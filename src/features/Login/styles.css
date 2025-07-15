@@ -1,0 +1,151 @@
+.login_mainContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: url("../../assets/login-background.svg");
+  width: 100%;
+}
+
+.custom-dots ul {
+  display: flex !important;
+  justify-content: center;
+  padding: 0;
+  margin-top: 40px;
+}
+
+.custom-dot {
+  width: 20px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0px;
+}
+
+/* Circle for inactive dots */
+.dot-circle-left {
+  padding: 3px;
+  background: #d1ebff;
+  border-radius: 50%;
+  margin-right: 19px;
+  margin-top: 2px !important;
+}
+.dot-circle-right {
+  padding: 3px;
+  background: #d1ebff;
+  border-radius: 50%;
+  margin-left: 19px;
+  margin-top: 2px !important;
+}
+/* Active progress bar base */
+.dot-progress {
+  height: 4px;
+  width: 100%;
+  background: #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: opacity ease-in-out, transform 0.3s linear;
+  transform: scaleX(1);
+}
+
+/* Inner animated progress bar */
+.dot-progress.animated::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background-color: rgb(0, 162, 246);
+  animation: fillProgress 4s linear forwards;
+}
+
+.slick-dots {
+  bottom: -210px !important;
+}
+@keyframes fillProgress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.login_sliderheadings {
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+.login_sliderdescription {
+  text-align: center;
+}
+
+.login_card_formcolumn_mainContainer {
+  border-right: 2px solid #f1f1f1;
+}
+.login_card {
+  width: 65%;
+  height: auto;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 2px;
+  transition: all 0.1s ease-in-out;
+  display: table-cell;
+  border-right: 2px solid #f1f1f1;
+  position: relative;
+}
+.login_logo {
+  width: 100px;
+}
+.login_cardheading {
+  font-weight: 600;
+  font-size: 24px;
+  margin-top: 12px !important;
+}
+.login_accesstext {
+  color: gray;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.login_formContainer {
+  position: relative;
+  z-index: 1;
+  margin-top: 30px;
+}
+.login_formlabels {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.login_signinbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  height: 36px;
+  margin-top: 30px;
+  width: 100%;
+  cursor: pointer;
+}
+.login_signinbutton:hover {
+  opacity: 0.7;
+}
+.login_signinbutton:active {
+  transform: scale(0.9);
+}
+.login_card_formcolumn_Container {
+  padding: 50px 35px !important;
+}
+.login_card_slidercolumn_Container {
+  padding: 50px 50px !important;
+}
+.login_signupnow_text {
+  font-size: 15px;
+  margin-top: 85px;
+  text-align: center;
+}
