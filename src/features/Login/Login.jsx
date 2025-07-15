@@ -4,10 +4,15 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
+import { emailValidator } from "../Common/Validation";
 import "./styles.css";
 
 export default function Login() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const settings = {
     dots: true,
@@ -40,6 +45,10 @@ export default function Login() {
     ),
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="login_mainContainer">
       <div className="login_card">
@@ -53,20 +62,44 @@ export default function Login() {
               <form className="login_formContainer">
                 <div>
                   <p className="login_formlabels">Email</p>
-                  <Input />
+                  <Input
+                    className="login_inputfields"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError(emailValidator(e.target.value));
+                    }}
+                  />
                 </div>
 
                 <div style={{ marginTop: "22px" }}>
                   <p className="login_formlabels">Password</p>
-                  <Input />
+                  <Input.Password
+                    className="login_inputfields"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError(emailValidator(e.target.value));
+                    }}
+                  />
                 </div>
 
-                <button className="login_signinbutton">Sign In</button>
+                <div className="login_forgotpasswordtextContainer">
+                  <p className="login_forgotpasswordtext">Forgot Password?</p>
+                </div>
+                <button className="login_signinbutton" onClick={handleSubmit}>
+                  Sign In
+                </button>
               </form>
 
               <p className="login_signupnow_text">
                 Don't have a account?{" "}
-                <span style={{ color: "#5b69ca", fontWeight: 500 }}>
+                <span
+                  style={{
+                    color: "#5b69ca",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
                   Sign up now
                 </span>
               </p>

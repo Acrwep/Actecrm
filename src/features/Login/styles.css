@@ -63,7 +63,7 @@
 }
 
 .slick-dots {
-  bottom: -210px !important;
+  bottom: -220px !important;
 }
 @keyframes fillProgress {
   from {
@@ -97,6 +97,8 @@
   display: table-cell;
   border-right: 2px solid #f1f1f1;
   position: relative;
+  /* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
 }
 .login_logo {
   width: 100px;
@@ -119,6 +121,26 @@
 .login_formlabels {
   font-weight: 500;
   margin-bottom: 6px;
+}
+.login_inputfields {
+  height: 35px;
+}
+.login_inputfields:hover {
+  border-color: #5b69ca !important;
+}
+.login_inputfields:focus {
+  border-color: #5b69ca !important;
+  box-shadow: 0 0 0 2px #5b6aca28;
+}
+.login_forgotpasswordtextContainer {
+  margin-top: 6px;
+  font-weight: 500;
+  display: flex;
+  justify-content: flex-end;
+}
+.login_forgotpasswordtext {
+  width: max-content;
+  cursor: pointer;
 }
 .login_signinbutton {
   background-color: #5b69ca;
@@ -145,7 +167,7 @@
   padding: 50px 50px !important;
 }
 .login_signupnow_text {
-  font-size: 15px;
-  margin-top: 85px;
+  font-size: 14px;
+  margin-top: 55px;
   text-align: center;
 }
