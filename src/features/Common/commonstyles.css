@@ -1,0 +1,23 @@
+/* mui textinput field styles */
+.common_inputfield .MuiInputLabel-root {
+  font-family: "Poppins", sans-serif !important;
+}
+.common_inputfield .MuiOutlinedInput-root:hover fieldset {
+  border-color: rgba(128, 128, 128, 0.712) !important;
+}
+.common_inputfield .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #5b69ca !important;
+  border-width: 1px !important;
+}
+.common_inputfield .MuiInputLabel-root {
+  font-size: 15px !important;
+}
+.common_inputfield .MuiInputLabel-root.Mui-focused {
+  color: #5b69ca !important;
+}
+.common_inputfield .MuiInputLabel-root.Mui-error.Mui-focused {
+  color: #d32f2f !important;
+}
+.common_inputfield .MuiOutlinedInput-root.Mui-error fieldset {
+  border-color: #d32f2f !important;
+}

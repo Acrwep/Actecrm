@@ -1,0 +1,13 @@
+.leadmanager_addleadbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 22px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
