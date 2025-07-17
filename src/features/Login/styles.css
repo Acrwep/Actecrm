@@ -132,6 +132,58 @@
   border-color: #5b69ca !important;
   box-shadow: 0 0 0 2px #5b6aca28;
 }
+
+.login_errorinputfields {
+  height: 35px;
+  border-color: #e52020 !important;
+}
+.login_errorinputfields:hover {
+  border-color: #e52020 !important;
+}
+.login_errorinputfields:focus {
+  border-color: #e52020 !important;
+  box-shadow: 0 0 0 2px #e520201c !important;
+}
+.login_errorinputfields:focus-within {
+  border-color: #e52020 !important;
+  box-shadow: 0 0 0 2px #e520201c !important;
+}
+.login_inputfieldserror_show {
+  color: #e52020;
+  position: absolute;
+  bottom: -21px;
+  opacity: 1;
+  transform: translateX(0px);
+  transition: all 0.3s ease-in-out;
+  font-size: 13px;
+}
+.login_inputfieldserror_hide {
+  position: absolute;
+  bottom: -21px;
+  opacity: 0;
+  transform: translateX(-20px);
+  font-size: 13px;
+  transition: all 0.3s ease-in-out;
+}
+
+.login_passworderror_show {
+  color: #e52020;
+  position: absolute;
+  bottom: -42px;
+  opacity: 1;
+  transform: translateX(0px);
+  transition: all 0.3s ease-in-out;
+  font-size: 13px;
+  width: 68%;
+}
+.login_passworderror_hide {
+  position: absolute;
+  bottom: -42px;
+  opacity: 0;
+  transform: translateX(-20px);
+  font-size: 13px;
+  transition: all 0.3s ease-in-out;
+}
 .login_forgotpasswordtextContainer {
   margin-top: 6px;
   font-weight: 500;
@@ -153,6 +205,9 @@
   margin-top: 30px;
   width: 100%;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .login_signinbutton:hover {
   opacity: 0.7;

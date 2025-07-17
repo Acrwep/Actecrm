@@ -44,6 +44,47 @@ export const emailValidator = (email) => {
   return error;
 };
 
+export const passwordValidator = (password) => {
+  const isTooShort = password.length < 8;
+  const isMissingLowercase = !/[a-z]/.test(password);
+  const isMissingUppercase = !/[A-Z]/.test(password);
+  const isMissingNumber = !/\d/.test(password);
+  const isMissingSpecialChar = !/[\W_]/.test(password);
+
+  let error = "";
+
+  const newErrors = {
+    lengthError: isTooShort
+      ? "Password must be at least 8 characters long."
+      : "",
+    lowercaseError: isMissingLowercase
+      ? "Password must contain at least one lowercase letter."
+      : "",
+    uppercaseError: isMissingUppercase
+      ? "Password must contain at least one uppercase letter."
+      : "",
+    numberError: isMissingNumber
+      ? "Password must contain at least one numeric."
+      : "",
+    specialCharacterError: isMissingSpecialChar
+      ? "Password must contain at least one special character (!@#$%^&* etc.)."
+      : "",
+  };
+
+  if (newErrors.lengthError) {
+    error = newErrors.lengthError;
+  } else if (newErrors.lowercaseError) {
+    error = newErrors.lowercaseError;
+  } else if (newErrors.uppercaseError) {
+    error = newErrors.uppercaseError;
+  } else if (newErrors.numberError) {
+    error = newErrors.numberError;
+  } else if (newErrors.specialCharacterError) {
+    error = newErrors.specialCharacterError;
+  }
+  return error;
+};
+
 export const selectValidator = (name) => {
   let error = "";
 

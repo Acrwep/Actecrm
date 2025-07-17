@@ -1,7 +1,6 @@
 :root {
   line-height: 1.5;
   font-weight: 400;
-  /* color-scheme: light dark; */
   color: rgba(255, 255, 255, 0.87);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -20,12 +19,14 @@ a:hover {
 * {
   font-family: "Poppins", sans-serif;
 }
-body {
+
+html,
+body,
+#root {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  height: 100%;
+  width: 100%;
 }
 
 h1 {
@@ -37,6 +38,7 @@ p {
   color: black;
   margin: 0;
   padding: 0;
+  margin-bottom: 0 !important;
 }
 button {
   border-radius: 8px;
@@ -74,4 +76,49 @@ button:focus-visible {
 /* antd input field styles */
 .ant-input {
   font-family: "Poppins", sans-serif !important;
+}
+.ant-input-outlined:focus-within {
+  border-color: #5b69ca !important;
+  box-shadow: 0 0 0 2px #5b6aca1a !important;
+}
+/* antd layout styles */
+.ant-layout {
+  /* background: #5b69ca14 !important; */
+}
+.ant-layout-sider {
+  background: #5b69ca14 !important;
+}
+.ant-menu-light .ant-menu-item {
+  color: #333 !important;
+  background-color: transparent;
+}
+.ant-menu-light .ant-menu-item-selected {
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  font-weight: 500;
+  border-radius: 16px !important;
+}
+
+.ant-menu-light
+  .ant-menu-item:not(.ant-menu-item-selected):not(
+    .ant-menu-submenu-selected
+  ):hover {
+  font-weight: 500 !important;
+  background-color: transparent;
+}
+
+.ant-menu-light.ant-menu-root.ant-menu-inline {
+  border-inline-end: none !important;
+}
+.ant-menu-inline .ant-menu-item {
+  height: 40px !important;
+  width: 90%;
+  margin-left: 9px;
+}
+.ant-menu-submenu-title {
+  color: #333 !important;
+}
+
+.ant-menu-light:not(.ant-menu-horizontal) .ant-menu-submenu-title:hover {
+  background-color: transparent !important;
 }

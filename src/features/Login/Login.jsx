@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
-import { emailValidator } from "../Common/Validation";
+import { emailValidator, passwordValidator } from "../Common/Validation";
 import "./styles.css";
 
 export default function Login() {
@@ -13,6 +13,7 @@ export default function Login() {
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [validationTrigger, setValidationTrigger] = useState(false);
 
   const settings = {
     dots: true,
@@ -47,6 +48,17 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setValidationTrigger(true);
+
+    const emailValidate = emailValidator(email);
+    const passwordValidate = passwordValidator(password);
+
+    setEmailError(emailValidate);
+    setPasswordError(passwordValidate);
+
+    if (emailValidate || passwordValidate) return;
+
+    alert("success");
   };
 
   return (
@@ -60,27 +72,58 @@ export default function Login() {
               <p className="login_accesstext">to access CRM</p>
 
               <form className="login_formContainer">
-                <div>
+                <div style={{ position: "relative" }}>
                   <p className="login_formlabels">Email</p>
                   <Input
-                    className="login_inputfields"
+                    className={
+                      emailError
+                        ? "login_errorinputfields"
+                        : "login_inputfields"
+                    }
                     onChange={(e) => {
                       setEmail(e.target.value);
-                      setEmailError(emailValidator(e.target.value));
+                      if (validationTrigger) {
+                        setEmailError(emailValidator(e.target.value));
+                      }
                     }}
+                    value={email}
                   />
+                  <p
+                    className={
+                      emailError
+                        ? "login_inputfieldserror_show"
+                        : "login_inputfieldserror_hide"
+                    }
+                  >
+                    {"Email " + emailError}
+                  </p>
                 </div>
 
-                <div style={{ marginTop: "22px" }}>
+                <div style={{ marginTop: "22px", position: "relative" }}>
                   <p className="login_formlabels">Password</p>
                   <Input.Password
-                    className="login_inputfields"
-                    value={password}
+                    className={
+                      passwordError
+                        ? "login_errorinputfields"
+                        : "login_inputfields"
+                    }
                     onChange={(e) => {
                       setPassword(e.target.value);
-                      setPasswordError(emailValidator(e.target.value));
+                      if (validationTrigger) {
+                        setPasswordError(passwordValidator(e.target.value));
+                      }
                     }}
+                    value={password}
                   />
+                  <p
+                    className={
+                      passwordError
+                        ? "login_passworderror_show"
+                        : "login_passworderror_hide"
+                    }
+                  >
+                    {passwordError}
+                  </p>
                 </div>
 
                 <div className="login_forgotpasswordtextContainer">
