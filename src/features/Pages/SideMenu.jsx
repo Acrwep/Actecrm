@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "antd";
-import { UserOutlined, VideoCameraOutlined } from "@ant-design/icons";
+import { GrAppsRounded } from "react-icons/gr";
+import { PiUsersThreeBold } from "react-icons/pi";
+import { FiPhoneCall } from "react-icons/fi";
+import { PiHandCoins } from "react-icons/pi";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -11,13 +14,23 @@ export default function SideMenu() {
   const sideMenuOptions = {
     1: {
       title: "Dashboard",
-      icon: <UserOutlined />,
+      icon: <GrAppsRounded size={17} />,
       path: "dashboard",
     },
     2: {
       title: "Lead Manager",
-      icon: <VideoCameraOutlined />,
+      icon: <PiHandCoins size={17} />,
       path: "lead-manager",
+    },
+    3: {
+      title: "Lead Followup",
+      icon: <FiPhoneCall size={17} />,
+      path: "lead-followup",
+    },
+    4: {
+      title: "Customers",
+      icon: <PiUsersThreeBold size={17} />,
+      path: "customers",
     },
   };
 

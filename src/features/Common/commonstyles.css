@@ -2,6 +2,9 @@
 .common_inputfield .MuiInputLabel-root {
   font-family: "Poppins", sans-serif !important;
 }
+.MuiInputBase-root.MuiOutlinedInput-root {
+  font-family: "Poppins", sans-serif !important; /* or your preferred font */
+}
 .common_inputfield .MuiOutlinedInput-root:hover fieldset {
   border-color: rgba(128, 128, 128, 0.712) !important;
 }
@@ -9,9 +12,8 @@
   border-color: #5b69ca !important;
   border-width: 1px !important;
 }
-.common_inputfield .MuiInputLabel-root {
-  font-size: 15px !important;
-}
+/* .common_inputfield .MuiInputLabel-root {
+} */
 .common_inputfield .MuiInputLabel-root.Mui-focused {
   color: #5b69ca !important;
 }
@@ -20,4 +22,67 @@
 }
 .common_inputfield .MuiOutlinedInput-root.Mui-error fieldset {
   border-color: #d32f2f !important;
+}
+.MuiFormHelperText-root.Mui-error {
+  position: absolute;
+  bottom: -24px;
+  font-family: "Poppins", sans-serif !important;
+  line-height: 1.9 !important;
+  font-size: 11px !important;
+}
+
+/* mui select field styles */
+.common_inputfield .MuiSelect-select {
+  font-family: "Poppins", sans-serif !important;
+}
+.common_inputfield .MuiSelect-select[aria-expanded="false"] {
+  color: rgba(0, 0, 0, 0.87);
+}
+.MuiMenuItem-root {
+  font-family: "Poppins", sans-serif !important;
+}
+.common_selectfield_errortext {
+  color: #d32f2f !important;
+}
+
+/* antd datepicker styles */
+.common_singledatepicker {
+  border-radius: 5px !important;
+  border-color: rgba(0, 0, 0, 0.23) !important;
+  border-width: 1px !important;
+}
+.ant-picker .ant-picker-input > input::placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+.common_singledatepicker_error {
+  border-radius: 5px !important;
+  border-color: #d32f2f !important;
+  border-width: 1px !important;
+}
+.common_singledatepicker_errortext {
+  color: #d32f2f !important;
+  margin-top: 5px;
+  margin-left: 12px !important;
+  font-size: 12px !important;
+  font-family: "Poppins", sans-serif !important;
+}
+/* textarea label */
+.commontextarea_label {
+  margin-bottom: 6px !important;
+}
+.commontextarea {
+  border-radius: 5px !important;
+}
+.commontextarea:hover {
+  border-color: rgba(128, 128, 128, 0.712) !important;
+  box-shadow: none !important;
+}
+.commontextarea:focus {
+  border-color: #5b69ca !important;
+  box-shadow: none !important;
+}
+/* common table styles */
+.commontable_paginationlabel {
+  color: gray;
+  font-size: 12px;
 }

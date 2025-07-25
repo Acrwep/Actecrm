@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Col, Layout, Row, theme } from "antd";
-import Logo from "../../assets/acte-logo.png";
+import Logo from "../../assets/logo.png";
 
 const { Sider, Content } = Layout;
 
@@ -11,6 +11,8 @@ import SideMenu from "./SideMenu";
 import "./styles.css";
 import LeadManager from "../Lead/LeadManager";
 import Header from "./Header";
+import LeadFollowUp from "../Lead/LeadFollowUp";
+import Customers from "../Customers/Customers";
 
 export default function Pages() {
   const location = useLocation();
@@ -60,6 +62,8 @@ export default function Pages() {
               <Header />
               <Routes>
                 <Route element={<LeadManager />} path="/lead-manager" />
+                <Route element={<LeadFollowUp />} path="/lead-followup" />
+                <Route element={<Customers />} path="/customers" />
               </Routes>
             </Content>
           </Layout>

@@ -186,13 +186,14 @@
 }
 .login_forgotpasswordtextContainer {
   margin-top: 6px;
-  font-weight: 500;
+  font-weight: 400;
   display: flex;
   justify-content: flex-end;
 }
 .login_forgotpasswordtext {
   width: max-content;
   cursor: pointer;
+  font-size: 13px;
 }
 .login_signinbutton {
   background-color: #5b69ca;

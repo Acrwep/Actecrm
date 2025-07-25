@@ -54,20 +54,16 @@ export const passwordValidator = (password) => {
   let error = "";
 
   const newErrors = {
-    lengthError: isTooShort
-      ? "Password must be at least 8 characters long."
-      : "",
+    lengthError: isTooShort ? " must be at least 8 characters long." : "",
     lowercaseError: isMissingLowercase
-      ? "Password must contain at least one lowercase letter."
+      ? " must contain at least one lowercase letter."
       : "",
     uppercaseError: isMissingUppercase
-      ? "Password must contain at least one uppercase letter."
+      ? " must contain at least one uppercase letter."
       : "",
-    numberError: isMissingNumber
-      ? "Password must contain at least one numeric."
-      : "",
+    numberError: isMissingNumber ? " must contain at least one numeric." : "",
     specialCharacterError: isMissingSpecialChar
-      ? "Password must contain at least one special character (!@#$%^&* etc.)."
+      ? " must contain at least one special character (!@#$%^&* etc.)."
       : "",
   };
 

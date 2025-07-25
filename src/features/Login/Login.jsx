@@ -6,6 +6,9 @@ import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
 import { emailValidator, passwordValidator } from "../Common/Validation";
 import "./styles.css";
+import CommonInputField from "../Common/CommonInputField";
+import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import { FiEyeOff, FiEye } from "react-icons/fi";
 
 export default function Login() {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -13,6 +16,7 @@ export default function Login() {
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
 
   const settings = {
@@ -73,13 +77,8 @@ export default function Login() {
 
               <form className="login_formContainer">
                 <div style={{ position: "relative" }}>
-                  <p className="login_formlabels">Email</p>
-                  <Input
-                    className={
-                      emailError
-                        ? "login_errorinputfields"
-                        : "login_inputfields"
-                    }
+                  <CommonInputField
+                    label="Email"
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (validationTrigger) {
@@ -87,25 +86,32 @@ export default function Login() {
                       }
                     }}
                     value={email}
+                    error={emailError}
                   />
-                  <p
-                    className={
-                      emailError
-                        ? "login_inputfieldserror_show"
-                        : "login_inputfieldserror_hide"
-                    }
-                  >
-                    {"Email " + emailError}
-                  </p>
                 </div>
 
-                <div style={{ marginTop: "22px", position: "relative" }}>
-                  <p className="login_formlabels">Password</p>
-                  <Input.Password
-                    className={
-                      passwordError
-                        ? "login_errorinputfields"
-                        : "login_inputfields"
+                <div style={{ marginTop: "30px", position: "relative" }}>
+                  <CommonOutlinedInput
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    icon={
+                      <>
+                        {showPassword ? (
+                          <FiEye
+                            size={18}
+                            color="gray"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setShowPassword(!showPassword)}
+                          />
+                        ) : (
+                          <FiEyeOff
+                            size={18}
+                            color="gray"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setShowPassword(!showPassword)}
+                          />
+                        )}
+                      </>
                     }
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -114,16 +120,13 @@ export default function Login() {
                       }
                     }}
                     value={password}
+                    error={passwordError}
+                    helperTextContainerStyle={{
+                      position: "absolute",
+                      bottom: "-21px",
+                      width: "65%",
+                    }}
                   />
-                  <p
-                    className={
-                      passwordError
-                        ? "login_passworderror_show"
-                        : "login_passworderror_hide"
-                    }
-                  >
-                    {passwordError}
-                  </p>
                 </div>
 
                 <div className="login_forgotpasswordtextContainer">

@@ -5,7 +5,89 @@
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 22px;
+  /* padding: 6px 22px; */
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.addleaddrawer_headings {
+  font-weight: 500;
+  margin-bottom: 12px !important;
+  font-size: 15px;
+}
+.leadmanager_ratinglabel {
+  color: #202020;
+  margin-bottom: 12px !important;
+}
+.leadmanager_submitlead_buttoncontainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  /* position: fixed;
+  bottom: 20px;
+  right: 34px; */
+}
+.leadmanager_submitleadbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 30px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.leadmanager_filterContainer {
+  display: flex;
+  margin-bottom: 6px;
+  gap: 16px;
+  width: 100%;
+}
+.leadmanager_tablefilterdrawer .ant-drawer-body {
+  padding: 0px 0px !important;
+}
+.leadmanager_tablefiler_container {
+  background-color: #fcfcfc;
+  padding: 12px 0px;
+}
+.leadmanager_tablefiler_columnnam_container {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+.leadmanager_tablefiler_columnnames {
+  padding: 0px 24px;
+  font-size: 13px;
+}
+
+.leadmanager_tablefiler_divider {
+  margin: 0 !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+}
+.leadmanager_tablefiler_footer {
+  position: absolute;
+  bottom: 0px;
+  right: 12px;
+  box-shadow: 0 -5px 5px -5px #eee;
+  border-top: 1px solid #ddd;
+  width: 100%;
+  padding: 9px 0px;
+}
+.leadmanager_tablefilter_applybutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 80px;
   cursor: pointer;
   display: flex;
   justify-content: center;

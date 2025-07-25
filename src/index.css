@@ -86,10 +86,14 @@ button:focus-visible {
 }
 /* antd layout styles */
 .ant-layout-sider {
-  background: #5b69ca14 !important;
+  background: #0d1c40 !important;
+  background-image: url("../src/assets/nav_bg.png") !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% !important;
+  background-position: center !important;
 }
 .ant-menu-light .ant-menu-item {
-  color: #333 !important;
+  color: #fff !important;
   background-color: transparent;
 }
 .ant-menu-light .ant-menu-item-selected {
@@ -115,10 +119,202 @@ button:focus-visible {
   width: 90%;
   margin-left: 9px;
 }
+.ant-menu-light.ant-menu-inline .ant-menu-item {
+  margin-top: 6px !important;
+}
+.ant-menu-inline.ant-menu-root .ant-menu-item > .ant-menu-title-content {
+  font-size: 13px !important;
+}
 .ant-menu-submenu-title {
   color: #333 !important;
 }
 
 .ant-menu-light:not(.ant-menu-horizontal) .ant-menu-submenu-title:hover {
   background-color: transparent !important;
+}
+
+/* antd datepicker styles */
+.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+  background: #5b69ca !important;
+}
+.ant-picker-outlined {
+  border-radius: 4px !important;
+  height: 34px !important;
+}
+.ant-picker-outlined:hover {
+  border-color: rgba(128, 128, 128, 0.712) !important;
+}
+.ant-picker-outlined.ant-picker-status-error:not(.ant-picker-disabled):hover {
+  border-color: #d32f2f !important;
+}
+.ant-picker-outlined:focus {
+  border-color: rgba(128, 128, 128, 0.712) !important;
+  box-shadow: 0 0 0 2px rgba(128, 128, 128, 0.712) !important;
+}
+.ant-picker-outlined:focus-within {
+  border-color: #5b69ca !important;
+  box-shadow: none !important;
+}
+.ant-picker-outlined.ant-picker-status-error:not(
+    .ant-picker-disabled
+  ):focus-within {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
+.ant-picker-dropdown
+  .ant-picker-cell-in-view.ant-picker-cell-today
+  .ant-picker-cell-inner::before {
+  border-color: #5b69ca !important;
+}
+.ant-picker-now-btn {
+  color: #5b69ca !important;
+}
+.ant-picker-outlined.ant-picker-status-error:not(.ant-picker-disabled)
+  .ant-picker-suffix {
+  color: #d32f2f !important;
+}
+/* ant double datepicker styles */
+.ant-picker-range .ant-picker-active-bar {
+  background: #5b69ca !important;
+}
+.ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background-color: #5b69ca !important;
+}
+.ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner {
+  background-color: #5b69ca !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: #5b69ca !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-range-start:not(
+    .ant-picker-cell-range-start-single
+  )::before,
+.ant-picker-cell-in-view.ant-picker-cell-in-range::before,
+.ant-picker-cell-in-view.ant-picker-cell-range-end:not(
+    .ant-picker-cell-range-end-single
+  )::before,
+.ant-picker-time-panel-column
+  > li.ant-picker-time-panel-cell-selected
+  .ant-picker-time-panel-cell-inner {
+  background: #25a17e13 !important;
+}
+/* rating styles */
+.ant-rate .ant-rate-star-zero .ant-rate-star-first,
+.ant-rate .ant-rate-star-zero .ant-rate-star-second {
+  color: rgba(0, 0, 0, 0.123) !important; /* Your desired color */
+}
+
+/* antd table styles */
+.users_table .ant-table-thead .ant-table-cell {
+  background-color: #e0e3e8;
+  color: white;
+}
+.ant-pagination {
+  display: flex;
+  align-items: center;
+}
+.ant-select-outlined.ant-select-status-error:not(.ant-select-disabled):not(
+    .ant-select-customize- input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #d32f2f !important;
+  box-shadow: 0 0 0 2px rgba(255, 38, 5, 0.06) !important;
+}
+.ant-pagination .ant-pagination-item-active {
+  border-color: #5b69ca !important;
+}
+.ant-pagination-options-size-changer {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+.ant-pagination
+  .ant-pagination-options-size-changer.ant-select:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  font-size: 11px;
+  height: 29px !important;
+  width: 100px !important;
+  color: #333 !important;
+  display: flex !important;
+  align-items: center !important;
+  border-color: rgba(128, 128, 128, 0.486) !important;
+}
+.ant-select-single.ant-select-sm
+  .ant-select-selector
+  .ant-select-selection-item {
+  line-height: 15px !important;
+}
+.ant-pagination-options-size-changer .ant-select-arrow {
+  color: #333;
+}
+
+.ant-select-outlined:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer):hover
+  .ant-select-selector {
+  border-color: #5b69ca !important;
+  box-shadow: 0 0 0 2px #0057b31c !important;
+}
+.ant-select-focused.ant-select:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #5b69ca !important;
+  box-shadow: 0 0 0 2px #0057b31c !important;
+}
+.ant-table-thead .ant-table-cell {
+  background-color: #e0e3e8 !important;
+  font-size: 13px !important;
+  color: #333 !important;
+}
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  font-size: 13px !important;
+}
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:first-child {
+  border-start-start-radius: 3px !important;
+}
+.ant-table-wrapper
+  .ant-table-container
+  table
+  > thead
+  > tr:first-child
+  > *:last-child {
+  border-start-end-radius: 3px !important;
+}
+.ant-pagination .ant-pagination-item-active a {
+  color: #5b69ca !important;
+}
+.ant-pagination .ant-pagination-item-active a:hover {
+  color: #5b69ca !important;
+}
+.ant-pagination .ant-pagination-item {
+  border: 1px solid #0057b338;
+  height: 25px !important;
+  line-height: 24px;
+  min-width: 27px;
+  font-size: 12px !important;
+}
+.ant-pagination .ant-pagination-item a {
+  color: #5b69ca !important;
+}
+.ant-pagination .ant-pagination-item:not(.ant-pagination-item-active):hover {
+  background-color: none !important;
+  opacity: 0.7;
+}
+.ant-table-wrapper .ant-table.ant-table-small .ant-table-cell,
+:where(.css-dev-only-do-not-override-16dneet).ant-table-wrapper
+  .ant-table.ant-table-small
+  .ant-table-thead
+  > tr
+  > th {
+  padding: 11px !important;
 }
