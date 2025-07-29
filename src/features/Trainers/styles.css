@@ -1,0 +1,12 @@
+.trainers_actionbuttonContainer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.trainers_action_icons {
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.trainers_action_icons:hover {
+  transform: scale(1.1);
+}

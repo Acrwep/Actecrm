@@ -8,7 +8,7 @@ import { FcManager } from "react-icons/fc";
 import { AiOutlineLogout } from "react-icons/ai";
 import "./styles.css";
 
-export default function Header() {
+export default function CustomHeader() {
   const location = useLocation();
 
   const items = [
@@ -41,6 +41,10 @@ export default function Header() {
               ? "Batches"
               : location.pathname === "/trainers"
               ? "Trainers"
+              : location.pathname === "/server"
+              ? "Server"
+              : location.pathname === "/settings"
+              ? "Settings"
               : ""}
           </p>
         </div>
@@ -69,7 +73,6 @@ export default function Header() {
               </div>
 
               <div className="header_profileContainer">
-                {/* <FcManager size={32} /> */}
                 <Space direction="vertical">
                   <Space wrap>
                     <Dropdown

@@ -93,6 +93,9 @@ button:focus-visible {
   background-size: 100% !important;
   background-position: center !important;
 }
+.ant-layout-header {
+  line-height: 20px !important;
+}
 .ant-menu-light .ant-menu-item {
   color: #fff !important;
   background-color: transparent;

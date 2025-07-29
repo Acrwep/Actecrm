@@ -20,11 +20,14 @@
 
 /* header styles */
 .header_maincontainer {
-  margin-bottom: 30px;
+  padding: 24px;
+  width: 100%;
 }
 .header_innercontainer {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap; /* Allow children to wrap */
+  width: 100%;
 }
 .header_titleContainer {
   display: flex;
@@ -38,6 +41,7 @@
 .header_searchbar_container {
   position: relative;
   margin-right: 12px;
+  height: 100%;
 }
 .header_searchbar {
   border-radius: 16px;

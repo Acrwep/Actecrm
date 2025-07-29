@@ -7,6 +7,8 @@ import { FiPhoneCall } from "react-icons/fi";
 import { PiHandCoins } from "react-icons/pi";
 import { MdOutlineGroupAdd } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
+import { IoServerOutline } from "react-icons/io5";
+import { IoSettingsOutline } from "react-icons/io5";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -43,6 +45,16 @@ export default function SideMenu() {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
+    },
+    7: {
+      title: "Server",
+      icon: <IoServerOutline size={17} />,
+      path: "server",
+    },
+    8: {
+      title: "Settings",
+      icon: <IoSettingsOutline size={17} />,
+      path: "settings",
     },
   };
 
