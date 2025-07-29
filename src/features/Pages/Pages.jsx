@@ -79,7 +79,6 @@ export default function Pages() {
                 padding: 0,
                 background: colorBgContainer,
                 position: "fixed",
-                width: "100%",
                 left: collapsed ? 80 : 200,
                 width: `calc(100% - ${collapsed ? 80 : 200}px)`,
                 zIndex: 100,
