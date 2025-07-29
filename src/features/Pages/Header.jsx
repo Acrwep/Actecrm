@@ -37,6 +37,10 @@ export default function Header() {
               ? "Lead Followup"
               : location.pathname === "/customers"
               ? "Customers"
+              : location.pathname === "/batches"
+              ? "Batches"
+              : location.pathname === "/trainers"
+              ? "Trainers"
               : ""}
           </p>
         </div>

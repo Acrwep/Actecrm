@@ -13,6 +13,9 @@ import LeadManager from "../Lead/LeadManager";
 import Header from "./Header";
 import LeadFollowUp from "../Lead/LeadFollowUp";
 import Customers from "../Customers/Customers";
+import Batches from "../Batches/Batches";
+import Dashboard from "../Dashboard/Dashboard";
+import Trainers from "../Trainers/Trainers";
 
 export default function Pages() {
   const location = useLocation();
@@ -61,9 +64,12 @@ export default function Pages() {
             >
               <Header />
               <Routes>
+                <Route element={<Dashboard />} path="/dashboard" />
                 <Route element={<LeadManager />} path="/lead-manager" />
                 <Route element={<LeadFollowUp />} path="/lead-followup" />
                 <Route element={<Customers />} path="/customers" />
+                <Route element={<Batches />} path="/batches" />
+                <Route element={<Trainers />} path="/batches" />
               </Routes>
             </Content>
           </Layout>

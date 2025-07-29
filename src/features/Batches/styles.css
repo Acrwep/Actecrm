@@ -1,0 +1,32 @@
+.batches_usercountContainer {
+  align-items: center;
+  border-radius: 7px;
+  display: flex;
+  font-size: 13px;
+  font-weight: 600;
+  justify-content: center;
+  padding: 2px 0;
+  width: 75px;
+  background-color: #14b8a524;
+  color: #14b8a6;
+  cursor: pointer;
+}
+.batch_usermodal_addcandidate {
+  margin-top: 30px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.batch_usermodal_addcandidate_buttonContainer {
+  display: flex;
+  margin-top: 12px;
+  gap: 12px;
+  width: 100%;
+}
+.batch_usermodal_addcandidate_button {
+  background-color: transparent;
+  padding: 0px;
+  color: #5b69ca;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

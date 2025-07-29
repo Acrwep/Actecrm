@@ -10,6 +10,7 @@ export default function CommonInputField({
   required,
   height,
   labelFontSize,
+  ref,
 }) {
   return (
     <div>
@@ -33,6 +34,7 @@ export default function CommonInputField({
             fontSize: "14px",
           },
         }}
+        inputRef={ref}
       />
     </div>
   );

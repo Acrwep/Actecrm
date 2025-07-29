@@ -5,6 +5,8 @@ import { GrAppsRounded } from "react-icons/gr";
 import { PiUsersThreeBold } from "react-icons/pi";
 import { FiPhoneCall } from "react-icons/fi";
 import { PiHandCoins } from "react-icons/pi";
+import { MdOutlineGroupAdd } from "react-icons/md";
+import { FaChalkboardTeacher } from "react-icons/fa";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -31,6 +33,16 @@ export default function SideMenu() {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
+    },
+    5: {
+      title: "Batches",
+      icon: <MdOutlineGroupAdd size={17} />,
+      path: "batches",
+    },
+    6: {
+      title: "Trainers",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainers",
     },
   };
 

@@ -1,0 +1,191 @@
+/* .customers_status_mainContainer {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1; 
+}
+.customers_status_mainContainer::-webkit-scrollbar {
+  width: 12px;
+}
+
+.customers_status_mainContainer::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+.customers_status_mainContainer::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 10px; 
+}
+
+.customers_status_mainContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} */
+.customers_scroll_wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 10px;
+  margin-bottom: 16px;
+}
+.customer_statusscroll_button {
+  border-radius: 50%;
+  padding: 6px 6px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  color: #333;
+  background-color: #e0e3e8;
+}
+.customers_status_mainContainer {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 16px;
+  padding: 10px;
+  scrollbar-width: none; /* Firefox */
+  white-space: nowrap;
+  /* margin-top: 18px;
+  margin-bottom: 24px; */
+}
+.customers_status_mainContainer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+.customers_awaitfinance_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ff6b6b;
+  background-color: #ff6b6b11;
+  border-radius: 6px;
+  color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_studentvefity_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ffa502;
+  background-color: #ffa6020e;
+  border-radius: 6px;
+  color: #ffa502;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_assigntrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #2ed573;
+  background-color: #2ed5740e;
+  border-radius: 6px;
+  color: #2ed573;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_verifytrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #1e90ff;
+  background-color: #1e8fff11;
+  border-radius: 6px;
+  color: #1e90ff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_classschedule_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #a29bfe;
+  background-color: #a29bfe15;
+  border-radius: 6px;
+  color: #a29bfe;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_classgoing_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #00cec9;
+  background-color: #00cecb10;
+  border-radius: 6px;
+  color: #00cec9;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_pendingfees_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #e17055;
+  background-color: #e1715513;
+  border-radius: 6px;
+  color: #e17055;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_escalated_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #6c5ce7;
+  background-color: #6c5ce715;
+  border-radius: 6px;
+  color: #6c5ce7;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_feedback_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #fd79a8;
+  background-color: #fd79a711;
+  border-radius: 6px;
+  color: #fd79a8;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_completed_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #3c9111;
+  background-color: #3c911111;
+  border-radius: 6px;
+  color: #3c9111;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_others_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #0984e3;
+  background-color: #0985e30e;
+  border-radius: 6px;
+  color: #0984e3;
+  font-size: 13px;
+  font-weight: 600;
+}

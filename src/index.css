@@ -28,6 +28,8 @@ body,
   height: 100%;
   width: 100%;
   font-family: "Poppins", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
@@ -36,7 +38,6 @@ h1 {
 }
 
 p {
-  color: black;
   margin: 0;
   padding: 0;
   margin-bottom: 0 !important;
@@ -139,7 +140,7 @@ button:focus-visible {
 }
 .ant-picker-outlined {
   border-radius: 4px !important;
-  height: 34px !important;
+  /* height: 34px !important; */
 }
 .ant-picker-outlined:hover {
   border-color: rgba(128, 128, 128, 0.712) !important;
@@ -317,4 +318,9 @@ button:focus-visible {
   > tr
   > th {
   padding: 11px !important;
+}
+
+/* progress bar styles */
+.ant-progress .ant-progress-bg {
+  background: #5b69ca !important;
 }

@@ -48,6 +48,7 @@ export default function CommonDoubleDatePicker({ onChange, value, label }) {
           }
           onChange={handleRangePickerChange}
           disabledDate={disabledDate}
+          style={{ height: "34px" }}
           // allowClear={true}
         />
       </Space>
