@@ -10,7 +10,7 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons";
-import CustomHeader from "./Header";
+import CustomHeader from "./CustomHeader";
 
 const { Sider, Content, Header } = Layout;
 
