@@ -1,27 +1,25 @@
 import React from "react";
 import { Autocomplete, TextField } from "@mui/material";
 
-export default function CommonMultiSelect({
-  options = [],
+export default function CommonOptionsMultiSelect({
+  options,
   label,
   defaultValue,
   height,
   fontSize,
   valueMarginTop,
   optionsFontSize,
+  required,
 }) {
   return (
     <div>
       <Autocomplete
         multiple
-        freeSolo
         limitTags={2}
         size="small"
         id="multiple-limit-tags"
-        options={[]}
-        getOptionLabel={(option) =>
-          typeof option === "string" ? option : option.title
-        }
+        options={options}
+        getOptionLabel={(option) => option.title}
         defaultValue={defaultValue}
         renderInput={(params) => (
           <TextField
@@ -39,6 +37,7 @@ export default function CommonMultiSelect({
                 top: "43%",
               },
             }}
+            required={required}
           />
         )}
         className="common_inputfield"

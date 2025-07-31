@@ -1,0 +1,89 @@
+.settings_tabbutton_maincontainer {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+.settings_tab_inactivebutton {
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.548);
+  background-color: transparent;
+  padding: 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+}
+.settings_tab_activebutton {
+  border-radius: 6px;
+  /* border: 1px solid rgba(128, 128, 128, 0.548); */
+  background-color: #5b69ca;
+  color: #fff;
+  padding: 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* users styles */
+.users_adddrawer_createbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 95px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* page access styles */
+.settings_groupcard {
+  padding: 12px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: 6px;
+}
+.groupname_container {
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+.settings_group_contentContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.settings_groupcard_footer_container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 36px;
+  margin-bottom: 2px;
+}
+.settings_group_footer_buttons {
+  background-color: transparent;
+  border-color: gray;
+  border-radius: 6px;
+  padding: 4px 12px !important;
+  font-size: 12px;
+}
+.settings_group_footer_buttons:hover {
+  border-color: #5b69ca;
+  opacity: 1 !important;
+  color: #5b69ca;
+}
+.settings_permission_heading {
+  font-weight: 500;
+  margin-top: 12px !important;
+  font-size: 16px;
+}

@@ -3,13 +3,6 @@ import { Route, Routes } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Col, Layout, Row, theme, Button } from "antd";
 import Logo from "../../assets/logo.png";
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
 import CustomHeader from "./CustomHeader";
 
 const { Sider, Content, Header } = Layout;

@@ -85,4 +85,5 @@
 .commontable_paginationlabel {
   color: gray;
   font-size: 12px;
+  cursor: default !important;
 }
