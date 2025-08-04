@@ -1,0 +1,91 @@
+.dashboard_leadcount_card {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  height: 100%;
+}
+.dashboard_leadcount_header_container {
+  border-bottom: 1px solid rgb(5 5 5 / 14%);
+}
+.dashboard_scrorecard_heading {
+  font-weight: 600;
+  font-size: 16px;
+}
+.dashboard_daterange_text {
+  color: #777;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.dashboard_daterangeContainer {
+  position: absolute;
+  z-index: 99;
+  background: white;
+  top: 68px;
+  right: 0px;
+}
+.dashboard_scorecard_dateiconContainer {
+  position: relative;
+  width: 140px;
+  background-color: transparent;
+  padding: 0px 12px;
+  height: 100%;
+  border-left: 1px solid rgb(5 5 5 / 14%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  gap: 8px;
+  cursor: pointer;
+}
+.dashboard_scorecard_divider {
+  margin: 0px 0px !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.dashboard_leadcountcard_progressbar_mainContainer {
+  padding: 16px 22px;
+}
+.dashboard_leadcountcard_subheadings {
+  font-weight: 500;
+  font-size: 15px;
+}
+.dashboard_leadcountcard_count {
+  font-size: 35px;
+  color: #5b69ca;
+  font-weight: 600;
+}
+.dashboard_leadcountcard_progressbar {
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+.dashboard_leadcountcard_progressbar.ant-progress .ant-progress-bg {
+  background: #5b6aca66 !important;
+  height: 20px !important;
+  border-radius: 2px !important;
+}
+.dashboard_leadcountcard_progressbar.ant-progress .ant-progress-inner {
+  border-radius: 4px !important;
+  background-color: #f5f5f5 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+.dashboard_leadcountcard_progressbar .ant-progress-inner {
+  position: relative;
+}
+
+.dashboard_leadcountcard_progressbar .ant-progress-text {
+  position: absolute;
+  left: 24%;
+  top: 36%;
+  transform: translate(-50%, -50%);
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+}
+.dashboard_performchannel_headingContainer {
+  padding: 9px 12px;
+  background-color: #5b6aca17;
+}
+.dashboard_performchannel_heading_col {
+  font-size: 13px;
+  font-weight: 500;
+}
+.dashboard_performchannel_data_col {
+  font-size: 13px;
+}

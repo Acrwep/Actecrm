@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { LuMessageCircleMore } from "react-icons/lu";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
@@ -10,12 +10,16 @@ import "./styles.css";
 
 export default function CustomHeader() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const items = [
     {
       key: "1",
       label: (
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div
+          style={{ display: "flex", gap: "12px", alignItems: "center" }}
+          onClick={() => navigate("/login")}
+        >
           <AiOutlineLogout size={14} />
           <p>Logout</p>
         </div>

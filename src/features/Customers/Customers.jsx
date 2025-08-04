@@ -128,8 +128,11 @@ export default function Customers() {
           <IoMdArrowDropleft size={25} />
         </button>
         <div className="customers_status_mainContainer" ref={scrollRef}>
+          <div className="customers_awaitregister_container">
+            <p>Awaiting Register {`( 1 )`}</p>
+          </div>
           <div className="customers_awaitfinance_container">
-            <p>Awaiting Finance {`( 1 )`}</p>
+            <p>Awaiting Finance {`( 12 )`}</p>
           </div>
           <div className="customers_studentvefity_container">
             <p>Student Verify {`( 20 )`}</p>

@@ -9,8 +9,11 @@ import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { FiEyeOff, FiEye } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [activeSlide, setActiveSlide] = useState(0);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -62,7 +65,7 @@ export default function Login() {
 
     if (emailValidate || passwordValidate) return;
 
-    alert("success");
+    navigate("/lead-manager");
   };
 
   return (

@@ -1,9 +1,30 @@
 .pages_sidebarlogoContainer {
+  padding: 22px 0px 16px 0px;
+}
+.pages_sidebarlogo_col {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.pages_collapseicon_container {
+  background-color: #fff;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  padding: 4px 0px 4px 9px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 22px 0px 16px 0px;
-  gap: 12px;
+  cursor: pointer;
+}
+.pages_collapseicon_collapsedcontainer {
+  background-color: #fff;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  padding: 4px 0px 4px 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 .pages_sidebarcollpase_button {
   width: 35px;

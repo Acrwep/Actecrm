@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Col, Layout, Row, theme, Button } from "antd";
 import Logo from "../../assets/logo.png";
 import CustomHeader from "./CustomHeader";
+import { HiMenuAlt2 } from "react-icons/hi";
+import { HiMenuAlt3 } from "react-icons/hi";
+import { HiOutlineMenuAlt3 } from "react-icons/hi";
+import Logo2 from "../../assets/a-logo.png";
 
 const { Sider, Content, Header } = Layout;
 
@@ -21,7 +25,9 @@ import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
 
 export default function Pages() {
+  const navigate = useNavigate();
   const location = useLocation();
+
   const [collapsed, setCollapsed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const {
@@ -35,6 +41,9 @@ export default function Pages() {
     if (pathName === "login") {
       setShowSidebar(false);
     } else {
+      if (pathName === "") {
+        navigate("/lead-manager");
+      }
       setShowSidebar(true);
     }
   }, [location.pathname]);
@@ -61,9 +70,31 @@ export default function Pages() {
             }}
           >
             <div className="demo-logo-vertical" />
-            <div className="pages_sidebarlogoContainer">
+            {/* <div className="pages_sidebarlogoContainer">
               <img src={Logo} style={{ width: "92px" }} />
-            </div>
+              <p>Hii</p>
+            </div> */}
+            <Row className="pages_sidebarlogoContainer">
+              <Col span={15} className="pages_sidebarlogo_col">
+                {collapsed ? (
+                  <img src={Logo2} style={{ width: "22px" }} />
+                ) : (
+                  <img src={Logo} style={{ width: "92px" }} />
+                )}
+              </Col>
+              <Col span={9} className="pages_sidebarlogo_col">
+                <div
+                  className={
+                    collapsed
+                      ? "pages_collapseicon_collapsedcontainer"
+                      : "pages_collapseicon_container"
+                  }
+                  onClick={() => setCollapsed(!collapsed)}
+                >
+                  <HiOutlineMenuAlt3 color="#333" size={21} />
+                </div>
+              </Col>
+            </Row>
             <SideMenu />
           </Sider>
           <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>

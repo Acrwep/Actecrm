@@ -92,6 +92,7 @@ button:focus-visible {
   background-repeat: no-repeat !important;
   background-size: 100% !important;
   background-position: center !important;
+  transition: all 0.4s ease;
 }
 .ant-layout-header {
   line-height: 20px !important;
@@ -202,7 +203,7 @@ button:focus-visible {
 .ant-picker-time-panel-column
   > li.ant-picker-time-panel-cell-selected
   .ant-picker-time-panel-cell-inner {
-  background: #25a17e13 !important;
+  background: #5b6aca13 !important;
 }
 /* rating styles */
 .ant-rate .ant-rate-star-zero .ant-rate-star-first,
@@ -326,4 +327,22 @@ button:focus-visible {
 /* progress bar styles */
 .ant-progress .ant-progress-bg {
   background: #5b69ca !important;
+}
+/* antd checkbox styles */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #535bf2 !important;
+  border-color: #5b69ca !important;
+}
+.ant-checkbox-wrapper:hover .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #5b69ca !important;
+}
+.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox:hover .ant-checkbox-inner,
+.ant-checkbox-input:focus + .ant-checkbox-inner {
+  border-color: #5b69ca !important;
+}
+.ant-checkbox-wrapper-disabled:hover
+  .ant-checkbox-disabled
+  .ant-checkbox-inner {
+  border-color: #d9d9d9 !important;
 }

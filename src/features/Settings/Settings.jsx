@@ -19,7 +19,7 @@ export default function Settings() {
         >
           Users
         </button>
-        <button
+        {/* <button
           className={
             activePage === "addfields"
               ? "settings_tab_activebutton"
@@ -28,7 +28,7 @@ export default function Settings() {
           onClick={() => setActivePage("addfields")}
         >
           Add fields
-        </button>
+        </button> */}
         <button
           className={
             activePage === "pageaccess"

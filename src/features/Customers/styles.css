@@ -57,7 +57,7 @@
 .customers_status_mainContainer::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
-.customers_awaitfinance_container {
+.customers_awaitregister_container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -66,6 +66,18 @@
   background-color: #ff6b6b11;
   border-radius: 6px;
   color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customers_awaitfinance_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #eb6d4b;
+  background-color: #eb6e4b11;
+  border-radius: 6px;
+  color: #eb6d4b;
   font-size: 13px;
   font-weight: 600;
 }

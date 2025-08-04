@@ -87,3 +87,119 @@
   font-size: 12px;
   cursor: default !important;
 }
+/* common daterangepicker styles */
+.commondaterangepicker_maincontainer {
+  border: 1px solid rgba(128, 128, 128, 0.281);
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0px 2px 30px #ccc6;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.common_rangepicker_footer {
+  display: flex;
+  justify-content: space-between;
+}
+.common_rangepicker_resetbutton {
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.548);
+  background-color: transparent;
+  padding: 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  height: 28px;
+  color: #333;
+}
+.common_rangepicker_applybutton {
+  border-radius: 6px;
+  border: 1px solid #5b69ca;
+  background-color: #5b69ca;
+  padding: 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  height: 28px;
+  color: #fff;
+}
+.daterangepicker_select .ant-select-selector {
+  font-size: 12px !important;
+}
+.custom-date-range-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.rdrStartEdge {
+  background: #5b69ca !important;
+}
+.rdrInRange {
+  background: #5b69ca !important;
+}
+.rdrEndEdge {
+  background: #5b69ca !important;
+}
+/* Change the border color of the selected range preview */
+.rdrDayStartPreview,
+.rdrDayInPreview,
+.rdrDayEndPreview {
+  border-color: #5b69ca !important; /* Change to any color you like */
+}
+.rdrDateDisplayItem input {
+  height: 25px !important;
+  font-size: 12px !important;
+}
+.rdrDateDisplayItemActive {
+  border-color: #5b69ca !important;
+}
+.rdrMonthAndYearWrapper {
+  height: 46px !important;
+  padding-top: 0px !important;
+}
+.rdrMonth {
+  padding: 4px 4px !important;
+}
+/* Reduce calendar height */
+.custom-daterange .rdrCalendarWrapper {
+  height: 100px; /* Adjust height as needed */
+}
+
+/* Reduce individual calendar size */
+.custom-daterange .rdrMonth {
+  width: 100%;
+  /* padding: 4px; */
+}
+
+/* Reduce navigation size */
+.custom-daterange .rdrMonthAndYearWrapper {
+  /* padding: 4px 8px; */
+  font-size: 12px;
+}
+
+/* Reduce day size */
+.custom-daterange .rdrDay {
+  height: 30px;
+}
+
+.custom-daterange .rdrDayNumber span {
+  font-size: 12px;
+}
+/* current date */
+.rdrDayToday .rdrDayNumber span {
+  border: 1px solid #5b69ca;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  background-color: #fff !important;
+  color: #333 !important;
+  border-radius: 4px !important;
+}
+.rdrDayToday .rdrDayNumber span:after {
+  height: 0px !important;
+  width: 0 !important;
+}

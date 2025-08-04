@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Col, Row, Drawer, Rate, Divider, Checkbox } from "antd";
+import { Col, Row, Drawer, Rate } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import { nameValidator, selectValidator } from "../Common/Validation";
@@ -12,6 +12,7 @@ import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
 import { FiFilter } from "react-icons/fi";
 import CommonDnd from "../Common/CommonDnd";
+import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 
 export default function LeadManager() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -88,18 +89,7 @@ export default function LeadManager() {
               icon={<CiSearch size={16} />}
               labelMarginTop="-1px"
             />
-            <CommonDatePicker
-              placeholder="Start Date"
-              height="34px"
-              labelFontSize="12px"
-              style={{ width: "34%" }}
-            />
-            <CommonDatePicker
-              placeholder="End Date"
-              height="34px"
-              labelFontSize="12px"
-              style={{ width: "34%" }}
-            />
+            <CommonDoubleDatePicker />
           </div>
         </Col>
         <Col
