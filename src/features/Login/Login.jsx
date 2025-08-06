@@ -4,23 +4,27 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
-import { emailValidator, passwordValidator } from "../Common/Validation";
+import { userIdValidator, passwordValidator } from "../Common/Validation";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { LoginApi } from "../ApiService/action";
+import CommonSpinner from "../Common/CommonSpinner";
+import { CommonMessage } from "../Common/CommonMessage";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const [activeSlide, setActiveSlide] = useState(0);
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [userId, setUserId] = useState("");
+  const [userIdError, setUserIdError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const settings = {
     dots: true,
@@ -53,19 +57,45 @@ export default function Login() {
     ),
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setValidationTrigger(true);
 
-    const emailValidate = emailValidator(email);
+    const emailValidate = userIdValidator(userId);
     const passwordValidate = passwordValidator(password);
 
-    setEmailError(emailValidate);
+    setUserIdError(emailValidate);
     setPasswordError(passwordValidate);
 
     if (emailValidate || passwordValidate) return;
 
-    navigate("/lead-manager");
+    setLoading(true);
+    const payload = {
+      user_id: userId,
+      password: password,
+    };
+    try {
+      const response = await LoginApi(payload);
+      console.log("login response", response);
+      const loginUserDetails = response?.data?.data;
+      localStorage.setItem("AccessToken", response?.data?.token);
+      localStorage.setItem(
+        "loginUserDetails",
+        JSON.stringify(loginUserDetails)
+      );
+      setTimeout(() => {
+        setLoading(false);
+        navigate("/dashboard");
+      }, 300);
+    } catch (error) {
+      console.log("login error");
+      setLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   return (
@@ -81,15 +111,15 @@ export default function Login() {
               <form className="login_formContainer">
                 <div style={{ position: "relative" }}>
                   <CommonInputField
-                    label="Email"
+                    label="UserId"
                     onChange={(e) => {
-                      setEmail(e.target.value);
+                      setUserId(e.target.value);
                       if (validationTrigger) {
-                        setEmailError(emailValidator(e.target.value));
+                        setUserIdError(userIdValidator(e.target.value));
                       }
                     }}
-                    value={email}
-                    error={emailError}
+                    value={userId}
+                    error={userIdError}
                   />
                 </div>
 
@@ -135,9 +165,15 @@ export default function Login() {
                 <div className="login_forgotpasswordtextContainer">
                   <p className="login_forgotpasswordtext">Forgot Password?</p>
                 </div>
-                <button className="login_signinbutton" onClick={handleSubmit}>
-                  Sign In
-                </button>
+                {loading ? (
+                  <button className="login_loadingsigninbutton">
+                    <CommonSpinner />
+                  </button>
+                ) : (
+                  <button className="login_signinbutton" onClick={handleSubmit}>
+                    Sign In
+                  </button>
+                )}
               </form>
 
               <p className="login_signupnow_text">

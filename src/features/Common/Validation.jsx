@@ -44,6 +44,15 @@ export const emailValidator = (email) => {
   return error;
 };
 
+export const userIdValidator = (userid) => {
+  let error = "";
+
+  if (!userid || userid.length <= 0) error = " is required";
+  else if (!mobileRegex.test(userid) || userid.length < 4)
+    error = " is not valid";
+  return error;
+};
+
 export const passwordValidator = (password) => {
   const isTooShort = password.length < 8;
   const isMissingLowercase = !/[a-z]/.test(password);
@@ -130,6 +139,16 @@ export const endTimeValidator = (endtime, starttime) => {
   // Validation: End time should not be less than start time
   else if (starttime && endtime < starttime)
     error = " must be after start time";
+
+  return error;
+};
+
+export const confirmPasswordValidator = (password, confirmPassword) => {
+  let error = "";
+
+  if (!confirmPassword || confirmPassword.length <= 0) error = " is required";
+  // Validation: End time should not be less than start time
+  else if (password != confirmPassword) error = " does not match";
 
   return error;
 };

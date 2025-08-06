@@ -12,13 +12,18 @@ export default function CustomHeader() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    navigate("/login");
+  };
   const items = [
     {
       key: "1",
       label: (
         <div
           style={{ display: "flex", gap: "12px", alignItems: "center" }}
-          onClick={() => navigate("/login")}
+          onClick={handleLogout}
         >
           <AiOutlineLogout size={14} />
           <p>Logout</p>
@@ -86,7 +91,7 @@ export default function CustomHeader() {
                       // popupRender={() => <CustomDropdownContent />}
                       trigger={["click"]}
                     >
-                      <FcManager size={32} />
+                      <FcManager size={32} style={{ cursor: "pointer" }} />
                     </Dropdown>
                   </Space>
                 </Space>

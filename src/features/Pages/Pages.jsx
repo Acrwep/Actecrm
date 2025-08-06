@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Col, Layout, Row, theme, Button } from "antd";
 import Logo from "../../assets/logo.png";
 import CustomHeader from "./CustomHeader";
-import { HiMenuAlt2 } from "react-icons/hi";
-import { HiMenuAlt3 } from "react-icons/hi";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import Logo2 from "../../assets/a-logo.png";
 
@@ -35,16 +33,16 @@ export default function Pages() {
   } = theme.useToken();
 
   useEffect(() => {
+    const AccessToken = localStorage.getItem("AccessToken");
     const pathName = location.pathname.split("/")[1];
 
     console.log("pathNameee", pathName);
-    if (pathName === "login") {
-      setShowSidebar(false);
-    } else {
-      if (pathName === "") {
-        navigate("/lead-manager");
-      }
+    if (AccessToken) {
       setShowSidebar(true);
+      navigate(`/${pathName}`, { replace: true });
+    } else {
+      setShowSidebar(false);
+      navigate("/login");
     }
   }, [location.pathname]);
 
@@ -131,6 +129,7 @@ export default function Pages() {
                 <Route element={<Trainers />} path="/trainers" />
                 <Route element={<Server />} path="/server" />
                 <Route element={<Settings />} path="/settings" />
+                <Route element={<Navigate to={"/dashboard"} />} path="*" />
               </Routes>
             </Content>
           </Layout>

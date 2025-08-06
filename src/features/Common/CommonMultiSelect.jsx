@@ -9,6 +9,7 @@ export default function CommonMultiSelect({
   fontSize,
   valueMarginTop,
   optionsFontSize,
+  required,
 }) {
   return (
     <div>
@@ -39,6 +40,7 @@ export default function CommonMultiSelect({
                 top: "43%",
               },
             }}
+            required={required}
           />
         )}
         className="common_inputfield"

@@ -346,3 +346,16 @@ button:focus-visible {
   .ant-checkbox-inner {
   border-color: #d9d9d9 !important;
 }
+
+/* antd spinner styles */
+.ant-spin .ant-spin-dot-item {
+  background: #5b69ca !important;
+}
+/* antd radio button styles */
+.ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
+  border-color: #5b69ca !important;
+  background-color: #5b69ca !important;
+}
+.ant-radio-wrapper:hover .ant-radio-inner {
+  border-color: #5b69ca !important;
+}

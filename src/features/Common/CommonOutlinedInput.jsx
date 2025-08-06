@@ -21,6 +21,7 @@ export default function CommonOutlinedInput({
   labelFontSize,
   labelMarginTop,
   helperTextContainerStyle,
+  style,
 }) {
   return (
     <FormControl
@@ -28,6 +29,7 @@ export default function CommonOutlinedInput({
       size="small"
       className="common_inputfield"
       error={error ? true : false}
+      // required={required}
       required={required}
       sx={{
         width: width ? width : "100%",
@@ -50,6 +52,7 @@ export default function CommonOutlinedInput({
         value={value}
         onChange={onChange}
         type={type}
+        sx={style}
       />
       {error && (
         <div style={helperTextContainerStyle}>

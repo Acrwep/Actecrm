@@ -10,6 +10,7 @@ import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
+import CommonTimePicker from "../Common/CommonTimePicker";
 
 export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -123,13 +124,13 @@ export default function Trainers() {
             />
           </Col>
           <Col span={12}>
-            <CommonInputField label="Profile Name" required={true} />
+            <CommonInputField label="Trainer Email" required={true} />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonInputField label="Mobile Number" required={true} />
+            <CommonInputField label="Trainer Mobile" required={true} />
           </Col>
           <Col span={12}>
             <CommonOutlinedInput
@@ -142,8 +143,9 @@ export default function Trainers() {
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonInputField label="Email" required={true} />
+            <CommonSelectField label="Technology" required={true} />
           </Col>
+
           <Col span={12}>
             <CommonSelectField label="Experience" required={true} />
           </Col>
@@ -151,14 +153,43 @@ export default function Trainers() {
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonSelectField label="Trainer Type" required={true} />
+            <CommonSelectField label="Relevant Experience" required={true} />
           </Col>
+          <Col span={12}>
+            {/* <CommonMultiSelect
+              label="Skills"
+              required={true}
+              options={[{ id: 1, title: "Name" }]}
+            /> */}
+            <CommonSelectField label="Batch" required={true} />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={12}>
+            <CommonTimePicker
+              placeholder="Avaibility Time *"
+              labelFontSize="14px"
+            />
+          </Col>
+          <Col span={12}>
+            <CommonTimePicker
+              placeholder="Secondary Time"
+              labelFontSize="14px"
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
             <CommonMultiSelect
               label="Skills"
               required={true}
               options={[{ id: 1, title: "Name" }]}
             />
+          </Col>
+          <Col span={12}>
+            <CommonSelectField label="Location" required={true} />
           </Col>
         </Row>
 
