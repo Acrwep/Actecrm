@@ -26,32 +26,32 @@ export default function SideMenu() {
       icon: <PiHandCoins size={17} />,
       path: "lead-manager",
     },
+    // 3: {
+    //   title: "Lead Followup",
+    //   icon: <FiPhoneCall size={17} />,
+    //   path: "lead-followup",
+    // },
     3: {
-      title: "Lead Followup",
-      icon: <FiPhoneCall size={17} />,
-      path: "lead-followup",
-    },
-    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    5: {
+    4: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    6: {
+    5: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    7: {
+    6: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    8: {
+    7: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",

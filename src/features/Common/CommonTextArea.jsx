@@ -38,8 +38,8 @@ const CommonTextArea = ({
         <div
           className={
             error
-              ? "commoninput_errormessage_activediv"
-              : "commoninput_errormessagediv"
+              ? "commontextarea_errormessage_activediv"
+              : "commontextarea_errormessagediv"
           }
         >
           <p style={{ color: "#d32f2f", marginTop: "2px" }}>{label + error}</p>

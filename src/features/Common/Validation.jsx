@@ -5,6 +5,7 @@ const mobileRegex = /^[0-9]+$/;
 const domainRegex =
   /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:[a-zA-Z]{2,})$/;
 const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[^\s]*)?$/i;
+import moment from "moment";
 
 export const nameValidator = (name) => {
   let error = "";
@@ -102,7 +103,11 @@ export const mobileValidator = (mobile) => {
   let error = "";
 
   if (!mobile || mobile.length <= 0) error = " is required";
-  else if (!mobileRegex.test(mobile) || mobile.length < 10)
+  else if (
+    !mobileRegex.test(mobile) ||
+    mobile.length < 10 ||
+    mobile.length > 10
+  )
     error = " is not valid";
   return error;
 };
@@ -223,4 +228,54 @@ export const getCurrentandPreviousweekDate = () => {
 export const parseTimeToDecimal = (timeString) => {
   const [hours, minutes, seconds] = timeString.split(":").map(Number);
   return hours + minutes / 60 + seconds / 3600;
+};
+
+export const formatToBackendIST = (date) => {
+  const istDate = new Date(
+    date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const year = istDate.getFullYear();
+  const month = pad(istDate.getMonth() + 1);
+  const day = pad(istDate.getDate());
+  const hours = pad(istDate.getHours());
+  const minutes = pad(istDate.getMinutes());
+  const seconds = pad(istDate.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+export const priceCategory = (fees) => {
+  if (fees <= 18999) {
+    return "Bronze";
+  } else if (fees <= 28999) {
+    return "Silver";
+  } else if (fees <= 38999) {
+    return "Gold";
+  } else {
+    return "Diamond";
+  }
+};
+
+export const shortRelativeTime = (date) => {
+  const diffSeconds = moment().diff(
+    moment(date, "YYYY-MM-DD HH:mm:ss"),
+    "seconds"
+  );
+
+  if (diffSeconds < 60) return `${diffSeconds}s ago`;
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  const diffWeeks = Math.floor(diffDays / 7);
+  return `${diffWeeks}w ago`;
 };

@@ -86,6 +86,11 @@ button:focus-visible {
   box-shadow: 0 0 0 2px #5b6aca1a !important;
 }
 /* antd layout styles */
+.ant-layout-sider-children {
+  overflow-y: auto;
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #0d1c40 #0d1c40;
+}
 .ant-layout-sider {
   background: #0d1c40 !important;
   background-image: url("../src/assets/nav_bg.png") !important;

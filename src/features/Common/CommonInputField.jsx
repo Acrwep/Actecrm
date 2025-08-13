@@ -11,6 +11,8 @@ export default function CommonInputField({
   height,
   labelFontSize,
   ref,
+  maxLength,
+  type,
 }) {
   return (
     <div>
@@ -35,6 +37,7 @@ export default function CommonInputField({
           },
         }}
         inputRef={ref}
+        slotProps={{ htmlInput: { maxLength: maxLength, type: type } }}
       />
     </div>
   );

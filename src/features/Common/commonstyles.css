@@ -1,9 +1,10 @@
 /* mui textinput field styles */
 .common_inputfield .MuiInputLabel-root {
   font-family: "Poppins", sans-serif !important;
+  -webkit-tap-highlight-color: none;
 }
 .MuiInputBase-root.MuiOutlinedInput-root {
-  font-family: "Poppins", sans-serif !important; /* or your preferred font */
+  font-family: "Poppins", sans-serif !important;
 }
 .common_inputfield .MuiOutlinedInput-root:hover fieldset {
   border-color: rgba(128, 128, 128, 0.712) !important;
@@ -12,8 +13,6 @@
   border-color: #5b69ca !important;
   border-width: 1px !important;
 }
-/* .common_inputfield .MuiInputLabel-root {
-} */
 .common_inputfield .MuiInputLabel-root.Mui-focused {
   color: #5b69ca !important;
 }
@@ -23,7 +22,7 @@
 .common_inputfield .MuiOutlinedInput-root.Mui-error fieldset {
   border-color: #d32f2f !important;
 }
-.MuiFormHelperText-root.Mui-error {
+.common_inputfield .MuiFormHelperText-root.Mui-error {
   position: absolute;
   bottom: -24px;
   font-family: "Poppins", sans-serif !important;
@@ -32,10 +31,14 @@
 }
 
 /* mui select field styles */
-.common_inputfield .MuiSelect-select {
+.common_selectfield * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.common_selectfield .MuiSelect-select {
   font-family: "Poppins", sans-serif !important;
 }
-.common_inputfield .MuiSelect-select[aria-expanded="false"] {
+.common_selectfield .MuiSelect-select[aria-expanded="false"] {
   color: rgba(0, 0, 0, 0.87);
 }
 .MuiMenuItem-root {
@@ -43,6 +46,40 @@
 }
 .common_selectfield_errortext {
   color: #d32f2f !important;
+  font-size: 11px !important;
+  font-family: "Poppins", sans-serif !important;
+  margin-bottom: 0 !important;
+  position: absolute;
+}
+
+.common_selectfield .MuiInputLabel-root {
+  font-family: "Poppins", sans-serif !important;
+}
+.MuiInputBase-root.MuiOutlinedInput-root {
+  font-family: "Poppins", sans-serif !important;
+}
+.common_selectfield .MuiOutlinedInput-root:hover fieldset {
+  border-color: rgba(128, 128, 128, 0.712) !important;
+}
+.common_selectfield .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #5b69ca !important;
+  border-width: 1px !important;
+}
+.common_selectfield .MuiInputLabel-root.Mui-focused {
+  color: #5b69ca !important;
+}
+.common_selectfield .MuiInputLabel-root.Mui-error.Mui-focused {
+  color: #d32f2f !important;
+}
+.common_selectfield .MuiOutlinedInput-root.Mui-error fieldset {
+  border-color: #d32f2f !important;
+}
+.common_selectfield .MuiFormHelperText-root.Mui-error {
+  position: absolute;
+  bottom: -20px;
+  font-family: "Poppins", sans-serif !important;
+  line-height: 1.9 !important;
+  font-size: 11px !important;
 }
 
 /* antd datepicker styles */
@@ -63,8 +100,31 @@
   color: #d32f2f !important;
   margin-top: 5px;
   margin-left: 12px !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-family: "Poppins", sans-serif !important;
+}
+.common_singledatepicker .ant-picker-input > input::placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+.ant-btn-variant-solid {
+  background: #5b69ca !important;
+}
+/* Red placeholder when error exists */
+.common_singledatepicker_error .ant-picker-input > input::placeholder {
+  color: #d32f2f !important;
+}
+.commontimepicker_errormessagediv {
+  position: absolute;
+  left: 0%;
+  opacity: 0;
+  top: 0%;
+}
+.commontimepicker_errormessage_activediv {
+  transform: translateX(2%);
+  font-size: 11px !important;
+  opacity: 1;
+  position: absolute;
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }
 /* textarea label */
 .commontextarea_label {
@@ -202,4 +262,31 @@
 .rdrDayToday .rdrDayNumber span:after {
   height: 0px !important;
   width: 0 !important;
+}
+
+/* common textarea styles */
+.commontextarea_error {
+  border-color: #d32f2f !important;
+}
+.commontextarea_error:hover {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
+.commontextarea_error:focus {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
+.commontextarea_errormessagediv {
+  position: absolute;
+  left: 0%;
+  opacity: 0;
+  top: 0%;
+}
+.commontextarea_errormessage_activediv {
+  transform: translateX(4%);
+  transform: translateY(20%);
+  opacity: 1;
+  position: absolute;
+  font-size: 12px !important;
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }

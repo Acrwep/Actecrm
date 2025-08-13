@@ -104,6 +104,7 @@ export default function Pages() {
                 left: collapsed ? 80 : 200,
                 width: `calc(100% - ${collapsed ? 80 : 200}px)`,
                 zIndex: 100,
+                transition: "all 0.3s ease-in-out",
               }}
             >
               <CustomHeader />

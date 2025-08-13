@@ -123,7 +123,9 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
 
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
-    getUsersData(e.target.value, filterType);
+    setTimeout(() => {
+      getUsersData(e.target.value);
+    }, 300);
   };
 
   const formReset = () => {

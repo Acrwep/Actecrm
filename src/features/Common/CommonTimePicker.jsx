@@ -63,11 +63,13 @@ const CommonTimePicker = ({
         <div
           className={
             error
-              ? "commoninput_errormessage_activediv"
-              : "commoninput_errormessagediv"
+              ? "commontimepicker_errormessage_activediv"
+              : "commontimepicker_errormessagediv"
           }
         >
-          <p className="common_singledatepicker_errortext">{label + error}</p>
+          <p className="common_singledatepicker_errortext">
+            {placeholder.replace("*", "").trim() + error}
+          </p>
         </div>
       )}
     </div>

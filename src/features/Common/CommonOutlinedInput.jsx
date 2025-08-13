@@ -22,6 +22,7 @@ export default function CommonOutlinedInput({
   labelMarginTop,
   helperTextContainerStyle,
   style,
+  maxLength,
 }) {
   return (
     <FormControl
@@ -53,6 +54,7 @@ export default function CommonOutlinedInput({
         onChange={onChange}
         type={type}
         sx={style}
+        inputProps={{ maxLength: maxLength }}
       />
       {error && (
         <div style={helperTextContainerStyle}>

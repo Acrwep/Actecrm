@@ -18,6 +18,7 @@ export default function CommonDatePicker({
   width,
   height,
   labelFontSize,
+  disablePreviousDates,
 }) {
   const handleChange = (date) => {
     if (date) {
@@ -33,7 +34,11 @@ export default function CommonDatePicker({
 
   // Disable future dates
   const disableFutureDates = (current) => {
-    return current && current > dayjs().endOf("day"); // Disable dates greater than today
+    if (disablePreviousDates) {
+      return current && current < dayjs().startOf("day"); // Disable dates lesser than today
+    } else {
+      return current && current > dayjs().endOf("day"); // Disable dates greater than today
+    }
   };
 
   const fontSizeClass = labelFontSize

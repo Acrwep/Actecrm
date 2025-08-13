@@ -33,17 +33,18 @@ export default function Settings() {
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
-        <button
-          className={
-            activePage === "users"
-              ? "settings_tab_activebutton"
-              : "settings_tab_inactivebutton"
-          }
-          onClick={() => setActivePage("users")}
-        >
-          Users
-        </button>
-        {/* <button
+        <div style={{ display: "flex", gap: "18px" }}>
+          <button
+            className={
+              activePage === "users"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => setActivePage("users")}
+          >
+            Users
+          </button>
+          {/* <button
           className={
             activePage === "addfields"
               ? "settings_tab_activebutton"
@@ -53,16 +54,17 @@ export default function Settings() {
         >
           Add fields
         </button> */}
-        <button
-          className={
-            activePage === "pageaccess"
-              ? "settings_tab_activebutton"
-              : "settings_tab_inactivebutton"
-          }
-          onClick={() => setActivePage("pageaccess")}
-        >
-          Page Access
-        </button>
+          <button
+            className={
+              activePage === "pageaccess"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => setActivePage("pageaccess")}
+          >
+            Page Access
+          </button>
+        </div>
       </div>
 
       {activePage === "users" ? (

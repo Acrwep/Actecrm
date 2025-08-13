@@ -1,9 +1,9 @@
 import React from "react";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 import FormHelperText from "@mui/material/FormHelperText";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 import "./commonstyles.css";
 
 export default function CommonSelectField({
@@ -22,78 +22,91 @@ export default function CommonSelectField({
   style,
   labelMarginTop,
   downArrowIconTop,
+  helperTextContainerStyle,
+  disableClearable,
 }) {
   return (
     <div style={style}>
       <FormControl
         fullWidth
-        className="common_inputfield"
+        className="common_selectfield"
         size="small"
-        error={error ? true : false}
-        required={required}
         sx={{
           flex: 1,
           "& .MuiInputLabel-root": {
-            fontSize: labelFontSize ? labelFontSize : "14px",
+            fontSize: labelFontSize || "14px",
             padding: "0px 0px",
-            marginTop: labelMarginTop,
+            marginTop: labelMarginTop ? labelMarginTop : "1px",
+            fontFamily: "Poppins,  sans-serif ",
           },
-          "& .MuiInputBase-root": {
-            height: height ? height : "46px", //  Controls full height of select box
+          "& .MuiOutlinedInput-root": {
+            height: height || "42px",
           },
-          "& .MuiSelect-select": {
-            height: height ? height : "100%", //  Controls the selected value area
-            display: "flex",
-            alignItems: "center",
-            fontSize: fontSize ? fontSize : "14px",
-            marginTop: valueMarginTop,
-          },
-          "& .MuiOutlinedInput-notchedOutline": {
-            height: "100%", // Ensure the outline stretches
-          },
-          "& .MuiSelect-icon": {
-            top: downArrowIconTop ?? "44%",
-            transform: "translateY(-50%)", // perfectly vertical center
+          "& .MuiAutocomplete-input": {
+            fontSize: fontSize || "14px",
+            marginTop: "0px",
           },
         }}
       >
-        <InputLabel id="demo-simple-select-label">{label}</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          label={label}
-          value={value ?? ""} // this avoids uncontrolled-to-controlled warning
-          onChange={onChange}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                "& .MuiMenuItem-root": {
-                  fontSize: optionsFontSize ? optionsFontSize : "13px",
+        <Autocomplete
+          options={options}
+          value={options.find((opt) => opt.id === value) || null}
+          getOptionLabel={(option) => option?.exp_range || option?.name || ""}
+          onChange={(event, newValue) =>
+            onChange({
+              target: { value: newValue ? newValue.id : "" },
+            })
+          }
+          disableClearable={disableClearable ?? true}
+          noOptionsText={
+            <span
+              style={{
+                fontSize: "13px",
+                color: "#888",
+                fontStyle: "Poppins, sans-serif",
+              }}
+            >
+              No data found
+            </span>
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              size="small"
+              label={label}
+              required={required}
+              sx={{
+                "& .MuiInputBase-input": {
+                  fontSize: fontSize || "14px",
                 },
-                "& .MuiMenuItem-root.Mui-selected": {
+              }}
+              className="common_inputfield"
+              error={error}
+            />
+          )}
+          slotProps={{
+            listbox: {
+              sx: {
+                "& .MuiAutocomplete-option": {
+                  fontSize: optionsFontSize || "13px",
+                },
+                "& .MuiAutocomplete-option[aria-selected='true']": {
                   backgroundColor: "#5b69ca26",
                 },
-                "& .MuiMenuItem-root.Mui-selected:hover": {
+                "& .MuiAutocomplete-option[aria-selected='true']:hover": {
                   backgroundColor: "#5b69ca26",
                 },
               },
             },
           }}
-        >
-          {options.length === 0 ? (
-            <MenuItem disabled>No data found</MenuItem>
-          ) : (
-            options.map((item) => (
-              <MenuItem key={item.id} value={item.id}>
-                {item.name}
-              </MenuItem>
-            ))
-          )}
-        </Select>
+        />
+
         {error && (
-          <FormHelperText className="common_selectfield_errortext">
-            {label + " " + error}
-          </FormHelperText>
+          <div style={helperTextContainerStyle}>
+            <FormHelperText className="common_selectfield_errortext">
+              {label + " " + error}
+            </FormHelperText>
+          </div>
         )}
       </FormControl>
     </div>

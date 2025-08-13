@@ -1,332 +1,123 @@
-import React, { useState } from "react";
-import { Col, Row, Drawer, Rate } from "antd";
+import React, { useState, useEffect } from "react";
 import "./styles.css";
-import CommonInputField from "../Common/CommonInputField";
-import { nameValidator, selectValidator } from "../Common/Validation";
-import CommonSelectField from "../Common/CommonSelectField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import { SiWhatsapp } from "react-icons/si";
-import CommonDatePicker from "../Common/CommonDatePicker";
-import CommonTextArea from "../Common/CommonTextArea";
-import CommonTable from "../Common/CommonTable";
-import { CiSearch } from "react-icons/ci";
-import { FiFilter } from "react-icons/fi";
-import CommonDnd from "../Common/CommonDnd";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
+import Leads from "./Leads";
+import LeadFollowUp from "./LeadFollowUp";
+import { Button, Tooltip } from "antd";
+import { RedoOutlined } from "@ant-design/icons";
 
-export default function LeadManager() {
-  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [date, setDate] = useState(null);
-  const [countryId, setCountryId] = useState(null);
-  const [countryIdError, setCountryIdError] = useState("");
-  const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
-  const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
+export default function Settings() {
+  const [activePage, setActivePage] = useState("followup");
+  const [triggerApi, setTriggerApi] = useState(true);
 
-  const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Registered Name", isChecked: true },
-    { title: "Registered Email", isChecked: true },
-    { title: "Registered Mobile", isChecked: true },
-    { title: "State", isChecked: true },
-    { title: "City ", isChecked: true },
-  ]);
+  // Track whether each tab has been opened at least once
+  const [loadedTabs, setLoadedTabs] = useState({
+    followup: true, // first tab shown initially
+    leads: false,
+  });
 
-  const [columns, setColumns] = useState([
-    { title: "Registered Name", key: "name", dataIndex: "name" },
-    { title: "Registered Email", key: "email", dataIndex: "email" },
-    { title: "Registered Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "State", key: "state", dataIndex: "state" },
-    { title: "City ", key: "city", dataIndex: "city" },
-  ]);
+  // For forcing remount
+  const [tabKeys, setTabKeys] = useState({
+    followup: 0,
+    leads: 0,
+  });
 
-  const nonChangeColumns = [
-    { title: "Registered Name", key: "name", dataIndex: "name" },
-    { title: "Registered Email", key: "email", dataIndex: "email" },
-    { title: "Registered Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "State", key: "state", dataIndex: "state" },
-    { title: "City ", key: "city", dataIndex: "city" },
-  ];
+  // const [userTableLoading, setUserTableLoading] = useState(true);
 
-  const leadData = [
-    {
-      id: 1,
-      name: "xyz",
-      email: "balaji@gmail.com",
-      mobile: "986788872",
-      state: "State Not Available",
-      city: "City Not Available",
-    },
-  ];
+  // useEffect(() => {
+  //   getUsersData();
+  // }, []);
 
-  const formReset = () => {
-    setIsOpenAddDrawer(false);
-    setIsOpenFilterDrawer(false);
-    setName("");
-    setNameError("");
-    setCountryId(null);
+  // const getUsersData = async () => {
+  //   setUserTableLoading(true);
+  //   try {
+  //     const response = await getUsers();
+  //     console.log("users response", response);
+  //     dispatch(storeUsersList(response?.data?.data || []));
+  //   } catch (error) {
+  //     dispatch(storeUsersList([]));
+  //   } finally {
+  //     setTimeout(() => {
+  //       setUserTableLoading(false);
+  //     }, 300);
+  //   }
+  // };
+
+  const handleTabClick = (tab) => {
+    setActivePage(tab);
+    setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
   };
 
-  const handleSubmit = () => {
-    const countryValidate = selectValidator(countryId);
+  const handleRefresh = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      [activePage]: prev[activePage] + 1, // change key to remount
+    }));
+  };
 
-    setCountryIdError(countryValidate);
-
-    if (countryValidate) return;
+  const refreshLeadFollowUp = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      followup: prev.followup + 1,
+    }));
   };
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="leadmanager_filterContainer">
-            <CommonOutlinedInput
-              label="Search"
-              width="36%"
-              height="34px"
-              labelFontSize="12px"
-              icon={<CiSearch size={16} />}
-              labelMarginTop="-1px"
-            />
-            <CommonDoubleDatePicker />
-          </div>
-        </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
+      <div className="settings_tabbutton_maincontainer">
+        <div style={{ display: "flex", gap: "18px" }}>
           <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
+            className={
+              activePage === "followup"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("followup")}
           >
-            Add Lead
+            Lead Followup
           </button>
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ marginLeft: "12px", cursor: "pointer" }}
-            onClick={() => setIsOpenFilterDrawer(true)}
-          />
-        </Col>
-      </Row>
+          <button
+            className={
+              activePage === "leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("leads")}
+          >
+            All Leads
+          </button>
+        </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <CommonTable
-          scroll={{ x: 600 }}
-          columns={columns}
-          dataSource={leadData}
-          dataPerPage={10}
-          // loading={tableLoading}
-          checkBox="false"
-          size="small"
-          className="questionupload_table"
-        />
+        {/* <Button className="leadmanager_refresh_button">
+          <VscRefresh />
+        </Button> */}
+
+        <Tooltip placement="top" title="Refresh">
+          <Button
+            className="leadmanager_refresh_button"
+            onClick={handleRefresh}
+          >
+            <RedoOutlined className="refresh_icon" />
+          </Button>
+        </Tooltip>
       </div>
-      <Drawer
-        title="Add Lead"
-        open={isOpenAddDrawer}
-        onClose={formReset}
-        width="50%"
-        style={{ position: "relative" }}
-      >
-        <p className="addleaddrawer_headings">Basic Information</p>
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonInputField
-              label="Candidate Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setNameError(nameValidator(e.target.value));
-              }}
-              error={nameError}
-              required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField label="Email" required={true} />
-          </Col>
-          <Col span={8}>
-            <CommonInputField label="Mobile Number" required={true} />
-          </Col>
-        </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonOutlinedInput
-              label="Whatsapp Number"
-              icon={<SiWhatsapp color="#39AE41" />}
-              required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Candidate Location"
-              options={[]}
-              required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Country"
-              value={countryId}
-              onChange={(event) => {
-                console.log("eee", event.target.value);
-                setCountryId(event.target.value);
-                setCountryIdError(selectValidator(event.target.value));
-              }}
-              options={[
-                { id: 1, name: "India" },
-                { id: 2, name: "Australia" },
-              ]}
-              error={countryIdError}
-              required={true}
-            />
-          </Col>
-        </Row>
-
-        <p className="addleaddrawer_headings">Course Details</p>
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonInputField label="Primary Course" required={true} />
-          </Col>
-          <Col span={8}>
-            <CommonInputField label="Fees" required={true} />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField label="Training Mode" required={true} />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField label="Priority" options={[]} required={true} />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Source"
-              options={[]}
-              required={true}
-            />
-          </Col>
-        </Row>
-
-        <p className="addleaddrawer_headings">Sales Information</p>
-
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonSelectField label="Lead Status" />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField label="Response Status" />
-          </Col>
-          <Col span={8}>
-            <CommonDatePicker
-              placeholder="Next Follow-Up Date"
-              onChange={(value) => {
-                setNxtFollowupDate(value);
-                setNxtFollowupDateError(selectValidator(value));
-              }}
-              value={nxtFollowupDate}
-              allowClear={true}
-              error={nxtFollowupDateError}
-              labelFontSize="14px"
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonDatePicker
-              placeholder="Expected Date Join"
-              onChange={(value) => setDate(value)}
-              value={date}
-              allowClear={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField label="Branch Name" />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField label="Batch Track" />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <p className="leadmanager_ratinglabel">Lead Quality Rating</p>
-            <Rate allowHalf />
-          </Col>
-          <Col span={16}>
-            <CommonTextArea label="Comments" />
-          </Col>
-        </Row>
-
-        <div className="leadmanager_submitlead_buttoncontainer">
-          <button
-            className="leadmanager_submitleadbutton"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+      {/* Mount only when first opened, keep mounted afterward */}
+      {loadedTabs.followup && (
+        <div style={{ display: activePage === "followup" ? "block" : "none" }}>
+          <LeadFollowUp key={tabKeys.followup} />
         </div>
-      </Drawer>
+      )}
 
-      {/* table filter drawer */}
-
-      <Drawer
-        title="Manage Table"
-        open={isOpenFilterDrawer}
-        onClose={formReset}
-        width="35%"
-        className="leadmanager_tablefilterdrawer"
-        style={{ position: "relative" }}
-      >
-        <Row>
-          <Col span={24}>
-            <div className="leadmanager_tablefiler_container">
-              <CommonDnd
-                data={defaultColumns}
-                setDefaultColumns={setDefaultColumns}
-              />
-            </div>
-          </Col>
-        </Row>
-        <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
-            <button
-              className="leadmanager_tablefilter_applybutton"
-              onClick={() => {
-                const reorderedColumns = defaultColumns
-                  .filter((item) => item.isChecked) // only include checked items
-                  .map((defaultItem) =>
-                    nonChangeColumns.find(
-                      (col) => col.title.trim() === defaultItem.title.trim()
-                    )
-                  )
-                  .filter(Boolean); // remove unmatched/null entries
-
-                console.log("Reordered Columns:", reorderedColumns);
-
-                setColumns(reorderedColumns);
-                setIsOpenFilterDrawer(false);
-              }}
-            >
-              Apply
-            </button>
-          </div>
+      {loadedTabs.leads && (
+        <div style={{ display: activePage === "leads" ? "block" : "none" }}>
+          <Leads
+            triggerApi={triggerApi}
+            setTriggerApi={setTriggerApi}
+            key={tabKeys.leads}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+          />
         </div>
-      </Drawer>
+      )}
     </div>
   );
 }

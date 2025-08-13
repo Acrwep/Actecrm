@@ -3,10 +3,10 @@ import { message } from "antd";
 
 export const CommonMessage = (msg, content) => {
   if (msg === "success") {
-    message.success(content, 10);
+    message.success(content, 2);
   } else if (msg === "error") {
-    message.error(content);
+    message.error(content, 2);
   } else {
-    message.warning(content);
+    message.warning(content, 2);
   }
 };

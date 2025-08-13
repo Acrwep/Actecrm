@@ -1,79 +1,247 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CommonTable from "../Common/CommonTable";
-import { Row, Col, Drawer } from "antd";
+import { Row, Col, Drawer, Rate, Input, Modal } from "antd";
 import { FiFilter } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonDnd from "../Common/CommonDnd";
+import { IoIosClose } from "react-icons/io";
+import { getLeadFollowUps } from "../ApiService/action";
+import { IoMdSend } from "react-icons/io";
+import moment from "moment";
+import CommonDatePicker from "../Common/CommonDatePicker";
+import {
+  addressValidator,
+  selectValidator,
+  shortRelativeTime,
+} from "../Common/Validation";
+
+const { TextArea } = Input;
 
 export default function LeadFollowUp() {
-  const [dateFilterOptions, setDateFilterOptions] = useState([
-    { id: 1, name: "Today" },
-    { id: 2, name: "Caryy Over" },
-  ]);
-  const [dateFilter, setDateFilter] = useState(1);
+  const chatBoxRef = useRef();
+  const dateFilterOptions = [
+    { id: "Today", name: "Today" },
+    { id: "Carry Over", name: "Carry Over" },
+  ];
+  const [dateFilter, setDateFilter] = useState("Today");
+  const [followUpData, setFollowUpData] = useState([]);
+  const [isOpenChat, setIsOpenChat] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [isOpenCommentModal, setIsOpenCommentModal] = useState(false);
+  const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
+  const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
+  const actionOptions = [
+    { id: 1, name: "Followup" },
+    { id: 2, name: "Junk" },
+  ];
+  const [actionId, setActionId] = useState(null);
+  const [actionIdError, setActionIdError] = useState(null);
+  const [newComment, setNewComment] = useState("");
+  const [newCommentError, setNewCommentError] = useState("");
+  const [commentsHistory, setCommentsHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Lead Id", isChecked: true },
+    { title: "Lead Owner", isChecked: true },
     { title: "Next Follow Up", isChecked: true },
-    { title: "Name", isChecked: true },
+    { title: "Candidate Name", isChecked: true },
     { title: "Mobile", isChecked: true },
     { title: "Course ", isChecked: true },
-    { title: "Fees ", isChecked: true },
+    { title: "Course Fees ", isChecked: true },
     { title: "Last Update ", isChecked: true },
     { title: "Recent Comments", isChecked: true },
-    { title: "Sale Rating ", isChecked: true },
-    { title: "PQ Rating ", isChecked: true },
+    { title: "Sale Rating", isChecked: true },
   ]);
 
   const [columns, setColumns] = useState([
-    { title: "Lead Id", key: "id", dataIndex: "id" },
-    { title: "Next Follow Up", key: "nextfollowup", dataIndex: "nextfollowup" },
-    { title: "Name", key: "name", dataIndex: "name" },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Course ", key: "course", dataIndex: "course" },
-    { title: "Fees ", key: "fees", dataIndex: "fees" },
-    { title: "Last Update", key: "lastupdate", dataIndex: "lastupdate" },
-    { title: "Recent Comments", key: "comments", dataIndex: "comments" },
-    { title: "Sale Rating", key: "rating", dataIndex: "rating" },
-    { title: "PQ Rating", key: "pqrating", dataIndex: "pqrating" },
+    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
+    {
+      title: "Next Follow Up",
+      key: "next_follow_up_date",
+      dataIndex: "next_follow_up_date",
+      render: (text, record) => {
+        return (
+          <div
+            className="leadfollowup_tabledateContainer"
+            onClick={() => {
+              setIsOpenCommentModal(true);
+              setCommentsHistory(record.histories);
+            }}
+          >
+            <p>{moment(text).format("DD/MM/YYYY")}</p>
+            <div className="leadfollowup_tablecommentContainer">
+              <p>{record.histories.length}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Candidate Name",
+      key: "candidate_name",
+      dataIndex: "candidate_name",
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Course",
+      key: "primary_course",
+      dataIndex: "primary_course",
+      width: 200,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+    },
+    {
+      title: "Recent Comments",
+      key: "comments",
+      dataIndex: "comments",
+      // fixed: "right",
+      width: 200,
+    },
+    {
+      title: "Sale Rating",
+      key: "lead_quality_rating",
+      dataIndex: "lead_quality_rating",
+      width: 130,
+      fixed: "right",
+      render: (text, record) => {
+        return (
+          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
+        );
+      },
+    },
   ]);
 
   const nonChangeColumns = [
-    { title: "Lead Id", key: "id", dataIndex: "id" },
-    { title: "Next Follow Up", key: "nextfollowup", dataIndex: "nextfollowup" },
-    { title: "Name", key: "name", dataIndex: "name" },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Course ", key: "course", dataIndex: "course" },
-    { title: "Fees ", key: "fees", dataIndex: "fees" },
-    { title: "Last Update", key: "lastupdate", dataIndex: "lastupdate" },
-    { title: "Recent Comments", key: "comments", dataIndex: "comments" },
-    { title: "Sale Rating", key: "rating", dataIndex: "rating" },
-    { title: "PQ Rating", key: "pqrating", dataIndex: "pqrating" },
-  ];
-
-  const followUpData = [
+    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
     {
-      id: 1,
-      name: "Balaji",
-      nextfollowup: "25/07/2025",
-      mobile: "9786564561",
-      course: "Full Statck",
-      fees: "22000",
-      lastupdate: "21/07/2025",
-      comments: "",
-      rating: "",
-      pqrating: "",
+      title: "Next Follow Up",
+      key: "next_follow_up_date",
+      dataIndex: "next_follow_up_date",
+      render: (text, record) => {
+        return (
+          <div
+            className="leadfollowup_tabledateContainer"
+            onClick={() => {
+              setIsOpenCommentModal(true);
+              setCommentsHistory(record.histories);
+            }}
+          >
+            <p>{moment(text).format("DD/MM/YYYY")}</p>
+            <div className="leadfollowup_tablecommentContainer">
+              <p>{record.histories.length}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Candidate Name",
+      key: "candidate_name",
+      dataIndex: "candidate_name",
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Course",
+      key: "primary_course",
+      dataIndex: "primary_course",
+      width: 200,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+    },
+    {
+      title: "Recent Comments",
+      key: "comments",
+      dataIndex: "comments",
+      // fixed: "right",
+      width: 200,
+    },
+    {
+      title: "Sale Rating",
+      key: "lead_quality_rating",
+      dataIndex: "lead_quality_rating",
+      width: 130,
+      fixed: "right",
+      render: (text, record) => {
+        return (
+          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
+        );
+      },
     },
   ];
+
+  const messages = [
+    { id: 1, text: "Hey there!", type: "receiver" },
+    { id: 2, text: "Hello! How are you?", type: "sender" },
+    { id: 3, text: "I’m doing well, thanks!", type: "receiver" },
+    { id: 4, text: "Glad to hear!", type: "sender" },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (chatBoxRef.current && !chatBoxRef.current.contains(event.target)) {
+        setIsOpenChat(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    getLeadFollowUpsData("Today");
+  }, []);
+
+  const getLeadFollowUpsData = async (dateType) => {
+    setLoading(true);
+    const payload = {
+      date_type: dateType,
+    };
+    try {
+      const response = await getLeadFollowUps(payload);
+      console.log("follow up response", response);
+      setFollowUpData(response?.data?.data || []);
+    } catch (error) {
+      setFollowUpData([]);
+      console.log("get followup error", error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
+    }
+  };
 
   const formReset = () => {
     setIsOpenFilterDrawer(false);
   };
 
+  const handleUpdateFollowUp = () => {
+    const actionValidate = selectValidator(actionId);
+    const nxtFollowdateValidate = selectValidator(nxtFollowupDate);
+    const commentValidate = addressValidator(newComment);
+
+    setActionIdError(actionValidate);
+    setNxtFollowupDateError(nxtFollowdateValidate);
+    setNewCommentError(commentValidate);
+
+    if (actionValidate || nxtFollowdateValidate || commentValidate) return;
+
+    alert("success");
+  };
+
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
           <div className="leadmanager_filterContainer">
@@ -87,7 +255,7 @@ export default function LeadFollowUp() {
             />
             <CommonSelectField
               label="Select"
-              height="39px"
+              height="35px"
               style={{ width: "36%" }}
               labelFontSize="12px"
               options={dateFilterOptions}
@@ -97,7 +265,9 @@ export default function LeadFollowUp() {
               downArrowIconTop="43%"
               fontSize="13px"
               onChange={(e) => {
+                console.log(e.target.value);
                 setDateFilter(e.target.value);
+                getLeadFollowUpsData(e.target.value);
               }}
             />
           </div>
@@ -124,11 +294,11 @@ export default function LeadFollowUp() {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1600 }}
+          scroll={{ x: 1200 }}
           columns={columns}
           dataSource={followUpData}
           dataPerPage={10}
-          // loading={tableLoading}
+          loading={loading}
           checkBox="false"
           size="small"
           className="questionupload_table"
@@ -180,6 +350,156 @@ export default function LeadFollowUp() {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        title="Update Followup"
+        open={isOpenCommentModal}
+        onCancel={() => {
+          setIsOpenCommentModal(false);
+          setActionId(null);
+          setActionIdError("");
+          setNxtFollowupDate(null);
+          setNxtFollowupDateError("");
+          setNewComment("");
+          setNewCommentError("");
+        }}
+        footer={false}
+        width="35%"
+        className="leadfollowup_actionmodal"
+      >
+        <div className="leadfollowup_actionfield_mainContainer">
+          <Row gutter={12} className="leadfollowup_actionfield_rowdiv">
+            <Col span={12}>
+              <CommonSelectField
+                label="Action"
+                options={actionOptions}
+                height="34px"
+                labelMarginTop="-2px"
+                value={actionId}
+                onChange={(e) => {
+                  setActionId(e.target.value);
+                  setActionIdError(selectValidator(e.target.value));
+                }}
+                error={actionIdError}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonDatePicker
+                placeholder="Next Followup Date"
+                height="35px"
+                onChange={(value) => {
+                  setNxtFollowupDate(value);
+                  setNxtFollowupDateError(selectValidator(value));
+                }}
+                value={nxtFollowupDate}
+                error={nxtFollowupDateError}
+                disablePreviousDates={true}
+              />
+            </Col>
+          </Row>
+
+          <p className="leadmanager_commentbox_heading">Comments</p>
+          {commentsHistory.length >= 1 ? (
+            <>
+              {commentsHistory.map((item) => {
+                return (
+                  <>
+                    <div className="leadmanager_comments_namecontainer">
+                      <div className="leadfollowup_chatbox_initialContainer">
+                        <p>BA</p>
+                      </div>
+                      <p className="leadfollowup_comment_username">
+                        Balaji{" "}
+                        <span className="leadfollowup_comment_time">
+                          {shortRelativeTime(item.updated_date)}
+                        </span>
+                      </p>
+                    </div>
+                    <p className="leadfollowup_comments_text">
+                      {item.comments}
+                    </p>
+                  </>
+                );
+              })}
+            </>
+          ) : (
+            <p className="leadfollowup_comment_nodatafound">
+              No comments found
+            </p>
+          )}
+
+          <div style={{ position: "relative" }}>
+            <TextArea
+              placeholder="Add Comment..."
+              className="leadmanager_commentbox_input"
+              onChange={(e) => {
+                setNewComment(e.target.value);
+                setNewCommentError(addressValidator(e.target.value));
+              }}
+            />
+            <div
+              className="leadmanager_comment_senddiv"
+              onClick={handleUpdateFollowUp}
+            >
+              <IoMdSend size={18} />
+            </div>
+          </div>
+
+          {newCommentError && (
+            <p className="leadfollowup_newcommenterror">
+              {"Comments" + newCommentError}
+            </p>
+          )}
+        </div>
+      </Modal>
+
+      <div
+        className="leadfollowup_chatbox_container"
+        style={{ display: isOpenChat ? "block" : "none" }}
+        ref={chatBoxRef}
+      >
+        <div className="leadfollowup_chatbox_headercontainer">
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <div className="leadfollowup_chatbox_initialContainer">
+              <p>BA</p>
+            </div>
+            <p className="leadfollowup_chatbox_username">Balaji</p>
+          </div>
+
+          <div
+            className="leadfollowup_chatbox_header_closediv"
+            onClick={() => setIsOpenChat(false)}
+          >
+            <IoIosClose size={16} />{" "}
+          </div>
+        </div>
+
+        <div className="chat-container">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`message-row ${
+                msg.type === "sender" ? "sender-row" : "receiver-row"
+              }`}
+            >
+              {msg.type === "receiver" ? (
+                <div className={"chat_receiver_usernamediv"}>
+                  <p className="username">BA</p>
+                </div>
+              ) : (
+                ""
+              )}
+              <div
+                className={`message ${
+                  msg.type === "sender" ? "sender" : "receiver"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

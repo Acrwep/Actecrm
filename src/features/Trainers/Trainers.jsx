@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Row, Col, Modal, Drawer } from "antd";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Drawer, Flex, Tooltip, Button, Radio } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
@@ -11,23 +11,198 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import CommonTimePicker from "../Common/CommonTimePicker";
+import {
+  addressValidator,
+  emailValidator,
+  formatToBackendIST,
+  mobileValidator,
+  nameValidator,
+  selectValidator,
+} from "../Common/Validation";
+import {
+  createTrainer,
+  getBatches,
+  getExperience,
+  getTechnologies,
+  getTrainers,
+  trainerStatusUpdate,
+  updateTrainer,
+} from "../ApiService/action";
+import { CommonMessage } from "../Common/CommonMessage";
+import CommonSpinner from "../Common/CommonSpinner";
+import dayjs from "dayjs";
+import moment from "moment/moment";
+import { IoFilter } from "react-icons/io5";
+import { IoIosClose } from "react-icons/io";
 
 export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+  const [trainersData, setTrainersData] = useState([]);
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [mobileError, setMobileError] = useState("");
+  const [whatsApp, setWhatsApp] = useState("");
+  const [whatsAppError, setWhatsAppError] = useState("");
+  const [technologyOptions, setTechnologyOptions] = useState("");
+  const [technology, setTechnology] = useState("");
+  const [technologyError, setTechnologyError] = useState("");
+  const [experienceOptions, setExperienceOptions] = useState("");
+  const [experience, setExperience] = useState("");
+  const [experienceError, setExperienceError] = useState("");
+  const [relevantExperience, setRelevantExperience] = useState("");
+  const [relevantExperienceError, setRelevantExperienceError] = useState("");
+  const [batchOptions, setBatchOptions] = useState("");
+  const [batch, setBatch] = useState("");
+  const [batchError, setBatchError] = useState("");
+  const [avaibilityTime, setAvaibilityTime] = useState(null);
+  const [avaibilityTimeError, setAvaibilityError] = useState("");
+  const [secondaryTime, setSecondaryTime] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [skillsError, setSkillsError] = useState("");
+  const [location, setLocation] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [validationTrigger, setValidationTrigger] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [editTrainerId, setEditTrainerId] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [filterType, setFilterType] = useState(1);
+
   const columns = [
-    { title: "Trainer ID", key: "trainerId", dataIndex: "trainerId" },
-    { title: "Trainer Name", key: "trainerName", dataIndex: "trainerName" },
+    {
+      title: "Trainer Name",
+      key: "name",
+      dataIndex: "name",
+      width: 190,
+      fixed: "left",
+    },
+    { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Technology", key: "technology", dataIndex: "technology" },
-    { title: "Experience", key: "experience", dataIndex: "experience" },
+    {
+      title: "Technology",
+      key: "technology",
+      dataIndex: "technology",
+      width: 220,
+    },
+    {
+      title: "Overall Experience",
+      key: "overall_exp_year",
+      dataIndex: "overall_exp_year",
+      render: (text, record) => {
+        return <p>{text + " Years"}</p>;
+      },
+    },
+    {
+      title: "Relevent Experience",
+      key: "relavant_exp_year",
+      dataIndex: "relavant_exp_year",
+      render: (text, record) => {
+        return <p>{text + " Years"}</p>;
+      },
+    },
+    { title: "Batch", key: "batch", dataIndex: "batch" },
+    {
+      title: "Avaibility Time",
+      key: "availability_time",
+      dataIndex: "availability_time",
+      render: (text, record) => {
+        return <p>{moment(text, "HH:mm:ss").format("hh:mm A")}</p>;
+      },
+    },
+    {
+      title: "Secondary Time",
+      key: "secondary_time",
+      dataIndex: "secondary_time",
+      render: (text, record) => {
+        return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
+      },
+    },
+    { title: "Batch", key: "batch", dataIndex: "batch" },
+    {
+      title: "Skills",
+      key: "skills",
+      dataIndex: "skills",
+      width: 200,
+      render: (text) => {
+        // const convertAsJson = JSON.parse(text);
+        return (
+          <div style={{ display: "flex" }}>
+            <p>{text.join(", ")}</p>
+          </div>
+        );
+      },
+    },
+    { title: "Location", key: "location", dataIndex: "location", width: 120 },
+    {
+      title: "Status",
+      key: "status",
+      dataIndex: "status",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <Flex style={{ whiteSpace: "nowrap" }}>
+            <Tooltip
+              placement="bottomLeft"
+              color="#fff"
+              title={
+                <Radio.Group
+                  value={text}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    handleStatusChange(record.id, e.target.value);
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <Radio
+                      value="Pending"
+                      style={{ marginTop: "6px", marginBottom: "12px" }}
+                    >
+                      Pending
+                    </Radio>
+                    <Radio value="Verified" style={{ marginBottom: "12px" }}>
+                      Verified
+                    </Radio>
+                    <Radio value="Rejected" style={{ marginBottom: "6px" }}>
+                      Rejected
+                    </Radio>
+                  </div>
+                </Radio.Group>
+              }
+            >
+              {text === "Pending" || text === "PENDING" ? (
+                <Button className="trainers_pending_button">Pending</Button>
+              ) : text === "Verified" || text === "VERIFIED" ? (
+                <div className="trainers_verifieddiv">
+                  <Button className="trainers_verified_button">Verified</Button>
+                </div>
+              ) : text === "Rejected" || text === "REJECTED" ? (
+                <Button className="trainers_rejected_button">Rejected</Button>
+              ) : (
+                <p style={{ marginLeft: "6px" }}>-</p>
+              )}
+            </Tooltip>
+          </Flex>
+        );
+      },
+    },
     {
       title: "Action",
       key: "action",
       dataIndex: "action",
+      fixed: "right",
+      width: 120,
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit size={20} className="trainers_action_icons" />
+            <AiOutlineEdit
+              size={20}
+              className="trainers_action_icons"
+              onClick={() => handleEdit(record)}
+            />
             <RiDeleteBinLine
               size={19}
               color="#d32f2f"
@@ -39,33 +214,353 @@ export default function Trainers() {
     },
   ];
 
-  const trainerData = [
-    {
-      trainerId: "TR251535",
-      trainerName: "Santhosh",
-      mobile: "9676543452",
-      technology: "Full stack",
-      experience: "3 years",
-    },
-  ];
+  useEffect(() => {
+    getTechnologiesData();
+  }, []);
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      console.log("technologies response", response);
+      setTechnologyOptions(response?.data?.data || []);
+    } catch (error) {
+      setTechnologyOptions([]);
+      console.log("technology error", error);
+    } finally {
+      getBatchData();
+    }
+  };
+
+  const getBatchData = async () => {
+    try {
+      const response = await getBatches();
+      console.log("batches response", response);
+      setBatchOptions(response?.data?.data || []);
+    } catch (error) {
+      setBatchOptions([]);
+      console.log("batch error", error);
+    } finally {
+      getExperienceData();
+    }
+  };
+
+  const getExperienceData = async () => {
+    try {
+      const response = await getExperience();
+      console.log("experience response", response);
+      setExperienceOptions(response?.data?.data || []);
+    } catch (error) {
+      setExperienceOptions([]);
+      console.log("experience error", error);
+    } finally {
+      setTimeout(() => {
+        getTrainersData();
+      }, 300);
+    }
+  };
+
+  const getTrainersData = async (searchvalue) => {
+    setLoading(true);
+    const payload = {
+      ...(searchvalue && filterType === 1
+        ? { name: searchvalue }
+        : searchvalue && filterType === 2
+        ? { email: searchvalue }
+        : searchvalue && filterType === 3
+        ? { mobile: searchvalue }
+        : {}),
+    };
+    try {
+      const response = await getTrainers(payload);
+      console.log("trainers response", response);
+      setTrainersData(response?.data?.data || []);
+    } catch (error) {
+      setTrainersData([]);
+      console.log("trainers error", error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
+    }
+  };
+
+  const handleEdit = (item) => {
+    console.log("clicked item", item);
+    // const skillsAsJson = JSON.parse(item.skills);
+    // const skillsOutput = skillsAsJson[0].split(",").map((item) => item.trim());
+
+    setIsOpenAddDrawer(true);
+    setEditTrainerId(item.id);
+    setName(item.name);
+    setEmail(item.email);
+    setMobile(item.mobile);
+    setWhatsApp(item.whatsapp);
+    setTechnology(item.technology_id);
+    setExperience(parseInt(item.overall_exp_year));
+    setRelevantExperience(parseInt(item.relavant_exp_year));
+    setBatch(item.batch_id);
+    setLocation(item.location);
+    setAvaibilityTime(dayjs(item.availability_time, "HH:mm:ss"));
+    setSecondaryTime(
+      item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : null
+    );
+    setSkills(item.skills);
+  };
+
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setLoading(true);
+    setTimeout(() => {
+      getTrainersData(e.target.value);
+    }, 300);
+  };
 
   const formReset = () => {
+    setButtonLoading(false);
+    setEditTrainerId(null);
+    setName("");
+    setNameError("");
+    setEmail("");
+    setEmailError("");
+    setMobile("");
+    setMobileError("");
+    setWhatsApp("");
+    setWhatsAppError("");
+    setTechnology("");
+    setTechnologyError("");
+    setExperience("");
+    setExperienceError("");
+    setRelevantExperience("");
+    setRelevantExperienceError("");
+    setBatch("");
+    setBatchError("");
+    setAvaibilityTime("");
+    setAvaibilityError("");
+    setSecondaryTime("");
+    setSkills([]);
+    setSkillsError("");
+    setLocation("");
+    setLocationError("");
     setIsOpenAddDrawer(false);
+    setValidationTrigger(false);
+  };
+
+  const handleSubmit = async () => {
+    setValidationTrigger(true);
+    const nameValidate = nameValidator(name);
+    const emailValidate = emailValidator(email);
+    const mobileValidate = mobileValidator(mobile);
+    const whatsAppValidate = mobileValidator(whatsApp);
+    const technologyValidate = selectValidator(technology);
+    const experienceValidate = selectValidator(experience);
+    const relevantExperienceValidate = selectValidator(relevantExperience);
+    const batchValidate = selectValidator(batch);
+    const avaibilityTimeValidate = selectValidator(avaibilityTime);
+    const skillsValidate = selectValidator(skills);
+    const locationValidate = addressValidator(location);
+
+    setNameError(nameValidate);
+    setEmailError(emailValidate);
+    setMobileError(mobileValidate);
+    setWhatsAppError(whatsAppValidate);
+    setTechnologyError(technologyValidate);
+    setExperienceError(experienceValidate);
+    setRelevantExperienceError(relevantExperienceValidate);
+    setBatchError(batchValidate);
+    setAvaibilityError(avaibilityTimeValidate);
+    setSkillsError(skillsValidate);
+    setLocationError(locationValidate);
+
+    const formatAvaibilityTime = formatToBackendIST(avaibilityTime);
+    let formatSecondaryTime;
+    if (secondaryTime) {
+      formatSecondaryTime = formatToBackendIST(secondaryTime);
+    } else {
+      formatSecondaryTime = null;
+    }
+    console.log(formatAvaibilityTime, "sendFormatrr");
+
+    if (
+      nameValidate ||
+      emailValidate ||
+      mobileValidate ||
+      whatsAppValidate ||
+      technologyValidate ||
+      experienceValidate ||
+      relevantExperienceValidate ||
+      batchValidate ||
+      avaibilityTimeValidate ||
+      skillsValidate ||
+      locationValidate
+    )
+      return;
+
+    setButtonLoading(true);
+    const payload = {
+      ...(editTrainerId && { id: editTrainerId }),
+      trainer_name: name,
+      email: email,
+      mobile: mobile,
+      whatsapp: whatsApp,
+      technology_id: technology,
+      overall_exp_year: experience,
+      relevant_exp_year: relevantExperience,
+      batch_id: batch,
+      availability_time: moment(formatAvaibilityTime).format("HH:mm:ss"),
+      secondary_time: formatSecondaryTime,
+      skills: skills,
+      location: location,
+      status: "Pending",
+    };
+
+    console.log("payload", payload);
+
+    if (editTrainerId) {
+      try {
+        await updateTrainer(payload);
+        CommonMessage("success", "Trainer Updated");
+        setTimeout(() => {
+          setButtonLoading(false);
+          formReset();
+          getTrainersData(searchValue);
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
+    } else {
+      try {
+        await createTrainer(payload);
+        CommonMessage("success", "Trainer Created");
+        setTimeout(() => {
+          setButtonLoading(false);
+          formReset();
+          getTrainersData(searchValue);
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
+    }
+  };
+
+  const handleStatusChange = async (trainerId, trainerStatus) => {
+    const payload = {
+      trainer_id: trainerId,
+      status: trainerStatus,
+    };
+    try {
+      await trainerStatusUpdate(payload);
+      CommonMessage("success", "Status Updated");
+      setTimeout(() => {
+        getTrainersData(searchValue);
+      });
+    } catch (error) {
+      console.log("trainer status change error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   return (
     <div>
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="leadmanager_filterContainer">
+          <div
+            className="leadmanager_filterContainer"
+            style={{ position: "relative" }}
+          >
             <CommonOutlinedInput
-              label="Search"
+              label={
+                filterType === 1
+                  ? "Search By Name"
+                  : filterType === 2
+                  ? "Search By Email"
+                  : filterType === 3
+                  ? "Search by Mobile"
+                  : ""
+              }
               width="40%"
               height="33px"
               labelFontSize="12px"
-              icon={<CiSearch size={16} />}
+              icon={
+                searchValue ? (
+                  <div
+                    className="users_filter_closeIconContainer"
+                    onClick={() => {
+                      setSearchValue("");
+                      getTrainersData(null);
+                    }}
+                  >
+                    <IoIosClose size={11} />
+                  </div>
+                ) : (
+                  <CiSearch size={16} />
+                )
+              }
               labelMarginTop="-1px"
+              style={{
+                borderTopRightRadius: "0px",
+                borderBottomRightRadius: "0px",
+              }}
+              onChange={handleSearch}
+              value={searchValue}
             />
+            <div className="users_filterContainer">
+              <Flex
+                justify="center"
+                align="center"
+                style={{ whiteSpace: "nowrap" }}
+              >
+                <Tooltip
+                  placement="bottomLeft"
+                  color="#fff"
+                  title={
+                    <Radio.Group
+                      value={filterType}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        setFilterType(e.target.value);
+                        if (searchValue === "") {
+                          return;
+                        } else {
+                          setSearchValue("");
+                          getTrainersData(null);
+                        }
+                      }}
+                    >
+                      <Radio
+                        value={1}
+                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                      >
+                        Search by Name
+                      </Radio>
+                      <Radio value={2} style={{ marginBottom: "12px" }}>
+                        Search by Email
+                      </Radio>
+                      <Radio value={3} style={{ marginBottom: "6px" }}>
+                        Search by Mobile
+                      </Radio>
+                    </Radio.Group>
+                  }
+                >
+                  <Button className="users_filterbutton">
+                    <IoFilter size={18} />
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </div>
           </div>
         </Col>
         <Col
@@ -92,11 +587,11 @@ export default function Trainers() {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 800 }}
+          scroll={{ x: 2400 }}
           columns={columns}
-          dataSource={trainerData}
+          dataSource={trainersData}
           dataPerPage={10}
-          // loading={tableLoading}
+          loading={loading}
           checkBox="false"
           size="small"
           className="questionupload_table"
@@ -114,46 +609,119 @@ export default function Trainers() {
           <Col span={12}>
             <CommonInputField
               label="Trainer Name"
-              //   value={name}
-              //   onChange={(e) => {
-              //     setName(e.target.value);
-              //     setNameError(nameValidator(e.target.value));
-              //   }}
-              //   error={nameError}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (validationTrigger) {
+                  setNameError(nameValidator(e.target.value));
+                }
+              }}
+              error={nameError}
               required={true}
             />
           </Col>
           <Col span={12}>
-            <CommonInputField label="Trainer Email" required={true} />
+            <CommonInputField
+              label="Trainer Email"
+              required={true}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (validationTrigger) {
+                  setEmailError(emailValidator(e.target.value));
+                }
+              }}
+              value={email}
+              error={emailError}
+            />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonInputField label="Trainer Mobile" required={true} />
+            <CommonInputField
+              label="Trainer Mobile"
+              required={true}
+              maxLength={10}
+              onChange={(e) => {
+                setMobile(e.target.value);
+                if (validationTrigger) {
+                  setMobileError(mobileValidator(e.target.value));
+                }
+              }}
+              value={mobile}
+              error={mobileError}
+            />
           </Col>
           <Col span={12}>
             <CommonOutlinedInput
               label="Whatsapp Number"
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
+              maxLength={10}
+              onChange={(e) => {
+                setWhatsApp(e.target.value);
+                if (validationTrigger) {
+                  setWhatsAppError(mobileValidator(e.target.value));
+                }
+              }}
+              value={whatsApp}
+              error={whatsAppError}
             />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonSelectField label="Technology" required={true} />
+            <CommonSelectField
+              label="Technology"
+              required={true}
+              options={technologyOptions}
+              onChange={(e) => {
+                setTechnology(e.target.value);
+                if (validationTrigger) {
+                  setTechnologyError(selectValidator(e.target.value));
+                }
+              }}
+              value={technology}
+              error={technologyError}
+              valueMarginTop="-4px"
+            />
           </Col>
 
           <Col span={12}>
-            <CommonSelectField label="Experience" required={true} />
+            <CommonSelectField
+              label="Experience"
+              required={true}
+              options={experienceOptions}
+              onChange={(e) => {
+                setExperience(e.target.value);
+                if (validationTrigger) {
+                  setExperienceError(selectValidator(e.target.value));
+                }
+              }}
+              value={experience}
+              error={experienceError}
+              valueMarginTop="-4px"
+            />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonSelectField label="Relevant Experience" required={true} />
+            <CommonSelectField
+              label="Relevant Experience"
+              options={experienceOptions}
+              required={true}
+              onChange={(e) => {
+                setRelevantExperience(e.target.value);
+                if (validationTrigger) {
+                  setRelevantExperienceError(selectValidator(e.target.value));
+                }
+              }}
+              value={relevantExperience}
+              error={relevantExperienceError}
+              valueMarginTop="-4px"
+            />
           </Col>
           <Col span={12}>
             {/* <CommonMultiSelect
@@ -161,7 +729,20 @@ export default function Trainers() {
               required={true}
               options={[{ id: 1, title: "Name" }]}
             /> */}
-            <CommonSelectField label="Batch" required={true} />
+            <CommonSelectField
+              label="Batch"
+              required={true}
+              options={batchOptions}
+              onChange={(e) => {
+                setBatch(e.target.value);
+                if (validationTrigger) {
+                  setBatchError(selectValidator(e.target.value));
+                }
+              }}
+              value={batch}
+              error={batchError}
+              valueMarginTop="-4px"
+            />
           </Col>
         </Row>
 
@@ -170,12 +751,26 @@ export default function Trainers() {
             <CommonTimePicker
               placeholder="Avaibility Time *"
               labelFontSize="14px"
+              onChange={(time, timeString) => {
+                setAvaibilityTime(time);
+                console.log("timeeeeeeee", time);
+                if (validationTrigger) {
+                  setAvaibilityError(selectValidator(time));
+                }
+              }}
+              value={avaibilityTime}
+              error={avaibilityTimeError}
             />
           </Col>
           <Col span={12}>
             <CommonTimePicker
               placeholder="Secondary Time"
               labelFontSize="14px"
+              onChange={(time) => {
+                setSecondaryTime(time);
+              }}
+              value={secondaryTime}
+              // error={null}
             />
           </Col>
         </Row>
@@ -185,19 +780,53 @@ export default function Trainers() {
             <CommonMultiSelect
               label="Skills"
               required={true}
-              options={[{ id: 1, title: "Name" }]}
+              onChange={(e, selectedValues) => {
+                setSkills(selectedValues);
+                if (validationTrigger) {
+                  setSkillsError(selectValidator(selectedValues));
+                }
+              }}
+              value={skills}
+              error={skillsError}
             />
           </Col>
           <Col span={12}>
-            <CommonSelectField label="Location" required={true} />
+            <CommonInputField
+              label="Location"
+              required={true}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                if (validationTrigger) {
+                  setLocationError(addressValidator(e.target.value));
+                }
+              }}
+              value={location}
+              error={locationError}
+            />
           </Col>
         </Row>
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
-            <button className="leadmanager_tablefilter_applybutton">
+            {/* <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={handleSubmit}
+            >
               Save
-            </button>
+            </button> */}
+
+            {buttonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={handleSubmit}
+              >
+                {editTrainerId ? "Update" : "Create"}
+              </button>
+            )}
           </div>
         </div>
       </Drawer>

@@ -1,9 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { usersListReducer } from "./Slice";
+import { nxtFollowupActionIdReducer, usersListReducer } from "./Slice";
 
 export const reduxStore = configureStore({
   devTools: true,
   reducer: {
     userslist: usersListReducer,
+    nxtfollowupactionid: nxtFollowupActionIdReducer,
   },
 });
