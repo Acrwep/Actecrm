@@ -11,7 +11,7 @@ export default function CommonDatePicker({
   placeholder,
   label,
   error,
-  mandatory,
+  required,
   style,
   disabled,
   allowClear,
@@ -74,7 +74,7 @@ export default function CommonDatePicker({
         value={value ? dayjs(value) : null}
         defaultValue={defaultValue}
         format="DD-MM-YYYY"
-        placeholder={placeholder}
+        placeholder={`${placeholder} ${required ? "*" : ""}`}
         status={error ? "error" : ""}
         style={{
           width: "100%",
@@ -89,8 +89,8 @@ export default function CommonDatePicker({
         <div
           className={
             error
-              ? "commoninput_errormessage_activediv"
-              : "commoninput_errormessagediv"
+              ? "commontimepicker_errormessage_activediv"
+              : "commontimepicker_errormessagediv"
           }
         >
           <p className="common_singledatepicker_errortext">

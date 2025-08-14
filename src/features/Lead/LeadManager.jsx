@@ -8,6 +8,8 @@ import { RedoOutlined } from "@ant-design/icons";
 export default function Settings() {
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
+  const [followupCount, setFollowupCount] = useState(0);
+  const [leadCount, setLeadCount] = useState(0);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -73,7 +75,7 @@ export default function Settings() {
             }
             onClick={() => handleTabClick("followup")}
           >
-            Lead Followup
+            Lead Followup ( {followupCount} )
           </button>
           <button
             className={
@@ -83,7 +85,7 @@ export default function Settings() {
             }
             onClick={() => handleTabClick("leads")}
           >
-            All Leads
+            Leads ( {leadCount} )
           </button>
         </div>
 
@@ -104,7 +106,10 @@ export default function Settings() {
       {/* Mount only when first opened, keep mounted afterward */}
       {loadedTabs.followup && (
         <div style={{ display: activePage === "followup" ? "block" : "none" }}>
-          <LeadFollowUp key={tabKeys.followup} />
+          <LeadFollowUp
+            key={tabKeys.followup}
+            setFollowupCount={setFollowupCount}
+          />
         </div>
       )}
 
@@ -115,6 +120,7 @@ export default function Settings() {
             setTriggerApi={setTriggerApi}
             key={tabKeys.leads}
             refreshLeadFollowUp={refreshLeadFollowUp}
+            setLeadCount={setLeadCount}
           />
         </div>
       )}

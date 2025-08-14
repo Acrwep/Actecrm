@@ -24,6 +24,7 @@ export default function CommonSelectField({
   downArrowIconTop,
   helperTextContainerStyle,
   disableClearable,
+  disabled,
 }) {
   return (
     <div style={style}>
@@ -45,6 +46,11 @@ export default function CommonSelectField({
           "& .MuiAutocomplete-input": {
             fontSize: fontSize || "14px",
             marginTop: "0px",
+          },
+          "& .Mui-disabled": {
+            backgroundColor: "#f5f5f5", // change background
+            color: "#888", // change text color
+            WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
           },
         }}
       >
@@ -99,6 +105,7 @@ export default function CommonSelectField({
               },
             },
           }}
+          disabled={disabled}
         />
 
         {error && (

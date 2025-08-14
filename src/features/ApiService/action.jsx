@@ -217,3 +217,12 @@ export const getLeadFollowUps = async (payload) => {
     throw error;
   }
 };
+
+export const updateFollowUp = async (payload) => {
+  try {
+    const response = await api.put("/api/updateFollowUp", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

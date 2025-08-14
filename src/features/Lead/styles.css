@@ -119,7 +119,45 @@
   font-size: 12px;
   margin-top: 3px;
 }
-
+.leadmanager_paymentdetails_drawer .ant-drawer-body {
+  padding: 0px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.leadmanager_paymentdetails_drawer_rowdiv {
+  padding: 0px 24px;
+}
+.leadmanger_paymentdrawer_divider {
+  margin: 24px 0px !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.leadmanager_paymentdetails_drawer_amount {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+.leadmanager_paymentdrawer_userheadings {
+  color: gray;
+  font-weight: 500;
+  font-size: 13px;
+  word-break: break-all;
+}
+.leadmanager_paymentdrawer_userdetails {
+  color: #333;
+}
+.leadmanager_paymentdetails_drawer_heading {
+  font-weight: 500;
+  font-size: 15px;
+  padding: 0px 24px;
+}
+.leadmanager_payment_screenshotbutton {
+  font-size: 11px;
+  width: 100%;
+}
+.leadmanager_payment_screenshotbutton:hover {
+  color: #5b69ca !important;
+  border-color: #5b69ca !important;
+}
 /* lead followup styles */
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {
   padding: 0px !important;
@@ -317,7 +355,7 @@
 .leadfollowup_comments_text {
   color: gray;
   font-size: 11px;
-  padding: 0px 0px 4px 50px;
+  padding: 0px 0px 4px 54px;
 }
 .leadfollowup_comment_nodatafound {
   font-size: 12px;

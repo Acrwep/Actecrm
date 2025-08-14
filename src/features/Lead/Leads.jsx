@@ -1,26 +1,33 @@
-import React, { useState, useEffect } from "react";
-import { Col, Row, Drawer, Rate } from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { Col, Row, Drawer, Rate, Tooltip, Divider, Upload, Button } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import {
   addressValidator,
+  calculateAmount,
+  debounce,
+  discountValidator,
   emailValidator,
   formatToBackendIST,
   getCurrentandPreviousweekDate,
   mobileValidator,
   nameValidator,
   priceCategory,
+  priceValidator,
   selectValidator,
 } from "../Common/Validation";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { SiWhatsapp } from "react-icons/si";
+import { VscPercentage } from "react-icons/vsc";
 import CommonDatePicker from "../Common/CommonDatePicker";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
+import { AiOutlineEdit } from "react-icons/ai";
+import { RiDeleteBinLine } from "react-icons/ri";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
@@ -39,8 +46,11 @@ import {
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
+import { FaRegAddressCard } from "react-icons/fa";
+import CommonImageUpload from "../Common/CommonImageUpload";
+import { UploadOutlined } from "@ant-design/icons";
 
-export default function Leads({ refreshLeadFollowUp }) {
+export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
 
@@ -101,8 +111,26 @@ export default function Leads({ refreshLeadFollowUp }) {
   const [comments, setComments] = useState("");
   const [commentsError, setCommentsError] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
+  const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
+
+  //payment usestates
+  const [paymentType, setPaymentType] = useState(null);
+  const [paymentTypeError, setPaymentTypeError] = useState(null);
+  const [price, setPrice] = useState("");
+  const [priceError, setPriceError] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [discountError, setDiscountError] = useState("");
+  const [taxMode, setTaxMode] = useState("");
+  const [taxModeError, setTaxModeError] = useState("");
+  const [taxType, setTaxType] = useState("");
+  const [taxTypeError, setTaxTypeError] = useState("");
+  const [amount, setAmount] = useState("");
+  const [paymentScreenShotsArray, setPaymentScreenShotsArray] = useState([]);
+  const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
+  const [paymentValidationTrigger, setPaymentValidationTrigger] =
+    useState(false);
 
   const [defaultColumns, setDefaultColumns] = useState([
     {
@@ -305,7 +333,38 @@ export default function Leads({ refreshLeadFollowUp }) {
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 200,
+      width: 180,
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="trainers_actionbuttonContainer">
+            <AiOutlineEdit
+              size={20}
+              className="trainers_action_icons"
+              // onClick={() => handleEdit(record)}
+            />
+
+            <Tooltip
+              placement="bottom"
+              title="Make as customer"
+              className="leadtable_customertooltip"
+            >
+              <FaRegAddressCard
+                size={19}
+                color="#d32f2f"
+                className="trainers_action_icons"
+                onClick={() => setIsOpenPaymentDrawer(true)}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
     },
   ]);
 
@@ -451,8 +510,10 @@ export default function Leads({ refreshLeadFollowUp }) {
     try {
       const response = await getLeads(payload);
       setLeadData(response?.data?.data || []);
+      setLeadCount(response?.data?.data.length || 0);
     } catch (error) {
       setLeadData([]);
+      setLeadCount(0);
       console.log("get leads error");
     } finally {
       setTimeout(() => {
@@ -615,10 +676,13 @@ export default function Leads({ refreshLeadFollowUp }) {
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchValue(e.target.value);
-    getAllLeadData(e.target.value, selectedDates[0], selectedDates[1], false);
-  };
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((val) => {
+        getAllLeadData(val, selectedDates[0], selectedDates[1], false);
+      }, 300),
+    [selectedDates]
+  );
 
   const handleDateChange = (dates, dateStrings) => {
     setSelectedDates(dateStrings);
@@ -628,6 +692,113 @@ export default function Leads({ refreshLeadFollowUp }) {
       console.log("call function");
       getAllLeadData(searchValue, startDate, endDate, false);
     }
+  };
+
+  const handlePrice = (e) => {
+    setPrice(e.target.value);
+    if (paymentValidationTrigger) {
+      setPriceError(priceValidator(e.target.value, 10000));
+    }
+    const amnt = calculateAmount(
+      e.target.value ? parseInt(e.target.value) : 0,
+      discount ? parseInt(discount) : 0,
+      taxType === 1 ? 18 : 0
+    );
+    if (isNaN(amnt)) {
+      setAmount("");
+    } else {
+      setAmount(String(amnt));
+    }
+  };
+
+  const handleDiscount = (e) => {
+    setDiscount(e.target.value);
+    if (paymentValidationTrigger) {
+      setDiscountError(discountValidator(e.target.value));
+    }
+
+    const amnt = calculateAmount(
+      price ? parseInt(price) : 0,
+      e.target.value ? parseInt(e.target.value) : 0,
+      taxType === 1 ? 18 : 0
+    );
+    if (isNaN(amnt)) {
+      setAmount("");
+    } else {
+      setAmount(String(amnt));
+    }
+  };
+
+  const handleTaxMode = (e) => {
+    setTaxMode(e.target.value);
+    if (paymentValidationTrigger) {
+      setTaxModeError(selectValidator(e.target.value));
+    }
+
+    if (e.target.value === 1) {
+      setTaxType(1);
+      const amnt = calculateAmount(
+        price ? parseInt(price) : 0,
+        discount ? parseInt(discount) : 0,
+        18
+      );
+      if (isNaN(amnt)) {
+        setAmount("");
+      } else {
+        setAmount(String(amnt));
+      }
+    } else {
+      setTaxType("");
+      const amnt = calculateAmount(
+        price ? parseInt(price) : 0,
+        discount ? parseInt(discount) : 0,
+        0
+      );
+      if (isNaN(amnt)) {
+        setAmount("");
+      } else {
+        setAmount(String(amnt));
+      }
+    }
+  };
+
+  const handleTaxType = (e) => {
+    setTaxType(e.target.value);
+    const amnt = calculateAmount(
+      price ? parseInt(price) : 0,
+      discount ? parseInt(discount) : 0,
+      18
+    );
+    if (isNaN(amnt)) {
+      setAmount("");
+    } else {
+      setAmount(String(amnt));
+    }
+  };
+
+  const handlePaymentScreenshot = ({ fileList }) => {
+    // allowed MIME types
+    const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
+
+    // filter out mismatched files
+    const filteredFiles = fileList.filter((file) =>
+      allowedTypes.includes(file.type)
+    );
+
+    if (filteredFiles.length !== fileList.length) {
+      CommonMessage("error", "Only PNG, JPG and JPEG files are allowed.");
+    }
+
+    if (filteredFiles.length > paymentScreenShotsArray.length) {
+      CommonMessage("success", "Uploaded");
+    }
+
+    if (filteredFiles.length >= 1) {
+      setPaymentScreenShotError("");
+    } else {
+      setPaymentScreenShotError(" is required");
+    }
+    setPaymentScreenShotsArray(filteredFiles);
   };
 
   //onclick functions
@@ -678,6 +849,23 @@ export default function Leads({ refreshLeadFollowUp }) {
     setComments("");
     setCommentsError("");
     setButtonLoading(false);
+
+    //payment drawer usestates
+    setIsOpenPaymentDrawer(false);
+    setPaymentValidationTrigger(false);
+    setPaymentType(null);
+    setPaymentTypeError("");
+    setPrice("");
+    setPriceError("");
+    setDiscount(0);
+    setDiscountError("");
+    setTaxMode(null);
+    setTaxModeError("");
+    setTaxType(null);
+    setTaxTypeError("");
+    setAmount("");
+    setPaymentScreenShotsArray([]);
+    setPaymentScreenShotError("");
   };
 
   const handleSubmit = async () => {
@@ -804,6 +992,33 @@ export default function Leads({ refreshLeadFollowUp }) {
     }
   };
 
+  const handlePaymentSubmit = () => {
+    setPaymentValidationTrigger(true);
+    const paymentTypeValidate = selectValidator(paymentType);
+    const priceValidate = priceValidator(price, 10000);
+    const discountValidate = discountValidator(discount);
+    const taxModeValidate = selectValidator(taxMode);
+    const screenshotValidate =
+      paymentScreenShotsArray.length <= 0 ? " is required" : "";
+
+    setPaymentTypeError(paymentTypeValidate);
+    setPriceError(priceValidate);
+    setDiscountError(discountValidate);
+    setTaxModeError(taxModeValidate);
+    setPaymentScreenShotError(screenshotValidate);
+
+    if (
+      paymentTypeValidate ||
+      priceValidate ||
+      discountValidate ||
+      taxModeValidate ||
+      screenshotValidate
+    )
+      return;
+
+    alert("success");
+  };
+
   return (
     <div>
       <Row>
@@ -831,7 +1046,10 @@ export default function Leads({ refreshLeadFollowUp }) {
               }
               labelMarginTop="-1px"
               value={searchValue}
-              onChange={handleSearch}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
             />
             <CommonDoubleDatePicker
               value={selectedDates}
@@ -869,7 +1087,7 @@ export default function Leads({ refreshLeadFollowUp }) {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3600 }}
+          scroll={{ x: 3800 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}
@@ -1114,6 +1332,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={8}>
             <CommonSelectField
               label="Response Status"
+              required={true}
               options={responseStatusOptions}
               onChange={(e) => {
                 setResponseLeadStatus(e.target.value);
@@ -1128,6 +1347,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={8}>
             <CommonDatePicker
               placeholder="Next Follow-Up Date"
+              required={true}
               onChange={(value) => {
                 setNxtFollowupDate(value);
                 if (validationTrigger) {
@@ -1147,6 +1367,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={8}>
             <CommonDatePicker
               placeholder="Expected Date Join"
+              required={true}
               onChange={(value) => {
                 setExpectDateJoin(value);
                 if (validationTrigger) {
@@ -1162,6 +1383,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={8}>
             <CommonSelectField
               label="Branch Name"
+              required={true}
               options={branchOptions}
               onChange={(e) => {
                 setBranch(e.target.value);
@@ -1176,6 +1398,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={8}>
             <CommonSelectField
               label="Batch Track"
+              required={true}
               options={batchTrackOptions}
               onChange={(e) => {
                 setBatchTrack(e.target.value);
@@ -1211,6 +1434,7 @@ export default function Leads({ refreshLeadFollowUp }) {
           <Col span={16}>
             <CommonTextArea
               label="Comments"
+              required={true}
               value={comments}
               onChange={(e) => {
                 setComments(e.target.value);
@@ -1280,6 +1504,263 @@ export default function Leads({ refreshLeadFollowUp }) {
               }}
             >
               Apply
+            </button>
+          </div>
+        </div>
+      </Drawer>
+
+      <Drawer
+        title="Payment Details"
+        open={isOpenPaymentDrawer}
+        onClose={formReset}
+        width="50%"
+        style={{ position: "relative", padding: "0px" }}
+        className="leadmanager_paymentdetails_drawer"
+      >
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "24px" }}
+        >
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Candidate Name:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                Balaji
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Email:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                balaji@gmail.com
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Mobile:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                8610122749
+              </span>
+            </p>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "20px" }}
+        >
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Country:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                India
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              State:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                TamilNadu
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              City:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                Chennai
+              </span>
+            </p>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          style={{ marginTop: "20px" }}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+        >
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              GST NO:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                GST676312788
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Total Fees: <span style={{ color: "#d32f2f" }}>21000</span>
+            </p>
+          </Col>
+          <Col span={8}>
+            {/* <p className="leadmanager_paymentdrawer_userheadings">
+              Invoice Date:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                14/08/2025
+              </span>
+            </p>{" "} */}
+          </Col>
+        </Row>
+
+        <Divider className="leadmanger_paymentdrawer_divider" />
+
+        {/* <Row gutter={16} className="leadmanager_paymentdetails_drawer_rowdiv">
+          <Col span={8}>
+            <p style={{ color: "#5b69ca", fontSize: "15px", fontWeight: 600 }}>
+              Total Fees: 21000
+            </p>
+          </Col>
+        </Row> */}
+        <p className="leadmanager_paymentdetails_drawer_heading">
+          Enter Payment Details
+        </p>
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "20px" }}
+        >
+          <Col span={8}>
+            <CommonSelectField
+              label="Payment Type"
+              options={[
+                { id: 1, name: "Cash" },
+                { id: 2, name: "Card" },
+                { id: 3, name: "Bank" },
+                { id: 4, name: "UPI" },
+                { id: 5, name: "Razorpay" },
+              ]}
+              onChange={(e) => {
+                setPaymentType(e.target.value);
+                if (paymentValidationTrigger) {
+                  setPaymentTypeError(selectValidator(e.target.value));
+                }
+              }}
+              value={paymentType}
+              error={paymentTypeError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonInputField
+              label="Price"
+              required={true}
+              type="number"
+              errorFontSize={priceError === " is required" ? "11px" : "10px"}
+              onChange={handlePrice}
+              value={price}
+              error={priceError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonOutlinedInput
+              label="Discount"
+              icon={<VscPercentage color="rgba(0, 0, 0, 0.6)" />}
+              required={true}
+              maxLength={3}
+              type="number"
+              onChange={handleDiscount}
+              value={discount}
+              onInput={(e) => {
+                if (e.target.value.length > 3) {
+                  e.target.value = e.target.value.slice(0, 3);
+                }
+              }}
+            />
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "30px" }}
+        >
+          <Col span={8}>
+            <CommonSelectField
+              label="Tax Mode"
+              required={true}
+              options={[
+                { id: 1, name: "With Tax" },
+                { id: 2, name: "Without Tax" },
+              ]}
+              onChange={handleTaxMode}
+              value={taxMode}
+              error={taxModeError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Tax Type"
+              required={true}
+              options={[
+                { id: 1, name: "GST (18%)" },
+                { id: 2, name: "IGST (18%)" },
+              ]}
+              onChange={handleTaxType}
+              value={taxType}
+              disabled={taxMode === 2 ? true : false}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonInputField
+              label="Amount"
+              required={true}
+              disabled
+              value={amount}
+            />
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "20px", marginBottom: "40px" }}
+        >
+          <Col span={8} style={{ marginBottom: "20px" }}>
+            <p style={{ fontSize: "13px" }}>
+              Payment Screenshot <span style={{ color: "#d32f2f" }}>*</span>
+            </p>
+            <Upload
+              style={{ width: "100%", marginTop: "6px" }}
+              beforeUpload={(file) => {
+                return false; // Prevent auto-upload
+              }}
+              accept=".png,.jpg,.jpeg"
+              onChange={handlePaymentScreenshot}
+              fileList={paymentScreenShotsArray}
+              multiple
+            >
+              <Button
+                icon={<UploadOutlined />}
+                className="leadmanager_payment_screenshotbutton"
+              >
+                Choose file
+                <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
+              </Button>
+            </Upload>{" "}
+            {paymentScreenShotError && (
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#d32f2f",
+                  marginTop: "4px",
+                  marginLeft: "6px",
+                }}
+              >{`Screenshot ${paymentScreenShotError}`}</p>
+            )}
+          </Col>
+        </Row>
+
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="users_adddrawer_createbutton"
+              onClick={handlePaymentSubmit}
+            >
+              Submit
             </button>
           </div>
         </div>

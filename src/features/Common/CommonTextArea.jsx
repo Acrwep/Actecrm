@@ -10,7 +10,7 @@ const CommonTextArea = ({
   value,
   error,
   maxLength,
-  mandatory,
+  required,
   className,
   style,
 }) => {
@@ -18,7 +18,11 @@ const CommonTextArea = ({
     <div style={style}>
       <div style={{ display: "flex" }}>
         <label className="commontextarea_label">{label}</label>
-        {mandatory ? <p style={{ color: "red", marginLeft: "4px" }}>*</p> : ""}
+        {required ? (
+          <p style={{ color: "#d32f2f", marginLeft: "4px" }}>*</p>
+        ) : (
+          ""
+        )}
       </div>
       <TextArea
         rows={4}

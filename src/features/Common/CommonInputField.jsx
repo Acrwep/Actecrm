@@ -10,9 +10,12 @@ export default function CommonInputField({
   required,
   height,
   labelFontSize,
+  errorFontSize,
   ref,
   maxLength,
   type,
+  disabled,
+  onInput,
 }) {
   return (
     <div>
@@ -23,8 +26,17 @@ export default function CommonInputField({
         onChange={onChange}
         size="small"
         error={error ? true : false}
-        helperText={error ? label + error : ""}
+        helperText={
+          error ? (
+            <span style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}>
+              {label}
+              {error}
+            </span>
+          ) : null
+        }
         required={required}
+        disabled={disabled}
+        type={type}
         sx={{
           width: "100%",
           "& .MuiInputLabel-root": {
@@ -35,9 +47,19 @@ export default function CommonInputField({
             boxSizing: "border-box",
             fontSize: "14px",
           },
+          "& .Mui-disabled": {
+            backgroundColor: "#f5f5f5", // change background
+            color: "#888", // change text color
+            WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+          },
         }}
         inputRef={ref}
-        slotProps={{ htmlInput: { maxLength: maxLength, type: type } }}
+        slotProps={{
+          input: {
+            maxLength: maxLength,
+          },
+        }}
+        onInput={onInput}
       />
     </div>
   );

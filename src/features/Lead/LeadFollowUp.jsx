@@ -7,19 +7,21 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonDnd from "../Common/CommonDnd";
 import { IoIosClose } from "react-icons/io";
-import { getLeadFollowUps } from "../ApiService/action";
+import { getLeadFollowUps, updateFollowUp } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
 import moment from "moment";
 import CommonDatePicker from "../Common/CommonDatePicker";
 import {
   addressValidator,
+  formatToBackendIST,
   selectValidator,
   shortRelativeTime,
 } from "../Common/Validation";
+import { CommonMessage } from "../Common/CommonMessage";
 
 const { TextArea } = Input;
 
-export default function LeadFollowUp() {
+export default function LeadFollowUp({ setFollowupCount }) {
   const chatBoxRef = useRef();
   const dateFilterOptions = [
     { id: "Today", name: "Today" },
@@ -41,6 +43,9 @@ export default function LeadFollowUp() {
   const [newComment, setNewComment] = useState("");
   const [newCommentError, setNewCommentError] = useState("");
   const [commentsHistory, setCommentsHistory] = useState([]);
+  const [leadHistoryId, setLeadHistoryId] = useState(null);
+  const [leadId, setLeadId] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [defaultColumns, setDefaultColumns] = useState([
@@ -68,6 +73,8 @@ export default function LeadFollowUp() {
             onClick={() => {
               setIsOpenCommentModal(true);
               setCommentsHistory(record.histories);
+              setLeadId(record.id);
+              setLeadHistoryId(record.lead_history_id);
             }}
           >
             <p>{moment(text).format("DD/MM/YYYY")}</p>
@@ -212,8 +219,10 @@ export default function LeadFollowUp() {
       const response = await getLeadFollowUps(payload);
       console.log("follow up response", response);
       setFollowUpData(response?.data?.data || []);
+      setFollowupCount(response?.data?.data.length || 0);
     } catch (error) {
       setFollowUpData([]);
+      setFollowupCount(0);
       console.log("get followup error", error);
     } finally {
       setTimeout(() => {
@@ -224,9 +233,20 @@ export default function LeadFollowUp() {
 
   const formReset = () => {
     setIsOpenFilterDrawer(false);
+    setIsOpenCommentModal(false);
+    setButtonLoading(false);
+    setActionId(null);
+    setActionIdError("");
+    setNxtFollowupDate(null);
+    setNxtFollowupDateError("");
+    setNewComment("");
+    setNewCommentError("");
+    setCommentsHistory([]);
+    setLeadHistoryId(null);
+    setLeadId(null);
   };
 
-  const handleUpdateFollowUp = () => {
+  const handleUpdateFollowUp = async () => {
     const actionValidate = selectValidator(actionId);
     const nxtFollowdateValidate = selectValidator(nxtFollowupDate);
     const commentValidate = addressValidator(newComment);
@@ -237,7 +257,34 @@ export default function LeadFollowUp() {
 
     if (actionValidate || nxtFollowdateValidate || commentValidate) return;
 
-    alert("success");
+    setButtonLoading(true);
+    const today = new Date();
+
+    const payload = {
+      lead_history_id: leadHistoryId,
+      comments: newComment,
+      next_follow_up_date: formatToBackendIST(nxtFollowupDate),
+      lead_status_id: actionId,
+      lead_id: leadId,
+      updated_date: formatToBackendIST(today),
+    };
+
+    try {
+      await updateFollowUp(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        getLeadFollowUpsData(dateFilter);
+        formReset();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      console.log("update follow up error");
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   return (
@@ -354,15 +401,7 @@ export default function LeadFollowUp() {
       <Modal
         title="Update Followup"
         open={isOpenCommentModal}
-        onCancel={() => {
-          setIsOpenCommentModal(false);
-          setActionId(null);
-          setActionIdError("");
-          setNxtFollowupDate(null);
-          setNxtFollowupDateError("");
-          setNewComment("");
-          setNewCommentError("");
-        }}
+        onCancel={formReset}
         footer={false}
         width="35%"
         className="leadfollowup_actionmodal"
@@ -436,13 +475,23 @@ export default function LeadFollowUp() {
                 setNewComment(e.target.value);
                 setNewCommentError(addressValidator(e.target.value));
               }}
+              value={newComment}
             />
-            <div
-              className="leadmanager_comment_senddiv"
-              onClick={handleUpdateFollowUp}
-            >
-              <IoMdSend size={18} />
-            </div>
+            {buttonLoading ? (
+              <div
+                className="leadmanager_comment_senddiv"
+                style={{ opacity: 0.7 }}
+              >
+                <IoMdSend size={18} />
+              </div>
+            ) : (
+              <div
+                className="leadmanager_comment_senddiv"
+                onClick={handleUpdateFollowUp}
+              >
+                <IoMdSend size={18} />
+              </div>
+            )}
           </div>
 
           {newCommentError && (

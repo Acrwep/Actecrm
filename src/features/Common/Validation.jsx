@@ -279,3 +279,51 @@ export const shortRelativeTime = (date) => {
   const diffWeeks = Math.floor(diffDays / 7);
   return `${diffWeeks}w ago`;
 };
+
+export const priceValidator = (price, totalprice) => {
+  let error = "";
+
+  if (!price || price.length <= 0) error = " is required";
+  else if (price > totalprice) error = " must be below total fees";
+
+  return error;
+};
+
+export const discountValidator = (discount) => {
+  let error = "";
+
+  if (discount > 99) error = " must be less than 100";
+
+  return error;
+};
+
+export const calculateAmount = (price, discount = 0, gst = 0) => {
+  if (typeof price !== "number" || price < 0) {
+    throw new Error("Price must be a positive number");
+  }
+
+  let finalPrice = price;
+
+  // Apply discount if given (percentage)
+  if (discount > 0) {
+    finalPrice -= (finalPrice * discount) / 100;
+  }
+
+  // Apply GST if given
+  if (gst > 0) {
+    finalPrice += (finalPrice * gst) / 100;
+  }
+
+  return parseFloat(finalPrice.toFixed(2)); // round to 2 decimals
+};
+
+// Reusable debounce function
+export const debounce = (func, delay) => {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+};

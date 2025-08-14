@@ -73,3 +73,9 @@
   opacity: 1 !important;
   box-shadow: none !important;
 }
+
+.trainer_status_mainContainer {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}

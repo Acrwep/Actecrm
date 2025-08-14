@@ -585,7 +585,22 @@ export default function Trainers() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "20px" }}>
+      <div className="trainer_status_mainContainer">
+        <div className="customers_feedback_container">
+          <p>Form Pending {`( 1 )`}</p>
+        </div>
+        <div className="customers_studentvefity_container">
+          <p>Verify Pending {`( 1 )`}</p>
+        </div>
+        <div className="customers_completed_container">
+          <p>Verified Trainer {`( 1 )`}</p>
+        </div>
+        <div className="customers_awaitfinance_container">
+          <p>Rejected Trainer {`( 1 )`}</p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "22px" }}>
         <CommonTable
           scroll={{ x: 2400 }}
           columns={columns}
