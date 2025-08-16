@@ -34,6 +34,7 @@ import dayjs from "dayjs";
 import moment from "moment/moment";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
+import { LuSend } from "react-icons/lu";
 
 export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -198,6 +199,10 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
+            <Tooltip placement="top" title="Send Registration Link">
+              <LuSend size={17} className="trainers_action_icons" />
+            </Tooltip>
+
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"

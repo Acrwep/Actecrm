@@ -21,6 +21,7 @@ import Dashboard from "../Dashboard/Dashboard";
 import Trainers from "../Trainers/Trainers";
 import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
+import TrainerRegistration from "../Trainers/TrainerRegistration";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -41,8 +42,13 @@ export default function Pages() {
       setShowSidebar(true);
       navigate(`/${pathName}`, { replace: true });
     } else {
-      setShowSidebar(false);
-      navigate("/login");
+      if (pathName === "trainer-registration") {
+        setShowSidebar(false);
+        navigate("/trainer-registration");
+      } else {
+        setShowSidebar(false);
+        navigate("/login");
+      }
     }
   }, [location.pathname]);
 
@@ -51,6 +57,13 @@ export default function Pages() {
       {location.pathname === "/login" ? (
         <Routes>
           <Route element={<Login />} path="/login" />
+        </Routes>
+      ) : location.pathname === "/trainer-registration" ? (
+        <Routes>
+          <Route
+            element={<TrainerRegistration />}
+            path="/trainer-registration"
+          />
         </Routes>
       ) : showSidebar ? (
         <Layout style={{ height: "100vh" }}>
@@ -130,6 +143,10 @@ export default function Pages() {
                 <Route element={<Trainers />} path="/trainers" />
                 <Route element={<Server />} path="/server" />
                 <Route element={<Settings />} path="/settings" />
+                <Route
+                  element={<TrainerRegistration />}
+                  path="/trainer-registration"
+                />
                 <Route element={<Navigate to={"/dashboard"} />} path="*" />
               </Routes>
             </Content>

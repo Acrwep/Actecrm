@@ -49,6 +49,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
 import CommonImageUpload from "../Common/CommonImageUpload";
 import { UploadOutlined } from "@ant-design/icons";
+import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 
 export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [searchValue, setSearchValue] = useState("");
@@ -347,7 +348,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
-              // onClick={() => handleEdit(record)}
+              onClick={() => handleEdit(record)}
             />
 
             <Tooltip
@@ -802,6 +803,47 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   };
 
   //onclick functions
+  const handleEdit = (item) => {
+    console.log("clicked itemmm", item);
+    setIsOpenAddDrawer(true);
+    setName(item.name);
+    setEmail(item.email);
+    setMobile(item.phone);
+    setWhatsApp(item.whatsapp);
+    setCountryId(item.country);
+    const stateList = State.getStatesOfCountry(item.country);
+    const updateSates = stateList.map((s) => {
+      return { ...s, id: s.isoCode };
+    });
+    console.log(updateSates, "updateSates");
+    setStateOptions(updateSates);
+    setStateId(item.state);
+    const cityList = City.getCitiesOfState(item.country, item.state);
+
+    const updateCities = cityList.map((city) => {
+      return { ...city, id: city.name };
+    });
+    console.log(updateCities, "updateCities");
+    setCityOptions(updateCities);
+    setCityId(item.district);
+
+    setPrimaryCourse(item.primary_course_id);
+    setPrimaryFees(item.primary_fees);
+    setSecondaryCourse(item.secondary_course_id);
+    setSecondaryFees(item.secondary_fees);
+    setTrainerMode(item.training_mode_id);
+    setPriority(item.priority_id);
+    setLeadType(item.lead_type_id);
+    setLeadStatus(item.lead_status_id);
+    setResponseLeadStatus(item.response_status_id);
+    setNxtFollowupDate(item.next_follow_up_date);
+    setExpectDateJoin(item.expected_join_date);
+    setBranch(item.branch_id);
+    setBatchTrack(item.batch_track_id);
+    setRating(item.lead_quality_rating);
+    setComments(item.comments);
+  };
+
   const formReset = () => {
     setIsOpenAddDrawer(false);
     setIsOpenFilterDrawer(false);
@@ -1345,39 +1387,36 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={8}>
-            <CommonDatePicker
-              placeholder="Next Follow-Up Date"
-              required={true}
+            <CommonMuiDatePicker
+              label="Next Follow-Up Date"
               onChange={(value) => {
+                console.log("vallll", value);
                 setNxtFollowupDate(value);
                 if (validationTrigger) {
                   setNxtFollowupDateError(selectValidator(value));
                 }
               }}
               value={nxtFollowupDate}
-              allowClear={true}
-              error={nxtFollowupDateError}
-              labelFontSize="14px"
               disablePreviousDates={true}
+              error={nxtFollowupDateError}
             />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
-            <CommonDatePicker
-              placeholder="Expected Date Join"
-              required={true}
+            <CommonMuiDatePicker
+              label="Expected Date Join"
               onChange={(value) => {
+                console.log("vallll", value);
                 setExpectDateJoin(value);
                 if (validationTrigger) {
                   setExpectDateJoinError(selectValidator(value));
                 }
               }}
               value={expectDateJoin}
-              error={expectDateJoinError}
-              allowClear={true}
               disablePreviousDates={true}
+              error={expectDateJoinError}
             />
           </Col>
           <Col span={8}>

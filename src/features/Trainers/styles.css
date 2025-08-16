@@ -79,3 +79,103 @@
   gap: 16px;
   margin-top: 16px;
 }
+
+/* trainer registration styles */
+.logincard_innerContainer {
+  padding: 0px 35px 0px 35px !important;
+}
+.trainer_registration_headings {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px !important;
+}
+.trainer_registration_dividers {
+  margin: 18px 0px !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.trainer_registration_signaturelabel {
+  color: #333;
+  font-weight: 500;
+  font-size: 12px;
+  position: absolute;
+  top: -15px;
+}
+.trainer_registration_signature_createbutton {
+  border: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 6px;
+  color: #5b69ca;
+  font-size: 13px;
+  box-shadow: none !important;
+  padding: 0px;
+  gap: 1px;
+  background-color: transparent;
+  margin-left: 12px;
+}
+.trainer_registration_signature_createbutton:active {
+  box-shadow: none !important;
+}
+.trainer_registration_signature_createbutton:hover {
+  color: #5b69ca !important;
+}
+.sigCanvas {
+  border: 1px solid rgba(128, 128, 128, 0.568);
+  border-radius: 6px;
+  margin-top: 12px;
+}
+.trainer_signature_clearbutton {
+  font-size: 13px !important;
+  border-radius: 6px !important;
+}
+.trainer_signature_clearbutton:hover {
+  color: #5b69ca !important;
+  border-color: #5b69ca !important;
+}
+.trainer_signature_downloadbutton {
+  background-color: #5b69ca;
+  color: #fff;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  border-color: #5b69ca !important;
+}
+.trainer_signature_downloadbutton:hover {
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  opacity: 0.7;
+}
+.trainer_registration_submitbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  height: 33px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 110px;
+  margin-bottom: 20px;
+}
+.trainer_registration_logoContainer {
+  display: flex;
+  justify-content: space-between;
+}
+.trainer_registration_tabs.ant-tabs > .ant-tabs-nav {
+  padding: 0px 35px !important;
+}
+.trainer_registration_heading {
+  color: #333;
+  margin-top: 14px;
+  font-weight: 600;
+}
+.trainer_registration_logotext {
+  color: #1b538c !important;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}

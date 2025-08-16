@@ -365,4 +365,14 @@ button:focus-visible {
   border-color: #5b69ca !important;
 }
 
-/* antd upload */
+/* antd tab */
+.ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #535bf2 !important;
+  text-shadow: none !important;
+}
+.ant-tabs .ant-tabs-tab:hover {
+  color: #535bf2 !important;
+}
+.ant-tabs .ant-tabs-ink-bar {
+  background: #535bf2 !important;
+}
