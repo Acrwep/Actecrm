@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Input } from "antd";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -56,6 +56,10 @@ export default function Login() {
       </div>
     ),
   };
+
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

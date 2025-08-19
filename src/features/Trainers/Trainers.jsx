@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Drawer, Flex, Tooltip, Button, Radio } from "antd";
+import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Tabs } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
@@ -38,6 +38,8 @@ import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { LuSend } from "react-icons/lu";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
+import Logo from "../../assets/acte-logo.png";
+import Signature from "../../assets/signature.png";
 
 export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -77,6 +79,7 @@ export default function Trainers() {
   const [filterType, setFilterType] = useState(1);
   const [emailLoader, setEmailLoader] = useState(false);
   //bank details usestates
+  const [isShowBankTab, setIsShowBankTab] = useState(false);
   const [profileImage, setProfileImage] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -217,14 +220,14 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip placement="top" title="Send Registration Link">
+            <Tooltip placement="top" title="Send Form Link">
               {emailLoader ? (
                 <CommonSpinner color="#333" />
               ) : (
                 <LuSend
                   size={17}
                   className="trainers_action_icons"
-                  onClick={() => handleSendFormLink(record.email)}
+                  onClick={() => handleSendFormLink(record.email, record.id)}
                 />
               )}
             </Tooltip>
@@ -324,6 +327,7 @@ export default function Trainers() {
   };
 
   const handleEdit = (item) => {
+    setIsShowBankTab(true);
     console.log("clicked item", item);
     // const skillsAsJson = JSON.parse(item.skills);
     // const skillsOutput = skillsAsJson[0].split(",").map((item) => item.trim());
@@ -344,6 +348,11 @@ export default function Trainers() {
       item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : null
     );
     setSkills(item.skills);
+    setAccountHolderName(item.account_holder_name);
+    setAccountNumber(item.account_number);
+    setBankName(item.bank_name);
+    setBranchName(item.branch_name);
+    setIfscCode(item.ifsc_code);
   };
 
   const handleSearch = (e) => {
@@ -357,6 +366,7 @@ export default function Trainers() {
   const formReset = () => {
     setButtonLoading(false);
     setEditTrainerId(null);
+    setIsShowBankTab(false);
     setName("");
     setNameError("");
     setEmail("");
@@ -380,6 +390,11 @@ export default function Trainers() {
     setSkillsError("");
     setLocation("");
     setLocationError("");
+    setAccountHolderName("");
+    setAccountNumber("");
+    setBankName("");
+    setBranchName("");
+    setIfscCode("");
     setIsOpenAddDrawer(false);
     setValidationTrigger(false);
   };
@@ -544,6 +559,295 @@ export default function Trainers() {
       );
     }
   };
+
+  const renderPersonalDetails = () => {
+    return (
+      <div style={{ marginBottom: "60px" }}>
+        <div className="trainer_profilephoto_container">
+          <p style={{ fontWeight: 500 }}>Profile Photo</p>
+          <img src={Logo} className="trainer_profilephoto" />
+        </div>
+        <Row gutter={16}>
+          <Col span={8}>
+            <CommonInputField
+              label="Trainer Name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (validationTrigger) {
+                  setNameError(nameValidator(e.target.value));
+                }
+              }}
+              error={nameError}
+              required={true}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonInputField
+              label="Trainer Email"
+              required={true}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (validationTrigger) {
+                  setEmailError(emailValidator(e.target.value));
+                }
+              }}
+              value={email}
+              error={emailError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonInputField
+              label="Trainer Mobile"
+              required={true}
+              maxLength={10}
+              onChange={(e) => {
+                setMobile(e.target.value);
+                if (validationTrigger) {
+                  setMobileError(mobileValidator(e.target.value));
+                }
+              }}
+              value={mobile}
+              error={mobileError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonOutlinedInput
+              label="Whatsapp Number"
+              icon={<SiWhatsapp color="#39AE41" />}
+              required={true}
+              maxLength={10}
+              onChange={(e) => {
+                setWhatsApp(e.target.value);
+                if (validationTrigger) {
+                  setWhatsAppError(mobileValidator(e.target.value));
+                }
+              }}
+              value={whatsApp}
+              error={whatsAppError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonSelectField
+              label="Technology"
+              required={true}
+              options={technologyOptions}
+              onChange={(e) => {
+                setTechnology(e.target.value);
+                if (validationTrigger) {
+                  setTechnologyError(selectValidator(e.target.value));
+                }
+              }}
+              value={technology}
+              error={technologyError}
+              valueMarginTop="-4px"
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonSelectField
+              label="Experience"
+              required={true}
+              options={experienceOptions}
+              onChange={(e) => {
+                setExperience(e.target.value);
+                if (validationTrigger) {
+                  setExperienceError(selectValidator(e.target.value));
+                }
+              }}
+              value={experience}
+              error={experienceError}
+              valueMarginTop="-4px"
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonSelectField
+              label="Relevant Experience"
+              options={experienceOptions}
+              required={true}
+              onChange={(e) => {
+                setRelevantExperience(e.target.value);
+                if (validationTrigger) {
+                  setRelevantExperienceError(selectValidator(e.target.value));
+                }
+              }}
+              value={relevantExperience}
+              error={relevantExperienceError}
+              valueMarginTop="-4px"
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch"
+              required={true}
+              options={batchOptions}
+              onChange={(e) => {
+                setBatch(e.target.value);
+                if (validationTrigger) {
+                  setBatchError(selectValidator(e.target.value));
+                }
+              }}
+              value={batch}
+              error={batchError}
+              valueMarginTop="-4px"
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMuiTimePicker
+              label="Avaibility Time"
+              required={true}
+              onChange={(value) => {
+                setAvaibilityTime(value);
+                console.log("timeeeeeeee", value);
+                if (validationTrigger) {
+                  setAvaibilityError(selectValidator(value));
+                }
+              }}
+              value={avaibilityTime}
+              error={avaibilityTimeError}
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonMuiTimePicker
+              label="Secondary Time"
+              required={true}
+              onChange={(value) => {
+                setSecondaryTime(value);
+              }}
+              value={secondaryTime}
+              allowClear={true}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMultiSelect
+              label="Skills"
+              required={true}
+              onChange={(e, selectedValues) => {
+                setSkills(selectedValues);
+                if (validationTrigger) {
+                  setSkillsError(selectValidator(selectedValues));
+                }
+              }}
+              value={skills}
+              error={skillsError}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonInputField
+              label="Location"
+              required={true}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                if (validationTrigger) {
+                  setLocationError(addressValidator(e.target.value));
+                }
+              }}
+              value={location}
+              error={locationError}
+            />
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  const renderBankDetails = () => {
+    return (
+      <div>
+        <Row gutter={16}>
+          <Col span={12}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Account Holder Name:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                Balaji
+              </span>
+            </p>
+          </Col>
+          <Col span={12}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Account Number:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                2672742847238
+              </span>
+            </p>
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "20px" }}>
+          <Col span={12}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Bank Name:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                State Bank Of India
+              </span>
+            </p>
+          </Col>
+          <Col span={12}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Branch Name:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                Velachery
+              </span>
+            </p>
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "20px" }}>
+          <Col span={12}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Ifsc Code:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                SBIN0006767
+              </span>
+            </p>
+          </Col>
+          <Col span={12} style={{ display: "flex", gap: "4px" }}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Signature:{" "}
+            </p>
+
+            <img src={Signature} className="trainer_signature_image" />
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  const tabItems = [
+    {
+      key: "1",
+      label: "Personal Details",
+      children: renderPersonalDetails(),
+    },
+    {
+      key: "2",
+      label: "Bank Details",
+      children: renderBankDetails(),
+    },
+  ];
 
   return (
     <div>
@@ -727,219 +1031,20 @@ export default function Trainers() {
         title="Add Trainer"
         open={isOpenAddDrawer}
         onClose={formReset}
-        width="38%"
+        width="50%"
         style={{ position: "relative" }}
+        className={isShowBankTab ? "trainers_addtrainerdrawer" : ""}
       >
-        <Row gutter={16}>
-          <Col span={12}>
-            <CommonInputField
-              label="Trainer Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (validationTrigger) {
-                  setNameError(nameValidator(e.target.value));
-                }
-              }}
-              error={nameError}
-              required={true}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonInputField
-              label="Trainer Email"
-              required={true}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (validationTrigger) {
-                  setEmailError(emailValidator(e.target.value));
-                }
-              }}
-              value={email}
-              error={emailError}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonInputField
-              label="Trainer Mobile"
-              required={true}
-              maxLength={10}
-              onChange={(e) => {
-                setMobile(e.target.value);
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
-                }
-              }}
-              value={mobile}
-              error={mobileError}
-              onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
-                }
-              }}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonOutlinedInput
-              label="Whatsapp Number"
-              icon={<SiWhatsapp color="#39AE41" />}
-              required={true}
-              maxLength={10}
-              onChange={(e) => {
-                setWhatsApp(e.target.value);
-                if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(e.target.value));
-                }
-              }}
-              value={whatsApp}
-              error={whatsAppError}
-              onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
-                }
-              }}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonSelectField
-              label="Technology"
-              required={true}
-              options={technologyOptions}
-              onChange={(e) => {
-                setTechnology(e.target.value);
-                if (validationTrigger) {
-                  setTechnologyError(selectValidator(e.target.value));
-                }
-              }}
-              value={technology}
-              error={technologyError}
-              valueMarginTop="-4px"
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonSelectField
-              label="Experience"
-              required={true}
-              options={experienceOptions}
-              onChange={(e) => {
-                setExperience(e.target.value);
-                if (validationTrigger) {
-                  setExperienceError(selectValidator(e.target.value));
-                }
-              }}
-              value={experience}
-              error={experienceError}
-              valueMarginTop="-4px"
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonSelectField
-              label="Relevant Experience"
-              options={experienceOptions}
-              required={true}
-              onChange={(e) => {
-                setRelevantExperience(e.target.value);
-                if (validationTrigger) {
-                  setRelevantExperienceError(selectValidator(e.target.value));
-                }
-              }}
-              value={relevantExperience}
-              error={relevantExperienceError}
-              valueMarginTop="-4px"
-            />
-          </Col>
-          <Col span={12}>
-            {/* <CommonMultiSelect
-              label="Skills"
-              required={true}
-              options={[{ id: 1, title: "Name" }]}
-            /> */}
-            <CommonSelectField
-              label="Batch"
-              required={true}
-              options={batchOptions}
-              onChange={(e) => {
-                setBatch(e.target.value);
-                if (validationTrigger) {
-                  setBatchError(selectValidator(e.target.value));
-                }
-              }}
-              value={batch}
-              error={batchError}
-              valueMarginTop="-4px"
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonMuiTimePicker
-              label="Avaibility Time"
-              required={true}
-              onChange={(value) => {
-                setAvaibilityTime(value);
-                console.log("timeeeeeeee", value);
-                if (validationTrigger) {
-                  setAvaibilityError(selectValidator(value));
-                }
-              }}
-              value={avaibilityTime}
-              error={avaibilityTimeError}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonMuiTimePicker
-              label="Secondary Time"
-              required={true}
-              onChange={(value) => {
-                setSecondaryTime(value);
-              }}
-              value={secondaryTime}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonMultiSelect
-              label="Skills"
-              required={true}
-              onChange={(e, selectedValues) => {
-                setSkills(selectedValues);
-                if (validationTrigger) {
-                  setSkillsError(selectValidator(selectedValues));
-                }
-              }}
-              value={skills}
-              error={skillsError}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonInputField
-              label="Location"
-              required={true}
-              onChange={(e) => {
-                setLocation(e.target.value);
-                if (validationTrigger) {
-                  setLocationError(addressValidator(e.target.value));
-                }
-              }}
-              value={location}
-              error={locationError}
-            />
-          </Col>
-        </Row>
-
+        {isShowBankTab ? (
+          <Tabs
+            // activeKey={activeKey}
+            // onTabClick={handleTabClick}
+            items={tabItems}
+            // className="trainer_registration_tabs"
+          />
+        ) : (
+          renderPersonalDetails()
+        )}
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {/* <button

@@ -3,6 +3,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { IoIosClose } from "react-icons/io";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+
 export default function CommonMuiTimePicker({
   label,
   required,
@@ -10,6 +14,7 @@ export default function CommonMuiTimePicker({
   value,
   error,
   errorFontSize,
+  allowClear = false,
 }) {
   // const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
@@ -85,6 +90,25 @@ export default function CommonMuiTimePicker({
               </span>
             ) : null,
             onClick: () => setOpen(true),
+            InputProps: {
+              endAdornment: (
+                <>
+                  {allowClear && value && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onChange(null); // clear value
+                        }}
+                      >
+                        <IoIosClose size={18} />
+                      </IconButton>
+                    </InputAdornment>
+                  )}
+                </>
+              ),
+            },
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
