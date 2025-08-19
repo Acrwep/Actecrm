@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Col, Divider, Row, Upload, Button, Modal, Tabs } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -36,6 +36,7 @@ import dayjs from "dayjs";
 
 export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
+  const navigate = useNavigate();
   const { trainer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
   //personal details usestates
@@ -141,6 +142,10 @@ export default function TrainerRegistration() {
       const response = await getTrainerById(trainer_id);
       console.log("trainer details", response);
       const trainerDetails = response?.data?.data;
+      if (trainerDetails.is_bank_updated === 1) {
+        navigate("/success");
+        return;
+      }
       setProfilePicture(trainerDetails.profile_image);
       const profilebase64String = trainerDetails.profile_image;
       if (profilebase64String) {
@@ -382,6 +387,7 @@ export default function TrainerRegistration() {
       CommonMessage("success", "Registered Successfully");
       setTimeout(() => {
         setButtonLoading(false);
+        navigate("/success");
       }, 300);
     } catch (error) {
       setButtonLoading(false);

@@ -22,6 +22,7 @@ import Trainers from "../Trainers/Trainers";
 import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
 import TrainerRegistration from "../Trainers/TrainerRegistration";
+import Success from "../Trainers/Success";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -42,6 +43,13 @@ export default function Pages() {
     // ✅ Skip navigation if on trainer-registration page
     if (pathName.includes("trainer-registration")) {
       console.log("Trainer Registration page detected — no redirect");
+      return;
+    }
+
+    if (pathName === "success") {
+      console.log("succcccc");
+      setShowSidebar(false);
+      navigate("/success", { replace: true });
       return;
     }
 
@@ -66,6 +74,10 @@ export default function Pages() {
             element={<TrainerRegistration />}
             path="/trainer-registration/:trainer_id"
           />
+        </Routes>
+      ) : location.pathname === "/success" ? (
+        <Routes>
+          <Route element={<Success />} path="/success" />
         </Routes>
       ) : showSidebar ? (
         <Layout style={{ height: "100vh" }}>

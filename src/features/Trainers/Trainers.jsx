@@ -406,6 +406,8 @@ export default function Trainers() {
     setBankName("");
     setBranchName("");
     setIfscCode("");
+    setProfileImage("");
+    setSignatureImage("");
     setIsOpenAddDrawer(false);
     setValidationTrigger(false);
   };
