@@ -42,6 +42,7 @@ import {
   getPriority,
   getTechnologies,
   getTrainingMode,
+  updateLead,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -57,6 +58,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [leadId, setLeadId] = useState(null);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -270,12 +272,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dataIndex: "training_mode",
       width: 140,
     },
-    {
-      title: "Trainer Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-      width: 140,
-    },
     { title: "Priority", key: "priority", dataIndex: "priority", width: 140 },
     {
       title: "Lead Type",
@@ -395,12 +391,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       title: "Secondary Course Fees",
       key: "secondary_fees",
       dataIndex: "secondary_fees",
-    },
-    {
-      title: "Trainer Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-      width: 140,
     },
     {
       title: "Trainer Mode",
@@ -806,6 +796,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const handleEdit = (item) => {
     console.log("clicked itemmm", item);
     setIsOpenAddDrawer(true);
+    setLeadId(item.id);
     setName(item.name);
     setEmail(item.email);
     setMobile(item.phone);
@@ -844,10 +835,15 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setComments(item.comments);
   };
 
-  const formReset = () => {
-    setIsOpenAddDrawer(false);
+  const formReset = (dontCloseAddDrawer) => {
+    if (dontCloseAddDrawer === true) {
+      setIsOpenAddDrawer(true);
+    } else {
+      setIsOpenAddDrawer(false);
+    }
     setIsOpenFilterDrawer(false);
     setValidationTrigger(false);
+    setLeadId(null);
     setName("");
     setNameError("");
     setEmail("");
@@ -984,9 +980,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
     setButtonLoading(true);
     const today = new Date();
-    const formatToday = formatToBackendIST(today);
 
     const payload = {
+      ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
       name: name,
       phone_code: "+91",
@@ -1015,22 +1011,42 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       created_date: formatToBackendIST(today),
     };
 
-    try {
-      await createLead(payload);
-      CommonMessage("success", "Lead created");
-      setTimeout(() => {
-        formReset();
-        getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
-        refreshLeadFollowUp();
-      }, 300);
-    } catch (error) {
-      console.log("lead create error", error);
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message ||
-          "Something went wrong. Try again later"
-      );
+    if (leadId) {
+      try {
+        await updateLead(payload);
+        CommonMessage("success", "Lead updated");
+        setTimeout(() => {
+          formReset();
+          getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
+          refreshLeadFollowUp();
+        }, 300);
+      } catch (error) {
+        console.log("lead create error", error);
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
+    } else {
+      try {
+        await createLead(payload);
+        CommonMessage("success", "Lead created");
+        setTimeout(() => {
+          formReset(true);
+          getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
+          refreshLeadFollowUp();
+        }, 300);
+      } catch (error) {
+        console.log("lead create error", error);
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
     }
   };
 
@@ -1399,6 +1415,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               value={nxtFollowupDate}
               disablePreviousDates={true}
               error={nxtFollowupDateError}
+              disabled={leadId ? true : false}
             />
           </Col>
         </Row>
@@ -1493,10 +1510,14 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             </button>
           ) : (
             <button
-              className="leadmanager_submitleadbutton"
+              className={
+                leadId
+                  ? "leadmanager_updateleadbutton"
+                  : "leadmanager_saveleadbutton"
+              }
               onClick={handleSubmit}
             >
-              Submit
+              {leadId ? "Update" : "Save And Add New"}
             </button>
           )}
         </div>

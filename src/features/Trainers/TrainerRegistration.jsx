@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Col, Divider, Row, Upload, Button, Modal, Tabs } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -14,13 +14,118 @@ import { UploadOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
 import { IoIosAdd } from "react-icons/io";
 import { PlusOutlined } from "@ant-design/icons";
+import {
+  accountNumberValidator,
+  addressValidator,
+  emailValidator,
+  ifscValidator,
+  mobileValidator,
+  nameValidator,
+  selectValidator,
+} from "../Common/Validation";
+import {
+  getBatches,
+  getExperience,
+  getTechnologies,
+} from "../ApiService/action";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
+  const [activeKey, setActiveKey] = useState("1");
+  //personal details usestates
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [mobileError, setMobileError] = useState("");
+  const [whatsApp, setWhatsApp] = useState("");
+  const [whatsAppError, setWhatsAppError] = useState("");
+  const [technologyOptions, setTechnologyOptions] = useState("");
+  const [technology, setTechnology] = useState("");
+  const [technologyError, setTechnologyError] = useState("");
+  const [experienceOptions, setExperienceOptions] = useState("");
+  const [experience, setExperience] = useState("");
+  const [experienceError, setExperienceError] = useState("");
+  const [relevantExperience, setRelevantExperience] = useState("");
+  const [relevantExperienceError, setRelevantExperienceError] = useState("");
+  const [batchOptions, setBatchOptions] = useState("");
+  const [batch, setBatch] = useState("");
+  const [batchError, setBatchError] = useState("");
+  const [avaibilityTime, setAvaibilityTime] = useState(null);
+  const [avaibilityTimeError, setAvaibilityError] = useState("");
+  const [secondaryTime, setSecondaryTime] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [skillsError, setSkillsError] = useState("");
+  const [location, setLocation] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [validationTrigger, setValidationTrigger] = useState(false);
+  //bank details usestates
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [accountHolderNameError, setAccountHolderNameError] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountNumberError, setAccountNumberError] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankNameError, setBankNameError] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [branchNameError, setBranchNameError] = useState("");
+  const [ifscCode, setIfscCode] = useState("");
+  const [ifscCodeError, setIfscCodeError] = useState("");
   const [signatureArray, setSignatureArray] = useState([]);
-  const [signatureError, setSignatureError] = useState([]);
+  const [signatureError, setSignatureError] = useState("");
+  const [signatureBase64, setSignatureBase64] = useState("");
   const [isOpenSignatureModal, setIsOpenSignatureModal] = useState(false);
   const [profilePictureArray, setProfilePictureArray] = useState([]);
+  const [profilePicture, setProfilePicture] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getTechnologiesData();
+  }, []);
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      console.log("technologies response", response);
+      setTechnologyOptions(response?.data?.data || []);
+    } catch (error) {
+      setTechnologyOptions([]);
+      console.log("technology error", error);
+    } finally {
+      getBatchData();
+    }
+  };
+
+  const getBatchData = async () => {
+    try {
+      const response = await getBatches();
+      console.log("batches response", response);
+      setBatchOptions(response?.data?.data || []);
+    } catch (error) {
+      setBatchOptions([]);
+      console.log("batch error", error);
+    } finally {
+      getExperienceData();
+    }
+  };
+
+  const getExperienceData = async () => {
+    try {
+      const response = await getExperience();
+      console.log("experience response", response);
+      setExperienceOptions(response?.data?.data || []);
+    } catch (error) {
+      setExperienceOptions([]);
+      console.log("experience error", error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
+    }
+  };
 
   const handleSignature = ({ file }) => {
     // allowed MIME types
@@ -31,38 +136,204 @@ export default function TrainerRegistration() {
 
     if (file.status === "uploading" || file.status === "removed") {
       setSignatureArray([]);
+      setSignatureBase64("");
+      setSignatureError("Signature is required");
       return;
     }
     if (isValidType) {
       console.log("fileeeee", file);
       setSignatureArray([file]);
       CommonMessage("success", "Signature uploaded");
-      //   const reader = new FileReader();
-      //   reader.readAsDataURL(file);
-      //   reader.onload = () => {
-      //     const base64String = reader.result.split(",")[1]; // Extract Base64 content
-      //     setProfilePicture(base64String); // Store in state
-      //   };
+      setSignatureError("");
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        setSignatureBase64(base64String); // Store in state
+      };
     } else {
       CommonMessage("error", "Accept only .png, .jpg and .jpeg");
       setSignatureArray([]);
+      setSignatureBase64("");
+      setSignatureError("Signature is required");
+    }
+  };
+
+  const handleTabClick = (key, e) => {
+    setActiveKey(key);
+  };
+
+  const handlePersonalDetails = () => {
+    setValidationTrigger(true);
+    const nameValidate = nameValidator(name);
+    const emailValidate = emailValidator(email);
+    const mobileValidate = mobileValidator(mobile);
+    const whatsAppValidate = mobileValidator(whatsApp);
+    const technologyValidate = selectValidator(technology);
+    const experienceValidate = selectValidator(experience);
+    const relevantExperienceValidate = selectValidator(relevantExperience);
+    const batchValidate = selectValidator(batch);
+    const avaibilityTimeValidate = selectValidator(avaibilityTime);
+    const skillsValidate = selectValidator(skills);
+    const locationValidate = addressValidator(location);
+
+    setNameError(nameValidate);
+    setEmailError(emailValidate);
+    setMobileError(mobileValidate);
+    setWhatsAppError(whatsAppValidate);
+    setTechnologyError(technologyValidate);
+    setExperienceError(experienceValidate);
+    setRelevantExperienceError(relevantExperienceValidate);
+    setBatchError(batchValidate);
+    setAvaibilityError(avaibilityTimeValidate);
+    setSkillsError(skillsValidate);
+    setLocationError(locationValidate);
+
+    if (
+      nameValidate ||
+      emailValidate ||
+      mobileValidate ||
+      whatsAppValidate ||
+      technologyValidate ||
+      experienceValidate ||
+      relevantExperienceValidate ||
+      batchValidate ||
+      avaibilityTimeValidate ||
+      skillsValidate ||
+      locationValidate
+    )
+      return;
+
+    // alert("success");
+    setActiveKey("2");
+  };
+
+  const handleSubmit = () => {
+    setValidationTrigger(true);
+    const nameValidate = nameValidator(name);
+    const emailValidate = emailValidator(email);
+    const mobileValidate = mobileValidator(mobile);
+    const whatsAppValidate = mobileValidator(whatsApp);
+    const technologyValidate = selectValidator(technology);
+    const experienceValidate = selectValidator(experience);
+    const relevantExperienceValidate = selectValidator(relevantExperience);
+    const batchValidate = selectValidator(batch);
+    const avaibilityTimeValidate = selectValidator(avaibilityTime);
+    const skillsValidate = selectValidator(skills);
+    const locationValidate = addressValidator(location);
+    const accountHolderNameValidate = nameValidator(accountHolderName);
+    const accountNumberValidate = accountNumberValidator(accountNumber);
+    const bankNameValidate = nameValidator(bankName);
+    const branchNameValidate = nameValidator(branchName);
+    const ifscCodeValidate = ifscValidator(ifscCode);
+    let signatureValidate;
+
+    if (signatureBase64 === "") {
+      signatureValidate = "Signature is required";
+    } else {
+      signatureValidate = "";
+    }
+
+    setNameError(nameValidate);
+    setEmailError(emailValidate);
+    setMobileError(mobileValidate);
+    setWhatsAppError(whatsAppValidate);
+    setTechnologyError(technologyValidate);
+    setExperienceError(experienceValidate);
+    setRelevantExperienceError(relevantExperienceValidate);
+    setBatchError(batchValidate);
+    setAvaibilityError(avaibilityTimeValidate);
+    setSkillsError(skillsValidate);
+    setLocationError(locationValidate);
+    setAccountHolderNameError(accountHolderNameValidate);
+    setAccountNumberError(accountNumberValidate);
+    setBankNameError(bankNameValidate);
+    setBranchNameError(branchNameValidate);
+    setIfscCodeError(ifscCodeValidate);
+    setSignatureError(signatureValidate);
+
+    if (
+      nameValidate ||
+      emailValidate ||
+      mobileValidate ||
+      whatsAppValidate ||
+      technologyValidate ||
+      experienceValidate ||
+      relevantExperienceValidate ||
+      batchValidate ||
+      avaibilityTimeValidate ||
+      skillsValidate ||
+      locationValidate
+    ) {
+      setActiveKey("1");
+      return;
+    }
+
+    if (
+      accountHolderNameValidate ||
+      accountNumberValidate ||
+      bankNameValidate ||
+      branchNameValidate ||
+      ifscCodeValidate ||
+      signatureValidate
+    ) {
+      return;
     }
   };
 
   const renderPersonalDetails = () => {
     return (
-      <>
+      <div style={{ height: "365px", position: "relative" }}>
         <div className="logincard_innerContainer">
           <p className="trainer_registration_headings">Primary Details</p>
           <Row gutter={12}>
             <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField label="Name" required={true} />
+              <CommonInputField
+                label="Trainer Name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (validationTrigger) {
+                    setNameError(nameValidator(e.target.value));
+                  }
+                }}
+                error={nameError}
+                required={true}
+              />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField label="Email" required={true} />
+              <CommonInputField
+                label="Email"
+                required={true}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (validationTrigger) {
+                    setEmailError(emailValidator(e.target.value));
+                  }
+                }}
+                value={email}
+                error={emailError}
+              />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField label="Mobile" required={true} />
+              <CommonInputField
+                label="Mobile"
+                required={true}
+                maxLength={10}
+                onChange={(e) => {
+                  setMobile(e.target.value);
+                  if (validationTrigger) {
+                    setMobileError(mobileValidator(e.target.value));
+                  }
+                }}
+                value={mobile}
+                error={mobileError}
+                onInput={(e) => {
+                  if (e.target.value.length > 10) {
+                    e.target.value = e.target.value.slice(0, 10);
+                  }
+                }}
+              />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
               <CommonOutlinedInput
@@ -70,6 +341,20 @@ export default function TrainerRegistration() {
                 icon={<SiWhatsapp color="#39AE41" />}
                 required={true}
                 maxLength={10}
+                onChange={(e) => {
+                  setWhatsApp(e.target.value);
+                  if (validationTrigger) {
+                    setWhatsAppError(mobileValidator(e.target.value));
+                  }
+                }}
+                value={whatsApp}
+                error={whatsAppError}
+                errorFontSize="10px"
+                onInput={(e) => {
+                  if (e.target.value.length > 10) {
+                    e.target.value = e.target.value.slice(0, 10);
+                  }
+                }}
               />{" "}
             </Col>
           </Row>
@@ -84,15 +369,15 @@ export default function TrainerRegistration() {
               <CommonSelectField
                 label="Technology"
                 required={true}
-                options={[]}
-                //   onChange={(e) => {
-                //     setTechnology(e.target.value);
-                //     if (validationTrigger) {
-                //       setTechnologyError(selectValidator(e.target.value));
-                //     }
-                //   }}
-                //   value={technology}
-                //   error={technologyError}
+                options={technologyOptions}
+                onChange={(e) => {
+                  setTechnology(e.target.value);
+                  if (validationTrigger) {
+                    setTechnologyError(selectValidator(e.target.value));
+                  }
+                }}
+                value={technology}
+                error={technologyError}
                 valueMarginTop="-4px"
               />
             </Col>
@@ -101,15 +386,15 @@ export default function TrainerRegistration() {
               <CommonSelectField
                 label="Experience"
                 required={true}
-                options={[]}
-                //   onChange={(e) => {
-                //     setTechnology(e.target.value);
-                //     if (validationTrigger) {
-                //       setTechnologyError(selectValidator(e.target.value));
-                //     }
-                //   }}
-                //   value={technology}
-                //   error={technologyError}
+                options={experienceOptions}
+                onChange={(e) => {
+                  setExperience(e.target.value);
+                  if (validationTrigger) {
+                    setExperienceError(selectValidator(e.target.value));
+                  }
+                }}
+                value={experience}
+                error={experienceError}
                 valueMarginTop="-4px"
               />
             </Col>
@@ -118,16 +403,17 @@ export default function TrainerRegistration() {
               <CommonSelectField
                 label="Relevant Experience"
                 required={true}
-                options={[]}
-                //   onChange={(e) => {
-                //     setTechnology(e.target.value);
-                //     if (validationTrigger) {
-                //       setTechnologyError(selectValidator(e.target.value));
-                //     }
-                //   }}
-                //   value={technology}
-                //   error={technologyError}
+                options={experienceOptions}
+                onChange={(e) => {
+                  setRelevantExperience(e.target.value);
+                  if (validationTrigger) {
+                    setRelevantExperienceError(selectValidator(e.target.value));
+                  }
+                }}
+                value={relevantExperience}
+                error={relevantExperienceError}
                 valueMarginTop="-4px"
+                errorFontSize="9.9px"
               />
             </Col>
 
@@ -135,112 +421,214 @@ export default function TrainerRegistration() {
               <CommonSelectField
                 label="Batch"
                 required={true}
-                options={[]}
-                //   onChange={(e) => {
-                //     setTechnology(e.target.value);
-                //     if (validationTrigger) {
-                //       setTechnologyError(selectValidator(e.target.value));
-                //     }
-                //   }}
-                //   value={technology}
-                //   error={technologyError}
+                options={batchOptions}
+                onChange={(e) => {
+                  setBatch(e.target.value);
+                  if (validationTrigger) {
+                    setBatchError(selectValidator(e.target.value));
+                  }
+                }}
+                value={batch}
+                error={batchError}
                 valueMarginTop="-4px"
               />
             </Col>
           </Row>
 
-          <Row gutter={12} style={{ marginTop: "25px", marginBottom: "25px" }}>
+          <Row gutter={12} style={{ marginTop: "30px", marginBottom: "25px" }}>
             <Col span={6}>
-              <CommonMuiTimePicker label="Avaibility Time" required={true} />
+              <CommonMuiTimePicker
+                label="Avaibility Time"
+                required={true}
+                onChange={(value) => {
+                  setAvaibilityTime(value);
+                  console.log("timeeeeeeee", value);
+                  if (validationTrigger) {
+                    setAvaibilityError(selectValidator(value));
+                  }
+                }}
+                value={avaibilityTime}
+                error={avaibilityTimeError}
+              />
             </Col>
             <Col span={6}>
-              <CommonMuiTimePicker label="Secondary Time" required={true} />
+              <CommonMuiTimePicker
+                label="Secondary Time"
+                required={true}
+                onChange={(value) => {
+                  setSecondaryTime(value);
+                }}
+                value={secondaryTime}
+              />
             </Col>
             <Col span={6}>
-              <CommonMultiSelect label="Skills" required={true} />
+              <CommonMultiSelect
+                label="Skills"
+                required={true}
+                onChange={(e, selectedValues) => {
+                  setSkills(selectedValues);
+                  if (validationTrigger) {
+                    setSkillsError(selectValidator(selectedValues));
+                  }
+                }}
+                value={skills}
+                error={skillsError}
+              />
             </Col>
             <Col span={6}>
-              <CommonInputField label="Location" />
+              <CommonInputField
+                label="Location"
+                required={true}
+                onChange={(e) => {
+                  setLocation(e.target.value);
+                  if (validationTrigger) {
+                    setLocationError(addressValidator(e.target.value));
+                  }
+                }}
+                value={location}
+                error={locationError}
+              />
             </Col>
           </Row>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-            }}
-          >
-            <button className="trainer_registration_submitbutton">Next</button>
-          </div>
         </div>
-      </>
+        <div className="trainer_registration_submitbuttonContainer">
+          <button
+            className="trainer_registration_submitbutton"
+            onClick={handlePersonalDetails}
+          >
+            Next
+          </button>
+        </div>
+      </div>
     );
   };
 
   const renderBankDetails = () => {
     return (
-      <div className="logincard_innerContainer">
-        <p className="trainer_registration_headings">Bank Details</p>
-        <Row gutter={12}>
-          <Col span={6}>
-            <CommonInputField label="Account Holder Name" required={true} />
-          </Col>
-          <Col span={6}>
-            <CommonInputField label="Account Number" required={true} />
-          </Col>
-          <Col span={6}>
-            <CommonInputField label="Bank Name" required={true} />
-          </Col>
-          <Col span={6}>
-            <CommonInputField label="Branch Name" required={true} />
-          </Col>
-        </Row>
+      <div style={{ height: "365px", position: "relative" }}>
+        <div className="logincard_innerContainer">
+          <p className="trainer_registration_headings">Bank Details</p>
+          <Row gutter={12}>
+            <Col span={6}>
+              <CommonInputField
+                label="Account Holder Name"
+                required={true}
+                onChange={(e) => {
+                  setAccountHolderName(e.target.value);
+                  if (validationTrigger) {
+                    setAccountHolderNameError(nameValidator(e.target.value));
+                  }
+                }}
+                value={accountHolderName}
+                error={accountHolderNameError}
+                errorFontSize="9.4px"
+              />
+            </Col>
+            <Col span={6}>
+              <CommonInputField
+                label="Account Number"
+                required={true}
+                onChange={(e) => {
+                  setAccountNumber(e.target.value);
+                  if (validationTrigger) {
+                    setAccountNumberError(
+                      accountNumberValidator(e.target.value)
+                    );
+                  }
+                }}
+                value={accountNumber}
+                error={accountNumberError}
+              />
+            </Col>
+            <Col span={6}>
+              <CommonInputField
+                label="Bank Name"
+                required={true}
+                onChange={(e) => {
+                  setBankName(e.target.value);
+                  if (validationTrigger) {
+                    setBankNameError(nameValidator(e.target.value));
+                  }
+                }}
+                value={bankName}
+                error={bankNameError}
+              />
+            </Col>
+            <Col span={6}>
+              <CommonInputField
+                label="Branch Name"
+                required={true}
+                onChange={(e) => {
+                  setBranchName(e.target.value);
+                  if (validationTrigger) {
+                    setBranchNameError(nameValidator(e.target.value));
+                  }
+                }}
+                value={branchName}
+                error={branchNameError}
+              />
+            </Col>
+          </Row>
 
-        <Row gutter={12} style={{ marginTop: "34px", marginBottom: "140px" }}>
-          <Col span={6}>
-            <CommonInputField label="IFSC Code" required={true} />
-          </Col>
-          <Col span={6} style={{ position: "relative", display: "flex" }}>
-            <p className="trainer_registration_signaturelabel">
-              Signature <span style={{ color: "#d32f2f" }}>*</span>
-            </p>
-            <Upload
-              style={{ width: "100%", marginTop: "6px" }}
-              beforeUpload={(file) => {
-                return false; // Prevent auto-upload
-              }}
-              accept=".png,.jpg,.jpeg"
-              onChange={handleSignature}
-              fileList={signatureArray}
-              multiple={false}
-            >
-              <Button
-                icon={<UploadOutlined />}
-                className="leadmanager_payment_screenshotbutton"
-                style={{ borderRadius: "4px" }}
+          <Row gutter={12} style={{ marginTop: "40px" }}>
+            <Col span={6}>
+              <CommonInputField
+                label="IFSC Code"
+                required={true}
+                onChange={(e) => {
+                  setIfscCode(e.target.value.toUpperCase());
+                  if (validationTrigger) {
+                    setIfscCodeError(ifscValidator(e.target.value));
+                  }
+                }}
+                value={ifscCode}
+                error={ifscCodeError}
+              />
+            </Col>
+            <Col span={6} style={{ position: "relative", display: "flex" }}>
+              <p className="trainer_registration_signaturelabel">
+                Signature <span style={{ color: "#d32f2f" }}>*</span>
+              </p>
+              <Upload
+                style={{ width: "100%", marginTop: "6px" }}
+                beforeUpload={(file) => {
+                  return false; // Prevent auto-upload
+                }}
+                accept=".png,.jpg,.jpeg"
+                onChange={handleSignature}
+                fileList={signatureArray}
+                multiple={false}
               >
-                Choose file
-                <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
-              </Button>
-            </Upload>{" "}
-            <button
-              className="trainer_registration_signature_createbutton"
-              onClick={() => setIsOpenSignatureModal(true)}
-            >
-              <IoIosAdd size={18} /> Create
-            </button>
-          </Col>
-        </Row>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <button className="trainer_registration_submitbutton">Submit</button>
+                <Button
+                  icon={<UploadOutlined />}
+                  className="leadmanager_payment_screenshotbutton"
+                  style={{ borderRadius: "4px" }}
+                >
+                  Choose file
+                  <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
+                </Button>
+              </Upload>{" "}
+              <button
+                className="trainer_registration_signature_createbutton"
+                onClick={() => setIsOpenSignatureModal(true)}
+              >
+                <IoIosAdd size={18} /> Create
+              </button>
+              {signatureError && (
+                <p className="trainer_registration_signatureerror">
+                  {signatureError}
+                </p>
+              )}
+            </Col>
+          </Row>
+        </div>
+        <div className="trainer_registration_submitbuttonContainer">
+          <button
+            className="trainer_registration_submitbutton"
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
         </div>
       </div>
     );
@@ -280,41 +668,54 @@ export default function TrainerRegistration() {
 
   const handleProfileAttachment = ({ fileList: newFileList }) => {
     console.log("newww", newFileList);
+
     if (newFileList.length <= 0) {
       setProfilePictureArray([]);
+      setProfilePicture("");
       return;
     }
+
+    const file = newFileList[0].originFileObj; // actual File object
+
     const isValidType =
-      newFileList[0].type === "image/png" ||
-      newFileList[0].type === "image/jpeg" ||
-      newFileList[0].type === "image/jpg";
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/jpg";
 
     if (isValidType) {
       console.log("fileeeee", newFileList);
       setProfilePictureArray(newFileList);
-      CommonToaster("Profile uploaded");
+      CommonMessage("success", "Profile uploaded");
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        setProfilePicture(base64String); // Store in state
+      };
     } else {
-      CommonToaster("Accept only .png, .jpg and .jpeg");
+      CommonMessage("error", "Accept only .png, .jpg and .jpeg");
       setProfilePictureArray([]);
+      setProfilePicture("");
     }
   };
 
   const handlePreview = async (file) => {
-    // if (file.url) {
-    //   setPreviewImage(file.url);
-    //   setPreviewOpen(true);
-    //   return;
-    // }
-    // const rawFile = file.originFileObj || file;
-    // const reader = new FileReader();
-    // reader.readAsDataURL(rawFile);
-    // reader.onload = () => {
-    //   const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
-    //   console.log("urlllll", dataUrl);
-    //   setPreviewImage(dataUrl); // Show in Modal
-    //   setProfilePicture(dataUrl.split(",")[1]); // Store Base64 content only
-    //   setPreviewOpen(true);
-    // };
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
   };
 
   const handleRemoveProfile = (fileToRemove) => {
@@ -369,11 +770,16 @@ export default function TrainerRegistration() {
           </div>
         </div>
 
-        <Tabs
-          defaultActiveKey="1"
-          items={tabItems}
-          className="trainer_registration_tabs"
-        />
+        {loading ? (
+          <CommonSpinner />
+        ) : (
+          <Tabs
+            activeKey={activeKey}
+            onTabClick={handleTabClick}
+            items={tabItems}
+            className="trainer_registration_tabs"
+          />
+        )}
 
         {/* <Divider className="trainer_registration_dividers" /> */}
       </div>
@@ -416,6 +822,15 @@ export default function TrainerRegistration() {
             Download PNG
           </Button>
         </div>
+      </Modal>
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

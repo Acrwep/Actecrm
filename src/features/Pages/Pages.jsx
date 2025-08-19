@@ -42,12 +42,11 @@ export default function Pages() {
       setShowSidebar(true);
       navigate(`/${pathName}`, { replace: true });
     } else {
+      setShowSidebar(false);
       if (pathName === "trainer-registration") {
-        setShowSidebar(false);
-        navigate("/trainer-registration");
+        navigate("/trainer-registration", { replace: true });
       } else {
-        setShowSidebar(false);
-        navigate("/login");
+        navigate("/login", { replace: true });
       }
     }
   }, [location.pathname]);

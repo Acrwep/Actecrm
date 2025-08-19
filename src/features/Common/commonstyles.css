@@ -27,7 +27,7 @@
   bottom: -24px;
   font-family: "Poppins", sans-serif !important;
   line-height: 1.9 !important;
-  font-size: 11px !important;
+  /* font-size: 11px !important; */
 }
 
 /* mui select field styles */
@@ -46,7 +46,6 @@
 }
 .common_selectfield_errortext {
   color: #d32f2f !important;
-  font-size: 11px !important;
   font-family: "Poppins", sans-serif !important;
   margin-bottom: 0 !important;
   position: absolute;

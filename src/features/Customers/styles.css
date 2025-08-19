@@ -68,6 +68,7 @@
   color: #ff6b6b;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_awaitfinance_container {
   display: flex;
@@ -80,6 +81,7 @@
   color: #eb6d4b;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_studentvefity_container {
   display: flex;
@@ -92,6 +94,7 @@
   color: #ffa502;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_assigntrainers_container {
   display: flex;
@@ -104,6 +107,7 @@
   color: #2ed573;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_verifytrainers_container {
   display: flex;
@@ -116,6 +120,7 @@
   color: #1e90ff;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_classschedule_container {
   display: flex;
@@ -128,6 +133,7 @@
   color: #a29bfe;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_classgoing_container {
   display: flex;
@@ -140,6 +146,7 @@
   color: #00cec9;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_pendingfees_container {
   display: flex;
@@ -152,6 +159,7 @@
   color: #e17055;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_escalated_container {
   display: flex;
@@ -164,6 +172,7 @@
   color: #6c5ce7;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_feedback_container {
   display: flex;
@@ -176,6 +185,7 @@
   color: #fd79a8;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_completed_container {
   display: flex;
@@ -188,6 +198,7 @@
   color: #3c9111;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 .customers_others_container {
   display: flex;
@@ -200,4 +211,5 @@
   color: #0984e3;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }

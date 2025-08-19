@@ -376,3 +376,8 @@ button:focus-visible {
 .ant-tabs .ant-tabs-ink-bar {
   background: #535bf2 !important;
 }
+
+/* antd upload styles */
+.ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
+  position: absolute !important;
+}

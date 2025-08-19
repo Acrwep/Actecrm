@@ -2,30 +2,37 @@ import * as React from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-
+import dayjs from "dayjs";
 export default function CommonMuiTimePicker({
   label,
   required,
+  onChange,
+  value,
   error,
   errorFontSize,
 }) {
-  const [value, setValue] = React.useState(null);
+  // const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <TimePicker
         label={label}
-        value={value}
+        value={value ? dayjs(value, "HH:mm:ss") : null} // convert JS Date to Dayjs
         onChange={(newValue) => {
-          setValue(newValue);
-          //   setOpen(false);
+          if (newValue && newValue.isValid()) {
+            onChange(newValue.format("HH:mm:ss")); // return as "09:00:00"
+          } else {
+            onChange(null);
+          }
         }}
         open={open}
         views={["hours", "minutes"]}
         onAccept={(newValue) => {
-          setValue(newValue);
-          setOpen(false); // only close when user clicks OK
+          if (newValue && newValue.isValid()) {
+            onChange(newValue.format("HH:mm:ss"));
+          }
+          setOpen(false);
         }}
         ampm={true}
         onClose={() => setOpen(false)}
@@ -74,7 +81,7 @@ export default function CommonMuiTimePicker({
               <span
                 style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
               >
-                {error}
+                {label + error}
               </span>
             ) : null,
             onClick: () => setOpen(true),

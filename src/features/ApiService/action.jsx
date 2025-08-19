@@ -123,6 +123,15 @@ export const trainerStatusUpdate = async (payload) => {
   }
 };
 
+export const sendTrainerFormEmail = async (payload) => {
+  try {
+    const response = await api.post("/api/sendMail", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // lead api's
 export const getTrainingMode = async (payload) => {
   try {
@@ -192,6 +201,15 @@ export const getBatchTrack = async (payload) => {
 export const createLead = async (payload) => {
   try {
     const response = await api.post("/api/insertLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateLead = async (payload) => {
+  try {
+    const response = await api.put("/api/updateLead", payload);
     return response;
   } catch (error) {
     throw error;

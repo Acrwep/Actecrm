@@ -25,6 +25,7 @@ export default function CommonSelectField({
   helperTextContainerStyle,
   disableClearable,
   disabled,
+  errorFontSize,
 }) {
   return (
     <div style={style}>
@@ -110,7 +111,12 @@ export default function CommonSelectField({
 
         {error && (
           <div style={helperTextContainerStyle}>
-            <FormHelperText className="common_selectfield_errortext">
+            <FormHelperText
+              className="common_selectfield_errortext"
+              style={{
+                fontSize: errorFontSize ? errorFontSize : "11px",
+              }}
+            >
               {label + " " + error}
             </FormHelperText>
           </div>

@@ -5,6 +5,7 @@ import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { RedoOutlined } from "@ant-design/icons";
 import { SiWhatsapp } from "react-icons/si";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -25,6 +26,7 @@ import {
   getExperience,
   getTechnologies,
   getTrainers,
+  sendTrainerFormEmail,
   trainerStatusUpdate,
   updateTrainer,
 } from "../ApiService/action";
@@ -35,10 +37,12 @@ import moment from "moment/moment";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { LuSend } from "react-icons/lu";
+import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
 
 export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
+  const [status, setStatus] = useState("");
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -71,6 +75,20 @@ export default function Trainers() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [emailLoader, setEmailLoader] = useState(false);
+  //bank details usestates
+  const [profileImage, setProfileImage] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [ifscCode, setIfscCode] = useState("");
+  const [signatureImage, setSignatureImage] = useState("");
+  //status count usestates
+  const [formPendingCount, setFormPendingCount] = useState(0);
+  const [verifyPendingCount, setVerifyPendingCount] = useState(0);
+  const [verifiedCount, setVerifiedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
 
   const columns = [
     {
@@ -200,7 +218,15 @@ export default function Trainers() {
         return (
           <div className="trainers_actionbuttonContainer">
             <Tooltip placement="top" title="Send Registration Link">
-              <LuSend size={17} className="trainers_action_icons" />
+              {emailLoader ? (
+                <CommonSpinner color="#333" />
+              ) : (
+                <LuSend
+                  size={17}
+                  className="trainers_action_icons"
+                  onClick={() => handleSendFormLink(record.email)}
+                />
+              )}
             </Tooltip>
 
             <AiOutlineEdit
@@ -278,7 +304,15 @@ export default function Trainers() {
     try {
       const response = await getTrainers(payload);
       console.log("trainers response", response);
-      setTrainersData(response?.data?.data || []);
+      setTrainersData(response?.data?.data?.trainers || []);
+      const statusCountList = response?.data?.data?.trainer_status_count || [];
+
+      if (statusCountList.length >= 1) {
+        setFormPendingCount(statusCountList[0].form_pending);
+        setVerifyPendingCount(statusCountList[0].verify_pending);
+        setVerifiedCount(statusCountList[0].verified);
+        setRejectedCount(statusCountList[0].rejected);
+      }
     } catch (error) {
       setTrainersData([]);
       console.log("trainers error", error);
@@ -376,14 +410,14 @@ export default function Trainers() {
     setSkillsError(skillsValidate);
     setLocationError(locationValidate);
 
-    const formatAvaibilityTime = formatToBackendIST(avaibilityTime);
-    let formatSecondaryTime;
-    if (secondaryTime) {
-      formatSecondaryTime = formatToBackendIST(secondaryTime);
-    } else {
-      formatSecondaryTime = null;
-    }
-    console.log(formatAvaibilityTime, "sendFormatrr");
+    // const formatAvaibilityTime = formatToBackendIST(avaibilityTime);
+    // let formatSecondaryTime;
+    // if (secondaryTime) {
+    //   formatSecondaryTime = formatToBackendIST(secondaryTime);
+    // } else {
+    //   formatSecondaryTime = null;
+    // }
+    // console.log(formatAvaibilityTime, "sendFormatrr");
 
     if (
       nameValidate ||
@@ -401,6 +435,7 @@ export default function Trainers() {
       return;
 
     setButtonLoading(true);
+    const today = new Date();
     const payload = {
       ...(editTrainerId && { id: editTrainerId }),
       trainer_name: name,
@@ -411,11 +446,19 @@ export default function Trainers() {
       overall_exp_year: experience,
       relevant_exp_year: relevantExperience,
       batch_id: batch,
-      availability_time: moment(formatAvaibilityTime).format("HH:mm:ss"),
-      secondary_time: formatSecondaryTime,
+      availability_time: avaibilityTime,
+      secondary_time: secondaryTime,
       skills: skills,
       location: location,
       status: "Pending",
+      profile_image: "",
+      account_holder_name: "",
+      account_number: "",
+      bank_name: "",
+      branche_name: "",
+      ifsc_code: "",
+      signature_image: "",
+      created_date: formatToBackendIST(today),
     };
 
     console.log("payload", payload);
@@ -470,6 +513,30 @@ export default function Trainers() {
       });
     } catch (error) {
       console.log("trainer status change error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleRefresh = () => {
+    setStatus("");
+  };
+
+  const handleSendFormLink = async (trainerEmail) => {
+    const payload = {
+      email: trainerEmail,
+    };
+
+    setEmailLoader(true);
+    try {
+      await sendTrainerFormEmail(payload);
+      CommonMessage("success", "Form Link Send To Trainer");
+      setEmailLoader(false);
+    } catch (error) {
+      setEmailLoader(false);
       CommonMessage(
         "error",
         error?.response?.data?.message ||
@@ -577,6 +644,7 @@ export default function Trainers() {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "12px",
           }}
         >
           <button
@@ -587,21 +655,58 @@ export default function Trainers() {
           >
             Add Trainer
           </button>
+
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
         </Col>
       </Row>
 
       <div className="trainer_status_mainContainer">
-        <div className="customers_feedback_container">
-          <p>Form Pending {`( 1 )`}</p>
+        <div
+          className={
+            status === "Form Pending"
+              ? "trainers_active_formpending_container"
+              : "customers_feedback_container"
+          }
+          onClick={() => setStatus("Form Pending")}
+        >
+          <p>Form Pending {`( ${formPendingCount} )`}</p>
         </div>
-        <div className="customers_studentvefity_container">
-          <p>Verify Pending {`( 1 )`}</p>
+        <div
+          className={
+            status === "Verify Pending"
+              ? "trainers_active_verifypending_container"
+              : "customers_studentvefity_container"
+          }
+          onClick={() => setStatus("Verify Pending")}
+        >
+          <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
         </div>
-        <div className="customers_completed_container">
-          <p>Verified Trainer {`( 1 )`}</p>
+        <div
+          className={
+            status === "Verified"
+              ? "trainers_active_verifiedtrainers_container"
+              : "customers_completed_container"
+          }
+          onClick={() => setStatus("Verified")}
+        >
+          <p>Verified Trainers {`( ${verifiedCount} )`}</p>
         </div>
-        <div className="customers_awaitfinance_container">
-          <p>Rejected Trainer {`( 1 )`}</p>
+        <div
+          className={
+            status === "Rejected"
+              ? "trainers_active_rejectedtrainers_container"
+              : "trainers_rejected_container"
+          }
+          onClick={() => setStatus("Rejected")}
+        >
+          <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
         </div>
       </div>
 
@@ -670,6 +775,11 @@ export default function Trainers() {
               }}
               value={mobile}
               error={mobileError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
             />
           </Col>
           <Col span={12}>
@@ -686,6 +796,11 @@ export default function Trainers() {
               }}
               value={whatsApp}
               error={whatsAppError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
             />
           </Col>
         </Row>
@@ -768,14 +883,14 @@ export default function Trainers() {
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={12}>
-            <CommonTimePicker
-              placeholder="Avaibility Time *"
-              labelFontSize="14px"
-              onChange={(time, timeString) => {
-                setAvaibilityTime(time);
-                console.log("timeeeeeeee", time);
+            <CommonMuiTimePicker
+              label="Avaibility Time"
+              required={true}
+              onChange={(value) => {
+                setAvaibilityTime(value);
+                console.log("timeeeeeeee", value);
                 if (validationTrigger) {
-                  setAvaibilityError(selectValidator(time));
+                  setAvaibilityError(selectValidator(value));
                 }
               }}
               value={avaibilityTime}
@@ -783,14 +898,13 @@ export default function Trainers() {
             />
           </Col>
           <Col span={12}>
-            <CommonTimePicker
-              placeholder="Secondary Time"
-              labelFontSize="14px"
-              onChange={(time) => {
-                setSecondaryTime(time);
+            <CommonMuiTimePicker
+              label="Secondary Time"
+              required={true}
+              onChange={(value) => {
+                setSecondaryTime(value);
               }}
               value={secondaryTime}
-              // error={null}
             />
           </Col>
         </Row>

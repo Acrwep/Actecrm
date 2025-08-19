@@ -79,7 +79,73 @@
   gap: 16px;
   margin-top: 16px;
 }
-
+.trainers_active_formpending_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #fd79a8;
+  background-color: #fd79a8;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.trainers_active_verifypending_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ffa502;
+  background-color: #ffa502;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.trainers_active_verifiedtrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #3c9111;
+  background-color: #3c9111;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.trainers_active_rejectedtrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #d32f2f;
+  background-color: #d32f2f;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.trainers_rejected_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #d32f2f;
+  background-color: #d32f2f13;
+  border-radius: 6px;
+  color: #d32f2f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.trainer_registration_signatureerror {
+  position: absolute;
+  bottom: -22px;
+  font-size: 11px;
+  color: #d32f2f;
+}
 /* trainer registration styles */
 .logincard_innerContainer {
   padding: 0px 35px 0px 35px !important;
@@ -91,7 +157,7 @@
   margin-bottom: 12px !important;
 }
 .trainer_registration_dividers {
-  margin: 18px 0px !important;
+  margin: 30px 0px 18px 0px !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
 }
 .trainer_registration_signaturelabel {
@@ -145,6 +211,14 @@
   background-color: #5b69ca !important;
   color: #fff !important;
   opacity: 0.7;
+}
+.trainer_registration_submitbuttonContainer {
+  position: absolute;
+  bottom: 2px;
+  right: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .trainer_registration_submitbutton {
   background-color: #5b69ca;

@@ -5,6 +5,8 @@ const mobileRegex = /^[0-9]+$/;
 const domainRegex =
   /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:[a-zA-Z]{2,})$/;
 const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[^\s]*)?$/i;
+const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
 import moment from "moment";
 
 export const nameValidator = (name) => {
@@ -315,6 +317,27 @@ export const calculateAmount = (price, discount = 0, gst = 0) => {
   }
 
   return parseFloat(finalPrice.toFixed(2)); // round to 2 decimals
+};
+
+export const accountNumberValidator = (accountnumber) => {
+  let error = "";
+
+  if (!accountnumber || accountnumber.length <= 0) error = " is required";
+  else if (
+    !mobileRegex.test(accountnumber) ||
+    accountnumber.length < 9 ||
+    accountnumber.length > 18
+  )
+    error = " is not valid";
+  return error;
+};
+
+export const ifscValidator = (ifsc) => {
+  let error = "";
+
+  if (!ifsc || ifsc.length <= 0) error = " is required";
+  else if (!ifscRegex.test(ifsc)) error = " is not valid";
+  return error;
 };
 
 // Reusable debounce function

@@ -24,6 +24,7 @@ export default function CommonOutlinedInput({
   style,
   maxLength,
   onInput,
+  errorFontSize,
 }) {
   return (
     <FormControl
@@ -60,7 +61,12 @@ export default function CommonOutlinedInput({
       />
       {error && (
         <div style={helperTextContainerStyle}>
-          <FormHelperText className="common_selectfield_errortext">
+          <FormHelperText
+            className="common_selectfield_errortext"
+            style={{
+              fontSize: errorFontSize ? errorFontSize : "11px",
+            }}
+          >
             {label + " " + error}
           </FormHelperText>
         </div>
