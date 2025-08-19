@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Col, Divider, Row, Upload, Button, Modal, Tabs } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -27,11 +28,15 @@ import {
   getBatches,
   getExperience,
   getTechnologies,
+  getTrainerById,
+  updateTrainer,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
+import dayjs from "dayjs";
 
 export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
+  const { trainer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
   //personal details usestates
   const [name, setName] = useState("");
@@ -60,8 +65,10 @@ export default function TrainerRegistration() {
   const [skillsError, setSkillsError] = useState("");
   const [location, setLocation] = useState("");
   const [locationError, setLocationError] = useState("");
+  const [trainerStatus, setTrainerstatus] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   //bank details usestates
+  const [trainerBankId, setTrainerBankId] = useState(null);
   const [accountHolderName, setAccountHolderName] = useState("");
   const [accountHolderNameError, setAccountHolderNameError] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -81,6 +88,7 @@ export default function TrainerRegistration() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
     getTechnologiesData();
@@ -123,7 +131,69 @@ export default function TrainerRegistration() {
     } finally {
       setTimeout(() => {
         setLoading(false);
+        getTrainerData();
       }, 300);
+    }
+  };
+
+  const getTrainerData = async () => {
+    try {
+      const response = await getTrainerById(trainer_id);
+      console.log("trainer details", response);
+      const trainerDetails = response?.data?.data;
+      setProfilePicture(trainerDetails.profile_image);
+      const profilebase64String = trainerDetails.profile_image;
+      if (profilebase64String) {
+        const fileObject = {
+          uid: "-1", // any unique id
+          name: "signature.png",
+          status: "done",
+          url: `data:image/png;base64,${profilebase64String}`, // Full Data URL
+        };
+        setProfilePictureArray([fileObject]);
+      } else {
+        setProfilePictureArray([]);
+      }
+      setName(trainerDetails?.name);
+      setEmail(trainerDetails.email);
+      setMobile(trainerDetails.mobile);
+      setWhatsApp(trainerDetails.whatsapp);
+      setTechnology(trainerDetails.technology_id);
+      setExperience(parseInt(trainerDetails.overall_exp_year));
+      setRelevantExperience(parseInt(trainerDetails.relavant_exp_year));
+      setBatch(trainerDetails.batch_id);
+      setAvaibilityTime(dayjs(trainerDetails.availability_time, "HH:mm:ss"));
+      setSecondaryTime(
+        trainerDetails.secondary_time
+          ? dayjs(trainerDetails.secondary_time, "HH:mm:ss")
+          : null
+      );
+      setSkills(trainerDetails.skills);
+      setLocation(trainerDetails.location);
+      setTrainerstatus(trainerDetails.status);
+      setTrainerBankId(trainerDetails.trainer_bank_id);
+      setAccountHolderName(trainerDetails.account_holder_name);
+      setAccountNumber(trainerDetails.account_number);
+      setBankName(trainerDetails.bank_name);
+      setBranchName(trainerDetails.branch_name);
+      setIfscCode(trainerDetails.ifsc_code);
+      setSignatureBase64(trainerDetails.signature_image);
+      const signbase64String = trainerDetails.signature_image;
+      if (signbase64String) {
+        const fileObject = {
+          uid: "-1", // any unique id
+          name: "signature.png",
+          status: "done",
+          url: `data:image/png;base64,${signbase64String}`, // Full Data URL
+        };
+        setSignatureArray([fileObject]);
+      } else {
+        setSignatureArray([]);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,7 +278,7 @@ export default function TrainerRegistration() {
     setActiveKey("2");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setValidationTrigger(true);
     const nameValidate = nameValidator(name);
     const emailValidate = emailValidator(email);
@@ -278,6 +348,48 @@ export default function TrainerRegistration() {
       signatureValidate
     ) {
       return;
+    }
+
+    const payload = {
+      id: trainer_id,
+      trainer_name: name,
+      email: email,
+      mobile: mobile,
+      whatsapp: whatsApp,
+      technology_id: technology,
+      overall_exp_year: experience,
+      relevant_exp_year: relevantExperience,
+      trainer_bank_id: trainerBankId,
+      batch_id: batch,
+      availability_time: avaibilityTime,
+      secondary_time: secondaryTime,
+      skills: skills,
+      location: location,
+      status: trainerStatus,
+      profile_image: profilePicture,
+      account_holder_name: accountHolderName,
+      account_number: accountNumber,
+      bank_name: bankName,
+      branch_name: branchName,
+      ifsc_code: ifscCode,
+      signature_image: signatureBase64,
+    };
+
+    setButtonLoading(true);
+
+    try {
+      await updateTrainer(payload);
+      CommonMessage("success", "Registered Successfully");
+      setTimeout(() => {
+        setButtonLoading(false);
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
     }
   };
 
@@ -521,7 +633,7 @@ export default function TrainerRegistration() {
                 }}
                 value={accountHolderName}
                 error={accountHolderNameError}
-                errorFontSize="9.4px"
+                errorFontSize="9px"
               />
             </Col>
             <Col span={6}>
@@ -623,12 +735,18 @@ export default function TrainerRegistration() {
           </Row>
         </div>
         <div className="trainer_registration_submitbuttonContainer">
-          <button
-            className="trainer_registration_submitbutton"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+          {buttonLoading ? (
+            <button className="trainer_registration_loadingsubmitbutton">
+              <CommonSpinner />
+            </button>
+          ) : (
+            <button
+              className="trainer_registration_submitbutton"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+          )}
         </div>
       </div>
     );

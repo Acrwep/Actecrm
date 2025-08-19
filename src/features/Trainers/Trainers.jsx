@@ -77,7 +77,7 @@ export default function Trainers() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
-  const [emailLoader, setEmailLoader] = useState(false);
+  const [loadingRowId, setLoadingRowId] = useState(null); // track only one row's loader
   //bank details usestates
   const [isShowBankTab, setIsShowBankTab] = useState(false);
   const [profileImage, setProfileImage] = useState("");
@@ -180,7 +180,7 @@ export default function Trainers() {
                 >
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <Radio
-                      value="Pending"
+                      value="Verify Pending"
                       style={{ marginTop: "6px", marginBottom: "12px" }}
                     >
                       Pending
@@ -195,7 +195,9 @@ export default function Trainers() {
                 </Radio.Group>
               }
             >
-              {text === "Pending" || text === "PENDING" ? (
+              {text === "Pending" ||
+              text === "PENDING" ||
+              text === "Verify Pending" ? (
                 <Button className="trainers_pending_button">Pending</Button>
               ) : text === "Verified" || text === "VERIFIED" ? (
                 <div className="trainers_verifieddiv">
@@ -221,7 +223,7 @@ export default function Trainers() {
         return (
           <div className="trainers_actionbuttonContainer">
             <Tooltip placement="top" title="Send Form Link">
-              {emailLoader ? (
+              {loadingRowId === record.id ? (
                 <CommonSpinner color="#333" />
               ) : (
                 <LuSend
@@ -293,7 +295,7 @@ export default function Trainers() {
     }
   };
 
-  const getTrainersData = async (searchvalue) => {
+  const getTrainersData = async (searchvalue, trainerStatus) => {
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType === 1
@@ -303,6 +305,9 @@ export default function Trainers() {
         : searchvalue && filterType === 3
         ? { mobile: searchvalue }
         : {}),
+      ...(trainerStatus && trainerStatus === 1
+        ? { is_form_sent: trainerStatus }
+        : trainerStatus && { status: trainerStatus }),
     };
     try {
       const response = await getTrainers(payload);
@@ -334,6 +339,7 @@ export default function Trainers() {
 
     setIsOpenAddDrawer(true);
     setEditTrainerId(item.id);
+    setProfileImage(item.profile_image);
     setName(item.name);
     setEmail(item.email);
     setMobile(item.mobile);
@@ -353,6 +359,7 @@ export default function Trainers() {
     setBankName(item.bank_name);
     setBranchName(item.branch_name);
     setIfscCode(item.ifsc_code);
+    setSignatureImage(item.signature_image);
   };
 
   const handleSearch = (e) => {
@@ -465,7 +472,7 @@ export default function Trainers() {
       secondary_time: secondaryTime,
       skills: skills,
       location: location,
-      status: "Pending",
+      status: "Verify Pending",
       profile_image: "",
       account_holder_name: "",
       account_number: "",
@@ -538,35 +545,51 @@ export default function Trainers() {
 
   const handleRefresh = () => {
     setStatus("");
+    getTrainersData(null, null);
   };
 
-  const handleSendFormLink = async (trainerEmail) => {
+  const handleSendFormLink = async (trainerEmail, trainerId) => {
+    setLoadingRowId(trainerId); // show loader for this row
     const payload = {
       email: trainerEmail,
+      link: `${
+        import.meta.env.VITE_EMAIL_URL
+      }/trainer-registration/${trainerId}`,
+      trainer_id: trainerId,
     };
 
-    setEmailLoader(true);
     try {
       await sendTrainerFormEmail(payload);
       CommonMessage("success", "Form Link Send To Trainer");
-      setEmailLoader(false);
+      setLoading(true);
+      setTimeout(() => {
+        getTrainersData(searchValue);
+      }, 300);
     } catch (error) {
-      setEmailLoader(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    } finally {
+      setTimeout(() => {
+        setLoadingRowId(null);
+      }, 300);
     }
   };
 
   const renderPersonalDetails = () => {
     return (
       <div style={{ marginBottom: "60px" }}>
-        <div className="trainer_profilephoto_container">
-          <p style={{ fontWeight: 500 }}>Profile Photo</p>
-          <img src={Logo} className="trainer_profilephoto" />
-        </div>
+        {profileImage && (
+          <div className="trainer_profilephoto_container">
+            <p style={{ fontWeight: 500 }}>Profile Photo</p>
+            <img
+              src={`data:image/png;base64,${profileImage}`}
+              className="trainer_profilephoto"
+            />
+          </div>
+        )}
         <Row gutter={16}>
           <Col span={8}>
             <CommonInputField
@@ -782,7 +805,7 @@ export default function Trainers() {
             <p className="leadmanager_paymentdrawer_userheadings">
               Account Holder Name:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                Balaji
+                {accountHolderName ? accountHolderName : "-"}
               </span>
             </p>
           </Col>
@@ -790,7 +813,7 @@ export default function Trainers() {
             <p className="leadmanager_paymentdrawer_userheadings">
               Account Number:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                2672742847238
+                {accountNumber ? accountNumber : "-"}
               </span>
             </p>
           </Col>
@@ -801,7 +824,7 @@ export default function Trainers() {
             <p className="leadmanager_paymentdrawer_userheadings">
               Bank Name:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                State Bank Of India
+                {bankName ? bankName : "-"}
               </span>
             </p>
           </Col>
@@ -809,7 +832,7 @@ export default function Trainers() {
             <p className="leadmanager_paymentdrawer_userheadings">
               Branch Name:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                Velachery
+                {branchName ? branchName : "-"}
               </span>
             </p>
           </Col>
@@ -820,7 +843,7 @@ export default function Trainers() {
             <p className="leadmanager_paymentdrawer_userheadings">
               Ifsc Code:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                SBIN0006767
+                {ifscCode ? ifscCode : "-"}
               </span>
             </p>
           </Col>
@@ -829,7 +852,15 @@ export default function Trainers() {
               Signature:{" "}
             </p>
 
-            <img src={Signature} className="trainer_signature_image" />
+            {signatureImage ? (
+              <img
+                src={`data:image/png;base64,${signatureImage}`}
+                alt="Trainer Signature"
+                className="trainer_signature_image"
+              />
+            ) : (
+              "-"
+            )}
           </Col>
         </Row>
       </div>
@@ -978,7 +1009,10 @@ export default function Trainers() {
               ? "trainers_active_formpending_container"
               : "customers_feedback_container"
           }
-          onClick={() => setStatus("Form Pending")}
+          onClick={() => {
+            setStatus("Form Pending");
+            getTrainersData(searchValue, 1);
+          }}
         >
           <p>Form Pending {`( ${formPendingCount} )`}</p>
         </div>
@@ -988,7 +1022,10 @@ export default function Trainers() {
               ? "trainers_active_verifypending_container"
               : "customers_studentvefity_container"
           }
-          onClick={() => setStatus("Verify Pending")}
+          onClick={() => {
+            setStatus("Verify Pending");
+            getTrainersData(searchValue, "Verify Pending");
+          }}
         >
           <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
         </div>
@@ -998,7 +1035,10 @@ export default function Trainers() {
               ? "trainers_active_verifiedtrainers_container"
               : "customers_completed_container"
           }
-          onClick={() => setStatus("Verified")}
+          onClick={() => {
+            setStatus("Verified");
+            getTrainersData(searchValue, "Verified");
+          }}
         >
           <p>Verified Trainers {`( ${verifiedCount} )`}</p>
         </div>
@@ -1008,7 +1048,10 @@ export default function Trainers() {
               ? "trainers_active_rejectedtrainers_container"
               : "trainers_rejected_container"
           }
-          onClick={() => setStatus("Rejected")}
+          onClick={() => {
+            setStatus("Rejected");
+            getTrainersData(searchValue, "Rejected");
+          }}
         >
           <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
         </div>

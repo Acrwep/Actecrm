@@ -156,9 +156,10 @@
   margin-bottom: 30px;
 }
 .trainer_profilephoto {
-  margin-top: 12px;
+  margin-top: 6px;
   width: 100px;
   height: 100%;
+  border-radius: 6px;
 }
 .trainer_signature_image {
   width: 100px;
@@ -252,6 +253,22 @@
   align-items: center;
   width: 110px;
   margin-bottom: 20px;
+}
+.trainer_registration_loadingsubmitbutton {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  height: 33px;
+  cursor: default;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 110px;
+  margin-bottom: 20px;
+  opacity: 0.7;
 }
 .trainer_registration_logoContainer {
   display: flex;

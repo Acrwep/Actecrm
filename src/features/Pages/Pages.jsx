@@ -38,16 +38,19 @@ export default function Pages() {
     const pathName = location.pathname.split("/")[1];
 
     console.log("pathNameee", pathName);
+
+    // ✅ Skip navigation if on trainer-registration page
+    if (pathName.includes("trainer-registration")) {
+      console.log("Trainer Registration page detected — no redirect");
+      return;
+    }
+
     if (AccessToken) {
       setShowSidebar(true);
       navigate(`/${pathName}`, { replace: true });
     } else {
       setShowSidebar(false);
-      if (pathName === "trainer-registration") {
-        navigate("/trainer-registration", { replace: true });
-      } else {
-        navigate("/login", { replace: true });
-      }
+      navigate("/login", { replace: true });
     }
   }, [location.pathname]);
 
@@ -57,11 +60,11 @@ export default function Pages() {
         <Routes>
           <Route element={<Login />} path="/login" />
         </Routes>
-      ) : location.pathname === "/trainer-registration" ? (
+      ) : location.pathname.includes("/trainer-registration") ? (
         <Routes>
           <Route
             element={<TrainerRegistration />}
-            path="/trainer-registration"
+            path="/trainer-registration/:trainer_id"
           />
         </Routes>
       ) : showSidebar ? (
