@@ -222,7 +222,11 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip placement="top" title="Send Form Link">
+            <Tooltip
+              placement="top"
+              title="Send Form Link"
+              trigger={["hover", "click"]}
+            >
               {loadingRowId === record.id ? (
                 <CommonSpinner color="#333" />
               ) : (
@@ -239,11 +243,11 @@ export default function Trainers() {
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
-            <RiDeleteBinLine
+            {/* <RiDeleteBinLine
               size={19}
               color="#d32f2f"
               className="trainers_action_icons"
-            />
+            /> */}
           </div>
         );
       },
