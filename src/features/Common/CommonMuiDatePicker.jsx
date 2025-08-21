@@ -77,7 +77,7 @@ export default function CommonMuiDatePicker({
               <span
                 style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
               >
-                {error}
+                {label + error}
               </span>
             ) : null,
             onClick: () => setOpen(true),

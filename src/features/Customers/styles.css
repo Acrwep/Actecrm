@@ -213,3 +213,17 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* customer registration form styles */
+.customerregistration_card {
+  width: 70%;
+  height: auto;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 2px;
+  transition: all 0.1s ease-in-out;
+  display: table-cell;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0px 2px 30px #ccc6;
+}

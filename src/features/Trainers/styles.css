@@ -206,31 +206,6 @@
 .trainer_registration_signature_createbutton:hover {
   color: #5b69ca !important;
 }
-.sigCanvas {
-  border: 1px solid rgba(128, 128, 128, 0.568);
-  border-radius: 6px;
-  margin-top: 12px;
-}
-.trainer_signature_clearbutton {
-  font-size: 13px !important;
-  border-radius: 6px !important;
-}
-.trainer_signature_clearbutton:hover {
-  color: #5b69ca !important;
-  border-color: #5b69ca !important;
-}
-.trainer_signature_downloadbutton {
-  background-color: #5b69ca;
-  color: #fff;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  border-color: #5b69ca !important;
-}
-.trainer_signature_downloadbutton:hover {
-  background-color: #5b69ca !important;
-  color: #fff !important;
-  opacity: 0.7;
-}
 .trainer_registration_submitbuttonContainer {
   position: absolute;
   bottom: 2px;
@@ -365,4 +340,9 @@
   margin-top: 12px;
   font-size: 12px;
   text-align: center;
+}
+.trainer_picture_circle.ant-upload-wrapper.ant-upload-picture-circle-wrapper
+  .ant-upload-list.ant-upload-list-picture-circle
+  .ant-upload-list-item {
+  height: 18% !important;
 }

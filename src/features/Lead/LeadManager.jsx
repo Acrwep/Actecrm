@@ -4,6 +4,7 @@ import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
+import { getLeadAndFollowupCount } from "../ApiService/action";
 
 export default function Settings() {
   const [activePage, setActivePage] = useState("followup");
@@ -25,24 +26,27 @@ export default function Settings() {
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
-  // useEffect(() => {
-  //   getUsersData();
-  // }, []);
+  useEffect(() => {
+    getLeadAndFollowupCountData();
+  }, []);
 
-  // const getUsersData = async () => {
-  //   setUserTableLoading(true);
-  //   try {
-  //     const response = await getUsers();
-  //     console.log("users response", response);
-  //     dispatch(storeUsersList(response?.data?.data || []));
-  //   } catch (error) {
-  //     dispatch(storeUsersList([]));
-  //   } finally {
-  //     setTimeout(() => {
-  //       setUserTableLoading(false);
-  //     }, 300);
-  //   }
-  // };
+  const getLeadAndFollowupCountData = async () => {
+    try {
+      const response = await getLeadAndFollowupCount();
+      console.log("lead count response", response);
+      const countDetails = response?.data?.data;
+      setFollowupCount(countDetails.follow_up_count);
+      setLeadCount(countDetails.total_lead_count);
+      // dispatch(storeUsersList(response?.data?.data || []));
+    } catch (error) {
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
+    } finally {
+      setTimeout(() => {
+        // setUserTableLoading(false);
+      }, 300);
+    }
+  };
 
   const handleTabClick = (tab) => {
     setActivePage(tab);
@@ -50,6 +54,8 @@ export default function Settings() {
   };
 
   const handleRefresh = () => {
+    getLeadAndFollowupCountData();
+
     setTabKeys((prev) => ({
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount

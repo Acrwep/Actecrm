@@ -159,6 +159,20 @@ export default function Trainers() {
     },
     { title: "Location", key: "location", dataIndex: "location", width: 120 },
     {
+      title: "Form Status",
+      key: "form_status",
+      dataIndex: "form_status",
+      width: 120,
+      fixed: "right",
+      render: (text, record) => {
+        return (
+          <>
+            {record.is_bank_updated === 1 ? <p>Completed</p> : <p>Pending</p>}
+          </>
+        );
+      },
+    },
+    {
       title: "Status",
       key: "status",
       dataIndex: "status",
@@ -1065,7 +1079,7 @@ export default function Trainers() {
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2400 }}
+          scroll={{ x: 2500 }}
           columns={columns}
           dataSource={trainersData}
           dataPerPage={10}

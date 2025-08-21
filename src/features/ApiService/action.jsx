@@ -236,6 +236,15 @@ export const getLeads = async (payload) => {
   }
 };
 
+export const getLeadAndFollowupCount = async () => {
+  try {
+    const response = await api.get("/api/getLeadCount");
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getLeadFollowUps = async (payload) => {
   try {
     const response = await api.get("/api/getLeadFollowUps", {

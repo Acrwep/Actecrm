@@ -5,12 +5,9 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { SiWhatsapp } from "react-icons/si";
 import Logo from "../../assets/acte-logo.png";
-import "./styles.css";
 import CommonSelectField from "../Common/CommonSelectField";
-import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
-import SignatureCanvas from "react-signature-canvas";
 import { UploadOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
 import { IoIosAdd } from "react-icons/io";
@@ -32,7 +29,9 @@ import {
   updateTrainer,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
+import CommonSignaturePad from "../Common/CommonSignaturePad";
 import dayjs from "dayjs";
+import "./styles.css";
 
 export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
@@ -215,7 +214,9 @@ export default function TrainerRegistration() {
       setSignatureError("Signature is required");
       return;
     }
-    if (isValidType) {
+    const isValidSize = file.size <= 1024 * 1024;
+
+    if (isValidType && isValidSize) {
       console.log("fileeeee", file);
       setSignatureArray([file]);
       CommonMessage("success", "Signature uploaded");
@@ -227,10 +228,13 @@ export default function TrainerRegistration() {
         setSignatureBase64(base64String); // Store in state
       };
     } else {
-      CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      if (!isValidType) {
+        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      } else if (!isValidSize) {
+        CommonMessage("error", "File size must be 1MB or less");
+      }
       setSignatureArray([]);
       setSignatureBase64("");
-      setSignatureError("Signature is required");
     }
   };
 
@@ -771,25 +775,6 @@ export default function TrainerRegistration() {
     },
   ];
 
-  const clearSignature = () => {
-    sigCanvasRef.current.clear();
-  };
-
-  const saveSignature = () => {
-    if (sigCanvasRef.current.isEmpty()) {
-      CommonMessage("error", "Please provide a signature first.");
-      return;
-    }
-    const dataURL = sigCanvasRef.current.toDataURL("image/png");
-
-    // Create a temporary link to download
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = "signature.png";
-    link.click();
-    CommonMessage("success", "Downloaded");
-  };
-
   const handleProfileAttachment = ({ fileList: newFileList }) => {
     console.log("newww", newFileList);
 
@@ -801,12 +786,16 @@ export default function TrainerRegistration() {
 
     const file = newFileList[0].originFileObj; // actual File object
 
+    // ✅ Check file type
     const isValidType =
       file.type === "image/png" ||
       file.type === "image/jpeg" ||
       file.type === "image/jpg";
 
-    if (isValidType) {
+    // ✅ Check file size (1MB = 1,048,576 bytes)
+    const isValidSize = file.size <= 1024 * 1024;
+
+    if (isValidType && isValidSize) {
       console.log("fileeeee", newFileList);
       setProfilePictureArray(newFileList);
       CommonMessage("success", "Profile uploaded");
@@ -818,7 +807,11 @@ export default function TrainerRegistration() {
         setProfilePicture(base64String); // Store in state
       };
     } else {
-      CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      if (!isValidType) {
+        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      } else if (!isValidSize) {
+        CommonMessage("error", "File size must be 1MB or less");
+      }
       setProfilePictureArray([]);
       setProfilePicture("");
     }
@@ -852,7 +845,7 @@ export default function TrainerRegistration() {
 
   return (
     <div className="login_mainContainer">
-      <div className="login_card">
+      <div className="customerregistration_card">
         <div className="logincard_innerContainer" style={{ marginTop: "40px" }}>
           <div className="trainer_registration_logoContainer">
             <div style={{ height: "100%" }}>
@@ -881,6 +874,7 @@ export default function TrainerRegistration() {
               onRemove={(file) => handleRemoveProfile(file)}
               beforeUpload={() => false} // prevent auto upload
               style={{ width: 90, height: 90 }} // reduce size
+              className="trainer_picture_circle"
             >
               {profilePictureArray.length >= 1 ? null : (
                 <div>
@@ -915,37 +909,7 @@ export default function TrainerRegistration() {
         footer={false}
         width="40%"
       >
-        <SignatureCanvas
-          ref={sigCanvasRef}
-          penColor="black"
-          canvasProps={{
-            width: 500,
-            height: 120,
-            className: "sigCanvas",
-            // style: { border: "1px solid gray" },
-          }}
-        />
-        <div
-          style={{
-            marginTop: "12px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button
-            className="trainer_signature_clearbutton"
-            onClick={clearSignature}
-            style={{ marginRight: "10px" }}
-          >
-            Clear
-          </Button>
-          <Button
-            className="trainer_signature_downloadbutton"
-            onClick={saveSignature}
-          >
-            Download PNG
-          </Button>
-        </div>
+        <CommonSignaturePad />
       </Modal>
 
       <Modal

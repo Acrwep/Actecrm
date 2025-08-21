@@ -1205,6 +1205,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
                 }
               }}
               error={mobileError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
             />
           </Col>
         </Row>
@@ -1224,6 +1229,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
                 }
               }}
               error={whatsAppError}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
             />
           </Col>
           <Col span={8}>
@@ -1313,7 +1323,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           <Col span={8}>
             <CommonInputField
               label="Fees"
-              required={true}
               value={secondaryFees}
               onChange={(e) => {
                 setSecondaryFees(e.target.value);
@@ -1505,7 +1514,13 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
         <div className="leadmanager_submitlead_buttoncontainer">
           {buttonLoading ? (
-            <button className="users_adddrawer_loadingcreatebutton">
+            <button
+              className={
+                leadId
+                  ? "leadmanager_loadingupdateleadbutton"
+                  : "leadmanager_loadingsaveleadbutton"
+              }
+            >
               <CommonSpinner />
             </button>
           ) : (

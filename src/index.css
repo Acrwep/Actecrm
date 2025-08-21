@@ -381,8 +381,3 @@ button:focus-visible {
 .ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
   position: absolute !important;
 }
-.ant-upload-wrapper.ant-upload-picture-circle-wrapper
-  .ant-upload-list.ant-upload-list-picture-circle
-  .ant-upload-list-item {
-  height: 18% !important;
-}

@@ -12,17 +12,20 @@ const { Sider, Content, Header } = Layout;
 import Login from "../Login/Login";
 import SideMenu from "./SideMenu";
 import "./styles.css";
+//lead
 import LeadManager from "../Lead/LeadManager";
-// import Header from "./Header";
 import LeadFollowUp from "../Lead/LeadFollowUp";
-import Customers from "../Customers/Customers";
-import Batches from "../Batches/Batches";
-import Dashboard from "../Dashboard/Dashboard";
+//trainers
 import Trainers from "../Trainers/Trainers";
-import Server from "../Server/Server";
-import Settings from "../Settings/Settings";
 import TrainerRegistration from "../Trainers/TrainerRegistration";
 import Success from "../Trainers/Success";
+//customers
+import Customers from "../Customers/Customers";
+import CustomerRegistration from "../Customers/CustomerRegistration";
+import Batches from "../Batches/Batches";
+import Dashboard from "../Dashboard/Dashboard";
+import Server from "../Server/Server";
+import Settings from "../Settings/Settings";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -46,8 +49,12 @@ export default function Pages() {
       return;
     }
 
+    if (pathName.includes("customer-registration")) {
+      console.log("Trainer Registration page detected — no redirect");
+      return;
+    }
+
     if (pathName === "success") {
-      console.log("succcccc");
       setShowSidebar(false);
       navigate("/success", { replace: true });
       return;
@@ -73,6 +80,13 @@ export default function Pages() {
           <Route
             element={<TrainerRegistration />}
             path="/trainer-registration/:trainer_id"
+          />
+        </Routes>
+      ) : location.pathname.includes("/customer-registration") ? (
+        <Routes>
+          <Route
+            element={<CustomerRegistration />}
+            path="/customer-registration"
           />
         </Routes>
       ) : location.pathname === "/success" ? (
