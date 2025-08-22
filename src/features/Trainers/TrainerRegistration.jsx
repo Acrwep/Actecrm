@@ -889,7 +889,9 @@ export default function TrainerRegistration() {
         </div>
 
         {loading ? (
-          <CommonSpinner />
+          <div className="customer_registration_loaderContainer">
+            <CommonSpinner color="#333" />
+          </div>
         ) : (
           <Tabs
             activeKey={activeKey}

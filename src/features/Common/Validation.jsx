@@ -286,7 +286,7 @@ export const priceValidator = (price, totalprice) => {
   let error = "";
 
   if (!price || price.length <= 0) error = " is required";
-  else if (price > totalprice) error = " must be below total fees";
+  else if (price > totalprice) error = " must be below or equal to amount";
 
   return error;
 };

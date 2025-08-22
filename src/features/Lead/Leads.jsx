@@ -42,6 +42,7 @@ import {
   getPriority,
   getTechnologies,
   getTrainingMode,
+  leadPayment,
   updateLead,
 } from "../ApiService/action";
 import moment from "moment";
@@ -119,9 +120,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [buttonLoading, setButtonLoading] = useState(false);
 
   //payment usestates
+  const [clickedLeadItem, setClickedLeadItem] = useState(null);
   const [paymentType, setPaymentType] = useState(null);
   const [paymentTypeError, setPaymentTypeError] = useState(null);
-  const [price, setPrice] = useState("");
+  const [subTotal, setSubTotal] = useState("");
   const [priceError, setPriceError] = useState("");
   const [discount, setDiscount] = useState(0);
   const [discountError, setDiscountError] = useState("");
@@ -129,8 +131,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [taxModeError, setTaxModeError] = useState("");
   const [taxType, setTaxType] = useState("");
   const [taxTypeError, setTaxTypeError] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [paidNow, setPaidNow] = useState("");
+  const [paidNowError, setPaidNowError] = useState("");
   const [paymentScreenShotsArray, setPaymentScreenShotsArray] = useState([]);
+  const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
     useState(false);
@@ -347,18 +352,37 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               onClick={() => handleEdit(record)}
             />
 
-            <Tooltip
-              placement="bottom"
-              title="Make as customer"
-              className="leadtable_customertooltip"
-            >
-              <FaRegAddressCard
-                size={19}
-                color="#d32f2f"
-                className="trainers_action_icons"
-                onClick={() => setIsOpenPaymentDrawer(true)}
-              />
-            </Tooltip>
+            {record.is_customer_reg === 1 ? (
+              <Tooltip
+                placement="bottom"
+                title="Already a Customer"
+                className="leadtable_customertooltip"
+              >
+                <FaRegAddressCard
+                  size={19}
+                  color="#2ed573"
+                  className="trainers_action_icons"
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip
+                placement="bottom"
+                title="Make as customer"
+                className="leadtable_customertooltip"
+              >
+                <FaRegAddressCard
+                  size={19}
+                  color="#d32f2f"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenPaymentDrawer(true);
+                    setSubTotal(parseInt(record.primary_fees));
+                    setAmount(parseInt(record.primary_fees));
+                    setClickedLeadItem(record);
+                  }}
+                />
+              </Tooltip>
+            )}
           </div>
         );
       },
@@ -685,31 +709,22 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePrice = (e) => {
-    setPrice(e.target.value);
+  const handlePaidNow = (e) => {
+    setPaidNow(e.target.value);
     if (paymentValidationTrigger) {
-      setPriceError(priceValidator(e.target.value, 10000));
-    }
-    const amnt = calculateAmount(
-      e.target.value ? parseInt(e.target.value) : 0,
-      discount ? parseInt(discount) : 0,
-      taxType === 1 ? 18 : 0
-    );
-    if (isNaN(amnt)) {
-      setAmount("");
-    } else {
-      setAmount(String(amnt));
+      setPaidNowError(priceValidator(e.target.value, amount));
     }
   };
 
   const handleDiscount = (e) => {
     setDiscount(e.target.value);
+
     if (paymentValidationTrigger) {
       setDiscountError(discountValidator(e.target.value));
     }
 
     const amnt = calculateAmount(
-      price ? parseInt(price) : 0,
+      subTotal ? parseInt(subTotal) : 0,
       e.target.value ? parseInt(e.target.value) : 0,
       taxType === 1 ? 18 : 0
     );
@@ -729,7 +744,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     if (e.target.value === 1) {
       setTaxType(1);
       const amnt = calculateAmount(
-        price ? parseInt(price) : 0,
+        subTotal ? parseInt(subTotal) : 0,
         discount ? parseInt(discount) : 0,
         18
       );
@@ -741,7 +756,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     } else {
       setTaxType("");
       const amnt = calculateAmount(
-        price ? parseInt(price) : 0,
+        subTotal ? parseInt(subTotal) : 0,
         discount ? parseInt(discount) : 0,
         0
       );
@@ -756,7 +771,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const handleTaxType = (e) => {
     setTaxType(e.target.value);
     const amnt = calculateAmount(
-      price ? parseInt(price) : 0,
+      subTotal ? parseInt(subTotal) : 0,
       discount ? parseInt(discount) : 0,
       18
     );
@@ -767,29 +782,41 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePaymentScreenshot = ({ fileList }) => {
+  const handlePaymentScreenshot = ({ file }) => {
     // allowed MIME types
-    const allowedTypes = ["image/png", "image/jpg", "image/jpeg"];
+    const isValidType =
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/jpg";
 
-    // filter out mismatched files
-    const filteredFiles = fileList.filter((file) =>
-      allowedTypes.includes(file.type)
-    );
-
-    if (filteredFiles.length !== fileList.length) {
-      CommonMessage("error", "Only PNG, JPG and JPEG files are allowed.");
-    }
-
-    if (filteredFiles.length > paymentScreenShotsArray.length) {
-      CommonMessage("success", "Uploaded");
-    }
-
-    if (filteredFiles.length >= 1) {
-      setPaymentScreenShotError("");
-    } else {
+    if (file.status === "uploading" || file.status === "removed") {
+      setPaymentScreenShotsArray([]);
+      setPaymentScreenShotBase64("");
       setPaymentScreenShotError(" is required");
+      return;
     }
-    setPaymentScreenShotsArray(filteredFiles);
+    const isValidSize = file.size <= 1024 * 1024;
+
+    if (isValidType && isValidSize) {
+      console.log("fileeeee", file);
+      setPaymentScreenShotsArray([file]);
+      CommonMessage("success", "Screenshot uploaded");
+      setPaymentScreenShotError("");
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        setPaymentScreenShotBase64(base64String); // Store in state
+      };
+    } else {
+      if (!isValidType) {
+        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      } else if (!isValidSize) {
+        CommonMessage("error", "File size must be 1MB or less");
+      }
+      setPaymentScreenShotsArray([]);
+      setPaymentScreenShotBase64("");
+    }
   };
 
   //onclick functions
@@ -891,9 +918,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     //payment drawer usestates
     setIsOpenPaymentDrawer(false);
     setPaymentValidationTrigger(false);
+    setClickedLeadItem(null);
     setPaymentType(null);
     setPaymentTypeError("");
-    setPrice("");
+    setSubTotal("");
     setPriceError("");
     setDiscount(0);
     setDiscountError("");
@@ -902,7 +930,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setTaxType(null);
     setTaxTypeError("");
     setAmount("");
+    setPaidNow("");
+    setPaidNowError("");
     setPaymentScreenShotsArray([]);
+    setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
   };
 
@@ -1050,31 +1081,79 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const paymentTypeValidate = selectValidator(paymentType);
-    const priceValidate = priceValidator(price, 10000);
     const discountValidate = discountValidator(discount);
     const taxModeValidate = selectValidator(taxMode);
+    const paidNowValidate = priceValidator(paidNow, amount);
+
     const screenshotValidate =
       paymentScreenShotsArray.length <= 0 ? " is required" : "";
 
     setPaymentTypeError(paymentTypeValidate);
-    setPriceError(priceValidate);
     setDiscountError(discountValidate);
     setTaxModeError(taxModeValidate);
+    setPaidNowError(paidNowValidate);
     setPaymentScreenShotError(screenshotValidate);
 
     if (
       paymentTypeValidate ||
-      priceValidate ||
+      paidNowValidate ||
       discountValidate ||
       taxModeValidate ||
       screenshotValidate
     )
       return;
+    setButtonLoading(true);
+    const today = new Date();
 
-    alert("success");
+    // Step 1: Apply discount
+    const discountAmount = (subTotal * discount) / 100;
+    const netAmount = amount - discountAmount;
+
+    // Step 2: Calculate GST on discounted amount
+    const gstPercent = taxMode === 1 ? 18 : 0;
+    const gstAmount = (netAmount * gstPercent) / 100;
+
+    console.log("Discount Amount:", discountAmount);
+    console.log("Net Amount after Discount:", netAmount);
+    console.log("GST Amount:", gstAmount);
+
+    const payload = {
+      lead_id: clickedLeadItem.id,
+      invoice_date: formatToBackendIST(today),
+      tax_type: taxMode === 1 ? "GST 18%" : null,
+      discount: discount,
+      discount_amount: discountAmount,
+      gst_percentage: taxMode === 1 ? "18%" : 0,
+      gst_amount: gstAmount,
+      total_amount: amount,
+      convenience_fees: 0,
+      paymode_id: paymentType,
+      paid_amount: paidNow,
+      payment_screenshot: paymentScreenShotBase64,
+      payment_status: "Verify Pending",
+      created_date: formatToBackendIST(today),
+    };
+
+    console.log("payment payload", payload);
+
+    try {
+      await leadPayment(payload);
+      CommonMessage("success", "Created as a Customer");
+      setTimeout(() => {
+        setButtonLoading(false);
+        formReset();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   return (
@@ -1663,41 +1742,108 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <p className="leadmanager_paymentdrawer_userheadings">
               GST NO:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                GST676312788
+                33AAQCA617L1Z9
               </span>
             </p>
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Total Fees: <span style={{ color: "#d32f2f" }}>21000</span>
+              Product Fees: <span style={{ color: "#d32f2f" }}>{subTotal}</span>
             </p>
-          </Col>
-          <Col span={8}>
-            {/* <p className="leadmanager_paymentdrawer_userheadings">
-              Invoice Date:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                14/08/2025
-              </span>
-            </p>{" "} */}
           </Col>
         </Row>
 
         <Divider className="leadmanger_paymentdrawer_divider" />
 
-        {/* <Row gutter={16} className="leadmanager_paymentdetails_drawer_rowdiv">
-          <Col span={8}>
-            <p style={{ color: "#5b69ca", fontSize: "15px", fontWeight: 600 }}>
-              Total Fees: 21000
-            </p>
-          </Col>
-        </Row> */}
         <p className="leadmanager_paymentdetails_drawer_heading">
-          Enter Payment Details
+          Billing Details
         </p>
         <Row
           gutter={16}
           className="leadmanager_paymentdetails_drawer_rowdiv"
           style={{ marginTop: "20px" }}
+        >
+          <Col span={8}>
+            <CommonInputField
+              label="Sub Total"
+              required={true}
+              type="number"
+              errorFontSize={priceError === " is required" ? "11px" : "10px"}
+              value={subTotal}
+              disabled={true}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonOutlinedInput
+              label="Discount"
+              icon={<VscPercentage color="rgba(0, 0, 0, 0.6)" />}
+              maxLength={3}
+              type="number"
+              onChange={handleDiscount}
+              value={discount}
+              onInput={(e) => {
+                if (e.target.value.length > 3) {
+                  e.target.value = e.target.value.slice(0, 3);
+                }
+              }}
+              error={discountError}
+              errorFontSize="10px"
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Tax Mode"
+              required={true}
+              options={[
+                { id: 1, name: "With Tax" },
+                { id: 2, name: "Without Tax" },
+              ]}
+              onChange={handleTaxMode}
+              value={taxMode}
+              error={taxModeError}
+              height="41px"
+            />
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "30px" }}
+        >
+          <Col span={8}>
+            <CommonSelectField
+              label="Tax Type"
+              required={true}
+              options={[
+                { id: 1, name: "GST (18%)" },
+                { id: 2, name: "IGST (18%)" },
+              ]}
+              onChange={handleTaxType}
+              value={taxType}
+              disabled={taxMode === 2 ? true : false}
+              height="41px"
+            />
+          </Col>
+          <Col span={8}>
+            <CommonInputField
+              label="Amount"
+              required={true}
+              disabled
+              value={amount}
+            />
+          </Col>
+        </Row>
+
+        <Divider className="leadmanger_paymentdrawer_divider" />
+
+        <p className="leadmanager_paymentdetails_drawer_heading">
+          Payment Info
+        </p>
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "20px", marginBottom: "40px" }}
         >
           <Col span={8}>
             <CommonSelectField
@@ -1721,92 +1867,30 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <CommonInputField
-              label="Price"
+              label="Paid Now"
               required={true}
-              type="number"
-              errorFontSize={priceError === " is required" ? "11px" : "10px"}
-              onChange={handlePrice}
-              value={price}
-              error={priceError}
+              onChange={handlePaidNow}
+              value={paidNow}
+              error={paidNowError}
+              errorFontSize="9.2px"
             />
           </Col>
-          <Col span={8}>
-            <CommonOutlinedInput
-              label="Discount"
-              icon={<VscPercentage color="rgba(0, 0, 0, 0.6)" />}
-              required={true}
-              maxLength={3}
-              type="number"
-              onChange={handleDiscount}
-              value={discount}
-              onInput={(e) => {
-                if (e.target.value.length > 3) {
-                  e.target.value = e.target.value.slice(0, 3);
-                }
-              }}
-            />
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "30px" }}
-        >
-          <Col span={8}>
-            <CommonSelectField
-              label="Tax Mode"
-              required={true}
-              options={[
-                { id: 1, name: "With Tax" },
-                { id: 2, name: "Without Tax" },
-              ]}
-              onChange={handleTaxMode}
-              value={taxMode}
-              error={taxModeError}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Tax Type"
-              required={true}
-              options={[
-                { id: 1, name: "GST (18%)" },
-                { id: 2, name: "IGST (18%)" },
-              ]}
-              onChange={handleTaxType}
-              value={taxType}
-              disabled={taxMode === 2 ? true : false}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Amount"
-              required={true}
-              disabled
-              value={amount}
-            />
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "20px", marginBottom: "40px" }}
-        >
-          <Col span={8} style={{ marginBottom: "20px" }}>
-            <p style={{ fontSize: "13px" }}>
+          <Col span={8} style={{ marginBottom: "20px", position: "relative" }}>
+            <p
+              className="leads_paymentscreenshot_label"
+              style={{ fontSize: "13px" }}
+            >
               Payment Screenshot <span style={{ color: "#d32f2f" }}>*</span>
             </p>
             <Upload
-              style={{ width: "100%", marginTop: "6px" }}
+              style={{ width: "100%", marginTop: "8px" }}
               beforeUpload={(file) => {
                 return false; // Prevent auto-upload
               }}
               accept=".png,.jpg,.jpeg"
               onChange={handlePaymentScreenshot}
               fileList={paymentScreenShotsArray}
-              multiple
+              multiple={false}
             >
               <Button
                 icon={<UploadOutlined />}
@@ -1831,12 +1915,18 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
-            <button
-              className="users_adddrawer_createbutton"
-              onClick={handlePaymentSubmit}
-            >
-              Submit
-            </button>
+            {buttonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={handlePaymentSubmit}
+              >
+                Submit
+              </button>
+            )}
           </div>
         </div>
       </Drawer>

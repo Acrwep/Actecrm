@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Row, Col, Upload, Button, Modal, Tabs, Checkbox } from "antd";
 import Logo from "../../assets/acte-logo.png";
 import { PlusOutlined } from "@ant-design/icons";
@@ -10,6 +11,7 @@ import "./styles.css";
 import {
   addressValidator,
   emailValidator,
+  formatToBackendIST,
   mobileValidator,
   nameValidator,
   selectValidator,
@@ -19,9 +21,21 @@ import { IoIosAdd } from "react-icons/io";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSignaturePad from "../Common/CommonSignaturePad";
+import {
+  getBatches,
+  getBatchTrack,
+  getBranches,
+  getCustomerById,
+  getTechnologies,
+  getTrainingMode,
+  updateCustomer,
+} from "../ApiService/action";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function CustomerRegistration() {
   const sigCanvasRef = useRef(null);
+  const navigate = useNavigate();
+  const { customer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
 
   const [name, setName] = useState("");
@@ -66,6 +80,9 @@ export default function CustomerRegistration() {
   const [batchTimingError, setBatchTimingError] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [branchId, setBranchId] = useState(null);
+  const [branchIdError, setBranchIdError] = useState("");
 
   const [profilePictureArray, setProfilePictureArray] = useState([]);
   const [profilePicture, setProfilePicture] = useState("");
@@ -73,8 +90,107 @@ export default function CustomerRegistration() {
   const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
   const [signatureError, setSignatureError] = useState("");
-
+  const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
+
+  useEffect(() => {
+    getTechnologiesData();
+  }, []);
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      setCourseOptions(response?.data?.data || []);
+    } catch (error) {
+      setCourseOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getTrainingModeData();
+      }, 300);
+    }
+  };
+
+  const getTrainingModeData = async () => {
+    try {
+      const response = await getTrainingMode();
+      setTrainingModeOptions(response?.data?.result || []);
+    } catch (error) {
+      setTrainingModeOptions([]);
+      console.log("trainer mode error", error);
+    } finally {
+      setTimeout(() => {
+        getBatchTrackData();
+      }, 300);
+    }
+  };
+
+  const getBatchTrackData = async () => {
+    try {
+      const response = await getBatchTrack();
+      setBatchTrackOptions(response?.data?.result || []);
+    } catch (error) {
+      setBatchTrackOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getBatchTimingData();
+      }, 300);
+    }
+  };
+
+  const getBatchTimingData = async () => {
+    try {
+      const response = await getBatches();
+      console.log("batches response", response);
+      setBatchTimingOptions(response?.data?.data || []);
+    } catch (error) {
+      setBatchTimingOptions([]);
+      console.log("batch error", error);
+    } finally {
+      setTimeout(() => {
+        getBranchesData();
+      }, 300);
+    }
+  };
+
+  const getBranchesData = async () => {
+    try {
+      const response = await getBranches();
+      setBranchOptions(response?.data?.result || []);
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getCustomerData();
+      }, 300);
+    }
+  };
+
+  const getCustomerData = async () => {
+    try {
+      const response = await getCustomerById(customer_id);
+      console.log("customer response", response);
+      const customerDetails = response?.data?.data;
+      if (customerDetails.is_customer_updated === 1) {
+        navigate("/success");
+        return;
+      }
+      setName(customerDetails.name);
+      setEmail(customerDetails.email);
+      setMobile(customerDetails.phone);
+      setWhatsApp(customerDetails.whatsapp);
+      setCourse(customerDetails.enrolled_course);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 200);
+    }
+  };
 
   const handleProfileAttachment = ({ fileList: newFileList }) => {
     console.log("newww", newFileList);
@@ -233,6 +349,7 @@ export default function CustomerRegistration() {
   };
 
   const handleSubmit = async () => {
+    setValidationTrigger(true);
     const nameValidate = nameValidator(name);
     const emailValidate = emailValidator(email);
     const mobileValidate = mobileValidator(mobile);
@@ -249,6 +366,9 @@ export default function CustomerRegistration() {
     const trainingModeValidate = selectValidator(trainingMode);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
+    const branchIdValidate = selectValidator(branchId);
+    const placementSupportValidate = selectValidator(placementSupport);
+
     let signatureValidate;
 
     if (signatureBase64 === "") {
@@ -273,6 +393,8 @@ export default function CustomerRegistration() {
     setTrainingModeError(trainingModeValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
+    setBranchIdError(branchIdValidate);
+    setPlacementSupportError(placementSupportValidate);
     setSignatureError(signatureValidate);
 
     if (
@@ -298,12 +420,52 @@ export default function CustomerRegistration() {
       trainingModeValidate ||
       batchTrackValidate ||
       batchTimingValidate ||
+      branchIdValidate ||
+      placementSupportValidate ||
       signatureValidate
     )
       return;
 
-    alert("success");
+    setButtonLoading(true);
+
+    const payload = {
+      id: customer_id,
+      name: studentName,
+      email: studentEmail,
+      phonecode: "+91",
+      phone: studentMobile,
+      whatsapp: studentWhatsApp,
+      date_of_birth: formatToBackendIST(dateOfBirth),
+      gender: gender,
+      date_of_joining: formatToBackendIST(dateOfJoining),
+      enrolled_course: course,
+      training_mode: trainingMode,
+      branch_id: branchId,
+      batch_track_id: batchTrack,
+      batch_timing_id: batchTiming,
+      current_location: location,
+      signature_image: signatureBase64,
+      profile_image: profilePicture,
+      palcement_support: placementSupport,
+    };
+
+    try {
+      await updateCustomer(payload);
+      CommonMessage("success", "Registered Successfully");
+      setTimeout(() => {
+        setButtonLoading(false);
+        navigate("/success");
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
+
   const renderPersonalDetails = () => {
     return (
       <div style={{ height: "300px", position: "relative" }}>
@@ -530,8 +692,8 @@ export default function CustomerRegistration() {
                 label="Gender"
                 required={true}
                 options={[
-                  { id: 1, name: "Male" },
-                  { id: 2, name: "Female" },
+                  { id: "Male", name: "Male" },
+                  { id: "Female", name: "Female" },
                 ]}
                 onChange={(e) => {
                   setGender(e.target.value);
@@ -667,6 +829,41 @@ export default function CustomerRegistration() {
           </Row>
 
           <Row gutter={12} style={{ marginTop: courseError ? "40px" : "30px" }}>
+            <Col xs={24} sm={24} md={24} lg={6}>
+              <CommonSelectField
+                label="Branch"
+                required={true}
+                options={branchOptions}
+                onChange={(e) => {
+                  setBranchId(e.target.value);
+                  if (validationTrigger) {
+                    setBranchIdError(selectValidator(e.target.value));
+                  }
+                }}
+                value={branchId}
+                error={branchIdError}
+              />
+            </Col>
+
+            <Col xs={24} sm={24} md={24} lg={6}>
+              <CommonSelectField
+                label="Placement Support"
+                required={true}
+                options={[
+                  { id: "Need", name: "Need" },
+                  { id: "Not Need", name: "Not Need" },
+                ]}
+                onChange={(e) => {
+                  setPlacementSupport(e.target.value);
+                  if (validationTrigger) {
+                    setPlacementSupportError(selectValidator(e.target.value));
+                  }
+                }}
+                value={placementSupport}
+                error={placementSupportError}
+              />
+            </Col>
+
             <Col span={6} style={{ position: "relative", display: "flex" }}>
               <p className="trainer_registration_signaturelabel">
                 Signature <span style={{ color: "#d32f2f" }}>*</span>
@@ -705,24 +902,18 @@ export default function CustomerRegistration() {
           </Row>
         </div>{" "}
         <div className="trainer_registration_submitbuttonContainer">
-          {/* {buttonLoading ? (
-                    <button className="trainer_registration_loadingsubmitbutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="trainer_registration_submitbutton"
-                      onClick={handleSubmit}
-                    >
-                      Submit
-                    </button>
-                  )} */}
-          <button
-            className="trainer_registration_submitbutton"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+          {buttonLoading ? (
+            <button className="trainer_registration_loadingsubmitbutton">
+              <CommonSpinner />
+            </button>
+          ) : (
+            <button
+              className="trainer_registration_submitbutton"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+          )}
         </div>
       </div>
     );
@@ -782,12 +973,18 @@ export default function CustomerRegistration() {
           </div>
         </div>
 
-        <Tabs
-          activeKey={activeKey}
-          onTabClick={handleTabClick}
-          items={tabItems}
-          className="trainer_registration_tabs"
-        />
+        {loading ? (
+          <div className="customer_registration_loaderContainer">
+            <CommonSpinner color="#333" />
+          </div>
+        ) : (
+          <Tabs
+            activeKey={activeKey}
+            onTabClick={handleTabClick}
+            items={tabItems}
+            className="trainer_registration_tabs"
+          />
+        )}
       </div>
 
       <Modal

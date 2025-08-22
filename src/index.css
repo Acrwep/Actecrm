@@ -378,6 +378,6 @@ button:focus-visible {
 }
 
 /* antd upload styles */
-.ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
+/* .ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
   position: absolute !important;
-}
+} */

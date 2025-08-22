@@ -169,7 +169,7 @@
   padding: 0px 24px;
 }
 .leadmanger_paymentdrawer_divider {
-  margin: 24px 0px !important;
+  margin: 24px 0px 16px 0px !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
 }
 .leadmanager_paymentdetails_drawer_amount {
@@ -198,6 +198,10 @@
 .leadmanager_payment_screenshotbutton:hover {
   color: #5b69ca !important;
   border-color: #5b69ca !important;
+}
+.leads_paymentscreenshot_label {
+  position: absolute;
+  top: -18px;
 }
 /* lead followup styles */
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {

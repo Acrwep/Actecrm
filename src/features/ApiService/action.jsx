@@ -264,3 +264,51 @@ export const updateFollowUp = async (payload) => {
     throw error;
   }
 };
+
+export const leadPayment = async (payload) => {
+  try {
+    const response = await api.post("/api/createPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// customers api's
+export const getCustomers = async (payload) => {
+  try {
+    const response = await api.post("/api/getCustomers", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendCustomerFormEmail = async (payload) => {
+  try {
+    const response = await api.post("/api/sendCustomerMail", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomerById = async (customer_id) => {
+  try {
+    const response = await api.get(
+      `/api/getCustomerById?customer_id=${customer_id}`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/updateCustomer", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

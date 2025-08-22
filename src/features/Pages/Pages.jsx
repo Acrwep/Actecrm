@@ -50,7 +50,7 @@ export default function Pages() {
     }
 
     if (pathName.includes("customer-registration")) {
-      console.log("Trainer Registration page detected — no redirect");
+      console.log("Customer Registration page detected — no redirect");
       return;
     }
 
@@ -86,7 +86,7 @@ export default function Pages() {
         <Routes>
           <Route
             element={<CustomerRegistration />}
-            path="/customer-registration"
+            path="/customer-registration/:customer_id"
           />
         </Routes>
       ) : location.pathname === "/success" ? (

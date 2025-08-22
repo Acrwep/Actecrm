@@ -28,8 +28,12 @@ export default function CommonInputField({
         error={error ? true : false}
         helperText={
           error ? (
-            <span style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}>
-              {label}
+            <span
+              style={{
+                fontSize: errorFontSize ? errorFontSize : "11px",
+              }}
+            >
+              {label === "Paid Now" ? "" : label}
               {error}
             </span>
           ) : null

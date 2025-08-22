@@ -214,6 +214,70 @@
   cursor: pointer;
 }
 
+.customer_profileContainer {
+  display: flex;
+  gap: 12px;
+}
+.cutomer_profileimage {
+  border-radius: 50%;
+  width: 70px;
+}
+.customer_nametext {
+  font-weight: 600;
+  font-size: 20px;
+}
+.customer_coursenametext {
+  color: gray;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.customer_details_rowcontainer {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 14px;
+}
+.customerdetails_rowheadingContainer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.customerdetails_rowheading {
+  font-weight: 500;
+  font-size: 13px;
+}
+.customerdetails_text {
+  color: gray;
+  font-size: 13px;
+  word-break: break-all;
+}
+.customerdetails_coursecard {
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  margin-top: 20px;
+  border-radius: 6px;
+}
+.customerdetails_coursecard_headercontainer {
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.295);
+}
+.customerdetails_coursecard_contentcontainer {
+  padding: 12px;
+}
+.customer_signature_image {
+  width: 120px;
+  margin-top: 9px;
+}
+.customerdetails_signatureContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: 16px;
+}
 /* customer registration form styles */
 .customerregistration_card {
   width: 70%;
@@ -226,4 +290,10 @@
   position: relative;
   z-index: 1;
   box-shadow: 0px 2px 30px #ccc6;
+}
+.customer_registration_loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
 }
