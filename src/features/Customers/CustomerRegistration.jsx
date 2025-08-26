@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Row, Col, Upload, Button, Modal, Tabs, Checkbox } from "antd";
+import { Row, Col, Upload, Button, Modal, Tabs } from "antd";
 import Logo from "../../assets/acte-logo.png";
 import { PlusOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -47,15 +47,6 @@ export default function CustomerRegistration() {
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
 
-  const [studentName, setStudentName] = useState("");
-  const [studentNameError, setStudentNameError] = useState("");
-  const [studentEmail, setStudentEmail] = useState("");
-  const [studentEmailError, setStudentEmailError] = useState("");
-  const [studentMobile, setStudentMobile] = useState("");
-  const [studentMobileError, setStudentMobileError] = useState("");
-  const [studentWhatsApp, setStudentWhatsApp] = useState("");
-  const [studentWhatsAppError, setStudentWhatsAppError] = useState("");
-  const [sameAsAbove, setSameAsAbove] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
   const [gender, setGender] = useState(null);
@@ -307,10 +298,6 @@ export default function CustomerRegistration() {
     const emailValidate = emailValidator(email);
     const mobileValidate = mobileValidator(mobile);
     const whatsAppValidate = mobileValidator(whatsApp);
-    const studentNameValidate = nameValidator(studentName);
-    const studentEmailValidate = emailValidator(studentEmail);
-    const studentMobileValidate = mobileValidator(studentMobile);
-    const studentWhatsappValidate = mobileValidator(studentWhatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
     const dateOfJoiningValidate = selectValidator(dateOfJoining);
@@ -320,10 +307,6 @@ export default function CustomerRegistration() {
     setEmailError(emailValidate);
     setMobileError(mobileValidate);
     setWhatsAppError(whatsAppValidate);
-    setStudentNameError(studentNameValidate);
-    setStudentEmailError(studentEmailValidate);
-    setStudentMobileError(studentMobileValidate);
-    setStudentWhatsAppError(studentWhatsappValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
     setDateOfJoiningError(dateOfJoiningValidate);
@@ -334,10 +317,6 @@ export default function CustomerRegistration() {
       emailValidate ||
       mobileValidate ||
       whatsAppValidate ||
-      studentNameValidate ||
-      studentEmailValidate ||
-      studentMobileValidate ||
-      studentWhatsappValidate ||
       dateOfBirthValidate ||
       genderValidate ||
       dateOfJoiningValidate ||
@@ -354,10 +333,6 @@ export default function CustomerRegistration() {
     const emailValidate = emailValidator(email);
     const mobileValidate = mobileValidator(mobile);
     const whatsAppValidate = mobileValidator(whatsApp);
-    const studentNameValidate = nameValidator(studentName);
-    const studentEmailValidate = emailValidator(studentEmail);
-    const studentMobileValidate = mobileValidator(studentMobile);
-    const studentWhatsappValidate = mobileValidator(studentWhatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
     const dateOfJoiningValidate = selectValidator(dateOfJoining);
@@ -381,10 +356,6 @@ export default function CustomerRegistration() {
     setEmailError(emailValidate);
     setMobileError(mobileValidate);
     setWhatsAppError(whatsAppValidate);
-    setStudentNameError(studentNameValidate);
-    setStudentEmailError(studentEmailValidate);
-    setStudentMobileError(studentMobileValidate);
-    setStudentWhatsAppError(studentWhatsappValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
     setDateOfJoiningError(dateOfJoiningValidate);
@@ -402,10 +373,6 @@ export default function CustomerRegistration() {
       emailValidate ||
       mobileValidate ||
       whatsAppValidate ||
-      studentNameValidate ||
-      studentEmailValidate ||
-      studentMobileValidate ||
-      studentWhatsappValidate ||
       dateOfBirthValidate ||
       genderValidate ||
       dateOfJoiningValidate ||
@@ -430,11 +397,11 @@ export default function CustomerRegistration() {
 
     const payload = {
       id: customer_id,
-      name: studentName,
-      email: studentEmail,
+      name: name,
+      email: email,
       phonecode: "+91",
-      phone: studentMobile,
-      whatsapp: studentWhatsApp,
+      phone: mobile,
+      whatsapp: whatsApp,
       date_of_birth: formatToBackendIST(dateOfBirth),
       gender: gender,
       date_of_joining: formatToBackendIST(dateOfJoining),
@@ -477,12 +444,8 @@ export default function CustomerRegistration() {
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  if (sameAsAbove) {
-                    setStudentName(e.target.value);
-                  }
                   if (validationTrigger) {
                     setNameError(nameValidator(e.target.value));
-                    setStudentNameError(nameValidator(e.target.value));
                   }
                 }}
                 error={nameError}
@@ -495,12 +458,8 @@ export default function CustomerRegistration() {
                 required={true}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (sameAsAbove) {
-                    setStudentEmail(e.target.value);
-                  }
                   if (validationTrigger) {
                     setEmailError(emailValidator(e.target.value));
-                    setStudentEmailError(emailValidator(e.target.value));
                   }
                 }}
                 value={email}
@@ -515,12 +474,8 @@ export default function CustomerRegistration() {
                 type="number"
                 onChange={(e) => {
                   setMobile(e.target.value);
-                  if (sameAsAbove) {
-                    setStudentMobile(e.target.value);
-                  }
                   if (validationTrigger) {
                     setMobileError(mobileValidator(e.target.value));
-                    setStudentMobileError(mobileValidator(e.target.value));
                   }
                 }}
                 value={mobile}
@@ -541,126 +496,12 @@ export default function CustomerRegistration() {
                 type="number"
                 onChange={(e) => {
                   setWhatsApp(e.target.value);
-                  if (sameAsAbove) {
-                    setStudentWhatsApp(e.target.value);
-                  }
                   if (validationTrigger) {
                     setWhatsAppError(mobileValidator(e.target.value));
-                    setStudentWhatsAppError(mobileValidator(e.target.value));
                   }
                 }}
                 value={whatsApp}
                 error={whatsAppError}
-                errorFontSize="10px"
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-              />{" "}
-            </Col>
-          </Row>
-
-          <div style={{ marginTop: nameError ? "20px" : "12px" }}>
-            <Checkbox
-              value={sameAsAbove}
-              onChange={(e) => {
-                const value = e.target.checked;
-                setSameAsAbove(value);
-                if (value === true) {
-                  setStudentName(name);
-                  setStudentEmail(email);
-                  setStudentMobile(mobile);
-                  setStudentWhatsApp(whatsApp);
-                  if (validationTrigger) {
-                    setStudentNameError(nameValidator(name));
-                    setStudentEmailError(emailValidator(email));
-                    setStudentMobileError(mobileValidator(mobile));
-                    setStudentWhatsAppError(mobileValidator(whatsApp));
-                  }
-                } else {
-                  setStudentName("");
-                  setStudentEmail("");
-                  setStudentMobile("");
-                  setStudentWhatsApp("");
-                  if (validationTrigger) {
-                    setStudentNameError(" is required");
-                    setStudentEmailError(" is required");
-                    setStudentMobileError(" is required");
-                    setStudentWhatsAppError(" is required");
-                  }
-                }
-              }}
-            >
-              Same as above
-            </Checkbox>
-          </div>
-
-          <Row gutter={12} style={{ marginTop: "16px" }}>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Student Name"
-                value={studentName}
-                onChange={(e) => {
-                  setStudentName(e.target.value);
-                  if (validationTrigger) {
-                    setStudentNameError(nameValidator(e.target.value));
-                  }
-                }}
-                error={studentNameError}
-                required={true}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Student Email"
-                required={true}
-                onChange={(e) => {
-                  setStudentEmail(e.target.value);
-                  if (validationTrigger) {
-                    setStudentEmailError(emailValidator(e.target.value));
-                  }
-                }}
-                value={studentEmail}
-                error={studentEmailError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Student Mobile"
-                required={true}
-                maxLength={10}
-                type="number"
-                onChange={(e) => {
-                  setStudentMobile(e.target.value);
-                  if (validationTrigger) {
-                    setStudentMobileError(mobileValidator(e.target.value));
-                  }
-                }}
-                value={studentMobile}
-                error={studentMobileError}
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonOutlinedInput
-                label="Student Whatsapp"
-                icon={<SiWhatsapp color="#39AE41" />}
-                required={true}
-                maxLength={10}
-                type="number"
-                onChange={(e) => {
-                  setStudentWhatsApp(e.target.value);
-                  if (validationTrigger) {
-                    setStudentWhatsAppError(mobileValidator(e.target.value));
-                  }
-                }}
-                value={studentWhatsApp}
-                error={studentWhatsAppError}
                 errorFontSize="10px"
                 onInput={(e) => {
                   if (e.target.value.length > 10) {

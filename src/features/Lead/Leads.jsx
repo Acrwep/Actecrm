@@ -43,6 +43,7 @@ import {
   getTechnologies,
   getTrainingMode,
   leadPayment,
+  sendCustomerFormEmail,
   updateLead,
 } from "../ApiService/action";
 import moment from "moment";
@@ -1123,7 +1124,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const payload = {
       lead_id: clickedLeadItem.id,
       invoice_date: formatToBackendIST(today),
-      tax_type: taxMode === 1 ? "GST 18%" : null,
+      tax_type: taxMode === 1 ? "GST 18%" : "",
       discount: discount,
       discount_amount: discountAmount,
       gst_percentage: taxMode === 1 ? "18%" : 0,
@@ -1140,17 +1141,43 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     console.log("payment payload", payload);
 
     try {
-      await leadPayment(payload);
+      const response = await leadPayment(payload);
+      console.log("lead payment response", response);
+      const createdCustomerDetails = response?.data?.data;
       CommonMessage("success", "Created as a Customer");
       setTimeout(() => {
         setButtonLoading(false);
         formReset();
+        handleSendCustomerFormLink(
+          createdCustomerDetails.email,
+          createdCustomerDetails.insertId
+        );
       }, 300);
     } catch (error) {
       setButtonLoading(false);
       CommonMessage(
         "error",
         error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleSendCustomerFormLink = async (customerEmail, customerId) => {
+    const payload = {
+      email: customerEmail,
+      link: `${
+        import.meta.env.VITE_EMAIL_URL
+      }/customer-registration/${customerId}`,
+      customer_id: customerId,
+    };
+
+    try {
+      await sendCustomerFormEmail(payload);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -1276,6 +1303,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               label="Mobile Number"
               required={true}
               maxLength={10}
+              type="number"
               value={mobile}
               onChange={(e) => {
                 setMobile(e.target.value);
@@ -1300,6 +1328,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
               maxLength={10}
+              type="number"
               value={whatsApp}
               onChange={(e) => {
                 setWhatsApp(e.target.value);

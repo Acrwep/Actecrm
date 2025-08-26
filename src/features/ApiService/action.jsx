@@ -312,3 +312,48 @@ export const updateCustomer = async (payload) => {
     throw error;
   }
 };
+
+export const updateCustomerStatus = async (payload) => {
+  try {
+    const response = await api.put("/api/updateCustomerStatus", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/verifyStudent", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const assignTrainerForCustomer = async (payload) => {
+  try {
+    const response = await api.post("/api/trainerAssign", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyTrainerForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/verifyTrainer", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectTrainerForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/rejectTrainer", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

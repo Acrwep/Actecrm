@@ -77,7 +77,6 @@ export default function Trainers() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
-  const [loadingRowId, setLoadingRowId] = useState(null); // track only one row's loader
   //bank details usestates
   const [isShowBankTab, setIsShowBankTab] = useState(false);
   const [profileImage, setProfileImage] = useState("");
@@ -236,7 +235,7 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip
+            {/* <Tooltip
               placement="top"
               title="Send Form Link"
               trigger={["hover", "click"]}
@@ -250,7 +249,7 @@ export default function Trainers() {
                   onClick={() => handleSendFormLink(record.email, record.id)}
                 />
               )}
-            </Tooltip>
+            </Tooltip> */}
 
             <AiOutlineEdit
               size={20}
@@ -323,7 +322,7 @@ export default function Trainers() {
         : searchvalue && filterType === 3
         ? { mobile: searchvalue }
         : {}),
-      ...(trainerStatus && trainerStatus === 1
+      ...(trainerStatus && trainerStatus == 1
         ? { is_form_sent: trainerStatus }
         : trainerStatus && { status: trainerStatus }),
     };
@@ -384,7 +383,7 @@ export default function Trainers() {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
-      getTrainersData(e.target.value);
+      getTrainersData(e.target.value, status);
     }, 300);
   };
 
@@ -524,12 +523,14 @@ export default function Trainers() {
       }
     } else {
       try {
-        await createTrainer(payload);
+        const response = await createTrainer(payload);
+        const createdTrainerDetails = response?.data?.data;
         CommonMessage("success", "Trainer Created");
         setTimeout(() => {
-          setButtonLoading(false);
-          formReset();
-          getTrainersData(searchValue);
+          handleSendFormLink(
+            createdTrainerDetails.email,
+            createdTrainerDetails.insertId
+          );
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -569,7 +570,6 @@ export default function Trainers() {
   };
 
   const handleSendFormLink = async (trainerEmail, trainerId) => {
-    setLoadingRowId(trainerId); // show loader for this row
     const payload = {
       email: trainerEmail,
       link: `${
@@ -580,11 +580,7 @@ export default function Trainers() {
 
     try {
       await sendTrainerFormEmail(payload);
-      CommonMessage("success", "Form Link Send To Trainer");
       setLoading(true);
-      setTimeout(() => {
-        getTrainersData(searchValue);
-      }, 300);
     } catch (error) {
       CommonMessage(
         "error",
@@ -593,7 +589,9 @@ export default function Trainers() {
       );
     } finally {
       setTimeout(() => {
-        setLoadingRowId(null);
+        setButtonLoading(false);
+        formReset();
+        getTrainersData(searchValue);
       }, 300);
     }
   };
@@ -644,6 +642,7 @@ export default function Trainers() {
               label="Trainer Mobile"
               required={true}
               maxLength={10}
+              type="number"
               onChange={(e) => {
                 setMobile(e.target.value);
                 if (validationTrigger) {
@@ -668,6 +667,7 @@ export default function Trainers() {
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
               maxLength={10}
+              type="number"
               onChange={(e) => {
                 setWhatsApp(e.target.value);
                 if (validationTrigger) {
@@ -676,6 +676,7 @@ export default function Trainers() {
               }}
               value={whatsApp}
               error={whatsAppError}
+              errorFontSize="10px"
               onInput={(e) => {
                 if (e.target.value.length > 10) {
                   e.target.value = e.target.value.slice(0, 10);
@@ -1030,6 +1031,9 @@ export default function Trainers() {
               : "customers_feedback_container"
           }
           onClick={() => {
+            if (status === "Form Pending") {
+              return;
+            }
             setStatus("Form Pending");
             getTrainersData(searchValue, 1);
           }}
@@ -1043,6 +1047,9 @@ export default function Trainers() {
               : "customers_studentvefity_container"
           }
           onClick={() => {
+            if (status === "Verify Pending") {
+              return;
+            }
             setStatus("Verify Pending");
             getTrainersData(searchValue, "Verify Pending");
           }}
@@ -1056,6 +1063,9 @@ export default function Trainers() {
               : "customers_completed_container"
           }
           onClick={() => {
+            if (status === "Verified") {
+              return;
+            }
             setStatus("Verified");
             getTrainersData(searchValue, "Verified");
           }}
@@ -1069,6 +1079,9 @@ export default function Trainers() {
               : "trainers_rejected_container"
           }
           onClick={() => {
+            if (status === "Rejected") {
+              return;
+            }
             setStatus("Rejected");
             getTrainersData(searchValue, "Rejected");
           }}
@@ -1110,13 +1123,6 @@ export default function Trainers() {
         )}
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
-            {/* <button
-              className="leadmanager_tablefilter_applybutton"
-              onClick={handleSubmit}
-            >
-              Save
-            </button> */}
-
             {buttonLoading ? (
               <button className="users_adddrawer_loadingcreatebutton">
                 <CommonSpinner />

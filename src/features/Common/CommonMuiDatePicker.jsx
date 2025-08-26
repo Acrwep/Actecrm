@@ -75,7 +75,13 @@ export default function CommonMuiDatePicker({
             disabled: disabled,
             helperText: error ? (
               <span
-                style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
+                style={{
+                  position: "absolute",
+                  bottom: "-18px", // adjust distance below the input
+                  left: "0",
+                  fontSize: errorFontSize ? errorFontSize : "11px",
+                  color: "#d32f2f",
+                }}
               >
                 {label + error}
               </span>

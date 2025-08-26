@@ -54,7 +54,8 @@
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 18px;
+  padding: 6px 0px;
+  width: 160px;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -67,7 +68,8 @@
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 18px;
+  padding: 6px 0px;
+  width: 160px;
   cursor: default;
   display: flex;
   justify-content: center;

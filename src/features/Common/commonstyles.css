@@ -127,6 +127,7 @@
 }
 /* textarea label */
 .commontextarea_label {
+  font-size: 13px;
   margin-bottom: 6px !important;
 }
 .commontextarea {

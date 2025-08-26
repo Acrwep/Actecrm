@@ -57,7 +57,7 @@
 .customers_status_mainContainer::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
-.customers_awaitregister_container {
+.customers_formpending_container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -66,6 +66,19 @@
   background-color: #ff6b6b11;
   border-radius: 6px;
   color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers_active_formpending_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ff6b6b;
+  background-color: #ff6b6b;
+  border-radius: 6px;
+  color: #fff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -79,6 +92,19 @@
   background-color: #eb6e4b11;
   border-radius: 6px;
   color: #eb6d4b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers_active_awaitfinance_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #eb6d4b;
+  background-color: #eb6d4b;
+  border-radius: 6px;
+  color: #fff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -214,6 +240,112 @@
   cursor: pointer;
 }
 
+.customers_status_awaitfinance_button {
+  background: #eb6e4b18;
+  color: #eb6d4b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaitfinance_button:hover {
+  background-color: #eb6e4b18 !important;
+  color: #eb6d4b !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+
+.customers_status_awaitverify_button {
+  background: #ffa60218;
+  color: #ffa502;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaitverify_button:hover {
+  background-color: #ffa6021a !important;
+  color: #ffa502 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+.customers_status_awaittrainer_button {
+  background: #2ed57417;
+  color: #2ed573;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaittrainer_button:hover {
+  background-color: #2ed57417 !important;
+  color: #2ed573 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+.customers_status_awaittrainerverify_button {
+  background: #1e8fff15;
+  color: #1e90ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaittrainerverify_button:hover {
+  background-color: #1e8fff15 !important;
+  color: #1e90ff !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+.customers_status_awaitclassschedule_button {
+  background: #a29bfe1f;
+  color: #a29bfe;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaitclassschedule_button:hover {
+  background-color: #a29bfe1f !important;
+  color: #a29bfe !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
 .customer_profileContainer {
   display: flex;
   gap: 12px;
@@ -225,6 +357,7 @@
 .customer_nametext {
   font-weight: 600;
   font-size: 20px;
+  color: #333;
 }
 .customer_coursenametext {
   color: gray;
@@ -248,7 +381,9 @@
 .customerdetails_text {
   color: gray;
   font-size: 13px;
-  word-break: break-all;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 .customerdetails_coursecard {
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
@@ -278,6 +413,47 @@
   justify-content: center;
   margin-top: 16px;
 }
+.customers_statustooltip .ant-tooltip-inner {
+  width: 160px !important; /* or max-content */
+  max-width: none !important; /* remove AntD's 250px cap */
+  white-space: normal !important; /* allow wrapping */
+}
+
+.customers_statuscheckbox {
+  margin-bottom: 9px !important;
+  font-size: 12px !important;
+}
+.customer_trainerreject_button {
+  background-color: #d32f2f;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f11;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 95px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+}
+.customer_trainerreject_loadingbutton {
+  background-color: #d32f2f;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f11;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 95px;
+  cursor: default;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+  opacity: 0.7;
+}
 /* customer registration form styles */
 .customerregistration_card {
   width: 70%;
@@ -296,4 +472,47 @@
   justify-content: center;
   align-items: center;
   height: 300px;
+}
+
+/* customer update styles */
+.customerupdate_drawer .ant-drawer-body {
+  padding: 0px !important;
+}
+.customer_update_tab.ant-tabs > .ant-tabs-nav {
+  padding: 0px 24px !important;
+}
+.customerupdate_maincontainer {
+  padding: 0px 24px;
+}
+
+.customer_statusupdate_drawer .ant-drawer-body {
+  padding: 0px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.customer_statusupdate_drawer_profileContainer {
+  display: flex;
+  gap: 12px;
+  padding: 12px 24px 12px 24px;
+}
+.customer_statusupdate_divider {
+  margin: 16px 0px 14px 0px !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.customer_statusupdate_adddetailsContainer {
+  padding: 0px 24px 0px 24px;
+}
+.customer_statusupdate_adddetails_heading {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+.customer_paymentscreenshot_heading {
+  color: #333;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 12px !important;
+}
+.customer_paymentscreenshot_image {
+  width: 100%;
 }
