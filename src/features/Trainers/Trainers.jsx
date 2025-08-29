@@ -4,14 +4,12 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
-import { RiDeleteBinLine } from "react-icons/ri";
 import { RedoOutlined } from "@ant-design/icons";
 import { SiWhatsapp } from "react-icons/si";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
-import CommonTimePicker from "../Common/CommonTimePicker";
 import {
   addressValidator,
   emailValidator,
@@ -36,12 +34,12 @@ import dayjs from "dayjs";
 import moment from "moment/moment";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
-import { LuSend } from "react-icons/lu";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
-import Logo from "../../assets/acte-logo.png";
-import Signature from "../../assets/signature.png";
+import { FiFilter } from "react-icons/fi";
+import CommonDnd from "../Common/CommonDnd";
 
 export default function Trainers() {
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
   const [status, setStatus] = useState("");
@@ -92,7 +90,23 @@ export default function Trainers() {
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
 
-  const columns = [
+  const [defaultColumns, setDefaultColumns] = useState([
+    { title: "Trainer Name", isChecked: true },
+    { title: "Email", isChecked: true },
+    { title: "Technology", isChecked: true },
+    { title: "Overall Experience", isChecked: true },
+    { title: "Relevent Experience ", isChecked: true },
+    { title: "Batch", isChecked: true },
+    { title: "Avaibility Time", isChecked: true },
+    { title: "Secondary Time", isChecked: true },
+    { title: "Skills", isChecked: true },
+    { title: "Location", isChecked: true },
+    { title: "Form Status", isChecked: true },
+    { title: "Status", isChecked: true },
+    { title: "Action", isChecked: true },
+  ]);
+
+  const [columns, setColumns] = useState([
     {
       title: "Trainer Name",
       key: "name",
@@ -141,7 +155,6 @@ export default function Trainers() {
         return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
       },
     },
-    { title: "Batch", key: "batch", dataIndex: "batch" },
     {
       title: "Skills",
       key: "skills",
@@ -235,32 +248,164 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip
-              placement="top"
-              title="Send Form Link"
-              trigger={["hover", "click"]}
-            >
-              {loadingRowId === record.id ? (
-                <CommonSpinner color="#333" />
-              ) : (
-                <LuSend
-                  size={17}
-                  className="trainers_action_icons"
-                  onClick={() => handleSendFormLink(record.email, record.id)}
-                />
-              )}
-            </Tooltip> */}
-
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
-            {/* <RiDeleteBinLine
-              size={19}
-              color="#d32f2f"
+          </div>
+        );
+      },
+    },
+  ]);
+
+  const nonChangeColumns = [
+    {
+      title: "Trainer Name",
+      key: "name",
+      dataIndex: "name",
+      width: 190,
+      fixed: "left",
+    },
+    { title: "Email", key: "email", dataIndex: "email", width: 220 },
+    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
+    {
+      title: "Technology",
+      key: "technology",
+      dataIndex: "technology",
+      width: 220,
+    },
+    {
+      title: "Overall Experience",
+      key: "overall_exp_year",
+      dataIndex: "overall_exp_year",
+      render: (text, record) => {
+        return <p>{text + " Years"}</p>;
+      },
+    },
+    {
+      title: "Relevent Experience",
+      key: "relavant_exp_year",
+      dataIndex: "relavant_exp_year",
+      render: (text, record) => {
+        return <p>{text + " Years"}</p>;
+      },
+    },
+    { title: "Batch", key: "batch", dataIndex: "batch" },
+    {
+      title: "Avaibility Time",
+      key: "availability_time",
+      dataIndex: "availability_time",
+      render: (text, record) => {
+        return <p>{moment(text, "HH:mm:ss").format("hh:mm A")}</p>;
+      },
+    },
+    {
+      title: "Secondary Time",
+      key: "secondary_time",
+      dataIndex: "secondary_time",
+      render: (text, record) => {
+        return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
+      },
+    },
+    {
+      title: "Skills",
+      key: "skills",
+      dataIndex: "skills",
+      width: 200,
+      render: (text) => {
+        // const convertAsJson = JSON.parse(text);
+        return (
+          <div style={{ display: "flex" }}>
+            <p>{text.join(", ")}</p>
+          </div>
+        );
+      },
+    },
+    { title: "Location", key: "location", dataIndex: "location", width: 120 },
+    {
+      title: "Form Status",
+      key: "form_status",
+      dataIndex: "form_status",
+      width: 120,
+      fixed: "right",
+      render: (text, record) => {
+        return (
+          <>
+            {record.is_bank_updated === 1 ? <p>Completed</p> : <p>Pending</p>}
+          </>
+        );
+      },
+    },
+    {
+      title: "Status",
+      key: "status",
+      dataIndex: "status",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <Flex style={{ whiteSpace: "nowrap" }}>
+            <Tooltip
+              placement="bottomLeft"
+              color="#fff"
+              title={
+                <Radio.Group
+                  value={text}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    handleStatusChange(record.id, e.target.value);
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <Radio
+                      value="Verify Pending"
+                      style={{ marginTop: "6px", marginBottom: "12px" }}
+                    >
+                      Pending
+                    </Radio>
+                    <Radio value="Verified" style={{ marginBottom: "12px" }}>
+                      Verified
+                    </Radio>
+                    <Radio value="Rejected" style={{ marginBottom: "6px" }}>
+                      Rejected
+                    </Radio>
+                  </div>
+                </Radio.Group>
+              }
+            >
+              {text === "Pending" ||
+              text === "PENDING" ||
+              text === "Verify Pending" ? (
+                <Button className="trainers_pending_button">Pending</Button>
+              ) : text === "Verified" || text === "VERIFIED" ? (
+                <div className="trainers_verifieddiv">
+                  <Button className="trainers_verified_button">Verified</Button>
+                </div>
+              ) : text === "Rejected" || text === "REJECTED" ? (
+                <Button className="trainers_rejected_button">Rejected</Button>
+              ) : (
+                <p style={{ marginLeft: "6px" }}>-</p>
+              )}
+            </Tooltip>
+          </Flex>
+        );
+      },
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="trainers_actionbuttonContainer">
+            <AiOutlineEdit
+              size={20}
               className="trainers_action_icons"
-            /> */}
+              onClick={() => handleEdit(record)}
+            />
           </div>
         );
       },
@@ -423,6 +568,7 @@ export default function Trainers() {
     setSignatureImage("");
     setIsOpenAddDrawer(false);
     setValidationTrigger(false);
+    setIsOpenFilterDrawer(false);
   };
 
   const handleSubmit = async () => {
@@ -1023,72 +1169,91 @@ export default function Trainers() {
         </Col>
       </Row>
 
-      <div className="trainer_status_mainContainer">
-        <div
-          className={
-            status === "Form Pending"
-              ? "trainers_active_formpending_container"
-              : "customers_feedback_container"
-          }
-          onClick={() => {
-            if (status === "Form Pending") {
-              return;
-            }
-            setStatus("Form Pending");
-            getTrainersData(searchValue, 1);
+      <Row style={{ marginTop: "16px" }}>
+        <Col span={20}>
+          <div className="trainer_status_mainContainer">
+            <div
+              className={
+                status === "Form Pending"
+                  ? "trainers_active_formpending_container"
+                  : "customers_feedback_container"
+              }
+              onClick={() => {
+                if (status === "Form Pending") {
+                  return;
+                }
+                setStatus("Form Pending");
+                getTrainersData(searchValue, 1);
+              }}
+            >
+              <p>Form Pending {`( ${formPendingCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "Verify Pending"
+                  ? "trainers_active_verifypending_container"
+                  : "customers_studentvefity_container"
+              }
+              onClick={() => {
+                if (status === "Verify Pending") {
+                  return;
+                }
+                setStatus("Verify Pending");
+                getTrainersData(searchValue, "Verify Pending");
+              }}
+            >
+              <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "Verified"
+                  ? "trainers_active_verifiedtrainers_container"
+                  : "customers_completed_container"
+              }
+              onClick={() => {
+                if (status === "Verified") {
+                  return;
+                }
+                setStatus("Verified");
+                getTrainersData(searchValue, "Verified");
+              }}
+            >
+              <p>Verified Trainers {`( ${verifiedCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "Rejected"
+                  ? "trainers_active_rejectedtrainers_container"
+                  : "trainers_rejected_container"
+              }
+              onClick={() => {
+                if (status === "Rejected") {
+                  return;
+                }
+                setStatus("Rejected");
+                getTrainersData(searchValue, "Rejected");
+              }}
+            >
+              <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
+            </div>
+          </div>
+        </Col>
+        <Col
+          span={4}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
           }}
         >
-          <p>Form Pending {`( ${formPendingCount} )`}</p>
-        </div>
-        <div
-          className={
-            status === "Verify Pending"
-              ? "trainers_active_verifypending_container"
-              : "customers_studentvefity_container"
-          }
-          onClick={() => {
-            if (status === "Verify Pending") {
-              return;
-            }
-            setStatus("Verify Pending");
-            getTrainersData(searchValue, "Verify Pending");
-          }}
-        >
-          <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
-        </div>
-        <div
-          className={
-            status === "Verified"
-              ? "trainers_active_verifiedtrainers_container"
-              : "customers_completed_container"
-          }
-          onClick={() => {
-            if (status === "Verified") {
-              return;
-            }
-            setStatus("Verified");
-            getTrainersData(searchValue, "Verified");
-          }}
-        >
-          <p>Verified Trainers {`( ${verifiedCount} )`}</p>
-        </div>
-        <div
-          className={
-            status === "Rejected"
-              ? "trainers_active_rejectedtrainers_container"
-              : "trainers_rejected_container"
-          }
-          onClick={() => {
-            if (status === "Rejected") {
-              return;
-            }
-            setStatus("Rejected");
-            getTrainersData(searchValue, "Rejected");
-          }}
-        >
-          <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
-        </div>
-      </div>
+          <FiFilter
+            size={20}
+            color="#5b69ca"
+            style={{ marginLeft: "12px", cursor: "pointer" }}
+            onClick={() => setIsOpenFilterDrawer(true)}
+          />
+        </Col>
+      </Row>
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
@@ -1135,6 +1300,52 @@ export default function Trainers() {
                 {editTrainerId ? "Update" : "Create"}
               </button>
             )}
+          </div>
+        </div>
+      </Drawer>
+
+      {/* table filter drawer */}
+
+      <Drawer
+        title="Manage Table"
+        open={isOpenFilterDrawer}
+        onClose={formReset}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: "60px" }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd
+                data={defaultColumns}
+                setDefaultColumns={setDefaultColumns}
+              />
+            </div>
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={() => {
+                const reorderedColumns = defaultColumns
+                  .filter((item) => item.isChecked) // only include checked items
+                  .map((defaultItem) =>
+                    nonChangeColumns.find(
+                      (col) => col.title.trim() === defaultItem.title.trim()
+                    )
+                  )
+                  .filter(Boolean); // remove unmatched/null entries
+
+                console.log("Reordered Columns:", reorderedColumns);
+
+                setColumns(reorderedColumns);
+                setIsOpenFilterDrawer(false);
+              }}
+            >
+              Apply
+            </button>
           </div>
         </div>
       </Drawer>

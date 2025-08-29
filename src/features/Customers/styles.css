@@ -122,6 +122,19 @@
   font-weight: 600;
   cursor: pointer;
 }
+.customers_active_studentvefity_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ffa502;
+  background-color: #ffa502;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .customers_assigntrainers_container {
   display: flex;
   justify-content: center;
@@ -131,6 +144,19 @@
   background-color: #2ed5740e;
   border-radius: 6px;
   color: #2ed573;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers_active_assigntrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #2ed573;
+  background-color: #2ed573;
+  border-radius: 6px;
+  color: #fff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -148,6 +174,19 @@
   font-weight: 600;
   cursor: pointer;
 }
+.customers_active_verifytrainers_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #1e90ff;
+  background-color: #1e90ff;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .customers_classschedule_container {
   display: flex;
   justify-content: center;
@@ -161,6 +200,19 @@
   font-weight: 600;
   cursor: pointer;
 }
+.customers_active_classschedule_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #a29bfe;
+  background-color: #a29bfe;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .customers_classgoing_container {
   display: flex;
   justify-content: center;
@@ -170,6 +222,19 @@
   background-color: #00cecb10;
   border-radius: 6px;
   color: #00cec9;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers_active_classgoing_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #00cec9;
+  background-color: #00cec9;
+  border-radius: 6px;
+  color: #fff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -346,6 +411,27 @@
   box-shadow: none !important;
   opacity: 1;
 }
+.customers_status_classgoing_button {
+  background: #00cecb15;
+  color: #00cec9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_classgoing_button:hover {
+  background-color: #00cecb15 !important;
+  color: #00cec9 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
 .customer_profileContainer {
   display: flex;
   gap: 12px;
@@ -452,6 +538,55 @@
   justify-content: center;
   align-items: center;
   margin-right: 12px;
+  opacity: 0.7;
+}
+.customer_classgoing_percentage {
+  font-weight: 600;
+  font-size: 12px;
+  color: #333;
+}
+.customer_classgoing_updateinput {
+  width: 74px;
+  height: 0px;
+  padding: 9px 4px;
+  color: #333;
+  border-width: 1px !important;
+  border-color: rgb(128 128 128 / 38%) !important;
+  border-radius: 3px;
+  font-size: 12px !important;
+  display: flex;
+  align-items: center;
+  margin-top: 19px;
+}
+.customer_classgoing_updateinput:focus-visible {
+  border-width: 1px !important;
+  border-color: rgb(128 128 128 / 38%) !important;
+  outline: none !important;
+}
+.customers_classgoing_updatebutton {
+  background-color: #00cec9 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
+.customers_classgoing_loadingupdatebutton {
+  background-color: #00cec9 !important;
+  color: #fff !important;
+  width: 54px;
+  height: 22px;
+  border-radius: 4px !important;
+  font-size: 11px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  cursor: default;
   opacity: 0.7;
 }
 /* customer registration form styles */

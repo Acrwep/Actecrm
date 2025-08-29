@@ -357,3 +357,21 @@ export const rejectTrainerForCustomer = async (payload) => {
     throw error;
   }
 };
+
+export const classScheduleForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/classSchedule", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateClassGoingForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/updateClassGiong", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

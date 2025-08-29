@@ -77,7 +77,6 @@
 .trainer_status_mainContainer {
   display: flex;
   gap: 16px;
-  margin-top: 16px;
 }
 .trainers_active_formpending_container {
   display: flex;

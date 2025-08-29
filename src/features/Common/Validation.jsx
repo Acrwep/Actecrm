@@ -340,6 +340,15 @@ export const ifscValidator = (ifsc) => {
   return error;
 };
 
+export const percentageValidator = (percent) => {
+  let error = "";
+
+  if (percent === "" || percent === null || isNaN(percent))
+    error = " is required";
+  else if (percent > 100) error = " is not valid";
+  return error;
+};
+
 // Reusable debounce function
 export const debounce = (func, delay) => {
   let timer;
