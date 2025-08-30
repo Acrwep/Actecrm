@@ -195,10 +195,7 @@ export default function CustomerRegistration() {
     const file = newFileList[0].originFileObj; // actual File object
 
     // ✅ Check file type
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
+    const isValidType = file.type === "image/png";
 
     // ✅ Check file size (1MB = 1,048,576 bytes)
     const isValidSize = file.size <= 1024 * 1024;
@@ -216,7 +213,7 @@ export default function CustomerRegistration() {
       };
     } else {
       if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+        CommonMessage("error", "Accept only .png");
       } else if (!isValidSize) {
         CommonMessage("error", "File size must be 1MB or less");
       }
@@ -253,10 +250,7 @@ export default function CustomerRegistration() {
 
   const handleSignature = ({ file }) => {
     // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
+    const isValidType = file.type === "image/png";
 
     if (file.status === "uploading" || file.status === "removed") {
       setSignatureArray([]);
@@ -279,7 +273,7 @@ export default function CustomerRegistration() {
       };
     } else {
       if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+        CommonMessage("error", "Accept only .png");
       } else if (!isValidSize) {
         CommonMessage("error", "File size must be 1MB or less");
       }
@@ -714,7 +708,7 @@ export default function CustomerRegistration() {
                 beforeUpload={(file) => {
                   return false; // Prevent auto-upload
                 }}
-                accept=".png,.jpg,.jpeg"
+                accept=".png"
                 onChange={handleSignature}
                 fileList={signatureArray}
                 multiple={false}

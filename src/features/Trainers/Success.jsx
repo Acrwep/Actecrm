@@ -46,8 +46,8 @@ export default function Success() {
           Registration Completed Successfully
         </p>
         <p className="success_descriptiontext">
-          Our team will review your details, and you’ll be notified once your
-          trainer account is activated.
+          Thank you for registering with Acte Technologies. Your registration
+          has been completed successfully.
         </p>
       </div>
     </div>

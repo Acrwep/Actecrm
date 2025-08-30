@@ -274,6 +274,15 @@ export const leadPayment = async (payload) => {
   }
 };
 
+export const sendLeadInvoiceEmail = async (payload) => {
+  try {
+    const response = await api.post("/api/sendInvoice", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // customers api's
 export const getCustomers = async (payload) => {
   try {
@@ -322,6 +331,15 @@ export const updateCustomerStatus = async (payload) => {
   }
 };
 
+export const verifyCustomerPayment = async (payload) => {
+  try {
+    const response = await api.put("/api/verifyPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const verifyCustomer = async (payload) => {
   try {
     const response = await api.put("/api/verifyStudent", payload);
@@ -334,6 +352,17 @@ export const verifyCustomer = async (payload) => {
 export const assignTrainerForCustomer = async (payload) => {
   try {
     const response = await api.post("/api/trainerAssign", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAssignTrainerHistoryForCustomer = async (payload) => {
+  try {
+    const response = await api.get("/api/getTrainerHistory", {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;

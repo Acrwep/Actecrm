@@ -345,7 +345,7 @@ export const percentageValidator = (percent) => {
 
   if (percent === "" || percent === null || isNaN(percent))
     error = " is required";
-  else if (percent > 100) error = " is not valid";
+  else if (percent > 100) error = " must be 100 or less";
   return error;
 };
 

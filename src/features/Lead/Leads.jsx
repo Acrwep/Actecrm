@@ -44,6 +44,7 @@ import {
   getTrainingMode,
   leadPayment,
   sendCustomerFormEmail,
+  sendLeadInvoiceEmail,
   updateLead,
 } from "../ApiService/action";
 import moment from "moment";
@@ -713,7 +714,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const handlePaidNow = (e) => {
     setPaidNow(e.target.value);
     if (paymentValidationTrigger) {
-      setPaidNowError(priceValidator(e.target.value, amount));
+      setPaidNowError(
+        priceValidator(parseInt(e.target.value), parseInt(amount))
+      );
     }
   };
 
@@ -1087,7 +1090,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const paymentTypeValidate = selectValidator(paymentType);
     const discountValidate = discountValidator(discount);
     const taxModeValidate = selectValidator(taxMode);
-    const paidNowValidate = priceValidator(paidNow, amount);
+    console.log("eeeee", paidNow, amount);
+    const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
 
     const screenshotValidate =
       paymentScreenShotsArray.length <= 0 ? " is required" : "";
@@ -1148,10 +1152,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       setTimeout(() => {
         setButtonLoading(false);
         formReset();
-        handleSendCustomerFormLink(
-          createdCustomerDetails.email,
-          createdCustomerDetails.insertId
-        );
+        getAllLeadData(searchValue, selectedDates[0], selectedDates[1], false);
+        handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -1163,23 +1165,56 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handleSendCustomerFormLink = async (customerEmail, customerId) => {
+  const handleSendCustomerFormLink = async (customerDetails) => {
     const payload = {
-      email: customerEmail,
-      link: `${
-        import.meta.env.VITE_EMAIL_URL
-      }/customer-registration/${customerId}`,
-      customer_id: customerId,
+      email: customerDetails.email,
+      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
+        customerDetails.insertId
+      }`,
+      customer_id: customerDetails.insertId,
     };
 
     try {
       await sendCustomerFormEmail(payload);
+      setTimeout(() => {
+        sendInvoiceEmail(customerDetails);
+      }, 300);
     } catch (error) {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const sendInvoiceEmail = async (customerDetails) => {
+    const invoiceDetails = customerDetails.invoice_details;
+    const courseDetails = customerDetails.course;
+    const payload = {
+      email: customerDetails.email,
+      name: customerDetails.name,
+      mobile: customerDetails.phone,
+      convenience_fees: invoiceDetails.convenience_fees,
+      discount: parseFloat(invoiceDetails.discount),
+      discount_amount: invoiceDetails.discount_amount,
+      gst_amount: invoiceDetails.gst_amount,
+      gst_percentage: parseFloat(invoiceDetails.gst_percentage),
+      invoice_date: invoiceDetails.invoice_date,
+      invoice_number: invoiceDetails.invoice_number,
+      paid_amount: invoiceDetails.paid_amount,
+      payment_mode: invoiceDetails.payment_mode,
+      tax_type: invoiceDetails.tax_type,
+      total_amount: invoiceDetails.total_amount,
+      balance_amount: invoiceDetails.balance_amount,
+      course_name: courseDetails.course_name,
+      sub_total: courseDetails.primary_fees,
+    };
+
+    try {
+      await sendLeadInvoiceEmail(payload);
+    } catch (error) {
+      console.log("invoice error", error);
     }
   };
 
@@ -1877,6 +1912,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           <Col span={8}>
             <CommonSelectField
               label="Payment Type"
+              required={true}
               options={[
                 { id: 1, name: "Cash" },
                 { id: 2, name: "Card" },
