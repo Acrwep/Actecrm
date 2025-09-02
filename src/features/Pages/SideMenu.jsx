@@ -9,6 +9,7 @@ import { MdOutlineGroupAdd } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
+import { MdOutlinePendingActions } from "react-icons/md";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -37,21 +38,26 @@ export default function SideMenu() {
       path: "customers",
     },
     4: {
+      title: "Fee Pending Customers",
+      icon: <MdOutlinePendingActions size={17} />,
+      path: "fee-pending-customers",
+    },
+    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    5: {
+    6: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    6: {
+    7: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    7: {
+    8: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -84,6 +90,7 @@ export default function SideMenu() {
       items={renderMenuItems(sideMenuOptions)}
       onClick={handleMenuClick}
       style={{ backgroundColor: "rgb(91 105 202 / 0%)", borderRight: "none" }} // 👈 Add this
+      forceSubMenuRender={true}
     />
   );
 }

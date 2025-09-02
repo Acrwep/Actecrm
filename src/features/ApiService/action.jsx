@@ -404,3 +404,12 @@ export const updateClassGoingForCustomer = async (payload) => {
     throw error;
   }
 };
+
+export const updatefeedbackForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/updateReview", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

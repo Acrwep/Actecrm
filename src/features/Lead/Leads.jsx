@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Col, Row, Drawer, Rate, Tooltip, Divider, Upload, Button } from "antd";
+import {
+  Col,
+  Row,
+  Drawer,
+  Rate,
+  Tooltip,
+  Divider,
+  Upload,
+  Button,
+  Checkbox,
+} from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import {
@@ -84,6 +94,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [primaryCourseError, setPrimaryCourseError] = useState("");
   const [primaryFees, setPrimaryFees] = useState("");
   const [primaryFeesError, setPrimaryFeesError] = useState("");
+  const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
   const [secondaryCourse, setSecondaryCourse] = useState(null);
   const [secondaryFees, setSecondaryFees] = useState("");
   const [trainerModeOptions, setTrainerModeOptions] = useState([]);
@@ -1417,6 +1428,21 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               required={true}
             />
           </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Lead Source"
+              required={true}
+              options={leadTypeOptions}
+              onChange={(e) => {
+                setLeadType(e.target.value);
+                if (validationTrigger) {
+                  setLeadTypeError(selectValidator(e.target.value));
+                }
+              }}
+              value={leadType}
+              error={leadTypeError}
+            />
+          </Col>
         </Row>
 
         <p className="addleaddrawer_headings">Course Details</p>
@@ -1451,27 +1477,48 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={8}>
-            <CommonSelectField
-              label="Secondary Course"
-              value={secondaryCourse}
-              onChange={(e) => {
-                setSecondaryCourse(e.target.value);
-              }}
-              options={courseOptions}
-            />
+            <div style={{ marginTop: "10px" }}>
+              <Checkbox
+                value={isShowSecondaryCourse}
+                onChange={(e) => {
+                  setIsShowSecondaryCourse(e.target.checked);
+                  if (e.target.checked === false) {
+                    setSecondaryCourse(null);
+                    setSecondaryFees("");
+                  }
+                }}
+              >
+                Add Course
+              </Checkbox>
+            </div>
           </Col>
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonInputField
-              label="Fees"
-              value={secondaryFees}
-              onChange={(e) => {
-                setSecondaryFees(e.target.value);
-              }}
-            />
-          </Col>
+        {isShowSecondaryCourse && (
+          <Row gutter={16} style={{ marginTop: "30px" }}>
+            <Col span={8}>
+              <CommonSelectField
+                label="Secondary Course"
+                value={secondaryCourse}
+                onChange={(e) => {
+                  setSecondaryCourse(e.target.value);
+                }}
+                options={courseOptions}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Fees"
+                value={secondaryFees}
+                onChange={(e) => {
+                  setSecondaryFees(e.target.value);
+                }}
+              />
+            </Col>
+          </Row>
+        )}
+
+        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Training Mode"
@@ -1489,56 +1536,39 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <CommonSelectField
-              label="Priority"
+              label="Branch Name"
               required={true}
-              options={priorityOptions}
+              options={branchOptions}
               onChange={(e) => {
-                setPriority(e.target.value);
+                setBranch(e.target.value);
                 if (validationTrigger) {
-                  setPriorityError(selectValidator(e.target.value));
+                  setBranchError(selectValidator(e.target.value));
                 }
               }}
-              value={priority}
-              error={priorityError}
+              value={branch}
+              error={branchError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch Track"
+              required={true}
+              options={batchTrackOptions}
+              onChange={(e) => {
+                setBatchTrack(e.target.value);
+                if (validationTrigger) {
+                  setBatchTrackError(selectValidator(e.target.value));
+                }
+              }}
+              value={batchTrack}
+              error={batchTrackError}
             />
           </Col>
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Type"
-              required={true}
-              options={leadTypeOptions}
-              onChange={(e) => {
-                setLeadType(e.target.value);
-                if (validationTrigger) {
-                  setLeadTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={leadType}
-              error={leadTypeError}
-            />
-          </Col>
-        </Row>
         <p className="addleaddrawer_headings">Sales Information</p>
 
         <Row gutter={16}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Status"
-              required={true}
-              options={leadStatusOptions}
-              onChange={(e) => {
-                setLeadStatus(e.target.value);
-                if (validationTrigger) {
-                  setLeadStatusError(selectValidator(e.target.value));
-                }
-              }}
-              value={leadStatus}
-              error={leadStatusError}
-            />
-          </Col>
           <Col span={8}>
             <CommonSelectField
               label="Response Status"
@@ -1552,6 +1582,21 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               }}
               value={responseStatus}
               error={responseStatusError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Lead Status"
+              required={true}
+              options={leadStatusOptions}
+              onChange={(e) => {
+                setLeadStatus(e.target.value);
+                if (validationTrigger) {
+                  setLeadStatusError(selectValidator(e.target.value));
+                }
+              }}
+              value={leadStatus}
+              error={leadStatusError}
             />
           </Col>
           <Col span={8}>
@@ -1590,32 +1635,17 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <CommonSelectField
-              label="Branch Name"
+              label="Priority"
               required={true}
-              options={branchOptions}
+              options={priorityOptions}
               onChange={(e) => {
-                setBranch(e.target.value);
+                setPriority(e.target.value);
                 if (validationTrigger) {
-                  setBranchError(selectValidator(e.target.value));
+                  setPriorityError(selectValidator(e.target.value));
                 }
               }}
-              value={branch}
-              error={branchError}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Batch Track"
-              required={true}
-              options={batchTrackOptions}
-              onChange={(e) => {
-                setBatchTrack(e.target.value);
-                if (validationTrigger) {
-                  setBatchTrackError(selectValidator(e.target.value));
-                }
-              }}
-              value={batchTrack}
-              error={batchTrackError}
+              value={priority}
+              error={priorityError}
             />
           </Col>
         </Row>
@@ -1744,7 +1774,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <p className="leadmanager_paymentdrawer_userheadings">
               Candidate Name:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                Balaji
+                {clickedLeadItem ? clickedLeadItem.name : "-"}
               </span>
             </p>
           </Col>
@@ -1752,7 +1782,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <p className="leadmanager_paymentdrawer_userheadings">
               Email:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                balaji@gmail.com
+                {clickedLeadItem ? clickedLeadItem.email : "-"}
               </span>
             </p>
           </Col>
@@ -1760,7 +1790,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <p className="leadmanager_paymentdrawer_userheadings">
               Mobile:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                8610122749
+                {clickedLeadItem ? clickedLeadItem.phone : "-"}
               </span>
             </p>
           </Col>
@@ -1791,7 +1821,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             <p className="leadmanager_paymentdrawer_userheadings">
               City:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                Chennai
+                {clickedLeadItem ? clickedLeadItem.district : "-"}
               </span>
             </p>
           </Col>

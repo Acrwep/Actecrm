@@ -357,6 +357,28 @@
   cursor: pointer;
 }
 
+.customers_status_formpending_button {
+  background: #ff6b6b15;
+  color: #ff6b6b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_formpending_button:hover {
+  background-color: #ff6b6b15 !important;
+  color: #ff6b6b !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+
 .customers_status_awaitfinance_button {
   background: #eb6e4b18;
   color: #eb6d4b;
@@ -764,6 +786,29 @@
   margin-bottom: 16px !important;
   text-align: center;
 }
+.customers_formlink_copybutton:active {
+  transform: scale(0.9);
+  cursor: pointer !important;
+}
+.customer_paymentscreenshot_viewbutton {
+  color: #5b69ca;
+  background-color: transparent !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 0px !important;
+  margin-top: 16px;
+}
+.customer_paymentscreenshot_image {
+  width: 100%;
+  width: 100% !important;
+  height: auto;
+  object-fit: cover; /* fill full width */
+  display: block;
+  border-radius: 6px;
+}
 /* customer registration form styles */
 .customerregistration_card {
   width: 70%;
@@ -822,7 +867,4 @@
   font-weight: 600;
   margin-top: 20px;
   margin-bottom: 12px !important;
-}
-.customer_paymentscreenshot_image {
-  width: 100%;
 }

@@ -29,6 +29,7 @@ import {
   getTechnologies,
   getTrainingMode,
   updateCustomer,
+  updateCustomerStatus,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 
@@ -414,6 +415,7 @@ export default function CustomerRegistration() {
       await updateCustomer(payload);
       CommonMessage("success", "Registered Successfully");
       setTimeout(() => {
+        handleCustomerStatus();
         setButtonLoading(false);
         navigate("/success");
       }, 300);
@@ -424,6 +426,18 @@ export default function CustomerRegistration() {
         error?.response?.data?.message ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const handleCustomerStatus = async () => {
+    const payload = {
+      customer_id: customer_id,
+      status: "Awaiting Finance",
+    };
+    try {
+      await updateCustomerStatus(payload);
+    } catch (error) {
+      console.log("customer status change error", error);
     }
   };
 

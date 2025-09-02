@@ -46,6 +46,8 @@ export default function CustomHeader() {
               ? "Lead Followup"
               : location.pathname === "/customers"
               ? "Customers"
+              : location.pathname === "/fee-pending-customers"
+              ? "Fee Pending Customers"
               : location.pathname === "/batches"
               ? "Batches"
               : location.pathname === "/trainers"

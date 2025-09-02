@@ -26,6 +26,7 @@ import Batches from "../Batches/Batches";
 import Dashboard from "../Dashboard/Dashboard";
 import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
+import PendingFeesCustomers from "../Customers/PendingFeesCustomers";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -167,6 +168,10 @@ export default function Pages() {
                 <Route element={<LeadManager />} path="/lead-manager" />
                 <Route element={<LeadFollowUp />} path="/lead-followup" />
                 <Route element={<Customers />} path="/customers" />
+                <Route
+                  element={<PendingFeesCustomers />}
+                  path="/fee-pending-customers"
+                />
                 <Route element={<Batches />} path="/batches" />
                 <Route element={<Trainers />} path="/trainers" />
                 <Route element={<Server />} path="/server" />
