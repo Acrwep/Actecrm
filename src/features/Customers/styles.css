@@ -506,6 +506,48 @@
   box-shadow: none !important;
   opacity: 1;
 }
+.customers_status_awaitgreview_button {
+  background: #ffc10717;
+  color: #ffc107;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaitgreview_button:hover {
+  background-color: #ffc10717 !important;
+  color: #ffc107 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+.customers_status_awaitlinkdinreview_button {
+  background: #286cb517;
+  color: #286cb5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_awaitlinkdinreview_button:hover {
+  background-color: #286cb517 !important;
+  color: #286cb5 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
 .customers_status_classgoing_button {
   background: #00cecb15;
   color: #00cec9;
@@ -727,6 +769,30 @@
   align-items: center;
   font-weight: 500;
 }
+.customers_add_greview_button {
+  background-color: #ffc107 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
+.customers_add_linkdinreview_button {
+  background-color: #286cb5 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
 .customers_feedback_imagelabels {
   color: #333;
   font-size: 12px;
@@ -808,6 +874,26 @@
   object-fit: cover; /* fill full width */
   display: block;
   border-radius: 6px;
+}
+.customers_updateschedulebutton {
+  background-color: #a29bfe !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  margin-top: 4px;
+}
+/* overall due styles */
+.overallduecustomers_filterContainer {
+  display: flex;
+  margin-bottom: 6px;
+  gap: 0px;
+  width: 100%;
 }
 /* customer registration form styles */
 .customerregistration_card {

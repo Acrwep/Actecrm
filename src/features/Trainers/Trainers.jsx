@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Tabs } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
@@ -36,9 +36,20 @@ import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
 import { FiFilter } from "react-icons/fi";
+import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import CommonDnd from "../Common/CommonDnd";
+import { FaRegCopy } from "react-icons/fa6";
 
 export default function Trainers() {
+  const scrollRef = useRef();
+
+  const scroll = (scrollOffset) => {
+    scrollRef.current.scrollBy({
+      left: scrollOffset,
+      behavior: "smooth",
+    });
+  };
+
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
@@ -179,7 +190,33 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <>
-            {record.is_bank_updated === 1 ? <p>Completed</p> : <p>Pending</p>}
+            {record.is_bank_updated === 1 ? (
+              <p>Completed</p>
+            ) : (
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p>Pending</p>
+                <Tooltip
+                  placement="top"
+                  title="Copy form link"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegCopy
+                    size={14}
+                    className="customers_formlink_copybutton"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${
+                          import.meta.env.VITE_EMAIL_URL
+                        }/trainer-registration/${record.id}`
+                      );
+                      CommonMessage("success", "Link Copied");
+                      console.log("Copied: eeee");
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            )}
           </>
         );
       },
@@ -332,7 +369,33 @@ export default function Trainers() {
       render: (text, record) => {
         return (
           <>
-            {record.is_bank_updated === 1 ? <p>Completed</p> : <p>Pending</p>}
+            {record.is_bank_updated === 1 ? (
+              <p>Completed</p>
+            ) : (
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p>Pending</p>
+                <Tooltip
+                  placement="top"
+                  title="Copy form link"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegCopy
+                    size={14}
+                    className="customers_formlink_copybutton"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${
+                          import.meta.env.VITE_EMAIL_URL
+                        }/trainer-registration/${record.id}`
+                      );
+                      CommonMessage("success", "Link Copied");
+                      console.log("Copied: eeee");
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            )}
           </>
         );
       },
@@ -467,8 +530,12 @@ export default function Trainers() {
         : searchvalue && filterType === 3
         ? { mobile: searchvalue }
         : {}),
-      ...(trainerStatus && trainerStatus == 1
-        ? { is_form_sent: trainerStatus }
+      ...(trainerStatus && trainerStatus == "Form Pending"
+        ? { is_form_sent: 1 }
+        : trainerStatus == "Onboarded"
+        ? { is_onboarding: 1 }
+        : trainerStatus == "Ongoing"
+        ? { ongoing: "Ongoing" }
         : trainerStatus && { status: trainerStatus }),
     };
     try {
@@ -1170,80 +1237,128 @@ export default function Trainers() {
       </Row>
 
       <Row style={{ marginTop: "16px" }}>
-        <Col span={20}>
-          <div className="trainer_status_mainContainer">
-            <div
-              className={
-                status === "Form Pending"
-                  ? "trainers_active_formpending_container"
-                  : "customers_feedback_container"
-              }
-              onClick={() => {
-                if (status === "Form Pending") {
-                  return;
-                }
-                setStatus("Form Pending");
-                getTrainersData(searchValue, 1);
-              }}
+        <Col span={22}>
+          <div className="customers_scroll_wrapper">
+            <button
+              onClick={() => scroll(-600)}
+              className="customer_statusscroll_button"
             >
-              <p>Form Pending {`( ${formPendingCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Verify Pending"
-                  ? "trainers_active_verifypending_container"
-                  : "customers_studentvefity_container"
-              }
-              onClick={() => {
-                if (status === "Verify Pending") {
-                  return;
+              <IoMdArrowDropleft size={25} />
+            </button>
+            <div className="customers_status_mainContainer" ref={scrollRef}>
+              {" "}
+              <div
+                className={
+                  status === "Form Pending"
+                    ? "trainers_active_formpending_container"
+                    : "customers_feedback_container"
                 }
-                setStatus("Verify Pending");
-                getTrainersData(searchValue, "Verify Pending");
-              }}
-            >
-              <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Verified"
-                  ? "trainers_active_verifiedtrainers_container"
-                  : "customers_completed_container"
-              }
-              onClick={() => {
-                if (status === "Verified") {
-                  return;
+                onClick={() => {
+                  if (status === "Form Pending") {
+                    return;
+                  }
+                  setStatus("Form Pending");
+                  getTrainersData(searchValue, "Form Pending");
+                }}
+              >
+                <p>Form Pending {`( ${formPendingCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "Verify Pending"
+                    ? "trainers_active_verifypending_container"
+                    : "customers_studentvefity_container"
                 }
-                setStatus("Verified");
-                getTrainersData(searchValue, "Verified");
-              }}
-            >
-              <p>Verified Trainers {`( ${verifiedCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Rejected"
-                  ? "trainers_active_rejectedtrainers_container"
-                  : "trainers_rejected_container"
-              }
-              onClick={() => {
-                if (status === "Rejected") {
-                  return;
+                onClick={() => {
+                  if (status === "Verify Pending") {
+                    return;
+                  }
+                  setStatus("Verify Pending");
+                  getTrainersData(searchValue, "Verify Pending");
+                }}
+              >
+                <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "Verified"
+                    ? "trainers_active_verifiedtrainers_container"
+                    : "customers_completed_container"
                 }
-                setStatus("Rejected");
-                getTrainersData(searchValue, "Rejected");
-              }}
-            >
-              <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
+                onClick={() => {
+                  if (status === "Verified") {
+                    return;
+                  }
+                  setStatus("Verified");
+                  getTrainersData(searchValue, "Verified");
+                }}
+              >
+                <p>Verified Trainers {`( ${verifiedCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "Onboarded"
+                    ? "customers_active_classschedule_container"
+                    : "customers_classschedule_container"
+                }
+                onClick={() => {
+                  if (status === "Onboarded") {
+                    return;
+                  }
+                  setStatus("Onboarded");
+                  getTrainersData(searchValue, "Onboarded");
+                }}
+              >
+                <p>Onboarded Trainers {`( 10 )`}</p>
+              </div>
+              <div
+                className={
+                  status === "OnGoing"
+                    ? "customers_active_classgoing_container"
+                    : "customers_classgoing_container"
+                }
+                onClick={() => {
+                  if (status === "OnGoing") {
+                    return;
+                  }
+                  setStatus("OnGoing");
+                  getTrainersData(searchValue, "Ongoing");
+                }}
+              >
+                <p>On-Going Trainers {`( 10 )`}</p>
+              </div>
+              <div
+                className={
+                  status === "Rejected"
+                    ? "trainers_active_rejectedtrainers_container"
+                    : "trainers_rejected_container"
+                }
+                onClick={() => {
+                  if (status === "Rejected") {
+                    return;
+                  }
+                  setStatus("Rejected");
+                  getTrainersData(searchValue, "Rejected");
+                }}
+              >
+                <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
+              </div>
             </div>
+            <button
+              onClick={() => scroll(600)}
+              className="customer_statusscroll_button"
+            >
+              <IoMdArrowDropright size={25} />
+            </button>
           </div>
         </Col>
         <Col
-          span={4}
+          span={2}
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            marginTop: "-8px",
           }}
         >
           <FiFilter

@@ -286,7 +286,7 @@ export const priceValidator = (price, totalprice) => {
   let error = "";
 
   if (!price || price.length <= 0) error = " is required";
-  else if (price > totalprice) error = " must be below or equal to amount";
+  else if (price > totalprice) error = " is > total amount";
 
   return error;
 };
@@ -299,24 +299,43 @@ export const discountValidator = (discount) => {
   return error;
 };
 
-export const calculateAmount = (price, discount = 0, gst = 0) => {
+export const getBalanceAmount = (totalAmount, paidAmount) => {
+  let result = totalAmount - paidAmount;
+  console.log("resssssss", result);
+  return parseFloat(result.toFixed(2)); // keeps 2 decimals
+};
+
+export const calculateAmount = (price, gst = 0, paymentType = 0) => {
   if (typeof price !== "number" || price < 0) {
     throw new Error("Price must be a positive number");
   }
 
   let finalPrice = price;
 
-  // Apply discount if given (percentage)
-  if (discount > 0) {
-    finalPrice -= (finalPrice * discount) / 100;
-  }
-
   // Apply GST if given
   if (gst > 0) {
     finalPrice += (finalPrice * gst) / 100;
   }
 
-  return parseFloat(finalPrice.toFixed(2)); // round to 2 decimals
+  // Add extra % based on paymentType
+  if (paymentType > 0) {
+    finalPrice += (finalPrice * paymentType) / 100;
+  }
+
+  return parseInt(finalPrice); // round to 2 decimals
+};
+export const getConvenienceFees = (totalAmount, paymentType = 0) => {
+  if (typeof totalAmount !== "number" || totalAmount < 0) {
+    throw new Error("Total amount must be a positive number");
+  }
+
+  if (typeof paymentType !== "number" || paymentType < 0) {
+    throw new Error("Payment type must be a non-negative number");
+  }
+
+  const fees = (totalAmount * paymentType) / 100;
+
+  return parseInt(fees); // round to 2 decimals
 };
 
 export const accountNumberValidator = (accountnumber) => {

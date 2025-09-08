@@ -6,7 +6,7 @@ import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import { getLeadAndFollowupCount } from "../ApiService/action";
 
-export default function Settings() {
+export default function LeadManager() {
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);

@@ -26,6 +26,8 @@ export default function CommonSelectField({
   disableClearable,
   disabled,
   errorFontSize,
+  renderOption,
+  groupBy,
 }) {
   return (
     <div style={style}>
@@ -39,7 +41,7 @@ export default function CommonSelectField({
             fontSize: labelFontSize || "14px",
             padding: "0px 0px",
             marginTop: labelMarginTop ? labelMarginTop : "1px",
-            fontFamily: "Poppins,  sans-serif ",
+            fontFamily: "Poppins,  sans-serif",
           },
           "& .MuiOutlinedInput-root": {
             height: height || "42px",
@@ -107,6 +109,8 @@ export default function CommonSelectField({
             },
           }}
           disabled={disabled}
+          renderOption={renderOption}
+          groupBy={groupBy}
         />
 
         {error && (

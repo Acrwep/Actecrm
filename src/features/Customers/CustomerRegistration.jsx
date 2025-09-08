@@ -28,6 +28,7 @@ import {
   getCustomerById,
   getTechnologies,
   getTrainingMode,
+  inserCustomerTrack,
   updateCustomer,
   updateCustomerStatus,
 } from "../ApiService/action";
@@ -436,8 +437,24 @@ export default function CustomerRegistration() {
     };
     try {
       await updateCustomerStatus(payload);
+      handleCustomerTrack();
     } catch (error) {
       console.log("customer status change error", error);
+    }
+  };
+
+  const handleCustomerTrack = async () => {
+    const today = new Date();
+
+    const payload = {
+      customer_id: customer_id,
+      status: "Awaiting Finance",
+      status_date: formatToBackendIST(today),
+    };
+    try {
+      await inserCustomerTrack(payload);
+    } catch (error) {
+      console.log("customer track error", error);
     }
   };
 

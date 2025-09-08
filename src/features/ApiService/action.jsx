@@ -293,6 +293,15 @@ export const getCustomers = async (payload) => {
   }
 };
 
+export const getPendingFeesCustomers = async (payload) => {
+  try {
+    const response = await api.get("/api/pendingFeesList", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const sendCustomerFormEmail = async (payload) => {
   try {
     const response = await api.post("/api/sendCustomerMail", payload);
@@ -325,6 +334,15 @@ export const updateCustomer = async (payload) => {
 export const updateCustomerStatus = async (payload) => {
   try {
     const response = await api.put("/api/updateCustomerStatus", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const inserCustomerTrack = async (payload) => {
+  try {
+    const response = await api.post("/api/insertCusTrack", payload);
     return response;
   } catch (error) {
     throw error;

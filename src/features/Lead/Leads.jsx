@@ -10,6 +10,13 @@ import {
   Button,
   Checkbox,
 } from "antd";
+import {
+  FormControl,
+  Select,
+  InputLabel,
+  MenuItem,
+  ListSubheader,
+} from "@mui/material";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import {
@@ -19,6 +26,8 @@ import {
   discountValidator,
   emailValidator,
   formatToBackendIST,
+  getBalanceAmount,
+  getConvenienceFees,
   getCurrentandPreviousweekDate,
   mobileValidator,
   nameValidator,
@@ -117,11 +126,18 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [expectDateJoin, setExpectDateJoin] = useState(null);
   const [expectDateJoinError, setExpectDateJoinError] = useState("");
 
+  const regionOptions = [
+    { id: 1, name: "Chennai" },
+    { id: 2, name: "Bangalore" },
+    { id: 3, name: "Hub" },
+  ];
+  const [regionId, setRegionId] = useState(null);
+  const [regionError, setRegionError] = useState("");
   const [branchOptions, setBranchOptions] = useState([]);
   const [branch, setBranch] = useState("");
   const [branchError, setBranchError] = useState("");
   const [batchTrackOptions, setBatchTrackOptions] = useState([]);
-  const [batchTrack, setBatchTrack] = useState("");
+  const [batchTrack, setBatchTrack] = useState(1);
   const [batchTrackError, setBatchTrackError] = useState("");
   const [rating, setRating] = useState(null);
   const [ratingError, setRatingError] = useState(null);
@@ -130,18 +146,17 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
 
   //payment usestates
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
-  const [paymentType, setPaymentType] = useState(null);
-  const [paymentTypeError, setPaymentTypeError] = useState(null);
+  const [paymentDate, setPaymentDate] = useState(null);
+  const [paymentDateError, setPaymentDateError] = useState("");
+  const [paymentMode, setPaymentMode] = useState(null);
+  const [paymentModeError, setPaymentModeError] = useState(null);
   const [subTotal, setSubTotal] = useState("");
-  const [priceError, setPriceError] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [discountError, setDiscountError] = useState("");
-  const [taxMode, setTaxMode] = useState("");
-  const [taxModeError, setTaxModeError] = useState("");
+  const [convenienceFees, setConvenienceFees] = useState("");
   const [taxType, setTaxType] = useState("");
   const [taxTypeError, setTaxTypeError] = useState("");
   const [amount, setAmount] = useState(0);
@@ -152,7 +167,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
     useState(false);
-
+  const [balanceAmount, setBalanceAmount] = useState("");
+  const [isShowDueDate, setIsShowDueDate] = useState(true);
+  const [dueDate, setDueDate] = useState(null);
+  const [dueDateError, setDueDateError] = useState("");
   const [defaultColumns, setDefaultColumns] = useState([
     {
       title: "Candidate Name",
@@ -391,6 +409,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
                     setIsOpenPaymentDrawer(true);
                     setSubTotal(parseInt(record.primary_fees));
                     setAmount(parseInt(record.primary_fees));
+                    setBalanceAmount(parseInt(record.primary_fees));
                     setClickedLeadItem(record);
                   }}
                 />
@@ -723,78 +742,99 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   };
 
   const handlePaidNow = (e) => {
-    setPaidNow(e.target.value);
-    if (paymentValidationTrigger) {
-      setPaidNowError(
-        priceValidator(parseInt(e.target.value), parseInt(amount))
-      );
+    const value = parseInt(e.target.value);
+    const amt = parseInt(amount);
+    if (value < amt || isNaN(value) || value === "" || value === null) {
+      setIsShowDueDate(true);
+    } else {
+      setIsShowDueDate(false);
+      setDueDate(null);
+      setDueDateError("");
     }
-  };
-
-  const handleDiscount = (e) => {
-    setDiscount(e.target.value);
-
-    if (paymentValidationTrigger) {
-      setDiscountError(discountValidator(e.target.value));
-    }
-
-    const amnt = calculateAmount(
-      subTotal ? parseInt(subTotal) : 0,
-      e.target.value ? parseInt(e.target.value) : 0,
-      taxType === 1 ? 18 : 0
+    setPaidNow(isNaN(value) ? "" : value);
+    setBalanceAmount(
+      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
-    if (isNaN(amnt)) {
-      setAmount("");
-    } else {
-      setAmount(String(amnt));
-    }
-  };
-
-  const handleTaxMode = (e) => {
-    setTaxMode(e.target.value);
     if (paymentValidationTrigger) {
-      setTaxModeError(selectValidator(e.target.value));
-    }
-
-    if (e.target.value === 1) {
-      setTaxType(1);
-      const amnt = calculateAmount(
-        subTotal ? parseInt(subTotal) : 0,
-        discount ? parseInt(discount) : 0,
-        18
-      );
-      if (isNaN(amnt)) {
-        setAmount("");
-      } else {
-        setAmount(String(amnt));
-      }
-    } else {
-      setTaxType("");
-      const amnt = calculateAmount(
-        subTotal ? parseInt(subTotal) : 0,
-        discount ? parseInt(discount) : 0,
-        0
-      );
-      if (isNaN(amnt)) {
-        setAmount("");
-      } else {
-        setAmount(String(amnt));
-      }
+      setPaidNowError(priceValidator(value, parseInt(amt)));
     }
   };
 
   const handleTaxType = (e) => {
     setTaxType(e.target.value);
+    if (paymentValidationTrigger) {
+      setTaxTypeError(selectValidator(e.target.value));
+    }
     const amnt = calculateAmount(
-      subTotal ? parseInt(subTotal) : 0,
-      discount ? parseInt(discount) : 0,
-      18
+      parseInt(subTotal),
+      e.target.value === 5 ? 0 : 18,
+      paymentMode === 2 || paymentMode === 5 ? 3 : 0
     );
     if (isNaN(amnt)) {
       setAmount("");
     } else {
       setAmount(String(amnt));
+      const conve_fees = getConvenienceFees(
+        amnt,
+        paymentMode === 2 || paymentMode === 5 ? 3 : 0
+      );
+      console.log("conve_fees", conve_fees);
+      setConvenienceFees(conve_fees);
     }
+
+    //handle balance amount
+    if (
+      paidNow < amnt ||
+      isNaN(paidNow) ||
+      paidNow === "" ||
+      paidNow === null
+    ) {
+      setIsShowDueDate(true);
+    } else {
+      setIsShowDueDate(false);
+      setDueDate(null);
+      setDueDateError("");
+    }
+    setBalanceAmount(
+      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+    );
+  };
+
+  const handlePaymentType = (e) => {
+    const value = e.target.value;
+    setPaymentMode(value);
+    const amnt = calculateAmount(
+      parseInt(subTotal),
+      taxType === 5 ? 0 : 18,
+      value === 2 || value === 5 ? 3 : 0
+    );
+    setAmount(amnt);
+    const conve_fees = getConvenienceFees(
+      amnt,
+      value === 2 || value === 5 ? 3 : 0
+    );
+    setConvenienceFees(conve_fees);
+
+    if (paymentValidationTrigger) {
+      setPaymentModeError(selectValidator(value));
+    }
+
+    //handle balance amount
+    if (
+      paidNow < amnt ||
+      isNaN(paidNow) ||
+      paidNow === "" ||
+      paidNow === null
+    ) {
+      setIsShowDueDate(true);
+    } else {
+      setIsShowDueDate(false);
+      setDueDate(null);
+      setDueDateError("");
+    }
+    setBalanceAmount(
+      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+    );
   };
 
   const handlePaymentScreenshot = ({ file }) => {
@@ -871,6 +911,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setResponseLeadStatus(item.response_status_id);
     setNxtFollowupDate(item.next_follow_up_date);
     setExpectDateJoin(item.expected_join_date);
+    setRegionId(null);
+    setRegionError("");
     setBranch(item.branch_id);
     setBatchTrack(item.batch_track_id);
     setRating(item.lead_quality_rating);
@@ -920,9 +962,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setNxtFollowupDateError("");
     setExpectDateJoin(null);
     setExpectDateJoinError("");
-    setBranch(null);
+    setRegionId(null);
+    setRegionError("");
+    setBranch("");
     setBranchError("");
-    setBatchTrack(null);
+    setBatchTrack(1);
     setBatchTrackError("");
     setRating(null);
     setRatingError("");
@@ -934,22 +978,24 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setIsOpenPaymentDrawer(false);
     setPaymentValidationTrigger(false);
     setClickedLeadItem(null);
-    setPaymentType(null);
-    setPaymentTypeError("");
+    setPaymentMode(null);
+    setPaymentModeError("");
     setSubTotal("");
-    setPriceError("");
-    setDiscount(0);
-    setDiscountError("");
-    setTaxMode(null);
-    setTaxModeError("");
+    setConvenienceFees("");
     setTaxType(null);
     setTaxTypeError("");
     setAmount("");
     setPaidNow("");
     setPaidNowError("");
+    setPaymentDate(null);
+    setPaymentDateError("");
     setPaymentScreenShotsArray([]);
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
+    setIsShowDueDate(true);
+    setBalanceAmount("");
+    setDueDate(null);
+    setDueDateError("");
   };
 
   const handleSubmit = async () => {
@@ -1096,60 +1142,67 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePaymentSubmit = async () => {
+  const handlePaymentSubmit = async (is_sendInvoice) => {
     setPaymentValidationTrigger(true);
-    const paymentTypeValidate = selectValidator(paymentType);
-    const discountValidate = discountValidator(discount);
-    const taxModeValidate = selectValidator(taxMode);
+    const taxTypeValidate = selectValidator(taxType);
+    const paymentTypeValidate = selectValidator(paymentMode);
+    const paymentDateValidate = selectValidator(paymentDate);
+
     console.log("eeeee", paidNow, amount);
     const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
 
     const screenshotValidate =
       paymentScreenShotsArray.length <= 0 ? " is required" : "";
+    let dueDateValidate;
 
-    setPaymentTypeError(paymentTypeValidate);
-    setDiscountError(discountValidate);
-    setTaxModeError(taxModeValidate);
+    if (isShowDueDate) {
+      dueDateValidate = selectValidator(dueDate);
+    } else {
+      dueDateValidate = "";
+    }
+
+    setTaxTypeError(taxTypeValidate);
+    setPaymentModeError(paymentTypeValidate);
     setPaidNowError(paidNowValidate);
+    setPaymentDateError(paymentDateValidate);
     setPaymentScreenShotError(screenshotValidate);
+    setDueDateError(dueDateValidate);
 
     if (
       paymentTypeValidate ||
       paidNowValidate ||
-      discountValidate ||
-      taxModeValidate ||
-      screenshotValidate
+      taxTypeValidate ||
+      paymentDateValidate ||
+      screenshotValidate ||
+      dueDateValidate
     )
       return;
-    setButtonLoading(true);
+    if (is_sendInvoice) {
+      setInvoiceButtonLoading(true);
+    } else {
+      setButtonLoading(true);
+    }
+
     const today = new Date();
 
-    // Step 1: Apply discount
-    const discountAmount = (subTotal * discount) / 100;
-    const netAmount = amount - discountAmount;
-
     // Step 2: Calculate GST on discounted amount
-    const gstPercent = taxMode === 1 ? 18 : 0;
-    const gstAmount = (netAmount * gstPercent) / 100;
+    const gstAmount = 0;
 
-    console.log("Discount Amount:", discountAmount);
-    console.log("Net Amount after Discount:", netAmount);
     console.log("GST Amount:", gstAmount);
 
     const payload = {
       lead_id: clickedLeadItem.id,
       invoice_date: formatToBackendIST(today),
-      tax_type: taxMode === 1 ? "GST 18%" : "",
-      discount: discount,
-      discount_amount: discountAmount,
-      gst_percentage: taxMode === 1 ? "18%" : 0,
+      tax_type: taxType === 5 ? "" : "GST 18%",
+      // gst_percentage: taxMode === 1 ? "18%" : 0,
       gst_amount: gstAmount,
       total_amount: amount,
       convenience_fees: 0,
-      paymode_id: paymentType,
+      paymode_id: paymentMode,
       paid_amount: paidNow,
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
+      next_due_date: formatToBackendIST(dueDate),
       created_date: formatToBackendIST(today),
     };
 
@@ -1162,12 +1215,14 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       CommonMessage("success", "Created as a Customer");
       setTimeout(() => {
         setButtonLoading(false);
+        setInvoiceButtonLoading(false);
         formReset();
         getAllLeadData(searchValue, selectedDates[0], selectedDates[1], false);
-        handleSendCustomerFormLink(createdCustomerDetails);
+        handleSendCustomerFormLink(createdCustomerDetails, is_sendInvoice);
       }, 300);
     } catch (error) {
       setButtonLoading(false);
+      setInvoiceButtonLoading(false);
       CommonMessage(
         "error",
         error?.response?.data?.message ||
@@ -1176,7 +1231,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handleSendCustomerFormLink = async (customerDetails) => {
+  const handleSendCustomerFormLink = async (
+    customerDetails,
+    is_sendInvoice
+  ) => {
     const payload = {
       email: customerDetails.email,
       link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
@@ -1188,7 +1246,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     try {
       await sendCustomerFormEmail(payload);
       setTimeout(() => {
-        sendInvoiceEmail(customerDetails);
+        if (is_sendInvoice === true) {
+          sendInvoiceEmail(customerDetails);
+        }
       }, 300);
     } catch (error) {
       CommonMessage(
@@ -1207,7 +1267,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       name: customerDetails.name,
       mobile: customerDetails.phone,
       convenience_fees: invoiceDetails.convenience_fees,
-      discount: parseFloat(invoiceDetails.discount),
       discount_amount: invoiceDetails.discount_amount,
       gst_amount: invoiceDetails.gst_amount,
       gst_percentage: parseFloat(invoiceDetails.gst_percentage),
@@ -1392,6 +1451,21 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <CommonSelectField
+              label="Lead Source"
+              required={true}
+              options={leadTypeOptions}
+              onChange={(e) => {
+                setLeadType(e.target.value);
+                if (validationTrigger) {
+                  setLeadTypeError(selectValidator(e.target.value));
+                }
+              }}
+              value={leadType}
+              error={leadTypeError}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
               label="Country"
               value={countryId}
               onChange={handleCountry}
@@ -1400,6 +1474,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               required={true}
             />
           </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "26px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="State"
@@ -1410,9 +1487,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               required={true}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "26px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="City"
@@ -1426,21 +1500,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               options={cityOptions}
               error={cityError}
               required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Source"
-              required={true}
-              options={leadTypeOptions}
-              onChange={(e) => {
-                setLeadType(e.target.value);
-                if (validationTrigger) {
-                  setLeadTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={leadType}
-              error={leadTypeError}
             />
           </Col>
         </Row>
@@ -1518,7 +1577,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Row>
         )}
 
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
+        <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Training Mode"
@@ -1536,19 +1595,432 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <CommonSelectField
-              label="Branch Name"
+              label="Region"
               required={true}
-              options={branchOptions}
+              options={regionOptions}
               onChange={(e) => {
-                setBranch(e.target.value);
+                setRegionId(e.target.value);
+                setBranch("");
                 if (validationTrigger) {
-                  setBranchError(selectValidator(e.target.value));
+                  setRegionError(selectValidator(e.target.value));
                 }
               }}
-              value={branch}
-              error={branchError}
+              value={regionId}
+              error={regionError}
             />
           </Col>
+          <Col span={8}>
+            {regionId === 1 ? (
+              <FormControl fullWidth size="small" required>
+                <InputLabel
+                  id="demo-simple-select-label"
+                  sx={{
+                    color: "gray",
+                    fontFamily: "Poppins,  sans-serif",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    marginTop: "1px",
+                    "&.Mui-focused": {
+                      color: "#5b69ca",
+                    },
+                  }}
+                >
+                  Branch Name
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={branch ?? ""}
+                  label="Branch Name"
+                  onChange={(e) => {
+                    console.log("eeeeeeee", e.target.value);
+                    const value = e.target.value;
+                    if (
+                      regionId === 1 &&
+                      (value === 70 ||
+                        value === 80 ||
+                        value === 90 ||
+                        value === 100 ||
+                        value === 102)
+                    ) {
+                      CommonMessage("error", "Region Mismatched");
+                      return;
+                    }
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    fontFamily: "Poppins,  sans-serif",
+                    height: "43px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#a4a4a4",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#5b69ca",
+                      borderWidth: 1,
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 250,
+                        overflowY: "auto",
+                        "& .MuiMenuItem-root": {
+                          fontSize: 13,
+                          fontFamily: "Poppins,  sans-serif",
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Chennai
+                  </p>
+                  <MenuItem value={10}>Velachery</MenuItem>
+                  <MenuItem value={20}>Anna Nager</MenuItem>
+                  <MenuItem value={30}>Porur</MenuItem>
+                  <MenuItem value={40}>OMR</MenuItem>
+                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
+                  <MenuItem value={60}>Tambaram</MenuItem>
+                  <MenuItem value={101}>Online</MenuItem>
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Bangalore
+                  </p>
+                  <MenuItem value={70}>Electronic City</MenuItem>
+                  <MenuItem value={80}>BTM Layout</MenuItem>
+                  <MenuItem value={90}>Marathahalli</MenuItem>
+                  <MenuItem value={102}>Online</MenuItem>
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Hub
+                  </p>
+                  <MenuItem value={100}>Online</MenuItem>
+
+                  {/* <p
+                    style={{
+                      padding: "6px 16px",
+                      fontSize: "13px",
+                      color: "#888",
+                      fontStyle: "Poppins, sans-serif",
+                    }}
+                  >
+                    No data found
+                  </p> */}
+                </Select>
+              </FormControl>
+            ) : regionId === 2 ? (
+              <FormControl fullWidth size="small" required>
+                <InputLabel
+                  id="demo-simple-select-label"
+                  sx={{
+                    color: "gray",
+                    fontFamily: "Poppins,  sans-serif",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    marginTop: "1px",
+                    "&.Mui-focused": {
+                      color: "#5b69ca",
+                    },
+                  }}
+                >
+                  Branch Name
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={branch ?? ""}
+                  label="Branch Name"
+                  onChange={(e) => {
+                    console.log("eeeeeeee", e.target.value);
+                    const value = e.target.value;
+                    if (
+                      regionId === 2 &&
+                      (value === 10 ||
+                        value === 20 ||
+                        value === 30 ||
+                        value === 40 ||
+                        value === 50 ||
+                        value === 60 ||
+                        value === 100 ||
+                        value === 101)
+                    ) {
+                      CommonMessage("error", "Region Mismatched");
+                      return;
+                    }
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    fontFamily: "Poppins,  sans-serif",
+                    height: "43px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#a4a4a4",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#5b69ca",
+                      borderWidth: 1,
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 250,
+                        overflowY: "auto",
+                        "& .MuiMenuItem-root": {
+                          fontSize: 13,
+                          fontFamily: "Poppins,  sans-serif",
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Bangalore
+                  </p>
+                  <MenuItem value={70}>Electronic City</MenuItem>
+                  <MenuItem value={80}>BTM Layout</MenuItem>
+                  <MenuItem value={90}>Marathahalli</MenuItem>
+                  <MenuItem value={102}>Online</MenuItem>
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Chennai
+                  </p>
+                  <MenuItem value={10}>Velachery</MenuItem>
+                  <MenuItem value={20}>Anna Nager</MenuItem>
+                  <MenuItem value={30}>Porur</MenuItem>
+                  <MenuItem value={40}>OMR</MenuItem>
+                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
+                  <MenuItem value={60}>Tambaram</MenuItem>
+                  <MenuItem value={101}>Online</MenuItem>
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Hub
+                  </p>
+                  <MenuItem value={100}>Online</MenuItem>
+
+                  {/* <p
+                    style={{
+                      padding: "6px 16px",
+                      fontSize: "13px",
+                      color: "#888",
+                      fontStyle: "Poppins, sans-serif",
+                    }}
+                  >
+                    No data found
+                  </p> */}
+                </Select>
+              </FormControl>
+            ) : regionId === 3 ? (
+              <FormControl fullWidth size="small" required>
+                <InputLabel
+                  id="demo-simple-select-label"
+                  sx={{
+                    color: "gray",
+                    fontFamily: "Poppins,  sans-serif",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    marginTop: "1px",
+                    "&.Mui-focused": {
+                      color: "#5b69ca",
+                    },
+                  }}
+                >
+                  Branch Name
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={branch ?? ""}
+                  label="Branch Name"
+                  onChange={(e) => {
+                    console.log("eeeeeeee", e.target.value);
+                    const value = e.target.value;
+                    if (regionId === 3 && value != 100) {
+                      CommonMessage("error", "Region Mismatched");
+                      return;
+                    }
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    fontFamily: "Poppins,  sans-serif",
+                    height: "43px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#a4a4a4",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#5b69ca",
+                      borderWidth: 1,
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 250,
+                        overflowY: "auto",
+                        "& .MuiMenuItem-root": {
+                          fontSize: 13,
+                          fontFamily: "Poppins,  sans-serif",
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Hub
+                  </p>
+                  <MenuItem value={100}>Online</MenuItem>
+
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Chennai
+                  </p>
+                  <MenuItem value={10}>Velachery</MenuItem>
+                  <MenuItem value={20}>Anna Nager</MenuItem>
+                  <MenuItem value={30}>Porur</MenuItem>
+                  <MenuItem value={40}>OMR</MenuItem>
+                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
+                  <MenuItem value={60}>Tambaram</MenuItem>
+                  <MenuItem value={101}>Online</MenuItem>
+                  <p
+                    style={{
+                      padding: "4px 9px",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                    }}
+                  >
+                    Bangalore
+                  </p>
+                  <MenuItem value={70}>Electronic City</MenuItem>
+                  <MenuItem value={80}>BTM Layout</MenuItem>
+                  <MenuItem value={90}>Marathahalli</MenuItem>
+                  <MenuItem value={102}>Online</MenuItem>
+                </Select>
+              </FormControl>
+            ) : (
+              <FormControl fullWidth size="small" required>
+                <InputLabel
+                  id="demo-simple-select-label"
+                  sx={{
+                    color: "gray",
+                    fontFamily: "Poppins,  sans-serif",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    marginTop: "1px",
+                    "&.Mui-focused": {
+                      color: "#5b69ca",
+                    },
+                  }}
+                >
+                  Branch Name
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={branch ?? ""}
+                  label="Branch Name"
+                  onChange={(e) => {
+                    console.log("eeeeeeee", e.target.value);
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  sx={{
+                    fontSize: 14,
+                    fontFamily: "Poppins,  sans-serif",
+                    height: "43px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#a4a4a4",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#5b69ca",
+                      borderWidth: 1,
+                    },
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 250,
+                        overflowY: "auto",
+                        "& .MuiMenuItem-root": {
+                          fontSize: 13,
+                          fontFamily: "Poppins,  sans-serif",
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <p
+                    style={{
+                      padding: "6px 16px",
+                      fontSize: "13px",
+                      color: "#888",
+                      fontStyle: "Poppins, sans-serif",
+                    }}
+                  >
+                    No data found
+                  </p>
+                </Select>
+              </FormControl>
+            )}
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Batch Track"
@@ -1566,24 +2038,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
         </Row>
 
-        <p className="addleaddrawer_headings">Sales Information</p>
+        <p className="addleaddrawer_headings">Response Status</p>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Response Status"
-              required={true}
-              options={responseStatusOptions}
-              onChange={(e) => {
-                setResponseLeadStatus(e.target.value);
-                if (validationTrigger) {
-                  setResponseLeadStatusError(selectValidator(e.target.value));
-                }
-              }}
-              value={responseStatus}
-              error={responseStatusError}
-            />
-          </Col>
+        <Row gutter={16} style={{ marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Lead Status"
@@ -1602,6 +2059,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           <Col span={8}>
             <CommonMuiDatePicker
               label="Next Follow-Up Date"
+              required={true}
               onChange={(value) => {
                 console.log("vallll", value);
                 setNxtFollowupDate(value);
@@ -1615,12 +2073,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               disabled={leadId ? true : false}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonMuiDatePicker
               label="Expected Date Join"
+              required={true}
               onChange={(value) => {
                 console.log("vallll", value);
                 setExpectDateJoin(value);
@@ -1633,6 +2089,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               error={expectDateJoinError}
             />
           </Col>
+        </Row>
+
+        <p className="addleaddrawer_headings">Priority Status</p>
+        <Row gutter={16} style={{ marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Priority"
@@ -1648,9 +2108,25 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               error={priorityError}
             />
           </Col>
+          <Col span={10}>
+            <div style={{ marginTop: "-20px" }}>
+              <CommonTextArea
+                label="Comments"
+                required={true}
+                value={comments}
+                onChange={(e) => {
+                  setComments(e.target.value);
+                  if (validationTrigger) {
+                    setCommentsError(addressValidator(e.target.value));
+                  }
+                }}
+                error={commentsError}
+              />
+            </div>
+          </Col>
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
+        {/* <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <p className="leadmanager_ratinglabel">Lead Quality Rating</p>
             <Rate
@@ -1670,20 +2146,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             )}
           </Col>
           <Col span={16}>
-            <CommonTextArea
-              label="Comments"
-              required={true}
-              value={comments}
-              onChange={(e) => {
-                setComments(e.target.value);
-                if (validationTrigger) {
-                  setCommentsError(addressValidator(e.target.value));
-                }
-              }}
-              error={commentsError}
-            />
+           
           </Col>
-        </Row>
+        </Row> */}
 
         <div className="leadmanager_submitlead_buttoncontainer">
           {buttonLoading ? (
@@ -1697,16 +2162,29 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               <CommonSpinner />
             </button>
           ) : (
-            <button
-              className={
-                leadId
-                  ? "leadmanager_updateleadbutton"
-                  : "leadmanager_saveleadbutton"
-              }
-              onClick={handleSubmit}
-            >
-              {leadId ? "Update" : "Save And Add New"}
-            </button>
+            <div style={{ display: "flex", gap: "12px" }}>
+              {leadId ? (
+                ""
+              ) : (
+                <button
+                  className={"leadmanager_updateleadbutton"}
+                  onClick={handleSubmit}
+                >
+                  Save
+                </button>
+              )}
+
+              <button
+                className={
+                  leadId
+                    ? "leadmanager_updateleadbutton"
+                    : "leadmanager_saveleadbutton"
+                }
+                onClick={handleSubmit}
+              >
+                {leadId ? "Update" : "Save And Add New"}
+              </button>
+            </div>
           )}
         </div>
       </Drawer>
@@ -1719,7 +2197,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         onClose={formReset}
         width="35%"
         className="leadmanager_tablefilterdrawer"
-        style={{ position: "relative" }}
+        style={{ position: "relative", paddingBottom: 50 }}
       >
         <Row>
           <Col span={24}>
@@ -1758,17 +2236,24 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       </Drawer>
 
       <Drawer
-        title="Payment Details"
+        title="Make as Customer"
         open={isOpenPaymentDrawer}
         onClose={formReset}
         width="50%"
-        style={{ position: "relative", padding: "0px" }}
+        style={{ position: "relative", padding: "0px", paddingBottom: 50 }}
         className="leadmanager_paymentdetails_drawer"
       >
+        <p
+          className="leadmanager_paymentdetails_drawer_heading"
+          style={{ marginTop: "24px" }}
+        >
+          Candidate Details
+        </p>
+
         <Row
           gutter={16}
           className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "24px" }}
+          style={{ marginTop: "16px" }}
         >
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
@@ -1803,125 +2288,68 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         >
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Country:{" "}
+              Training Mode:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                India
+                {clickedLeadItem ? clickedLeadItem.training_mode : "-"}
               </span>
             </p>
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              State:{" "}
+              Course:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                TamilNadu
+                {clickedLeadItem ? clickedLeadItem.primary_course : "-"}
               </span>
             </p>
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              City:{" "}
+              Course Fees:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.district : "-"}
+                {clickedLeadItem ? "₹" + clickedLeadItem.primary_fees : "-"}
               </span>
             </p>
           </Col>
         </Row>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px" }}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-        >
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              GST NO:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                33AAQCA617L1Z9
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Product Fees: <span style={{ color: "#d32f2f" }}>{subTotal}</span>
-            </p>
-          </Col>
-        </Row>
-
         <Divider className="leadmanger_paymentdrawer_divider" />
 
         <p className="leadmanager_paymentdetails_drawer_heading">
-          Billing Details
+          Payment Details
         </p>
         <Row
           gutter={16}
           className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "20px" }}
+          style={{ marginTop: "20px", marginBottom: "30px" }}
         >
           <Col span={8}>
             <CommonInputField
-              label="Sub Total"
+              label="Fees"
               required={true}
               type="number"
-              errorFontSize={priceError === " is required" ? "11px" : "10px"}
               value={subTotal}
               disabled={true}
             />
           </Col>
-          <Col span={8}>
-            <CommonOutlinedInput
-              label="Discount"
-              icon={<VscPercentage color="rgba(0, 0, 0, 0.6)" />}
-              maxLength={3}
-              type="number"
-              onChange={handleDiscount}
-              value={discount}
-              onInput={(e) => {
-                if (e.target.value.length > 3) {
-                  e.target.value = e.target.value.slice(0, 3);
-                }
-              }}
-              error={discountError}
-              errorFontSize="10px"
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Tax Mode"
-              required={true}
-              options={[
-                { id: 1, name: "With Tax" },
-                { id: 2, name: "Without Tax" },
-              ]}
-              onChange={handleTaxMode}
-              value={taxMode}
-              error={taxModeError}
-              height="41px"
-            />
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "30px" }}
-        >
           <Col span={8}>
             <CommonSelectField
               label="Tax Type"
               required={true}
               options={[
                 { id: 1, name: "GST (18%)" },
-                { id: 2, name: "IGST (18%)" },
+                { id: 2, name: "SGST (18%)" },
+                { id: 3, name: "IGST (18%)" },
+                { id: 4, name: "VAT (18%)" },
+                { id: 5, name: "No tax" },
               ]}
               onChange={handleTaxType}
               value={taxType}
-              disabled={taxMode === 2 ? true : false}
+              error={taxTypeError}
               height="41px"
             />
           </Col>
           <Col span={8}>
             <CommonInputField
-              label="Amount"
+              label="Total Amount"
               required={true}
               disabled
               value={amount}
@@ -1934,14 +2362,25 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         <p className="leadmanager_paymentdetails_drawer_heading">
           Payment Info
         </p>
+
         <Row
           gutter={16}
           className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "20px", marginBottom: "40px" }}
+          style={{ marginTop: "20px" }}
         >
           <Col span={8}>
+            <CommonInputField
+              label="Pay Amount"
+              required={true}
+              onChange={handlePaidNow}
+              value={paidNow}
+              error={paidNowError}
+              errorFontSize="10px"
+            />
+          </Col>
+          <Col span={8}>
             <CommonSelectField
-              label="Payment Type"
+              label="Payment Mode"
               required={true}
               options={[
                 { id: 1, name: "Cash" },
@@ -1950,27 +2389,42 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
                 { id: 4, name: "UPI" },
                 { id: 5, name: "Razorpay" },
               ]}
-              onChange={(e) => {
-                setPaymentType(e.target.value);
-                if (paymentValidationTrigger) {
-                  setPaymentTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={paymentType}
-              error={paymentTypeError}
+              onChange={handlePaymentType}
+              value={paymentMode}
+              error={paymentModeError}
             />
           </Col>
           <Col span={8}>
             <CommonInputField
-              label="Paid Now"
+              label="Convenience fees"
               required={true}
-              onChange={handlePaidNow}
-              value={paidNow}
-              error={paidNowError}
-              errorFontSize="9.2px"
+              value={convenienceFees}
+              disabled={true}
+              type="number"
             />
           </Col>
-          <Col span={8} style={{ marginBottom: "20px", position: "relative" }}>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "40px" }}
+        >
+          <Col span={8}>
+            <CommonMuiDatePicker
+              label="Payment Date"
+              required={true}
+              onChange={(value) => {
+                setPaymentDate(value);
+                if (paymentValidationTrigger) {
+                  setPaymentDateError(selectValidator(value));
+                }
+              }}
+              value={paymentDate}
+              error={paymentDateError}
+            />
+          </Col>
+          <Col span={16}>
             <p
               className="leads_paymentscreenshot_label"
               style={{ fontSize: "13px" }}
@@ -2008,8 +2462,64 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
         </Row>
 
+        <Divider className="leadmanger_paymentdrawer_divider" />
+
+        <p className="leadmanager_paymentdetails_drawer_heading">
+          Balance Amount Details
+        </p>
+
+        <Row
+          gutter={16}
+          style={{ marginTop: "20px", marginBottom: "30px" }}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+        >
+          <Col span={8}>
+            <CommonInputField
+              label="Balance Amount"
+              required={true}
+              value={balanceAmount}
+              disabled={true}
+              type="number"
+            />
+          </Col>
+          {isShowDueDate ? (
+            <Col span={8}>
+              <CommonMuiDatePicker
+                label="Next Due Date"
+                onChange={(value) => {
+                  setDueDate(value);
+                  setDueDateError(selectValidator(value));
+                }}
+                value={dueDate}
+                error={dueDateError}
+                disablePreviousDates={true}
+              />
+            </Col>
+          ) : (
+            ""
+          )}
+        </Row>
+
         <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
+          <div
+            className="leadmanager_submitlead_buttoncontainer"
+            style={{ gap: "12px" }}
+          >
+            {invoiceButtonLoading ? (
+              <button className="lead_paymentsubmitwithinvoice_loadingbutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="lead_paymentsubmitwithinvoice_button"
+                onClick={() => {
+                  handlePaymentSubmit(true);
+                }}
+              >
+                Submit and Send Invoice
+              </button>
+            )}
+
             {buttonLoading ? (
               <button className="users_adddrawer_loadingcreatebutton">
                 <CommonSpinner />
@@ -2017,7 +2527,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={handlePaymentSubmit}
+                onClick={() => {
+                  handlePaymentSubmit(false);
+                }}
               >
                 Submit
               </button>
