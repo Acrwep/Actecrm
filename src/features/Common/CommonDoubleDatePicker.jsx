@@ -5,7 +5,12 @@ import { DatePicker, Space } from "antd";
 import "./commonstyles.css";
 const { RangePicker } = DatePicker;
 
-export default function CommonDoubleDatePicker({ onChange, value, label }) {
+export default function CommonDoubleDatePicker({
+  onChange,
+  value,
+  label,
+  showFutureDates,
+}) {
   const handleRangePickerChange = (dates, dateStrings) => {
     // If dates are selected
     if (dates && dates.length === 2) {
@@ -25,6 +30,9 @@ export default function CommonDoubleDatePicker({ onChange, value, label }) {
   };
   const disabledDate = (current) => {
     // Disable dates that are after today
+    if (showFutureDates === true) {
+      return;
+    }
     return current && current > moment().endOf("day");
   };
   return (

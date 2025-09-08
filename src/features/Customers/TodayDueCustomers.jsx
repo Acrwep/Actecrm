@@ -18,6 +18,7 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { LuCircleUser } from "react-icons/lu";
+import moment from "moment";
 
 export default function TodayDueCustomers() {
   const [searchValue, setSearchValue] = useState("");
@@ -157,9 +158,15 @@ export default function TodayDueCustomers() {
                   {text}
                 </Button>
               </div>
-            ) : text === "Awaiting Feedback" ? (
+            ) : text === "Awaiting G-Review" ? (
               <div>
-                <Button className="customers_status_awaitfeedback_button">
+                <Button className="customers_status_awaitgreview_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting L-Review" ? (
+              <div>
+                <Button className="customers_status_awaitgreview_button">
                   {text}
                 </Button>
               </div>
@@ -260,10 +267,11 @@ export default function TodayDueCustomers() {
 
   const getPendingFeesCustomersData = async () => {
     const today = new Date();
+    const formatDate = formatToBackendIST(today);
 
     const payload = {
-      from_date: formatToBackendIST(today),
-      to_date: formatToBackendIST(today),
+      from_date: moment(formatDate).format("YYYY-MM-DD"),
+      to_date: moment(formatDate).format("YYYY-MM-DD"),
     };
     try {
       const response = await getPendingFeesCustomers(payload);

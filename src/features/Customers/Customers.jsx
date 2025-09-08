@@ -2881,6 +2881,7 @@ export default function Customers() {
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <FaRegCircleUser size={15} color="gray" />
+
                   <p className="customerdetails_rowheading">Name</p>
                 </div>
               </Col>
@@ -3322,10 +3323,41 @@ export default function Customers() {
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoLocationOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Location</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.current_location
+                    ? customerDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
 
           <Col span={12}>
             <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.course_name
+                    ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
@@ -3343,43 +3375,51 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Timing</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_timing
-                    ? customerDetails.batch_timing
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Training Mode</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
+                  {/* {customerDetails && customerDetails.batch_tracking
+                    ? customerDetails.batch_tracking
+                    : "-"} */}
                   {customerDetails && customerDetails.training_mode
                     ? customerDetails.training_mode
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.primary_fees
+                    ? "₹" + customerDetails.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f" }}
+                >
+                  {customerDetails &&
+                  customerDetails.balance_amount !== undefined &&
+                  customerDetails.balance_amount !== null
+                    ? "₹" + customerDetails.balance_amount
                     : "-"}
                 </p>
               </Col>
@@ -4468,7 +4508,7 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <FaWhatsapp size={15} color="gray" />
+                      <IoLocationOutline size={15} color="gray" />
                       <p className="customerdetails_rowheading">Location</p>
                     </div>
                   </Col>

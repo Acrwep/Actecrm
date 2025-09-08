@@ -191,6 +191,15 @@ export const getLeadResponseStatus = async (payload) => {
   }
 };
 
+export const getRegions = async (payload) => {
+  try {
+    const response = await api.get("/api/getRegion", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBranches = async (payload) => {
   try {
     const response = await api.get("/api/getBranches", { params: payload });

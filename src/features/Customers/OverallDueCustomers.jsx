@@ -21,6 +21,7 @@ import { BsGenderMale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { LuCircleUser } from "react-icons/lu";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
+import moment from "moment";
 
 export default function OverallDueCustomers() {
   const [searchValue, setSearchValue] = useState("");
@@ -160,9 +161,15 @@ export default function OverallDueCustomers() {
                   {text}
                 </Button>
               </div>
-            ) : text === "Awaiting Feedback" ? (
+            ) : text === "Awaiting G-Review" ? (
               <div>
-                <Button className="customers_status_awaitfeedback_button">
+                <Button className="customers_status_awaitgreview_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting L-Review" ? (
+              <div>
+                <Button className="customers_status_awaitgreview_button">
                   {text}
                 </Button>
               </div>
@@ -261,15 +268,19 @@ export default function OverallDueCustomers() {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
 
-    getPendingFeesCustomersData();
+    getPendingFeesCustomersData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1]
+    );
   }, []);
 
-  const getPendingFeesCustomersData = async () => {
-    const today = new Date();
+  const getPendingFeesCustomersData = async (startDate, endDate) => {
+    const from_date = formatToBackendIST(startDate);
+    const to_date = formatToBackendIST(endDate);
 
     const payload = {
-      from_date: formatToBackendIST(today),
-      to_date: formatToBackendIST(today),
+      from_date: moment(from_date).format("YYYY-MM-DD"),
+      to_date: moment(to_date).format("YYYY-MM-DD"),
     };
     try {
       const response = await getPendingFeesCustomers(payload);
@@ -298,6 +309,7 @@ export default function OverallDueCustomers() {
     const endDate = dateStrings[1];
     if (startDate != "" && endDate != "") {
       console.log("call function");
+      getPendingFeesCustomersData(startDate, endDate);
     }
   };
 
@@ -397,6 +409,7 @@ export default function OverallDueCustomers() {
               <CommonDoubleDatePicker
                 value={selectedDates}
                 onChange={handleDateChange}
+                showFutureDates={true}
               />
             </div>
           </div>

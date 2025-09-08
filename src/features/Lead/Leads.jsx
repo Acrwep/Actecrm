@@ -59,6 +59,7 @@ import {
   getLeadStatus,
   getLeadType,
   getPriority,
+  getRegions,
   getTechnologies,
   getTrainingMode,
   leadPayment,
@@ -126,11 +127,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [expectDateJoin, setExpectDateJoin] = useState(null);
   const [expectDateJoinError, setExpectDateJoinError] = useState("");
 
-  const regionOptions = [
-    { id: 1, name: "Chennai" },
-    { id: 2, name: "Bangalore" },
-    { id: 3, name: "Hub" },
-  ];
+  const [regionOptions, setRegionOptions] = useState([]);
   const [regionId, setRegionId] = useState(null);
   const [regionError, setRegionError] = useState("");
   const [branchOptions, setBranchOptions] = useState([]);
@@ -184,6 +181,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     { title: "State", key: "state", dataIndex: "state", isChecked: true },
     { title: "City ", key: "district", dataIndex: "district", isChecked: true },
     {
+      title: "Lead Source",
+      key: "lead_type",
+      dataIndex: "lead_type",
+      isChecked: true,
+    },
+    {
       title: "Primary Course",
       key: "primary_course",
       dataIndex: "primary_course",
@@ -214,39 +217,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       isChecked: true,
     },
     {
-      title: "Priority",
-      key: "priority",
-      dataIndex: "priority",
-      isChecked: true,
-    },
-    {
-      title: "Lead Type",
-      key: "lead_type",
-      dataIndex: "lead_type",
-      isChecked: true,
-    },
-    {
-      title: "Lead Status",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      isChecked: true,
-    },
-    {
-      title: "Response Status",
-      key: "response_status",
-      dataIndex: "response_status",
-      isChecked: true,
-    },
-    {
-      title: "Next Followup Date",
-      key: "next_follow_up_date",
-      dataIndex: "next_follow_up_date",
-      isChecked: true,
-    },
-    {
-      title: "Expected Join Date",
-      key: "expected_join_date",
-      dataIndex: "expected_join_date",
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
       isChecked: true,
     },
     {
@@ -262,15 +235,39 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       isChecked: true,
     },
     {
-      title: "Rating",
-      key: "lead_quality_rating",
-      dataIndex: "lead_quality_rating",
+      title: "Lead Status",
+      key: "lead_status",
+      dataIndex: "lead_status",
+      isChecked: true,
+    },
+    {
+      title: "Next Followup Date",
+      key: "next_follow_up_date",
+      dataIndex: "next_follow_up_date",
+      isChecked: true,
+    },
+    {
+      title: "Expected Join Date",
+      key: "expected_join_date",
+      dataIndex: "expected_join_date",
+      isChecked: true,
+    },
+    {
+      title: "Priority",
+      key: "priority",
+      dataIndex: "priority",
       isChecked: true,
     },
     {
       title: "Comments",
       key: "comments",
       dataIndex: "comments",
+      isChecked: true,
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
       isChecked: true,
     },
   ]);
@@ -282,6 +279,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     { title: "Country", key: "country", dataIndex: "country", width: 120 },
     { title: "State", key: "state", dataIndex: "state", width: 120 },
     { title: "City ", key: "district", dataIndex: "district", width: 120 },
+    {
+      title: "Lead Source",
+      key: "lead_type",
+      dataIndex: "lead_type",
+      width: 140,
+    },
     {
       title: "Primary Course",
       key: "primary_course",
@@ -308,23 +311,29 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dataIndex: "training_mode",
       width: 140,
     },
-    { title: "Priority", key: "priority", dataIndex: "priority", width: 140 },
     {
-      title: "Lead Type",
-      key: "lead_type",
-      dataIndex: "lead_type",
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
       width: 140,
+    },
+    {
+      title: "Branch",
+      key: "branche_name",
+      dataIndex: "branche_name",
+      width: 190,
+    },
+    {
+      title: "Batch Track",
+      key: "batch_track",
+      dataIndex: "batch_track",
+      width: 120,
     },
     {
       title: "Lead Status",
       key: "lead_status",
       dataIndex: "lead_status",
       width: 140,
-    },
-    {
-      title: "Response Status",
-      key: "response_status",
-      dataIndex: "response_status",
     },
     {
       title: "Next Followup Date",
@@ -342,24 +351,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
-    { title: "Branch", key: "branche_name", dataIndex: "branche_name" },
     {
-      title: "Batch Track",
-      key: "batch_track",
-      dataIndex: "batch_track",
-      width: 120,
-    },
-    {
-      title: "Rating",
-      key: "lead_quality_rating",
-      dataIndex: "lead_quality_rating",
-      width: 130,
+      title: "Priority",
+      key: "priority",
+      dataIndex: "priority",
+      width: 140,
       fixed: "right",
-      render: (text, record) => {
-        return (
-          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
-        );
-      },
     },
     {
       title: "Comments",
@@ -429,7 +426,13 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     { title: "State", key: "state", dataIndex: "state", width: 120 },
     { title: "City ", key: "district", dataIndex: "district", width: 120 },
     {
-      title: "Primary Course ",
+      title: "Lead Source",
+      key: "lead_type",
+      dataIndex: "lead_type",
+      width: 140,
+    },
+    {
+      title: "Primary Course",
       key: "primary_course",
       dataIndex: "primary_course",
     },
@@ -454,23 +457,29 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dataIndex: "training_mode",
       width: 140,
     },
-    { title: "Priority", key: "priority", dataIndex: "priority", width: 140 },
     {
-      title: "Lead Type",
-      key: "lead_type",
-      dataIndex: "lead_type",
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
       width: 140,
+    },
+    {
+      title: "Branch",
+      key: "branche_name",
+      dataIndex: "branche_name",
+      width: 190,
+    },
+    {
+      title: "Batch Track",
+      key: "batch_track",
+      dataIndex: "batch_track",
+      width: 120,
     },
     {
       title: "Lead Status",
       key: "lead_status",
       dataIndex: "lead_status",
       width: 140,
-    },
-    {
-      title: "Response Status",
-      key: "response_status",
-      dataIndex: "response_status",
     },
     {
       title: "Next Followup Date",
@@ -488,29 +497,70 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
-    { title: "Branch", key: "branche_name", dataIndex: "branche_name" },
     {
-      title: "Batch Track",
-      key: "batch_track",
-      dataIndex: "batch_track",
-      width: 120,
-    },
-    {
-      title: "Rating",
-      key: "lead_quality_rating",
-      dataIndex: "lead_quality_rating",
-      width: 130,
-      render: (text, record) => {
-        return (
-          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
-        );
-      },
+      title: "Priority",
+      key: "priority",
+      dataIndex: "priority",
+      width: 140,
+      fixed: "right",
     },
     {
       title: "Comments",
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
+      width: 180,
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="trainers_actionbuttonContainer">
+            <AiOutlineEdit
+              size={20}
+              className="trainers_action_icons"
+              onClick={() => handleEdit(record)}
+            />
+
+            {record.is_customer_reg === 1 ? (
+              <Tooltip
+                placement="bottom"
+                title="Already a Customer"
+                className="leadtable_customertooltip"
+              >
+                <FaRegAddressCard
+                  size={19}
+                  color="#2ed573"
+                  className="trainers_action_icons"
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip
+                placement="bottom"
+                title="Make as customer"
+                className="leadtable_customertooltip"
+              >
+                <FaRegAddressCard
+                  size={19}
+                  color="#d32f2f"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenPaymentDrawer(true);
+                    setSubTotal(parseInt(record.primary_fees));
+                    setAmount(parseInt(record.primary_fees));
+                    setBalanceAmount(parseInt(record.primary_fees));
+                    setClickedLeadItem(record);
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
   ];
   const [leadData, setLeadData] = useState([]);
@@ -639,17 +689,17 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
-        getBranchesData();
+        getRegionData();
       }, 300);
     }
   };
 
-  const getBranchesData = async () => {
+  const getRegionData = async () => {
     try {
-      const response = await getBranches();
-      setBranchOptions(response?.data?.result || []);
+      const response = await getRegions();
+      setRegionOptions(response?.data?.data || []);
     } catch (error) {
-      setBranchOptions([]);
+      setRegionOptions([]);
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
@@ -723,6 +773,19 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      setBranchOptions(response?.data?.result || []);
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const debouncedSearch = useMemo(
     () =>
       debounce((val) => {
@@ -755,6 +818,14 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setBalanceAmount(
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
+
+    if (paymentMode === 2 || paymentMode === 5) {
+      const conve_fees = getConvenienceFees(value);
+      setConvenienceFees(conve_fees);
+    } else {
+      setConvenienceFees(0);
+    }
+
     if (paymentValidationTrigger) {
       setPaidNowError(priceValidator(value, parseInt(amt)));
     }
@@ -767,19 +838,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
     const amnt = calculateAmount(
       parseInt(subTotal),
-      e.target.value === 5 ? 0 : 18,
-      paymentMode === 2 || paymentMode === 5 ? 3 : 0
+      e.target.value === 5 ? 0 : 18
     );
     if (isNaN(amnt)) {
       setAmount("");
     } else {
       setAmount(String(amnt));
-      const conve_fees = getConvenienceFees(
-        amnt,
-        paymentMode === 2 || paymentMode === 5 ? 3 : 0
-      );
-      console.log("conve_fees", conve_fees);
-      setConvenienceFees(conve_fees);
     }
 
     //handle balance amount
@@ -803,17 +867,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const handlePaymentType = (e) => {
     const value = e.target.value;
     setPaymentMode(value);
-    const amnt = calculateAmount(
-      parseInt(subTotal),
-      taxType === 5 ? 0 : 18,
-      value === 2 || value === 5 ? 3 : 0
-    );
+    const amnt = calculateAmount(parseInt(subTotal), taxType === 5 ? 0 : 18);
     setAmount(amnt);
-    const conve_fees = getConvenienceFees(
-      amnt,
-      value === 2 || value === 5 ? 3 : 0
-    );
-    setConvenienceFees(conve_fees);
 
     if (paymentValidationTrigger) {
       setPaymentModeError(selectValidator(value));
@@ -835,6 +890,14 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setBalanceAmount(
       getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
     );
+
+    //handle convenience fees
+    if (value === 2 || value === 5) {
+      const conve_fees = getConvenienceFees(paidNow);
+      setConvenienceFees(conve_fees);
+    } else {
+      setConvenienceFees(0);
+    }
   };
 
   const handlePaymentScreenshot = ({ file }) => {
@@ -911,8 +974,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setResponseLeadStatus(item.response_status_id);
     setNxtFollowupDate(item.next_follow_up_date);
     setExpectDateJoin(item.expected_join_date);
-    setRegionId(null);
-    setRegionError("");
+    setRegionId(item.region_id);
     setBranch(item.branch_id);
     setBatchTrack(item.batch_track_id);
     setRating(item.lead_quality_rating);
@@ -1017,12 +1079,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const priorityValidate = selectValidator(priority);
     const leadTypeValidate = selectValidator(leadType);
     const leadStatusValidate = selectValidator(leadStatus);
-    const responseStatusValidate = selectValidator(responseStatus);
     const nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
     const expectDateJoinValidate = selectValidator(expectDateJoin);
     const branchValidate = selectValidator(branch);
     const batchTrackValidate = selectValidator(batchTrack);
-    const ratingValidate = selectValidator(rating);
     const commentsValidate = addressValidator(comments);
 
     setNameError(nameValidate);
@@ -1038,12 +1098,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setPriorityError(priorityValidate);
     setLeadTypeError(leadTypeValidate);
     setLeadStatusError(leadStatusValidate);
-    setResponseLeadStatusError(responseStatusValidate);
     setNxtFollowupDateError(nxtFollowupDateValidate);
     setExpectDateJoinError(expectDateJoinValidate);
     setBranchError(branchValidate);
     setBatchTrackError(batchTrackValidate);
-    setRatingError(ratingValidate);
     setCommentsError(commentsValidate);
 
     if (
@@ -1060,12 +1118,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       priorityValidate ||
       leadTypeValidate ||
       leadStatusValidate ||
-      responseStatusValidate ||
       nxtFollowupDateValidate ||
       expectDateJoinValidate ||
       branchValidate ||
       batchTrackValidate ||
-      ratingValidate ||
       commentsValidate
     )
       return;
@@ -1093,10 +1149,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       priority_id: priority,
       lead_type_id: leadType,
       lead_status_id: leadStatus,
-      response_status_id: responseStatus,
       next_follow_up_date: formatToBackendIST(nxtFollowupDate),
       expected_join_date: formatToBackendIST(expectDateJoin),
-      lead_quality_rating: rating,
+      region_id: regionId,
       branch_id: branch,
       batch_track_id: batchTrack,
       comments: comments,
@@ -1186,24 +1241,34 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const today = new Date();
 
     // Step 2: Calculate GST on discounted amount
-    const gstAmount = 0;
+    const gstAmount = amount - subTotal;
 
     console.log("GST Amount:", gstAmount);
 
     const payload = {
       lead_id: clickedLeadItem.id,
-      invoice_date: formatToBackendIST(today),
-      tax_type: taxType === 5 ? "" : "GST 18%",
-      // gst_percentage: taxMode === 1 ? "18%" : 0,
+      invoice_date: formatToBackendIST(paymentDate),
+      tax_type:
+        taxType === 1
+          ? "GST (18%)"
+          : taxType === 2
+          ? "SGST (18%)"
+          : taxType === 3
+          ? "IGST (18%)"
+          : taxType === 4
+          ? "VAT (18%)"
+          : "No Tax",
+      gst_percentage: taxType === 5 ? "0%" : "18%",
       gst_amount: gstAmount,
       total_amount: amount,
-      convenience_fees: 0,
+      convenience_fees: convenienceFees,
       paymode_id: paymentMode,
       paid_amount: paidNow,
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
       next_due_date: formatToBackendIST(dueDate),
       created_date: formatToBackendIST(today),
+      paid_date: formatToBackendIST(paymentDate),
     };
 
     console.log("payment payload", payload);
@@ -1356,7 +1421,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3800 }}
+          scroll={{ x: 3400 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}
@@ -1601,6 +1666,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               onChange={(e) => {
                 setRegionId(e.target.value);
                 setBranch("");
+                getBranchesData(e.target.value);
                 if (validationTrigger) {
                   setRegionError(selectValidator(e.target.value));
                 }
@@ -1610,413 +1676,19 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={8}>
-            {regionId === 1 ? (
-              <FormControl fullWidth size="small" required>
-                <InputLabel
-                  id="demo-simple-select-label"
-                  sx={{
-                    color: "gray",
-                    fontFamily: "Poppins,  sans-serif",
-                    fontWeight: 400,
-                    fontSize: "14px",
-                    marginTop: "1px",
-                    "&.Mui-focused": {
-                      color: "#5b69ca",
-                    },
-                  }}
-                >
-                  Branch Name
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={branch ?? ""}
-                  label="Branch Name"
-                  onChange={(e) => {
-                    console.log("eeeeeeee", e.target.value);
-                    const value = e.target.value;
-                    if (
-                      regionId === 1 &&
-                      (value === 70 ||
-                        value === 80 ||
-                        value === 90 ||
-                        value === 100 ||
-                        value === 102)
-                    ) {
-                      CommonMessage("error", "Region Mismatched");
-                      return;
-                    }
-                    setBranch(e.target.value);
-                    if (validationTrigger) {
-                      setBranchError(selectValidator(e.target.value));
-                    }
-                  }}
-                  sx={{
-                    fontSize: 14,
-                    fontFamily: "Poppins,  sans-serif",
-                    height: "43px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#a4a4a4",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#5b69ca",
-                      borderWidth: 1,
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        "& .MuiMenuItem-root": {
-                          fontSize: 13,
-                          fontFamily: "Poppins,  sans-serif",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Chennai
-                  </p>
-                  <MenuItem value={10}>Velachery</MenuItem>
-                  <MenuItem value={20}>Anna Nager</MenuItem>
-                  <MenuItem value={30}>Porur</MenuItem>
-                  <MenuItem value={40}>OMR</MenuItem>
-                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
-                  <MenuItem value={60}>Tambaram</MenuItem>
-                  <MenuItem value={101}>Online</MenuItem>
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Bangalore
-                  </p>
-                  <MenuItem value={70}>Electronic City</MenuItem>
-                  <MenuItem value={80}>BTM Layout</MenuItem>
-                  <MenuItem value={90}>Marathahalli</MenuItem>
-                  <MenuItem value={102}>Online</MenuItem>
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Hub
-                  </p>
-                  <MenuItem value={100}>Online</MenuItem>
-
-                  {/* <p
-                    style={{
-                      padding: "6px 16px",
-                      fontSize: "13px",
-                      color: "#888",
-                      fontStyle: "Poppins, sans-serif",
-                    }}
-                  >
-                    No data found
-                  </p> */}
-                </Select>
-              </FormControl>
-            ) : regionId === 2 ? (
-              <FormControl fullWidth size="small" required>
-                <InputLabel
-                  id="demo-simple-select-label"
-                  sx={{
-                    color: "gray",
-                    fontFamily: "Poppins,  sans-serif",
-                    fontWeight: 400,
-                    fontSize: "14px",
-                    marginTop: "1px",
-                    "&.Mui-focused": {
-                      color: "#5b69ca",
-                    },
-                  }}
-                >
-                  Branch Name
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={branch ?? ""}
-                  label="Branch Name"
-                  onChange={(e) => {
-                    console.log("eeeeeeee", e.target.value);
-                    const value = e.target.value;
-                    if (
-                      regionId === 2 &&
-                      (value === 10 ||
-                        value === 20 ||
-                        value === 30 ||
-                        value === 40 ||
-                        value === 50 ||
-                        value === 60 ||
-                        value === 100 ||
-                        value === 101)
-                    ) {
-                      CommonMessage("error", "Region Mismatched");
-                      return;
-                    }
-                    setBranch(e.target.value);
-                    if (validationTrigger) {
-                      setBranchError(selectValidator(e.target.value));
-                    }
-                  }}
-                  sx={{
-                    fontSize: 14,
-                    fontFamily: "Poppins,  sans-serif",
-                    height: "43px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#a4a4a4",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#5b69ca",
-                      borderWidth: 1,
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        "& .MuiMenuItem-root": {
-                          fontSize: 13,
-                          fontFamily: "Poppins,  sans-serif",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Bangalore
-                  </p>
-                  <MenuItem value={70}>Electronic City</MenuItem>
-                  <MenuItem value={80}>BTM Layout</MenuItem>
-                  <MenuItem value={90}>Marathahalli</MenuItem>
-                  <MenuItem value={102}>Online</MenuItem>
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Chennai
-                  </p>
-                  <MenuItem value={10}>Velachery</MenuItem>
-                  <MenuItem value={20}>Anna Nager</MenuItem>
-                  <MenuItem value={30}>Porur</MenuItem>
-                  <MenuItem value={40}>OMR</MenuItem>
-                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
-                  <MenuItem value={60}>Tambaram</MenuItem>
-                  <MenuItem value={101}>Online</MenuItem>
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Hub
-                  </p>
-                  <MenuItem value={100}>Online</MenuItem>
-
-                  {/* <p
-                    style={{
-                      padding: "6px 16px",
-                      fontSize: "13px",
-                      color: "#888",
-                      fontStyle: "Poppins, sans-serif",
-                    }}
-                  >
-                    No data found
-                  </p> */}
-                </Select>
-              </FormControl>
-            ) : regionId === 3 ? (
-              <FormControl fullWidth size="small" required>
-                <InputLabel
-                  id="demo-simple-select-label"
-                  sx={{
-                    color: "gray",
-                    fontFamily: "Poppins,  sans-serif",
-                    fontWeight: 400,
-                    fontSize: "14px",
-                    marginTop: "1px",
-                    "&.Mui-focused": {
-                      color: "#5b69ca",
-                    },
-                  }}
-                >
-                  Branch Name
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={branch ?? ""}
-                  label="Branch Name"
-                  onChange={(e) => {
-                    console.log("eeeeeeee", e.target.value);
-                    const value = e.target.value;
-                    if (regionId === 3 && value != 100) {
-                      CommonMessage("error", "Region Mismatched");
-                      return;
-                    }
-                    setBranch(e.target.value);
-                    if (validationTrigger) {
-                      setBranchError(selectValidator(e.target.value));
-                    }
-                  }}
-                  sx={{
-                    fontSize: 14,
-                    fontFamily: "Poppins,  sans-serif",
-                    height: "43px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#a4a4a4",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#5b69ca",
-                      borderWidth: 1,
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        "& .MuiMenuItem-root": {
-                          fontSize: 13,
-                          fontFamily: "Poppins,  sans-serif",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Hub
-                  </p>
-                  <MenuItem value={100}>Online</MenuItem>
-
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Chennai
-                  </p>
-                  <MenuItem value={10}>Velachery</MenuItem>
-                  <MenuItem value={20}>Anna Nager</MenuItem>
-                  <MenuItem value={30}>Porur</MenuItem>
-                  <MenuItem value={40}>OMR</MenuItem>
-                  <MenuItem value={50}>Maraimalai Nagar</MenuItem>
-                  <MenuItem value={60}>Tambaram</MenuItem>
-                  <MenuItem value={101}>Online</MenuItem>
-                  <p
-                    style={{
-                      padding: "4px 9px",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                    }}
-                  >
-                    Bangalore
-                  </p>
-                  <MenuItem value={70}>Electronic City</MenuItem>
-                  <MenuItem value={80}>BTM Layout</MenuItem>
-                  <MenuItem value={90}>Marathahalli</MenuItem>
-                  <MenuItem value={102}>Online</MenuItem>
-                </Select>
-              </FormControl>
-            ) : (
-              <FormControl fullWidth size="small" required>
-                <InputLabel
-                  id="demo-simple-select-label"
-                  sx={{
-                    color: "gray",
-                    fontFamily: "Poppins,  sans-serif",
-                    fontWeight: 400,
-                    fontSize: "14px",
-                    marginTop: "1px",
-                    "&.Mui-focused": {
-                      color: "#5b69ca",
-                    },
-                  }}
-                >
-                  Branch Name
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={branch ?? ""}
-                  label="Branch Name"
-                  onChange={(e) => {
-                    console.log("eeeeeeee", e.target.value);
-                    setBranch(e.target.value);
-                    if (validationTrigger) {
-                      setBranchError(selectValidator(e.target.value));
-                    }
-                  }}
-                  sx={{
-                    fontSize: 14,
-                    fontFamily: "Poppins,  sans-serif",
-                    height: "43px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#a4a4a4",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#5b69ca",
-                      borderWidth: 1,
-                    },
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        "& .MuiMenuItem-root": {
-                          fontSize: 13,
-                          fontFamily: "Poppins,  sans-serif",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "6px 16px",
-                      fontSize: "13px",
-                      color: "#888",
-                      fontStyle: "Poppins, sans-serif",
-                    }}
-                  >
-                    No data found
-                  </p>
-                </Select>
-              </FormControl>
-            )}
+            <CommonSelectField
+              label="Branch Name"
+              required={true}
+              options={branchOptions}
+              onChange={(e) => {
+                setBranch(e.target.value);
+                if (validationTrigger) {
+                  setBranchError(selectValidator(e.target.value));
+                }
+              }}
+              value={branch}
+              error={branchError}
+            />
           </Col>
         </Row>
 
@@ -2288,6 +1960,14 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         >
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
+              Course:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                {clickedLeadItem ? clickedLeadItem.primary_course : "-"}
+              </span>
+            </p>
+          </Col>
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
               Training Mode:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
                 {clickedLeadItem ? clickedLeadItem.training_mode : "-"}
@@ -2296,9 +1976,24 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Course:{" "}
+              Region:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.primary_course : "-"}
+                {clickedLeadItem ? clickedLeadItem.region_name : "-"}
+              </span>
+            </p>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+          style={{ marginTop: "20px" }}
+        >
+          <Col span={8}>
+            <p className="leadmanager_paymentdrawer_userheadings">
+              Branch Name:{" "}
+              <span className="leadmanager_paymentdrawer_userdetails">
+                {clickedLeadItem ? clickedLeadItem.branche_name : "-"}
               </span>
             </p>
           </Col>

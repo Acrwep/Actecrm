@@ -305,7 +305,7 @@ export const getBalanceAmount = (totalAmount, paidAmount) => {
   return parseFloat(result.toFixed(2)); // keeps 2 decimals
 };
 
-export const calculateAmount = (price, gst = 0, paymentType = 0) => {
+export const calculateAmount = (price, gst = 0) => {
   if (typeof price !== "number" || price < 0) {
     throw new Error("Price must be a positive number");
   }
@@ -317,25 +317,19 @@ export const calculateAmount = (price, gst = 0, paymentType = 0) => {
     finalPrice += (finalPrice * gst) / 100;
   }
 
-  // Add extra % based on paymentType
-  if (paymentType > 0) {
-    finalPrice += (finalPrice * paymentType) / 100;
-  }
-
-  return parseInt(finalPrice); // round to 2 decimals
+  return parseInt(finalPrice); // keep 2 decimals
 };
-export const getConvenienceFees = (totalAmount, paymentType = 0) => {
+
+export const getConvenienceFees = (totalAmount) => {
   if (typeof totalAmount !== "number" || totalAmount < 0) {
     throw new Error("Total amount must be a positive number");
   }
 
-  if (typeof paymentType !== "number" || paymentType < 0) {
-    throw new Error("Payment type must be a non-negative number");
-  }
+  // Calculate 3% of the amount
+  const fees = (totalAmount * 3) / 100;
 
-  const fees = (totalAmount * paymentType) / 100;
-
-  return parseInt(fees); // round to 2 decimals
+  // Round to 2 decimals
+  return parseInt(fees);
 };
 
 export const accountNumberValidator = (accountnumber) => {
