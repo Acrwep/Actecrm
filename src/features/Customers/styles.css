@@ -667,6 +667,13 @@
   margin-bottom: 9px !important;
   font-size: 12px !important;
 }
+.customers_classtaken_customerscount {
+  color: gray;
+  font-size: 11px;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
 .customer_trainerreject_button {
   background-color: #d32f2f;
   border-radius: 6px;
@@ -914,7 +921,25 @@
   align-items: center;
   height: 300px;
 }
-
+.customer_registration_terms_container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 25px;
+  font-size: 13px;
+}
+.customer_registration_terms_contentContainer ul {
+  font-size: 13px;
+  color: #333;
+}
+.customer_registration_terms_contentContainer li {
+  margin-bottom: 12px;
+}
+.customer_registration_terms_error {
+  color: #d32f2f;
+  font-size: 11px;
+  padding: 4px 20px;
+}
 /* customer update styles */
 .customerupdate_drawer .ant-drawer-body {
   padding: 0px !important;
@@ -953,4 +978,16 @@
   font-weight: 600;
   margin-top: 20px;
   margin-bottom: 12px !important;
+}
+
+/* pending customers styles */
+.pendingcustomer_paymentscreenshot_viewbutton {
+  color: #5b69ca;
+  background-color: transparent !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 0px !important;
 }

@@ -3,27 +3,18 @@ import {
   Col,
   Row,
   Drawer,
-  Rate,
   Tooltip,
   Divider,
   Upload,
   Button,
   Checkbox,
 } from "antd";
-import {
-  FormControl,
-  Select,
-  InputLabel,
-  MenuItem,
-  ListSubheader,
-} from "@mui/material";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import {
   addressValidator,
   calculateAmount,
   debounce,
-  discountValidator,
   emailValidator,
   formatToBackendIST,
   getBalanceAmount,
@@ -38,15 +29,12 @@ import {
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { SiWhatsapp } from "react-icons/si";
-import { VscPercentage } from "react-icons/vsc";
-import CommonDatePicker from "../Common/CommonDatePicker";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { AiOutlineEdit } from "react-icons/ai";
-import { RiDeleteBinLine } from "react-icons/ri";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
@@ -71,7 +59,6 @@ import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
-import CommonImageUpload from "../Common/CommonImageUpload";
 import { UploadOutlined } from "@ant-design/icons";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 
@@ -145,6 +132,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [loading, setLoading] = useState(true);
   const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
 
   //payment usestates
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
@@ -989,7 +977,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
     setIsOpenFilterDrawer(false);
     setValidationTrigger(false);
-    setLeadId(null);
+    setTimeout(() => {
+      setLeadId(null);
+    }, 300);
     setName("");
     setNameError("");
     setEmail("");
@@ -1035,6 +1025,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setComments("");
     setCommentsError("");
     setButtonLoading(false);
+    setSaveOnlyLoading(false);
 
     //payment drawer usestates
     setIsOpenPaymentDrawer(false);
@@ -1060,7 +1051,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setDueDateError("");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (saveType) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     console.log("convertAsJson", convertAsJson);
@@ -1126,7 +1117,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     )
       return;
 
-    setButtonLoading(true);
+    if (saveType === "Save Only") {
+      setSaveOnlyLoading(true);
+    } else {
+      setButtonLoading(true);
+    }
+
     const today = new Date();
 
     const payload = {
@@ -1170,6 +1166,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       } catch (error) {
         console.log("lead create error", error);
         setButtonLoading(false);
+        setSaveOnlyLoading(false);
         CommonMessage(
           "error",
           error?.response?.data?.message ||
@@ -1181,13 +1178,18 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         await createLead(payload);
         CommonMessage("success", "Lead created");
         setTimeout(() => {
-          formReset(true);
+          if (saveType === "Save Only") {
+            formReset(true);
+          } else {
+            formReset(false);
+          }
           getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
           refreshLeadFollowUp();
         }, 300);
       } catch (error) {
         console.log("lead create error", error);
         setButtonLoading(false);
+        setSaveOnlyLoading(false);
         CommonMessage(
           "error",
           error?.response?.data?.message ||
@@ -1823,41 +1825,53 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         </Row> */}
 
         <div className="leadmanager_submitlead_buttoncontainer">
-          {buttonLoading ? (
-            <button
-              className={
-                leadId
-                  ? "leadmanager_loadingupdateleadbutton"
-                  : "leadmanager_loadingsaveleadbutton"
-              }
-            >
-              <CommonSpinner />
-            </button>
-          ) : (
-            <div style={{ display: "flex", gap: "12px" }}>
-              {leadId ? (
-                ""
-              ) : (
-                <button
-                  className={"leadmanager_updateleadbutton"}
-                  onClick={handleSubmit}
-                >
-                  Save
-                </button>
-              )}
+          <div style={{ display: "flex", gap: "12px" }}>
+            {leadId ? (
+              ""
+            ) : (
+              <>
+                {saveOnlyLoading ? (
+                  <button className={"leadmanager_loadingupdateleadbutton"}>
+                    <CommonSpinner />
+                  </button>
+                ) : (
+                  <button
+                    className={"leadmanager_updateleadbutton"}
+                    onClick={() => {
+                      handleSubmit("Save Only");
+                    }}
+                  >
+                    Save
+                  </button>
+                )}
+              </>
+            )}
 
+            {buttonLoading ? (
+              <button
+                className={
+                  leadId
+                    ? "leadmanager_loadingupdateleadbutton"
+                    : "leadmanager_loadingsaveleadbutton"
+                }
+              >
+                <CommonSpinner />
+              </button>
+            ) : (
               <button
                 className={
                   leadId
                     ? "leadmanager_updateleadbutton"
                     : "leadmanager_saveleadbutton"
                 }
-                onClick={handleSubmit}
+                onClick={() => {
+                  handleSubmit("Save And Add New");
+                }}
               >
                 {leadId ? "Update" : "Save And Add New"}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Drawer>
 

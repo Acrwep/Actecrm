@@ -26,6 +26,7 @@ import {
   assignTrainerForCustomer,
   classScheduleForCustomer,
   getAssignTrainerHistoryForCustomer,
+  getCustomerByTrainerId,
   getCustomers,
   getTrainerById,
   getTrainers,
@@ -145,6 +146,7 @@ export default function Customers() {
   const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
     useState(false);
   const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
+  const [trainerFilterType, setTrainerFilterType] = useState(1);
   //trainer verify usestates
   const [assignTrainerData, setAssignTrainerData] = useState(null);
   const [isShowRejectTrainerCommentBox, setIsShowRejectTrainerCommentBox] =
@@ -153,6 +155,11 @@ export default function Customers() {
   const [rejectTrainerCommentsError, setRejectTrainerCommentsError] =
     useState("");
   const [rejectbuttonLoader, setRejectButtonLoader] = useState(false);
+  const [isOpenTrainerCustomersModal, setIsOpenTrainerCustomersModal] =
+    useState(false);
+  const [customerByTrainerData, setCustomerByTrainerData] = useState([]);
+  const [customerByTrainerLoading, setCustomerByTrainerLoading] =
+    useState(false);
   //class schedule usestates
   const scheduleOptions = [
     { id: 1, name: "On Going" },
@@ -1466,6 +1473,64 @@ export default function Customers() {
 
   const [customersData, setCustomersData] = useState([]);
 
+  const customerByTrainerColumn = [
+    {
+      title: "Customer Name",
+      key: "cus_name",
+      dataIndex: "cus_name",
+      width: 180,
+    },
+    {
+      title: "Customer Email",
+      key: "cus_email",
+      dataIndex: "cus_email",
+      width: 220,
+    },
+    { title: "Customer Mobile", key: "cus_phone", dataIndex: "cus_phone" },
+    {
+      title: "Course Name",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 200,
+    },
+    {
+      title: "Training Mode",
+      key: "training_mode",
+      dataIndex: "training_mode",
+    },
+    {
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
+      width: 120,
+    },
+    { title: "Branch Name", key: "branch_name", dataIndex: "branch_name" },
+    {
+      title: "Class Going %",
+      key: "class_percentage",
+      dataIndex: "class_percentage",
+      width: 120,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+      render: (text) => {
+        return <p>{"₹" + text}</p>;
+      },
+    },
+    {
+      title: "Trainer Commercial",
+      key: "commercial",
+      dataIndex: "commercial",
+      fixed: "right",
+      render: (text) => {
+        return <p>{"₹" + text}</p>;
+      },
+    },
+  ];
+
   useEffect(() => {
     getTrainersData();
   }, []);
@@ -1504,7 +1569,15 @@ export default function Customers() {
   ) => {
     setLoading(true);
     const payload = {
-      ...(searchvalue ? { name: searchvalue } : {}),
+      ...(searchvalue && filterType === 1
+        ? { name: searchvalue }
+        : searchvalue && filterType === 2
+        ? { email: searchvalue }
+        : searchvalue && filterType === 3
+        ? { mobile: searchvalue }
+        : searchvalue && filterType === 4
+        ? { course: searchvalue }
+        : {}),
       from_date: startDate,
       to_date: endDate,
       ...(customerStatus && { status: customerStatus }),
@@ -2066,6 +2139,26 @@ export default function Customers() {
     }
   };
 
+  const getCustomerByTrainerIdData = async (trainerid, classtaken) => {
+    setCustomerByTrainerLoading(true);
+    const payload = {
+      trainer_id: trainerid,
+      is_class_taken: classtaken,
+    };
+    try {
+      const response = await getCustomerByTrainerId(payload);
+      console.log("get customer by trainer id response", response);
+      setCustomerByTrainerData(response?.data?.data || []);
+      setTimeout(() => {
+        setCustomerByTrainerLoading(false);
+      }, 300);
+    } catch (error) {
+      setCustomerByTrainerData([]);
+      setCustomerByTrainerLoading(false);
+      console.log("get customer by trainer id error", error);
+    }
+  };
+
   const handleVerifyTrainer = async () => {
     const today = new Date();
 
@@ -2353,6 +2446,7 @@ export default function Customers() {
     setAssignTrainerProofError("");
     setAssignTrainerComments("");
     setAssignTrainerCommentsError("");
+    setTrainerFilterType(1);
     setTrainerHistory([]);
     //verify trainer
     setAssignTrainerData(null);
@@ -2396,6 +2490,8 @@ export default function Customers() {
                   ? "Search By Email"
                   : filterType === 3
                   ? "Search by Mobile"
+                  : filterType === 4
+                  ? "Search by Course"
                   : ""
               }
               width="40%"
@@ -2407,6 +2503,12 @@ export default function Customers() {
                     className="users_filter_closeIconContainer"
                     onClick={() => {
                       setSearchValue("");
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        null,
+                        status
+                      );
                     }}
                   >
                     <IoIosClose size={11} />
@@ -2442,6 +2544,12 @@ export default function Customers() {
                           return;
                         } else {
                           setSearchValue("");
+                          getCustomersData(
+                            selectedDates[0],
+                            selectedDates[1],
+                            null,
+                            status
+                          );
                         }
                       }}
                     >
@@ -2456,6 +2564,12 @@ export default function Customers() {
                       </Radio>
                       <Radio value={3} style={{ marginBottom: "6px" }}>
                         Search by Mobile
+                      </Radio>
+                      <Radio
+                        value={4}
+                        style={{ marginTop: "6px", marginBottom: "6px" }}
+                      >
+                        Search by Course
                       </Radio>
                     </Radio.Group>
                   }
@@ -3060,6 +3174,38 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Training Mode
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.training_mode
+                        ? customerDetails.training_mode
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Region</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.region_name
+                        ? customerDetails.region_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Branch</p>
                     </div>
                   </Col>
@@ -3071,8 +3217,10 @@ export default function Customers() {
                     </p>
                   </Col>
                 </Row>
+              </Col>
 
-                <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Batch Timing</p>
@@ -3086,10 +3234,8 @@ export default function Customers() {
                     </p>
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Batch Track</p>
@@ -3108,14 +3254,14 @@ export default function Customers() {
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
-                        Training Mode
+                        Placement Support
                       </p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.training_mode
-                        ? customerDetails.training_mode
+                      {customerDetails && customerDetails.placement_support
+                        ? customerDetails.placement_support
                         : "-"}
                     </p>
                   </Col>
@@ -3339,6 +3485,23 @@ export default function Customers() {
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }} gutter={16}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <LuCircleUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {" "}
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
 
           <Col span={12}>
@@ -3360,13 +3523,13 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
+                  <p className="customerdetails_rowheading">Training Mode</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
+                  {customerDetails && customerDetails.training_mode
+                    ? customerDetails.training_mode
                     : "-"}
                 </p>
               </Col>
@@ -3375,16 +3538,28 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Training Mode</p>
+                  <p className="customerdetails_rowheading">Region</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {/* {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"} */}
-                  {customerDetails && customerDetails.training_mode
-                    ? customerDetails.training_mode
+                  {customerDetails && customerDetails.region_name
+                    ? customerDetails.region_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.branch_name
+                    ? customerDetails.branch_name
                     : "-"}
                 </p>
               </Col>
@@ -3420,22 +3595,6 @@ export default function Customers() {
                   customerDetails.balance_amount !== undefined &&
                   customerDetails.balance_amount !== null
                     ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }} gutter={16}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Owner</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
                     : "-"}
                 </p>
               </Col>
@@ -3704,7 +3863,27 @@ export default function Customers() {
                 Assign New Trainer
               </p>
 
-              <Row gutter={16} style={{ marginTop: "16px" }}>
+              <div style={{ marginTop: "8px" }}>
+                <Radio.Group
+                  value={trainerFilterType}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setTrainerFilterType(e.target.value);
+                  }}
+                >
+                  <Radio value={1} style={{ fontSize: "10px" }}>
+                    Search Trainer by Name
+                  </Radio>
+                  <Radio value={2} style={{ fontSize: "10px" }}>
+                    Search Trainer by Email
+                  </Radio>
+                  <Radio value={3} style={{ fontSize: "10px" }}>
+                    Search Trainer by Mobile
+                  </Radio>
+                </Radio.Group>
+              </div>
+
+              <Row gutter={16} style={{ marginTop: "14px" }}>
                 <Col span={12}>
                   <div
                     style={{
@@ -3729,6 +3908,13 @@ export default function Customers() {
                         }}
                         value={trainerId}
                         error={trainerIdError}
+                        showLabelStatus={
+                          trainerFilterType === 1
+                            ? "Name"
+                            : trainerFilterType === 2
+                            ? "Email"
+                            : "Mobile"
+                        }
                       />
                     </div>
 
@@ -4008,14 +4194,40 @@ export default function Customers() {
                         </p>
                       </div>
                     </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
+                    <Col
+                      span={12}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <p className="customers_classtaken_customerscount">
                         {customerDetails &&
                         customerDetails.completed_student_count
                           ? customerDetails.completed_student_count +
                             " Customers"
                           : "-"}
                       </p>
+                      <Tooltip
+                        placement="top"
+                        title="View Customer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={12}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenTrainerCustomersModal(true);
+                            getCustomerByTrainerIdData(
+                              customerDetails && customerDetails.trainer_id
+                                ? customerDetails.trainer_id
+                                : null,
+                              1
+                            );
+                          }}
+                        />
+                      </Tooltip>
                     </Col>
                   </Row>
 
@@ -4027,13 +4239,39 @@ export default function Customers() {
                         </p>
                       </div>
                     </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
+                    <Col
+                      span={12}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <p className="customers_classtaken_customerscount">
                         {customerDetails &&
                         customerDetails.ongoing_student_count
                           ? customerDetails.ongoing_student_count + " Customers"
                           : "-"}
                       </p>
+                      <Tooltip
+                        placement="top"
+                        title="View Customer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={12}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenTrainerCustomersModal(true);
+                            getCustomerByTrainerIdData(
+                              customerDetails && customerDetails.trainer_id
+                                ? customerDetails.trainer_id
+                                : null,
+                              0
+                            );
+                          }}
+                        />
+                      </Tooltip>
                     </Col>
                   </Row>
                 </Col>
@@ -4631,6 +4869,25 @@ export default function Customers() {
             )}
           </PrismaZoom>
         </div>
+      </Modal>
+
+      <Modal
+        title="Customers Details"
+        open={isOpenTrainerCustomersModal}
+        onCancel={() => setIsOpenTrainerCustomersModal(false)}
+        footer={false}
+        width="60%"
+      >
+        <CommonTable
+          scroll={{ x: 1600 }}
+          columns={customerByTrainerColumn}
+          dataSource={customerByTrainerData}
+          dataPerPage={10}
+          loading={customerByTrainerLoading}
+          checkBox="false"
+          size="small"
+          className="questionupload_table"
+        />
       </Modal>
     </div>
   );

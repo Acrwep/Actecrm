@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Row, Col, Upload, Button, Modal, Tabs } from "antd";
+import { Row, Col, Upload, Button, Modal, Tabs, Checkbox } from "antd";
 import Logo from "../../assets/acte-logo.png";
 import { PlusOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -40,6 +40,7 @@ export default function CustomerRegistration() {
   const { customer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
 
+  const [customerFullDetails, setCustomerFullDetails] = useState(null);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -73,9 +74,6 @@ export default function CustomerRegistration() {
   const [batchTimingError, setBatchTimingError] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState(null);
-  const [branchOptions, setBranchOptions] = useState([]);
-  const [branchId, setBranchId] = useState(null);
-  const [branchIdError, setBranchIdError] = useState("");
 
   const [profilePictureArray, setProfilePictureArray] = useState([]);
   const [profilePicture, setProfilePicture] = useState("");
@@ -83,6 +81,9 @@ export default function CustomerRegistration() {
   const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
   const [signatureError, setSignatureError] = useState("");
+  const [isOpenTermsModal, setIsOpenTermsModal] = useState(false);
+  const [isCheckedTerms, setIsCheckedTerms] = useState(false);
+  const [isCheckedTermsError, setIsCheckedTermsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
@@ -143,20 +144,6 @@ export default function CustomerRegistration() {
       console.log("batch error", error);
     } finally {
       setTimeout(() => {
-        getBranchesData();
-      }, 300);
-    }
-  };
-
-  const getBranchesData = async () => {
-    try {
-      const response = await getBranches();
-      setBranchOptions(response?.data?.result || []);
-    } catch (error) {
-      setBranchOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
         getCustomerData();
       }, 300);
     }
@@ -171,6 +158,7 @@ export default function CustomerRegistration() {
         navigate("/success");
         return;
       }
+      setCustomerFullDetails(customerDetails);
       setName(customerDetails.name);
       setEmail(customerDetails.email);
       setMobile(customerDetails.phone);
@@ -178,6 +166,7 @@ export default function CustomerRegistration() {
       setCourse(customerDetails.enrolled_course);
     } catch (error) {
       console.log("getcustomer by id error", error);
+      setCustomerFullDetails(null);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -337,15 +326,21 @@ export default function CustomerRegistration() {
     const trainingModeValidate = selectValidator(trainingMode);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
-    const branchIdValidate = selectValidator(branchId);
     const placementSupportValidate = selectValidator(placementSupport);
 
+    let termsandconditionsValidate;
     let signatureValidate;
 
     if (signatureBase64 === "") {
       signatureValidate = "Signature is required";
     } else {
       signatureValidate = "";
+    }
+
+    if (isCheckedTerms === false) {
+      termsandconditionsValidate = " is required";
+    } else {
+      termsandconditionsValidate = "";
     }
 
     setNameError(nameValidate);
@@ -360,9 +355,9 @@ export default function CustomerRegistration() {
     setTrainingModeError(trainingModeValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
-    setBranchIdError(branchIdValidate);
     setPlacementSupportError(placementSupportValidate);
     setSignatureError(signatureValidate);
+    setIsCheckedTermsError(termsandconditionsValidate);
 
     if (
       nameValidate ||
@@ -383,9 +378,9 @@ export default function CustomerRegistration() {
       trainingModeValidate ||
       batchTrackValidate ||
       batchTimingValidate ||
-      branchIdValidate ||
       placementSupportValidate ||
-      signatureValidate
+      signatureValidate ||
+      termsandconditionsValidate
     )
       return;
 
@@ -403,7 +398,14 @@ export default function CustomerRegistration() {
       date_of_joining: formatToBackendIST(dateOfJoining),
       enrolled_course: course,
       training_mode: trainingMode,
-      branch_id: branchId,
+      region_id:
+        customerFullDetails && customerFullDetails.region_id
+          ? customerFullDetails.region_id
+          : null,
+      branch_id:
+        customerFullDetails && customerFullDetails.branch_id
+          ? customerFullDetails.branch_id
+          : null,
       batch_track_id: batchTrack,
       batch_timing_id: batchTiming,
       current_location: location,
@@ -697,22 +699,6 @@ export default function CustomerRegistration() {
           <Row gutter={12} style={{ marginTop: courseError ? "40px" : "30px" }}>
             <Col xs={24} sm={24} md={24} lg={6}>
               <CommonSelectField
-                label="Branch"
-                required={true}
-                options={branchOptions}
-                onChange={(e) => {
-                  setBranchId(e.target.value);
-                  if (validationTrigger) {
-                    setBranchIdError(selectValidator(e.target.value));
-                  }
-                }}
-                value={branchId}
-                error={branchIdError}
-              />
-            </Col>
-
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
                 label="Placement Support"
                 required={true}
                 options={[
@@ -766,6 +752,36 @@ export default function CustomerRegistration() {
               )}
             </Col>
           </Row>
+
+          <div className="customer_registration_terms_container">
+            <Checkbox
+              onChange={(e) => {
+                setIsCheckedTerms(e.target.checked);
+                if (validationTrigger) {
+                  if (e.target.checked === true) {
+                    setIsCheckedTermsError("");
+                  } else {
+                    setIsCheckedTermsError(" is required");
+                  }
+                }
+              }}
+              value={isCheckedTerms}
+            />
+            <p>
+              I have read and agree to the{" "}
+              <span
+                onClick={() => setIsOpenTermsModal(true)}
+                style={{ cursor: "pointer", color: "#5b69ca", fontWeight: 500 }}
+              >
+                Terms and Conditions
+              </span>
+            </p>
+          </div>
+          {isCheckedTermsError && (
+            <p className="customer_registration_terms_error">
+              Please accept the terms and conditions
+            </p>
+          )}
         </div>{" "}
         <div className="trainer_registration_submitbuttonContainer">
           {buttonLoading ? (
@@ -861,6 +877,161 @@ export default function CustomerRegistration() {
         width="40%"
       >
         <CommonSignaturePad />
+      </Modal>
+
+      <Modal
+        title="Terms and conditions"
+        open={isOpenTermsModal}
+        onCancel={() => setIsOpenTermsModal(false)}
+        footer={false}
+        width="50%"
+        style={{ top: 20 }} // 👈 distance from top
+      >
+        <div className="customer_registration_terms_contentContainer">
+          <ul>
+            <li>
+              The candidate should be on the date & time once the classes have
+              been scheduled, if found irregular attendance management isn’t
+              responsible for the subject coverage
+            </li>
+            <li>
+              Candidates are advised to attend the class properly and neatly
+              dressed and are asked to leave their sandals outside (Only shoes
+              allowed inside)
+            </li>
+            <li>
+              The candidate should not be engaged in entertaining activities
+              during class hours other than subject training
+            </li>
+            <li>
+              The candidate should not bring any irrelevant person into ACTE
+              campus except for the course inquiry
+            </li>
+            <li>
+              If the candidate finds any quality lacking in the subject, they
+              should immediately bring into the notice of the Management so that
+              they will take the necessary steps
+            </li>
+            <li>
+              Internal examination score with rich attendance is mandatory for
+              the candidate, to apply for the certification
+            </li>
+            <li>
+              On successful completion of training candidates need to register
+              for their Certificate to the Management
+            </li>
+            <li>
+              Certification will be issued to the candidate after 15 days which
+              is required for management processing for a soft copy.
+            </li>
+            <li>
+              Candidates discussing other than placement activities in the ACTE
+              forum What Sapp group will be removed from the group if required
+            </li>
+            <li>
+              They need to drop an e-mail regarding their query to
+              support@acte.in or they should communicate with the concerned team
+            </li>
+            <li>
+              Once the enrolment has been done in ACTE the management starts its
+              process of allocating trainer and scheduling the class which will
+              not pave the way to any kind of refund claim.
+            </li>
+            <li>
+              Raise refund requests within 7 days of purchase of course. A
+              money-back guarantee is void if the participant has accessed more
+              than 30% of the content or downloaded the E-Book.
+            </li>
+            <li>
+              On figuring out any kind of quality issues necessary steps will be
+              taken by the management to retain the training quality if the
+              required trainer will be changed
+            </li>
+            <li>
+              For a change of trainer, the student should submit their
+              attendance record maintained by the trainer. After that management
+              will check the trainer’s quality with other students in their
+              batch
+            </li>
+            <li>
+              ACTE makes its full-fledged effort at maximum level to make the
+              candidates placed and on which candidate’s active performance in
+              class and the candidate’s best performance in the interview are
+              mandatory
+            </li>
+            <li>
+              Management holds the responsibility of providing software that is
+              widely available in the market and if particularly you’ve paid for
+              that software subscription
+            </li>
+            <li>
+              In rare cases if it fails to provide the software then virtual &
+              real-time oriented practical sessions will be provided by the
+              management
+            </li>
+            <li>
+              Candidates are requested to bring their laptops during practical
+              sessions and if not possible management will provide a system
+              based on the availability with respect to time & class
+            </li>
+            <li>
+              Once every 15 days candidates are subjected to quality checks by
+              the management, for that purpose they need their own system
+            </li>
+            <li>
+              Candidates opted for the part payment are asked to clear their
+              pending fee amount within 15 days of time once the course is
+              started
+            </li>
+            <li>
+              Candidates are authorized to utilize the management’s resources
+              like the Internet, and systems only during the class timings
+            </li>
+            <li>
+              ACTE is the brand name of our service and it functions under the
+              care of ACTE Training Institute Private Limited
+            </li>
+            <li>
+              You must update the attendance form we gave you. If you do not
+              keep your attendance record, you will not be eligible for
+              compensation.
+            </li>
+            <li>
+              Once you made the payment the process for your training will be
+              started, it will take a minimum of 24 to 48 HRS to start the
+              session for you.
+            </li>
+            <li>
+              Refunds must be requested within 7 days of the start of the batch
+              in which you registered. If a participant has accessed more than
+              50% of an e-learning course's content or has attended Online
+              Classrooms for more than one day, the money-back promise is null
+              and void.
+            </li>
+            <li>
+              If a cancellation is done by a candidate of the event, no refunds
+              will be made.
+            </li>
+            <li>
+              The attendance record we provided you with needs to be updated.
+              You won't be able to receive a payment if you don't keep a record
+              of your attendance.
+            </li>
+            <li>
+              Following ACTE Technologies Pvt Ltd.’s approval of the refund
+              request, all reimbursements will be executed within 7 to 10
+              working days.
+            </li>
+            <li>
+              ACTE is the brand name of our service and it functions under the
+              care of ACTE Training Institute Private Limited
+            </li>
+            <li>
+              I agree to the above terms and Conditions with my knowledge and
+              consciousness and I wish to join in ACTE
+            </li>
+          </ul>
+        </div>
       </Modal>
     </div>
   );

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import "./styles.css";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { getLeadAndFollowupCount } from "../ApiService/action";
+import { getPendingFeesCustomersCount } from "../ApiService/action";
 import TodayDueCustomers from "./TodayDueCustomers";
 import OverallDueCustomers from "./OverallDueCustomers";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 
 export default function PendingFeesCustomers() {
   const [activePage, setActivePage] = useState("todaydue");
-  const [followupCount, setFollowupCount] = useState(0);
-  const [leadCount, setLeadCount] = useState(0);
+  const [dueSelectedDates, setDueSelectedDates] = useState([]);
+  const [todayDueCount, setTodayDueCount] = useState(0);
+  const [overAllDueCount, setOverAllDueCount] = useState(0);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -25,6 +27,41 @@ export default function PendingFeesCustomers() {
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
+  useEffect(() => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
+    if (dueSelectedDates.length === 0) {
+      setDueSelectedDates(PreviousAndCurrentDate);
+      getPendingCustomersCountData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1]
+      );
+    } else {
+      getPendingCustomersCountData(dueSelectedDates[0], dueSelectedDates[1]);
+    }
+  }, [dueSelectedDates]);
+
+  const getPendingCustomersCountData = async (startdate, enddate) => {
+    const payload = {
+      from_date: startdate,
+      to_date: enddate,
+    };
+    try {
+      const response = await getPendingFeesCustomersCount(payload);
+      console.log("pending fees count response", response);
+      const countDetails = response?.data?.data;
+      setTodayDueCount(countDetails.today_count);
+      setOverAllDueCount(countDetails.overall_count);
+    } catch (error) {
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
+    } finally {
+      setTimeout(() => {
+        // setUserTableLoading(false);
+      }, 300);
+    }
+  };
+
   const handleTabClick = (tab) => {
     setActivePage(tab);
     setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
@@ -35,6 +72,11 @@ export default function PendingFeesCustomers() {
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount
     }));
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    getPendingCustomersCountData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1]
+    );
   };
 
   return (
@@ -49,7 +91,7 @@ export default function PendingFeesCustomers() {
             }
             onClick={() => handleTabClick("todaydue")}
           >
-            Today Due ( 2 )
+            Today Due ( {todayDueCount} )
           </button>
           <button
             className={
@@ -59,7 +101,7 @@ export default function PendingFeesCustomers() {
             }
             onClick={() => handleTabClick("overalldue")}
           >
-            Overall Due ( 10 )
+            Overall Due ( {overAllDueCount} )
           </button>
         </div>
 
@@ -80,10 +122,7 @@ export default function PendingFeesCustomers() {
       {/* Mount only when first opened, keep mounted afterward */}
       {loadedTabs.todaydue && (
         <div style={{ display: activePage === "todaydue" ? "block" : "none" }}>
-          <TodayDueCustomers
-            key={tabKeys.todaydue}
-            setFollowupCount={setFollowupCount}
-          />
+          <TodayDueCustomers key={tabKeys.todaydue} />
         </div>
       )}
 
@@ -91,7 +130,12 @@ export default function PendingFeesCustomers() {
         <div
           style={{ display: activePage === "overalldue" ? "block" : "none" }}
         >
-          <OverallDueCustomers key={tabKeys.overalldue} />
+          <OverallDueCustomers
+            key={tabKeys.overalldue}
+            setTodayDueCount={setTodayDueCount}
+            setOverAllDueCount={setOverAllDueCount}
+            setDueSelectedDates={setDueSelectedDates}
+          />
         </div>
       )}
     </div>

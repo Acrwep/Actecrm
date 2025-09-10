@@ -28,6 +28,7 @@ export default function CommonSelectField({
   errorFontSize,
   renderOption,
   groupBy,
+  showLabelStatus,
 }) {
   return (
     <div style={style}>
@@ -60,7 +61,15 @@ export default function CommonSelectField({
         <Autocomplete
           options={options}
           value={options.find((opt) => opt.id === value) || null}
-          getOptionLabel={(option) => option?.exp_range || option?.name || ""}
+          getOptionLabel={(option) =>
+            showLabelStatus === "Name"
+              ? option?.name
+              : showLabelStatus === "Email"
+              ? option?.email
+              : showLabelStatus === "Mobile"
+              ? option?.mobile
+              : option?.exp_range || option?.name || ""
+          }
           onChange={(event, newValue) =>
             onChange({
               target: { value: newValue ? newValue.id : "" },

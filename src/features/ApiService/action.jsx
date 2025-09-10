@@ -304,7 +304,18 @@ export const getCustomers = async (payload) => {
 
 export const getPendingFeesCustomers = async (payload) => {
   try {
-    const response = await api.get("/api/pendingFeesList", { params: payload });
+    const response = await api.post("/api/pendingFeesList", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPendingFeesCustomersCount = async (payload) => {
+  try {
+    const response = await api.get("/api/getPendingFeesCount", {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;
@@ -388,6 +399,17 @@ export const assignTrainerForCustomer = async (payload) => {
 export const getAssignTrainerHistoryForCustomer = async (payload) => {
   try {
     const response = await api.get("/api/getTrainerHistory", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomerByTrainerId = async (payload) => {
+  try {
+    const response = await api.get("/api/getCusByTrainer", {
       params: payload,
     });
     return response;

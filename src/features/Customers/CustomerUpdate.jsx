@@ -25,6 +25,7 @@ import {
   getBatchTrack,
   getBranches,
   getCustomerById,
+  getRegions,
   getTechnologies,
   getTrainingMode,
   updateCustomer,
@@ -65,6 +66,9 @@ const CustomerUpdate = forwardRef(
     const [courseOptions, setCourseOptions] = useState([]);
     const [course, setCourse] = useState(null);
     const [courseError, setCourseError] = useState("");
+    const [regionOptions, setRegionOptions] = useState([]);
+    const [regionId, setRegionId] = useState(null);
+    const [regionError, setRegionError] = useState("");
     const [trainingModeOptions, setTrainingModeOptions] = useState([]);
     const [trainingMode, setTrainingMode] = useState(null);
     const [trainingModeError, setTrainingModeError] = useState("");
@@ -150,17 +154,17 @@ const CustomerUpdate = forwardRef(
         console.log("batch error", error);
       } finally {
         setTimeout(() => {
-          getBranchesData();
+          getRegionData();
         }, 300);
       }
     };
 
-    const getBranchesData = async () => {
+    const getRegionData = async () => {
       try {
-        const response = await getBranches();
-        setBranchOptions(response?.data?.result || []);
+        const response = await getRegions();
+        setRegionOptions(response?.data?.data || []);
       } catch (error) {
-        setBranchOptions([]);
+        setRegionOptions([]);
         console.log("response status error", error);
       } finally {
         setTimeout(() => {
@@ -194,6 +198,8 @@ const CustomerUpdate = forwardRef(
         setCourse(customerDetails.enrolled_course);
         setProfilePictureBase64(customerDetails.profile_image);
         setSignatureBase64(customerDetails.signature_image);
+        setRegionId(customerDetails.region_id);
+        getBranchesData(customerDetails, true);
       } catch (error) {
         console.log("getcustomer by id error", error);
       } finally {
@@ -201,6 +207,25 @@ const CustomerUpdate = forwardRef(
           setLoading(false);
           setCallCustomerApi(true);
         }, 200);
+      }
+    };
+
+    const getBranchesData = async (customerfulldetails, initialset) => {
+      const payload = {
+        region_id:
+          typeof customerfulldetails === "number"
+            ? customerfulldetails
+            : customerfulldetails.region_id,
+      };
+      try {
+        const response = await getBranches(payload);
+        setBranchOptions(response?.data?.result || []);
+        if (initialset === true) {
+          setBranchId(customerfulldetails.branch_id);
+        }
+      } catch (error) {
+        setBranchOptions([]);
+        console.log("response status error", error);
       }
     };
 
@@ -260,9 +285,10 @@ const CustomerUpdate = forwardRef(
       const locationValidate = addressValidator(location);
       const courseValidate = selectValidator(course);
       const trainingModeValidate = selectValidator(trainingMode);
+      const regionIdValidate = selectValidator(regionId);
+      const branchIdValidate = selectValidator(branchId);
       const batchTrackValidate = selectValidator(batchTrack);
       const batchTimingValidate = selectValidator(batchTiming);
-      const branchIdValidate = selectValidator(branchId);
       const placementSupportValidate = selectValidator(placementSupport);
 
       setNameError(nameValidate);
@@ -275,9 +301,10 @@ const CustomerUpdate = forwardRef(
       setLocationError(locationValidate);
       setCourseError(courseValidate);
       setTrainingModeError(trainingModeValidate);
+      setRegionError(regionIdValidate);
+      setBranchIdError(branchIdValidate);
       setBatchTrackError(batchTrackValidate);
       setBatchTimingError(batchTimingValidate);
-      setBranchIdError(branchIdValidate);
       setPlacementSupportError(placementSupportValidate);
 
       if (
@@ -297,9 +324,10 @@ const CustomerUpdate = forwardRef(
       if (
         courseValidate ||
         trainingModeValidate ||
+        regionIdValidate ||
+        branchIdValidate ||
         batchTrackValidate ||
         batchTimingValidate ||
-        branchIdValidate ||
         placementSupportValidate
       )
         return;
@@ -318,6 +346,7 @@ const CustomerUpdate = forwardRef(
         date_of_joining: formatToBackendIST(dateOfJoining),
         enrolled_course: course,
         training_mode: trainingMode,
+        region_id: regionId,
         branch_id: branchId,
         batch_track_id: batchTrack,
         batch_timing_id: batchTiming,
@@ -590,17 +619,19 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
-                  label="Batch Track"
+                  label="Region"
                   required={true}
-                  options={batchTrackOptions}
+                  options={regionOptions}
                   onChange={(e) => {
-                    setBatchTrack(e.target.value);
+                    setRegionId(e.target.value);
+                    setBranchId("");
+                    getBranchesData(e.target.value, false);
                     if (validationTrigger) {
-                      setBatchTrackError(selectValidator(e.target.value));
+                      setRegionError(selectValidator(e.target.value));
                     }
                   }}
-                  value={batchTrack}
-                  error={batchTrackError}
+                  value={regionId}
+                  error={regionError}
                 />
               </Col>
             </Row>
@@ -609,21 +640,6 @@ const CustomerUpdate = forwardRef(
               gutter={12}
               style={{ marginTop: courseError ? "40px" : "30px" }}
             >
-              <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonSelectField
-                  label="Batch Timing"
-                  required={true}
-                  options={batchTimingOptions}
-                  onChange={(e) => {
-                    setBatchTiming(e.target.value);
-                    if (validationTrigger) {
-                      setBatchTimingError(selectValidator(e.target.value));
-                    }
-                  }}
-                  value={batchTiming}
-                  error={batchTimingError}
-                />
-              </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Branch"
@@ -639,7 +655,39 @@ const CustomerUpdate = forwardRef(
                   error={branchIdError}
                 />
               </Col>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="Batch Track"
+                  required={true}
+                  options={batchTrackOptions}
+                  onChange={(e) => {
+                    setBatchTrack(e.target.value);
+                    if (validationTrigger) {
+                      setBatchTrackError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={batchTrack}
+                  error={batchTrackError}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="Batch Timing"
+                  required={true}
+                  options={batchTimingOptions}
+                  onChange={(e) => {
+                    setBatchTiming(e.target.value);
+                    if (validationTrigger) {
+                      setBatchTimingError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={batchTiming}
+                  error={batchTimingError}
+                />
+              </Col>
+            </Row>
 
+            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Placement Support"

@@ -54,6 +54,8 @@ export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
   const [status, setStatus] = useState("");
+  const [onBoardingCount, setOnboardingCount] = useState("");
+  const [onGoingCount, setOnGoingCount] = useState("");
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -542,6 +544,9 @@ export default function Trainers() {
       const response = await getTrainers(payload);
       console.log("trainers response", response);
       setTrainersData(response?.data?.data?.trainers || []);
+      setOnboardingCount(response?.data?.data?.on_boarding ?? "-");
+      setOnGoingCount(response?.data?.data?.on_going ?? "-");
+
       const statusCountList = response?.data?.data?.trainer_status_count || [];
 
       if (statusCountList.length >= 1) {
@@ -1309,7 +1314,7 @@ export default function Trainers() {
                   getTrainersData(searchValue, "Onboarded");
                 }}
               >
-                <p>Onboarded Trainers {`( 10 )`}</p>
+                <p>Onboarded Trainers {`( ${onBoardingCount} )`}</p>
               </div>
               <div
                 className={
@@ -1325,7 +1330,7 @@ export default function Trainers() {
                   getTrainersData(searchValue, "Ongoing");
                 }}
               >
-                <p>On-Going Trainers {`( 10 )`}</p>
+                <p>On-Going Trainers {`( ${onGoingCount} )`}</p>
               </div>
               <div
                 className={

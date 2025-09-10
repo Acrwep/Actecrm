@@ -57,7 +57,6 @@ export default function LeadFollowUp({ setFollowupCount }) {
     { title: "Course Fees ", isChecked: true },
     { title: "Last Update ", isChecked: true },
     { title: "Recent Comments", isChecked: true },
-    { title: "Sale Rating", isChecked: true },
   ]);
 
   const [columns, setColumns] = useState([
@@ -95,7 +94,7 @@ export default function LeadFollowUp({ setFollowupCount }) {
       title: "Course",
       key: "primary_course",
       dataIndex: "primary_course",
-      width: 200,
+      width: 180,
     },
     {
       title: "Course Fees",
@@ -107,20 +106,8 @@ export default function LeadFollowUp({ setFollowupCount }) {
       title: "Recent Comments",
       key: "comments",
       dataIndex: "comments",
-      // fixed: "right",
-      width: 200,
-    },
-    {
-      title: "Sale Rating",
-      key: "lead_quality_rating",
-      dataIndex: "lead_quality_rating",
-      width: 130,
       fixed: "right",
-      render: (text, record) => {
-        return (
-          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
-        );
-      },
+      width: 200,
     },
   ]);
 
@@ -137,6 +124,8 @@ export default function LeadFollowUp({ setFollowupCount }) {
             onClick={() => {
               setIsOpenCommentModal(true);
               setCommentsHistory(record.histories);
+              setLeadId(record.id);
+              setLeadHistoryId(record.lead_history_id);
             }}
           >
             <p>{moment(text).format("DD/MM/YYYY")}</p>
@@ -157,7 +146,7 @@ export default function LeadFollowUp({ setFollowupCount }) {
       title: "Course",
       key: "primary_course",
       dataIndex: "primary_course",
-      width: 200,
+      width: 180,
     },
     {
       title: "Course Fees",
@@ -169,20 +158,8 @@ export default function LeadFollowUp({ setFollowupCount }) {
       title: "Recent Comments",
       key: "comments",
       dataIndex: "comments",
-      // fixed: "right",
-      width: 200,
-    },
-    {
-      title: "Sale Rating",
-      key: "lead_quality_rating",
-      dataIndex: "lead_quality_rating",
-      width: 130,
       fixed: "right",
-      render: (text, record) => {
-        return (
-          <Rate allowHalf value={text} style={{ fontSize: 14 }} disabled />
-        );
-      },
+      width: 200,
     },
   ];
 
@@ -341,7 +318,7 @@ export default function LeadFollowUp({ setFollowupCount }) {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1100 }}
           columns={columns}
           dataSource={followUpData}
           dataPerPage={10}
