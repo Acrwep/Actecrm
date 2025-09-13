@@ -187,6 +187,32 @@
   font-weight: 600;
   cursor: pointer;
 }
+.customers_awaitingclass_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ff8c01;
+  background-color: #ff8d0118;
+  border-radius: 6px;
+  color: #ff8c01;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customers_active_awaitingclass_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #ff8c01;
+  background-color: #ff8c01;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .customers_classschedule_container {
   display: flex;
   justify-content: center;
@@ -270,10 +296,10 @@
   justify-content: center;
   align-items: center;
   padding: 6px 16px;
-  border: 1px solid #6c5ce7;
-  background-color: #6c5ce715;
+  border: 1px solid #d32f2f;
+  background-color: #d32f2f13;
   border-radius: 6px;
-  color: #6c5ce7;
+  color: #d32f2f;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -283,8 +309,8 @@
   justify-content: center;
   align-items: center;
   padding: 6px 16px;
-  border: 1px solid #6c5ce7;
-  background-color: #6c5ce7;
+  border: 1px solid #d32f2f;
+  background-color: #d32f2f;
   border-radius: 6px;
   color: #fff;
   font-size: 13px;
@@ -357,6 +383,19 @@
   cursor: pointer;
 }
 
+.customers_active_others_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #0984e3;
+  background-color: #0984e3;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .customers_status_formpending_button {
   background: #ff6b6b15;
   color: #ff6b6b;
@@ -464,7 +503,27 @@
   box-shadow: none !important;
   opacity: 1;
 }
-.customers_status_awaitclassschedule_button {
+.customers_status_awaitingclass_button {
+  background: #ff8d0113;
+  color: #ff8c01;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+.customers_status_awaitingclass_button:hover {
+  background-color: #ff8d0113 !important;
+  color: #ff8c01 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+.customers_status_classscheduled_button {
   background: #a29bfe1f;
   color: #a29bfe;
   display: flex;
@@ -479,7 +538,7 @@
   height: 0px !important;
 }
 
-.customers_status_awaitclassschedule_button:hover {
+.customers_status_classscheduled_button:hover {
   background-color: #a29bfe1f !important;
   color: #a29bfe !important;
   box-shadow: none !important;
@@ -852,6 +911,47 @@
 .assesmntresult_collapse .ant-collapse-content-box {
   padding: 6px 12px !important; /* reduce body/content height */
 }
+.customer_finance_rejectbutton {
+  font-size: 12px;
+  padding: 0px 12px !important;
+  background-color: #d32f2f13;
+  color: #d32f2f;
+  border-color: #d32f2f13;
+  height: 28px !important;
+}
+.customer_finance_rejectbutton:hover {
+  background-color: #d32f2f13 !important;
+  color: #d32f2f !important;
+  border-color: #d32f2f13 !important;
+}
+.customer_finance_verifybutton {
+  font-size: 12px;
+  padding: 0px 12px !important;
+  background-color: #3c911111;
+  color: #3c9111;
+  border-color: #3c911111;
+  height: 28px !important;
+}
+.customer_finance_verifybutton:hover {
+  background-color: #3c911111 !important;
+  color: #3c9111 !important;
+  border-color: #3c911111 !important;
+}
+.customer_finance_loadingverifybutton {
+  font-size: 12px;
+  padding: 0px 12px !important;
+  background-color: #3c911111;
+  color: #3c9111;
+  border-color: #3c911111;
+  height: 28px !important;
+  opacity: 0.7 !important;
+  cursor: default;
+}
+.customer_finance_loadingverifybutton:hover {
+  background-color: #3c911111 !important;
+  color: #3c9111 !important;
+  border-color: #3c911111 !important;
+}
 .customer_trainerhistory_nodatatext {
   font-weight: 500;
   color: #333;
@@ -894,6 +994,86 @@
   align-items: center;
   font-weight: 500;
   margin-top: 4px;
+}
+.customer_generatecert_button_container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.customer_generatecert_button {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+}
+.customer_generatecert_button:hover {
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}
+.customer_stepperbuttons {
+  font-size: 13px;
+}
+.customer_stepperbuttons:hover {
+  color: #5b69ca !important;
+  border-color: #5b69ca !important;
+}
+.customer_complete_passedoutbutton {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+}
+.customer_complete_passedoutbutton:hover {
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}
+.customer_trainer_cusomer_heading {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 12px !important;
+}
+.customer_trainermappingfilter_container {
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 8px;
+  margin-left: -8px;
+  border-left: none !important;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  border-bottom-right-radius: 4px !important;
+  border-top-right-radius: 4px !important;
+}
+.customer_trainermappingfilter_container:hover {
+  border-color: rgba(128, 128, 128, 0.432) !important;
+  color: #333 !important;
+}
+.customer_trainer_badge_mainconatiner {
+  display: flex;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.363);
+  padding: 4px 12px;
+  margin-top: 16px;
+  width: max-content;
+  gap: 12px;
+}
+.customer_trainer_onboardcount_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #3c9111;
+}
+.customer_trainer_goingcount_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #ffa502;
+}
+.customer_trainer_onboardcount_badgecount {
+  font-size: 11px;
+  color: #333;
 }
 /* overall due styles */
 .overallduecustomers_filterContainer {

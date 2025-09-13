@@ -16,7 +16,10 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
-import { getPendingFeesCustomers } from "../ApiService/action";
+import {
+  customerDuePayment,
+  getPendingFeesCustomers,
+} from "../ApiService/action";
 import {
   formatToBackendIST,
   getBalanceAmount,
@@ -337,7 +340,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                   setCustomerDetails(record);
                   setPendingAmount(record.balance_amount);
                   setBalanceAmount(record.balance_amount);
-                  handlePaymentHistory(
+                  setPaymentHistory(
                     record.payment && record.payment.payment_trans
                       ? record.payment.payment_trans
                       : []
@@ -417,162 +420,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
     if (startDate != "" && endDate != "") {
       console.log("call function");
       getPendingFeesCustomersData(startDate, endDate, searchValue);
-    }
-  };
-
-  const handlePaymentHistory = (payment_history) => {
-    // setPaymentHistory([]);
-    console.log("eeeeeeeeeeeee", payment_history);
-    if (payment_history.length >= 1) {
-      // const reverseData = payment_history.reverse();
-      const addChildren = payment_history.map((item, index) => {
-        return {
-          ...item,
-          key: index + 1,
-          label: (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                fontSize: "13px",
-                alignItems: "center",
-              }}
-            >
-              <span>
-                Transaction Date -{" "}
-                <span style={{ fontWeight: "500" }}>
-                  {moment(item.invoice_date).format("DD/MM/YYYY")}
-                </span>
-              </span>
-              {/* <p style={{ color: "gray" }}>
-                      Status: <span style={{ color: "#d32f2f" }}>Rejected</span>
-                    </p>{" "} */}
-            </div>
-          ),
-          children: (
-            <div>
-              <Row gutter={16} style={{ marginTop: "6px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Invoice Date
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {moment(item.invoice_date).format("DD/MM/YYYY")}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Invoice Number
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.invoice_number}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-
-              <Row gutter={16} style={{ marginTop: "16px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Payment Mode
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.payment_mode}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Convenience Fees
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {"₹" + item.convenience_fees}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-
-              <Row gutter={16} style={{ marginTop: "16px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Paid Amount
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ color: "#3c9111", fontWeight: 500 }}
-                      >
-                        {"₹" + item.amount}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Payment Screenshot
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <button
-                        className="pendingcustomer_paymentscreenshot_viewbutton"
-                        onClick={() => {
-                          setIsOpenPaymentScreenshotModal(true);
-                          setTransactionScreenshot(item.payment_screenshot);
-                        }}
-                      >
-                        <FaRegEye size={16} /> View screenshot
-                      </button>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </div>
-          ),
-        };
-      });
-
-      setPaymentHistory(addChildren);
-    } else {
-      setPaymentHistory([]);
     }
   };
 
@@ -677,7 +524,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
     }
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
@@ -710,18 +557,46 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
       dueDateValidate
     )
       return;
-    if (is_sendInvoice) {
-      setInvoiceButtonLoading(true);
-    } else {
-      setButtonLoading(true);
-    }
+
+    setButtonLoading(true);
 
     const today = new Date();
 
-    setTimeout(() => {
-      setInvoiceButtonLoading(false);
+    // setTimeout(() => {
+    //   setInvoiceButtonLoading(false);
+    //   setButtonLoading(false);
+    // }, 300);
+
+    const payload = {
+      payment_master_id: customerDetails.payment_master_id,
+      invoice_date: formatToBackendIST(paymentDate),
+      paid_amount: payAmount,
+      convenience_fees: convenienceFees,
+      balance_amount: balanceAmount,
+      paymode_id: paymentMode,
+      payment_screenshot: paymentScreenShotBase64,
+      payment_status: "Verify Pending",
+      next_due_date: formatToBackendIST(dueDate),
+      created_date: formatToBackendIST(today),
+      paid_date: formatToBackendIST(paymentDate),
+    };
+
+    try {
+      const response = await customerDuePayment(payload);
+      console.log("lead payment response", response);
+      const createdCustomerDetails = response?.data?.data;
+      setTimeout(() => {
+        setButtonLoading(false);
+        formReset();
+      }, 300);
+    } catch (error) {
       setButtonLoading(false);
-    }, 300);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   const formReset = () => {
@@ -1086,23 +961,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Training Mode
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.training_mode
-                        ? customerDetails.training_mode
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Region</p>
                     </div>
                   </Col>
@@ -1344,23 +1202,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 </p>
               </Col>
             </Row>
-
-            <Row style={{ marginTop: "12px" }} gutter={16}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <LuCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
           </Col>
 
           <Col span={12}>
@@ -1374,21 +1215,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Training Mode</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.training_mode
-                    ? customerDetails.training_mode
                     : "-"}
                 </p>
               </Col>
@@ -1458,6 +1284,22 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {" "}
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
         </Row>
 
@@ -1476,7 +1318,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">
-                          Course Name
+                          Course Fees
                         </p>
                       </div>
                     </Col>
@@ -1551,14 +1393,179 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
           {paymentHistory.length >= 1 ? (
             <div style={{ marginTop: "12px", marginBottom: "20px" }}>
               <Collapse
-                className="assesmntresult_collapse"
-                items={paymentHistory}
                 activeKey={collapseDefaultKey}
-                onChange={(keys) => {
-                  setCollapseDefaultKey(keys);
-                  console.log("keyyyy", keys);
-                }}
-              ></Collapse>
+                onChange={(keys) => setCollapseDefaultKey(keys)}
+                className="assesmntresult_collapse"
+              >
+                {paymentHistory.map((item, index) => (
+                  <Collapse.Panel
+                    key={item.id || index} // unique key
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          fontSize: "13px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>
+                          Transaction Date -{" "}
+                          <span style={{ fontWeight: "500" }}>
+                            {moment(item.invoice_date).format("DD/MM/YYYY")}
+                          </span>
+                        </span>
+
+                        <p
+                          style={{
+                            color: "#333",
+                          }}
+                        >
+                          Status:{" "}
+                          <span
+                            style={{
+                              color:
+                                item.payment_status === "Verified"
+                                  ? "#3c9111"
+                                  : item.payment_status === "Verify Pending"
+                                  ? "gray"
+                                  : "#d32f2f",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {item.payment_status}
+                          </span>
+                        </p>
+                      </div>
+                    }
+                  >
+                    <div>
+                      <Row gutter={16} style={{ marginTop: "6px" }}>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Invoice Date
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Invoice Number
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.invoice_number}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+                      </Row>
+
+                      <Row gutter={16} style={{ marginTop: "16px" }}>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Payment Mode
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.payment_mode}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Convenience Fees
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {"₹" + item.convenience_fees}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+                      </Row>
+
+                      <Row
+                        gutter={16}
+                        style={{ marginTop: "16px", marginBottom: "8px" }}
+                      >
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Paid Amount
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p
+                                className="customerdetails_text"
+                                style={{
+                                  color: "#3c9111",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {"₹" + item.amount}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Payment Screenshot
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <button
+                                className="pendingcustomer_paymentscreenshot_viewbutton"
+                                onClick={() => {
+                                  setIsOpenPaymentScreenshotModal(true);
+                                  setTransactionScreenshot(
+                                    item.payment_screenshot
+                                  );
+                                }}
+                              >
+                                <FaRegEye size={16} /> View screenshot
+                              </button>
+                            </Col>
+                          </Row>
+                        </Col>
+                      </Row>
+                    </div>
+                  </Collapse.Panel>
+                ))}
+              </Collapse>
             </div>
           ) : (
             <p className="customer_trainerhistory_nodatatext">No Data found</p>
@@ -1722,21 +1729,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
             className="leadmanager_submitlead_buttoncontainer"
             style={{ gap: "12px" }}
           >
-            {invoiceButtonLoading ? (
-              <button className="lead_paymentsubmitwithinvoice_loadingbutton">
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className="lead_paymentsubmitwithinvoice_button"
-                onClick={() => {
-                  handlePaymentSubmit(true);
-                }}
-              >
-                Submit and Send Invoice
-              </button>
-            )}
-
             {buttonLoading ? (
               <button className="users_adddrawer_loadingcreatebutton">
                 <CommonSpinner />
@@ -1745,7 +1737,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
               <button
                 className="users_adddrawer_createbutton"
                 onClick={() => {
-                  handlePaymentSubmit(false);
+                  handlePaymentSubmit();
                 }}
               >
                 Submit

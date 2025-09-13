@@ -381,3 +381,26 @@ button:focus-visible {
 /* .ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
   position: absolute !important;
 } */
+
+/* antd steps styles */
+.ant-steps.ant-steps-small .ant-steps-item-icon {
+  line-height: 22px !important;
+}
+.ant-steps .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #535bf2 !important;
+  border-color: #535bf2 !important;
+}
+.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #535bf218 !important;
+  border-color: #535bf218 !important;
+}
+.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: #535bf2 !important;
+}
+.ant-steps
+  .ant-steps-item-finish
+  > .ant-steps-item-container
+  > .ant-steps-item-content
+  > .ant-steps-item-title::after {
+  background-color: #535bf2 !important;
+}

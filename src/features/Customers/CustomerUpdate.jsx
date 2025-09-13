@@ -70,8 +70,6 @@ const CustomerUpdate = forwardRef(
     const [regionId, setRegionId] = useState(null);
     const [regionError, setRegionError] = useState("");
     const [trainingModeOptions, setTrainingModeOptions] = useState([]);
-    const [trainingMode, setTrainingMode] = useState(null);
-    const [trainingModeError, setTrainingModeError] = useState("");
     const [batchTrackOptions, setBatchTrackOptions] = useState([]);
     const [batchTrack, setBatchTrack] = useState(null);
     const [batchTrackError, setBatchTrackError] = useState("");
@@ -190,7 +188,6 @@ const CustomerUpdate = forwardRef(
             ? customerDetails.current_location
             : ""
         );
-        setTrainingMode(customerDetails.training_mode_id);
         setBatchTrack(customerDetails.batch_track_id);
         setBatchTiming(customerDetails.batch_timing_id);
         setBranchId(customerDetails.branch_id);
@@ -284,7 +281,6 @@ const CustomerUpdate = forwardRef(
       const dateOfJoiningValidate = selectValidator(dateOfJoining);
       const locationValidate = addressValidator(location);
       const courseValidate = selectValidator(course);
-      const trainingModeValidate = selectValidator(trainingMode);
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = selectValidator(branchId);
       const batchTrackValidate = selectValidator(batchTrack);
@@ -300,7 +296,6 @@ const CustomerUpdate = forwardRef(
       setDateOfJoiningError(dateOfJoiningValidate);
       setLocationError(locationValidate);
       setCourseError(courseValidate);
-      setTrainingModeError(trainingModeValidate);
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
       setBatchTrackError(batchTrackValidate);
@@ -323,7 +318,6 @@ const CustomerUpdate = forwardRef(
 
       if (
         courseValidate ||
-        trainingModeValidate ||
         regionIdValidate ||
         branchIdValidate ||
         batchTrackValidate ||
@@ -345,7 +339,6 @@ const CustomerUpdate = forwardRef(
         gender: gender,
         date_of_joining: formatToBackendIST(dateOfJoining),
         enrolled_course: course,
-        training_mode: trainingMode,
         region_id: regionId,
         branch_id: branchId,
         batch_track_id: batchTrack,
@@ -396,8 +389,6 @@ const CustomerUpdate = forwardRef(
       setLocationError("");
       setCourse("");
       setCourseError("");
-      setTrainingMode("");
-      setTrainingModeError("");
       setBatchTrack("");
       setBatchTrackError("");
       setBatchTiming("");
@@ -603,7 +594,7 @@ const CustomerUpdate = forwardRef(
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonSelectField
+                {/* <CommonSelectField
                   label="Training Mode"
                   required={true}
                   options={trainingModeOptions}
@@ -615,9 +606,7 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={trainingMode}
                   error={trainingModeError}
-                />
-              </Col>
-              <Col xs={24} sm={24} md={24} lg={8}>
+                /> */}
                 <CommonSelectField
                   label="Region"
                   required={true}
@@ -634,12 +623,6 @@ const CustomerUpdate = forwardRef(
                   error={regionError}
                 />
               </Col>
-            </Row>
-
-            <Row
-              gutter={12}
-              style={{ marginTop: courseError ? "40px" : "30px" }}
-            >
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Branch"
@@ -655,6 +638,12 @@ const CustomerUpdate = forwardRef(
                   error={branchIdError}
                 />
               </Col>
+            </Row>
+
+            <Row
+              gutter={12}
+              style={{ marginTop: courseError ? "40px" : "30px" }}
+            >
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Batch Track"
@@ -685,9 +674,6 @@ const CustomerUpdate = forwardRef(
                   error={batchTimingError}
                 />
               </Col>
-            </Row>
-
-            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Placement Support"

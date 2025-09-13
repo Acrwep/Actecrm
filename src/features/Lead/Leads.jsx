@@ -40,6 +40,7 @@ import { Country, State, City } from "country-state-city";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import {
   createLead,
+  generateLeadInvoiceEmail,
   getBatchTrack,
   getBranches,
   getLeadResponseStatus,
@@ -94,12 +95,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
   const [secondaryCourse, setSecondaryCourse] = useState(null);
   const [secondaryFees, setSecondaryFees] = useState("");
-  const [trainerModeOptions, setTrainerModeOptions] = useState([]);
-  const [trainerMode, setTrainerMode] = useState(null);
-  const [trainerModeError, setTrainerModeError] = useState("");
-  const [priorityOptions, setPriorityOptions] = useState([]);
-  const [priority, setPriority] = useState(null);
-  const [priorityError, setPriorityError] = useState("");
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
   const [leadType, setLeadType] = useState(null);
   const [leadTypeError, setLeadTypeError] = useState("");
@@ -199,12 +194,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       isChecked: true,
     },
     {
-      title: "Trainer Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-      isChecked: true,
-    },
-    {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
@@ -241,12 +230,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       isChecked: true,
     },
     {
-      title: "Priority",
-      key: "priority",
-      dataIndex: "priority",
-      isChecked: true,
-    },
-    {
       title: "Comments",
       key: "comments",
       dataIndex: "comments",
@@ -262,7 +245,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
   const [columns, setColumns] = useState([
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
+    { title: "Email", key: "email", dataIndex: "email", width: 240 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     { title: "Country", key: "country", dataIndex: "country", width: 120 },
     { title: "State", key: "state", dataIndex: "state", width: 120 },
@@ -294,12 +277,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dataIndex: "secondary_fees",
     },
     {
-      title: "Trainer Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-      width: 140,
-    },
-    {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
@@ -318,12 +295,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       width: 120,
     },
     {
-      title: "Lead Status",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      width: 140,
-    },
-    {
       title: "Next Followup Date",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
@@ -340,11 +311,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       },
     },
     {
-      title: "Priority",
-      key: "priority",
-      dataIndex: "priority",
-      width: 140,
+      title: "Lead Status",
+      key: "lead_status",
+      dataIndex: "lead_status",
       fixed: "right",
+      width: 140,
     },
     {
       title: "Comments",
@@ -408,7 +379,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
   const nonChangeColumns = [
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
+    { title: "Email", key: "email", dataIndex: "email", width: 240 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     { title: "Country", key: "country", dataIndex: "country", width: 120 },
     { title: "State", key: "state", dataIndex: "state", width: 120 },
@@ -440,12 +411,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dataIndex: "secondary_fees",
     },
     {
-      title: "Trainer Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-      width: 140,
-    },
-    {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
@@ -464,12 +429,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       width: 120,
     },
     {
-      title: "Lead Status",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      width: 140,
-    },
-    {
       title: "Next Followup Date",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
@@ -486,11 +445,11 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       },
     },
     {
-      title: "Priority",
-      key: "priority",
-      dataIndex: "priority",
-      width: 140,
+      title: "Lead Status",
+      key: "lead_status",
+      dataIndex: "lead_status",
       fixed: "right",
+      width: 140,
     },
     {
       title: "Comments",
@@ -603,39 +562,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     } finally {
       setTimeout(() => {
         if (triggerOtherApis === true) {
-          getTrainingModeData();
+          getLeadTypeData();
         } else {
           setLoading(false);
         }
-      }, 300);
-    }
-  };
-
-  const getTrainingModeData = async () => {
-    try {
-      const response = await getTrainingMode();
-      setTrainerModeOptions(response?.data?.result || []);
-    } catch (error) {
-      setTrainerModeOptions([]);
-      console.log("trainer mode error", error);
-    } finally {
-      setTimeout(() => {
-        getPriorityData();
-      }, 300);
-    }
-  };
-
-  const getPriorityData = async () => {
-    try {
-      const response = await getPriority();
-      setPriorityOptions(response?.data?.result || []);
-    } catch (error) {
-      setPriorityOptions([]);
-      console.log("priority error", error);
-    } finally {
-      setTimeout(() => {
-        setLoading(false);
-        getLeadTypeData();
       }, 300);
     }
   };
@@ -650,6 +580,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     } finally {
       setTimeout(() => {
         getLeadStatusData();
+        setLoading(false);
       }, 300);
     }
   };
@@ -955,14 +886,13 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setPrimaryFees(item.primary_fees);
     setSecondaryCourse(item.secondary_course_id);
     setSecondaryFees(item.secondary_fees);
-    setTrainerMode(item.training_mode_id);
-    setPriority(item.priority_id);
     setLeadType(item.lead_type_id);
     setLeadStatus(item.lead_status_id);
     setResponseLeadStatus(item.response_status_id);
     setNxtFollowupDate(item.next_follow_up_date);
     setExpectDateJoin(item.expected_join_date);
     setRegionId(item.region_id);
+    getBranchesData(item.region_id);
     setBranch(item.branch_id);
     setBatchTrack(item.batch_track_id);
     setRating(item.lead_quality_rating);
@@ -1000,10 +930,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setPrimaryFeesError("");
     setSecondaryCourse(null);
     setSecondaryFees("");
-    setTrainerMode(null);
-    setTrainerModeError("");
-    setPriority(null);
-    setPriorityError("");
     setLeadType(null);
     setLeadTypeError("");
     setLeadStatus(null);
@@ -1066,8 +992,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const cityValidate = selectValidator(cityId);
     const primaryCourseValidate = selectValidator(primaryCourse);
     const primaryFeesValidate = selectValidator(primaryFees);
-    const trainerModeValidate = selectValidator(trainerMode);
-    const priorityValidate = selectValidator(priority);
     const leadTypeValidate = selectValidator(leadType);
     const leadStatusValidate = selectValidator(leadStatus);
     const nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
@@ -1085,8 +1009,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setCityError(cityValidate);
     setPrimaryCourseError(primaryCourseValidate);
     setPrimaryFeesError(primaryFeesValidate);
-    setTrainerModeError(trainerModeValidate);
-    setPriorityError(priorityValidate);
     setLeadTypeError(leadTypeValidate);
     setLeadStatusError(leadStatusValidate);
     setNxtFollowupDateError(nxtFollowupDateValidate);
@@ -1105,8 +1027,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       cityValidate ||
       primaryCourseValidate ||
       primaryFeesValidate ||
-      trainerModeValidate ||
-      priorityValidate ||
       leadTypeValidate ||
       leadStatusValidate ||
       nxtFollowupDateValidate ||
@@ -1141,8 +1061,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       price_category: priceCategory(primaryFees),
       secondary_course_id: secondaryCourse,
       secondary_fees: secondaryFees,
-      training_mode_id: trainerMode,
-      priority_id: priority,
       lead_type_id: leadType,
       lead_status_id: leadStatus,
       next_follow_up_date: formatToBackendIST(nxtFollowupDate),
@@ -1179,9 +1097,9 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         CommonMessage("success", "Lead created");
         setTimeout(() => {
           if (saveType === "Save Only") {
-            formReset(true);
+            formReset();
           } else {
-            formReset(false);
+            formReset(true);
           }
           getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
           refreshLeadFollowUp();
@@ -1199,7 +1117,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePaymentSubmit = async (is_sendInvoice) => {
+  const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const taxTypeValidate = selectValidator(taxType);
     const paymentTypeValidate = selectValidator(paymentMode);
@@ -1234,11 +1152,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       dueDateValidate
     )
       return;
-    if (is_sendInvoice) {
-      setInvoiceButtonLoading(true);
-    } else {
-      setButtonLoading(true);
-    }
+
+    setButtonLoading(true);
 
     const today = new Date();
 
@@ -1285,7 +1200,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         setInvoiceButtonLoading(false);
         formReset();
         getAllLeadData(searchValue, selectedDates[0], selectedDates[1], false);
-        handleSendCustomerFormLink(createdCustomerDetails, is_sendInvoice);
+        handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -1298,10 +1213,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handleSendCustomerFormLink = async (
-    customerDetails,
-    is_sendInvoice
-  ) => {
+  const handleSendCustomerFormLink = async (customerDetails) => {
     const payload = {
       email: customerDetails.email,
       link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
@@ -1312,11 +1224,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
     try {
       await sendCustomerFormEmail(payload);
-      setTimeout(() => {
-        if (is_sendInvoice === true) {
-          sendInvoiceEmail(customerDetails);
-        }
-      }, 300);
     } catch (error) {
       CommonMessage(
         "error",
@@ -1334,7 +1241,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       name: customerDetails.name,
       mobile: customerDetails.phone,
       convenience_fees: invoiceDetails.convenience_fees,
-      discount_amount: invoiceDetails.discount_amount,
       gst_amount: invoiceDetails.gst_amount,
       gst_percentage: parseFloat(invoiceDetails.gst_percentage),
       invoice_date: invoiceDetails.invoice_date,
@@ -1423,7 +1329,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3400 }}
+          scroll={{ x: 3200 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}
@@ -1644,22 +1550,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Row>
         )}
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Training Mode"
-              required={true}
-              options={trainerModeOptions}
-              onChange={(e) => {
-                setTrainerMode(e.target.value);
-                if (validationTrigger) {
-                  setTrainerModeError(selectValidator(e.target.value));
-                }
-              }}
-              value={trainerMode}
-              error={trainerModeError}
-            />
-          </Col>
+        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Region"
@@ -1692,9 +1583,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               error={branchError}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
           <Col span={8}>
             <CommonSelectField
               label="Batch Track"
@@ -1711,6 +1599,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
         </Row>
+
+        {/* <Row gutter={16} style={{ marginTop: "30px",  }}>
+          <Col span={8}>
+          
+          </Col>
+        </Row> */}
 
         <p className="addleaddrawer_headings">Response Status</p>
 
@@ -1765,24 +1659,8 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
         </Row>
 
-        <p className="addleaddrawer_headings">Priority Status</p>
-        <Row gutter={16} style={{ marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Priority"
-              required={true}
-              options={priorityOptions}
-              onChange={(e) => {
-                setPriority(e.target.value);
-                if (validationTrigger) {
-                  setPriorityError(selectValidator(e.target.value));
-                }
-              }}
-              value={priority}
-              error={priorityError}
-            />
-          </Col>
-          <Col span={10}>
+        <Row gutter={16} style={{ marginTop: "40px", marginBottom: "30px" }}>
+          <Col span={24}>
             <div style={{ marginTop: "-20px" }}>
               <CommonTextArea
                 label="Comments"
@@ -1982,17 +1860,17 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Training Mode:{" "}
+              Region:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.training_mode : "-"}
+                {clickedLeadItem ? clickedLeadItem.region_name : "-"}
               </span>
             </p>
           </Col>
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Region:{" "}
+              Branch Name:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.region_name : "-"}
+                {clickedLeadItem ? clickedLeadItem.branche_name : "-"}
               </span>
             </p>
           </Col>
@@ -2005,20 +1883,13 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         >
           <Col span={8}>
             <p className="leadmanager_paymentdrawer_userheadings">
-              Branch Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.branche_name : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
               Course Fees:{" "}
               <span className="leadmanager_paymentdrawer_userdetails">
                 {clickedLeadItem ? "₹" + clickedLeadItem.primary_fees : "-"}
               </span>
             </p>
           </Col>
+          <Col span={8}></Col>
         </Row>
         <Divider className="leadmanger_paymentdrawer_divider" />
 
@@ -2214,21 +2085,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             className="leadmanager_submitlead_buttoncontainer"
             style={{ gap: "12px" }}
           >
-            {invoiceButtonLoading ? (
-              <button className="lead_paymentsubmitwithinvoice_loadingbutton">
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className="lead_paymentsubmitwithinvoice_button"
-                onClick={() => {
-                  handlePaymentSubmit(true);
-                }}
-              >
-                Submit and Send Invoice
-              </button>
-            )}
-
             {buttonLoading ? (
               <button className="users_adddrawer_loadingcreatebutton">
                 <CommonSpinner />
@@ -2237,7 +2093,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               <button
                 className="users_adddrawer_createbutton"
                 onClick={() => {
-                  handlePaymentSubmit(false);
+                  handlePaymentSubmit();
                 }}
               >
                 Submit

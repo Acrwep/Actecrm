@@ -16,7 +16,10 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
-import { getPendingFeesCustomers } from "../ApiService/action";
+import {
+  customerDuePayment,
+  getPendingFeesCustomers,
+} from "../ApiService/action";
 import {
   formatToBackendIST,
   getBalanceAmount,
@@ -48,7 +51,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import PrismaZoom from "react-prismazoom";
 
-export default function TodayDueCustomers() {
+export default function UrgentDueCustomers({ setDueSelectedDates }) {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
@@ -351,14 +354,23 @@ export default function TodayDueCustomers() {
   ]);
 
   useEffect(() => {
-    getPendingFeesCustomersData();
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+
+    getPendingFeesCustomersData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1]
+    );
   }, []);
 
-  const getPendingFeesCustomersData = async (searchvalue) => {
-    const today = new Date();
+  const getPendingFeesCustomersData = async (
+    startDate,
+    endDate,
+    searchvalue
+  ) => {
     setLoading(true);
-    const from_date = formatToBackendIST(today);
-    const to_date = formatToBackendIST(today);
+    const from_date = formatToBackendIST(startDate);
+    const to_date = formatToBackendIST(endDate);
 
     const payload = {
       from_date: moment(from_date).format("YYYY-MM-DD"),
@@ -375,7 +387,7 @@ export default function TodayDueCustomers() {
     };
     try {
       const response = await getPendingFeesCustomers(payload);
-      console.log("today pending fee customer response", response);
+      console.log("pending fee customer response", response);
       setCustomersData(response?.data?.data || []);
       setTimeout(() => {
         setLoading(false);
@@ -391,8 +403,23 @@ export default function TodayDueCustomers() {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
-      getPendingFeesCustomersData(e.target.value);
+      getPendingFeesCustomersData(
+        selectedDates[0],
+        selectedDates[1],
+        e.target.value
+      );
     }, 300);
+  };
+
+  const handleDateChange = (dates, dateStrings) => {
+    setSelectedDates(dateStrings);
+    setDueSelectedDates(dateStrings);
+    const startDate = dateStrings[0];
+    const endDate = dateStrings[1];
+    if (startDate != "" && endDate != "") {
+      console.log("call function");
+      getPendingFeesCustomersData(startDate, endDate, searchValue);
+    }
   };
 
   const handlePaidNow = (e) => {
@@ -496,7 +523,7 @@ export default function TodayDueCustomers() {
     }
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
@@ -534,9 +561,41 @@ export default function TodayDueCustomers() {
 
     const today = new Date();
 
-    setTimeout(() => {
+    // setTimeout(() => {
+    //   setInvoiceButtonLoading(false);
+    //   setButtonLoading(false);
+    // }, 300);
+
+    const payload = {
+      payment_master_id: customerDetails.payment_master_id,
+      invoice_date: formatToBackendIST(paymentDate),
+      paid_amount: payAmount,
+      convenience_fees: convenienceFees,
+      balance_amount: balanceAmount,
+      paymode_id: paymentMode,
+      payment_screenshot: paymentScreenShotBase64,
+      payment_status: "Verify Pending",
+      next_due_date: formatToBackendIST(dueDate),
+      created_date: formatToBackendIST(today),
+      paid_date: formatToBackendIST(paymentDate),
+    };
+
+    try {
+      const response = await customerDuePayment(payload);
+      console.log("lead payment response", response);
+      const createdCustomerDetails = response?.data?.data;
+      setTimeout(() => {
+        setButtonLoading(false);
+        formReset();
+      }, 300);
+    } catch (error) {
       setButtonLoading(false);
-    }, 300);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   const formReset = () => {
@@ -662,6 +721,15 @@ export default function TodayDueCustomers() {
                   </Button>
                 </Tooltip>
               </Flex>
+            </div>
+
+            {/* Date Picker on the Right */}
+            <div style={{ marginLeft: "16px" }}>
+              <CommonDoubleDatePicker
+                value={selectedDates}
+                onChange={handleDateChange}
+                showFutureDates={true}
+              />
             </div>
           </div>
         </Col>

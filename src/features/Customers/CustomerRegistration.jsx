@@ -323,7 +323,6 @@ export default function CustomerRegistration() {
     const dateOfJoiningValidate = selectValidator(dateOfJoining);
     const locationValidate = addressValidator(location);
     const courseValidate = selectValidator(course);
-    const trainingModeValidate = selectValidator(trainingMode);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
     const placementSupportValidate = selectValidator(placementSupport);
@@ -352,7 +351,6 @@ export default function CustomerRegistration() {
     setDateOfJoiningError(dateOfJoiningValidate);
     setLocationError(locationValidate);
     setCourseError(courseValidate);
-    setTrainingModeError(trainingModeValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
     setPlacementSupportError(placementSupportValidate);
@@ -375,7 +373,6 @@ export default function CustomerRegistration() {
 
     if (
       courseValidate ||
-      trainingModeValidate ||
       batchTrackValidate ||
       batchTimingValidate ||
       placementSupportValidate ||
@@ -397,7 +394,6 @@ export default function CustomerRegistration() {
       gender: gender,
       date_of_joining: formatToBackendIST(dateOfJoining),
       enrolled_course: course,
-      training_mode: trainingMode,
       region_id:
         customerFullDetails && customerFullDetails.region_id
           ? customerFullDetails.region_id
@@ -651,21 +647,6 @@ export default function CustomerRegistration() {
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
               <CommonSelectField
-                label="Training Mode"
-                required={true}
-                options={trainingModeOptions}
-                onChange={(e) => {
-                  setTrainingMode(e.target.value);
-                  if (validationTrigger) {
-                    setTrainingModeError(selectValidator(e.target.value));
-                  }
-                }}
-                value={trainingMode}
-                error={trainingModeError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
                 label="Batch Track"
                 required={true}
                 options={batchTrackOptions}
@@ -694,9 +675,6 @@ export default function CustomerRegistration() {
                 error={batchTimingError}
               />
             </Col>
-          </Row>
-
-          <Row gutter={12} style={{ marginTop: courseError ? "40px" : "30px" }}>
             <Col xs={24} sm={24} md={24} lg={6}>
               <CommonSelectField
                 label="Placement Support"
@@ -715,7 +693,9 @@ export default function CustomerRegistration() {
                 error={placementSupportError}
               />
             </Col>
+          </Row>
 
+          <Row gutter={12} style={{ marginTop: courseError ? "40px" : "30px" }}>
             <Col span={6} style={{ position: "relative", display: "flex" }}>
               <p className="trainer_registration_signaturelabel">
                 Signature <span style={{ color: "#d32f2f" }}>*</span>

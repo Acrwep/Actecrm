@@ -6,23 +6,27 @@ import { getPendingFeesCustomersCount } from "../ApiService/action";
 import TodayDueCustomers from "./TodayDueCustomers";
 import OverallDueCustomers from "./OverallDueCustomers";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import UrgentDueCustomers from "./UrgentDueCustomers";
 
 export default function PendingFeesCustomers() {
   const [activePage, setActivePage] = useState("todaydue");
   const [dueSelectedDates, setDueSelectedDates] = useState([]);
   const [todayDueCount, setTodayDueCount] = useState(0);
   const [overAllDueCount, setOverAllDueCount] = useState(0);
+  const [urgentDueCount, setUrgentDueCount] = useState(0);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
     todaydue: true, // first tab shown initially
     overalldue: false,
+    urgentdue: false,
   });
 
   // For forcing remount
   const [tabKeys, setTabKeys] = useState({
     todaydue: 0,
     overalldue: 0,
+    urgentdue: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -103,6 +107,17 @@ export default function PendingFeesCustomers() {
           >
             Overall Due ( {overAllDueCount} )
           </button>
+
+          <button
+            className={
+              activePage === "urgentdue"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("urgentdue")}
+          >
+            Urgent Due ( {urgentDueCount} )
+          </button>
         </div>
 
         {/* <Button className="leadmanager_refresh_button">
@@ -134,6 +149,15 @@ export default function PendingFeesCustomers() {
             key={tabKeys.overalldue}
             setTodayDueCount={setTodayDueCount}
             setOverAllDueCount={setOverAllDueCount}
+            setDueSelectedDates={setDueSelectedDates}
+          />
+        </div>
+      )}
+
+      {loadedTabs.urgentdue && (
+        <div style={{ display: activePage === "urgentdue" ? "block" : "none" }}>
+          <UrgentDueCustomers
+            key={tabKeys.urgentdue}
             setDueSelectedDates={setDueSelectedDates}
           />
         </div>

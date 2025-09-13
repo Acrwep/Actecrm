@@ -292,6 +292,17 @@ export const sendLeadInvoiceEmail = async (payload) => {
   }
 };
 
+export const generateLeadInvoiceEmail = async (payload) => {
+  try {
+    const response = await api.post("/api/generateInvoice", payload, {
+      responseType: "blob",
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // customers api's
 export const getCustomers = async (payload) => {
   try {
@@ -457,6 +468,16 @@ export const updateClassGoingForCustomer = async (payload) => {
 export const updatefeedbackForCustomer = async (payload) => {
   try {
     const response = await api.put("/api/updateReview", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//payment api's
+export const customerDuePayment = async (payload) => {
+  try {
+    const response = await api.post("/api/partPayment", payload);
     return response;
   } catch (error) {
     throw error;

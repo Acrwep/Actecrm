@@ -13,6 +13,7 @@ import {
   Progress,
   Collapse,
   Modal,
+  Steps,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -33,6 +34,7 @@ import {
   inserCustomerTrack,
   rejectTrainerForCustomer,
   sendCustomerFormEmail,
+  sendLeadInvoiceEmail,
   updateClassGoingForCustomer,
   updateCustomerStatus,
   updatefeedbackForCustomer,
@@ -74,6 +76,7 @@ import { FaRegCopy } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import PrismaZoom from "react-prismazoom";
+const { Step } = Steps;
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -103,6 +106,8 @@ export default function Customers() {
   //finance usestates
   const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
     useState(false);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [transactionScreenshot, setTransactionScreenshot] = useState("");
   //student verify usestates
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
@@ -126,13 +131,7 @@ export default function Customers() {
   ];
   const [modeOfClass, setModeOfClass] = useState(null);
   const [modeOfClassError, setModeOfClassError] = useState("");
-  const trainerTypeOptions = [
-    { id: "New", name: "New" },
-    { id: "Exist", name: "Exist" },
-    { id: "Permanent", name: "Permanent" },
-  ];
-  const [trainerType, setTrainerType] = useState(null);
-  const [trainerTypeError, setTrainerTypeError] = useState("");
+  const [trainerType, setTrainerType] = useState("");
 
   const [assignTrainerProofArray, setAssignTrainerProofArray] = useState([]);
   const [assignTrainerProofBase64, setAssignTrainerProofBase64] = useState("");
@@ -147,6 +146,8 @@ export default function Customers() {
     useState(false);
   const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
   const [trainerFilterType, setTrainerFilterType] = useState(1);
+  const [trainerClassTakenCount, setTrainerClassTakenCount] = useState(0);
+  const [trainerClassGoingCount, setTrainerClassGoingCount] = useState(0);
   //trainer verify usestates
   const [assignTrainerData, setAssignTrainerData] = useState(null);
   const [isShowRejectTrainerCommentBox, setIsShowRejectTrainerCommentBox] =
@@ -164,17 +165,31 @@ export default function Customers() {
   const scheduleOptions = [
     { id: 1, name: "On Going" },
     { id: 3, name: "Hold" },
-    { id: 5, name: "Escalated" },
     { id: 6, name: "CGS" },
+  ];
+  const scheduleOptions2 = [
+    { id: 1, name: "On Going" },
+    { id: 3, name: "Hold" },
+    { id: 5, name: "Escalated" },
+    { id: 7, name: "Partially Closed" },
+    { id: 8, name: "Discontinued" },
+    { id: 9, name: "Refund" },
   ];
   const [scheduleId, setScheduleId] = useState(null);
   const [scheduleIdError, setScheduleIdError] = useState("");
   const [classStartDate, setClassStartDate] = useState(null);
   const [classStartDateError, setClassStartDateError] = useState("");
+  const [classHoldComments, setClassHoldComments] = useState("");
+  const [classHoldCommentsError, setClassHoldCommentsError] = useState("");
   //class going usestates
   const [classGoingPercentage, setClassGoingPercentage] = useState(0);
   const [classGoingPercentageError, setClassGoingPercentageError] = useState(0);
   const [classGoingComments, setClassGoingComments] = useState("");
+  const [classGoingCommentsError, setClassGoingCommentsError] = useState("");
+  const [addattachmentArray, setAddattachmentArray] = useState([]);
+  const [addattachmentBase64, setAddattachmentBase64] = useState("");
+  const [addattachmentError, setAddattachmentError] = useState("");
+  const [isShowAddAttachment, setIsShowAddAttachment] = useState(false);
   //feedback usestates
   const [linkedinFeedbackArray, setLinkedinFeedbackArray] = useState([]);
   const [linkedinFeedbackBase64, setLinkedinFeedbackBase64] = useState("");
@@ -187,6 +202,12 @@ export default function Customers() {
   const [courseDurationError, setCourseDurationError] = useState("");
   const [courseCompleteDate, setCourseCompleteDate] = useState("");
   const [courseCompleteDateError, setCourseCompleteDateError] = useState("");
+  const [isGoogleReviewChange, setIsGoogleReviewChange] = useState(false);
+  const [isCertChange, setIsCertChange] = useState(false);
+  const [completeLoading, setCompleteLoading] = useState(true);
+  const [current, setCurrent] = useState(0);
+
+  const prev = () => setCurrent(current - 1);
 
   const [loading, setLoading] = useState(true);
 
@@ -321,6 +342,11 @@ export default function Customers() {
                               setCustomerDetails(record);
                               setDrawerContentStatus("Finance Verify");
                               setIsStatusUpdateDrawer(true);
+                              setPaymentHistory(
+                                record.payments && record.payments
+                                  ? record.payments.payment_trans
+                                  : []
+                              );
                             }
                           }}
                         >
@@ -388,7 +414,8 @@ export default function Customers() {
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ? (
+                      record.status === "Awaiting Trainer" ||
+                      record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -408,7 +435,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Assign Trainer");
@@ -442,7 +472,8 @@ export default function Customers() {
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
-                      record.status === "Awaiting Trainer Verify" ? (
+                      record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -509,7 +540,13 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
-                      record.status === "Awaiting Class" ? (
+                      record.status === "Trainer Rejected" ||
+                      record.status === "Awaiting Class" ||
+                      record.status === "Hold" ||
+                      record.status === "Escalated" ||
+                      record.status === "Partially Closed" ||
+                      record.status === "Discontinued" ||
+                      record.status === "Refund" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -541,7 +578,14 @@ export default function Customers() {
                                 "warning",
                                 "Trainer not Verified yet"
                               );
-                            } else if (record.status === "Awaiting Class") {
+                            } else if (
+                              record.status === "Awaiting Class" ||
+                              record.status === "Hold" ||
+                              record.status === "Escalated" ||
+                              record.status === "Partially Closed" ||
+                              record.status === "Discontinued" ||
+                              record.status === "Refund"
+                            ) {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Class Schedule");
@@ -588,8 +632,7 @@ export default function Customers() {
                     </Col>
 
                     {record.status === "Class Going" ||
-                    record.status === "Awaiting G-Review" ||
-                    record.status === "Awaiting L-Review" ||
+                    record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <Col span={12}>
                         {classPercent < 100 ? (
@@ -629,67 +672,60 @@ export default function Customers() {
                     )}
                   </Row>
 
-                  {record.status === "Awaiting G-Review" ? (
+                  {record.status === "Passedout process" ||
+                  record.status === "Completed" ? (
                     <Row style={{ marginTop: "0px" }}>
                       <Col span={12}>
-                        <button
-                          className="customers_add_greview_button"
-                          onClick={() => {
-                            setCustomerId(record.id);
-                            setCustomerDetails(record);
-                            setDrawerContentStatus("Add G-Review");
-                            setIsStatusUpdateDrawer(true);
-                          }}
-                        >
-                          Add G-Review
-                        </button>
+                        {record.status === "Passedout process" ? (
+                          <button
+                            className="customers_addfeedbackbutton"
+                            onClick={() => {
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setDrawerContentStatus("Add G-Review");
+                              setIsStatusUpdateDrawer(true);
+                              if (record.google_review === null) {
+                                setCurrent(0);
+                              } else if (record.course_duration === null) {
+                                setCurrent(1);
+                              } else {
+                                setCurrent(2);
+                              }
+                              setCourseDuration(record.course_duration);
+                              setCourseCompleteDate(
+                                record.course_completion_date
+                              );
+                              if (record.google_review) {
+                                setGoogleFeedbackBase64(record.google_review);
+                                setGoogleFeedbackArray([
+                                  { name: "G-Review.png" },
+                                ]);
+                              }
+                            }}
+                          >
+                            Passedout process
+                          </button>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              PO Process Completed
+                            </p>
+                          </div>
+                        )}
                       </Col>
-                    </Row>
-                  ) : record.status === "Awaiting L-Review" ? (
-                    <Row style={{ marginTop: "0px" }}>
-                      <Col span={12}>
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            G-Review Collected
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <button
-                          className="customers_add_linkdinreview_button"
-                          onClick={() => {
-                            setCustomerId(record.id);
-                            setCustomerDetails(record);
-                            setDrawerContentStatus("Add L-Review");
-                            setIsStatusUpdateDrawer(true);
-                          }}
-                        >
-                          Add L-Review
-                        </button>
-                      </Col>
-                    </Row>
-                  ) : (
-                    ""
-                  )}
 
-                  {record.status === "Completed" ? (
-                    <Row style={{ marginBottom: "8px" }}>
                       <Col span={12}>
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            All Review Collected
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Certificate Issued
-                          </p>
-                        </div>
+                        {record.status === "Completed" ? (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Certificate Issued
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
                       </Col>
                     </Row>
                   ) : (
@@ -734,29 +770,17 @@ export default function Customers() {
                 </div>
               ) : text === "Awaiting Class" ? (
                 <div>
-                  <Button className="customers_status_awaitclassschedule_button">
+                  <Button className="customers_status_awaitingclass_button">
                     {text}
                   </Button>
                 </div>
               ) : text === "Class Scheduled" ? (
                 <div>
-                  <Button className="customers_status_awaitclassschedule_button">
+                  <Button className="customers_status_classscheduled_button">
                     {text}
                   </Button>
                 </div>
-              ) : text === "Awaiting G-Review" ? (
-                <div>
-                  <Button className="customers_status_awaitgreview_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting L-Review" ? (
-                <div>
-                  <Button className="customers_status_awaitlinkdinreview_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Feedback" ? (
+              ) : text === "Passedout process" ? (
                 <div>
                   <Button className="customers_status_awaitfeedback_button">
                     {text}
@@ -768,8 +792,15 @@ export default function Customers() {
                     {text}
                   </Button>
                 </div>
-              ) : text === "Rejected" || text === "REJECTED" ? (
-                <Button className="trainers_rejected_button">Rejected</Button>
+              ) : text === "Rejected" ||
+                text === "REJECTED" ||
+                text === "Trainer Rejected" ||
+                text === "Escalated" ||
+                text === "Hold" ||
+                text === "Partially Closed" ||
+                text === "Discontinued" ||
+                text === "Refund" ? (
+                <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
                 <div style={{ display: "flex", gap: "12px" }}>
                   <Button className="customers_status_classgoing_button">
@@ -974,6 +1005,11 @@ export default function Customers() {
                               setCustomerDetails(record);
                               setDrawerContentStatus("Finance Verify");
                               setIsStatusUpdateDrawer(true);
+                              setPaymentHistory(
+                                record.payments && record.payments
+                                  ? record.payments.payment_trans
+                                  : []
+                              );
                             }
                           }}
                         >
@@ -1041,7 +1077,8 @@ export default function Customers() {
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ? (
+                      record.status === "Awaiting Trainer" ||
+                      record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -1061,7 +1098,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Assign Trainer");
@@ -1095,7 +1135,8 @@ export default function Customers() {
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
-                      record.status === "Awaiting Trainer Verify" ? (
+                      record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -1162,7 +1203,13 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
-                      record.status === "Awaiting Class" ? (
+                      record.status === "Trainer Rejected" ||
+                      record.status === "Awaiting Class" ||
+                      record.status === "Hold" ||
+                      record.status === "Escalated" ||
+                      record.status === "Partially Closed" ||
+                      record.status === "Discontinued" ||
+                      record.status === "Refund" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -1194,7 +1241,14 @@ export default function Customers() {
                                 "warning",
                                 "Trainer not Verified yet"
                               );
-                            } else if (record.status === "Awaiting Class") {
+                            } else if (
+                              record.status === "Awaiting Class" ||
+                              record.status === "Hold" ||
+                              record.status === "Escalated" ||
+                              record.status === "Partially Closed" ||
+                              record.status === "Discontinued" ||
+                              record.status === "Refund"
+                            ) {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Class Schedule");
@@ -1241,7 +1295,7 @@ export default function Customers() {
                     </Col>
 
                     {record.status === "Class Going" ||
-                    record.status === "Awaiting Feedback" ||
+                    record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <Col span={12}>
                         {classPercent < 100 ? (
@@ -1281,40 +1335,60 @@ export default function Customers() {
                     )}
                   </Row>
 
-                  {record.status === "Awaiting Feedback" ? (
-                    <Row style={{ marginTop: "4px" }}>
+                  {record.status === "Passedout process" ||
+                  record.status === "Completed" ? (
+                    <Row style={{ marginTop: "0px" }}>
                       <Col span={12}>
-                        <button
-                          className="customers_addfeedbackbutton"
-                          onClick={() => {
-                            setCustomerId(record.id);
-                            setCustomerDetails(record);
-                            setDrawerContentStatus("Add Feedback");
-                            setIsStatusUpdateDrawer(true);
-                          }}
-                        >
-                          Add Feedback
-                        </button>
+                        {record.status === "Passedout process" ? (
+                          <button
+                            className="customers_addfeedbackbutton"
+                            onClick={() => {
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setDrawerContentStatus("Add G-Review");
+                              setIsStatusUpdateDrawer(true);
+                              if (record.google_review === null) {
+                                setCurrent(0);
+                              } else if (record.course_duration === null) {
+                                setCurrent(1);
+                              } else {
+                                setCurrent(2);
+                              }
+                              setCourseDuration(record.course_duration);
+                              setCourseCompleteDate(
+                                record.course_completion_date
+                              );
+                              if (record.google_review) {
+                                setGoogleFeedbackBase64(record.google_review);
+                                setGoogleFeedbackArray([
+                                  { name: "G-Review.png" },
+                                ]);
+                              }
+                            }}
+                          >
+                            Passedout process
+                          </button>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              PO Process Completed
+                            </p>
+                          </div>
+                        )}
                       </Col>
-                      <Col span={12}></Col>
-                    </Row>
-                  ) : record.status === "Completed" ? (
-                    <Row style={{ marginBottom: "8px" }}>
+
                       <Col span={12}>
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Feedback Collected
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Certificate Issued
-                          </p>
-                        </div>
+                        {record.status === "Completed" ? (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Certificate Issued
+                            </p>
+                          </div>
+                        ) : (
+                          ""
+                        )}
                       </Col>
                     </Row>
                   ) : (
@@ -1359,17 +1433,17 @@ export default function Customers() {
                 </div>
               ) : text === "Awaiting Class" ? (
                 <div>
-                  <Button className="customers_status_awaitclassschedule_button">
+                  <Button className="customers_status_awaitingclass_button">
                     {text}
                   </Button>
                 </div>
               ) : text === "Class Scheduled" ? (
                 <div>
-                  <Button className="customers_status_awaitclassschedule_button">
+                  <Button className="customers_status_classscheduled_button">
                     {text}
                   </Button>
                 </div>
-              ) : text === "Awaiting Feedback" ? (
+              ) : text === "Passedout process" ? (
                 <div>
                   <Button className="customers_status_awaitfeedback_button">
                     {text}
@@ -1381,8 +1455,15 @@ export default function Customers() {
                     {text}
                   </Button>
                 </div>
-              ) : text === "Rejected" || text === "REJECTED" ? (
-                <Button className="trainers_rejected_button">Rejected</Button>
+              ) : text === "Rejected" ||
+                text === "REJECTED" ||
+                text === "Trainer Rejected" ||
+                text === "Escalated" ||
+                text === "Hold" ||
+                text === "Partially Closed" ||
+                text === "Discontinued" ||
+                text === "Refund" ? (
+                <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
                 <div style={{ display: "flex", gap: "12px" }}>
                   <Button className="customers_status_classgoing_button">
@@ -1414,6 +1495,7 @@ export default function Customers() {
                       }/customer-registration/${record.id}`
                     );
                     CommonMessage("success", "Link Copied");
+                    console.log("Copied: eeee");
                   }}
                 />
               </Tooltip>
@@ -1494,23 +1576,12 @@ export default function Customers() {
       width: 200,
     },
     {
-      title: "Training Mode",
-      key: "training_mode",
-      dataIndex: "training_mode",
-    },
-    {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
       width: 120,
     },
     { title: "Branch Name", key: "branch_name", dataIndex: "branch_name" },
-    {
-      title: "Class Going %",
-      key: "class_percentage",
-      dataIndex: "class_percentage",
-      width: 120,
-    },
     {
       title: "Course Fees",
       key: "primary_fees",
@@ -1519,6 +1590,13 @@ export default function Customers() {
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
+    },
+    {
+      title: "Class Going %",
+      key: "class_percentage",
+      dataIndex: "class_percentage",
+      width: 120,
+      fixed: "right",
     },
     {
       title: "Trainer Commercial",
@@ -1580,7 +1658,12 @@ export default function Customers() {
         : {}),
       from_date: startDate,
       to_date: endDate,
-      ...(customerStatus && { status: customerStatus }),
+      ...(customerStatus && {
+        status:
+          customerStatus === "Awaiting Trainer"
+            ? ["Awaiting Trainer", "Trainer Rejected"]
+            : customerStatus,
+      }),
     };
 
     try {
@@ -1662,10 +1745,7 @@ export default function Customers() {
 
   const handleStudentVerifyProof = ({ file }) => {
     // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
+    const isValidType = file.type === "image/png";
 
     if (file.status === "uploading" || file.status === "removed") {
       setStudentVerifyProofArray([]);
@@ -1699,10 +1779,7 @@ export default function Customers() {
 
   const handleLinedinFeedback = ({ file }) => {
     // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
+    const isValidType = file.type === "image/png";
 
     if (file.status === "uploading" || file.status === "removed") {
       setLinkedinFeedbackArray([]);
@@ -1736,11 +1813,8 @@ export default function Customers() {
 
   const handleGoogleFeedback = ({ file }) => {
     // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
-
+    const isValidType = file.type === "image/png";
+    setIsGoogleReviewChange(true);
     if (file.status === "uploading" || file.status === "removed") {
       setGoogleFeedbackArray([]);
       setGoogleFeedbackBase64("");
@@ -1771,12 +1845,43 @@ export default function Customers() {
     }
   };
 
+  const handleAddAttachment = ({ file }) => {
+    // allowed MIME types
+    const isValidType = file.type === "image/png";
+
+    if (file.status === "uploading" || file.status === "removed") {
+      setAddattachmentArray([]);
+      setAddattachmentBase64("");
+      setAddattachmentError("Attachment is required");
+      return;
+    }
+    const isValidSize = file.size <= 1024 * 1024;
+
+    if (isValidType && isValidSize) {
+      console.log("fileeeee", file);
+      setAddattachmentArray([file]);
+      CommonMessage("success", "Attachment uploaded");
+      setAddattachmentError("");
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        setAddattachmentBase64(base64String); // Store in state
+      };
+    } else {
+      if (!isValidType) {
+        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
+      } else if (!isValidSize) {
+        CommonMessage("error", "File size must be 1MB or less");
+      }
+      setAddattachmentArray([]);
+      setAddattachmentBase64("");
+    }
+  };
+
   const handleAssignTrainerProof = ({ file }) => {
     // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
+    const isValidType = file.type === "image/png";
 
     if (file.status === "uploading" || file.status === "removed") {
       setAssignTrainerProofArray([]);
@@ -1849,11 +1954,11 @@ export default function Customers() {
     }
   };
 
-  const handleFinaceVerify = async () => {
+  const handleFinaceVerify = async (transactiondetails) => {
     setUpdateButtonLoading(true);
     const today = new Date();
     const payload = {
-      payment_trans_id: customerDetails.payments.payment_trans_id,
+      payment_trans_id: transactiondetails?.id || "",
       verified_date: formatToBackendIST(today),
     };
     try {
@@ -1861,6 +1966,7 @@ export default function Customers() {
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
         handleCustomerStatus("Awaiting Verify");
+        sendInvoiceEmail(transactiondetails);
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -1869,6 +1975,47 @@ export default function Customers() {
         error?.response?.data?.message ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const sendInvoiceEmail = async (transactiondetails) => {
+    const payload = {
+      email:
+        customerDetails && customerDetails.email ? customerDetails.email : "",
+      name: customerDetails && customerDetails.name ? customerDetails.name : "",
+      mobile:
+        customerDetails && customerDetails.phone ? customerDetails.phone : "",
+      convenience_fees: transactiondetails?.convenience_fees || "",
+      gst_amount: customerDetails?.payments?.gst_amount
+        ? customerDetails.payments.gst_amount
+        : "",
+      gst_percentage: customerDetails?.payments?.gst_percentage
+        ? parseFloat(customerDetails.payments.gst_percentage)
+        : "",
+      invoice_date: transactiondetails?.invoice_date
+        ? moment(transactiondetails.invoice_date).format("DD-MM-YYYY")
+        : "",
+      invoice_number: transactiondetails?.invoice_number || "",
+      paid_amount: transactiondetails?.amount || "",
+      payment_mode: transactiondetails?.payment_mode || "",
+      total_amount: customerDetails?.payments?.total_amount
+        ? customerDetails.payments.total_amount
+        : "",
+      balance_amount: transactiondetails?.balance_amount || "",
+      course_name:
+        customerDetails && customerDetails.course_name
+          ? customerDetails.course_name
+          : "",
+      sub_total:
+        customerDetails && customerDetails.primary_fees
+          ? customerDetails.primary_fees
+          : "",
+    };
+
+    try {
+      await sendLeadInvoiceEmail(payload);
+    } catch (error) {
+      console.log("invoice error", error);
     }
   };
 
@@ -2080,7 +2227,6 @@ export default function Customers() {
     const trainerIdValidate = selectValidator(trainerId);
     const commercialValidate = selectValidator(commercial);
     const modeOfClassValidate = selectValidator(modeOfClass);
-    const trainerTypeValidate = selectValidator(trainerType);
     const commentValidate = addressValidator(assignTrainerComments);
 
     let assignTrainerProofValidate;
@@ -2094,7 +2240,6 @@ export default function Customers() {
     setTrainerIdError(trainerIdValidate);
     setCommercialError(commercialValidate);
     setModeOfClassError(modeOfClassValidate);
-    setTrainerTypeError(trainerTypeValidate);
     setAssignTrainerProofError(assignTrainerProofValidate);
     setAssignTrainerCommentsError(commentValidate);
 
@@ -2102,7 +2247,6 @@ export default function Customers() {
       trainerIdValidate ||
       commercialValidate ||
       modeOfClassValidate ||
-      trainerTypeValidate ||
       assignTrainerProofValidate ||
       commentValidate
     )
@@ -2148,7 +2292,11 @@ export default function Customers() {
     try {
       const response = await getCustomerByTrainerId(payload);
       console.log("get customer by trainer id response", response);
-      setCustomerByTrainerData(response?.data?.data || []);
+
+      setTrainerClassTakenCount(response?.data?.data?.on_boarding_count || 0);
+      setTrainerClassGoingCount(response?.data?.data?.on_going_count || 0);
+
+      setCustomerByTrainerData(response?.data?.data?.students || []);
       setTimeout(() => {
         setCustomerByTrainerLoading(false);
       }, 300);
@@ -2214,7 +2362,7 @@ export default function Customers() {
       await rejectTrainerForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
-        handleCustomerStatus("Awaiting Trainer");
+        handleCustomerStatus("Trainer Rejected");
       }, 300);
     } catch (error) {
       setRejectButtonLoader(false);
@@ -2229,6 +2377,7 @@ export default function Customers() {
   const handleClassSchedule = async () => {
     const scheduleIdValidate = selectValidator(scheduleId);
     let classStartDateValidate;
+    let classHoldCommentValidate;
 
     if (scheduleId === 6) {
       classStartDateValidate = selectValidator(classStartDate);
@@ -2236,10 +2385,22 @@ export default function Customers() {
       classStartDateValidate = "";
     }
 
+    if (scheduleId === 3) {
+      classHoldCommentValidate = addressValidator(classHoldComments);
+    } else {
+      classStartDateValidate = "";
+    }
+
     setScheduleIdError(scheduleIdValidate);
     setClassStartDateError(classStartDateValidate);
+    setClassHoldCommentsError(classHoldCommentValidate);
 
-    if (scheduleIdValidate || classStartDateValidate) return;
+    if (
+      scheduleIdValidate ||
+      classStartDateValidate ||
+      classHoldCommentValidate
+    )
+      return;
     setUpdateButtonLoading(true);
 
     const today = new Date();
@@ -2253,6 +2414,7 @@ export default function Customers() {
           }
         : { class_start_date: null }),
       schedule_at: formatToBackendIST(today),
+      ...(classHoldComments && { comments: classHoldComments }),
     };
     console.log("class schedule payload", payload);
     try {
@@ -2280,41 +2442,66 @@ export default function Customers() {
   };
 
   const handleUpdateClassGoing = async () => {
-    if (scheduleId != 1) {
-      handleClassSchedule();
-      return;
-    }
     const classGoingPercentageValidate =
       percentageValidator(classGoingPercentage);
+    let commentValidate;
+    let attachmentValidate;
+
+    if (scheduleId != 1) {
+      commentValidate = addressValidator(classGoingComments);
+      attachmentValidate = selectValidator(addattachmentBase64);
+    } else {
+      commentValidate = "";
+      attachmentValidate = "";
+    }
 
     setClassGoingPercentageError(classGoingPercentageValidate);
+    setClassGoingCommentsError(commentValidate);
+    setAddattachmentError(attachmentValidate);
 
-    if (classGoingPercentageValidate) return;
+    if (classGoingPercentageValidate || commentValidate || attachmentValidate)
+      return;
 
     setUpdateButtonLoading(true);
     const payload = {
       customer_id: customerDetails.id,
-      schedule_id: 1,
+      schedule_id: scheduleId,
       class_percentage: classGoingPercentage,
       class_comments: classGoingComments,
+      class_attachment: addattachmentBase64,
     };
     try {
       await updateClassGoingForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
       if (classGoingPercentage < 100) {
         setTimeout(() => {
-          getCustomersData(
-            selectedDates[0],
-            selectedDates[1],
-            searchValue,
-            status
+          // getCustomersData(
+          //   selectedDates[0],
+          //   selectedDates[1],
+          //   searchValue,
+          //   status
+          // );
+          handleCustomerStatus(
+            scheduleId === 1
+              ? "Class Going"
+              : scheduleId === 3
+              ? "Hold"
+              : scheduleId === 5
+              ? "Escalated"
+              : scheduleId === 7
+              ? "Partially Closed"
+              : scheduleId === 8
+              ? "Discontinued"
+              : scheduleId === 9
+              ? "Refund"
+              : ""
           );
           setUpdateButtonLoading(false);
-          updateStatusDrawerReset();
+          // updateStatusDrawerReset();
         }, 300);
       } else {
         setTimeout(() => {
-          handleCustomerStatus("Awaiting G-Review");
+          handleCustomerStatus("Passedout process");
           setUpdateButtonLoading(false);
         }, 300);
       }
@@ -2329,46 +2516,93 @@ export default function Customers() {
   };
 
   const handleGoogleReview = async () => {
-    let googleValidate;
-    const courseDurationValidate = selectValidator(courseDuration);
-    const courseCompleteDateValidate = selectValidator(courseCompleteDate);
+    if (isGoogleReviewChange) {
+      let googleValidate;
+      if (googleFeedbackBase64 === "") {
+        googleValidate = "Google review screenshot is required";
+      } else {
+        googleValidate = "";
+      }
+      setGoogleFeedbackError(googleValidate);
 
-    if (googleFeedbackBase64 === "") {
-      googleValidate = "Google review screenshot is required";
+      if (googleValidate) return;
+
+      const today = new Date();
+      const payload = {
+        customer_id: customerDetails.id,
+        linkedin_review: customerDetails.linkedin_review
+          ? customerDetails.linkedin_review
+          : linkedinFeedbackBase64,
+        google_review: googleFeedbackBase64,
+        course_duration: customerDetails.course_duration,
+        course_completed_date: customerDetails.course_completion_date,
+        review_updated_date: formatToBackendIST(today),
+      };
+      try {
+        await updatefeedbackForCustomer(payload);
+        getCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue,
+          status
+        );
+        // CommonMessage("success", "Updated Successfully");
+        setCurrent(1);
+      } catch (error) {
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
     } else {
-      googleValidate = "";
+      setCurrent(1);
     }
+  };
 
-    setCourseDurationError(courseDurationValidate);
-    setCourseCompleteDateError(courseCompleteDateValidate);
-    setGoogleFeedbackError(googleValidate);
+  const handleCertificateDetails = async () => {
+    if (isCertChange) {
+      const courseDurationValidate = selectValidator(courseDuration);
+      const courseCompleteDateValidate = selectValidator(courseCompleteDate);
 
-    if (courseDurationValidate || courseCompleteDateValidate || googleValidate)
-      return;
-    setUpdateButtonLoading(true);
+      setCourseDurationError(courseDurationValidate);
+      setCourseCompleteDateError(courseCompleteDateValidate);
 
-    const today = new Date();
-    const payload = {
-      customer_id: customerDetails.id,
-      linkedin_review: "",
-      google_review: googleFeedbackBase64,
-      course_duration: courseDuration,
-      course_completed_date: formatToBackendIST(courseCompleteDate),
-      review_updated_date: formatToBackendIST(today),
-    };
-    try {
-      await updatefeedbackForCustomer(payload);
-      CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleCustomerStatus("Awaiting L-Review");
-      }, 300);
-    } catch (error) {
-      setUpdateButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message ||
-          "Something went wrong. Try again later"
-      );
+      if (courseDurationValidate || courseCompleteDateValidate) return;
+
+      const today = new Date();
+      const payload = {
+        customer_id: customerDetails.id,
+        linkedin_review: customerDetails.linkedin_review
+          ? customerDetails.linkedin_review
+          : linkedinFeedbackBase64,
+        google_review: customerDetails.google_review
+          ? customerDetails.google_review
+          : googleFeedbackBase64,
+        course_duration: courseDuration,
+        course_completed_date: formatToBackendIST(courseCompleteDate),
+        review_updated_date: formatToBackendIST(today),
+      };
+      try {
+        await updatefeedbackForCustomer(payload);
+        // CommonMessage("success", "Updated Successfully");
+        getCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue,
+          status
+        );
+        setCurrent(2);
+      } catch (error) {
+        setUpdateButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later"
+        );
+      }
+    } else {
+      setCurrent(2);
     }
   };
 
@@ -2390,11 +2624,11 @@ export default function Customers() {
     const payload = {
       customer_id: customerDetails.id,
       linkedin_review: linkedinFeedbackBase64,
-      google_review: customerDetails.google_review,
-      course_duration: customerDetails.course_duration,
-      course_completed_date: formatToBackendIST(
-        customerDetails.course_completion_date
-      ),
+      google_review: customerDetails.google_review
+        ? customerDetails.google_review
+        : googleFeedbackBase64,
+      course_duration: courseDuration,
+      course_completed_date: formatToBackendIST(courseCompleteDate),
       review_updated_date: formatToBackendIST(today),
     };
     try {
@@ -2439,8 +2673,7 @@ export default function Customers() {
     setCommercialError("");
     setModeOfClass(null);
     setModeOfClassError("");
-    setTrainerType(null);
-    setTrainerTypeError("");
+    setTrainerType("");
     setAssignTrainerProofArray([]);
     setAssignTrainerProofBase64("");
     setAssignTrainerProofError("");
@@ -2448,6 +2681,8 @@ export default function Customers() {
     setAssignTrainerCommentsError("");
     setTrainerFilterType(1);
     setTrainerHistory([]);
+    setTrainerClassTakenCount(0);
+    setTrainerClassGoingCount(0);
     //verify trainer
     setAssignTrainerData(null);
     setRejectTrainerComments("");
@@ -2462,7 +2697,13 @@ export default function Customers() {
     setClassGoingPercentage(0);
     setClassGoingPercentageError("");
     setClassGoingComments("");
+    setClassGoingCommentsError("");
+    setAddattachmentArray([]);
+    setAddattachmentBase64("");
+    setAddattachmentError("");
+    setClassHoldComments("");
     //feedback
+    setCurrent(0);
     setLinkedinFeedbackArray([]);
     setLinkedinFeedbackBase64("");
     setLinkedinFeedbackError("");
@@ -2474,6 +2715,8 @@ export default function Customers() {
     setCourseCompleteDateError("");
     setCourseCompleteDate(null);
     setCourseCompleteDateError("");
+    setIsGoogleReviewChange(false);
+    setIsCertChange(false);
   };
 
   return (
@@ -2781,11 +3024,12 @@ export default function Customers() {
  )`}
             </p>
           </div>
+
           <div
             className={
               status === "Awaiting Class"
-                ? "customers_active_classschedule_container"
-                : "customers_classschedule_container"
+                ? "customers_active_awaitingclass_container"
+                : "customers_awaitingclass_container"
             }
             onClick={() => {
               if (status === "Awaiting Class") {
@@ -2801,12 +3045,44 @@ export default function Customers() {
             }}
           >
             <p>
-              Class Schedule{" "}
+              Awaiting Class{" "}
               {`(  ${
                 customerStatusCount &&
                 customerStatusCount.awaiting_class !== undefined &&
                 customerStatusCount.awaiting_class !== null
                   ? customerStatusCount.awaiting_class
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              status === "Class Scheduled"
+                ? "customers_active_classschedule_container"
+                : "customers_classschedule_container"
+            }
+            onClick={() => {
+              if (status === "Class Scheduled") {
+                return;
+              }
+              setStatus("Class Scheduled");
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                "Class Scheduled"
+              );
+            }}
+          >
+            <p>
+              Class Scheduled{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.class_scheduled !== undefined &&
+                customerStatusCount.class_scheduled !== null
+                  ? customerStatusCount.class_scheduled
                   : "-"
               }
  )`}
@@ -2846,61 +3122,30 @@ export default function Customers() {
 
           <div
             className={
-              status === "Escalated"
-                ? "customers_active_escalated_container"
-                : "customers_escalated_container"
-            }
-            onClick={() => {
-              if (status === "Escalated") {
-                return;
-              }
-              setStatus("Escalated");
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                "Escalated"
-              );
-            }}
-          >
-            <p>
-              Escalated{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.escalated !== undefined &&
-                customerStatusCount.escalated !== null
-                  ? customerStatusCount.escalated
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-          <div
-            className={
-              status === "Awaiting Feedback"
+              status === "Passedout process"
                 ? "customers_active_feedback_container"
                 : "customers_feedback_container"
             }
             onClick={() => {
-              if (status === "Awaiting Feedback") {
+              if (status === "Passedout process") {
                 return;
               }
-              setStatus("Awaiting Feedback");
+              setStatus("Passedout process");
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Feedback"
+                "Passedout Process"
               );
             }}
           >
             <p>
-              Feedback{" "}
+              Passedout Process{" "}
               {`(  ${
                 customerStatusCount &&
-                customerStatusCount.awaiting_feedback !== undefined &&
-                customerStatusCount.awaiting_feedback !== null
-                  ? customerStatusCount.awaiting_feedback
+                customerStatusCount.passedout_process !== undefined &&
+                customerStatusCount.passedout_process !== null
+                  ? customerStatusCount.passedout_process
                   : "-"
               }
  )`}
@@ -2937,8 +3182,69 @@ export default function Customers() {
  )`}
             </p>
           </div>
-          <div className="customers_others_container">
-            <p>Others {`( 0 )`}</p>
+
+          <div
+            className={
+              status === "Escalated"
+                ? "customers_active_escalated_container"
+                : "customers_escalated_container"
+            }
+            onClick={() => {
+              if (status === "Escalated") {
+                return;
+              }
+              setStatus("Escalated");
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                "Escalated"
+              );
+            }}
+          >
+            <p>
+              Escalated{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.escalated !== undefined &&
+                customerStatusCount.escalated !== null
+                  ? customerStatusCount.escalated
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              status === "Others"
+                ? "customers_active_others_container"
+                : "customers_others_container"
+            }
+            onClick={() => {
+              if (status === "Others") {
+                return;
+              }
+              setStatus("Others");
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                "Others"
+              );
+            }}
+          >
+            <p>
+              Others{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.Others !== undefined &&
+                customerStatusCount.Others !== null
+                  ? customerStatusCount.Others
+                  : "-"
+              }
+ )`}
+            </p>
           </div>
         </div>
         <button
@@ -3174,23 +3480,6 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Training Mode
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.training_mode
-                        ? customerDetails.training_mode
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Region</p>
                     </div>
                   </Col>
@@ -3377,8 +3666,12 @@ export default function Customers() {
         title="Update Status"
         open={isStatusUpdateDrawer}
         onClose={updateStatusDrawerReset}
-        width="40%"
-        style={{ position: "relative", paddingBottom: "65px" }}
+        width="45%"
+        style={{
+          position: "relative",
+          paddingBottom:
+            drawerContentStatus === "Finance Verify" ? "0px" : "65px",
+        }}
         className="customer_statusupdate_drawer"
       >
         <div className="customer_statusupdate_drawer_profileContainer">
@@ -3485,23 +3778,6 @@ export default function Customers() {
                 </p>
               </Col>
             </Row>
-
-            <Row style={{ marginTop: "12px" }} gutter={16}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <LuCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
           </Col>
 
           <Col span={12}>
@@ -3515,21 +3791,6 @@ export default function Customers() {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Training Mode</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.training_mode
-                    ? customerDetails.training_mode
                     : "-"}
                 </p>
               </Col>
@@ -3599,6 +3860,22 @@ export default function Customers() {
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {" "}
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
         </Row>
 
@@ -3606,126 +3883,282 @@ export default function Customers() {
 
         {drawerContentStatus === "Finance Verify" ? (
           <div className="customer_statusupdate_adddetailsContainer">
-            <p className="customer_statusupdate_adddetails_heading">
-              Payment Details
+            <div
+              className="customerdetails_coursecard"
+              style={{ marginBottom: "16px" }}
+            >
+              <div className="customerdetails_coursecard_headercontainer">
+                <p>Tax Details</p>
+              </div>
+
+              <div className="customerdetails_coursecard_contentcontainer">
+                <Row>
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Course Fees
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {customerDetails && customerDetails.primary_fees
+                            ? "₹" + customerDetails.primary_fees
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Gst Amount
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {customerDetails &&
+                          customerDetails.payments.gst_amount
+                            ? "₹" + customerDetails.payments.gst_amount
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+                  </Col>
+
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">Tax Type</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {customerDetails && customerDetails.payments.tax_type
+                            ? customerDetails.payments.tax_type
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Total Fees
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {customerDetails &&
+                          customerDetails.payments.total_amount
+                            ? "₹" + customerDetails.payments.total_amount
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </div>
+            </div>
+
+            <p style={{ fontWeight: 600, color: "#333", fontSize: "16px" }}>
+              Transaction History
             </p>
 
-            <Row>
-              <Col span={12}>
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Invoice Number
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.payments.invoice_number
-                        ? customerDetails.payments.invoice_number
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+            <div>
+              {paymentHistory.length >= 1 ? (
+                <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                  <Collapse
+                    activeKey={collapseDefaultKey}
+                    onChange={(keys) => setCollapseDefaultKey(keys)}
+                    className="assesmntresult_collapse"
+                  >
+                    {paymentHistory.map((item, index) => (
+                      <Collapse.Panel
+                        key={item.id || index} // unique key
+                        header={
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              width: "100%",
+                              fontSize: "13px",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span>
+                              Transaction Date -{" "}
+                              <span style={{ fontWeight: "500" }}>
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </span>
+                            </span>
 
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Invoice Date</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.payments.invoice_date
-                        ? customerDetails.payments.invoice_date
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+                            {item.payment_status === "Verify Pending" ? (
+                              <div style={{ display: "flex", gap: "12px" }}>
+                                <Button className="customer_finance_rejectbutton">
+                                  Reject
+                                </Button>
 
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Total Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.primary_fees
-                        ? "₹" + customerDetails.primary_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
+                                {updateButtonLoading ? (
+                                  <Button className="customer_finance_loadingverifybutton">
+                                    <CommonSpinner />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    className="customer_finance_verifybutton"
+                                    onClick={() => handleFinaceVerify(item)}
+                                  >
+                                    Verify
+                                  </Button>
+                                )}
+                              </div>
+                            ) : (
+                              <p style={{ color: "#3c9111", fontWeight: 500 }}>
+                                Verified
+                              </p>
+                            )}
+                          </div>
+                        }
+                      >
+                        <div>
+                          <Row gutter={16} style={{ marginTop: "6px" }}>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Invoice Date
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {moment(item.invoice_date).format(
+                                      "DD/MM/YYYY"
+                                    )}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Invoice Number
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.invoice_number}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                          </Row>
 
-              <Col span={12}>
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Paid Amount</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.payments.amount !== undefined &&
-                      customerDetails.payments.amount !== null
-                        ? "₹" + customerDetails.payments.amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+                          <Row gutter={16} style={{ marginTop: "16px" }}>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Payment Mode
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.payment_mode}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Convenience Fees
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {"₹" + item.convenience_fees}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                          </Row>
 
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Balance Amount
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: "500" }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Payment Mode</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.payments.payment_mode
-                        ? customerDetails.payments.payment_mode
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            <button
-              className="customer_paymentscreenshot_viewbutton"
-              onClick={() => {
-                setIsOpenPaymentScreenshotModal(true);
-              }}
-            >
-              <FaRegEye size={16} /> View payment screenshot
-            </button>
+                          <Row gutter={16} style={{ marginTop: "16px" }}>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Paid Amount
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p
+                                    className="customerdetails_text"
+                                    style={{
+                                      color: "#3c9111",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {"₹" + item.amount}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Payment Screenshot
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <button
+                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                    onClick={() => {
+                                      setIsOpenPaymentScreenshotModal(true);
+                                      setTransactionScreenshot(
+                                        item.payment_screenshot
+                                      );
+                                    }}
+                                  >
+                                    <FaRegEye size={16} /> View screenshot
+                                  </button>
+                                </Col>
+                              </Row>
+                            </Col>
+                          </Row>
+                        </div>
+                      </Collapse.Panel>
+                    ))}
+                  </Collapse>
+                </div>
+              ) : (
+                <p className="customer_trainerhistory_nodatatext">
+                  No Data found
+                </p>
+              )}
+            </div>
           </div>
         ) : drawerContentStatus === "Student Verify" ? (
           <>
@@ -3734,43 +4167,11 @@ export default function Customers() {
                 Add Details
               </p>
 
-              <Row style={{ marginTop: "22px" }}>
+              <Row style={{ marginTop: "6px" }}>
                 <Col span={24}>
-                  <p className="trainer_registration_signaturelabel">
-                    Proof Communication{" "}
-                    <span style={{ color: "#d32f2f" }}>*</span>
-                  </p>
-                  <div style={{ position: "relative" }}>
-                    <Upload
-                      style={{ width: "100%", marginTop: "6px" }}
-                      beforeUpload={(file) => {
-                        return false; // Prevent auto-upload
-                      }}
-                      accept=".png,.jpg,.jpeg"
-                      onChange={handleStudentVerifyProof}
-                      fileList={studentVerifyProofArray}
-                      multiple={false}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        className="leadmanager_payment_screenshotbutton"
-                        style={{ borderRadius: "4px" }}
-                      >
-                        Choose file
-                        <span style={{ fontSize: "10px" }}>
-                          (PNG, JPEG, & PNG)
-                        </span>
-                      </Button>
-                    </Upload>{" "}
-                    {studentVerifyProofError && (
-                      <p className="trainer_registration_signatureerror">
-                        {studentVerifyProofError}
-                      </p>
-                    )}
-                  </div>
                   <div
                     style={{
-                      marginTop: "20px",
+                      marginBottom: "40px",
                     }}
                   >
                     <CommonTextArea
@@ -3785,6 +4186,41 @@ export default function Customers() {
                       value={studentVerifyComments}
                       error={studentVerifyCommentsError}
                     />
+                  </div>
+
+                  <div style={{ position: "relative", marginBottom: "20px" }}>
+                    <p className="trainer_registration_signaturelabel">
+                      Proof Communication{" "}
+                      <span style={{ color: "#d32f2f" }}>*</span>
+                    </p>
+                    <div style={{ position: "relative" }}>
+                      <Upload
+                        style={{ width: "100%", marginTop: "6px" }}
+                        beforeUpload={(file) => {
+                          return false; // Prevent auto-upload
+                        }}
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handleStudentVerifyProof}
+                        fileList={studentVerifyProofArray}
+                        multiple={false}
+                      >
+                        <Button
+                          icon={<UploadOutlined />}
+                          className="leadmanager_payment_screenshotbutton"
+                          style={{ borderRadius: "4px" }}
+                        >
+                          Choose file
+                          <span style={{ fontSize: "10px" }}>
+                            (PNG, JPEG, & PNG)
+                          </span>
+                        </Button>
+                      </Upload>{" "}
+                      {studentVerifyProofError && (
+                        <p className="trainer_registration_signatureerror">
+                          {studentVerifyProofError}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div
@@ -3812,30 +4248,6 @@ export default function Customers() {
                 Previous Assigned Trainer History
               </p>
 
-              {/* <table
-                border="1"
-                cellpadding="8"
-                cellspacing="0"
-                className="customer_trainerassign_historytable"
-              >
-                <thead>
-                  <tr>
-                    <th>Trainer Name</th>
-                    <th>Assigned Date</th>
-                    <th>Rejected Reason</th>
-                    <th>Rejected Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>—</td>
-                  </tr>
-                </tbody>
-              </table> */}
-
               {historyLoading === false ? (
                 <>
                   {trainerHistory.length >= 1 ? (
@@ -3846,7 +4258,6 @@ export default function Customers() {
                         activeKey={collapseDefaultKey}
                         onChange={(keys) => {
                           setCollapseDefaultKey(keys);
-                          console.log("keyyyy", keys);
                         }}
                       ></Collapse>
                     </div>
@@ -3862,26 +4273,6 @@ export default function Customers() {
               <p className="customer_statusupdate_adddetails_heading">
                 Assign New Trainer
               </p>
-
-              <div style={{ marginTop: "8px" }}>
-                <Radio.Group
-                  value={trainerFilterType}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setTrainerFilterType(e.target.value);
-                  }}
-                >
-                  <Radio value={1} style={{ fontSize: "10px" }}>
-                    Search Trainer by Name
-                  </Radio>
-                  <Radio value={2} style={{ fontSize: "10px" }}>
-                    Search Trainer by Email
-                  </Radio>
-                  <Radio value={3} style={{ fontSize: "10px" }}>
-                    Search Trainer by Mobile
-                  </Radio>
-                </Radio.Group>
-              </div>
 
               <Row gutter={16} style={{ marginTop: "14px" }}>
                 <Col span={12}>
@@ -3903,8 +4294,15 @@ export default function Customers() {
                             (f) => f.id === e.target.value
                           );
                           console.log("clickedTrainer", clickedTrainer);
+                          setTrainerType(
+                            clickedTrainer.length >= 1 &&
+                              clickedTrainer[0].trainer_type
+                              ? clickedTrainer[0].trainer_type
+                              : ""
+                          );
                           setClickedTrainerDetails(clickedTrainer);
                           setTrainerIdError(selectValidator(e.target.value));
+                          getCustomerByTrainerIdData(e.target.value, 0);
                         }}
                         value={trainerId}
                         error={trainerIdError}
@@ -3918,6 +4316,48 @@ export default function Customers() {
                       />
                     </div>
 
+                    <div>
+                      {/* <IoFilter size={16} /> */}
+                      <Flex
+                        justify="center"
+                        align="center"
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        <Tooltip
+                          placement="bottomLeft"
+                          color="#fff"
+                          title={
+                            <Radio.Group
+                              value={trainerFilterType}
+                              onChange={(e) => {
+                                console.log(e.target.value);
+                                setTrainerFilterType(e.target.value);
+                              }}
+                            >
+                              <Radio
+                                value={1}
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                Search by Name
+                              </Radio>
+                              <Radio value={2} style={{ marginBottom: "12px" }}>
+                                Search by Email
+                              </Radio>
+                              <Radio value={3} style={{ marginBottom: "12px" }}>
+                                Search by Mobile
+                              </Radio>
+                            </Radio.Group>
+                          }
+                        >
+                          <Button className="customer_trainermappingfilter_container">
+                            <IoFilter size={16} />
+                          </Button>
+                        </Tooltip>
+                      </Flex>
+                    </div>
                     {trainerId && (
                       <Tooltip
                         placement="top"
@@ -3970,57 +4410,20 @@ export default function Customers() {
                   />
                 </Col>
                 <Col span={12}>
-                  <CommonSelectField
+                  <CommonInputField
                     label="Trainer Type"
                     required={true}
-                    options={trainerTypeOptions}
-                    onChange={(e) => {
-                      setTrainerType(e.target.value);
-                      setTrainerTypeError(selectValidator(e.target.value));
-                    }}
                     value={trainerType}
-                    error={trainerTypeError}
+                    disabled={true}
                   />
                 </Col>
               </Row>
 
-              <Row style={{ marginTop: "34px" }}>
+              <Row style={{ marginTop: "28px" }}>
                 <Col span={24}>
-                  <p className="trainer_registration_signaturelabel">
-                    Proof Communication{" "}
-                    <span style={{ color: "#d32f2f" }}>*</span>
-                  </p>
-                  <div style={{ position: "relative" }}>
-                    <Upload
-                      style={{ width: "100%", marginTop: "6px" }}
-                      beforeUpload={(file) => {
-                        return false; // Prevent auto-upload
-                      }}
-                      accept=".png,.jpg,.jpeg"
-                      onChange={handleAssignTrainerProof}
-                      fileList={assignTrainerProofArray}
-                      multiple={false}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        className="leadmanager_payment_screenshotbutton"
-                        style={{ borderRadius: "4px" }}
-                      >
-                        Choose file
-                        <span style={{ fontSize: "10px" }}>
-                          (PNG, JPEG, & PNG)
-                        </span>
-                      </Button>
-                    </Upload>{" "}
-                    {assignTrainerProofError && (
-                      <p className="trainer_registration_signatureerror">
-                        {assignTrainerProofError}
-                      </p>
-                    )}
-                  </div>
                   <div
                     style={{
-                      marginTop: "20px",
+                      marginBottom: "20px",
                     }}
                   >
                     <CommonTextArea
@@ -4035,6 +4438,39 @@ export default function Customers() {
                       value={assignTrainerComments}
                       error={assignTrainerCommentsError}
                     />
+                  </div>
+
+                  <div style={{ position: "relative", marginTop: "38px" }}>
+                    <p className="trainer_registration_signaturelabel">
+                      Proof Communication{" "}
+                      <span style={{ color: "#d32f2f" }}>*</span>
+                    </p>
+                    <div style={{ position: "relative" }}>
+                      <Upload
+                        style={{ width: "100%", marginTop: "6px" }}
+                        beforeUpload={(file) => {
+                          return false; // Prevent auto-upload
+                        }}
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handleAssignTrainerProof}
+                        fileList={assignTrainerProofArray}
+                        multiple={false}
+                      >
+                        <Button
+                          icon={<UploadOutlined />}
+                          className="leadmanager_payment_screenshotbutton"
+                          style={{ borderRadius: "4px" }}
+                        >
+                          Choose file
+                          <span style={{ fontSize: "10px" }}>(PNG)</span>
+                        </Button>
+                      </Upload>{" "}
+                      {assignTrainerProofError && (
+                        <p className="trainer_registration_signatureerror">
+                          {assignTrainerProofError}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </Col>
               </Row>
@@ -4171,11 +4607,16 @@ export default function Customers() {
                         style={{
                           color:
                             customerDetails &&
-                            customerDetails.commercial_percentage !== null &&
-                            customerDetails.commercial_percentage > 24
-                              ? "#d32f2f"
-                              : "#3c9111", // default color
-                          fontWeight: 600,
+                            customerDetails.commercial_percentage !== null
+                              ? customerDetails.commercial_percentage < 18
+                                ? "#3c9111" // green
+                                : customerDetails.commercial_percentage > 19 &&
+                                  customerDetails.commercial_percentage <= 22
+                                ? "#ffa502" // orange
+                                : customerDetails.commercial_percentage > 22
+                                ? "#d32f2f" // red
+                                : "inherit"
+                              : "inherit", // fallback color if null
                         }}
                       >
                         {customerDetails &&
@@ -4322,6 +4763,14 @@ export default function Customers() {
                       setClassStartDate(null);
                       setClassStartDateError("");
                     }
+
+                    if (value === 3) {
+                      setClassHoldCommentsError(
+                        addressValidator(classHoldComments)
+                      );
+                    } else {
+                      setClassHoldCommentsError("");
+                    }
                   }}
                   value={scheduleId}
                   error={scheduleIdError}
@@ -4330,7 +4779,7 @@ export default function Customers() {
               {scheduleId === 6 ? (
                 <div style={{ marginTop: "30px" }}>
                   <CommonMuiDatePicker
-                    label="Schedule Status"
+                    label="Schedule Date"
                     required={true}
                     onChange={(value) => {
                       setClassStartDate(value);
@@ -4344,6 +4793,25 @@ export default function Customers() {
               ) : (
                 ""
               )}
+
+              {scheduleId === 3 && (
+                <Row style={{ marginTop: "20px", marginBottom: 40 }}>
+                  <Col span={24}>
+                    <CommonTextArea
+                      label="Comments"
+                      required={false}
+                      onChange={(e) => {
+                        setClassHoldComments(e.target.value);
+                        setClassHoldCommentsError(
+                          addressValidator(e.target.value)
+                        );
+                      }}
+                      value={classHoldComments}
+                      error={classHoldCommentsError}
+                    />
+                  </Col>
+                </Row>
+              )}
             </div>
           </>
         ) : drawerContentStatus === "Class Going" ? (
@@ -4353,71 +4821,60 @@ export default function Customers() {
                 Update Class-Going Process
               </p>
 
-              <Row style={{ marginTop: "30px" }}>
-                <Col span={24}>
+              <Row gutter={16} style={{ marginTop: "30px" }}>
+                <Col span={12}>
                   <CommonSelectField
                     label="Schedule Status"
-                    options={scheduleOptions}
+                    options={scheduleOptions2}
                     required={true}
                     onChange={(e) => {
                       const value = e.target.value;
                       setScheduleId(value);
                       setScheduleIdError(selectValidator(value));
-                      if (value === 6) {
-                        setClassStartDateError(selectValidator(classStartDate));
+                      if (value !== 1) {
+                        setClassGoingCommentsError(
+                          addressValidator(classGoingComments)
+                        );
+                        setAddattachmentError(
+                          selectValidator(addattachmentBase64)
+                        );
                       } else {
-                        setClassStartDate(null);
-                        setClassStartDateError("");
+                        setClassGoingCommentsError("");
+                        setAddattachmentError("");
                       }
                     }}
                     value={scheduleId}
                     error={scheduleIdError}
                   />
                 </Col>
+                <Col span={12}>
+                  <CommonInputField
+                    label="Class Going Percentage"
+                    required={true}
+                    type="number"
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (value < 0) {
+                        setClassGoingPercentage(0);
+                        return;
+                      }
+                      setClassGoingPercentage(value);
+                      setClassGoingPercentageError(percentageValidator(value));
+                    }}
+                    value={classGoingPercentage}
+                    error={classGoingPercentageError}
+                    onInput={(e) => {
+                      if (e.target.value.length > 3) {
+                        e.target.value = e.target.value.slice(0, 3);
+                      }
+                    }}
+                    errorFontSize="9px"
+                  />
+                </Col>
               </Row>
 
-              {scheduleId === 6 ? (
-                <div style={{ marginTop: "30px" }}>
-                  <CommonMuiDatePicker
-                    label="Schedule Status"
-                    required={true}
-                    onChange={(value) => {
-                      setClassStartDate(value);
-                      setClassStartDateError(selectValidator(value));
-                    }}
-                    value={classStartDate}
-                    error={classStartDateError}
-                    disablePreviousDates={true}
-                  />
-                </div>
-              ) : scheduleId === 1 ? (
-                <Row gutter={16} style={{ marginTop: "30px" }}>
-                  <Col span={12}>
-                    <CommonInputField
-                      label="Class Going Percentage"
-                      required={true}
-                      type="number"
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value < 0) {
-                          setClassGoingPercentage(0);
-                          return;
-                        }
-                        setClassGoingPercentage(value);
-                        setClassGoingPercentageError(
-                          percentageValidator(value)
-                        );
-                      }}
-                      value={classGoingPercentage}
-                      error={classGoingPercentageError}
-                      onInput={(e) => {
-                        if (e.target.value.length > 3) {
-                          e.target.value = e.target.value.slice(0, 3);
-                        }
-                      }}
-                      errorFontSize="9px"
-                    />
-                  </Col>
+              {scheduleId != 1 ? (
+                <Row gutter={16} style={{ marginTop: "40px" }}>
                   <Col span={12}>
                     <div style={{ marginTop: "-25px" }}>
                       <CommonTextArea
@@ -4425,9 +4882,48 @@ export default function Customers() {
                         required={false}
                         onChange={(e) => {
                           setClassGoingComments(e.target.value);
+                          setClassGoingCommentsError(
+                            addressValidator(e.target.value)
+                          );
                         }}
                         value={classGoingComments}
+                        error={classGoingCommentsError}
                       />
+                    </div>
+                  </Col>
+
+                  <Col span={12}>
+                    <div>
+                      <p className="customers_feedback_imagelabels">
+                        Add Attachment{" "}
+                        <span style={{ color: "#d32f2f" }}>*</span>
+                      </p>
+                      <div style={{ position: "relative" }}>
+                        <Upload
+                          style={{ width: "100%", marginTop: "6px" }}
+                          beforeUpload={(file) => {
+                            return false; // Prevent auto-upload
+                          }}
+                          accept=".png"
+                          onChange={handleAddAttachment}
+                          fileList={addattachmentArray}
+                          multiple={false}
+                        >
+                          <Button
+                            icon={<UploadOutlined />}
+                            className="leadmanager_payment_screenshotbutton"
+                            style={{ borderRadius: "4px" }}
+                          >
+                            Choose file
+                            <span style={{ fontSize: "10px" }}>(PNG)</span>
+                          </Button>
+                        </Upload>{" "}
+                        {addattachmentError && (
+                          <p className="trainer_registration_signatureerror">
+                            {addattachmentError}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -4439,79 +4935,140 @@ export default function Customers() {
         ) : drawerContentStatus === "Add G-Review" ? (
           <>
             <div className="customer_statusupdate_adddetailsContainer">
-              <p className="customer_statusupdate_adddetails_heading">
-                Add Feedback Details
-              </p>
+              {/* <p className="customer_statusupdate_adddetails_heading">
+                Certificate Details
+              </p> */}
 
-              <div style={{ marginTop: "22px" }}>
-                <p className="customers_feedback_imagelabels">
-                  Google Review Screenshot{" "}
-                  <span style={{ color: "#d32f2f" }}>*</span>
-                </p>
-                <div style={{ position: "relative" }}>
-                  <Upload
-                    style={{ width: "100%", marginTop: "6px" }}
-                    beforeUpload={(file) => {
-                      return false; // Prevent auto-upload
-                    }}
-                    accept=".png,.jpg,.jpeg"
-                    onChange={handleGoogleFeedback}
-                    fileList={googleFeedbackArray}
-                    multiple={false}
-                  >
-                    <Button
-                      icon={<UploadOutlined />}
-                      className="leadmanager_payment_screenshotbutton"
-                      style={{ borderRadius: "4px" }}
+              <Steps current={current} size="small">
+                <Step title="Add G-Review" />
+                <Step title="Certificate Details" />
+                <Step title="Add L-Review" />
+              </Steps>
+
+              {current === 0 ? (
+                <div style={{ marginTop: "22px" }}>
+                  <p className="customers_feedback_imagelabels">
+                    Google Review Screenshot{" "}
+                    <span style={{ color: "#d32f2f" }}>*</span>
+                  </p>
+                  <div style={{ position: "relative" }}>
+                    <Upload
+                      style={{ width: "100%", marginTop: "6px" }}
+                      beforeUpload={(file) => {
+                        return false; // Prevent auto-upload
+                      }}
+                      accept=".png"
+                      onChange={handleGoogleFeedback}
+                      fileList={googleFeedbackArray}
+                      multiple={false}
                     >
-                      Choose file
-                      <span style={{ fontSize: "10px" }}>
-                        (PNG, JPEG, & PNG)
-                      </span>
-                    </Button>
-                  </Upload>{" "}
-                  {googleFeedbackError && (
-                    <p className="trainer_registration_signatureerror">
-                      {googleFeedbackError}
-                    </p>
-                  )}
+                      <Button
+                        icon={<UploadOutlined />}
+                        className="leadmanager_payment_screenshotbutton"
+                        style={{ borderRadius: "4px" }}
+                      >
+                        Choose file
+                        <span style={{ fontSize: "10px" }}>(PNG)</span>
+                      </Button>
+                    </Upload>{" "}
+                    {googleFeedbackError && (
+                      <p className="trainer_registration_signatureerror">
+                        {googleFeedbackError}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                ""
+              )}
 
-              <Row gutter={16} style={{ marginTop: "30px" }}>
-                <Col span={12}>
-                  <CommonOutlinedInput
-                    label="Course Duration"
-                    type="number"
-                    required={true}
-                    onChange={(e) => {
-                      setCourseDuration(e.target.value);
-                      setCourseDurationError(selectValidator(e.target.value));
-                    }}
-                    value={courseDuration}
-                    error={courseDurationError}
-                    onInput={(e) => {
-                      if (e.target.value.length > 3) {
-                        e.target.value = e.target.value.slice(0, 3);
-                      }
-                    }}
-                    icon={<p style={{ fontSize: "11px" }}>Months</p>}
-                  />
-                </Col>
-                <Col span={12}>
-                  <CommonMuiDatePicker
-                    label="Course Completion Date"
-                    required={true}
-                    onChange={(value) => {
-                      setCourseCompleteDate(value);
-                      setCourseCompleteDateError(selectValidator(value));
-                    }}
-                    value={courseCompleteDate}
-                    disablePreviousDates={false}
-                    error={courseCompleteDateError}
-                  />
-                </Col>
-              </Row>
+              {current === 1 ? (
+                <>
+                  <Row gutter={16} style={{ marginTop: "16px" }}>
+                    <Col span={12}>
+                      <CommonOutlinedInput
+                        label="Course Duration"
+                        type="number"
+                        required={true}
+                        onChange={(e) => {
+                          setCourseDuration(e.target.value);
+                          setIsCertChange(true);
+                          setCourseDurationError(
+                            selectValidator(e.target.value)
+                          );
+                        }}
+                        value={courseDuration}
+                        error={courseDurationError}
+                        onInput={(e) => {
+                          if (e.target.value.length > 3) {
+                            e.target.value = e.target.value.slice(0, 3);
+                          }
+                        }}
+                        icon={<p style={{ fontSize: "11px" }}>Months</p>}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <CommonMuiDatePicker
+                        label="Course Completion Date"
+                        required={true}
+                        onChange={(value) => {
+                          setCourseCompleteDate(value);
+                          setIsCertChange(true);
+                          setCourseCompleteDateError(selectValidator(value));
+                        }}
+                        value={courseCompleteDate}
+                        disablePreviousDates={false}
+                        error={courseCompleteDateError}
+                      />
+                    </Col>
+                  </Row>
+
+                  <div className="customer_generatecert_button_container">
+                    <Button className="customer_generatecert_button">
+                      Generate Certificate
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                ""
+              )}
+
+              {current === 2 ? (
+                <div style={{ marginTop: "12px" }}>
+                  <p className="customers_feedback_imagelabels">
+                    Linkedin Review Screenshot{" "}
+                    <span style={{ color: "#d32f2f" }}>*</span>
+                  </p>
+                  <div style={{ position: "relative" }}>
+                    <Upload
+                      style={{ width: "100%", marginTop: "6px" }}
+                      beforeUpload={(file) => {
+                        return false; // Prevent auto-upload
+                      }}
+                      accept=".png"
+                      onChange={handleLinedinFeedback}
+                      fileList={linkedinFeedbackArray}
+                      multiple={false}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        className="leadmanager_payment_screenshotbutton"
+                        style={{ borderRadius: "4px" }}
+                      >
+                        Choose file
+                        <span style={{ fontSize: "10px" }}>(PNG)</span>
+                      </Button>
+                    </Upload>{" "}
+                    {linkedinFeedbackError && (
+                      <p className="trainer_registration_signatureerror">
+                        {linkedinFeedbackError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </>
         ) : drawerContentStatus === "Add L-Review" ? (
@@ -4561,81 +5118,132 @@ export default function Customers() {
           ""
         )}
 
-        <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
-            {drawerContentStatus === "Trainer Verify" ? (
-              <>
-                {rejectbuttonLoader ? (
-                  <button className="customer_trainerreject_loadingbutton">
-                    <CommonSpinner />
-                  </button>
-                ) : (
-                  <button
-                    className="customer_trainerreject_button"
-                    onClick={handleRejectTrainer}
-                  >
-                    Rejected
-                  </button>
-                )}
-              </>
-            ) : (
-              ""
-            )}
+        {drawerContentStatus === "Finance Verify" ? (
+          ""
+        ) : (
+          <div className="leadmanager_tablefiler_footer">
+            <div className="leadmanager_submitlead_buttoncontainer">
+              {drawerContentStatus === "Trainer Verify" ? (
+                <>
+                  {rejectbuttonLoader ? (
+                    <button className="customer_trainerreject_loadingbutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="customer_trainerreject_button"
+                      onClick={handleRejectTrainer}
+                    >
+                      Rejected
+                    </button>
+                  )}
+                </>
+              ) : (
+                ""
+              )}
 
-            {drawerContentStatus === "Add L-Review" ? (
-              <>
-                {updateButtonLoading ? (
-                  <button className="customer_issuecert_loadingbutton">
-                    <CommonSpinner />
-                  </button>
-                ) : (
-                  <button
-                    className="customer_issuecert_button"
-                    onClick={handleIssueCert}
-                  >
-                    Update And Issue Certificate
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {updateButtonLoading ? (
-                  <button className="users_adddrawer_loadingcreatebutton">
-                    <CommonSpinner />
-                  </button>
-                ) : (
-                  <button
-                    className="users_adddrawer_createbutton"
-                    onClick={
-                      drawerContentStatus === "Finance Verify"
-                        ? handleFinaceVerify
-                        : drawerContentStatus === "Student Verify"
-                        ? handleStudentVerify
-                        : drawerContentStatus === "Assign Trainer"
-                        ? handleAssignTrainer
-                        : drawerContentStatus === "Trainer Verify"
-                        ? handleVerifyTrainer
-                        : drawerContentStatus === "Class Schedule"
-                        ? handleClassSchedule
-                        : drawerContentStatus === "Class Going"
-                        ? handleUpdateClassGoing
-                        : drawerContentStatus === "Add G-Review"
-                        ? handleGoogleReview
-                        : handleStatusMismatch
-                    }
-                  >
-                    {drawerContentStatus === "Assign Trainer"
-                      ? "Assign"
-                      : drawerContentStatus === "Class Going" ||
-                        drawerContentStatus === "Add G-Review"
-                      ? "Update"
-                      : "Verified"}
-                  </button>
-                )}
-              </>
-            )}
+              {drawerContentStatus === "Add L-Review" ? (
+                <>
+                  {updateButtonLoading ? (
+                    <button className="customer_issuecert_loadingbutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="customer_issuecert_button"
+                      onClick={handleIssueCert}
+                    >
+                      Update And Issue Certificate
+                    </button>
+                  )}
+                </>
+              ) : drawerContentStatus === "Add G-Review" ? (
+                <>
+                  {current > 0 && (
+                    <Button
+                      onClick={prev}
+                      style={{ marginRight: 12 }}
+                      className="customer_stepperbuttons"
+                    >
+                      Previous
+                    </Button>
+                  )}
+                  {current < 3 && (
+                    <>
+                      {updateButtonLoading ? (
+                        <Button
+                          className={
+                            current === 2
+                              ? "customer_complete_passedoutbutton"
+                              : "customer_stepperbuttons"
+                          }
+                        >
+                          <CommonSpinner />
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={
+                            current === 0
+                              ? handleGoogleReview
+                              : current === 1
+                              ? handleCertificateDetails
+                              : current === 2
+                              ? handleIssueCert
+                              : ""
+                          }
+                          className={
+                            current === 2
+                              ? "customer_complete_passedoutbutton"
+                              : "customer_stepperbuttons"
+                          }
+                        >
+                          {current === 2
+                            ? "Passedout Process Completed"
+                            : "Next"}
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {updateButtonLoading ? (
+                    <button className="users_adddrawer_loadingcreatebutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="users_adddrawer_createbutton"
+                      onClick={
+                        drawerContentStatus === "Student Verify"
+                          ? handleStudentVerify
+                          : drawerContentStatus === "Assign Trainer"
+                          ? handleAssignTrainer
+                          : drawerContentStatus === "Trainer Verify"
+                          ? handleVerifyTrainer
+                          : drawerContentStatus === "Class Schedule"
+                          ? handleClassSchedule
+                          : drawerContentStatus === "Class Going"
+                          ? handleUpdateClassGoing
+                          : drawerContentStatus === "Add G-Review"
+                          ? handleGoogleReview
+                          : handleStatusMismatch
+                      }
+                    >
+                      {drawerContentStatus === "Assign Trainer"
+                        ? "Assign"
+                        : drawerContentStatus === "Class Going" ||
+                          drawerContentStatus === "Class Schedule" ||
+                          drawerContentStatus === "Add G-Review"
+                        ? "Update"
+                        : "Verified"}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </Drawer>
 
       {/* table filter drawer */}
@@ -4846,21 +5454,66 @@ export default function Customers() {
             </Row>
           );
         })}
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div className="customer_trainer_badge_mainconatiner">
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="customer_trainer_onboardcount_badge" />
+              <p className="customer_trainer_onboardcount_badgecount">
+                Class Taken{" "}
+                <span style={{ fontWeight: 600 }}>
+                  {trainerClassTakenCount}
+                </span>{" "}
+                Customers
+              </p>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="customer_trainer_goingcount_badge" />
+              <p className="customer_trainer_onboardcount_badgecount">
+                Class Going{" "}
+                <span style={{ fontWeight: 600 }}>
+                  {trainerClassGoingCount}
+                </span>{" "}
+                Customers
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "16px" }}>
+          <p className="customer_trainer_cusomer_heading">
+            Class Going Customers List{" "}
+          </p>
+          <CommonTable
+            scroll={{ x: 1600 }}
+            columns={customerByTrainerColumn}
+            dataSource={customerByTrainerData}
+            dataPerPage={10}
+            loading={customerByTrainerLoading}
+            checkBox="false"
+            size="small"
+            className="questionupload_table"
+          />
+        </div>
       </Modal>
 
       <Modal
         title="Payment Screenshot"
         open={isOpenPaymentScreenshotModal}
-        onCancel={() => setIsOpenPaymentScreenshotModal(false)}
+        onCancel={() => {
+          setIsOpenPaymentScreenshotModal(false);
+          setTransactionScreenshot("");
+        }}
         footer={false}
         width="32%"
         className="customer_paymentscreenshot_modal"
       >
         <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
           <PrismaZoom>
-            {customerDetails?.payments?.payment_screenshot ? (
+            {transactionScreenshot ? (
               <img
-                src={`data:image/png;base64,${customerDetails?.payments?.payment_screenshot}`}
+                src={`data:image/png;base64,${transactionScreenshot}`}
                 alt="payment screenshot"
                 className="customer_paymentscreenshot_image"
               />
