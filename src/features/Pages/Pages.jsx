@@ -38,6 +38,23 @@ export default function Pages() {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  //the useEffect call only the token will expire
+  useEffect(() => {
+    //handle navigate to login page when token expire
+    const handleTokenExpire = () => {
+      navigate("/login");
+    };
+
+    window.addEventListener("tokenExpireUpdated", handleTokenExpire);
+
+    // Initial load
+    // handleTokenExpire();
+
+    return () => {
+      window.removeEventListener("tokenExpireUpdated", handleTokenExpire);
+    };
+  }, []);
+
   useEffect(() => {
     const AccessToken = localStorage.getItem("AccessToken");
     const pathName = location.pathname.split("/")[1];

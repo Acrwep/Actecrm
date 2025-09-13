@@ -53,6 +53,8 @@ import {
   getTrainingMode,
   leadPayment,
   sendCustomerFormEmail,
+  sendCustomerPaymentVerificationEmail,
+  sendCustomerWelcomeEmail,
   sendLeadInvoiceEmail,
   updateLead,
 } from "../ApiService/action";
@@ -1224,6 +1226,48 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
     try {
       await sendCustomerFormEmail(payload);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    } finally {
+      setTimeout(() => {
+        handleSendWelcomeEmail(customerDetails);
+      }, 300);
+    }
+  };
+
+  const handleSendWelcomeEmail = async (customerDetails) => {
+    const payload = {
+      email: customerDetails.email,
+      name: customerDetails.name,
+    };
+
+    try {
+      await sendCustomerWelcomeEmail(payload);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    } finally {
+      setTimeout(() => {
+        handleSendPaymentVerificationEmail(customerDetails);
+      }, 300);
+    }
+  };
+
+  const handleSendPaymentVerificationEmail = async (customerDetails) => {
+    const payload = {
+      email: customerDetails.email,
+      name: customerDetails.name,
+    };
+
+    try {
+      await sendCustomerPaymentVerificationEmail(payload);
     } catch (error) {
       CommonMessage(
         "error",
