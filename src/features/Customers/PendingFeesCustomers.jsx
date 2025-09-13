@@ -56,6 +56,7 @@ export default function PendingFeesCustomers() {
       const countDetails = response?.data?.data;
       setTodayDueCount(countDetails.today_count);
       setOverAllDueCount(countDetails.overall_count);
+      setUrgentDueCount(countDetails.urgent_due_count);
     } catch (error) {
       console.log("lead count error", error);
       // dispatch(storeUsersList([]));
