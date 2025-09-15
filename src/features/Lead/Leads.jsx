@@ -814,7 +814,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
 
     //handle convenience fees
     if (value === 2 || value === 5) {
-      const conve_fees = getConvenienceFees(paidNow);
+      const conve_fees = getConvenienceFees(paidNow ? paidNow : 0);
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
@@ -998,6 +998,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const leadStatusValidate = selectValidator(leadStatus);
     const nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
     const expectDateJoinValidate = selectValidator(expectDateJoin);
+    const regionIdValidate = selectValidator(regionId);
     const branchValidate = selectValidator(branch);
     const batchTrackValidate = selectValidator(batchTrack);
     const commentsValidate = addressValidator(comments);
@@ -1015,6 +1016,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setLeadStatusError(leadStatusValidate);
     setNxtFollowupDateError(nxtFollowupDateValidate);
     setExpectDateJoinError(expectDateJoinValidate);
+    setRegionError(regionIdValidate);
     setBranchError(branchValidate);
     setBatchTrackError(batchTrackValidate);
     setCommentsError(commentsValidate);
@@ -1033,6 +1035,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       leadStatusValidate ||
       nxtFollowupDateValidate ||
       expectDateJoinValidate ||
+      regionIdValidate ||
       branchValidate ||
       batchTrackValidate ||
       commentsValidate
@@ -1062,7 +1065,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       primary_fees: primaryFees,
       price_category: priceCategory(primaryFees),
       secondary_course_id: secondaryCourse,
-      secondary_fees: secondaryFees,
+      secondary_fees: secondaryFees ? secondaryFees : 0,
       lead_type_id: leadType,
       lead_status_id: leadStatus,
       next_follow_up_date: formatToBackendIST(nxtFollowupDate),

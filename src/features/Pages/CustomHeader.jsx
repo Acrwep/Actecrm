@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LuMessageCircleMore } from "react-icons/lu";
 import { IoMdNotificationsOutline } from "react-icons/io";
@@ -11,6 +11,18 @@ import "./styles.css";
 export default function CustomHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+    if (converAsJson) {
+      setUserName(converAsJson?.user_name || "");
+    } else {
+      setUserName("-");
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -79,7 +91,7 @@ export default function CustomHeader() {
 
             <div style={{ display: "flex", gap: "12px" }}>
               <div>
-                <p className="header_nametext">Andrew Balaji R</p>
+                <p className="header_nametext">{userName}</p>
                 <p className="header_roletext">Admin</p>
               </div>
 

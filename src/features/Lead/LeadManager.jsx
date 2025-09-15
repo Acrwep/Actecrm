@@ -69,6 +69,13 @@ export default function LeadManager() {
     }));
   };
 
+  const refreshLeads = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      leads: prev.leads + 1,
+    }));
+  };
+
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
@@ -115,6 +122,7 @@ export default function LeadManager() {
           <LeadFollowUp
             key={tabKeys.followup}
             setFollowupCount={setFollowupCount}
+            refreshLeads={refreshLeads}
           />
         </div>
       )}

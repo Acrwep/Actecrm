@@ -21,7 +21,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 
 const { TextArea } = Input;
 
-export default function LeadFollowUp({ setFollowupCount }) {
+export default function LeadFollowUp({ setFollowupCount, refreshLeads }) {
   const chatBoxRef = useRef();
   const dateFilterOptions = [
     { id: "Today", name: "Today" },
@@ -251,6 +251,7 @@ export default function LeadFollowUp({ setFollowupCount }) {
       CommonMessage("success", "Updated");
       setTimeout(() => {
         getLeadFollowUpsData(dateFilter);
+        refreshLeads();
         formReset();
       }, 300);
     } catch (error) {

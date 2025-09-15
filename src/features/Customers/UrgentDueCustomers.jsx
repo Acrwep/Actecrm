@@ -246,7 +246,14 @@ export default function UrgentDueCustomers({ setDueSelectedDates }) {
                   {text}
                 </Button>
               </div>
-            ) : text === "Rejected" || text === "REJECTED" ? (
+            ) : text === "Rejected" ||
+              text === "REJECTED" ||
+              text === "Trainer Rejected" ||
+              text === "Escalated" ||
+              text === "Hold" ||
+              text === "Partially Closed" ||
+              text === "Discontinued" ||
+              text === "Refund" ? (
               <Button className="trainers_rejected_button">Rejected</Button>
             ) : text === "Class Going" ? (
               <div style={{ display: "flex", gap: "12px" }}>
