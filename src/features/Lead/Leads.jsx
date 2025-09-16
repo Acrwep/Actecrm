@@ -8,6 +8,7 @@ import {
   Upload,
   Button,
   Checkbox,
+  Modal,
 } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -40,6 +41,7 @@ import { Country, State, City } from "country-state-city";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import {
   createLead,
+  createTechnology,
   generateLeadInvoiceEmail,
   getBatchTrack,
   getBranches,
@@ -153,6 +155,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [isShowDueDate, setIsShowDueDate] = useState(true);
   const [dueDate, setDueDate] = useState(null);
   const [dueDateError, setDueDateError] = useState("");
+  //add course usestates
+  const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
+  const [courseName, setCourseName] = useState("");
+  const [courseNameError, setCourseNameError] = useState("");
+  const [addCourseLoading, setAddCourseLoading] = useState(false);
+
   const [defaultColumns, setDefaultColumns] = useState([
     {
       title: "Candidate Name",
@@ -1280,31 +1288,35 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const sendInvoiceEmail = async (customerDetails) => {
-    const invoiceDetails = customerDetails.invoice_details;
-    const courseDetails = customerDetails.course;
+  const handleCreateCourse = async () => {
+    const courseValidate = addressValidator(courseName);
+
+    setCourseNameError(courseValidate);
+
+    if (courseValidate) return;
+
     const payload = {
-      email: customerDetails.email,
-      name: customerDetails.name,
-      mobile: customerDetails.phone,
-      convenience_fees: invoiceDetails.convenience_fees,
-      gst_amount: invoiceDetails.gst_amount,
-      gst_percentage: parseFloat(invoiceDetails.gst_percentage),
-      invoice_date: invoiceDetails.invoice_date,
-      invoice_number: invoiceDetails.invoice_number,
-      paid_amount: invoiceDetails.paid_amount,
-      payment_mode: invoiceDetails.payment_mode,
-      tax_type: invoiceDetails.tax_type,
-      total_amount: invoiceDetails.total_amount,
-      balance_amount: invoiceDetails.balance_amount,
-      course_name: courseDetails.course_name,
-      sub_total: courseDetails.primary_fees,
+      course_name: courseName,
     };
+    setAddCourseLoading(true);
 
     try {
-      await sendLeadInvoiceEmail(payload);
+      await createTechnology(payload);
+      CommonMessage("success", "Course Created");
+      setTimeout(() => {
+        setAddCourseLoading(false);
+        setIsOpenAddCourseModal(false);
+        setCourseName("");
+        setCountryError("");
+        getCourseData();
+      }, 300);
     } catch (error) {
-      console.log("invoice error", error);
+      setAddCourseLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
     }
   };
 
@@ -1556,7 +1568,20 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={8}>
-            <div style={{ marginTop: "10px" }}>
+            <div
+              style={{
+                marginTop: "0px",
+                display: "flex",
+                fontSize: "12px",
+                gap: "6px",
+              }}
+            >
+              <button
+                className="batch_usermodal_addcandidate_button"
+                onClick={() => setIsOpenAddCourseModal(true)}
+              >
+                + Add New Course
+              </button>
               <Checkbox
                 value={isShowSecondaryCourse}
                 onChange={(e) => {
@@ -1566,6 +1591,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
                     setSecondaryFees("");
                   }
                 }}
+                style={{ fontSize: "12px" }}
               >
                 Add Course
               </Checkbox>
@@ -2149,6 +2175,62 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        title="Add Course"
+        open={isOpenAddCourseModal}
+        onCancel={() => {
+          setIsOpenAddCourseModal(false);
+          setCourseName("");
+          setCourseNameError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddCourseModal(false);
+              setCourseName("");
+              setCourseNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleCreateCourse}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "40px" }}>
+          <CommonInputField
+            label="Course Name"
+            required={true}
+            onChange={(e) => {
+              setCourseName(e.target.value);
+              setCourseNameError(addressValidator(e.target.value));
+            }}
+            value={courseName}
+            error={courseNameError}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

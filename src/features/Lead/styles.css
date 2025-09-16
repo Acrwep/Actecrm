@@ -236,6 +236,19 @@
   justify-content: center;
   align-items: center;
 }
+.leads_coursemodal_cancelbutton {
+  margin-right: 6px !important;
+}
+.leads_coursemodal_cancelbutton:hover {
+  color: black !important;
+  border-color: #333 !important;
+}
+.leads_coursemodal_loading_createbutton {
+  width: 83px;
+}
+.leads_coursemodal_createbutton {
+  width: 83px;
+}
 /* lead followup styles */
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {
   padding: 0px !important;

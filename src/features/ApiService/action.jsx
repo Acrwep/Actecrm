@@ -133,9 +133,20 @@ export const updateUser = async (payload) => {
 };
 
 // trainer api's
+export const createTechnology = async (payload) => {
+  try {
+    const response = await api.post("/api/addTechnologies", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTechnologies = async (payload) => {
   try {
-    const response = await api.get("/api/getTechnologies", { params: payload });
+    const response = await api.get("/api/getTechnologies", {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;
@@ -473,6 +484,15 @@ export const inserCustomerTrack = async (payload) => {
 export const verifyCustomerPayment = async (payload) => {
   try {
     const response = await api.put("/api/verifyPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectCustomerPayment = async (payload) => {
+  try {
+    const response = await api.put("/api/paymentReject", payload);
     return response;
   } catch (error) {
     throw error;

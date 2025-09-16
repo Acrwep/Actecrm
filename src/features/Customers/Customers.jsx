@@ -32,6 +32,7 @@ import {
   getTrainerById,
   getTrainers,
   inserCustomerTrack,
+  rejectCustomerPayment,
   rejectTrainerForCustomer,
   sendCustomerFormEmail,
   sendLeadInvoiceEmail,
@@ -108,6 +109,7 @@ export default function Customers() {
     useState(false);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
+  const [rejectLoading, setRejectLoading] = useState(false);
   //student verify usestates
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
@@ -326,7 +328,8 @@ export default function Customers() {
                   <Row>
                     <Col span={12}>
                       {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ? (
+                      record.status === "Awaiting Finance" ||
+                      record.status === "Payment Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           style={{ marginTop: "6px" }}
@@ -368,6 +371,7 @@ export default function Customers() {
                     <Col span={12}>
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Awaiting Verify" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -415,6 +419,7 @@ export default function Customers() {
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -473,6 +478,7 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -493,7 +499,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Trainer not Assigned yet"
@@ -540,6 +549,7 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ||
                       record.status === "Awaiting Class" ||
                       record.status === "Hold" ||
@@ -566,7 +576,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Trainer not Assigned yet"
@@ -674,7 +687,7 @@ export default function Customers() {
 
                   {record.status === "Passedout process" ||
                   record.status === "Completed" ? (
-                    <Row style={{ marginTop: "0px" }}>
+                    <Row style={{ marginTop: "0px", marginBottom: "6px" }}>
                       <Col span={12}>
                         {record.status === "Passedout process" ? (
                           <button
@@ -794,6 +807,7 @@ export default function Customers() {
                 </div>
               ) : text === "Rejected" ||
                 text === "REJECTED" ||
+                text === "Payment Rejected" ||
                 text === "Trainer Rejected" ||
                 text === "Escalated" ||
                 text === "Hold" ||
@@ -1337,7 +1351,7 @@ export default function Customers() {
 
                   {record.status === "Passedout process" ||
                   record.status === "Completed" ? (
-                    <Row style={{ marginTop: "0px" }}>
+                    <Row style={{ marginTop: "0px", marginBottom: "6px" }}>
                       <Col span={12}>
                         {record.status === "Passedout process" ? (
                           <button
@@ -1932,10 +1946,15 @@ export default function Customers() {
 
   const handleCustomerTrack = async (updatestatus) => {
     const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
 
     const payload = {
       customer_id: customerDetails.id,
       status: updatestatus,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       status_date: formatToBackendIST(today),
     };
     try {
@@ -1965,11 +1984,36 @@ export default function Customers() {
       await verifyCustomerPayment(payload);
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
+        setUpdateButtonLoading(false);
         handleCustomerStatus("Awaiting Verify");
         sendInvoiceEmail(transactiondetails);
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleFinaceReject = async (transactiondetails) => {
+    setRejectLoading(true);
+    const today = new Date();
+    const payload = {
+      payment_trans_id: transactiondetails?.id || "",
+      rejected_date: formatToBackendIST(today),
+    };
+    try {
+      await rejectCustomerPayment(payload);
+      CommonMessage("success", "Updated Successfully");
+      setTimeout(() => {
+        setRejectLoading(false);
+        handleCustomerStatus("Payment Rejected");
+      }, 300);
+    } catch (error) {
+      setRejectLoading(false);
       CommonMessage(
         "error",
         error?.response?.data?.message ||
@@ -4002,9 +4046,18 @@ export default function Customers() {
 
                             {item.payment_status === "Verify Pending" ? (
                               <div style={{ display: "flex", gap: "12px" }}>
-                                <Button className="customer_finance_rejectbutton">
-                                  Reject
-                                </Button>
+                                {updateButtonLoading ? (
+                                  <Button className="customer_finance_loadingverifybutton">
+                                    <CommonSpinner />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    className="customer_finance_rejectbutton"
+                                    onClick={() => handleFinaceReject(item)}
+                                  >
+                                    Reject
+                                  </Button>
+                                )}
 
                                 {updateButtonLoading ? (
                                   <Button className="customer_finance_loadingverifybutton">
@@ -4019,6 +4072,10 @@ export default function Customers() {
                                   </Button>
                                 )}
                               </div>
+                            ) : item.payment_status === "Rejected" ? (
+                              <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                                Rejected
+                              </p>
                             ) : (
                               <p style={{ color: "#3c9111", fontWeight: 500 }}>
                                 Verified
