@@ -35,6 +35,7 @@ import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
+import { MdAdd } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
@@ -42,32 +43,34 @@ import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import {
   createLead,
   createTechnology,
-  generateLeadInvoiceEmail,
-  getBatchTrack,
   getBranches,
-  getLeadResponseStatus,
   getLeads,
-  getLeadStatus,
-  getLeadType,
-  getPriority,
-  getRegions,
   getTechnologies,
-  getTrainingMode,
   leadPayment,
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
   sendCustomerWelcomeEmail,
-  sendLeadInvoiceEmail,
   updateLead,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import ImgCrop from "antd-img-crop";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
+import ImageUploadCrop from "../Common/ImageUploadCrop";
 
-export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
+export default function Leads({
+  refreshLeadFollowUp,
+  setLeadCount,
+  leadTypeOptions,
+  leadStatusOptions,
+  regionOptions,
+  batchTrackOptions,
+  courseOptions,
+  setCourseOptions,
+}) {
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
 
@@ -91,35 +94,28 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [cityOptions, setCityOptions] = useState([]);
   const [cityId, setCityId] = useState("");
   const [cityError, setCityError] = useState("");
-  const [courseOptions, setCourseOptions] = useState([]);
   const [primaryCourse, setPrimaryCourse] = useState(null);
   const [primaryCourseError, setPrimaryCourseError] = useState("");
   const [primaryFees, setPrimaryFees] = useState("");
   const [primaryFeesError, setPrimaryFeesError] = useState("");
+  const [isPrimaryCourseFocused, setIsPrimaryCourseFocused] = useState(false);
   const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
   const [secondaryCourse, setSecondaryCourse] = useState(null);
   const [secondaryFees, setSecondaryFees] = useState("");
-  const [leadTypeOptions, setLeadTypeOptions] = useState([]);
   const [leadType, setLeadType] = useState(null);
   const [leadTypeError, setLeadTypeError] = useState("");
-  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   const [leadStatus, setLeadStatus] = useState(null);
   const [leadStatusError, setLeadStatusError] = useState("");
-  const [responseStatusOptions, setResponseStatusOptions] = useState([]);
-  const [responseStatus, setResponseLeadStatus] = useState(null);
-  const [responseStatusError, setResponseLeadStatusError] = useState("");
   const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
   const [expectDateJoin, setExpectDateJoin] = useState(null);
   const [expectDateJoinError, setExpectDateJoinError] = useState("");
 
-  const [regionOptions, setRegionOptions] = useState([]);
   const [regionId, setRegionId] = useState(null);
   const [regionError, setRegionError] = useState("");
   const [branchOptions, setBranchOptions] = useState([]);
   const [branch, setBranch] = useState("");
   const [branchError, setBranchError] = useState("");
-  const [batchTrackOptions, setBatchTrackOptions] = useState([]);
   const [batchTrack, setBatchTrack] = useState(1);
   const [batchTrackError, setBatchTrackError] = useState("");
   const [rating, setRating] = useState(null);
@@ -146,7 +142,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
   const [amount, setAmount] = useState(0);
   const [paidNow, setPaidNow] = useState("");
   const [paidNowError, setPaidNowError] = useState("");
-  const [paymentScreenShotsArray, setPaymentScreenShotsArray] = useState([]);
   const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
@@ -541,20 +536,10 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setCountryOptions(updateCountries);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    getAllLeadData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      true
-    );
+    getAllLeadData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   }, []);
 
-  const getAllLeadData = async (
-    nameValue,
-    startDate,
-    endDate,
-    triggerOtherApis
-  ) => {
+  const getAllLeadData = async (nameValue, startDate, endDate) => {
     setLoading(true);
     const payload = {
       name: nameValue,
@@ -564,6 +549,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     try {
       const response = await getLeads(payload);
       setLeadData(response?.data?.data || []);
+      console.log("eeeeeeeee", response?.data?.data.length);
       setLeadCount(response?.data?.data.length || 0);
     } catch (error) {
       setLeadData([]);
@@ -571,82 +557,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       console.log("get leads error");
     } finally {
       setTimeout(() => {
-        if (triggerOtherApis === true) {
-          getLeadTypeData();
-        } else {
-          setLoading(false);
-        }
-      }, 300);
-    }
-  };
-
-  const getLeadTypeData = async () => {
-    try {
-      const response = await getLeadType();
-      setLeadTypeOptions(response?.data?.result || []);
-    } catch (error) {
-      setLeadTypeOptions([]);
-      console.log("lead type error", error);
-    } finally {
-      setTimeout(() => {
-        getLeadStatusData();
         setLoading(false);
-      }, 300);
-    }
-  };
-
-  const getLeadStatusData = async () => {
-    try {
-      const response = await getLeadStatus();
-      setLeadStatusOptions(response?.data?.result || []);
-    } catch (error) {
-      setLeadStatusOptions([]);
-      console.log("lead status error", error);
-    } finally {
-      setTimeout(() => {
-        getLeadResponseStatusData();
-      }, 300);
-    }
-  };
-
-  const getLeadResponseStatusData = async () => {
-    try {
-      const response = await getLeadResponseStatus();
-      setResponseStatusOptions(response?.data?.result || []);
-    } catch (error) {
-      setResponseStatusOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getRegionData();
-      }, 300);
-    }
-  };
-
-  const getRegionData = async () => {
-    try {
-      const response = await getRegions();
-      setRegionOptions(response?.data?.data || []);
-    } catch (error) {
-      setRegionOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getBatchTrackData();
-      }, 300);
-    }
-  };
-
-  const getBatchTrackData = async () => {
-    try {
-      const response = await getBatchTrack();
-      setBatchTrackOptions(response?.data?.result || []);
-    } catch (error) {
-      setBatchTrackOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getCourseData();
       }, 300);
     }
   };
@@ -829,43 +740,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     }
   };
 
-  const handlePaymentScreenshot = ({ file }) => {
-    // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
-      setPaymentScreenShotError(" is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setPaymentScreenShotsArray([file]);
-      CommonMessage("success", "Screenshot uploaded");
-      setPaymentScreenShotError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setPaymentScreenShotBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
-    }
-  };
-
   //onclick functions
   const handleEdit = (item) => {
     console.log("clicked itemmm", item);
@@ -898,7 +772,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setSecondaryFees(item.secondary_fees);
     setLeadType(item.lead_type_id);
     setLeadStatus(item.lead_status_id);
-    setResponseLeadStatus(item.response_status_id);
     setNxtFollowupDate(item.next_follow_up_date);
     setExpectDateJoin(item.expected_join_date);
     setRegionId(item.region_id);
@@ -944,8 +817,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setLeadTypeError("");
     setLeadStatus(null);
     setLeadStatusError("");
-    setResponseLeadStatus(null);
-    setResponseLeadStatusError("");
     setNxtFollowupDate(null);
     setNxtFollowupDateError("");
     setExpectDateJoin(null);
@@ -978,7 +849,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     setPaidNowError("");
     setPaymentDate(null);
     setPaymentDateError("");
-    setPaymentScreenShotsArray([]);
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
     setIsShowDueDate(true);
@@ -991,8 +861,19 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     console.log("convertAsJson", convertAsJson);
-
     setValidationTrigger(true);
+
+    let nxtFollowupDateValidate;
+    let expectDateJoinValidate;
+
+    if (leadStatus === 4) {
+      nxtFollowupDateValidate = "";
+      expectDateJoinValidate = "";
+    } else {
+      nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
+      expectDateJoinValidate = selectValidator(expectDateJoin);
+    }
+
     const nameValidate = nameValidator(name);
     const emailValidate = emailValidator(email);
     const mobileValidate = mobileValidator(mobile);
@@ -1004,8 +885,6 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     const primaryFeesValidate = selectValidator(primaryFees);
     const leadTypeValidate = selectValidator(leadType);
     const leadStatusValidate = selectValidator(leadStatus);
-    const nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
-    const expectDateJoinValidate = selectValidator(expectDateJoin);
     const regionIdValidate = selectValidator(regionId);
     const branchValidate = selectValidator(branch);
     const batchTrackValidate = selectValidator(batchTrack);
@@ -1076,8 +955,12 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
       secondary_fees: secondaryFees ? secondaryFees : 0,
       lead_type_id: leadType,
       lead_status_id: leadStatus,
-      next_follow_up_date: formatToBackendIST(nxtFollowupDate),
-      expected_join_date: formatToBackendIST(expectDateJoin),
+      next_follow_up_date: nxtFollowupDate
+        ? formatToBackendIST(nxtFollowupDate)
+        : null,
+      expected_join_date: expectDateJoin
+        ? formatToBackendIST(expectDateJoin)
+        : null,
       region_id: regionId,
       branch_id: branch,
       batch_track_id: batchTrack,
@@ -1139,8 +1022,7 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
     console.log("eeeee", paidNow, amount);
     const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
 
-    const screenshotValidate =
-      paymentScreenShotsArray.length <= 0 ? " is required" : "";
+    const screenshotValidate = selectValidator(paymentScreenShotBase64);
     let dueDateValidate;
 
     if (isShowDueDate) {
@@ -1539,19 +1421,46 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
         <p className="addleaddrawer_headings">Course Details</p>
         <Row gutter={16}>
           <Col span={8}>
-            <CommonSelectField
-              label="Primary Course"
-              value={primaryCourse}
-              onChange={(e) => {
-                setPrimaryCourse(e.target.value);
-                if (validationTrigger) {
-                  setPrimaryCourseError(selectValidator(e.target.value));
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Primary Course"
+                  value={primaryCourse}
+                  onChange={(e) => {
+                    setPrimaryCourse(e.target.value);
+                    if (validationTrigger) {
+                      setPrimaryCourseError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={courseOptions}
+                  error={primaryCourseError}
+                  required={true}
+                  borderRightNone={true}
+                />
+              </div>
+
+              <div
+                className={
+                  primaryCourseError
+                    ? "leads_errorcourse_addcontainer"
+                    : isPrimaryCourseFocused
+                    ? "leads_focusedcourse_addcontainer"
+                    : "leads_course_addcontainer"
                 }
-              }}
-              options={courseOptions}
-              error={primaryCourseError}
-              required={true}
-            />
+              >
+                <Tooltip
+                  placement="bottom"
+                  title="Add Course"
+                  className="leadtable_customertooltip"
+                >
+                  <MdAdd
+                    size={19}
+                    style={{ color: "#333333af", cursor: "pointer" }}
+                    onClick={() => setIsOpenAddCourseModal(true)}
+                  />
+                </Tooltip>
+              </div>
+            </div>
           </Col>
           <Col span={8}>
             <CommonInputField
@@ -1568,34 +1477,19 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={8}>
-            <div
-              style={{
-                marginTop: "0px",
-                display: "flex",
-                fontSize: "12px",
-                gap: "6px",
+            <Checkbox
+              value={isShowSecondaryCourse}
+              onChange={(e) => {
+                setIsShowSecondaryCourse(e.target.checked);
+                if (e.target.checked === false) {
+                  setSecondaryCourse(null);
+                  setSecondaryFees("");
+                }
               }}
+              style={{ fontSize: "12px", marginTop: "8px" }}
             >
-              <button
-                className="batch_usermodal_addcandidate_button"
-                onClick={() => setIsOpenAddCourseModal(true)}
-              >
-                + Add New Course
-              </button>
-              <Checkbox
-                value={isShowSecondaryCourse}
-                onChange={(e) => {
-                  setIsShowSecondaryCourse(e.target.checked);
-                  if (e.target.checked === false) {
-                    setSecondaryCourse(null);
-                    setSecondaryFees("");
-                  }
-                }}
-                style={{ fontSize: "12px" }}
-              >
-                Add Course
-              </Checkbox>
-            </div>
+              Add Course
+            </Checkbox>
           </Col>
         </Row>
 
@@ -1688,48 +1582,62 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
               required={true}
               options={leadStatusOptions}
               onChange={(e) => {
-                setLeadStatus(e.target.value);
+                const value = e.target.value;
+                setLeadStatus(value);
+                if (value === 4) {
+                  setNxtFollowupDate(null);
+                  setNxtFollowupDateError("");
+                  setExpectDateJoin(null);
+                  setExpectDateJoinError("");
+                }
                 if (validationTrigger) {
-                  setLeadStatusError(selectValidator(e.target.value));
+                  setLeadStatusError(selectValidator(value));
                 }
               }}
               value={leadStatus}
               error={leadStatusError}
             />
           </Col>
-          <Col span={8}>
-            <CommonMuiDatePicker
-              label="Next Follow-Up Date"
-              required={true}
-              onChange={(value) => {
-                console.log("vallll", value);
-                setNxtFollowupDate(value);
-                if (validationTrigger) {
-                  setNxtFollowupDateError(selectValidator(value));
-                }
-              }}
-              value={nxtFollowupDate}
-              disablePreviousDates={true}
-              error={nxtFollowupDateError}
-              disabled={leadId ? true : false}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonMuiDatePicker
-              label="Expected Date Join"
-              required={true}
-              onChange={(value) => {
-                console.log("vallll", value);
-                setExpectDateJoin(value);
-                if (validationTrigger) {
-                  setExpectDateJoinError(selectValidator(value));
-                }
-              }}
-              value={expectDateJoin}
-              disablePreviousDates={true}
-              error={expectDateJoinError}
-            />
-          </Col>
+
+          {leadStatus === 4 ? (
+            ""
+          ) : (
+            <>
+              <Col span={8}>
+                <CommonMuiDatePicker
+                  label="Next Follow-Up Date"
+                  required={true}
+                  onChange={(value) => {
+                    console.log("vallll", value);
+                    setNxtFollowupDate(value);
+                    if (validationTrigger) {
+                      setNxtFollowupDateError(selectValidator(value));
+                    }
+                  }}
+                  value={nxtFollowupDate}
+                  disablePreviousDates={true}
+                  error={nxtFollowupDateError}
+                  disabled={leadId ? true : false}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonMuiDatePicker
+                  label="Expected Date Join"
+                  required={true}
+                  onChange={(value) => {
+                    console.log("vallll", value);
+                    setExpectDateJoin(value);
+                    if (validationTrigger) {
+                      setExpectDateJoinError(selectValidator(value));
+                    }
+                  }}
+                  value={expectDateJoin}
+                  disablePreviousDates={true}
+                  error={expectDateJoinError}
+                />
+              </Col>
+            </>
+          )}
         </Row>
 
         <Row gutter={16} style={{ marginTop: "40px", marginBottom: "30px" }}>
@@ -2078,39 +1986,18 @@ export default function Leads({ refreshLeadFollowUp, setLeadCount }) {
             />
           </Col>
           <Col span={16}>
-            <p
-              className="leads_paymentscreenshot_label"
-              style={{ fontSize: "13px" }}
-            >
-              Payment Screenshot <span style={{ color: "#d32f2f" }}>*</span>
-            </p>
-            <Upload
-              style={{ width: "100%", marginTop: "8px" }}
-              beforeUpload={(file) => {
-                return false; // Prevent auto-upload
-              }}
-              accept=".png,.jpg,.jpeg"
-              onChange={handlePaymentScreenshot}
-              fileList={paymentScreenShotsArray}
-              multiple={false}
-            >
-              <Button
-                icon={<UploadOutlined />}
-                className="leadmanager_payment_screenshotbutton"
-              >
-                Choose file
-                <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
-              </Button>
-            </Upload>{" "}
+            <ImageUploadCrop
+              label="Payment Screenshot"
+              aspect={1}
+              maxSizeMB={1}
+              required={true}
+              onChange={(base64) => setPaymentScreenShotBase64(base64)}
+              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+            />
             {paymentScreenShotError && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d32f2f",
-                  marginTop: "4px",
-                  marginLeft: "6px",
-                }}
-              >{`Screenshot ${paymentScreenShotError}`}</p>
+              <p style={{ fontSize: "12px", color: "#d32f2f", marginTop: 4 }}>
+                {`Payment Screenshot ${paymentScreenShotError}`}
+              </p>
             )}
           </Col>
         </Row>

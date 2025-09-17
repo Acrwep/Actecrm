@@ -4,13 +4,26 @@ import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { getLeadAndFollowupCount } from "../ApiService/action";
+import {
+  getBatchTrack,
+  getLeadAndFollowupCount,
+  getLeadStatus,
+  getLeadType,
+  getRegions,
+  getTechnologies,
+} from "../ApiService/action";
 
 export default function LeadManager() {
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
+
+  const [leadTypeOptions, setLeadTypeOptions] = useState([]);
+  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [batchTrackOptions, setBatchTrackOptions] = useState([]);
+  const [courseOptions, setCourseOptions] = useState([]);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -44,7 +57,74 @@ export default function LeadManager() {
     } finally {
       setTimeout(() => {
         // setUserTableLoading(false);
+        getLeadTypeData();
       }, 300);
+    }
+  };
+
+  const getLeadTypeData = async () => {
+    try {
+      const response = await getLeadType();
+      setLeadTypeOptions(response?.data?.result || []);
+    } catch (error) {
+      setLeadTypeOptions([]);
+      console.log("lead type error", error);
+    } finally {
+      setTimeout(() => {
+        getLeadStatusData();
+      }, 300);
+    }
+  };
+
+  const getLeadStatusData = async () => {
+    try {
+      const response = await getLeadStatus();
+      setLeadStatusOptions(response?.data?.result || []);
+    } catch (error) {
+      setLeadStatusOptions([]);
+      console.log("lead status error", error);
+    } finally {
+      setTimeout(() => {
+        getRegionData();
+      }, 300);
+    }
+  };
+
+  const getRegionData = async () => {
+    try {
+      const response = await getRegions();
+      setRegionOptions(response?.data?.data || []);
+    } catch (error) {
+      setRegionOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getBatchTrackData();
+      }, 300);
+    }
+  };
+
+  const getBatchTrackData = async () => {
+    try {
+      const response = await getBatchTrack();
+      setBatchTrackOptions(response?.data?.result || []);
+    } catch (error) {
+      setBatchTrackOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getCourseData();
+      }, 300);
+    }
+  };
+
+  const getCourseData = async () => {
+    try {
+      const response = await getTechnologies();
+      setCourseOptions(response?.data?.data || []);
+    } catch (error) {
+      setCourseOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -123,21 +203,31 @@ export default function LeadManager() {
             key={tabKeys.followup}
             setFollowupCount={setFollowupCount}
             refreshLeads={refreshLeads}
+            leadTypeOptions={leadTypeOptions}
+            leadStatusOptions={leadStatusOptions}
+            regionOptions={regionOptions}
+            batchTrackOptions={batchTrackOptions}
+            courseOptions={courseOptions}
+            setCourseOptions={setCourseOptions}
           />
         </div>
       )}
 
-      {loadedTabs.leads && (
-        <div style={{ display: activePage === "leads" ? "block" : "none" }}>
-          <Leads
-            triggerApi={triggerApi}
-            setTriggerApi={setTriggerApi}
-            key={tabKeys.leads}
-            refreshLeadFollowUp={refreshLeadFollowUp}
-            setLeadCount={setLeadCount}
-          />
-        </div>
-      )}
+      <div style={{ display: activePage === "leads" ? "block" : "none" }}>
+        <Leads
+          triggerApi={triggerApi}
+          setTriggerApi={setTriggerApi}
+          key={tabKeys.leads}
+          refreshLeadFollowUp={refreshLeadFollowUp}
+          setLeadCount={setLeadCount}
+          leadTypeOptions={leadTypeOptions}
+          leadStatusOptions={leadStatusOptions}
+          regionOptions={regionOptions}
+          batchTrackOptions={batchTrackOptions}
+          courseOptions={courseOptions}
+          setCourseOptions={setCourseOptions}
+        />
+      </div>
     </div>
   );
 }

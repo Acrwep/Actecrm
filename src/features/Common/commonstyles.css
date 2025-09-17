@@ -340,3 +340,13 @@
   color: #fff !important;
   opacity: 0.7;
 }
+
+/* imagecrop styles */
+.imgcrop_label {
+  position: absolute;
+  top: -48%;
+}
+.imgcrop_uploadbutton:hover {
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+}

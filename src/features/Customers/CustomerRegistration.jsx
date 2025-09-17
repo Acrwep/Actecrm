@@ -746,15 +746,19 @@ export default function CustomerRegistration() {
                 }
               }}
               value={isCheckedTerms}
-            />
-            <p>
-              I have read and agree to the{" "}
-              <span
-                onClick={() => setIsOpenTermsModal(true)}
-                style={{ cursor: "pointer", color: "#5b69ca", fontWeight: 500 }}
-              >
-                Terms and Conditions
-              </span>
+            >
+              I have read and agree to the
+            </Checkbox>
+            <p
+              style={{
+                cursor: "pointer",
+                color: "#5b69ca",
+                fontWeight: 500,
+                marginLeft: "-3px",
+              }}
+              onClick={() => setIsOpenTermsModal(true)}
+            >
+              Terms and Conditions
             </p>
           </div>
           {isCheckedTermsError && (

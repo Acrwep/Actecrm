@@ -1,6 +1,7 @@
 import React from "react";
 import { TextField } from "@mui/material";
 import "./commonstyles.css";
+import { capitalizeWords } from "./Validation";
 
 export default function CommonInputField({
   label,
@@ -17,13 +18,20 @@ export default function CommonInputField({
   disabled,
   onInput,
 }) {
+  const handleChange = (e) => {
+    const newValue = capitalizeWords(e.target.value);
+    if (onChange) {
+      onChange({ target: { value: newValue } });
+    }
+  };
+
   return (
     <div>
       <TextField
         className="common_inputfield"
         label={label}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         size="small"
         error={error ? true : false}
         helperText={

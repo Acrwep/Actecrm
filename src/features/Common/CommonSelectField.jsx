@@ -29,6 +29,9 @@ export default function CommonSelectField({
   renderOption,
   groupBy,
   showLabelStatus,
+  borderRightNone,
+  onFocus,
+  onBlur,
 }) {
   return (
     <div style={style}>
@@ -97,9 +100,16 @@ export default function CommonSelectField({
                 "& .MuiInputBase-input": {
                   fontSize: fontSize || "14px",
                 },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderRight: borderRightNone ? "none" : "", // ⬅️ removes the right border
+                  borderTopRightRadius: borderRightNone ? "0px" : "4px",
+                  borderBottomRightRadius: borderRightNone ? "0px" : "4px",
+                },
               }}
               className="common_inputfield"
               error={error}
+              onFocus={onFocus}
+              onBlur={onBlur}
             />
           )}
           slotProps={{

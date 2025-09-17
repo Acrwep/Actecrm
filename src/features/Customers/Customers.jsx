@@ -110,6 +110,11 @@ export default function Customers() {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
   const [rejectLoading, setRejectLoading] = useState(false);
+  const [isShowFinanceRejectComment, setIsShowFinanceRejectComment] =
+    useState(false);
+  const [financeRejectComment, setFinanceRejectComment] = useState("");
+  const [financeRejectCommentError, setFinanceRejectCommentError] =
+    useState("");
   //student verify usestates
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
@@ -2561,16 +2566,6 @@ export default function Customers() {
 
   const handleGoogleReview = async () => {
     if (isGoogleReviewChange) {
-      let googleValidate;
-      if (googleFeedbackBase64 === "") {
-        googleValidate = "Google review screenshot is required";
-      } else {
-        googleValidate = "";
-      }
-      setGoogleFeedbackError(googleValidate);
-
-      if (googleValidate) return;
-
       const today = new Date();
       const payload = {
         customer_id: customerDetails.id,
@@ -2651,17 +2646,6 @@ export default function Customers() {
   };
 
   const handleIssueCert = async () => {
-    let linkedinValidate;
-
-    if (linkedinFeedbackBase64 === "") {
-      linkedinValidate = "Linkedin review screenshot is required";
-    } else {
-      linkedinValidate = "";
-    }
-
-    setLinkedinFeedbackError(linkedinValidate);
-
-    if (linkedinValidate) return;
     setUpdateButtonLoading(true);
 
     const today = new Date();
@@ -2703,6 +2687,9 @@ export default function Customers() {
     setRejectButtonLoader(false);
     //finance verify
     setIsOpenPaymentScreenshotModal(false);
+    setIsShowFinanceRejectComment(false);
+    setFinanceRejectComment("");
+    setFinanceRejectCommentError("");
     //student verify
     setStudentVerifyProofArray([]);
     setStudentVerifyProofBase64("");
@@ -4046,18 +4033,26 @@ export default function Customers() {
 
                             {item.payment_status === "Verify Pending" ? (
                               <div style={{ display: "flex", gap: "12px" }}>
-                                {updateButtonLoading ? (
-                                  <Button className="customer_finance_loadingverifybutton">
-                                    <CommonSpinner />
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    className="customer_finance_rejectbutton"
-                                    onClick={() => handleFinaceReject(item)}
-                                  >
-                                    Reject
-                                  </Button>
-                                )}
+                                <Button
+                                  className="customer_finance_rejectbutton"
+                                  // onClick={() => handleFinaceReject(item)}
+                                  onClick={() => {
+                                    setIsShowFinanceRejectComment(true);
+                                    setFinanceRejectCommentError(
+                                      addressValidator(financeRejectComment)
+                                    );
+                                    setTimeout(() => {
+                                      const container = document.getElementById(
+                                        "customer_financereject_comment_container"
+                                      );
+                                      container.scrollIntoView({
+                                        behavior: "smooth",
+                                      });
+                                    }, 200);
+                                  }}
+                                >
+                                  Reject
+                                </Button>
 
                                 {updateButtonLoading ? (
                                   <Button className="customer_finance_loadingverifybutton">
@@ -4215,6 +4210,44 @@ export default function Customers() {
                   No Data found
                 </p>
               )}
+
+              {isShowFinanceRejectComment && (
+                <div
+                  className="customer_financereject_comment_container"
+                  id="customer_financereject_comment_container"
+                >
+                  <CommonTextArea
+                    label="Comments"
+                    required={true}
+                    onChange={(e) => {
+                      setFinanceRejectComment(e.target.value);
+                      setFinanceRejectCommentError(
+                        addressValidator(e.target.value)
+                      );
+                    }}
+                    value={financeRejectComment}
+                    error={financeRejectCommentError}
+                  />
+
+                  <div className="customer_financereject_submitbutton_container">
+                    {rejectLoading ? (
+                      <Button
+                        type="primary"
+                        className="customer_financereject_loadingsubmitbutton"
+                      >
+                        <CommonSpinner />
+                      </Button>
+                    ) : (
+                      <Button
+                        type="primary"
+                        className="customer_financereject_submitbutton"
+                      >
+                        Submit
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : drawerContentStatus === "Student Verify" ? (
@@ -4363,6 +4396,7 @@ export default function Customers() {
                         }}
                         value={trainerId}
                         error={trainerIdError}
+                        borderRightNone={true}
                         showLabelStatus={
                           trainerFilterType === 1
                             ? "Name"
@@ -5006,7 +5040,6 @@ export default function Customers() {
                 <div style={{ marginTop: "22px" }}>
                   <p className="customers_feedback_imagelabels">
                     Google Review Screenshot{" "}
-                    <span style={{ color: "#d32f2f" }}>*</span>
                   </p>
                   <div style={{ position: "relative" }}>
                     <Upload
@@ -5094,7 +5127,6 @@ export default function Customers() {
                 <div style={{ marginTop: "12px" }}>
                   <p className="customers_feedback_imagelabels">
                     Linkedin Review Screenshot{" "}
-                    <span style={{ color: "#d32f2f" }}>*</span>
                   </p>
                   <div style={{ position: "relative" }}>
                     <Upload

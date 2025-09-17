@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "antd";
+import { capitalizeWords } from "./Validation";
 import "./commonstyles.css";
 
 const { TextArea } = Input;
@@ -14,6 +15,14 @@ const CommonTextArea = ({
   className,
   style,
 }) => {
+  const handleChange = (e) => {
+    const newValue = capitalizeWords(e.target.value);
+    if (onChange) {
+      // pass transformed value to parent
+      onChange({ target: { value: newValue } });
+    }
+  };
+
   return (
     <div style={style}>
       <div style={{ display: "flex" }}>
@@ -27,7 +36,7 @@ const CommonTextArea = ({
       <TextArea
         rows={4}
         placeholder="Type here..."
-        onChange={onChange}
+        onChange={handleChange}
         value={value}
         error={error}
         status={error ? "error" : ""}
