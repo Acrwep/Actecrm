@@ -346,6 +346,9 @@
   position: absolute;
   top: -48%;
 }
+.imgcrop_uploadbutton {
+  font-size: 11px !important;
+}
 .imgcrop_uploadbutton:hover {
   border-color: #5b69ca !important;
   color: #5b69ca !important;

@@ -36,6 +36,13 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { MdAdd } from "react-icons/md";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineEmail } from "react-icons/md";
+import { IoCallOutline } from "react-icons/io5";
+import { FaWhatsapp } from "react-icons/fa";
+import { IoLocationOutline } from "react-icons/io5";
+import { SlGlobe } from "react-icons/sl";
+import { BiMapPin } from "react-icons/bi";
 import { AiOutlineEdit } from "react-icons/ai";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
@@ -782,6 +789,35 @@ export default function Leads({
     setComments(item.comments);
   };
 
+  const getCountryName = (countryCode) => {
+    let countryName = "";
+
+    const findCountry = countryOptions.find((f) => f.isoCode === countryCode);
+    if (findCountry) {
+      countryName = findCountry.name;
+    } else {
+      countryName = "";
+    }
+    return countryName;
+  };
+
+  const getStateName = (countryCode, stateCode) => {
+    const stateList = State.getStatesOfCountry(countryCode);
+    const updateSates = stateList.map((s) => {
+      return { ...s, id: s.isoCode };
+    });
+
+    let stateName = "";
+
+    const findState = updateSates.find((f) => f.id === stateCode);
+    if (findState) {
+      stateName = findState.name;
+    } else {
+      stateName = "";
+    }
+    return stateName;
+  };
+
   const formReset = (dontCloseAddDrawer) => {
     if (dontCloseAddDrawer === true) {
       setIsOpenAddDrawer(true);
@@ -1436,6 +1472,9 @@ export default function Leads({
                   error={primaryCourseError}
                   required={true}
                   borderRightNone={true}
+                  errorFontSize="9px"
+                  onFocus={() => setIsPrimaryCourseFocused(true)}
+                  onBlur={() => setIsPrimaryCourseFocused(false)}
                 />
               </div>
 
@@ -1788,7 +1827,7 @@ export default function Leads({
         style={{ position: "relative", padding: "0px", paddingBottom: 50 }}
         className="leadmanager_paymentdetails_drawer"
       >
-        <p
+        {/* <p
           className="leadmanager_paymentdetails_drawer_heading"
           style={{ marginTop: "24px" }}
         >
@@ -1871,6 +1910,237 @@ export default function Leads({
             </p>
           </Col>
           <Col span={8}></Col>
+        </Row> */}
+        <p className="leadfollowup_leaddetails_heading">Lead Details</p>
+        <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegCircleUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Name</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.name
+                    ? clickedLeadItem.name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineEmail size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Email</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.email
+                    ? clickedLeadItem.email
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoCallOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Mobile</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.phone
+                    ? clickedLeadItem.phone
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaWhatsapp size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Whatsapp</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.whatsapp
+                    ? clickedLeadItem.whatsapp
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <SlGlobe size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Country</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.country
+                    ? getCountryName(clickedLeadItem.country)
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <BiMapPin size={15} color="gray" />
+                  <p className="customerdetails_rowheading">State</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.state
+                    ? getStateName(
+                        clickedLeadItem.country,
+                        clickedLeadItem.state
+                      )
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoLocationOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Area</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.district
+                    ? clickedLeadItem.district
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.primary_course
+                    ? clickedLeadItem.primary_course
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#333", fontWeight: 700 }}
+                >
+                  {clickedLeadItem && clickedLeadItem.primary_fees
+                    ? "₹" + clickedLeadItem.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Region</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.region_name
+                    ? clickedLeadItem.region_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.branche_name
+                    ? clickedLeadItem.branche_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Batch Track</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.batch_track
+                    ? clickedLeadItem.batch_track
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Status</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.lead_status
+                    ? clickedLeadItem.lead_status
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Next Followup</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.next_follow_up_date
+                    ? moment(clickedLeadItem.next_follow_up_date).format(
+                        "DD/MM/YYYY"
+                      )
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
         </Row>
         <Divider className="leadmanger_paymentdrawer_divider" />
 

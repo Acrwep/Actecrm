@@ -110,7 +110,7 @@ export default function ImageUploadCrop({
             style={{ width: "100%", marginTop: 8 }}
           >
             Choose file{" "}
-            <span style={{ fontSize: "10px" }}>(PNG, JPEG, JPG)</span>
+            <span style={{ fontSize: "10px" }}>(PNG, JPEG & JPG)</span>
           </Button>
         </Upload>
       </ImgCrop>
