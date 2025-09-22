@@ -859,7 +859,7 @@ export default function OverallDueCustomers({
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
+                  <p className="customerdetails_rowheading">Area</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -902,13 +902,53 @@ export default function OverallDueCustomers({
                 <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Name</p>
+                      <p className="customerdetails_rowheading">Course</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.course_name
                         ? customerDetails.course_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.course_fees
+                        ? "₹" + customerDetails.course_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>
@@ -933,6 +973,25 @@ export default function OverallDueCustomers({
                 </Row>
 
                 <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.is_server_required
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Region</p>
@@ -961,10 +1020,8 @@ export default function OverallDueCustomers({
                     </p>
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Batch Timing</p>
@@ -1006,41 +1063,6 @@ export default function OverallDueCustomers({
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.course_fees
-                        ? "₹" + customerDetails.course_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Balance</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: "500" }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>

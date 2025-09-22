@@ -46,6 +46,9 @@ import { UploadOutlined } from "@ant-design/icons";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
+import { FaRegCircleXmark } from "react-icons/fa6";
+import { BsPatchCheckFill } from "react-icons/bs";
+import ImageUploadCrop from "../Common/ImageUploadCrop";
 import PrismaZoom from "react-prismazoom";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
@@ -499,7 +502,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     }
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
@@ -508,8 +511,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       parseInt(pendingAmount)
     );
 
-    const screenshotValidate =
-      paymentScreenShotsArray.length <= 0 ? " is required" : "";
+    const screenshotValidate = selectValidator(paymentScreenShotBase64);
     let dueDateValidate;
 
     if (isShowDueDate) {
@@ -537,9 +539,43 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
     const today = new Date();
 
-    setTimeout(() => {
+    // setTimeout(() => {
+    //   setInvoiceButtonLoading(false);
+    //   setButtonLoading(false);
+    // }, 300);
+
+    const payload = {
+      payment_master_id: customerDetails.payment_master_id,
+      invoice_date: formatToBackendIST(paymentDate),
+      paid_amount: payAmount,
+      convenience_fees: convenienceFees,
+      balance_amount: balanceAmount,
+      paymode_id: paymentMode,
+      payment_screenshot: paymentScreenShotBase64,
+      payment_status: "Verify Pending",
+      next_due_date: formatToBackendIST(dueDate),
+      created_date: formatToBackendIST(today),
+      paid_date: formatToBackendIST(paymentDate),
+    };
+
+    try {
+      const response = await customerDuePayment(payload);
+      console.log("lead payment response", response);
+      const createdCustomerDetails = response?.data?.data;
+      setTimeout(() => {
+        setButtonLoading(false);
+        getPendingFeesCustomersData(searchValue);
+        formReset();
+      }, 300);
+    } catch (error) {
       setButtonLoading(false);
-    }, 300);
+      console.log("part payment error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   const formReset = () => {
@@ -819,7 +855,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
+                  <p className="customerdetails_rowheading">Area</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -862,13 +898,53 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Name</p>
+                      <p className="customerdetails_rowheading">Course</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.course_name
                         ? customerDetails.course_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.course_fees
+                        ? "₹" + customerDetails.course_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>
@@ -893,6 +969,25 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 </Row>
 
                 <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.is_server_required
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Region</p>
@@ -921,10 +1016,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     </p>
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Batch Timing</p>
@@ -966,41 +1059,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.course_fees
-                        ? "₹" + customerDetails.course_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Balance</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: "500" }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>
@@ -1124,6 +1182,26 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
+                  {customerDetails && customerDetails.gender === "Male" ? (
+                    <BsGenderMale size={15} color="gray" />
+                  ) : (
+                    <BsGenderFemale size={15} color="gray" />
+                  )}
+                  <p className="customerdetails_rowheading">Gender</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.gender
+                    ? customerDetails.gender
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
                   <p className="customerdetails_rowheading">Location</p>
                 </div>
@@ -1132,6 +1210,22 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.current_location
                     ? customerDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
                     : "-"}
                 </p>
               </Col>
@@ -1149,6 +1243,58 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.course_fees
+                    ? "₹" + customerDetails.course_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f", fontWeight: 700 }}
+                >
+                  {customerDetails &&
+                  customerDetails.balance_amount !== undefined &&
+                  customerDetails.balance_amount !== null
+                    ? "₹" + customerDetails.balance_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Server</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.is_server_required
+                    ? customerDetails.is_server_required === 1
+                      ? "Required"
+                      : "Not Required"
                     : "-"}
                 </p>
               </Col>
@@ -1187,13 +1333,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">Batch Track</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_fees
-                    ? "₹" + customerDetails.course_fees
+                  {customerDetails && customerDetails.batch_tracking
+                    ? customerDetails.batch_tracking
                     : "-"}
                 </p>
               </Col>
@@ -1202,34 +1348,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f" }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Batch Timing</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.batch_timing
+                    ? customerDetails.batch_timing
                     : "-"}
                 </p>
               </Col>
@@ -1268,13 +1393,16 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Gst Amount</p>
+                        <p className="customerdetails_rowheading">Total Fees</p>
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.gst_amount
-                          ? "₹" + customerDetails.payment.gst_amount
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails && customerDetails.payment.total_amount
+                          ? "₹" + customerDetails.payment.total_amount
                           : "-"}
                       </p>
                     </Col>
@@ -1285,14 +1413,21 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   <Row>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Tax Type</p>
+                        <p className="customerdetails_rowheading">Gst Amount</p>
                       </div>
                     </Col>
                     <Col span={12}>
                       <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.tax_type
-                          ? customerDetails.payment.tax_type
-                          : "-"}
+                        {customerDetails?.payment?.gst_amount ? (
+                          <>
+                            ₹{customerDetails.payment.gst_amount}{" "}
+                            <span style={{ fontSize: "11px" }}>
+                              ({customerDetails.payment.tax_type || "-"})
+                            </span>
+                          </>
+                        ) : (
+                          "-"
+                        )}
                       </p>
                     </Col>
                   </Row>
@@ -1300,13 +1435,18 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Total Fees</p>
+                        <p className="customerdetails_rowheading">
+                          Balance Amount
+                        </p>
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.total_amount
-                          ? "₹" + customerDetails.payment.total_amount
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
+                      >
+                        {customerDetails && customerDetails.balance_amount
+                          ? "₹" + customerDetails.balance_amount
                           : "-"}
                       </p>
                     </Col>
@@ -1333,7 +1473,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               >
                 {paymentHistory.map((item, index) => (
                   <Collapse.Panel
-                    key={item.id || index} // unique key
+                    key={index + 1} // unique key
                     header={
                       <div
                         style={{
@@ -1351,26 +1491,48 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                           </span>
                         </span>
 
-                        <p
-                          style={{
-                            color: "#333",
-                          }}
-                        >
-                          Status:{" "}
-                          <span
+                        {/* <p
                             style={{
-                              color:
-                                item.payment_status === "Verified"
-                                  ? "#3c9111"
-                                  : item.payment_status === "Verify Pending"
-                                  ? "gray"
-                                  : "#d32f2f",
-                              fontWeight: 500,
+                              color: "#333",
                             }}
                           >
-                            {item.payment_status}
-                          </span>
-                        </p>
+                            Status:{" "}
+                            <span
+                              style={{
+                                color:
+                                  item.payment_status === "Verified"
+                                    ? "#3c9111"
+                                    : item.payment_status === "Verify Pending"
+                                    ? "gray"
+                                    : "#d32f2f",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {item.payment_status}
+                            </span>
+                          </p> */}
+
+                        {item.payment_status === "Verify Pending" ? (
+                          <div className="customer_trans_statustext_container">
+                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                              Waiting for Verify
+                            </p>
+                          </div>
+                        ) : item.payment_status === "Rejected" ? (
+                          <div className="customer_trans_statustext_container">
+                            <FaRegCircleXmark color="#d32f2f" />
+                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                              Rejected
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p style={{ color: "#3c9111", fontWeight: 500 }}>
+                              Verified
+                            </p>
+                          </div>
+                        )}
                       </div>
                     }
                   >
@@ -1583,39 +1745,25 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           </Col>
 
           <Col span={8}>
-            <p
-              className="leads_paymentscreenshot_label"
-              style={{ fontSize: "13px" }}
-            >
-              Payment Screenshot <span style={{ color: "#d32f2f" }}>*</span>
-            </p>
-            <Upload
-              style={{ width: "100%", marginTop: "8px" }}
-              beforeUpload={(file) => {
-                return false; // Prevent auto-upload
-              }}
-              accept=".png,.jpg,.jpeg"
-              onChange={handlePaymentScreenshot}
-              fileList={paymentScreenShotsArray}
-              multiple={false}
-            >
-              <Button
-                icon={<UploadOutlined />}
-                className="leadmanager_payment_screenshotbutton"
-              >
-                Choose file
-                <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
-              </Button>
-            </Upload>{" "}
+            <ImageUploadCrop
+              label="Payment Screenshot"
+              aspect={1}
+              maxSizeMB={1}
+              required={true}
+              value={paymentScreenShotBase64}
+              onChange={(base64) => setPaymentScreenShotBase64(base64)}
+              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+            />
             {paymentScreenShotError && (
               <p
                 style={{
                   fontSize: "12px",
                   color: "#d32f2f",
-                  marginTop: "4px",
-                  marginLeft: "6px",
+                  marginTop: 4,
                 }}
-              >{`Screenshot ${paymentScreenShotError}`}</p>
+              >
+                {`Payment Screenshot ${paymentScreenShotError}`}
+              </p>
             )}
           </Col>
         </Row>
