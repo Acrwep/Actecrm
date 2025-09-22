@@ -103,7 +103,7 @@ export default function Leads({
   const [stateOptions, setStateOptions] = useState([]);
   const [stateId, setStateId] = useState("");
   const [stateError, setStateError] = useState("");
-  const [areaId, setAreaId] = useState("");
+  const [areaId, setAreaId] = useState(null);
   const [areaError, setAreaError] = useState("");
   const [isAreaFocused, setIsAreaFocused] = useState(false);
   const [isOpenAddAreaModal, setIsOpenAddAreaModal] = useState(false);
@@ -784,7 +784,7 @@ export default function Leads({
     console.log(updateSates, "updateSates");
     setStateOptions(updateSates);
     setStateId(item.state);
-    setAreaId(item.district);
+    setAreaId(parseInt(item.area_id));
 
     setPrimaryCourse(item.primary_course_id);
     setPrimaryFees(item.primary_fees);
@@ -1485,7 +1485,6 @@ export default function Leads({
               <div style={{ flex: 1 }}>
                 <CommonSelectField
                   label="Area"
-                  value={areaId}
                   onChange={(e) => {
                     setAreaId(e.target.value);
                     if (validationTrigger) {
@@ -1493,6 +1492,7 @@ export default function Leads({
                     }
                   }}
                   options={areaOptions}
+                  value={areaId}
                   error={areaError}
                   required={true}
                   borderRightNone={true}
