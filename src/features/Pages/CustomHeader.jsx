@@ -92,7 +92,7 @@ export default function CustomHeader() {
             <div style={{ display: "flex", gap: "12px" }}>
               <div>
                 <p className="header_nametext">{userName}</p>
-                <p className="header_roletext">Admin</p>
+                <p className="header_roletext">ACTE</p>
               </div>
 
               <div className="header_profileContainer">

@@ -54,7 +54,10 @@ import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
-export default function UrgentDueCustomers({ setDueSelectedDates }) {
+export default function UrgentDueCustomers({
+  setUrgentDueCount,
+  setDueSelectedDates,
+}) {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
@@ -399,6 +402,7 @@ export default function UrgentDueCustomers({ setDueSelectedDates }) {
       const response = await getPendingFeesCustomers(payload);
       console.log("urgent due customer response", response);
       setCustomersData(response?.data?.data || []);
+      setUrgentDueCount(response?.data?.data.length || 0);
       setTimeout(() => {
         setLoading(false);
       }, 300);

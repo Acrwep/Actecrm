@@ -81,6 +81,8 @@ import CommonDnd from "../Common/CommonDnd";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCopy } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
+import { FcGoogle } from "react-icons/fc";
+import { FaLinkedin } from "react-icons/fa";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
@@ -2843,7 +2845,9 @@ export default function Customers() {
     setIsStatusUpdateDrawer(false);
     setCustomerDetails(null);
     setDrawerContentStatus("");
-    setUpdateButtonLoading(false);
+    setTimeout(() => {
+      setUpdateButtonLoading(false);
+    }, 300);
     setRejectButtonLoader(false);
     //finance verify
     setIsOpenPaymentScreenshotModal(false);
@@ -3662,13 +3666,53 @@ export default function Customers() {
                 <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Name</p>
+                      <p className="customerdetails_rowheading">Course</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.course_name
                         ? customerDetails.course_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>
@@ -3693,6 +3737,25 @@ export default function Customers() {
                 </Row>
 
                 <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.is_server_required
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Region</p>
@@ -3721,10 +3784,8 @@ export default function Customers() {
                     </p>
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Batch Timing</p>
@@ -3766,41 +3827,6 @@ export default function Customers() {
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.primary_fees
-                        ? "₹" + customerDetails.primary_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Balance</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: "500" }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
                   </Col>
@@ -5713,9 +5739,27 @@ export default function Customers() {
           <>
             <div className="customer_statusupdate_adddetailsContainer">
               <Steps current={current} size="small">
-                <Step title="Add G-Review" />
+                <Step
+                  title={
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      Add G-Review
+                      <FcGoogle size={18} style={{ marginLeft: 6 }} />
+                    </span>
+                  }
+                />
                 <Step title="Certificate Details" />
-                <Step title="Add L-Review" />
+                <Step
+                  title={
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      Add L-Review
+                      <FaLinkedin
+                        color="#0a66c2"
+                        size={18}
+                        style={{ marginLeft: 6 }}
+                      />
+                    </span>
+                  }
+                />
               </Steps>
 
               {current === 0 ? (
@@ -5995,7 +6039,7 @@ export default function Customers() {
                           drawerContentStatus === "Class Schedule" ||
                           drawerContentStatus === "Add G-Review"
                         ? "Update"
-                        : "Verified"}
+                        : "Verify"}
                     </button>
                   )}
                 </>

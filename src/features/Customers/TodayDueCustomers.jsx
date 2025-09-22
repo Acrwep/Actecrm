@@ -48,7 +48,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import PrismaZoom from "react-prismazoom";
 
-export default function TodayDueCustomers() {
+export default function TodayDueCustomers({ setTodayDueCount }) {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
@@ -379,6 +379,7 @@ export default function TodayDueCustomers() {
       const response = await getPendingFeesCustomers(payload);
       console.log("today pending fee customer response", response);
       setCustomersData(response?.data?.data || []);
+      setTodayDueCount(response?.data?.data.length || 0);
       setTimeout(() => {
         setLoading(false);
       }, 300);

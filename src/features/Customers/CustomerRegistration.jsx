@@ -74,6 +74,8 @@ export default function CustomerRegistration() {
 
   const [profilePictureArray, setProfilePictureArray] = useState([]);
   const [profilePicture, setProfilePicture] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   const [isOpenSignatureModal, setIsOpenSignatureModal] = useState(false);
   const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
@@ -811,7 +813,7 @@ export default function CustomerRegistration() {
               onRemove={(file) => handleRemoveProfile(file)}
               beforeUpload={() => false} // prevent auto upload
               style={{ width: 90, height: 90 }} // reduce size
-              className="trainer_picture_circle"
+              accept=".png"
             >
               {profilePictureArray.length >= 1 ? null : (
                 <div>
@@ -1002,6 +1004,15 @@ export default function CustomerRegistration() {
             </li>
           </ul>
         </div>
+      </Modal>
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

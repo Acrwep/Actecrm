@@ -19,6 +19,7 @@ import { IoFilter } from "react-icons/io5";
 import {
   customerDuePayment,
   getPendingFeesCustomers,
+  getPendingFeesCustomersCount,
 } from "../ApiService/action";
 import {
   formatToBackendIST,
@@ -54,7 +55,10 @@ import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
-export default function OverallDueCustomers({ setDueSelectedDates }) {
+export default function OverallDueCustomers({
+  setOverAllDueCount,
+  setDueSelectedDates,
+}) {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
@@ -400,6 +404,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
       setCustomersData(response?.data?.data || []);
       setTimeout(() => {
         setLoading(false);
+        setOverAllDueCount(response?.data?.data.length || 0);
       }, 300);
     } catch (error) {
       setCustomersData([]);

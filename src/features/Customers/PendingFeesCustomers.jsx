@@ -14,6 +14,7 @@ export default function PendingFeesCustomers() {
   const [todayDueCount, setTodayDueCount] = useState(0);
   const [overAllDueCount, setOverAllDueCount] = useState(0);
   const [urgentDueCount, setUrgentDueCount] = useState(0);
+  const [callCountApi, setCallCountApi] = useState(true);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -34,16 +35,22 @@ export default function PendingFeesCustomers() {
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
-    if (dueSelectedDates.length === 0) {
-      setDueSelectedDates(PreviousAndCurrentDate);
+    // if (dueSelectedDates.length === 0) {
+    //   setDueSelectedDates(PreviousAndCurrentDate);
+    //   getPendingCustomersCountData(
+    //     PreviousAndCurrentDate[0],
+    //     PreviousAndCurrentDate[1]
+    //   );
+    // } else {
+    //   getPendingCustomersCountData(dueSelectedDates[0], dueSelectedDates[1]);
+    // }
+    if (callCountApi) {
       getPendingCustomersCountData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1]
       );
-    } else {
-      getPendingCustomersCountData(dueSelectedDates[0], dueSelectedDates[1]);
     }
-  }, [dueSelectedDates]);
+  }, []);
 
   const getPendingCustomersCountData = async (startdate, enddate) => {
     const payload = {
@@ -62,6 +69,7 @@ export default function PendingFeesCustomers() {
       // dispatch(storeUsersList([]));
     } finally {
       setTimeout(() => {
+        setCallCountApi(false);
         // setUserTableLoading(false);
       }, 300);
     }
@@ -138,7 +146,10 @@ export default function PendingFeesCustomers() {
       {/* Mount only when first opened, keep mounted afterward */}
       {loadedTabs.todaydue && (
         <div style={{ display: activePage === "todaydue" ? "block" : "none" }}>
-          <TodayDueCustomers key={tabKeys.todaydue} />
+          <TodayDueCustomers
+            key={tabKeys.todaydue}
+            setTodayDueCount={setTodayDueCount}
+          />
         </div>
       )}
 
@@ -160,6 +171,7 @@ export default function PendingFeesCustomers() {
           <UrgentDueCustomers
             key={tabKeys.urgentdue}
             setDueSelectedDates={setDueSelectedDates}
+            setUrgentDueCount={setUrgentDueCount}
           />
         </div>
       )}
