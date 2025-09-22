@@ -287,6 +287,9 @@ export default function CommonMuiCustomDatePicker({ onDateChange, value }) {
                       startDate ? startDate.format("YYYY-MM-DD") : null,
                       newEnd ? newEnd.format("YYYY-MM-DD") : null,
                     ]);
+                    setTimeout(() => {
+                      handleClose();
+                    }, 300);
                   }}
                   allowAllDates={true}
                 />

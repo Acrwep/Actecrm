@@ -629,6 +629,15 @@ export const viewCertForCustomer = async (payload) => {
   }
 };
 
+export const sendCustomerCertificate = async (payload) => {
+  try {
+    const response = await api.post("/api/sendCustomerCertificate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //payment api's
 export const customerDuePayment = async (payload) => {
   try {

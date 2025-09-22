@@ -1144,10 +1144,21 @@
   background-color: #5b69ca !important;
   color: #fff !important;
   border-color: #5b69ca !important;
+  width: 100px;
+  font-weight: 500;
 }
 .customer_complete_passedoutbutton:hover {
   border-color: #5b69ca !important;
   color: #fff !important;
+}
+.customer_complete_loadingpassedoutbutton {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+  width: 100px;
+  opacity: 0.7;
+  cursor: default;
 }
 .customer_trainer_cusomer_heading {
   font-weight: 600;

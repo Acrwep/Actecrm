@@ -34,6 +34,7 @@ import {
   inserCustomerTrack,
   rejectCustomerPayment,
   rejectTrainerForCustomer,
+  sendCustomerCertificate,
   sendLeadInvoiceEmail,
   updateClassGoingForCustomer,
   updateCustomerPaymentTransaction,
@@ -2803,7 +2804,7 @@ export default function Customers() {
     }
   };
 
-  const handleIssueCert = async () => {
+  const handleCompleteProcess = async () => {
     if (customerDetails.is_certificate_generated === 0) {
       CommonMessage("error", "Please Generate Certificate");
       return;
@@ -2825,10 +2826,27 @@ export default function Customers() {
       await updatefeedbackForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
+        handleSendCertByEmail();
         handleCustomerStatus("Completed");
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleSendCertByEmail = async () => {
+    const payload = {
+      email: customerDetails.email,
+      customer_id: customerDetails.id,
+    };
+    try {
+      await sendCustomerCertificate(payload);
+    } catch (error) {
       CommonMessage(
         "error",
         error?.response?.data?.message ||
@@ -5954,7 +5972,7 @@ export default function Customers() {
                   ) : (
                     <button
                       className="customer_issuecert_button"
-                      onClick={handleIssueCert}
+                      onClick={handleCompleteProcess}
                     >
                       Update And Issue Certificate
                     </button>
@@ -5977,7 +5995,7 @@ export default function Customers() {
                         <Button
                           className={
                             current === 2
-                              ? "customer_complete_passedoutbutton"
+                              ? "customer_complete_loadingpassedoutbutton"
                               : "customer_stepperbuttons"
                           }
                         >
@@ -5991,7 +6009,7 @@ export default function Customers() {
                               : current === 1
                               ? handleCertificateDetails
                               : current === 2
-                              ? handleIssueCert
+                              ? handleCompleteProcess
                               : ""
                           }
                           className={
@@ -6000,9 +6018,7 @@ export default function Customers() {
                               : "customer_stepperbuttons"
                           }
                         >
-                          {current === 2
-                            ? "Passedout Process Completed"
-                            : "Next"}
+                          {current === 2 ? "Submit" : "Next"}
                         </Button>
                       )}
                     </>
