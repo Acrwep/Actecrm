@@ -19,13 +19,13 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import "./styles.css";
 import {
   assignTrainerForCustomer,
   classScheduleForCustomer,
+  generateCertForCustomer,
   getAssignTrainerHistoryForCustomer,
   getCustomerByTrainerId,
   getCustomers,
@@ -34,20 +34,26 @@ import {
   inserCustomerTrack,
   rejectCustomerPayment,
   rejectTrainerForCustomer,
-  sendCustomerFormEmail,
   sendLeadInvoiceEmail,
   updateClassGoingForCustomer,
+  updateCustomerPaymentTransaction,
   updateCustomerStatus,
   updatefeedbackForCustomer,
   verifyCustomer,
   verifyCustomerPayment,
   verifyTrainerForCustomer,
+  viewCertForCustomer,
 } from "../ApiService/action";
 import {
   addressValidator,
+  calculateAmount,
   formatToBackendIST,
+  getBalanceAmount,
+  getConvenienceFees,
   getCurrentandPreviousweekDate,
+  nameValidator,
   percentageValidator,
+  priceValidator,
   selectValidator,
 } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -61,11 +67,11 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
 import { FaRegUser } from "react-icons/fa";
+import { FaRegCircleXmark } from "react-icons/fa6";
 import moment from "moment";
 import { AiOutlineEdit } from "react-icons/ai";
 import CustomerUpdate from "./CustomerUpdate";
 import CommonTextArea from "../Common/CommonTextArea";
-import { UploadOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonInputField from "../Common/CommonInputField";
@@ -77,6 +83,11 @@ import { FaRegCopy } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import PrismaZoom from "react-prismazoom";
+import ImageUploadCrop from "../Common/ImageUploadCrop";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import CommonMuiMonthPicker from "../Common/CommonMuiMonthPicker";
+import CommonCertificateViewer from "../Common/CommonCertificateViewer";
+
 const { Step } = Steps;
 
 export default function Customers() {
@@ -109,16 +120,37 @@ export default function Customers() {
     useState(false);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
+  const [rejectTransItem, setRejectTransItem] = useState(null);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [isShowFinanceRejectComment, setIsShowFinanceRejectComment] =
     useState(false);
   const [financeRejectComment, setFinanceRejectComment] = useState("");
   const [financeRejectCommentError, setFinanceRejectCommentError] =
     useState("");
+  //update payment usestates
+  const [updatePaymentTransId, setUpdatePaymentTransId] = useState(null);
+  const [paymentDate, setPaymentDate] = useState(null);
+  const [paymentDateError, setPaymentDateError] = useState("");
+  const [paymentMode, setPaymentMode] = useState(null);
+  const [paymentModeError, setPaymentModeError] = useState(null);
+  const [subTotal, setSubTotal] = useState("");
+  const [convenienceFees, setConvenienceFees] = useState("");
+  const [taxType, setTaxType] = useState("");
+  const [taxTypeError, setTaxTypeError] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [paidNow, setPaidNow] = useState("");
+  const [paidNowError, setPaidNowError] = useState("");
+  const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
+  const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
+  const [paymentValidationTrigger, setPaymentValidationTrigger] =
+    useState(false);
+  const [balanceAmount, setBalanceAmount] = useState("");
+  const [isShowDueDate, setIsShowDueDate] = useState(true);
+  const [dueDate, setDueDate] = useState(null);
+  const [dueDateError, setDueDateError] = useState("");
   //student verify usestates
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
-  const [studentVerifyProofArray, setStudentVerifyProofArray] = useState([]);
   const [studentVerifyProofBase64, setStudentVerifyProofBase64] = useState("");
   const [studentVerifyProofError, setStudentVerifyProofError] = useState("");
   const [studentVerifyComments, setStudentVerifyComments] = useState("");
@@ -140,7 +172,6 @@ export default function Customers() {
   const [modeOfClassError, setModeOfClassError] = useState("");
   const [trainerType, setTrainerType] = useState("");
 
-  const [assignTrainerProofArray, setAssignTrainerProofArray] = useState([]);
   const [assignTrainerProofBase64, setAssignTrainerProofBase64] = useState("");
   const [assignTrainerProofError, setAssignTrainerProofError] = useState("");
   const [assignTrainerComments, setAssignTrainerComments] = useState("");
@@ -193,24 +224,32 @@ export default function Customers() {
   const [classGoingPercentageError, setClassGoingPercentageError] = useState(0);
   const [classGoingComments, setClassGoingComments] = useState("");
   const [classGoingCommentsError, setClassGoingCommentsError] = useState("");
-  const [addattachmentArray, setAddattachmentArray] = useState([]);
   const [addattachmentBase64, setAddattachmentBase64] = useState("");
   const [addattachmentError, setAddattachmentError] = useState("");
+  const [isOpenClassCompleteModal, setIsOpenClassCompleteModal] =
+    useState(false);
+  const [classCompleteLoading, setClassCompleteLoading] = useState(false);
   const [isShowAddAttachment, setIsShowAddAttachment] = useState(false);
   //feedback usestates
-  const [linkedinFeedbackArray, setLinkedinFeedbackArray] = useState([]);
-  const [linkedinFeedbackBase64, setLinkedinFeedbackBase64] = useState("");
-  const [linkedinFeedbackError, setLinkedinFeedbackError] = useState("");
-
-  const [googleFeedbackArray, setGoogleFeedbackArray] = useState([]);
   const [googleFeedbackBase64, setGoogleFeedbackBase64] = useState("");
-  const [googleFeedbackError, setGoogleFeedbackError] = useState("");
+  const [linkedinFeedbackBase64, setLinkedinFeedbackBase64] = useState("");
+
   const [courseDuration, setCourseDuration] = useState("");
   const [courseDurationError, setCourseDurationError] = useState("");
   const [courseCompleteDate, setCourseCompleteDate] = useState("");
   const [courseCompleteDateError, setCourseCompleteDateError] = useState("");
   const [isGoogleReviewChange, setIsGoogleReviewChange] = useState(false);
   const [isCertChange, setIsCertChange] = useState(false);
+  const [certName, setCertName] = useState("");
+  const [certNameError, setCertNameError] = useState("");
+  const [certCourseName, setCertCourseName] = useState("");
+  const [certCourseNameError, setCertCourseNameError] = useState("");
+  const [certMonth, setCertMonth] = useState(null);
+  const [certMonthError, setCertMonthError] = useState("");
+  const [isCertGenerated, setIsCertGenerated] = useState(false);
+  const [generateCertLoading, setGenerateCertLoading] = useState(false);
+  const [certHtmlContent, setCertHtmlContent] = useState("");
+  const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [completeLoading, setCompleteLoading] = useState(true);
   const [current, setCurrent] = useState(0);
 
@@ -332,9 +371,96 @@ export default function Customers() {
                 <>
                   <Row>
                     <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Payment Rejected" ? (
+                      {record.is_last_pay_rejected === 1 ? (
+                        <>
+                          <button
+                            className="customers_finance_updatepayment_button"
+                            onClick={() => {
+                              setDrawerContentStatus("Update Payment");
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setCollapseDefaultKey(["1"]);
+                              setIsStatusUpdateDrawer(true);
+                              setPaymentHistory(
+                                record.payments && record.payments
+                                  ? record.payments.payment_trans
+                                  : []
+                              );
+                              setSubTotal(record.primary_fees);
+                              setTaxType(
+                                record.payments && record.payments.tax_type
+                                  ? record.payments.tax_type === "GST (18%)"
+                                    ? 1
+                                    : record.payments.tax_type === "SGST (18%)"
+                                    ? 2
+                                    : record.payments.tax_type === "IGST (18%)"
+                                    ? 3
+                                    : record.payments.tax_type === "VAT (18%)"
+                                    ? 4
+                                    : record.payments.tax_type === "No tax"
+                                    ? 5
+                                    : 0
+                                  : 0
+                              );
+                              setAmount(
+                                record.payments && record.payments.total_amount
+                                  ? record.payments.total_amount
+                                  : 0
+                              );
+                              //transaction handling
+                              const rejectedItem =
+                                record?.payments?.payment_trans?.find(
+                                  (f) => f?.payment_status === "Rejected"
+                                );
+                              console.log("rejectedItem", rejectedItem);
+                              setUpdatePaymentTransId(
+                                rejectedItem && rejectedItem.id
+                                  ? rejectedItem.id
+                                  : null
+                              );
+                              setPaidNow(
+                                rejectedItem && rejectedItem.amount
+                                  ? rejectedItem.amount
+                                  : 0
+                              );
+                              setPaymentMode(
+                                rejectedItem && rejectedItem.paymode_id
+                                  ? rejectedItem.paymode_id
+                                  : 0
+                              );
+                              setConvenienceFees(
+                                rejectedItem && rejectedItem.convenience_fees
+                                  ? rejectedItem.convenience_fees
+                                  : 0
+                              );
+                              setPaymentDate(
+                                rejectedItem && rejectedItem.paid_date
+                                  ? rejectedItem.paid_date
+                                  : null
+                              );
+                              setPaymentScreenShotBase64(
+                                rejectedItem && rejectedItem.payment_screenshot
+                                  ? rejectedItem.payment_screenshot
+                                  : ""
+                              );
+                              setBalanceAmount(
+                                rejectedItem && rejectedItem.balance_amount
+                                  ? rejectedItem.balance_amount
+                                  : 0
+                              );
+                              setDueDate(
+                                rejectedItem && rejectedItem.next_due_date
+                                  ? rejectedItem.next_due_date
+                                  : null
+                              );
+                            }}
+                          >
+                            Update Payment
+                          </button>
+                        </>
+                      ) : record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.is_second_due === 1 ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           style={{ marginTop: "6px" }}
@@ -349,6 +475,7 @@ export default function Customers() {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Finance Verify");
+                              setCollapseDefaultKey(["1"]);
                               setIsStatusUpdateDrawer(true);
                               setPaymentHistory(
                                 record.payments && record.payments
@@ -704,21 +831,25 @@ export default function Customers() {
                               setIsStatusUpdateDrawer(true);
                               if (record.google_review === null) {
                                 setCurrent(0);
-                              } else if (record.course_duration === null) {
+                              } else if (
+                                record.is_certificate_generated === 0
+                              ) {
                                 setCurrent(1);
                               } else {
                                 setCurrent(2);
                               }
-                              setCourseDuration(record.course_duration);
-                              setCourseCompleteDate(
-                                record.course_completion_date
-                              );
+                              setCourseDuration(record.cer_course_duration);
+                              setCertMonth(record.cer_course_completion_month);
                               if (record.google_review) {
                                 setGoogleFeedbackBase64(record.google_review);
-                                setGoogleFeedbackArray([
-                                  { name: "G-Review.png" },
-                                ]);
                               }
+                              setCertName(record.name);
+                              setCertCourseName(record.course_name);
+                              setIsCertGenerated(
+                                record.is_certificate_generated === 1
+                                  ? true
+                                  : false
+                              );
                             }}
                           >
                             Passedout process
@@ -752,14 +883,22 @@ export default function Customers() {
                 </>
               }
             >
-              {text === "Pending" ||
-              text === "PENDING" ||
-              text === "Verify Pending" ? (
-                <Button className="trainers_pending_button">Pending</Button>
+              {record.is_second_due === 1 ? (
+                <div>
+                  <Button className="customers_status_awaitfinance_button">
+                    Awaiting Finance
+                  </Button>
+                </div>
               ) : text === "Form Pending" ? (
                 <div>
                   <Button className="customers_status_formpending_button">
                     {text}
+                  </Button>
+                </div>
+              ) : record.is_last_pay_rejected === 1 ? (
+                <div>
+                  <Button className="trainers_rejected_button">
+                    Payment Rejected
                   </Button>
                 </div>
               ) : text === "Awaiting Finance" ? (
@@ -869,21 +1008,6 @@ export default function Customers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip
-              placement="top"
-              title="Send Form Link"
-              trigger={["hover", "click"]}
-            >
-              {loadingRowId === record.id ? (
-                <CommonSpinner color="#333" />
-              ) : (
-                <LuSend
-                  size={17}
-                  className="trainers_action_icons"
-                  onClick={() => handleSendFormLink(record.email, record.id)}
-                />
-              )}
-            </Tooltip> */}
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
@@ -1379,9 +1503,6 @@ export default function Customers() {
                               );
                               if (record.google_review) {
                                 setGoogleFeedbackBase64(record.google_review);
-                                setGoogleFeedbackArray([
-                                  { name: "G-Review.png" },
-                                ]);
                               }
                             }}
                           >
@@ -1662,7 +1783,8 @@ export default function Customers() {
     startDate,
     endDate,
     searchvalue,
-    customerStatus
+    customerStatus,
+    is_generate_certificate
   ) => {
     setLoading(true);
     const payload = {
@@ -1688,11 +1810,36 @@ export default function Customers() {
     try {
       const response = await getCustomers(payload);
       console.log("customers response", response);
-      const customers = response?.data?.data?.customers;
-      setCustomersData(response?.data?.data?.customers || []);
+      const customers = response?.data?.data?.customers || [];
+      setCustomersData(customers);
       setCustomerStatusCount(
         response?.data?.data?.customer_status_count || null
       );
+      if (is_generate_certificate === true) {
+        if (customers.length >= 1) {
+          const findCurrentCustomer = customers.find(
+            (f) => f.id === customerDetails.id
+          );
+
+          if (findCurrentCustomer) {
+            setCustomerDetails(findCurrentCustomer);
+            setGoogleFeedbackBase64(findCurrentCustomer.google_review);
+            setLinkedinFeedbackBase64(findCurrentCustomer.linkedin_review);
+            setCourseDuration(findCurrentCustomer.course_duration);
+            setCertMonth(findCurrentCustomer.cer_course_completion_month);
+            setCertName(findCurrentCustomer.cer_customer_name);
+            setCertCourseName(findCurrentCustomer.cer_course_name);
+            setIsCertGenerated(
+              findCurrentCustomer.is_certificate_generated === 1 ? true : false
+            );
+            setGenerateCertLoading(false);
+          } else {
+            setGenerateCertLoading(false);
+          }
+        } else {
+          setGenerateCertLoading(false);
+        }
+      }
     } catch (error) {
       setCustomerStatusCount(null);
       setCustomersData([]);
@@ -1712,16 +1859,6 @@ export default function Customers() {
     } catch (error) {
       setAssignTrainerData(null);
       console.log("get trainer by id error", error);
-    }
-  };
-
-  const handleDateChange = (dates, dateStrings) => {
-    setSelectedDates(dateStrings);
-    const startDate = dateStrings[0];
-    const endDate = dateStrings[1];
-    if (startDate != "" && endDate != "") {
-      console.log("call function");
-      getCustomersData(startDate, endDate, searchValue, status);
     }
   };
 
@@ -1749,6 +1886,69 @@ export default function Customers() {
     setCustomerDetails(null);
   };
 
+  const handlePaidNow = (e) => {
+    const value = parseInt(e.target.value);
+    const amt = parseInt(amount);
+    if (value < amt || isNaN(value) || value === "" || value === null) {
+      setIsShowDueDate(true);
+    } else {
+      setIsShowDueDate(false);
+      setDueDate(null);
+      setDueDateError("");
+    }
+    setPaidNow(isNaN(value) ? "" : value);
+    setBalanceAmount(
+      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
+    );
+
+    if (paymentMode === 2 || paymentMode === 5) {
+      const conve_fees = getConvenienceFees(value);
+      setConvenienceFees(conve_fees);
+    } else {
+      setConvenienceFees(0);
+    }
+
+    if (paymentValidationTrigger) {
+      setPaidNowError(priceValidator(value, parseInt(amt)));
+    }
+  };
+
+  const handlePaymentType = (e) => {
+    const value = e.target.value;
+    setPaymentMode(value);
+    const amnt = calculateAmount(parseInt(subTotal), taxType === 5 ? 0 : 18);
+    setAmount(amnt);
+
+    if (paymentValidationTrigger) {
+      setPaymentModeError(selectValidator(value));
+    }
+
+    //handle balance amount
+    if (
+      paidNow < amnt ||
+      isNaN(paidNow) ||
+      paidNow === "" ||
+      paidNow === null
+    ) {
+      setIsShowDueDate(true);
+    } else {
+      setIsShowDueDate(false);
+      setDueDate(null);
+      setDueDateError("");
+    }
+    setBalanceAmount(
+      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+    );
+
+    //handle convenience fees
+    if (value === 2 || value === 5) {
+      const conve_fees = getConvenienceFees(paidNow ? parseInt(paidNow) : 0);
+      setConvenienceFees(conve_fees);
+    } else {
+      setConvenienceFees(0);
+    }
+  };
+
   const handleRefresh = () => {
     setStatus("");
     setSearchValue("");
@@ -1760,176 +1960,6 @@ export default function Customers() {
       null,
       null
     );
-  };
-
-  const handleStudentVerifyProof = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setStudentVerifyProofArray([]);
-      setStudentVerifyProofBase64("");
-      setStudentVerifyProofError("Proof is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setStudentVerifyProofArray([file]);
-      CommonMessage("success", "Proof uploaded");
-      setStudentVerifyProofError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setStudentVerifyProofBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setStudentVerifyProofArray([]);
-      setStudentVerifyProofBase64("");
-    }
-  };
-
-  const handleLinedinFeedback = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setLinkedinFeedbackArray([]);
-      setLinkedinFeedbackBase64("");
-      setLinkedinFeedbackError("Linkedin review screenshot is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setLinkedinFeedbackArray([file]);
-      CommonMessage("success", "Linkedin review screenshot uploaded");
-      setLinkedinFeedbackError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setLinkedinFeedbackBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setLinkedinFeedbackArray([]);
-      setLinkedinFeedbackBase64("");
-    }
-  };
-
-  const handleGoogleFeedback = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-    setIsGoogleReviewChange(true);
-    if (file.status === "uploading" || file.status === "removed") {
-      setGoogleFeedbackArray([]);
-      setGoogleFeedbackBase64("");
-      setGoogleFeedbackError("Google review screenshot is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setGoogleFeedbackArray([file]);
-      CommonMessage("success", "Google review screenshot uploaded");
-      setGoogleFeedbackError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setGoogleFeedbackBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setGoogleFeedbackArray([]);
-      setGoogleFeedbackBase64("");
-    }
-  };
-
-  const handleAddAttachment = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setAddattachmentArray([]);
-      setAddattachmentBase64("");
-      setAddattachmentError("Attachment is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setAddattachmentArray([file]);
-      CommonMessage("success", "Attachment uploaded");
-      setAddattachmentError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setAddattachmentBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setAddattachmentArray([]);
-      setAddattachmentBase64("");
-    }
-  };
-
-  const handleAssignTrainerProof = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setAssignTrainerProofArray([]);
-      setAssignTrainerProofBase64("");
-      setAssignTrainerProofError("Proof is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setAssignTrainerProofArray([file]);
-      CommonMessage("success", "Proof uploaded");
-      setAssignTrainerProofError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setAssignTrainerProofBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setAssignTrainerProofArray([]);
-      setAssignTrainerProofBase64("");
-    }
   };
 
   const handleCustomerStatus = async (updatestatus) => {
@@ -1990,7 +2020,11 @@ export default function Customers() {
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
         setUpdateButtonLoading(false);
-        handleCustomerStatus("Awaiting Verify");
+        handleCustomerStatus(
+          customerDetails?.is_second_due === 1
+            ? customerDetails?.status ?? "Unknown"
+            : "Awaiting Verify"
+        );
         sendInvoiceEmail(transactiondetails);
       }, 300);
     } catch (error) {
@@ -2003,11 +2037,18 @@ export default function Customers() {
     }
   };
 
-  const handleFinaceReject = async (transactiondetails) => {
+  const handleFinaceReject = async () => {
+    const commentValidate = addressValidator(financeRejectComment);
+
+    setFinanceRejectCommentError(commentValidate);
+
+    if (commentValidate) return;
+
     setRejectLoading(true);
     const today = new Date();
     const payload = {
-      payment_trans_id: transactiondetails?.id || "",
+      payment_trans_id: rejectTransItem?.id || "",
+      reason: financeRejectComment,
       rejected_date: formatToBackendIST(today),
     };
     try {
@@ -2015,7 +2056,7 @@ export default function Customers() {
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
         setRejectLoading(false);
-        handleCustomerStatus("Payment Rejected");
+        handleCustomerStatus(customerDetails.status);
       }, 300);
     } catch (error) {
       setRejectLoading(false);
@@ -2068,16 +2109,71 @@ export default function Customers() {
     }
   };
 
+  const handleUpdatePaymentTransaction = async () => {
+    setPaymentValidationTrigger(true);
+    const paymentTypeValidate = selectValidator(paymentMode);
+    const paymentDateValidate = selectValidator(paymentDate);
+
+    const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
+
+    const screenshotValidate = selectValidator(paymentScreenShotBase64);
+    let dueDateValidate;
+
+    if (isShowDueDate) {
+      dueDateValidate = selectValidator(dueDate);
+    } else {
+      dueDateValidate = "";
+    }
+
+    setPaymentModeError(paymentTypeValidate);
+    setPaidNowError(paidNowValidate);
+    setPaymentDateError(paymentDateValidate);
+    setPaymentScreenShotError(screenshotValidate);
+    setDueDateError(dueDateValidate);
+
+    if (
+      paymentTypeValidate ||
+      paidNowValidate ||
+      paymentDateValidate ||
+      screenshotValidate ||
+      dueDateValidate
+    )
+      return;
+
+    setUpdateButtonLoading(true);
+    const today = new Date();
+    const payload = {
+      invoice_date: formatToBackendIST(paymentDate),
+      amount: paidNow,
+      convenience_fees: convenienceFees,
+      paymode_id: paymentMode,
+      payment_screenshot: paymentScreenShotBase64,
+      paid_date: formatToBackendIST(paymentDate),
+      next_due_date: formatToBackendIST(dueDate),
+      payment_trans_id: updatePaymentTransId,
+    };
+    try {
+      await updateCustomerPaymentTransaction(payload);
+      CommonMessage("success", "Updated Successfully");
+      setTimeout(() => {
+        setUpdateButtonLoading(false);
+        handleCustomerStatus(customerDetails.status);
+      }, 300);
+    } catch (error) {
+      setUpdateButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const handleStudentVerify = async () => {
     const commentValidate = addressValidator(studentVerifyComments);
-
-    let studentVerifyProofValidate;
-
-    if (studentVerifyProofBase64 === "") {
-      studentVerifyProofValidate = "Proof is required";
-    } else {
-      studentVerifyProofValidate = "";
-    }
+    const studentVerifyProofValidate = selectValidator(
+      studentVerifyProofBase64
+    );
 
     setStudentVerifyProofError(studentVerifyProofValidate);
     setStudentVerifyCommentsError(commentValidate);
@@ -2102,7 +2198,7 @@ export default function Customers() {
       setUpdateButtonLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2277,14 +2373,9 @@ export default function Customers() {
     const commercialValidate = selectValidator(commercial);
     const modeOfClassValidate = selectValidator(modeOfClass);
     const commentValidate = addressValidator(assignTrainerComments);
-
-    let assignTrainerProofValidate;
-
-    if (assignTrainerProofBase64 === "") {
-      assignTrainerProofValidate = "Proof is required";
-    } else {
-      assignTrainerProofValidate = "";
-    }
+    const assignTrainerProofValidate = selectValidator(
+      assignTrainerProofBase64
+    );
 
     setTrainerIdError(trainerIdValidate);
     setCommercialError(commercialValidate);
@@ -2326,7 +2417,7 @@ export default function Customers() {
       setUpdateButtonLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2376,7 +2467,7 @@ export default function Customers() {
       setUpdateButtonLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2417,7 +2508,7 @@ export default function Customers() {
       setRejectButtonLoader(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2484,7 +2575,7 @@ export default function Customers() {
       setUpdateButtonLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2519,17 +2610,18 @@ export default function Customers() {
       class_comments: classGoingComments,
       class_attachment: addattachmentBase64,
     };
+
+    if (classGoingPercentage >= 100) {
+      setIsOpenClassCompleteModal(true);
+      setUpdateButtonLoading(false);
+      return;
+    }
+
     try {
       await updateClassGoingForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
       if (classGoingPercentage < 100) {
         setTimeout(() => {
-          // getCustomersData(
-          //   selectedDates[0],
-          //   selectedDates[1],
-          //   searchValue,
-          //   status
-          // );
           handleCustomerStatus(
             scheduleId === 1
               ? "Class Going"
@@ -2548,17 +2640,40 @@ export default function Customers() {
           setUpdateButtonLoading(false);
           // updateStatusDrawerReset();
         }, 300);
-      } else {
-        setTimeout(() => {
-          handleCustomerStatus("Passedout process");
-          setUpdateButtonLoading(false);
-        }, 300);
       }
     } catch (error) {
       setUpdateButtonLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleCompleteClass = async () => {
+    setClassCompleteLoading(true);
+    const payload = {
+      customer_id: customerDetails.id,
+      schedule_id: scheduleId,
+      class_percentage: classGoingPercentage,
+      class_comments: classGoingComments,
+      class_attachment: addattachmentBase64,
+    };
+
+    try {
+      await updateClassGoingForCustomer(payload);
+      CommonMessage("success", "Updated Successfully");
+      setTimeout(() => {
+        setIsOpenClassCompleteModal(false);
+        handleCustomerStatus("Passedout process");
+        setClassCompleteLoading(false);
+      }, 300);
+    } catch (error) {
+      setClassCompleteLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -2590,7 +2705,7 @@ export default function Customers() {
       } catch (error) {
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }
@@ -2600,52 +2715,97 @@ export default function Customers() {
   };
 
   const handleCertificateDetails = async () => {
-    if (isCertChange) {
-      const courseDurationValidate = selectValidator(courseDuration);
-      const courseCompleteDateValidate = selectValidator(courseCompleteDate);
-
-      setCourseDurationError(courseDurationValidate);
-      setCourseCompleteDateError(courseCompleteDateValidate);
-
-      if (courseDurationValidate || courseCompleteDateValidate) return;
-
-      const today = new Date();
-      const payload = {
-        customer_id: customerDetails.id,
-        linkedin_review: customerDetails.linkedin_review
-          ? customerDetails.linkedin_review
-          : linkedinFeedbackBase64,
-        google_review: customerDetails.google_review
-          ? customerDetails.google_review
-          : googleFeedbackBase64,
-        course_duration: courseDuration,
-        course_completed_date: formatToBackendIST(courseCompleteDate),
-        review_updated_date: formatToBackendIST(today),
-      };
-      try {
-        await updatefeedbackForCustomer(payload);
-        // CommonMessage("success", "Updated Successfully");
-        getCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          status
-        );
-        setCurrent(2);
-      } catch (error) {
-        setUpdateButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.message ||
-            "Something went wrong. Try again later"
-        );
-      }
+    if (customerDetails.is_certificate_generated === 0) {
+      CommonMessage(
+        "error",
+        "Please Generate Certificate. Before Go To Next Step"
+      );
+      return;
     } else {
       setCurrent(2);
     }
   };
 
+  const handleGenerateCert = async () => {
+    const courseDurationValidate = selectValidator(courseDuration);
+    const certMonthValidate = selectValidator(certMonth);
+    const certNameValidate = nameValidator(certName);
+    const certCourseValidate = addressValidator(certCourseName);
+
+    setCourseDurationError(courseDurationValidate);
+    setCertMonthError(certMonthValidate);
+    setCertNameError(certNameValidate);
+    setCertCourseNameError(certCourseValidate);
+
+    if (
+      courseDurationValidate ||
+      certMonthValidate ||
+      certNameValidate ||
+      certCourseValidate
+    )
+      return;
+
+    const payload = {
+      customer_id: customerDetails.id,
+      customer_name: certName,
+      course_name: certCourseName,
+      course_duration: courseDuration,
+      course_completion_month: certMonth,
+    };
+
+    setGenerateCertLoading(true);
+    try {
+      const response = await generateCertForCustomer(payload);
+      console.log("cert response", response);
+      CommonMessage("success", "Certificate Generated Successfully");
+      setTimeout(() => {
+        getCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue,
+          status,
+          true
+        );
+      }, 300);
+    } catch (error) {
+      setGenerateCertLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleViewCert = async () => {
+    setGenerateCertLoading(true);
+    const payload = {
+      customer_id: customerDetails.id,
+    };
+    try {
+      const response = await viewCertForCustomer(payload);
+      console.log("cert response", response);
+      const htmlTemplate = response?.data?.data?.html_template;
+      setCertHtmlContent(htmlTemplate);
+      setTimeout(() => {
+        setGenerateCertLoading(false);
+        setIsOpenViewCertModal(true);
+      }, 300);
+    } catch (error) {
+      setGenerateCertLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const handleIssueCert = async () => {
+    if (customerDetails.is_certificate_generated === 0) {
+      CommonMessage("error", "Please Generate Certificate");
+      return;
+    }
     setUpdateButtonLoading(true);
 
     const today = new Date();
@@ -2655,8 +2815,8 @@ export default function Customers() {
       google_review: customerDetails.google_review
         ? customerDetails.google_review
         : googleFeedbackBase64,
-      course_duration: courseDuration,
-      course_completed_date: formatToBackendIST(courseCompleteDate),
+      course_duration: null,
+      course_completed_date: null,
       review_updated_date: formatToBackendIST(today),
     };
     try {
@@ -2690,8 +2850,27 @@ export default function Customers() {
     setIsShowFinanceRejectComment(false);
     setFinanceRejectComment("");
     setFinanceRejectCommentError("");
+    setRejectTransItem(null);
+    //update payment
+    setPaymentMode(null);
+    setPaymentModeError("");
+    setSubTotal("");
+    setConvenienceFees("");
+    setTaxType(null);
+    setTaxTypeError("");
+    setAmount("");
+    setPaidNow("");
+    setPaidNowError("");
+    setPaymentDate(null);
+    setPaymentDateError("");
+    setPaymentScreenShotBase64("");
+    setPaymentScreenShotError("");
+    setIsShowDueDate(true);
+    setBalanceAmount("");
+    setDueDate(null);
+    setDueDateError("");
+    setPaymentValidationTrigger(false);
     //student verify
-    setStudentVerifyProofArray([]);
     setStudentVerifyProofBase64("");
     setStudentVerifyProofError("");
     setStudentVerifyComments("");
@@ -2705,7 +2884,6 @@ export default function Customers() {
     setModeOfClass(null);
     setModeOfClassError("");
     setTrainerType("");
-    setAssignTrainerProofArray([]);
     setAssignTrainerProofBase64("");
     setAssignTrainerProofError("");
     setAssignTrainerComments("");
@@ -2729,18 +2907,13 @@ export default function Customers() {
     setClassGoingPercentageError("");
     setClassGoingComments("");
     setClassGoingCommentsError("");
-    setAddattachmentArray([]);
     setAddattachmentBase64("");
     setAddattachmentError("");
     setClassHoldComments("");
     //feedback
     setCurrent(0);
-    setLinkedinFeedbackArray([]);
-    setLinkedinFeedbackBase64("");
-    setLinkedinFeedbackError("");
-    setGoogleFeedbackArray([]);
     setGoogleFeedbackBase64("");
-    setGoogleFeedbackError("");
+    setLinkedinFeedbackBase64("");
     setCourseDuration("");
     setCourseDurationError("");
     setCourseCompleteDateError("");
@@ -2748,6 +2921,14 @@ export default function Customers() {
     setCourseCompleteDateError("");
     setIsGoogleReviewChange(false);
     setIsCertChange(false);
+    //cert usestaes
+    setCertName("");
+    setCertNameError("");
+    setCertCourseName("");
+    setCertCourseNameError("");
+    setCertMonth("");
+    setCertMonthError("");
+    setIsCertGenerated(false);
   };
 
   return (
@@ -2857,9 +3038,12 @@ export default function Customers() {
 
             {/* Date Picker on the Right */}
             <div style={{ marginLeft: "16px" }}>
-              <CommonDoubleDatePicker
+              <CommonMuiCustomDatePicker
                 value={selectedDates}
-                onChange={handleDateChange}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  getCustomersData(dates[0], dates[1], searchValue, status);
+                }}
               />
             </div>
           </div>
@@ -3435,7 +3619,7 @@ export default function Customers() {
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
+                  <p className="customerdetails_rowheading">Area</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -3697,11 +3881,14 @@ export default function Customers() {
         title="Update Status"
         open={isStatusUpdateDrawer}
         onClose={updateStatusDrawerReset}
-        width="45%"
+        width="50%"
         style={{
           position: "relative",
           paddingBottom:
-            drawerContentStatus === "Finance Verify" ? "0px" : "65px",
+            drawerContentStatus === "Finance Verify" ||
+            drawerContentStatus === "Update Payment"
+              ? "0px"
+              : "65px",
         }}
         className="customer_statusupdate_drawer"
       >
@@ -3710,7 +3897,12 @@ export default function Customers() {
           <FaRegUser size={50} color="#333" />
 
           <div>
-            <p className="customer_nametext">
+            <p
+              className="customer_nametext"
+              onClick={() => {
+                console.log("drawerContentStatus", drawerContentStatus);
+              }}
+            >
               {" "}
               {customerDetails && customerDetails.name
                 ? customerDetails.name
@@ -3797,6 +3989,26 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
+                  {customerDetails && customerDetails.gender === "Male" ? (
+                    <BsGenderMale size={15} color="gray" />
+                  ) : (
+                    <BsGenderFemale size={15} color="gray" />
+                  )}
+                  <p className="customerdetails_rowheading">Gender</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.gender
+                    ? customerDetails.gender
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
                   <p className="customerdetails_rowheading">Location</p>
                 </div>
@@ -3805,6 +4017,22 @@ export default function Customers() {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.current_location
                     ? customerDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
                     : "-"}
                 </p>
               </Col>
@@ -3822,6 +4050,58 @@ export default function Customers() {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.primary_fees
+                    ? "₹" + customerDetails.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f", fontWeight: 700 }}
+                >
+                  {customerDetails &&
+                  customerDetails.balance_amount !== undefined &&
+                  customerDetails.balance_amount !== null
+                    ? "₹" + customerDetails.balance_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Server</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.is_server_required
+                    ? customerDetails.is_server_required === 1
+                      ? "Required"
+                      : "Not Required"
                     : "-"}
                 </p>
               </Col>
@@ -3860,13 +4140,13 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">Batch Track</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
+                  {customerDetails && customerDetails.batch_tracking
+                    ? customerDetails.batch_tracking
                     : "-"}
                 </p>
               </Col>
@@ -3875,34 +4155,13 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f" }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Batch Timing</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.batch_timing
+                    ? customerDetails.batch_timing
                     : "-"}
                 </p>
               </Col>
@@ -3919,7 +4178,7 @@ export default function Customers() {
               style={{ marginBottom: "16px" }}
             >
               <div className="customerdetails_coursecard_headercontainer">
-                <p>Tax Details</p>
+                <p>Payment Details</p>
               </div>
 
               <div className="customerdetails_coursecard_contentcontainer">
@@ -3946,15 +4205,18 @@ export default function Customers() {
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
                           <p className="customerdetails_rowheading">
-                            Gst Amount
+                            Total Fees
                           </p>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">
+                        <p
+                          className="customerdetails_text"
+                          style={{ fontWeight: 700 }}
+                        >
                           {customerDetails &&
-                          customerDetails.payments.gst_amount
-                            ? "₹" + customerDetails.payments.gst_amount
+                          customerDetails.payments.total_amount
+                            ? "₹" + customerDetails.payments.total_amount
                             : "-"}
                         </p>
                       </Col>
@@ -3965,14 +4227,23 @@ export default function Customers() {
                     <Row>
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">Tax Type</p>
+                          <p className="customerdetails_rowheading">
+                            Gst Amount
+                          </p>
                         </div>
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {customerDetails && customerDetails.payments.tax_type
-                            ? customerDetails.payments.tax_type
-                            : "-"}
+                          {customerDetails?.payments?.gst_amount ? (
+                            <>
+                              ₹{customerDetails.payments.gst_amount}{" "}
+                              <span style={{ fontSize: "11px" }}>
+                                ({customerDetails.payments.tax_type || "-"})
+                              </span>
+                            </>
+                          ) : (
+                            "-"
+                          )}
                         </p>
                       </Col>
                     </Row>
@@ -3981,15 +4252,17 @@ export default function Customers() {
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
                           <p className="customerdetails_rowheading">
-                            Total Fees
+                            Balance Amount
                           </p>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">
-                          {customerDetails &&
-                          customerDetails.payments.total_amount
-                            ? "₹" + customerDetails.payments.total_amount
+                        <p
+                          className="customerdetails_text"
+                          style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
+                        >
+                          {customerDetails && customerDetails.balance_amount
+                            ? "₹" + customerDetails.balance_amount
                             : "-"}
                         </p>
                       </Col>
@@ -4003,7 +4276,7 @@ export default function Customers() {
               Transaction History
             </p>
 
-            <div>
+            <div style={{ marginBottom: "30px" }}>
               {paymentHistory.length >= 1 ? (
                 <div style={{ marginTop: "12px", marginBottom: "20px" }}>
                   <Collapse
@@ -4013,7 +4286,7 @@ export default function Customers() {
                   >
                     {paymentHistory.map((item, index) => (
                       <Collapse.Panel
-                        key={item.id || index} // unique key
+                        key={index + 1} // unique key
                         header={
                           <div
                             style={{
@@ -4035,12 +4308,12 @@ export default function Customers() {
                               <div style={{ display: "flex", gap: "12px" }}>
                                 <Button
                                   className="customer_finance_rejectbutton"
-                                  // onClick={() => handleFinaceReject(item)}
                                   onClick={() => {
                                     setIsShowFinanceRejectComment(true);
                                     setFinanceRejectCommentError(
                                       addressValidator(financeRejectComment)
                                     );
+                                    setRejectTransItem(item);
                                     setTimeout(() => {
                                       const container = document.getElementById(
                                         "customer_financereject_comment_container"
@@ -4068,13 +4341,23 @@ export default function Customers() {
                                 )}
                               </div>
                             ) : item.payment_status === "Rejected" ? (
-                              <p style={{ color: "#d32f2f", fontWeight: 500 }}>
-                                Rejected
-                              </p>
+                              <div className="customer_trans_statustext_container">
+                                <FaRegCircleXmark color="#d32f2f" />
+                                <p
+                                  style={{ color: "#d32f2f", fontWeight: 500 }}
+                                >
+                                  Rejected
+                                </p>
+                              </div>
                             ) : (
-                              <p style={{ color: "#3c9111", fontWeight: 500 }}>
-                                Verified
-                              </p>
+                              <div className="customer_trans_statustext_container">
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p
+                                  style={{ color: "#3c9111", fontWeight: 500 }}
+                                >
+                                  Verified
+                                </p>
+                              </div>
                             )}
                           </div>
                         }
@@ -4200,6 +4483,34 @@ export default function Customers() {
                               </Row>
                             </Col>
                           </Row>
+
+                          {item.payment_status === "Rejected" && (
+                            <Row
+                              gutter={16}
+                              style={{
+                                marginTop: "12px",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <Col span={12}></Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Rejected Reason
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.reason}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+                          )}
                         </div>
                       </Collapse.Panel>
                     ))}
@@ -4241,6 +4552,7 @@ export default function Customers() {
                       <Button
                         type="primary"
                         className="customer_financereject_submitbutton"
+                        onClick={handleFinaceReject}
                       >
                         Submit
                       </Button>
@@ -4250,6 +4562,421 @@ export default function Customers() {
               )}
             </div>
           </div>
+        ) : drawerContentStatus === "Update Payment" ? (
+          <>
+            <div className="customer_statusupdate_adddetailsContainer">
+              <p style={{ fontWeight: 600, color: "#333", fontSize: "16px" }}>
+                Transaction History
+              </p>
+
+              <div>
+                {paymentHistory.length >= 1 ? (
+                  <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                    <Collapse
+                      activeKey={collapseDefaultKey}
+                      onChange={(keys) => setCollapseDefaultKey(keys)}
+                      className="assesmntresult_collapse"
+                    >
+                      {paymentHistory.map((item, index) => (
+                        <Collapse.Panel
+                          key={index + 1} // unique key
+                          header={
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                width: "100%",
+                                fontSize: "13px",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>
+                                Transaction Date -{" "}
+                                <span style={{ fontWeight: "500" }}>
+                                  {moment(item.invoice_date).format(
+                                    "DD/MM/YYYY"
+                                  )}
+                                </span>
+                              </span>
+
+                              {item.payment_status === "Rejected" ? (
+                                <div className="customer_trans_statustext_container">
+                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <p
+                                    style={{
+                                      color: "#d32f2f",
+                                    }}
+                                  >
+                                    Rejected
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="customer_trans_statustext_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p
+                                    style={{
+                                      color: "#3c9111",
+                                    }}
+                                  >
+                                    Verified
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          }
+                        >
+                          <div>
+                            <Row gutter={16} style={{ marginTop: "6px" }}>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Invoice Date
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {moment(item.invoice_date).format(
+                                        "DD/MM/YYYY"
+                                      )}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Invoice Number
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.invoice_number}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            <Row gutter={16} style={{ marginTop: "16px" }}>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Payment Mode
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.payment_mode}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Convenience Fees
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {"₹" + item.convenience_fees}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            <Row gutter={16} style={{ marginTop: "16px" }}>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Paid Amount
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p
+                                      className="customerdetails_text"
+                                      style={{
+                                        color: "#3c9111",
+                                        fontWeight: 500,
+                                      }}
+                                    >
+                                      {"₹" + item.amount}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Payment Screenshot
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <button
+                                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                                      onClick={() => {
+                                        setIsOpenPaymentScreenshotModal(true);
+                                        setTransactionScreenshot(
+                                          item.payment_screenshot
+                                        );
+                                      }}
+                                    >
+                                      <FaRegEye size={16} /> View screenshot
+                                    </button>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            {item.payment_status === "Rejected" && (
+                              <Row
+                                gutter={16}
+                                style={{
+                                  marginTop: "12px",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <Col span={12}></Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Rejected Reason
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.reason}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            )}
+                          </div>
+                        </Collapse.Panel>
+                      ))}
+                    </Collapse>
+                  </div>
+                ) : (
+                  <p className="customer_trainerhistory_nodatatext">
+                    No Data found
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div className="customer_statusupdate_adddetailsContainer">
+              <p className="customer_statusupdate_adddetails_heading">
+                Payment Details
+              </p>
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px", marginBottom: "30px" }}
+              >
+                <Col span={8}>
+                  <CommonInputField
+                    label="Fees"
+                    required={true}
+                    type="number"
+                    value={subTotal}
+                    disabled={true}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Tax Type"
+                    required={true}
+                    options={[
+                      { id: 1, name: "GST (18%)" },
+                      { id: 2, name: "SGST (18%)" },
+                      { id: 3, name: "IGST (18%)" },
+                      { id: 4, name: "VAT (18%)" },
+                      { id: 5, name: "No tax" },
+                    ]}
+                    value={taxType}
+                    error={taxTypeError}
+                    height="41px"
+                    disabled={true}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label="Total Amount"
+                    required={true}
+                    disabled
+                    value={amount}
+                  />
+                </Col>
+              </Row>
+            </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div className="customer_statusupdate_adddetailsContainer">
+              <p className="customer_statusupdate_adddetails_heading">
+                Update Rejected Payment
+              </p>
+
+              <Row gutter={16} style={{ marginTop: "20px" }}>
+                <Col span={8}>
+                  <CommonInputField
+                    label="Pay Amount"
+                    required={true}
+                    onChange={handlePaidNow}
+                    value={paidNow}
+                    error={paidNowError}
+                    errorFontSize="10px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Payment Mode"
+                    required={true}
+                    options={[
+                      { id: 1, name: "Cash" },
+                      { id: 2, name: "Card" },
+                      { id: 3, name: "Bank" },
+                      { id: 4, name: "UPI" },
+                      { id: 5, name: "Razorpay" },
+                    ]}
+                    onChange={handlePaymentType}
+                    value={paymentMode}
+                    error={paymentModeError}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label="Convenience fees"
+                    required={true}
+                    value={convenienceFees}
+                    disabled={true}
+                    type="number"
+                  />
+                </Col>
+              </Row>
+
+              <Row gutter={16} style={{ marginTop: "40px" }}>
+                <Col span={8}>
+                  <CommonMuiDatePicker
+                    label="Payment Date"
+                    required={true}
+                    onChange={(value) => {
+                      setPaymentDate(value);
+                      if (paymentValidationTrigger) {
+                        setPaymentDateError(selectValidator(value));
+                      }
+                    }}
+                    value={paymentDate}
+                    error={paymentDateError}
+                  />
+                </Col>
+                <Col span={16}>
+                  <ImageUploadCrop
+                    label="Payment Screenshot"
+                    aspect={1}
+                    maxSizeMB={1}
+                    required={true}
+                    value={paymentScreenShotBase64}
+                    onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                    onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+                  />
+                  {paymentScreenShotError && (
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#d32f2f",
+                        marginTop: 4,
+                      }}
+                    >
+                      {`Payment Screenshot ${paymentScreenShotError}`}
+                    </p>
+                  )}
+                </Col>
+              </Row>
+            </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div className="customer_statusupdate_adddetailsContainer">
+              <p className="customer_statusupdate_adddetails_heading">
+                Balance Amount Details
+              </p>
+
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px", marginBottom: "30px" }}
+              >
+                <Col span={8}>
+                  <CommonInputField
+                    label="Balance Amount"
+                    required={true}
+                    value={balanceAmount}
+                    disabled={true}
+                    type="number"
+                  />
+                </Col>
+                {isShowDueDate ? (
+                  <Col span={8}>
+                    <CommonMuiDatePicker
+                      label="Next Due Date"
+                      onChange={(value) => {
+                        setDueDate(value);
+                        setDueDateError(selectValidator(value));
+                      }}
+                      value={dueDate}
+                      error={dueDateError}
+                      disablePreviousDates={true}
+                    />
+                  </Col>
+                ) : (
+                  ""
+                )}
+              </Row>
+
+              <div className="customer_paymentreject_buttoncontainer">
+                {updateButtonLoading ? (
+                  <Button
+                    type="primary"
+                    className="customer_paymentreject_loadingbutton"
+                  >
+                    <CommonSpinner />
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    className="customer_paymentreject_button"
+                    onClick={handleUpdatePaymentTransaction}
+                  >
+                    Update Payment
+                  </Button>
+                )}
+              </div>
+            </div>
+          </>
         ) : drawerContentStatus === "Student Verify" ? (
           <>
             <div className="customer_statusupdate_adddetailsContainer">
@@ -4278,54 +5005,27 @@ export default function Customers() {
                     />
                   </div>
 
-                  <div style={{ position: "relative", marginBottom: "20px" }}>
-                    <p className="trainer_registration_signaturelabel">
-                      Proof Communication{" "}
-                      <span style={{ color: "#d32f2f" }}>*</span>
-                    </p>
-                    <div style={{ position: "relative" }}>
-                      <Upload
-                        style={{ width: "100%", marginTop: "6px" }}
-                        beforeUpload={(file) => {
-                          return false; // Prevent auto-upload
+                  <div style={{ marginBottom: "20px" }}>
+                    <ImageUploadCrop
+                      label="Proof Communication"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={studentVerifyProofBase64}
+                      onChange={(base64) => setStudentVerifyProofBase64(base64)}
+                      onErrorChange={setStudentVerifyProofError}
+                    />
+                    {studentVerifyProofError && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#d32f2f",
+                          marginTop: 4,
                         }}
-                        accept=".png,.jpg,.jpeg"
-                        onChange={handleStudentVerifyProof}
-                        fileList={studentVerifyProofArray}
-                        multiple={false}
                       >
-                        <Button
-                          icon={<UploadOutlined />}
-                          className="leadmanager_payment_screenshotbutton"
-                          style={{ borderRadius: "4px" }}
-                        >
-                          Choose file
-                          <span style={{ fontSize: "10px" }}>
-                            (PNG, JPEG, & PNG)
-                          </span>
-                        </Button>
-                      </Upload>{" "}
-                      {studentVerifyProofError && (
-                        <p className="trainer_registration_signatureerror">
-                          {studentVerifyProofError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: studentVerifyCommentsError ? "20px" : "12px",
-                      // marginBottom:
-                      //   studentVerifyProofArray.length >= 1 ? "80px" : "0px",
-                    }}
-                  >
-                    <Checkbox
-                      onChange={(e) => setIsSatisfied(e.target.checked)}
-                      checked={isSatisfied}
-                    >
-                      Satisfied
-                    </Checkbox>
+                        {`Proof Screenshot ${studentVerifyProofError}`}
+                      </p>
+                    )}
                   </div>
                 </Col>
               </Row>
@@ -4531,37 +5231,33 @@ export default function Customers() {
                     />
                   </div>
 
-                  <div style={{ position: "relative", marginTop: "38px" }}>
-                    <p className="trainer_registration_signaturelabel">
-                      Proof Communication{" "}
-                      <span style={{ color: "#d32f2f" }}>*</span>
-                    </p>
-                    <div style={{ position: "relative" }}>
-                      <Upload
-                        style={{ width: "100%", marginTop: "6px" }}
-                        beforeUpload={(file) => {
-                          return false; // Prevent auto-upload
+                  <div
+                    style={{
+                      position: "relative",
+                      marginTop: "40px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <ImageUploadCrop
+                      label="Proof Communication"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={assignTrainerProofBase64}
+                      onChange={(base64) => setAssignTrainerProofBase64(base64)}
+                      onErrorChange={setAssignTrainerProofError}
+                    />
+                    {assignTrainerProofError && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#d32f2f",
+                          marginTop: 4,
                         }}
-                        accept=".png,.jpg,.jpeg"
-                        onChange={handleAssignTrainerProof}
-                        fileList={assignTrainerProofArray}
-                        multiple={false}
                       >
-                        <Button
-                          icon={<UploadOutlined />}
-                          className="leadmanager_payment_screenshotbutton"
-                          style={{ borderRadius: "4px" }}
-                        >
-                          Choose file
-                          <span style={{ fontSize: "10px" }}>(PNG)</span>
-                        </Button>
-                      </Upload>{" "}
-                      {assignTrainerProofError && (
-                        <p className="trainer_registration_signatureerror">
-                          {assignTrainerProofError}
-                        </p>
-                      )}
-                    </div>
+                        {`Proof Screenshot ${assignTrainerProofError}`}
+                      </p>
+                    )}
                   </div>
                 </Col>
               </Row>
@@ -4984,37 +5680,27 @@ export default function Customers() {
                   </Col>
 
                   <Col span={12}>
-                    <div>
-                      <p className="customers_feedback_imagelabels">
-                        Add Attachment{" "}
-                        <span style={{ color: "#d32f2f" }}>*</span>
-                      </p>
-                      <div style={{ position: "relative" }}>
-                        <Upload
-                          style={{ width: "100%", marginTop: "6px" }}
-                          beforeUpload={(file) => {
-                            return false; // Prevent auto-upload
+                    <div style={{ marginTop: "16px" }}>
+                      <ImageUploadCrop
+                        label="Add Attachment"
+                        aspect={1}
+                        maxSizeMB={1}
+                        required={true}
+                        value={addattachmentBase64}
+                        onChange={(base64) => setAddattachmentBase64(base64)}
+                        onErrorChange={setAddattachmentError}
+                      />
+                      {addattachmentError && (
+                        <p
+                          style={{
+                            fontSize: "12px",
+                            color: "#d32f2f",
+                            marginTop: 4,
                           }}
-                          accept=".png"
-                          onChange={handleAddAttachment}
-                          fileList={addattachmentArray}
-                          multiple={false}
                         >
-                          <Button
-                            icon={<UploadOutlined />}
-                            className="leadmanager_payment_screenshotbutton"
-                            style={{ borderRadius: "4px" }}
-                          >
-                            Choose file
-                            <span style={{ fontSize: "10px" }}>(PNG)</span>
-                          </Button>
-                        </Upload>{" "}
-                        {addattachmentError && (
-                          <p className="trainer_registration_signatureerror">
-                            {addattachmentError}
-                          </p>
-                        )}
-                      </div>
+                          {`Attachment ${addattachmentError}`}
+                        </p>
+                      )}
                     </div>
                   </Col>
                 </Row>
@@ -5026,10 +5712,6 @@ export default function Customers() {
         ) : drawerContentStatus === "Add G-Review" ? (
           <>
             <div className="customer_statusupdate_adddetailsContainer">
-              {/* <p className="customer_statusupdate_adddetails_heading">
-                Certificate Details
-              </p> */}
-
               <Steps current={current} size="small">
                 <Step title="Add G-Review" />
                 <Step title="Certificate Details" />
@@ -5037,36 +5719,18 @@ export default function Customers() {
               </Steps>
 
               {current === 0 ? (
-                <div style={{ marginTop: "22px" }}>
-                  <p className="customers_feedback_imagelabels">
-                    Google Review Screenshot{" "}
-                  </p>
-                  <div style={{ position: "relative" }}>
-                    <Upload
-                      style={{ width: "100%", marginTop: "6px" }}
-                      beforeUpload={(file) => {
-                        return false; // Prevent auto-upload
-                      }}
-                      accept=".png"
-                      onChange={handleGoogleFeedback}
-                      fileList={googleFeedbackArray}
-                      multiple={false}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        className="leadmanager_payment_screenshotbutton"
-                        style={{ borderRadius: "4px" }}
-                      >
-                        Choose file
-                        <span style={{ fontSize: "10px" }}>(PNG)</span>
-                      </Button>
-                    </Upload>{" "}
-                    {googleFeedbackError && (
-                      <p className="trainer_registration_signatureerror">
-                        {googleFeedbackError}
-                      </p>
-                    )}
-                  </div>
+                <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+                  <ImageUploadCrop
+                    label="Google Review Screenshot"
+                    aspect={1}
+                    maxSizeMB={1}
+                    required={false}
+                    value={googleFeedbackBase64}
+                    onChange={(base64) => {
+                      setIsGoogleReviewChange(true);
+                      setGoogleFeedbackBase64(base64);
+                    }}
+                  />
                 </div>
               ) : (
                 ""
@@ -5095,28 +5759,95 @@ export default function Customers() {
                           }
                         }}
                         icon={<p style={{ fontSize: "11px" }}>Months</p>}
+                        disabled={
+                          customerDetails?.is_certificate_generated === 1
+                        }
                       />
                     </Col>
                     <Col span={12}>
-                      <CommonMuiDatePicker
-                        label="Course Completion Date"
+                      <CommonMuiMonthPicker
+                        label="Course Completion Month"
                         required={true}
                         onChange={(value) => {
-                          setCourseCompleteDate(value);
-                          setIsCertChange(true);
-                          setCourseCompleteDateError(selectValidator(value));
+                          console.log(value, "monthhh");
+                          setCertMonth(value);
+                          setCertMonthError(selectValidator(value));
                         }}
-                        value={courseCompleteDate}
-                        disablePreviousDates={false}
-                        error={courseCompleteDateError}
+                        value={certMonth}
+                        error={certMonthError}
+                        disabled={
+                          customerDetails?.is_certificate_generated === 1
+                        }
                       />
                     </Col>
                   </Row>
 
+                  <Row gutter={16} style={{ marginTop: "30px" }}>
+                    <Col span={12}>
+                      <CommonInputField
+                        label="Candidate Name"
+                        required={true}
+                        onChange={(e) => {
+                          setCertName(e.target.value);
+                          setCertNameError(nameValidator(e.target.value));
+                        }}
+                        value={certName}
+                        error={certNameError}
+                        disabled={
+                          customerDetails?.is_certificate_generated === 1
+                        }
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <CommonInputField
+                        label="Course Name"
+                        required={true}
+                        onChange={(e) => {
+                          setCertCourseName(e.target.value);
+                          setCertCourseNameError(
+                            addressValidator(e.target.value)
+                          );
+                        }}
+                        value={certCourseName}
+                        error={certCourseNameError}
+                        disabled={
+                          customerDetails?.is_certificate_generated === 1
+                        }
+                      />
+                    </Col>
+                  </Row>
                   <div className="customer_generatecert_button_container">
-                    <Button className="customer_generatecert_button">
-                      Generate Certificate
-                    </Button>
+                    {isCertGenerated === false ? (
+                      <>
+                        {generateCertLoading ? (
+                          <Button className="customer_generatecert_loading_button">
+                            <CommonSpinner />
+                          </Button>
+                        ) : (
+                          <Button
+                            className="customer_generatecert_button"
+                            onClick={handleGenerateCert}
+                          >
+                            Generate Certificate
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {generateCertLoading ? (
+                          <Button className="customer_viewcert_loadingbutton">
+                            <CommonSpinner />
+                          </Button>
+                        ) : (
+                          <Button
+                            className="customer_viewcert_button"
+                            onClick={handleViewCert}
+                          >
+                            View Certificate
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </>
               ) : (
@@ -5124,90 +5855,29 @@ export default function Customers() {
               )}
 
               {current === 2 ? (
-                <div style={{ marginTop: "12px" }}>
-                  <p className="customers_feedback_imagelabels">
-                    Linkedin Review Screenshot{" "}
-                  </p>
-                  <div style={{ position: "relative" }}>
-                    <Upload
-                      style={{ width: "100%", marginTop: "6px" }}
-                      beforeUpload={(file) => {
-                        return false; // Prevent auto-upload
-                      }}
-                      accept=".png"
-                      onChange={handleLinedinFeedback}
-                      fileList={linkedinFeedbackArray}
-                      multiple={false}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        className="leadmanager_payment_screenshotbutton"
-                        style={{ borderRadius: "4px" }}
-                      >
-                        Choose file
-                        <span style={{ fontSize: "10px" }}>(PNG)</span>
-                      </Button>
-                    </Upload>{" "}
-                    {linkedinFeedbackError && (
-                      <p className="trainer_registration_signatureerror">
-                        {linkedinFeedbackError}
-                      </p>
-                    )}
-                  </div>
+                <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+                  <ImageUploadCrop
+                    label="Linkedin Review Screenshot"
+                    aspect={1}
+                    maxSizeMB={1}
+                    required={false}
+                    value={linkedinFeedbackBase64}
+                    onChange={(base64) => {
+                      setLinkedinFeedbackBase64(base64);
+                    }}
+                  />
                 </div>
               ) : (
                 ""
               )}
             </div>
           </>
-        ) : drawerContentStatus === "Add L-Review" ? (
-          <>
-            <div className="customer_statusupdate_adddetailsContainer">
-              <p className="customer_statusupdate_adddetails_heading">
-                Add Feedback Details
-              </p>
-
-              <div style={{ marginTop: "12px" }}>
-                <p className="customers_feedback_imagelabels">
-                  Linkedin Review Screenshot{" "}
-                  <span style={{ color: "#d32f2f" }}>*</span>
-                </p>
-                <div style={{ position: "relative" }}>
-                  <Upload
-                    style={{ width: "100%", marginTop: "6px" }}
-                    beforeUpload={(file) => {
-                      return false; // Prevent auto-upload
-                    }}
-                    accept=".png,.jpg,.jpeg"
-                    onChange={handleLinedinFeedback}
-                    fileList={linkedinFeedbackArray}
-                    multiple={false}
-                  >
-                    <Button
-                      icon={<UploadOutlined />}
-                      className="leadmanager_payment_screenshotbutton"
-                      style={{ borderRadius: "4px" }}
-                    >
-                      Choose file
-                      <span style={{ fontSize: "10px" }}>
-                        (PNG, JPEG, & PNG)
-                      </span>
-                    </Button>
-                  </Upload>{" "}
-                  {linkedinFeedbackError && (
-                    <p className="trainer_registration_signatureerror">
-                      {linkedinFeedbackError}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
         ) : (
           ""
         )}
 
-        {drawerContentStatus === "Finance Verify" ? (
+        {drawerContentStatus === "Finance Verify" ||
+        drawerContentStatus === "Update Payment" ? (
           ""
         ) : (
           <div className="leadmanager_tablefiler_footer">
@@ -5629,6 +6299,70 @@ export default function Customers() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+        />
+      </Modal>
+
+      <Modal
+        open={isOpenClassCompleteModal}
+        onCancel={() => setIsOpenClassCompleteModal(false)}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+        <p className="customer_classcompletemodal_text">
+          The Candidate{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "13px" }}>
+            {customerDetails && customerDetails.name
+              ? customerDetails.name
+              : ""}
+          </span>{" "}
+          has completed the class{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "13px" }}>
+            100%
+          </span>{" "}
+          and will be moved to the Passed Out process.
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => setIsOpenClassCompleteModal(false)}
+          >
+            No
+          </Button>
+          {classCompleteLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={handleCompleteClass}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={isOpenViewCertModal}
+        onCancel={() => setIsOpenViewCertModal(false)}
+        footer={false}
+        width="68%"
+        style={{ marginBottom: "20px" }}
+        zIndex={1100}
+        centered
+      >
+        <CommonCertificateViewer
+          htmlTemplate={certHtmlContent}
+          candidateName={
+            customerDetails && customerDetails.name ? customerDetails.name : "-"
+          }
         />
       </Modal>
     </div>

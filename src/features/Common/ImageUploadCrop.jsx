@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Button, Modal } from "antd";
 import ImgCrop from "antd-img-crop";
 import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -10,6 +10,7 @@ export default function ImageUploadCrop({
   aspect = 1,
   maxSizeMB = 1,
   allowedTypes = ["image/png", "image/jpeg", "image/jpg"],
+  value, // <-- base64 from parent/API
   onChange,
   onErrorChange,
   required = false,
@@ -19,8 +20,26 @@ export default function ImageUploadCrop({
   const [previewImage, setPreviewImage] = useState("");
 
   const reportError = (err) => {
-    onErrorChange?.(err); // ✅ only parent holds error state
+    onErrorChange?.(err);
   };
+
+  // 🔹 Sync base64 from parent/API into Upload list
+  useEffect(() => {
+    if (value) {
+      setPreviewImage(`data:image/jpeg;base64,${value}`);
+      setFileList([
+        {
+          uid: "-1",
+          name: "screenshot.jpg",
+          status: "done",
+          url: `data:image/jpeg;base64,${value}`,
+        },
+      ]);
+    } else {
+      setPreviewImage("");
+      setFileList([]);
+    }
+  }, [value]);
 
   const handleFileSelect = (file) => {
     const isValidType = allowedTypes.includes(file.type);
@@ -44,9 +63,7 @@ export default function ImageUploadCrop({
     reader.onload = () => {
       const base64String = reader.result.split(",")[1];
       onChange?.(base64String);
-      setPreviewImage(reader.result);
-      setFileList([file]);
-      reportError(""); // ✅ clear parent error
+      reportError("");
       CommonMessage("success", "Screenshot uploaded");
     };
 
@@ -55,7 +72,10 @@ export default function ImageUploadCrop({
 
   return (
     <div style={{ position: "relative" }}>
-      <p className="imgcrop_label" style={{ fontSize: "13px" }}>
+      <p
+        className={value ? "imgcrop_label_withvalue" : "imgcrop_label"}
+        style={{ fontSize: "13px" }}
+      >
         {label} {required && <span style={{ color: "#d32f2f" }}>*</span>}
       </p>
 
@@ -114,8 +134,6 @@ export default function ImageUploadCrop({
           </Button>
         </Upload>
       </ImgCrop>
-
-      {/* ❌ Removed local error message display, parent handles it */}
 
       <Modal
         title="Preview Image"

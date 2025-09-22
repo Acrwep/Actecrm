@@ -733,6 +733,34 @@
   word-break: keep-all;
   overflow-wrap: break-word;
 }
+.customers_finance_updatepayment_button {
+  background-color: #eb6d4b !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  margin-top: 1px;
+}
+.customer_paymentreject_buttoncontainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.customer_paymentreject_button {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  width: 140px !important;
+}
+.customer_paymentreject_loadingbutton {
+  opacity: 0.7;
+  width: 140px !important;
+}
 .customer_trainerreject_button {
   background-color: #d32f2f;
   border-radius: 6px;
@@ -822,6 +850,41 @@
 .customers_classgoing_completedtext {
   font-size: 10px;
   color: #333;
+}
+.customer_classcompletemodal_heading {
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 30px;
+}
+.customer_classcompletemodal_text {
+  color: gray;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 500;
+  line-height: 22px;
+  word-spacing: 2px;
+}
+.customer_classcompletemodal_button_container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.customer_classcompletemodal_cancelbutton {
+  width: 90px;
+}
+.customer_classcompletemodal_cancelbutton:hover {
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+}
+.customer_classcompletemodal_okbutton {
+  width: 90px;
+}
+.customer_classcompletemodal_loading_okbutton {
+  opacity: 0.7;
+  width: 90px;
 }
 .customers_addfeedbackbutton {
   background-color: #fd79a8 !important;
@@ -937,6 +1000,12 @@
   color: #3c9111 !important;
   border-color: #3c911111 !important;
 }
+.customer_trans_statustext_container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
 .customer_finance_loadingverifybutton {
   font-size: 12px;
   padding: 0px 12px !important;
@@ -1022,10 +1091,46 @@
   background-color: #5b69ca !important;
   color: #fff !important;
   border-color: #5b69ca !important;
+  width: 160px;
+  font-weight: 500;
 }
 .customer_generatecert_button:hover {
   border-color: #5b69ca !important;
   color: #fff !important;
+}
+.customer_generatecert_loading_button {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+  opacity: 0.7;
+  width: 160px;
+  cursor: default;
+}
+.customer_generatecert_loading_button:hover {
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}
+.customer_viewcert_button {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+  width: 140px;
+  font-weight: 500;
+}
+.customer_viewcert_button:hover {
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}
+.customer_viewcert_loadingbutton {
+  font-size: 13px !important;
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  border-color: #5b69ca !important;
+  width: 140px;
+  font-weight: 500;
+  opacity: 0.7;
 }
 .customer_stepperbuttons {
   font-size: 13px;
@@ -1135,6 +1240,13 @@
   color: #d32f2f;
   font-size: 11px;
   padding: 4px 20px;
+}
+.customer_registration_terms_text {
+  color: #5b69ca;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: -9px;
+  margin-top: 2px;
 }
 /* customer update styles */
 .customerupdate_drawer .ant-drawer-body {

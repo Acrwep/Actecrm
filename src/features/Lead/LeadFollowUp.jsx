@@ -18,7 +18,9 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CommonDnd from "../Common/CommonDnd";
 import { IoIosClose } from "react-icons/io";
 import {
+  createArea,
   createLead,
+  getAllAreas,
   getBranches,
   getLeadFollowUps,
   getTechnologies,
@@ -34,6 +36,8 @@ import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
+import { FaRegUser } from "react-icons/fa";
+import { MdOutlineDateRange } from "react-icons/md";
 import { SlGlobe } from "react-icons/sl";
 import { BiMapPin } from "react-icons/bi";
 import {
@@ -65,6 +69,8 @@ export default function LeadFollowUp({
   batchTrackOptions,
   courseOptions,
   setCourseOptions,
+  areaOptions,
+  setAreaOptions,
 }) {
   const chatBoxRef = useRef();
   const dateFilterOptions = [
@@ -125,9 +131,10 @@ export default function LeadFollowUp({
   const [stateOptions, setStateOptions] = useState([]);
   const [stateId, setStateId] = useState("");
   const [stateError, setStateError] = useState("");
-  const [cityOptions, setCityOptions] = useState([]);
-  const [cityId, setCityId] = useState("");
-  const [cityError, setCityError] = useState("");
+  const [areaId, setAreaId] = useState("");
+  const [areaError, setAreaError] = useState("");
+  const [isAreaFocused, setIsAreaFocused] = useState(false);
+  const [isOpenAddAreaModal, setIsOpenAddAreaModal] = useState(false);
   const [primaryCourse, setPrimaryCourse] = useState(null);
   const [primaryCourseError, setPrimaryCourseError] = useState("");
   const [isPrimaryCourseFocused, setIsPrimaryCourseFocused] = useState(false);
@@ -164,6 +171,9 @@ export default function LeadFollowUp({
   const [courseName, setCourseName] = useState("");
   const [courseNameError, setCourseNameError] = useState("");
   const [addCourseLoading, setAddCourseLoading] = useState(false);
+  //add area usestates
+  const [areaName, setAreaName] = useState("");
+  const [areaNameError, setAreaNameError] = useState("");
 
   const [columns, setColumns] = useState([
     { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
@@ -351,13 +361,22 @@ export default function LeadFollowUp({
     }
   };
 
+  const getAreasData = async () => {
+    try {
+      const response = await getAllAreas();
+      setAreaOptions(response?.data?.data || []);
+    } catch (error) {
+      setAreaOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   //onchange functions
   const handleCountry = (e) => {
     const value = e.target.value;
     console.log(value, countryOptions);
     setCountryId(value);
     setStateId("");
-    setCityId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
 
@@ -375,18 +394,7 @@ export default function LeadFollowUp({
   const handleState = (e) => {
     const value = e.target.value;
     setStateId(value);
-    setCityId("");
-    const selectedState = stateOptions.find((f) => f.id === value);
-    console.log("selected state", value, selectedState);
-
-    const cityList = City.getCitiesOfState(countryId, selectedState.id);
-
-    const updateCities = cityList.map((city) => {
-      return { ...city, id: city.name };
-    });
-    console.log(updateCities, "updateCities");
-    setCityOptions(updateCities);
-
+    setAreaId("");
     if (validationTrigger) {
       setStateError(selectValidator(value));
     }
@@ -431,7 +439,9 @@ export default function LeadFollowUp({
     const payload = {
       lead_history_id: leadHistoryId,
       comments: newComment,
-      next_follow_up_date: nxtFollowupDate?formatToBackendIST(nxtFollowupDate):null,
+      next_follow_up_date: nxtFollowupDate
+        ? formatToBackendIST(nxtFollowupDate)
+        : null,
       lead_status_id: actionId,
       lead_id: leadId,
       updated_by:
@@ -488,7 +498,7 @@ export default function LeadFollowUp({
     const whatsAppValidate = mobileValidator(whatsApp);
     const countryValidate = selectValidator(countryId);
     const stateValidate = selectValidator(stateId);
-    const cityValidate = selectValidator(cityId);
+    const cityValidate = selectValidator(areaId);
     const primaryCourseValidate = selectValidator(primaryCourse);
     const primaryFeesValidate = selectValidator(primaryFees);
     const leadTypeValidate = selectValidator(leadType);
@@ -504,7 +514,7 @@ export default function LeadFollowUp({
     setWhatsAppError(whatsAppValidate);
     setCountryError(countryValidate);
     setStateError(stateValidate);
-    setCityError(cityValidate);
+    setAreaError(cityValidate);
     setPrimaryCourseError(primaryCourseValidate);
     setPrimaryFeesError(primaryFeesValidate);
     setLeadTypeError(leadTypeValidate);
@@ -555,7 +565,7 @@ export default function LeadFollowUp({
       email: email,
       country: countryId,
       state: stateId,
-      district: cityId,
+      district: areaId,
       primary_course_id: primaryCourse,
       primary_fees: primaryFees,
       price_category: priceCategory(primaryFees),
@@ -569,7 +579,6 @@ export default function LeadFollowUp({
       expected_join_date: expectDateJoin
         ? formatToBackendIST(expectDateJoin)
         : null,
-      expected_join_date: formatToBackendIST(expectDateJoin),
       region_id: regionId,
       branch_id: branch,
       batch_track_id: batchTrack,
@@ -620,8 +629,40 @@ export default function LeadFollowUp({
         setAddCourseLoading(false);
         setIsOpenAddCourseModal(false);
         setCourseName("");
-        setCountryError("");
+        setCourseNameError("");
         getCourseData();
+      }, 300);
+    } catch (error) {
+      setAddCourseLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleCreateArea = async () => {
+    const areaValidate = addressValidator(courseName);
+
+    setAreaNameError(areaValidate);
+
+    if (areaValidate) return;
+
+    const payload = {
+      area_name: courseName,
+    };
+    setAddCourseLoading(true);
+
+    try {
+      await createArea(payload);
+      CommonMessage("success", "Area Created");
+      setTimeout(() => {
+        setAddCourseLoading(false);
+        setIsOpenAddAreaModal(false);
+        setAreaName("");
+        setAreaNameError("");
+        getAreasData();
       }, 300);
     } catch (error) {
       setAddCourseLoading(false);
@@ -676,12 +717,24 @@ export default function LeadFollowUp({
   const handlePrevious = () => {
     if (currentIndex > 0) {
       updateDetailsByIndex(currentIndex - 1);
+      setTimeout(() => {
+        const container = document.getElementById(
+          "leadfollowup_leaddetails_heading"
+        );
+        container.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
   };
 
   const handleNext = () => {
     if (currentIndex < followUpData.length - 1) {
       updateDetailsByIndex(currentIndex + 1);
+      setTimeout(() => {
+        const container = document.getElementById(
+          "leadfollowup_leaddetails_heading"
+        );
+        container.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
   };
 
@@ -724,12 +777,13 @@ export default function LeadFollowUp({
     setCountryError("");
     setStateId(null);
     setStateError("");
-    setCityId(null);
-    setCityError("");
+    setAreaId(null);
+    setAreaError("");
     setPrimaryCourse(null);
     setPrimaryCourseError("");
     setPrimaryFees("");
     setPrimaryFeesError("");
+    setIsShowSecondaryCourse(false);
     setSecondaryCourse(null);
     setSecondaryFees("");
     setLeadType(null);
@@ -1157,19 +1211,48 @@ export default function LeadFollowUp({
             />
           </Col>
           <Col span={8}>
-            <CommonSelectField
-              label="City"
-              value={cityId}
-              onChange={(e) => {
-                setCityId(e.target.value);
-                if (validationTrigger) {
-                  setCityError(selectValidator(e.target.value));
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Area"
+                  value={areaId}
+                  onChange={(e) => {
+                    setAreaId(e.target.value);
+                    if (validationTrigger) {
+                      setAreaError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={areaOptions}
+                  error={areaError}
+                  required={true}
+                  borderRightNone={true}
+                  onFocus={() => setIsAreaFocused(true)}
+                  onBlur={() => setIsAreaFocused(false)}
+                />
+              </div>
+
+              <div
+                className={
+                  areaError
+                    ? "leads_errorcourse_addcontainer"
+                    : isAreaFocused
+                    ? "leads_focusedcourse_addcontainer"
+                    : "leads_course_addcontainer"
                 }
-              }}
-              options={cityOptions}
-              error={cityError}
-              required={true}
-            />
+              >
+                <Tooltip
+                  placement="bottom"
+                  title="Add Area"
+                  className="leadtable_customertooltip"
+                >
+                  <MdAdd
+                    size={19}
+                    style={{ color: "#333333af", cursor: "pointer" }}
+                    onClick={() => setIsOpenAddAreaModal(true)}
+                  />
+                </Tooltip>
+              </div>
+            </div>
           </Col>
         </Row>
 
@@ -1236,7 +1319,7 @@ export default function LeadFollowUp({
           </Col>
           <Col span={8}>
             <Checkbox
-              value={isShowSecondaryCourse}
+              checked={isShowSecondaryCourse}
               onChange={(e) => {
                 setIsShowSecondaryCourse(e.target.checked);
                 if (e.target.checked === false) {
@@ -1510,6 +1593,78 @@ export default function LeadFollowUp({
         </div>
       </Modal>
 
+      {/* add area modal */}
+      <Modal
+        title="Add Area"
+        open={isOpenAddAreaModal}
+        onCancel={() => {
+          setIsOpenAddAreaModal(false);
+          setAreaName("");
+          setAreaNameError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddAreaModal(false);
+              setAreaName("");
+              setAreaNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleCreateArea}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonInputField
+            label="Area Name"
+            required={true}
+            onChange={(e) => {
+              setAreaName(e.target.value);
+              setAreaNameError(addressValidator(e.target.value));
+            }}
+            value={areaName}
+            error={areaNameError}
+          />
+        </div>
+
+        <div className="lead_course_instruction_container">
+          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
+          <p style={{ fontSize: "13px", marginTop: "2px" }}>
+            Make sure the area name remains exactly as{" "}
+            <span style={{ fontWeight: 600 }}>‘Google’</span>
+          </p>
+          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
+            Example:
+          </p>
+          <ul>
+            <li>Velachery</li>
+            <li>Perungudi</li>
+          </ul>
+        </div>
+      </Modal>
+
       <Drawer
         title="Lead Follow-Up"
         open={isOpenFollowUpDrawer}
@@ -1518,7 +1673,12 @@ export default function LeadFollowUp({
         style={{ position: "relative", paddingBottom: "65px" }}
         className="customer_statusupdate_drawer"
       >
-        <p className="leadfollowup_leaddetails_heading">Lead Details</p>
+        <p
+          className="leadfollowup_leaddetails_heading"
+          id="leadfollowup_leaddetails_heading"
+        >
+          Lead Details
+        </p>
         <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
           <Col span={12}>
             <Row>
@@ -1581,7 +1741,7 @@ export default function LeadFollowUp({
               </Col>
             </Row>
 
-            <Row style={{ marginTop: "12px" }}>
+            {/* <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <SlGlobe size={15} color="gray" />
@@ -1595,23 +1755,7 @@ export default function LeadFollowUp({
                     : "-"}
                 </p>
               </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <BiMapPin size={15} color="gray" />
-                  <p className="customerdetails_rowheading">State</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.state
-                    ? getStateName(leadDetails.country, leadDetails.state)
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
+            </Row> */}
 
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
@@ -1624,6 +1768,40 @@ export default function LeadFollowUp({
                 <p className="customerdetails_text">
                   {leadDetails && leadDetails.district
                     ? leadDetails.district
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.user_name
+                    ? leadDetails.user_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineDateRange size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Next Followup</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.next_follow_up_date
+                    ? moment(leadDetails.next_follow_up_date).format(
+                        "DD/MM/YYYY"
+                      )
                     : "-"}
                 </p>
               </Col>
@@ -1712,13 +1890,13 @@ export default function LeadFollowUp({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Status</p>
+                  <p className="customerdetails_rowheading">Lead Source</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_status
-                    ? leadDetails.lead_status
+                  {leadDetails && leadDetails.lead_type
+                    ? leadDetails.lead_type
                     : "-"}
                 </p>
               </Col>
@@ -1727,15 +1905,13 @@ export default function LeadFollowUp({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Next Followup</p>
+                  <p className="customerdetails_rowheading">Lead Status</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.next_follow_up_date
-                    ? moment(leadDetails.next_follow_up_date).format(
-                        "DD/MM/YYYY"
-                      )
+                  {leadDetails && leadDetails.lead_status
+                    ? leadDetails.lead_status
                     : "-"}
                 </p>
               </Col>

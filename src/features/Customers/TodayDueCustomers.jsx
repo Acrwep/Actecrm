@@ -225,15 +225,9 @@ export default function TodayDueCustomers() {
                   {text}
                 </Button>
               </div>
-            ) : text === "Awaiting G-Review" ? (
+            ) : text === "Passedout process" ? (
               <div>
-                <Button className="customers_status_awaitgreview_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Awaiting L-Review" ? (
-              <div>
-                <Button className="customers_status_awaitgreview_button">
+                <Button className="customers_status_awaitfeedback_button">
                   {text}
                 </Button>
               </div>
@@ -246,12 +240,13 @@ export default function TodayDueCustomers() {
             ) : text === "Rejected" ||
               text === "REJECTED" ||
               text === "Trainer Rejected" ||
+              text === "Payment Rejected" ||
               text === "Escalated" ||
               text === "Hold" ||
               text === "Partially Closed" ||
               text === "Discontinued" ||
               text === "Refund" ? (
-              <Button className="trainers_rejected_button">Rejected</Button>
+              <Button className="trainers_rejected_button">{text}</Button>
             ) : text === "Class Going" ? (
               <div style={{ display: "flex", gap: "12px" }}>
                 <Button className="customers_status_classgoing_button">

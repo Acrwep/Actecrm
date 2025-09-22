@@ -381,7 +381,13 @@ button:focus-visible {
 /* .ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
   position: absolute !important;
 } */
-
+.ant-upload-wrapper
+  .ant-upload-list
+  .ant-upload-list-item
+  .ant-upload-list-item-name {
+  color: #000000b4 !important;
+  font-weight: 400 !important;
+}
 /* antd steps styles */
 .ant-steps.ant-steps-small .ant-steps-item-icon {
   line-height: 22px !important;

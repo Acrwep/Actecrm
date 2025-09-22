@@ -346,10 +346,29 @@
   position: absolute;
   top: -48%;
 }
+.imgcrop_label_withvalue {
+  position: absolute;
+  top: -26%;
+}
 .imgcrop_uploadbutton {
   font-size: 11px !important;
 }
 .imgcrop_uploadbutton:hover {
   border-color: #5b69ca !important;
   color: #5b69ca !important;
+}
+
+/* common mui custom datepicker styles */
+.common_muicustomdatepicker_daterange_button {
+  border: 1px solid #d9d9d9 !important;
+  /* padding: 4px 40px !important; */
+  width: 320px !important;
+  height: 35px !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+  font-weight: 400 !important;
+}
+.common_muicustomdatepicker_daterange_button:hover {
+  background-color: transparent !important;
+  opacity: 1 !important;
+  border-color: rgba(128, 128, 128, 0.712) !important;
 }

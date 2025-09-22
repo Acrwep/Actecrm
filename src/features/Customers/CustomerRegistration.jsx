@@ -63,9 +63,6 @@ export default function CustomerRegistration() {
   const [courseOptions, setCourseOptions] = useState([]);
   const [course, setCourse] = useState(null);
   const [courseError, setCourseError] = useState("");
-  const [trainingModeOptions, setTrainingModeOptions] = useState([]);
-  const [trainingMode, setTrainingMode] = useState(null);
-  const [trainingModeError, setTrainingModeError] = useState("");
   const [batchTrackOptions, setBatchTrackOptions] = useState([]);
   const [batchTrack, setBatchTrack] = useState(null);
   const [batchTrackError, setBatchTrackError] = useState("");
@@ -99,20 +96,6 @@ export default function CustomerRegistration() {
     } catch (error) {
       setCourseOptions([]);
       console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getTrainingModeData();
-      }, 300);
-    }
-  };
-
-  const getTrainingModeData = async () => {
-    try {
-      const response = await getTrainingMode();
-      setTrainingModeOptions(response?.data?.result || []);
-    } catch (error) {
-      setTrainingModeOptions([]);
-      console.log("trainer mode error", error);
     } finally {
       setTimeout(() => {
         getBatchTrackData();
@@ -164,6 +147,9 @@ export default function CustomerRegistration() {
       setMobile(customerDetails.phone);
       setWhatsApp(customerDetails.whatsapp);
       setCourse(customerDetails.enrolled_course);
+      setBatchTrack(customerDetails.batch_track_id);
+      setBatchTiming(customerDetails.batch_timing_id);
+      setPlacementSupport(customerDetails.placement_support);
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerFullDetails(null);
@@ -407,7 +393,7 @@ export default function CustomerRegistration() {
       current_location: location,
       signature_image: signatureBase64,
       profile_image: profilePicture,
-      palcement_support: placementSupport,
+      placement_support: placementSupport,
     };
 
     try {
@@ -448,6 +434,7 @@ export default function CustomerRegistration() {
       customer_id: customer_id,
       status: "Awaiting Finance",
       status_date: formatToBackendIST(today),
+      updated_by: 211,
     };
     try {
       await inserCustomerTrack(payload);
@@ -643,6 +630,7 @@ export default function CustomerRegistration() {
                 }}
                 value={course}
                 error={courseError}
+                disabled={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
@@ -658,6 +646,7 @@ export default function CustomerRegistration() {
                 }}
                 value={batchTrack}
                 error={batchTrackError}
+                disabled={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
@@ -673,6 +662,7 @@ export default function CustomerRegistration() {
                 }}
                 value={batchTiming}
                 error={batchTimingError}
+                disabled={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
@@ -691,6 +681,7 @@ export default function CustomerRegistration() {
                 }}
                 value={placementSupport}
                 error={placementSupportError}
+                disabled={true}
               />
             </Col>
           </Row>
@@ -716,7 +707,7 @@ export default function CustomerRegistration() {
                   style={{ borderRadius: "4px" }}
                 >
                   Choose file
-                  <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
+                  <span style={{ fontSize: "10px" }}>(PNG)</span>
                 </Button>
               </Upload>{" "}
               <button
@@ -750,12 +741,7 @@ export default function CustomerRegistration() {
               I have read and agree to the
             </Checkbox>
             <p
-              style={{
-                cursor: "pointer",
-                color: "#5b69ca",
-                fontWeight: 500,
-                marginLeft: "-3px",
-              }}
+              className="customer_registration_terms_text"
               onClick={() => setIsOpenTermsModal(true)}
             >
               Terms and Conditions

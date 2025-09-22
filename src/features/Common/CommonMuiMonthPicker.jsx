@@ -1,18 +1,17 @@
 import * as React from "react";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import moment from "moment";
 
-export default function CommonMuiDatePicker({
+export default function CommonMuiMonthPicker({
   label,
   required,
   onChange,
   value,
   error,
   errorFontSize,
-  disablePreviousDates,
-  allowAllDates,
   disabled,
 }) {
   const [open, setOpen] = React.useState(false);
@@ -21,30 +20,21 @@ export default function CommonMuiDatePicker({
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DatePicker
         label={label}
-        value={value ? dayjs(value) : null} // convert JS Date to Dayjs
+        views={["month", "year"]}
+        value={value ? dayjs(value) : null}
         onChange={(newValue) => {
-          // Convert Dayjs to JS Date
-          const jsDate = newValue ? newValue.toDate() : null;
-          onChange(jsDate);
+          if (newValue) {
+            const formatted = moment(newValue.toDate()).format("MMMM - YYYY");
+            onChange(formatted); // return August - 2025 format
+          } else {
+            onChange(null);
+          }
         }}
-        open={!disabled && open} // ✅ only open if not disabled
-        format="DD/MM/YYYY"
+        open={!disabled && open}
         onClose={() => setOpen(false)}
         onOpen={() => {
           if (!disabled) {
             setOpen(true);
-          }
-        }}
-        shouldDisableDate={(date) => {
-          if (allowAllDates) {
-            return false; // ✅ allow everything
-          }
-
-          const today = dayjs();
-          if (disablePreviousDates) {
-            return date.isBefore(today, "day"); // disable past dates
-          } else {
-            return date.isAfter(today, "day"); // disable future dates
           }
         }}
         slotProps={{
@@ -64,9 +54,22 @@ export default function CommonMuiDatePicker({
           },
           popper: {
             sx: {
+              "& .MuiMonthCalendar-button": {
+                fontSize: "13px !important",
+                fontFamily: "Poppins, sans-serif",
+                padding: "4px 6px",
+              },
+              "& .MuiMonthCalendar-button.Mui-selected": {
+                backgroundColor: "#5b69ca !important",
+                color: "#fff !important",
+              },
               "& .MuiYearCalendar-button": {
-                fontSize: "13px !important", // desired font size
-                fontFamily: "Poppins, sans-serif", // desired font family
+                fontSize: "13px !important",
+                fontFamily: "Poppins, sans-serif",
+              },
+              "& .MuiYearCalendar-button.Mui-selected": {
+                backgroundColor: "#5b69ca !important",
+                color: "#fff !important",
               },
             },
           },
@@ -93,7 +96,7 @@ export default function CommonMuiDatePicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "42px !important",
+                height: "40px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {

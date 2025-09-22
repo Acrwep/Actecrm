@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Tabs } from "antd";
+import {
+  Row,
+  Col,
+  Drawer,
+  Flex,
+  Tooltip,
+  Button,
+  Radio,
+  Tabs,
+  Modal,
+} from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RedoOutlined } from "@ant-design/icons";
 import { SiWhatsapp } from "react-icons/si";
+import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -19,6 +30,7 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import {
+  createTechnology,
   createTrainer,
   getBatches,
   getExperience,
@@ -67,6 +79,7 @@ export default function Trainers() {
   const [technologyOptions, setTechnologyOptions] = useState("");
   const [technology, setTechnology] = useState("");
   const [technologyError, setTechnologyError] = useState("");
+  const [isTechnologyFocused, setIsTechnologyFocused] = useState(false);
   const [experienceOptions, setExperienceOptions] = useState("");
   const [experience, setExperience] = useState("");
   const [experienceError, setExperienceError] = useState("");
@@ -102,6 +115,11 @@ export default function Trainers() {
   const [verifyPendingCount, setVerifyPendingCount] = useState(0);
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  //add course usestates
+  const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
+  const [courseName, setCourseName] = useState("");
+  const [courseNameError, setCourseNameError] = useState("");
+  const [addCourseLoading, setAddCourseLoading] = useState(false);
 
   const [defaultColumns, setDefaultColumns] = useState([
     { title: "Trainer Name", isChecked: true },
@@ -565,6 +583,16 @@ export default function Trainers() {
     }
   };
 
+  const getCourseData = async () => {
+    try {
+      const response = await getTechnologies();
+      setTechnologyOptions(response?.data?.data || []);
+    } catch (error) {
+      setTechnologyOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const handleEdit = (item) => {
     setIsShowBankTab(true);
     console.log("clicked item", item);
@@ -602,6 +630,38 @@ export default function Trainers() {
     setTimeout(() => {
       getTrainersData(e.target.value, status);
     }, 300);
+  };
+
+  const handleCreateCourse = async () => {
+    const courseValidate = addressValidator(courseName);
+
+    setCourseNameError(courseValidate);
+
+    if (courseValidate) return;
+
+    const payload = {
+      course_name: courseName,
+    };
+    setAddCourseLoading(true);
+
+    try {
+      await createTechnology(payload);
+      CommonMessage("success", "Course Created");
+      setTimeout(() => {
+        setAddCourseLoading(false);
+        setIsOpenAddCourseModal(false);
+        setCourseName("");
+        setCourseNameError("");
+        getCourseData();
+      }, 300);
+    } catch (error) {
+      setAddCourseLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
   };
 
   const formReset = () => {
@@ -904,20 +964,49 @@ export default function Trainers() {
           </Col>
 
           <Col span={8}>
-            <CommonSelectField
-              label="Technology"
-              required={true}
-              options={technologyOptions}
-              onChange={(e) => {
-                setTechnology(e.target.value);
-                if (validationTrigger) {
-                  setTechnologyError(selectValidator(e.target.value));
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Course"
+                  required={true}
+                  options={technologyOptions}
+                  onChange={(e) => {
+                    setTechnology(e.target.value);
+                    if (validationTrigger) {
+                      setTechnologyError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={technology}
+                  error={technologyError}
+                  valueMarginTop="-4px"
+                  borderRightNone={true}
+                  onFocus={() => setIsTechnologyFocused(true)}
+                  onBlur={() => setIsTechnologyFocused(false)}
+                />
+              </div>
+
+              <div
+                className={
+                  technologyError
+                    ? "leads_errorcourse_addcontainer"
+                    : isTechnologyFocused
+                    ? "leads_focusedcourse_addcontainer"
+                    : "leads_course_addcontainer"
                 }
-              }}
-              value={technology}
-              error={technologyError}
-              valueMarginTop="-4px"
-            />
+              >
+                <Tooltip
+                  placement="bottom"
+                  title="Add Course"
+                  className="leadtable_customertooltip"
+                >
+                  <MdAdd
+                    size={19}
+                    style={{ color: "#333333af", cursor: "pointer" }}
+                    onClick={() => setIsOpenAddCourseModal(true)}
+                  />
+                </Tooltip>
+              </div>
+            </div>
           </Col>
 
           <Col span={8}>
@@ -1469,6 +1558,78 @@ export default function Trainers() {
           </div>
         </div>
       </Drawer>
+
+      {/* add course modal */}
+      <Modal
+        title="Add Course"
+        open={isOpenAddCourseModal}
+        onCancel={() => {
+          setIsOpenAddCourseModal(false);
+          setCourseName("");
+          setCourseNameError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddCourseModal(false);
+              setCourseName("");
+              setCourseNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleCreateCourse}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonInputField
+            label="Course Name"
+            required={true}
+            onChange={(e) => {
+              setCourseName(e.target.value);
+              setCourseNameError(addressValidator(e.target.value));
+            }}
+            value={courseName}
+            error={courseNameError}
+          />
+        </div>
+
+        <div className="lead_course_instruction_container">
+          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
+          <p style={{ fontSize: "13px", marginTop: "2px" }}>
+            Make sure the course name remains exactly as{" "}
+            <span style={{ fontWeight: 600 }}>‘Google’</span>
+          </p>
+          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
+            Example:
+          </p>
+          <ul>
+            <li>Full Stack Development</li>
+            <li>Core Java</li>
+          </ul>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -228,6 +228,24 @@ export const sendTrainerFormEmail = async (payload) => {
 };
 
 // lead api's
+export const getAllAreas = async (payload) => {
+  try {
+    const response = await api.get("/api/getAreas", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createArea = async (payload) => {
+  try {
+    const response = await api.post("/api/insertArea", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTrainingMode = async (payload) => {
   try {
     const response = await api.get("/api/getTrainingMode", { params: payload });
@@ -499,6 +517,15 @@ export const rejectCustomerPayment = async (payload) => {
   }
 };
 
+export const updateCustomerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.put("/api/updatePayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const verifyCustomer = async (payload) => {
   try {
     const response = await api.put("/api/verifyStudent", payload);
@@ -578,6 +605,24 @@ export const updateClassGoingForCustomer = async (payload) => {
 export const updatefeedbackForCustomer = async (payload) => {
   try {
     const response = await api.put("/api/updateReview", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const generateCertForCustomer = async (payload) => {
+  try {
+    const response = await api.post("/api/generateCertificate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const viewCertForCustomer = async (payload) => {
+  try {
+    const response = await api.get("/api/getCertificate", { params: payload });
     return response;
   } catch (error) {
     throw error;

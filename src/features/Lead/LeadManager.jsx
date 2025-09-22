@@ -5,6 +5,7 @@ import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import {
+  getAllAreas,
   getBatchTrack,
   getLeadAndFollowupCount,
   getLeadStatus,
@@ -24,6 +25,7 @@ export default function LeadManager() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [batchTrackOptions, setBatchTrackOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
+  const [areaOptions, setAreaOptions] = useState([]);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -125,6 +127,20 @@ export default function LeadManager() {
     } catch (error) {
       setCourseOptions([]);
       console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getAreasData();
+      }, 300);
+    }
+  };
+
+  const getAreasData = async () => {
+    try {
+      const response = await getAllAreas();
+      setAreaOptions(response?.data?.data || []);
+    } catch (error) {
+      setAreaOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -209,6 +225,8 @@ export default function LeadManager() {
             batchTrackOptions={batchTrackOptions}
             courseOptions={courseOptions}
             setCourseOptions={setCourseOptions}
+            areaOptions={areaOptions}
+            setAreaOptions={setAreaOptions}
           />
         </div>
       )}
@@ -226,6 +244,8 @@ export default function LeadManager() {
           batchTrackOptions={batchTrackOptions}
           courseOptions={courseOptions}
           setCourseOptions={setCourseOptions}
+          areaOptions={areaOptions}
+          setAreaOptions={setAreaOptions}
         />
       </div>
     </div>

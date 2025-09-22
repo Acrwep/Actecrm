@@ -301,7 +301,6 @@ export const discountValidator = (discount) => {
 
 export const getBalanceAmount = (totalAmount, paidAmount) => {
   let result = totalAmount - paidAmount;
-  console.log("resssssss", result);
   return parseFloat(result.toFixed(2)); // keeps 2 decimals
 };
 

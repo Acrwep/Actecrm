@@ -45,11 +45,14 @@ import moment from "moment";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import { UploadOutlined } from "@ant-design/icons";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
+import { FaRegCircleXmark } from "react-icons/fa6";
+import { BsPatchCheckFill } from "react-icons/bs";
 import PrismaZoom from "react-prismazoom";
+import ImageUploadCrop from "../Common/ImageUploadCrop";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
 export default function OverallDueCustomers({ setDueSelectedDates }) {
   const [searchValue, setSearchValue] = useState("");
@@ -73,7 +76,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
   const [convenienceFees, setConvenienceFees] = useState("");
   const [paymentDate, setPaymentDate] = useState(null);
   const [paymentDateError, setPaymentDateError] = useState(null);
-  const [paymentScreenShotsArray, setPaymentScreenShotsArray] = useState([]);
   const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
@@ -171,6 +173,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
       key: "status",
       dataIndex: "status",
       fixed: "right",
+      width: 180,
       render: (text, record) => {
         let classPercent = 0;
 
@@ -183,10 +186,12 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
         }
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {text === "Pending" ||
-            text === "PENDING" ||
-            text === "Verify Pending" ? (
-              <Button className="trainers_pending_button">Pending</Button>
+            {record.is_second_due === 1 ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Awaiting Finance
+                </Button>
+              </div>
             ) : text === "Form Pending" ? (
               <div>
                 <Button className="customers_status_formpending_button">
@@ -229,15 +234,9 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                   {text}
                 </Button>
               </div>
-            ) : text === "Awaiting G-Review" ? (
+            ) : text === "Passedout process" ? (
               <div>
-                <Button className="customers_status_awaitgreview_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Awaiting L-Review" ? (
-              <div>
-                <Button className="customers_status_awaitgreview_button">
+                <Button className="customers_status_awaitfeedback_button">
                   {text}
                 </Button>
               </div>
@@ -250,12 +249,13 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
             ) : text === "Rejected" ||
               text === "REJECTED" ||
               text === "Trainer Rejected" ||
+              text === "Payment Rejected" ||
               text === "Escalated" ||
               text === "Hold" ||
               text === "Partially Closed" ||
               text === "Discontinued" ||
               text === "Refund" ? (
-              <Button className="trainers_rejected_button">Rejected</Button>
+              <Button className="trainers_rejected_button">{text}</Button>
             ) : text === "Class Going" ? (
               <div style={{ display: "flex", gap: "12px" }}>
                 <Button className="customers_status_classgoing_button">
@@ -345,6 +345,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 onClick={() => {
                   setIsOpenPaymentDrawer(true);
                   setCustomerDetails(record);
+                  setCollapseDefaultKey(["1"]);
                   setPendingAmount(record.balance_amount);
                   setBalanceAmount(record.balance_amount);
                   setPaymentHistory(
@@ -419,17 +420,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
     }, 300);
   };
 
-  const handleDateChange = (dates, dateStrings) => {
-    setSelectedDates(dateStrings);
-    setDueSelectedDates(dateStrings);
-    const startDate = dateStrings[0];
-    const endDate = dateStrings[1];
-    if (startDate != "" && endDate != "") {
-      console.log("call function");
-      getPendingFeesCustomersData(startDate, endDate, searchValue);
-    }
-  };
-
   const handlePaidNow = (e) => {
     const value = parseInt(e.target.value);
     const amt = parseInt(pendingAmount);
@@ -487,47 +477,12 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
 
     //handle convenience fees
     if (value === 2 || value === 5) {
-      const conve_fees = getConvenienceFees(payAmount ? payAmount : 0);
+      const conve_fees = getConvenienceFees(
+        payAmount ? parseInt(payAmount) : 0
+      );
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
-    }
-  };
-
-  const handlePaymentScreenshot = ({ file }) => {
-    // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
-      setPaymentScreenShotError(" is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setPaymentScreenShotsArray([file]);
-      CommonMessage("success", "Screenshot uploaded");
-      setPaymentScreenShotError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setPaymentScreenShotBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
     }
   };
 
@@ -540,8 +495,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
       parseInt(pendingAmount)
     );
 
-    const screenshotValidate =
-      paymentScreenShotsArray.length <= 0 ? " is required" : "";
+    const screenshotValidate = selectValidator(paymentScreenShotBase64);
     let dueDateValidate;
 
     if (isShowDueDate) {
@@ -594,13 +548,19 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
       const createdCustomerDetails = response?.data?.data;
       setTimeout(() => {
         setButtonLoading(false);
+        getPendingFeesCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue
+        );
         formReset();
       }, 300);
     } catch (error) {
       setButtonLoading(false);
+      console.log("part payment error", error);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }
@@ -618,7 +578,6 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
     setConvenienceFees(0);
     setPaymentDate(null);
     setPaymentDateError("");
-    setPaymentScreenShotsArray([]);
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
     setBalanceAmount(0);
@@ -733,10 +692,13 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
 
             {/* Date Picker on the Right */}
             <div style={{ marginLeft: "16px" }}>
-              <CommonDoubleDatePicker
+              <CommonMuiCustomDatePicker
                 value={selectedDates}
-                onChange={handleDateChange}
-                showFutureDates={true}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  setDueSelectedDates(dates);
+                  getPendingFeesCustomersData(dates[0], dates[1], searchValue);
+                }}
               />
             </div>
           </div>
@@ -1197,6 +1159,26 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
+                  {customerDetails && customerDetails.gender === "Male" ? (
+                    <BsGenderMale size={15} color="gray" />
+                  ) : (
+                    <BsGenderFemale size={15} color="gray" />
+                  )}
+                  <p className="customerdetails_rowheading">Gender</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.gender
+                    ? customerDetails.gender
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
                   <p className="customerdetails_rowheading">Location</p>
                 </div>
@@ -1205,6 +1187,22 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.current_location
                     ? customerDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.lead_by
+                    ? customerDetails.lead_by
                     : "-"}
                 </p>
               </Col>
@@ -1222,6 +1220,58 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.course_fees
+                    ? "₹" + customerDetails.course_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f", fontWeight: 700 }}
+                >
+                  {customerDetails &&
+                  customerDetails.balance_amount !== undefined &&
+                  customerDetails.balance_amount !== null
+                    ? "₹" + customerDetails.balance_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Server</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.is_server_required
+                    ? customerDetails.is_server_required === 1
+                      ? "Required"
+                      : "Not Required"
                     : "-"}
                 </p>
               </Col>
@@ -1260,13 +1310,13 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">Batch Track</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_fees
-                    ? "₹" + customerDetails.course_fees
+                  {customerDetails && customerDetails.batch_tracking
+                    ? customerDetails.batch_tracking
                     : "-"}
                 </p>
               </Col>
@@ -1275,34 +1325,13 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f" }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Batch Timing</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.batch_timing
+                    ? customerDetails.batch_timing
                     : "-"}
                 </p>
               </Col>
@@ -1341,13 +1370,16 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Gst Amount</p>
+                        <p className="customerdetails_rowheading">Total Fees</p>
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.gst_amount
-                          ? "₹" + customerDetails.payment.gst_amount
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails && customerDetails.payment.total_amount
+                          ? "₹" + customerDetails.payment.total_amount
                           : "-"}
                       </p>
                     </Col>
@@ -1358,14 +1390,21 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                   <Row>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Tax Type</p>
+                        <p className="customerdetails_rowheading">Gst Amount</p>
                       </div>
                     </Col>
                     <Col span={12}>
                       <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.tax_type
-                          ? customerDetails.payment.tax_type
-                          : "-"}
+                        {customerDetails?.payment?.gst_amount ? (
+                          <>
+                            ₹{customerDetails.payment.gst_amount}{" "}
+                            <span style={{ fontSize: "11px" }}>
+                              ({customerDetails.payment.tax_type || "-"})
+                            </span>
+                          </>
+                        ) : (
+                          "-"
+                        )}
                       </p>
                     </Col>
                   </Row>
@@ -1373,13 +1412,18 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Total Fees</p>
+                        <p className="customerdetails_rowheading">
+                          Balance Amount
+                        </p>
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.payment.total_amount
-                          ? "₹" + customerDetails.payment.total_amount
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
+                      >
+                        {customerDetails && customerDetails.balance_amount
+                          ? "₹" + customerDetails.balance_amount
                           : "-"}
                       </p>
                     </Col>
@@ -1406,7 +1450,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
               >
                 {paymentHistory.map((item, index) => (
                   <Collapse.Panel
-                    key={item.id || index} // unique key
+                    key={index + 1} // unique key
                     header={
                       <div
                         style={{
@@ -1424,7 +1468,7 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                           </span>
                         </span>
 
-                        <p
+                        {/* <p
                           style={{
                             color: "#333",
                           }}
@@ -1443,7 +1487,29 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
                           >
                             {item.payment_status}
                           </span>
-                        </p>
+                        </p> */}
+
+                        {item.payment_status === "Verify Pending" ? (
+                          <div className="customer_trans_statustext_container">
+                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                              Waiting for Verify
+                            </p>
+                          </div>
+                        ) : item.payment_status === "Rejected" ? (
+                          <div className="customer_trans_statustext_container">
+                            <FaRegCircleXmark color="#d32f2f" />
+                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                              Rejected
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p style={{ color: "#3c9111", fontWeight: 500 }}>
+                              Verified
+                            </p>
+                          </div>
+                        )}
                       </div>
                     }
                   >
@@ -1656,39 +1722,25 @@ export default function OverallDueCustomers({ setDueSelectedDates }) {
           </Col>
 
           <Col span={8}>
-            <p
-              className="leads_paymentscreenshot_label"
-              style={{ fontSize: "13px" }}
-            >
-              Payment Screenshot <span style={{ color: "#d32f2f" }}>*</span>
-            </p>
-            <Upload
-              style={{ width: "100%", marginTop: "8px" }}
-              beforeUpload={(file) => {
-                return false; // Prevent auto-upload
-              }}
-              accept=".png,.jpg,.jpeg"
-              onChange={handlePaymentScreenshot}
-              fileList={paymentScreenShotsArray}
-              multiple={false}
-            >
-              <Button
-                icon={<UploadOutlined />}
-                className="leadmanager_payment_screenshotbutton"
-              >
-                Choose file
-                <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
-              </Button>
-            </Upload>{" "}
+            <ImageUploadCrop
+              label="Payment Screenshot"
+              aspect={1}
+              maxSizeMB={1}
+              required={true}
+              value={paymentScreenShotBase64}
+              onChange={(base64) => setPaymentScreenShotBase64(base64)}
+              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+            />
             {paymentScreenShotError && (
               <p
                 style={{
                   fontSize: "12px",
                   color: "#d32f2f",
-                  marginTop: "4px",
-                  marginLeft: "6px",
+                  marginTop: 4,
                 }}
-              >{`Screenshot ${paymentScreenShotError}`}</p>
+              >
+                {`Payment Screenshot ${paymentScreenShotError}`}
+              </p>
             )}
           </Col>
         </Row>

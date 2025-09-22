@@ -38,7 +38,7 @@ export default function SideMenu() {
       path: "customers",
     },
     4: {
-      title: "Fee Pending Customers",
+      title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },

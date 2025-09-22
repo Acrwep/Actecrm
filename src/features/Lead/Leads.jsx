@@ -41,15 +41,17 @@ import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { SlGlobe } from "react-icons/sl";
-import { BiMapPin } from "react-icons/bi";
+import { FaRegUser } from "react-icons/fa";
+import { MdOutlineDateRange } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import {
+  createArea,
   createLead,
   createTechnology,
+  getAllAreas,
   getBranches,
   getLeads,
   getTechnologies,
@@ -67,6 +69,7 @@ import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -77,6 +80,8 @@ export default function Leads({
   batchTrackOptions,
   courseOptions,
   setCourseOptions,
+  areaOptions,
+  setAreaOptions,
 }) {
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -98,9 +103,10 @@ export default function Leads({
   const [stateOptions, setStateOptions] = useState([]);
   const [stateId, setStateId] = useState("");
   const [stateError, setStateError] = useState("");
-  const [cityOptions, setCityOptions] = useState([]);
-  const [cityId, setCityId] = useState("");
-  const [cityError, setCityError] = useState("");
+  const [areaId, setAreaId] = useState("");
+  const [areaError, setAreaError] = useState("");
+  const [isAreaFocused, setIsAreaFocused] = useState(false);
+  const [isOpenAddAreaModal, setIsOpenAddAreaModal] = useState(false);
   const [primaryCourse, setPrimaryCourse] = useState(null);
   const [primaryCourseError, setPrimaryCourseError] = useState("");
   const [primaryFees, setPrimaryFees] = useState("");
@@ -157,11 +163,36 @@ export default function Leads({
   const [isShowDueDate, setIsShowDueDate] = useState(true);
   const [dueDate, setDueDate] = useState(null);
   const [dueDateError, setDueDateError] = useState("");
+  const [customerCourseId, setCustomerCourseId] = useState(null);
+  const [customerBatchTrackId, setCustomerBatchTrackId] = useState(null);
+  const batchTimingOptions = [
+    {
+      id: 1,
+      name: "Week Day",
+    },
+    {
+      id: 2,
+      name: "Week End",
+    },
+    {
+      id: 3,
+      name: "Fast Track",
+    },
+  ];
+  const [customerBatchTimingId, setCustomerBatchTimingId] = useState(null);
+  const [customerBatchTimingIdError, setCustomerBatchTimingIdError] =
+    useState("");
+  const [placementSupport, setPlacementSupport] = useState(null);
+  const [placementSupportError, setPlacementSupportError] = useState("");
+  const [serverRequired, setServerRequired] = useState(false);
   //add course usestates
   const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
   const [courseName, setCourseName] = useState("");
   const [courseNameError, setCourseNameError] = useState("");
   const [addCourseLoading, setAddCourseLoading] = useState(false);
+  //add area usestates
+  const [areaName, setAreaName] = useState("");
+  const [areaNameError, setAreaNameError] = useState("");
 
   const [defaultColumns, setDefaultColumns] = useState([
     {
@@ -378,6 +409,8 @@ export default function Leads({
                     setSubTotal(parseInt(record.primary_fees));
                     setAmount(parseInt(record.primary_fees));
                     setBalanceAmount(parseInt(record.primary_fees));
+                    setCustomerCourseId(record.primary_course_id);
+                    setCustomerBatchTrackId(record.batch_track_id);
                     setClickedLeadItem(record);
                   }}
                 />
@@ -524,17 +557,6 @@ export default function Leads({
   ];
   const [leadData, setLeadData] = useState([]);
 
-  // const leadData = [
-  //   {
-  //     id: 1,
-  //     name: "xyz",
-  //     email: "balaji@gmail.com",
-  //     mobile: "986788872",
-  //     state: "State Not Available",
-  //     city: "City Not Available",
-  //   },
-  // ];
-
   useEffect(() => {
     const countries = Country.getAllCountries();
     const updateCountries = countries.map((c) => {
@@ -579,13 +601,23 @@ export default function Leads({
     }
   };
 
+  const getAreasData = async () => {
+    try {
+      const response = await getAllAreas();
+      setAreaOptions(response?.data?.data || []);
+    } catch (error) {
+      setAreaOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   //onchange functions
   const handleCountry = (e) => {
     const value = e.target.value;
     console.log(value, countryOptions);
     setCountryId(value);
     setStateId("");
-    setCityId("");
+    setAreaId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
 
@@ -603,18 +635,6 @@ export default function Leads({
   const handleState = (e) => {
     const value = e.target.value;
     setStateId(value);
-    setCityId("");
-    const selectedState = stateOptions.find((f) => f.id === value);
-    console.log("selected state", value, selectedState);
-
-    const cityList = City.getCitiesOfState(countryId, selectedState.id);
-
-    const updateCities = cityList.map((city) => {
-      return { ...city, id: city.name };
-    });
-    console.log(updateCities, "updateCities");
-    setCityOptions(updateCities);
-
     if (validationTrigger) {
       setStateError(selectValidator(value));
     }
@@ -764,14 +784,7 @@ export default function Leads({
     console.log(updateSates, "updateSates");
     setStateOptions(updateSates);
     setStateId(item.state);
-    const cityList = City.getCitiesOfState(item.country, item.state);
-
-    const updateCities = cityList.map((city) => {
-      return { ...city, id: city.name };
-    });
-    console.log(updateCities, "updateCities");
-    setCityOptions(updateCities);
-    setCityId(item.district);
+    setAreaId(item.district);
 
     setPrimaryCourse(item.primary_course_id);
     setPrimaryFees(item.primary_fees);
@@ -787,35 +800,6 @@ export default function Leads({
     setBatchTrack(item.batch_track_id);
     setRating(item.lead_quality_rating);
     setComments(item.comments);
-  };
-
-  const getCountryName = (countryCode) => {
-    let countryName = "";
-
-    const findCountry = countryOptions.find((f) => f.isoCode === countryCode);
-    if (findCountry) {
-      countryName = findCountry.name;
-    } else {
-      countryName = "";
-    }
-    return countryName;
-  };
-
-  const getStateName = (countryCode, stateCode) => {
-    const stateList = State.getStatesOfCountry(countryCode);
-    const updateSates = stateList.map((s) => {
-      return { ...s, id: s.isoCode };
-    });
-
-    let stateName = "";
-
-    const findState = updateSates.find((f) => f.id === stateCode);
-    if (findState) {
-      stateName = findState.name;
-    } else {
-      stateName = "";
-    }
-    return stateName;
   };
 
   const formReset = (dontCloseAddDrawer) => {
@@ -841,12 +825,13 @@ export default function Leads({
     setCountryError("");
     setStateId(null);
     setStateError("");
-    setCityId(null);
-    setCityError("");
+    setAreaId(null);
+    setAreaError("");
     setPrimaryCourse(null);
     setPrimaryCourseError("");
     setPrimaryFees("");
     setPrimaryFeesError("");
+    setIsShowSecondaryCourse(false);
     setSecondaryCourse(null);
     setSecondaryFees("");
     setLeadType(null);
@@ -891,6 +876,13 @@ export default function Leads({
     setBalanceAmount("");
     setDueDate(null);
     setDueDateError("");
+    setCustomerCourseId(null);
+    setCustomerBatchTrackId(null);
+    setCustomerBatchTimingId(null);
+    setCustomerBatchTimingIdError("");
+    setPlacementSupport("");
+    setPlacementSupportError("");
+    setServerRequired(false);
   };
 
   const handleSubmit = async (saveType) => {
@@ -916,7 +908,7 @@ export default function Leads({
     const whatsAppValidate = mobileValidator(whatsApp);
     const countryValidate = selectValidator(countryId);
     const stateValidate = selectValidator(stateId);
-    const cityValidate = selectValidator(cityId);
+    const cityValidate = selectValidator(areaId);
     const primaryCourseValidate = selectValidator(primaryCourse);
     const primaryFeesValidate = selectValidator(primaryFees);
     const leadTypeValidate = selectValidator(leadType);
@@ -932,7 +924,7 @@ export default function Leads({
     setWhatsAppError(whatsAppValidate);
     setCountryError(countryValidate);
     setStateError(stateValidate);
-    setCityError(cityValidate);
+    setAreaError(cityValidate);
     setPrimaryCourseError(primaryCourseValidate);
     setPrimaryFeesError(primaryFeesValidate);
     setLeadTypeError(leadTypeValidate);
@@ -983,7 +975,7 @@ export default function Leads({
       email: email,
       country: countryId,
       state: stateId,
-      district: cityId,
+      district: areaId,
       primary_course_id: primaryCourse,
       primary_fees: primaryFees,
       price_category: priceCategory(primaryFees),
@@ -1054,6 +1046,8 @@ export default function Leads({
     const taxTypeValidate = selectValidator(taxType);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
+    const batchTimingValidate = selectValidator(customerBatchTimingId);
+    const placementSupportValidate = selectValidator(placementSupport);
 
     console.log("eeeee", paidNow, amount);
     const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
@@ -1073,6 +1067,8 @@ export default function Leads({
     setPaymentDateError(paymentDateValidate);
     setPaymentScreenShotError(screenshotValidate);
     setDueDateError(dueDateValidate);
+    setCustomerBatchTimingIdError(batchTimingValidate);
+    setPlacementSupportError(placementSupportValidate);
 
     if (
       paymentTypeValidate ||
@@ -1080,7 +1076,9 @@ export default function Leads({
       taxTypeValidate ||
       paymentDateValidate ||
       screenshotValidate ||
-      dueDateValidate
+      dueDateValidate ||
+      batchTimingValidate ||
+      placementSupportValidate
     )
       return;
 
@@ -1092,6 +1090,9 @@ export default function Leads({
     const gstAmount = amount - subTotal;
 
     console.log("GST Amount:", gstAmount);
+
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
 
     const payload = {
       lead_id: clickedLeadItem.id,
@@ -1114,9 +1115,16 @@ export default function Leads({
       paid_amount: paidNow,
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
-      next_due_date: formatToBackendIST(dueDate),
+      next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
       created_date: formatToBackendIST(today),
       paid_date: formatToBackendIST(paymentDate),
+      enrolled_course: customerCourseId,
+      batch_track_id: customerBatchTrackId,
+      batch_timing_id: customerBatchTimingId,
+      placement_support: placementSupport,
+      is_server_required: serverRequired,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
     };
 
     console.log("payment payload", payload);
@@ -1225,8 +1233,40 @@ export default function Leads({
         setAddCourseLoading(false);
         setIsOpenAddCourseModal(false);
         setCourseName("");
-        setCountryError("");
+        setCourseNameError("");
         getCourseData();
+      }, 300);
+    } catch (error) {
+      setAddCourseLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleCreateArea = async () => {
+    const areaValidate = addressValidator(courseName);
+
+    setAreaNameError(areaValidate);
+
+    if (areaValidate) return;
+
+    const payload = {
+      area_name: courseName,
+    };
+    setAddCourseLoading(true);
+
+    try {
+      await createArea(payload);
+      CommonMessage("success", "Area Created");
+      setTimeout(() => {
+        setAddCourseLoading(false);
+        setIsOpenAddAreaModal(false);
+        setAreaName("");
+        setAreaNameError("");
+        getAreasData();
       }, 300);
     } catch (error) {
       setAddCourseLoading(false);
@@ -1270,9 +1310,12 @@ export default function Leads({
                 debouncedSearch(e.target.value);
               }}
             />
-            <CommonDoubleDatePicker
+            <CommonMuiCustomDatePicker
               value={selectedDates}
-              onChange={handleDateChange}
+              onDateChange={(dates) => {
+                setSelectedDates(dates);
+                getAllLeadData(searchValue, dates[0], dates[1], false);
+              }}
             />
           </div>
         </Col>
@@ -1438,19 +1481,48 @@ export default function Leads({
             />
           </Col>
           <Col span={8}>
-            <CommonSelectField
-              label="City"
-              value={cityId}
-              onChange={(e) => {
-                setCityId(e.target.value);
-                if (validationTrigger) {
-                  setCityError(selectValidator(e.target.value));
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Area"
+                  value={areaId}
+                  onChange={(e) => {
+                    setAreaId(e.target.value);
+                    if (validationTrigger) {
+                      setAreaError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={areaOptions}
+                  error={areaError}
+                  required={true}
+                  borderRightNone={true}
+                  onFocus={() => setIsAreaFocused(true)}
+                  onBlur={() => setIsAreaFocused(false)}
+                />
+              </div>
+
+              <div
+                className={
+                  areaError
+                    ? "leads_errorcourse_addcontainer"
+                    : isAreaFocused
+                    ? "leads_focusedcourse_addcontainer"
+                    : "leads_course_addcontainer"
                 }
-              }}
-              options={cityOptions}
-              error={cityError}
-              required={true}
-            />
+              >
+                <Tooltip
+                  placement="bottom"
+                  title="Add Area"
+                  className="leadtable_customertooltip"
+                >
+                  <MdAdd
+                    size={19}
+                    style={{ color: "#333333af", cursor: "pointer" }}
+                    onClick={() => setIsOpenAddAreaModal(true)}
+                  />
+                </Tooltip>
+              </div>
+            </div>
           </Col>
         </Row>
 
@@ -1517,7 +1589,7 @@ export default function Leads({
           </Col>
           <Col span={8}>
             <Checkbox
-              value={isShowSecondaryCourse}
+              checked={isShowSecondaryCourse}
               onChange={(e) => {
                 setIsShowSecondaryCourse(e.target.checked);
                 if (e.target.checked === false) {
@@ -1827,90 +1899,6 @@ export default function Leads({
         style={{ position: "relative", padding: "0px", paddingBottom: 50 }}
         className="leadmanager_paymentdetails_drawer"
       >
-        {/* <p
-          className="leadmanager_paymentdetails_drawer_heading"
-          style={{ marginTop: "24px" }}
-        >
-          Candidate Details
-        </p>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "16px" }}
-        >
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Candidate Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.name : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Email:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.email : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Mobile:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.phone : "-"}
-              </span>
-            </p>
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "20px" }}
-        >
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Course:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.primary_course : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Region:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.region_name : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Branch Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? clickedLeadItem.branche_name : "-"}
-              </span>
-            </p>
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "20px" }}
-        >
-          <Col span={8}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Course Fees:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {clickedLeadItem ? "₹" + clickedLeadItem.primary_fees : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={8}></Col>
-        </Row> */}
         <p className="leadfollowup_leaddetails_heading">Lead Details</p>
         <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
           <Col span={12}>
@@ -1981,41 +1969,6 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <SlGlobe size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Country</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.country
-                    ? getCountryName(clickedLeadItem.country)
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <BiMapPin size={15} color="gray" />
-                  <p className="customerdetails_rowheading">State</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.state
-                    ? getStateName(
-                        clickedLeadItem.country,
-                        clickedLeadItem.state
-                      )
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
                   <p className="customerdetails_rowheading">Area</p>
                 </div>
@@ -2024,6 +1977,40 @@ export default function Leads({
                 <p className="customerdetails_text">
                   {clickedLeadItem && clickedLeadItem.district
                     ? clickedLeadItem.district
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.user_name
+                    ? clickedLeadItem.user_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineDateRange size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Next Followup</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.next_follow_up_date
+                    ? moment(clickedLeadItem.next_follow_up_date).format(
+                        "DD/MM/YYYY"
+                      )
                     : "-"}
                 </p>
               </Col>
@@ -2087,8 +2074,8 @@ export default function Leads({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.branche_name
-                    ? clickedLeadItem.branche_name
+                  {clickedLeadItem && clickedLeadItem.branch_name
+                    ? clickedLeadItem.branch_name
                     : "-"}
                 </p>
               </Col>
@@ -2112,13 +2099,13 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Status</p>
+                  <p className="customerdetails_rowheading">Lead Source</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.lead_status
-                    ? clickedLeadItem.lead_status
+                  {clickedLeadItem && clickedLeadItem.lead_type
+                    ? clickedLeadItem.lead_type
                     : "-"}
                 </p>
               </Col>
@@ -2127,15 +2114,13 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Next Followup</p>
+                  <p className="customerdetails_rowheading">Lead Status</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.next_follow_up_date
-                    ? moment(clickedLeadItem.next_follow_up_date).format(
-                        "DD/MM/YYYY"
-                      )
+                  {clickedLeadItem && clickedLeadItem.lead_status
+                    ? clickedLeadItem.lead_status
                     : "-"}
                 </p>
               </Col>
@@ -2261,6 +2246,7 @@ export default function Leads({
               aspect={1}
               maxSizeMB={1}
               required={true}
+              value={paymentScreenShotBase64}
               onChange={(base64) => setPaymentScreenShotBase64(base64)}
               onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
             />
@@ -2310,6 +2296,92 @@ export default function Leads({
           )}
         </Row>
 
+        <Divider className="leadmanger_paymentdrawer_divider" />
+
+        <p className="leadmanager_paymentdetails_drawer_heading">
+          Add Customer Details
+        </p>
+
+        <Row
+          gutter={16}
+          style={{ marginTop: "20px", marginBottom: "30px" }}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+        >
+          <Col span={8}>
+            <CommonSelectField
+              label="Course"
+              required={true}
+              options={courseOptions}
+              value={customerCourseId}
+              disabled={true}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch Track"
+              required={true}
+              options={batchTrackOptions}
+              value={customerBatchTrackId}
+              disabled={true}
+            />
+          </Col>
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch Timing"
+              required={true}
+              options={batchTimingOptions}
+              onChange={(e) => {
+                setCustomerBatchTimingId(e.target.value);
+                if (paymentValidationTrigger) {
+                  setCustomerBatchTimingIdError(
+                    selectValidator(e.target.value)
+                  );
+                }
+              }}
+              value={customerBatchTimingId}
+              error={customerBatchTimingIdError}
+            />
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          style={{ marginTop: "20px", marginBottom: "50px" }}
+          className="leadmanager_paymentdetails_drawer_rowdiv"
+        >
+          <Col span={8}>
+            <CommonSelectField
+              label="Placement Support"
+              required={true}
+              options={[
+                { id: "Need", name: "Need" },
+                { id: "Not Need", name: "Not Need" },
+              ]}
+              onChange={(e) => {
+                setPlacementSupport(e.target.value);
+                if (paymentValidationTrigger) {
+                  setPlacementSupportError(selectValidator(e.target.value));
+                }
+              }}
+              value={placementSupport}
+              error={placementSupportError}
+            />
+          </Col>
+          <Col span={8}>
+            <div style={{ marginTop: "10px" }}>
+              <Checkbox
+                style={{ color: "#333" }}
+                checked={serverRequired}
+                onChange={(e) => {
+                  setServerRequired(e.target.checked);
+                }}
+              >
+                Server Required
+              </Checkbox>
+            </div>
+          </Col>
+        </Row>
+
         <div className="leadmanager_tablefiler_footer">
           <div
             className="leadmanager_submitlead_buttoncontainer"
@@ -2333,6 +2405,7 @@ export default function Leads({
         </div>
       </Drawer>
 
+      {/* add course modal */}
       <Modal
         title="Add Course"
         open={isOpenAddCourseModal}
@@ -2375,7 +2448,7 @@ export default function Leads({
         ]}
         width="35%"
       >
-        <div style={{ marginTop: "20px", marginBottom: "40px" }}>
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
           <CommonInputField
             label="Course Name"
             required={true}
@@ -2386,6 +2459,93 @@ export default function Leads({
             value={courseName}
             error={courseNameError}
           />
+        </div>
+
+        <div className="lead_course_instruction_container">
+          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
+          <p style={{ fontSize: "13px", marginTop: "2px" }}>
+            Make sure the course name remains exactly as{" "}
+            <span style={{ fontWeight: 600 }}>‘Google’</span>
+          </p>
+          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
+            Example:
+          </p>
+          <ul>
+            <li>Full Stack Development</li>
+            <li>Core Java</li>
+          </ul>
+        </div>
+      </Modal>
+
+      {/* add area modal */}
+      <Modal
+        title="Add Area"
+        open={isOpenAddAreaModal}
+        onCancel={() => {
+          setIsOpenAddAreaModal(false);
+          setAreaName("");
+          setAreaNameError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddAreaModal(false);
+              setAreaName("");
+              setAreaNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleCreateArea}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonInputField
+            label="Area Name"
+            required={true}
+            onChange={(e) => {
+              setAreaName(e.target.value);
+              setAreaNameError(addressValidator(e.target.value));
+            }}
+            value={areaName}
+            error={areaNameError}
+          />
+        </div>
+
+        <div className="lead_course_instruction_container">
+          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
+          <p style={{ fontSize: "13px", marginTop: "2px" }}>
+            Make sure the area name remains exactly as{" "}
+            <span style={{ fontWeight: 600 }}>‘Google’</span>
+          </p>
+          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
+            Example:
+          </p>
+          <ul>
+            <li>Velachery</li>
+            <li>Perungudi</li>
+          </ul>
         </div>
       </Modal>
     </div>
