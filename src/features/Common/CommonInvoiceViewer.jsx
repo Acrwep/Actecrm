@@ -4,11 +4,9 @@ import html2canvas from "html2canvas";
 import { Button } from "antd";
 import { LuDownload } from "react-icons/lu";
 import CommonSpinner from "./CommonSpinner";
+import "./commonstyles.css";
 
-export default function CommonCertificateViewer({
-  htmlTemplate,
-  candidateName,
-}) {
+export default function CommonInvoiceViewer({ htmlTemplate, candidateName }) {
   const certificateRef = useRef(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +29,7 @@ export default function CommonCertificateViewer({
     // Since container is already A4 ratio, scale directly
     pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
 
-    pdf.save(`${candidateName}_Acte_Certificate.pdf`);
+    pdf.save(`${candidateName}_Acte_Invoice.pdf`);
     setLoading(false);
   };
 
@@ -42,8 +40,8 @@ export default function CommonCertificateViewer({
         ref={certificateRef}
         dangerouslySetInnerHTML={{ __html: htmlTemplate }}
         style={{
-          width: "794px", // A4 width in px
-          height: "1250px", // A4 height in px
+          width: "100%", // A4 width in px
+          height: "950px", // A4 height in px
           margin: 0,
           padding: 0,
           position: "relative", // needed for absolute images

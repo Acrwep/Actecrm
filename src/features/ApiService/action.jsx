@@ -385,20 +385,9 @@ export const leadPayment = async (payload) => {
   }
 };
 
-export const sendLeadInvoiceEmail = async (payload) => {
+export const sendPaymentInvoiceByEmail = async (payload) => {
   try {
-    const response = await api.post("/api/sendInvoice", payload);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const generateLeadInvoiceEmail = async (payload) => {
-  try {
-    const response = await api.post("/api/generateInvoice", payload, {
-      responseType: "blob",
-    });
+    const response = await api.post("/api/sendInvoicePdf", payload);
     return response;
   } catch (error) {
     throw error;
@@ -511,6 +500,15 @@ export const verifyCustomerPayment = async (payload) => {
 export const rejectCustomerPayment = async (payload) => {
   try {
     const response = await api.put("/api/paymentReject", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const viewPaymentInvoice = async (payload) => {
+  try {
+    const response = await api.post("/api/viewInvoicePdf", payload);
     return response;
   } catch (error) {
     throw error;
@@ -632,6 +630,17 @@ export const viewCertForCustomer = async (payload) => {
 export const sendCustomerCertificate = async (payload) => {
   try {
     const response = await api.post("/api/sendCustomerCertificate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomerFullHistory = async (customerid) => {
+  try {
+    const response = await api.get(
+      `/api/getCustomerHistory?customer_id=${customerid}`
+    );
     return response;
   } catch (error) {
     throw error;

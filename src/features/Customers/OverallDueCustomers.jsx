@@ -20,6 +20,7 @@ import {
   customerDuePayment,
   getPendingFeesCustomers,
   getPendingFeesCustomersCount,
+  inserCustomerTrack,
 } from "../ApiService/action";
 import {
   formatToBackendIST,
@@ -51,6 +52,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
@@ -552,13 +554,7 @@ export default function OverallDueCustomers({
       console.log("lead payment response", response);
       const createdCustomerDetails = response?.data?.data;
       setTimeout(() => {
-        setButtonLoading(false);
-        getPendingFeesCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue
-        );
-        formReset();
+        handleCustomerTrack("Part Payment Added");
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -568,6 +564,36 @@ export default function OverallDueCustomers({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const handleCustomerTrack = async (updatestatus) => {
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+
+    const payload = {
+      customer_id: customerDetails.id,
+      status: updatestatus,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      status_date: formatToBackendIST(today),
+    };
+
+    try {
+      await inserCustomerTrack(payload);
+      setTimeout(() => {
+        setButtonLoading(false);
+        getPendingFeesCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue
+        );
+        formReset();
+      }, 300);
+    } catch (error) {
+      console.log("customer track error", error);
     }
   };
 
@@ -1024,7 +1050,7 @@ export default function OverallDueCustomers({
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Timing</p>
+                      <p className="customerdetails_rowheading">Batch Type</p>
                     </div>
                   </Col>
                   <Col span={12}>
@@ -1307,21 +1333,6 @@ export default function OverallDueCustomers({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.region_name
-                    ? customerDetails.region_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
                 </div>
               </Col>
@@ -1352,7 +1363,7 @@ export default function OverallDueCustomers({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Timing</p>
+                  <p className="customerdetails_rowheading">Batch Type</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -1494,31 +1505,13 @@ export default function OverallDueCustomers({
                             {moment(item.invoice_date).format("DD/MM/YYYY")}
                           </span>
                         </span>
-
-                        {/* <p
-                          style={{
-                            color: "#333",
-                          }}
-                        >
-                          Status:{" "}
-                          <span
-                            style={{
-                              color:
-                                item.payment_status === "Verified"
-                                  ? "#3c9111"
-                                  : item.payment_status === "Verify Pending"
-                                  ? "gray"
-                                  : "#d32f2f",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {item.payment_status}
-                          </span>
-                        </p> */}
-
                         {item.payment_status === "Verify Pending" ? (
                           <div className="customer_trans_statustext_container">
-                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                            <PiClockCounterClockwiseBold
+                              size={16}
+                              color="gray"
+                            />
+                            <p style={{ color: "gray", fontWeight: 500 }}>
                               Waiting for Verify
                             </p>
                           </div>

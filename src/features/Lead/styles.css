@@ -304,6 +304,20 @@
 .lead_course_instruction_container ul {
   margin-bottom: 3px;
 }
+.leads_serverrequired_label {
+  font-size: 12.5px;
+  /* font-weight: 500; */
+}
+.leads_serverrequired_switch.ant-switch {
+  height: 20px !important;
+}
+.leads_serverrequired_switch.ant-switch .ant-switch-handle {
+  width: 16px !important;
+  height: 16px !important;
+}
+.leads_serverrequired_switch.ant-switch.ant-switch-checked {
+  background-color: #5b69ca !important;
+}
 /* lead followup styles */
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {
   padding: 0px !important;

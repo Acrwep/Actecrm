@@ -372,3 +372,15 @@
   opacity: 1 !important;
   border-color: rgba(128, 128, 128, 0.712) !important;
 }
+
+/* view invoice styles */
+.invoice-container table {
+  border: none; /* or your invoice-specific border */
+}
+
+.invoice-container table th,
+.invoice-container table td {
+  border: none !important;
+  padding: 8px !important;
+  text-align: center !important;
+}

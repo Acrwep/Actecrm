@@ -21,6 +21,7 @@ import { SiWhatsapp } from "react-icons/si";
 import "./styles.css";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import {
+  getAllAreas,
   getBatches,
   getBatchTrack,
   getBranches,
@@ -30,6 +31,7 @@ import {
   getTrainingMode,
   updateCustomer,
 } from "../ApiService/action";
+import { Country, State } from "country-state-city";
 import { CommonMessage } from "../Common/CommonMessage";
 
 const CustomerUpdate = forwardRef(
@@ -59,8 +61,15 @@ const CustomerUpdate = forwardRef(
     const [genderError, setGenderError] = useState("");
     const [dateOfJoining, setDateOfJoining] = useState("");
     const [dateOfJoiningError, setDateOfJoiningError] = useState("");
-    const [location, setLocation] = useState("");
-    const [locationError, setLocationError] = useState("");
+    const [countryOptions, setCountryOptions] = useState([]);
+    const [countryId, setCountryId] = useState(null);
+    const [countryIdError, setCountryIdError] = useState("");
+    const [stateOptions, setStateOptions] = useState([]);
+    const [stateId, setStateId] = useState(null);
+    const [stateIdError, setStateIdError] = useState("");
+    const [areaOptions, setAreaOptions] = useState([]);
+    const [areaId, setAreaId] = useState(null);
+    const [areaIdError, setAreaIdError] = useState("");
 
     //course details usestates
     const [courseOptions, setCourseOptions] = useState([]);
@@ -69,7 +78,6 @@ const CustomerUpdate = forwardRef(
     const [regionOptions, setRegionOptions] = useState([]);
     const [regionId, setRegionId] = useState(null);
     const [regionError, setRegionError] = useState("");
-    const [trainingModeOptions, setTrainingModeOptions] = useState([]);
     const [batchTrackOptions, setBatchTrackOptions] = useState([]);
     const [batchTrack, setBatchTrack] = useState(null);
     const [batchTrackError, setBatchTrackError] = useState("");
@@ -89,6 +97,8 @@ const CustomerUpdate = forwardRef(
     const [callCustomerApi, setCallCustomerApi] = useState(false);
 
     useEffect(() => {
+      setActiveKey("1");
+      setUpdateDrawerTabKey("1");
       if (callCustomerApi && customerId != null) {
         setUpdateDrawerTabKey("1");
         setActiveKey("1");
@@ -109,20 +119,6 @@ const CustomerUpdate = forwardRef(
         console.log("response status error", error);
       } finally {
         setTimeout(() => {
-          getTrainingModeData();
-        }, 300);
-      }
-    };
-
-    const getTrainingModeData = async () => {
-      try {
-        const response = await getTrainingMode();
-        setTrainingModeOptions(response?.data?.result || []);
-      } catch (error) {
-        setTrainingModeOptions([]);
-        console.log("trainer mode error", error);
-      } finally {
-        setTimeout(() => {
           getBatchTrackData();
         }, 300);
       }
@@ -134,6 +130,21 @@ const CustomerUpdate = forwardRef(
         setBatchTrackOptions(response?.data?.result || []);
       } catch (error) {
         setBatchTrackOptions([]);
+        console.log("response status error", error);
+      } finally {
+        setTimeout(() => {
+          getBatchTimingData();
+        }, 300);
+      }
+    };
+
+    const getAreasData = async () => {
+      try {
+        const response = await getAllAreas();
+        const allArea = response?.data?.data || [];
+        setAreaOptions(allArea);
+      } catch (error) {
+        setAreaOptions([]);
         console.log("response status error", error);
       } finally {
         setTimeout(() => {
@@ -183,11 +194,32 @@ const CustomerUpdate = forwardRef(
         setDateOfBirth(customerDetails.date_of_birth);
         setGender(customerDetails.gender);
         setDateOfJoining(customerDetails.date_of_joining);
-        setLocation(
-          customerDetails.current_location
-            ? customerDetails.current_location
-            : ""
-        );
+        const countries = Country.getAllCountries();
+        const updateCountries = countries.map((c) => {
+          return { ...c, id: c.isoCode };
+        });
+        setCountryOptions(updateCountries);
+
+        setCountryId(customerDetails.country);
+        const stateList = State.getStatesOfCountry(customerDetails.country);
+        const updateSates = stateList.map((s) => {
+          return { ...s, id: s.isoCode };
+        });
+        setStateOptions(updateSates);
+        setStateId(customerDetails.state);
+        //area
+        try {
+          const response = await getAllAreas();
+          const allArea = response?.data?.data || [];
+          setAreaOptions(allArea);
+          const findArea = allArea.find(
+            (f) => f.name === customerDetails.current_location
+          );
+          setAreaId(parseInt(findArea.id));
+        } catch (error) {
+          setAreaOptions([]);
+          console.log("area error", error);
+        }
         setBatchTrack(customerDetails.batch_track_id);
         setBatchTiming(customerDetails.batch_timing_id);
         setBranchId(customerDetails.branch_id);
@@ -232,6 +264,26 @@ const CustomerUpdate = forwardRef(
       formReset,
     }));
 
+    //onchange function
+    const handleCountry = (e) => {
+      const value = e.target.value;
+      console.log(value, countryOptions);
+      setCountryId(value);
+      setStateId("");
+      const selectedCountry = countryOptions.find((f) => f.id === value);
+      console.log("selected country", value, selectedCountry);
+
+      const stateList = State.getStatesOfCountry(selectedCountry.id);
+      const updateSates = stateList.map((s) => {
+        return { ...s, id: s.isoCode };
+      });
+      console.log(updateSates, "updateSates");
+      setStateOptions(updateSates);
+      if (validationTrigger) {
+        setCountryIdError(selectValidator(value));
+      }
+    };
+
     const handlePersonalDetails = () => {
       setValidationTrigger(true);
       const nameValidate = nameValidator(name);
@@ -241,9 +293,9 @@ const CustomerUpdate = forwardRef(
       const dateOfBirthValidate = selectValidator(dateOfBirth);
       const genderValidate = selectValidator(gender);
       const dateOfJoiningValidate = selectValidator(dateOfJoining);
-      const locationValidate = addressValidator(location);
-
-      console.log("locationValidate", location, locationValidate);
+      const countryValidate = selectValidator(countryId);
+      const stateValidate = selectValidator(stateId);
+      const areaValidate = selectValidator(areaId);
 
       setNameError(nameValidate);
       setEmailError(emailValidate);
@@ -252,7 +304,9 @@ const CustomerUpdate = forwardRef(
       setDateOfBirthError(dateOfBirthValidate);
       setGenderError(genderValidate);
       setDateOfJoiningError(dateOfJoiningValidate);
-      setLocationError(locationValidate);
+      setCountryIdError(countryValidate);
+      setStateIdError(stateValidate);
+      setAreaIdError(areaValidate);
 
       if (
         nameValidate ||
@@ -262,7 +316,9 @@ const CustomerUpdate = forwardRef(
         dateOfBirthValidate ||
         genderValidate ||
         dateOfJoiningValidate ||
-        locationValidate
+        countryValidate ||
+        stateValidate ||
+        areaValidate
       )
         return;
 
@@ -279,7 +335,9 @@ const CustomerUpdate = forwardRef(
       const dateOfBirthValidate = selectValidator(dateOfBirth);
       const genderValidate = selectValidator(gender);
       const dateOfJoiningValidate = selectValidator(dateOfJoining);
-      const locationValidate = addressValidator(location);
+      const countryValidate = selectValidator(countryId);
+      const stateValidate = selectValidator(stateId);
+      const areaValidate = selectValidator(areaId);
       const courseValidate = selectValidator(course);
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = selectValidator(branchId);
@@ -294,7 +352,9 @@ const CustomerUpdate = forwardRef(
       setDateOfBirthError(dateOfBirthValidate);
       setGenderError(genderValidate);
       setDateOfJoiningError(dateOfJoiningValidate);
-      setLocationError(locationValidate);
+      setCountryIdError(countryValidate);
+      setStateIdError(stateValidate);
+      setAreaIdError(areaValidate);
       setCourseError(courseValidate);
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
@@ -310,7 +370,9 @@ const CustomerUpdate = forwardRef(
         dateOfBirthValidate ||
         genderValidate ||
         dateOfJoiningValidate ||
-        locationValidate
+        countryValidate ||
+        stateValidate ||
+        areaValidate
       ) {
         setActiveKey("1");
         return;
@@ -327,6 +389,7 @@ const CustomerUpdate = forwardRef(
         return;
 
       setUpdateButtonLoading(true);
+      const getCustomerArea = areaOptions.find((f) => f.id === areaId);
 
       const payload = {
         id: customerId,
@@ -343,10 +406,12 @@ const CustomerUpdate = forwardRef(
         branch_id: branchId,
         batch_track_id: batchTrack,
         batch_timing_id: batchTiming,
-        current_location: location,
+        country: countryId,
+        state: stateId,
+        area: getCustomerArea.name,
         signature_image: signatureBase64,
         profile_image: profilePictureBase64,
-        palcement_support: placementSupport,
+        placement_support: placementSupport,
       };
 
       try {
@@ -355,6 +420,8 @@ const CustomerUpdate = forwardRef(
         setTimeout(() => {
           setUpdateButtonLoading(false);
           setIsOpenEditDrawer(false);
+          setUpdateDrawerTabKey("1");
+          setActiveKey("1");
           callgetCustomersApi();
         }, 300);
       } catch (error) {
@@ -385,8 +452,12 @@ const CustomerUpdate = forwardRef(
       setGenderError("");
       setDateOfJoining(null);
       setDateOfJoiningError("");
-      setLocation("");
-      setLocationError("");
+      setCountryId(null);
+      setCountryIdError("");
+      setStateId(null);
+      setStateIdError("");
+      setAreaId(null);
+      setAreaIdError("");
       setCourse("");
       setCourseError("");
       setBatchTrack("");
@@ -540,35 +611,51 @@ const CustomerUpdate = forwardRef(
               </Col>
 
               <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonInputField
-                  label="Location"
+                <CommonSelectField
+                  label="Country"
                   required={true}
+                  options={countryOptions}
+                  onChange={handleCountry}
+                  value={countryId}
+                  error={countryIdError}
+                />
+              </Col>
+
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="State"
+                  required={true}
+                  options={stateOptions}
                   onChange={(e) => {
-                    setLocation(e.target.value);
+                    setStateId(e.target.value);
                     if (validationTrigger) {
-                      setLocationError(addressValidator(e.target.value));
+                      setStateIdError(selectValidator(e.target.value));
                     }
                   }}
-                  value={location}
-                  error={locationError}
-                  onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
+                  value={stateId}
+                  error={stateIdError}
+                />
+              </Col>
+            </Row>
+
+            <Row gutter={12} style={{ marginTop: "30px" }}>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="Area"
+                  required={true}
+                  options={areaOptions}
+                  onChange={(e) => {
+                    setAreaId(e.target.value);
+                    if (validationTrigger) {
+                      setAreaIdError(selectValidator(e.target.value));
                     }
                   }}
+                  value={areaId}
+                  error={areaIdError}
                 />
               </Col>
             </Row>
           </div>
-
-          {/* <div className="trainer_registration_submitbuttonContainer">
-          <button
-            className="trainer_registration_submitbutton"
-            onClick={handlePersonalDetails}
-          >
-            Next
-          </button>
-        </div> */}
         </div>
       );
     };
@@ -594,19 +681,6 @@ const CustomerUpdate = forwardRef(
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
-                {/* <CommonSelectField
-                  label="Training Mode"
-                  required={true}
-                  options={trainingModeOptions}
-                  onChange={(e) => {
-                    setTrainingMode(e.target.value);
-                    if (validationTrigger) {
-                      setTrainingModeError(selectValidator(e.target.value));
-                    }
-                  }}
-                  value={trainingMode}
-                  error={trainingModeError}
-                /> */}
                 <CommonSelectField
                   label="Region"
                   required={true}
@@ -661,7 +735,7 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
-                  label="Batch Timing"
+                  label="Batch Type"
                   required={true}
                   options={batchTimingOptions}
                   onChange={(e) => {
@@ -694,20 +768,6 @@ const CustomerUpdate = forwardRef(
               </Col>
             </Row>
           </div>{" "}
-          {/* <div className="trainer_registration_submitbuttonContainer">
-          {buttonLoading ? (
-            <button className="trainer_registration_loadingsubmitbutton">
-              <CommonSpinner />
-            </button>
-          ) : (
-            <button
-              className="trainer_registration_submitbutton"
-              onClick={handleSubmit}
-            >
-              Submit
-            </button>
-          )}
-        </div> */}
         </div>
       );
     };

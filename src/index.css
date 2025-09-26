@@ -410,3 +410,19 @@ button:focus-visible {
   > .ant-steps-item-title::after {
   background-color: #535bf2 !important;
 }
+
+/* antd timeline style */
+.ant-timeline {
+  width: 62% !important;
+}
+.ant-timeline .ant-timeline-item {
+  padding-bottom: 45px !important;
+}
+.ant-timeline.ant-timeline-label
+  .ant-timeline-item-left
+  .ant-timeline-item-content {
+  width: 100% !important;
+}
+.ant-timeline.ant-timeline-label .ant-timeline-item-label {
+  font-size: 13px !important;
+}

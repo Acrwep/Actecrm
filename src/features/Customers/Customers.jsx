@@ -14,6 +14,7 @@ import {
   Collapse,
   Modal,
   Steps,
+  Timeline,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -28,6 +29,7 @@ import {
   generateCertForCustomer,
   getAssignTrainerHistoryForCustomer,
   getCustomerByTrainerId,
+  getCustomerFullHistory,
   getCustomers,
   getTrainerById,
   getTrainers,
@@ -35,7 +37,7 @@ import {
   rejectCustomerPayment,
   rejectTrainerForCustomer,
   sendCustomerCertificate,
-  sendLeadInvoiceEmail,
+  sendPaymentInvoiceByEmail,
   updateClassGoingForCustomer,
   updateCustomerPaymentTransaction,
   updateCustomerStatus,
@@ -84,12 +86,17 @@ import { FaRegCopy } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
 import { FcGoogle } from "react-icons/fc";
 import { FaLinkedin } from "react-icons/fa";
+import { GrCertificate } from "react-icons/gr";
+import { CloseOutlined } from "@ant-design/icons";
+import { GrNotes } from "react-icons/gr";
+import { LuFileClock } from "react-icons/lu";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonMuiMonthPicker from "../Common/CommonMuiMonthPicker";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
+import CustomerHistory from "./CustomerHistory";
 
 const { Step } = Steps;
 
@@ -207,6 +214,7 @@ export default function Customers() {
     { id: 1, name: "On Going" },
     { id: 3, name: "Hold" },
     { id: 6, name: "CGS" },
+    { id: 10, name: "Demo Completed" },
   ];
   const scheduleOptions2 = [
     { id: 1, name: "On Going" },
@@ -234,13 +242,12 @@ export default function Customers() {
   const [classCompleteLoading, setClassCompleteLoading] = useState(false);
   const [isShowAddAttachment, setIsShowAddAttachment] = useState(false);
   //feedback usestates
+  const [callCusTrack, setCallCusTrack] = useState(false);
   const [googleFeedbackBase64, setGoogleFeedbackBase64] = useState("");
   const [linkedinFeedbackBase64, setLinkedinFeedbackBase64] = useState("");
 
   const [courseDuration, setCourseDuration] = useState("");
   const [courseDurationError, setCourseDurationError] = useState("");
-  const [courseCompleteDate, setCourseCompleteDate] = useState("");
-  const [courseCompleteDateError, setCourseCompleteDateError] = useState("");
   const [isGoogleReviewChange, setIsGoogleReviewChange] = useState(false);
   const [isCertChange, setIsCertChange] = useState(false);
   const [certName, setCertName] = useState("");
@@ -253,8 +260,14 @@ export default function Customers() {
   const [generateCertLoading, setGenerateCertLoading] = useState(false);
   const [certHtmlContent, setCertHtmlContent] = useState("");
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
-  const [completeLoading, setCompleteLoading] = useState(true);
+  const [certificateName, setCertificateName] = useState("");
   const [current, setCurrent] = useState(0);
+
+  //customer history usestates
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [customerHistory, setCustomerHistory] = useState([]);
+  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
 
   const prev = () => setCurrent(current - 1);
 
@@ -691,6 +704,7 @@ export default function Customers() {
                       record.status === "Escalated" ||
                       record.status === "Partially Closed" ||
                       record.status === "Discontinued" ||
+                      record.status === "Demo Completed" ||
                       record.status === "Refund" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -732,6 +746,7 @@ export default function Customers() {
                               record.status === "Escalated" ||
                               record.status === "Partially Closed" ||
                               record.status === "Discontinued" ||
+                              record.status === "Demo Completed" ||
                               record.status === "Refund"
                             ) {
                               setCustomerId(record.id);
@@ -831,6 +846,7 @@ export default function Customers() {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Add G-Review");
+                              setCallCusTrack(true);
                               setIsStatusUpdateDrawer(true);
                               if (record.google_review === null) {
                                 setCurrent(0);
@@ -960,6 +976,7 @@ export default function Customers() {
                 text === "Hold" ||
                 text === "Partially Closed" ||
                 text === "Discontinued" ||
+                text === "Demo Completed" ||
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
@@ -993,7 +1010,24 @@ export default function Customers() {
                       }/customer-registration/${record.id}`
                     );
                     CommonMessage("success", "Link Copied");
-                    console.log("Copied: eeee");
+                  }}
+                />
+              </Tooltip>
+            )}
+            {record.status === "Completed" && (
+              <Tooltip
+                placement="top"
+                title="View Certificate"
+                trigger={["hover", "click"]}
+              >
+                <GrCertificate
+                  size={14}
+                  color="#5a5858"
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleViewCert(record.id);
+                    setCertificateName(record.name);
                   }}
                 />
               </Tooltip>
@@ -1012,7 +1046,7 @@ export default function Customers() {
         return (
           <div className="trainers_actionbuttonContainer">
             <AiOutlineEdit
-              size={20}
+              size={18}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
@@ -1022,11 +1056,35 @@ export default function Customers() {
               trigger={["hover", "click"]}
             >
               <FaRegEye
-                size={17}
+                size={15}
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
                   setCustomerDetails(record);
+                }}
+              />
+            </Tooltip>
+
+            <Tooltip
+              placement="top"
+              title="View Customer History"
+              trigger={["hover", "click"]}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setCustomerDetails(record);
+                  getCustomerHistoryData(record.id);
+                  setTimeout(() => {
+                    const container = document.getElementById(
+                      "customer_history_modal_maincontainer"
+                    );
+                    container.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }, 300);
                 }}
               />
             </Tooltip>
@@ -1037,7 +1095,7 @@ export default function Customers() {
   ]);
 
   const nonChangeColumns = [
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+  { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone" },
     { title: "Course ", key: "course_name", dataIndex: "course_name" },
@@ -1134,8 +1192,96 @@ export default function Customers() {
                 <>
                   <Row>
                     <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ? (
+                      {record.is_last_pay_rejected === 1 ? (
+                        <>
+                          <button
+                            className="customers_finance_updatepayment_button"
+                            onClick={() => {
+                              setDrawerContentStatus("Update Payment");
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setCollapseDefaultKey(["1"]);
+                              setIsStatusUpdateDrawer(true);
+                              setPaymentHistory(
+                                record.payments && record.payments
+                                  ? record.payments.payment_trans
+                                  : []
+                              );
+                              setSubTotal(record.primary_fees);
+                              setTaxType(
+                                record.payments && record.payments.tax_type
+                                  ? record.payments.tax_type === "GST (18%)"
+                                    ? 1
+                                    : record.payments.tax_type === "SGST (18%)"
+                                    ? 2
+                                    : record.payments.tax_type === "IGST (18%)"
+                                    ? 3
+                                    : record.payments.tax_type === "VAT (18%)"
+                                    ? 4
+                                    : record.payments.tax_type === "No tax"
+                                    ? 5
+                                    : 0
+                                  : 0
+                              );
+                              setAmount(
+                                record.payments && record.payments.total_amount
+                                  ? record.payments.total_amount
+                                  : 0
+                              );
+                              //transaction handling
+                              const rejectedItem =
+                                record?.payments?.payment_trans?.find(
+                                  (f) => f?.payment_status === "Rejected"
+                                );
+                              console.log("rejectedItem", rejectedItem);
+                              setUpdatePaymentTransId(
+                                rejectedItem && rejectedItem.id
+                                  ? rejectedItem.id
+                                  : null
+                              );
+                              setPaidNow(
+                                rejectedItem && rejectedItem.amount
+                                  ? rejectedItem.amount
+                                  : 0
+                              );
+                              setPaymentMode(
+                                rejectedItem && rejectedItem.paymode_id
+                                  ? rejectedItem.paymode_id
+                                  : 0
+                              );
+                              setConvenienceFees(
+                                rejectedItem && rejectedItem.convenience_fees
+                                  ? rejectedItem.convenience_fees
+                                  : 0
+                              );
+                              setPaymentDate(
+                                rejectedItem && rejectedItem.paid_date
+                                  ? rejectedItem.paid_date
+                                  : null
+                              );
+                              setPaymentScreenShotBase64(
+                                rejectedItem && rejectedItem.payment_screenshot
+                                  ? rejectedItem.payment_screenshot
+                                  : ""
+                              );
+                              setBalanceAmount(
+                                rejectedItem && rejectedItem.balance_amount
+                                  ? rejectedItem.balance_amount
+                                  : 0
+                              );
+                              setDueDate(
+                                rejectedItem && rejectedItem.next_due_date
+                                  ? rejectedItem.next_due_date
+                                  : null
+                              );
+                            }}
+                          >
+                            Update Payment
+                          </button>
+                        </>
+                      ) : record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.is_second_due === 1 ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           style={{ marginTop: "6px" }}
@@ -1150,6 +1296,7 @@ export default function Customers() {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Finance Verify");
+                              setCollapseDefaultKey(["1"]);
                               setIsStatusUpdateDrawer(true);
                               setPaymentHistory(
                                 record.payments && record.payments
@@ -1177,6 +1324,7 @@ export default function Customers() {
                     <Col span={12}>
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Awaiting Verify" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -1224,6 +1372,7 @@ export default function Customers() {
                       record.status === "Awaiting Finance" ||
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -1282,6 +1431,7 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -1302,7 +1452,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Trainer not Assigned yet"
@@ -1349,12 +1502,14 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
+                      record.status === "Payment Rejected" ||
                       record.status === "Trainer Rejected" ||
                       record.status === "Awaiting Class" ||
                       record.status === "Hold" ||
                       record.status === "Escalated" ||
                       record.status === "Partially Closed" ||
                       record.status === "Discontinued" ||
+                      record.status === "Demo Completed" ||
                       record.status === "Refund" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -1375,7 +1530,10 @@ export default function Customers() {
                                 "warning",
                                 "Customer not Verified Yet"
                               );
-                            } else if (record.status === "Awaiting Trainer") {
+                            } else if (
+                              record.status === "Awaiting Trainer" ||
+                              record.status === "Trainer Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Trainer not Assigned yet"
@@ -1393,6 +1551,7 @@ export default function Customers() {
                               record.status === "Escalated" ||
                               record.status === "Partially Closed" ||
                               record.status === "Discontinued" ||
+                              record.status === "Demo Completed" ||
                               record.status === "Refund"
                             ) {
                               setCustomerId(record.id);
@@ -1492,21 +1651,29 @@ export default function Customers() {
                               setCustomerId(record.id);
                               setCustomerDetails(record);
                               setDrawerContentStatus("Add G-Review");
+                              setCallCusTrack(true);
                               setIsStatusUpdateDrawer(true);
                               if (record.google_review === null) {
                                 setCurrent(0);
-                              } else if (record.course_duration === null) {
+                              } else if (
+                                record.is_certificate_generated === 0
+                              ) {
                                 setCurrent(1);
                               } else {
                                 setCurrent(2);
                               }
-                              setCourseDuration(record.course_duration);
-                              setCourseCompleteDate(
-                                record.course_completion_date
-                              );
+                              setCourseDuration(record.cer_course_duration);
+                              setCertMonth(record.cer_course_completion_month);
                               if (record.google_review) {
                                 setGoogleFeedbackBase64(record.google_review);
                               }
+                              setCertName(record.name);
+                              setCertCourseName(record.course_name);
+                              setIsCertGenerated(
+                                record.is_certificate_generated === 1
+                                  ? true
+                                  : false
+                              );
                             }}
                           >
                             Passedout process
@@ -1540,14 +1707,22 @@ export default function Customers() {
                 </>
               }
             >
-              {text === "Pending" ||
-              text === "PENDING" ||
-              text === "Verify Pending" ? (
-                <Button className="trainers_pending_button">Pending</Button>
+              {record.is_second_due === 1 ? (
+                <div>
+                  <Button className="customers_status_awaitfinance_button">
+                    Awaiting Finance
+                  </Button>
+                </div>
               ) : text === "Form Pending" ? (
                 <div>
                   <Button className="customers_status_formpending_button">
                     {text}
+                  </Button>
+                </div>
+              ) : record.is_last_pay_rejected === 1 ? (
+                <div>
+                  <Button className="trainers_rejected_button">
+                    Payment Rejected
                   </Button>
                 </div>
               ) : text === "Awaiting Finance" ? (
@@ -1600,11 +1775,13 @@ export default function Customers() {
                 </div>
               ) : text === "Rejected" ||
                 text === "REJECTED" ||
+                text === "Payment Rejected" ||
                 text === "Trainer Rejected" ||
                 text === "Escalated" ||
                 text === "Hold" ||
                 text === "Partially Closed" ||
                 text === "Discontinued" ||
+                text === "Demo Completed" ||
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
@@ -1638,7 +1815,24 @@ export default function Customers() {
                       }/customer-registration/${record.id}`
                     );
                     CommonMessage("success", "Link Copied");
-                    console.log("Copied: eeee");
+                  }}
+                />
+              </Tooltip>
+            )}
+            {record.status === "Completed" && (
+              <Tooltip
+                placement="top"
+                title="View Certificate"
+                trigger={["hover", "click"]}
+              >
+                <GrCertificate
+                  size={14}
+                  color="#5a5858"
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleViewCert(record.id);
+                    setCertificateName(record.name);
                   }}
                 />
               </Tooltip>
@@ -1656,23 +1850,8 @@ export default function Customers() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip
-              placement="top"
-              title="Send Form Link"
-              trigger={["hover", "click"]}
-            >
-              {loadingRowId === record.id ? (
-                <CommonSpinner color="#333" />
-              ) : (
-                <LuSend
-                  size={17}
-                  className="trainers_action_icons"
-                  onClick={() => handleSendFormLink(record.email, record.id)}
-                />
-              )}
-            </Tooltip> */}
             <AiOutlineEdit
-              size={20}
+              size={18}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
@@ -1682,11 +1861,35 @@ export default function Customers() {
               trigger={["hover", "click"]}
             >
               <FaRegEye
-                size={17}
+                size={15}
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
                   setCustomerDetails(record);
+                }}
+              />
+            </Tooltip>
+
+            <Tooltip
+              placement="top"
+              title="View Customer History"
+              trigger={["hover", "click"]}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setCustomerDetails(record);
+                  getCustomerHistoryData(record.id);
+                  setTimeout(() => {
+                    const container = document.getElementById(
+                      "customer_history_modal_maincontainer"
+                    );
+                    container.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }, 300);
                 }}
               />
             </Tooltip>
@@ -1854,6 +2057,21 @@ export default function Customers() {
     }
   };
 
+  const getCustomerHistoryData = async (customerid) => {
+    setIsOpenCustomerHistoryDrawer(true);
+    setCustomerByTrainerLoading(true);
+    try {
+      const response = await getCustomerFullHistory(customerid);
+      setCustomerHistory(response?.data?.data || []);
+      console.log("history response", response);
+      setTimeout(() => {
+        setCustomerHistoryLoading(false);
+      }, 300);
+    } catch (error) {
+      console.log("history response", error);
+    }
+  };
+
   const getAssignTrainerData = async (trainerId) => {
     try {
       const response = await getTrainerById(trainerId);
@@ -1982,7 +2200,165 @@ export default function Customers() {
     }
   };
 
-  const handleCustomerTrack = async (updatestatus) => {
+  const handleCustomerTrack = async (updatestatus, transactionId) => {
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+
+    const paymentVerifyDetails = {
+      transaction_id: transactionId ?? "0",
+    };
+    const studentVerifiedDetails = {
+      comments: studentVerifyComments,
+      proof_communication: studentVerifyProofBase64,
+    };
+
+    let trainerName = "";
+    if (updatestatus === "Trainer Assigned") {
+      const findTrainer = trainersData.find((f) => f.id === trainerId);
+      trainerName = findTrainer ? findTrainer.name : "";
+    }
+
+    const assignTrainerDetails = {
+      trainer_id: trainerId,
+      trainer_name: trainerName,
+      commercial: commercial,
+      mode_of_class: modeOfClass,
+      trainer_type: trainerType,
+      comments: assignTrainerComments,
+      proof_communication: assignTrainerProofBase64,
+    };
+
+    const verifyOrRejectTrainerDetails = {
+      trainer_name:
+        customerDetails && customerDetails.trainer_name
+          ? customerDetails.trainer_name
+          : "-",
+      trainer_email:
+        customerDetails && customerDetails.trainer_email
+          ? customerDetails.trainer_email
+          : "-",
+      trainer_mobile:
+        customerDetails && customerDetails.trainer_mobile
+          ? customerDetails.trainer_mobile
+          : "-",
+      mode_of_class:
+        customerDetails && customerDetails.mode_of_class
+          ? customerDetails.mode_of_class
+          : "-",
+      trainer_type:
+        customerDetails && customerDetails.trainer_type
+          ? customerDetails.trainer_type
+          : "-",
+      trainer_commercial:
+        customerDetails && customerDetails.commercial
+          ? customerDetails.commercial
+          : "-",
+      trainer_commercial_percentage:
+        customerDetails && customerDetails.commercial_percentage
+          ? customerDetails.commercial_percentage
+          : "-",
+      ...(updatestatus && updatestatus === "Trainer Rejected"
+        ? { rejected_reason: rejectTrainerComments }
+        : {}),
+    };
+
+    const classScheduledDetails = {
+      schedule_status: "Class Scheduled",
+      ...(classStartDate
+        ? {
+            class_start_date: formatToBackendIST(classStartDate),
+          }
+        : { class_start_date: null }),
+    };
+
+    const classGoingDetails = {
+      schedule_status: "Class Going",
+      class_going_percentage: classGoingPercentage,
+    };
+
+    const holdDetails = {
+      comments: classHoldComments,
+    };
+
+    const escalatedDetails = {
+      comments: classGoingComments,
+      attachment: addattachmentBase64,
+    };
+
+    const classCompletedDetails = {
+      schedule_status: "Class Completed",
+      class_going_percentage: 100,
+    };
+
+    const googleReviewDetails = {
+      google_review: googleFeedbackBase64,
+    };
+
+    const linkedinReviewDetails = {
+      linkedin_review: linkedinFeedbackBase64,
+    };
+
+    const payload = {
+      customer_id: customerDetails.id,
+      status: updatestatus,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      status_date: formatToBackendIST(today),
+      ...(updatestatus && updatestatus === "Payment Verified"
+        ? { details: paymentVerifyDetails }
+        : updatestatus === "Part Payment Verified"
+        ? { details: paymentVerifyDetails }
+        : updatestatus === "Student Verified"
+        ? { details: studentVerifiedDetails }
+        : updatestatus === "Trainer Assigned"
+        ? { details: assignTrainerDetails }
+        : updatestatus === "Trainer Verified" ||
+          updatestatus === "Trainer Rejected"
+        ? { details: verifyOrRejectTrainerDetails }
+        : updatestatus === "Class Scheduled"
+        ? { details: classScheduledDetails }
+        : updatestatus === "Class Going"
+        ? { details: classGoingDetails }
+        : updatestatus === "Hold" || updatestatus === "Demo Completed"
+        ? { details: holdDetails }
+        : updatestatus === "Escalated" ||
+          updatestatus === "Partially Closed" ||
+          updatestatus === "Discontinued" ||
+          updatestatus === "Refund"
+        ? { details: escalatedDetails }
+        : updatestatus === "Class Completed"
+        ? { details: classCompletedDetails }
+        : updatestatus === "Google Review Added"
+        ? { details: googleReviewDetails }
+        : updatestatus === "Linkedin Review Added"
+        ? { details: linkedinReviewDetails }
+        : {}),
+    };
+    try {
+      await inserCustomerTrack(payload);
+      setTimeout(() => {
+        if (
+          updatestatus === "Google Review Added" ||
+          updatestatus === "Certificate Generated"
+        ) {
+          return;
+        }
+        updateStatusDrawerReset();
+        getCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          searchValue,
+          status
+        );
+      }, 300);
+    } catch (error) {
+      console.log("customer track error", error);
+    }
+  };
+
+  const handleSecondCustomerTrack = async (updatestatus) => {
     const today = new Date();
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
@@ -1997,21 +2373,12 @@ export default function Customers() {
     };
     try {
       await inserCustomerTrack(payload);
-      setTimeout(() => {
-        updateStatusDrawerReset();
-        getCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          status
-        );
-      }, 300);
     } catch (error) {
       console.log("customer track error", error);
     }
   };
 
-  const handleFinaceVerify = async (transactiondetails) => {
+  const handleFinanceVerify = async (transactiondetails) => {
     setUpdateButtonLoading(true);
     const today = new Date();
     const payload = {
@@ -2021,13 +2388,35 @@ export default function Customers() {
     try {
       await verifyCustomerPayment(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        setUpdateButtonLoading(false);
-        handleCustomerStatus(
-          customerDetails?.is_second_due === 1
-            ? customerDetails?.status ?? "Unknown"
-            : "Awaiting Verify"
-        );
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status:
+            customerDetails?.is_second_due === 1
+              ? customerDetails?.status ?? "Unknown"
+              : "Awaiting Verify",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack(
+            customerDetails?.is_second_due === 1
+              ? "Part Payment Verified" ?? "Unknown"
+              : "Payment Verified",
+            transactiondetails?.id || ""
+          );
+          setTimeout(() => {
+            if (customerDetails?.is_second_due === 1) {
+              return;
+            }
+            handleSecondCustomerTrack("Awaiting Verify");
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
         sendInvoiceEmail(transactiondetails);
       }, 300);
     } catch (error) {
@@ -2059,7 +2448,11 @@ export default function Customers() {
       CommonMessage("success", "Updated Successfully");
       setTimeout(() => {
         setRejectLoading(false);
-        handleCustomerStatus(customerDetails.status);
+        handleCustomerTrack(
+          customerDetails?.is_second_due === 1
+            ? "Part Payment Rejected" ?? "Unknown"
+            : "Payment Rejected"
+        );
       }, 300);
     } catch (error) {
       setRejectLoading(false);
@@ -2106,7 +2499,7 @@ export default function Customers() {
     };
 
     try {
-      await sendLeadInvoiceEmail(payload);
+      await sendPaymentInvoiceByEmail(payload);
     } catch (error) {
       console.log("invoice error", error);
     }
@@ -2158,9 +2551,21 @@ export default function Customers() {
     try {
       await updateCustomerPaymentTransaction(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        setUpdateButtonLoading(false);
-        handleCustomerStatus(customerDetails.status);
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: customerDetails.status,
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Payment Updated");
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2194,8 +2599,24 @@ export default function Customers() {
     try {
       await verifyCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleCustomerStatus("Awaiting Trainer");
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Awaiting Trainer",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Student Verified");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Awaiting Trainer");
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2413,8 +2834,24 @@ export default function Customers() {
     try {
       await assignTrainerForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleCustomerStatus("Awaiting Trainer Verify");
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Awaiting Trainer Verify",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Trainer Assigned");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Awaiting Trainer Verify");
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2463,8 +2900,24 @@ export default function Customers() {
     try {
       await verifyTrainerForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleCustomerStatus("Awaiting Class");
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Awaiting Class",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Trainer Verified");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Awaiting Class");
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2504,8 +2957,24 @@ export default function Customers() {
     try {
       await rejectTrainerForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleCustomerStatus("Trainer Rejected");
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Trainer Rejected",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Trainer Rejected");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Awaiting Trainer");
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setRejectButtonLoader(false);
@@ -2528,7 +2997,7 @@ export default function Customers() {
       classStartDateValidate = "";
     }
 
-    if (scheduleId === 3) {
+    if (scheduleId === 3 || scheduleId === 10) {
       classHoldCommentValidate = addressValidator(classHoldComments);
     } else {
       classStartDateValidate = "";
@@ -2569,6 +3038,8 @@ export default function Customers() {
             ? "Class Going"
             : scheduleId === 3
             ? "Hold"
+            : scheduleId === 10
+            ? "Demo Completed"
             : scheduleId === 5
             ? "Escalated"
             : "Class Scheduled"
@@ -2667,10 +3138,26 @@ export default function Customers() {
     try {
       await updateClassGoingForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsOpenClassCompleteModal(false);
-        handleCustomerStatus("Passedout process");
-        setClassCompleteLoading(false);
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Passedout process",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Class Completed");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Passedout Process");
+            setClassCompleteLoading(false);
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setClassCompleteLoading(false);
@@ -2703,6 +3190,10 @@ export default function Customers() {
           searchValue,
           status
         );
+        if (callCusTrack) {
+          handleCustomerTrack("Google Review Added");
+          setCallCusTrack(false);
+        }
         // CommonMessage("success", "Updated Successfully");
         setCurrent(1);
       } catch (error) {
@@ -2762,6 +3253,7 @@ export default function Customers() {
       console.log("cert response", response);
       CommonMessage("success", "Certificate Generated Successfully");
       setTimeout(() => {
+        handleCustomerTrack("Certificate Generated");
         getCustomersData(
           selectedDates[0],
           selectedDates[1],
@@ -2780,10 +3272,10 @@ export default function Customers() {
     }
   };
 
-  const handleViewCert = async () => {
+  const handleViewCert = async (customer_id) => {
     setGenerateCertLoading(true);
     const payload = {
-      customer_id: customerDetails.id,
+      customer_id: customer_id ? customer_id : customerDetails.id,
     };
     try {
       const response = await viewCertForCustomer(payload);
@@ -2825,9 +3317,25 @@ export default function Customers() {
     try {
       await updatefeedbackForCustomer(payload);
       CommonMessage("success", "Updated Successfully");
-      setTimeout(() => {
-        handleSendCertByEmail();
-        handleCustomerStatus("Completed");
+      setTimeout(async () => {
+        const payload = {
+          customer_id: customerDetails.id,
+          status: "Completed",
+        };
+        try {
+          await updateCustomerStatus(payload);
+          handleCustomerTrack("Linkedin Review Added");
+          setTimeout(() => {
+            handleSecondCustomerTrack("Completed");
+            handleSendCertByEmail();
+          }, 300);
+        } catch (error) {
+          CommonMessage(
+            "error",
+            error?.response?.data?.message ||
+              "Something went wrong. Try again later"
+          );
+        }
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2853,6 +3361,32 @@ export default function Customers() {
           "Something went wrong. Try again later"
       );
     }
+  };
+
+  const getHistoryStatusColor = (status) => {
+    if (
+      [
+        "Verified",
+        "Assigned",
+        "Completed",
+        "Going",
+        "Added",
+        "created",
+        "Generated",
+        "Scheduled",
+      ].some((s) => status.includes(s))
+    ) {
+      return "green";
+    }
+    if (status.includes("Awaiting")) return "gray";
+    if (
+      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
+        status.includes(s)
+      )
+    ) {
+      return "#d32f2f";
+    }
+    return "#000"; // default black
   };
 
   const handleStatusMismatch = () => {
@@ -2935,12 +3469,10 @@ export default function Customers() {
     //feedback
     setCurrent(0);
     setGoogleFeedbackBase64("");
+    setCallCusTrack(false);
     setLinkedinFeedbackBase64("");
     setCourseDuration("");
     setCourseDurationError("");
-    setCourseCompleteDateError("");
-    setCourseCompleteDate(null);
-    setCourseCompleteDateError("");
     setIsGoogleReviewChange(false);
     setIsCertChange(false);
     //cert usestaes
@@ -2951,6 +3483,7 @@ export default function Customers() {
     setCertMonth("");
     setCertMonthError("");
     setIsCertGenerated(false);
+    setCertificateName("");
   };
 
   return (
@@ -3806,13 +4339,13 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Timing</p>
+                      <p className="customerdetails_rowheading">Batch Track</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_timing
-                        ? customerDetails.batch_timing
+                      {customerDetails && customerDetails.batch_tracking
+                        ? customerDetails.batch_tracking
                         : "-"}
                     </p>
                   </Col>
@@ -3821,13 +4354,13 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
+                      <p className="customerdetails_rowheading">Batch Type</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
+                      {customerDetails && customerDetails.batch_timing
+                        ? customerDetails.batch_timing
                         : "-"}
                     </p>
                   </Col>
@@ -3858,7 +4391,7 @@ export default function Customers() {
           <div className="customerdetails_signatureContainer">
             <p style={{ fontWeight: "500", marginRight: "40px" }}>Signature</p>
             <img
-              src={`data:image/png;base64,${customerDetails.signature_image}`}
+              src={`${customerDetails.signature_image}`}
               alt="Trainer Signature"
               className="customer_signature_image"
             />
@@ -4154,21 +4687,6 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.region_name
-                    ? customerDetails.region_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
                 </div>
               </Col>
@@ -4199,7 +4717,7 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Timing</p>
+                  <p className="customerdetails_rowheading">Batch Type</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -4378,7 +4896,7 @@ export default function Customers() {
                                 ) : (
                                   <Button
                                     className="customer_finance_verifybutton"
-                                    onClick={() => handleFinaceVerify(item)}
+                                    onClick={() => handleFinanceVerify(item)}
                                   >
                                     Verify
                                   </Button>
@@ -4494,7 +5012,7 @@ export default function Customers() {
                                     className="customerdetails_text"
                                     style={{
                                       color: "#3c9111",
-                                      fontWeight: 500,
+                                      fontWeight: 700,
                                     }}
                                   >
                                     {"₹" + item.amount}
@@ -4757,7 +5275,7 @@ export default function Customers() {
                                       className="customerdetails_text"
                                       style={{
                                         color: "#3c9111",
-                                        fontWeight: 500,
+                                        fontWeight: 700,
                                       }}
                                     >
                                       {"₹" + item.amount}
@@ -5586,6 +6104,7 @@ export default function Customers() {
                   required={true}
                   onChange={(e) => {
                     const value = e.target.value;
+                    console.log("valllllllllll", value);
                     setScheduleId(value);
                     setScheduleIdError(selectValidator(value));
                     if (value === 6) {
@@ -5595,7 +6114,7 @@ export default function Customers() {
                       setClassStartDateError("");
                     }
 
-                    if (value === 3) {
+                    if (value === 3 || value === 10) {
                       setClassHoldCommentsError(
                         addressValidator(classHoldComments)
                       );
@@ -5625,7 +6144,7 @@ export default function Customers() {
                 ""
               )}
 
-              {scheduleId === 3 && (
+              {scheduleId === 3 || scheduleId === 10 ? (
                 <Row style={{ marginTop: "20px", marginBottom: 40 }}>
                   <Col span={24}>
                     <CommonTextArea
@@ -5642,6 +6161,8 @@ export default function Customers() {
                     />
                   </Col>
                 </Row>
+              ) : (
+                ""
               )}
             </div>
           </>
@@ -5903,7 +6424,7 @@ export default function Customers() {
                         ) : (
                           <Button
                             className="customer_viewcert_button"
-                            onClick={handleViewCert}
+                            onClick={() => handleViewCert(null)}
                           >
                             View Certificate
                           </Button>
@@ -6377,11 +6898,11 @@ export default function Customers() {
               ? customerDetails.name
               : ""}
           </span>{" "}
-          has completed the class{" "}
+          Has Completed The Class{" "}
           <span style={{ color: "#333", fontWeight: 700, fontSize: "13px" }}>
             100%
           </span>{" "}
-          and will be moved to the Passed Out process.
+          And Will Be Moved To The Passed Out Process.
         </p>
         <div className="customer_classcompletemodal_button_container">
           <Button
@@ -6411,20 +6932,95 @@ export default function Customers() {
 
       <Modal
         open={isOpenViewCertModal}
-        onCancel={() => setIsOpenViewCertModal(false)}
+        onCancel={() => {
+          setIsOpenViewCertModal(false);
+          setCertificateName("");
+        }}
         footer={false}
-        width="68%"
+        width="64%"
         style={{ marginBottom: "20px" }}
+        className="customer_certificate_viewmodal"
         zIndex={1100}
         centered
+        closeIcon={
+          <span
+            style={{
+              color: "#ffffff", // white color
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+          >
+            <CloseOutlined />
+          </span>
+        }
       >
         <CommonCertificateViewer
           htmlTemplate={certHtmlContent}
           candidateName={
-            customerDetails && customerDetails.name ? customerDetails.name : "-"
+            certificateName
+              ? certificateName
+              : customerDetails && customerDetails.name
+              ? customerDetails.name
+              : "-"
           }
         />
       </Modal>
+
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Customer History</span>
+            <div className="customer_history_drawer_totalcount_container">
+              <span style={{ fontWeight: 600 }}>
+                Total Activity: {customerHistory?.length || 0}
+              </span>
+              <span style={{ fontWeight: 600 }}>
+                Current Status:{" "}
+                <span
+                  style={{
+                    color: getHistoryStatusColor(
+                      customerHistory?.[customerHistory.length - 1]?.status ||
+                        "N/A"
+                    ),
+                  }}
+                >
+                  {" "}
+                  {customerHistory && customerHistory.length > 0
+                    ? customerHistory[customerHistory.length - 1].status
+                    : "N/A"}
+                </span>
+              </span>
+            </div>
+          </div>
+        }
+        open={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setCustomerDetails(null);
+        }}
+        width="50%"
+        style={{ position: "relative" }}
+        className="customer_history_drawer"
+      >
+        <div
+          id="customer_history_modal_maincontainer"
+          style={{ marginBottom: "20px" }}
+        />
+        {customerHistoryLoading ? (
+          <CommonSpinner />
+        ) : (
+          <CustomerHistory
+            data={customerHistory}
+            customerDetails={customerDetails}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   Button,
   Checkbox,
   Modal,
+  Switch,
 } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -65,6 +66,7 @@ import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
+import { SlGlobe } from "react-icons/sl";
 import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
@@ -577,8 +579,8 @@ export default function Leads({
     };
     try {
       const response = await getLeads(payload);
+      console.log("lead response", response);
       setLeadData(response?.data?.data || []);
-      console.log("eeeeeeeee", response?.data?.data.length);
       setLeadCount(response?.data?.data.length || 0);
     } catch (error) {
       setLeadData([]);
@@ -1247,14 +1249,14 @@ export default function Leads({
   };
 
   const handleCreateArea = async () => {
-    const areaValidate = addressValidator(courseName);
+    const areaValidate = addressValidator(areaName);
 
     setAreaNameError(areaValidate);
 
     if (areaValidate) return;
 
     const payload = {
-      area_name: courseName,
+      area_name: areaName,
     };
     setAddCourseLoading(true);
 
@@ -1276,6 +1278,18 @@ export default function Leads({
           "Something went wrong. Try again later"
       );
     }
+  };
+
+  const getCountryName = (countryCode) => {
+    let countryName = "";
+
+    const findCountry = countryOptions.find((f) => f.isoCode === countryCode);
+    if (findCountry) {
+      countryName = findCountry.name;
+    } else {
+      countryName = "";
+    }
+    return countryName;
   };
 
   return (
@@ -1895,7 +1909,7 @@ export default function Leads({
         title="Make as Customer"
         open={isOpenPaymentDrawer}
         onClose={formReset}
-        width="50%"
+        width="54%"
         style={{ position: "relative", padding: "0px", paddingBottom: 50 }}
         className="leadmanager_paymentdetails_drawer"
       >
@@ -1969,6 +1983,22 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
+                  <SlGlobe size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Country</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.country
+                    ? getCountryName(clickedLeadItem.country)
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
                   <IoLocationOutline size={15} color="gray" />
                   <p className="customerdetails_rowheading">Area</p>
                 </div>
@@ -1977,40 +2007,6 @@ export default function Leads({
                 <p className="customerdetails_text">
                   {clickedLeadItem && clickedLeadItem.district
                     ? clickedLeadItem.district
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.user_name
-                    ? clickedLeadItem.user_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineDateRange size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Next Followup</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.next_follow_up_date
-                    ? moment(clickedLeadItem.next_follow_up_date).format(
-                        "DD/MM/YYYY"
-                      )
                     : "-"}
                 </p>
               </Col>
@@ -2054,21 +2050,6 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.region_name
-                    ? clickedLeadItem.region_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
                 </div>
               </Col>
@@ -2099,21 +2080,6 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Source</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.lead_type
-                    ? clickedLeadItem.lead_type
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Lead Status</p>
                 </div>
               </Col>
@@ -2125,8 +2091,24 @@ export default function Leads({
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Owner</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {clickedLeadItem && clickedLeadItem.user_name
+                    ? clickedLeadItem.user_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
         </Row>
+
         <Divider className="leadmanger_paymentdrawer_divider" />
 
         <p className="leadmanager_paymentdetails_drawer_heading">
@@ -2327,7 +2309,7 @@ export default function Leads({
           </Col>
           <Col span={8}>
             <CommonSelectField
-              label="Batch Timing"
+              label="Batch Type"
               required={true}
               options={batchTimingOptions}
               onChange={(e) => {
@@ -2368,16 +2350,23 @@ export default function Leads({
             />
           </Col>
           <Col span={8}>
-            <div style={{ marginTop: "10px" }}>
-              <Checkbox
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                gap: "6px",
+                alignItems: "center",
+              }}
+            >
+              <p className="leads_serverrequired_label">Server Required</p>
+              <Switch
                 style={{ color: "#333" }}
                 checked={serverRequired}
-                onChange={(e) => {
-                  setServerRequired(e.target.checked);
+                onChange={(checked) => {
+                  setServerRequired(checked);
                 }}
-              >
-                Server Required
-              </Checkbox>
+                className="leads_serverrequired_switch"
+              />
             </div>
           </Col>
         </Row>

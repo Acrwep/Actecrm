@@ -643,14 +643,14 @@ export default function LeadFollowUp({
   };
 
   const handleCreateArea = async () => {
-    const areaValidate = addressValidator(courseName);
+    const areaValidate = addressValidator(areaName);
 
     setAreaNameError(areaValidate);
 
     if (areaValidate) return;
 
     const payload = {
-      area_name: courseName,
+      area_name: areaName,
     };
     setAddCourseLoading(true);
 
@@ -1669,7 +1669,7 @@ export default function LeadFollowUp({
         title="Lead Follow-Up"
         open={isOpenFollowUpDrawer}
         onClose={formReset}
-        width="45%"
+        width="52%"
         style={{ position: "relative", paddingBottom: "65px" }}
         className="customer_statusupdate_drawer"
       >

@@ -16,7 +16,11 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
-import { getPendingFeesCustomers } from "../ApiService/action";
+import {
+  customerDuePayment,
+  getPendingFeesCustomers,
+  inserCustomerTrack,
+} from "../ApiService/action";
 import {
   formatToBackendIST,
   getBalanceAmount,
@@ -48,6 +52,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import PrismaZoom from "react-prismazoom";
 
@@ -73,7 +78,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   const [convenienceFees, setConvenienceFees] = useState("");
   const [paymentDate, setPaymentDate] = useState(null);
   const [paymentDateError, setPaymentDateError] = useState(null);
-  const [paymentScreenShotsArray, setPaymentScreenShotsArray] = useState([]);
   const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
@@ -465,43 +469,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     }
   };
 
-  const handlePaymentScreenshot = ({ file }) => {
-    // allowed MIME types
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
-      setPaymentScreenShotError(" is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setPaymentScreenShotsArray([file]);
-      CommonMessage("success", "Screenshot uploaded");
-      setPaymentScreenShotError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setPaymentScreenShotBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png, .jpg and .jpeg");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setPaymentScreenShotsArray([]);
-      setPaymentScreenShotBase64("");
-    }
-  };
-
   const handlePaymentSubmit = async () => {
     setPaymentValidationTrigger(true);
     const paymentTypeValidate = selectValidator(paymentMode);
@@ -563,9 +530,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       console.log("lead payment response", response);
       const createdCustomerDetails = response?.data?.data;
       setTimeout(() => {
-        setButtonLoading(false);
-        getPendingFeesCustomersData(searchValue);
-        formReset();
+        handleCustomerTrack("Part Payment Added");
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -575,6 +540,32 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const handleCustomerTrack = async (updatestatus) => {
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+
+    const payload = {
+      customer_id: customerDetails.id,
+      status: updatestatus,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      status_date: formatToBackendIST(today),
+    };
+
+    try {
+      await inserCustomerTrack(payload);
+      setTimeout(() => {
+        setButtonLoading(false);
+        getPendingFeesCustomersData(searchValue);
+        formReset();
+      }, 300);
+    } catch (error) {
+      console.log("customer track error", error);
     }
   };
 
@@ -590,7 +581,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     setConvenienceFees(0);
     setPaymentDate(null);
     setPaymentDateError("");
-    setPaymentScreenShotsArray([]);
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
     setBalanceAmount(0);
@@ -1020,7 +1010,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Timing</p>
+                      <p className="customerdetails_rowheading">Batch Type</p>
                     </div>
                   </Col>
                   <Col span={12}>
@@ -1303,21 +1293,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.region_name
-                    ? customerDetails.region_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
                 </div>
               </Col>
@@ -1348,7 +1323,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Timing</p>
+                  <p className="customerdetails_rowheading">Batch Type</p>
                 </div>
               </Col>
               <Col span={12}>
@@ -1514,7 +1489,11 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
                         {item.payment_status === "Verify Pending" ? (
                           <div className="customer_trans_statustext_container">
-                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
+                            <PiClockCounterClockwiseBold
+                              size={16}
+                              color="gray"
+                            />
+                            <p style={{ color: "gray", fontWeight: 500 }}>
                               Waiting for Verify
                             </p>
                           </div>

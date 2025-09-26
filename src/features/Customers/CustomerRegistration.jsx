@@ -22,6 +22,7 @@ import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSignaturePad from "../Common/CommonSignaturePad";
 import {
+  getAllAreas,
   getBatches,
   getBatchTrack,
   getBranches,
@@ -56,6 +57,10 @@ export default function CustomerRegistration() {
   const [genderError, setGenderError] = useState("");
   const [dateOfJoining, setDateOfJoining] = useState("");
   const [dateOfJoiningError, setDateOfJoiningError] = useState("");
+  const [countryId, setCountryId] = useState(null);
+  const [stateId, setStateId] = useState(null);
+  const [areaOptions, setAreaOptions] = useState([]);
+  const [areaId, setAreaId] = useState(null);
   const [location, setLocation] = useState("");
   const [locationError, setLocationError] = useState("");
 
@@ -114,6 +119,20 @@ export default function CustomerRegistration() {
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
+        getAreasData();
+      }, 300);
+    }
+  };
+
+  const getAreasData = async () => {
+    try {
+      const response = await getAllAreas();
+      setAreaOptions(response?.data?.data || []);
+    } catch (error) {
+      setAreaOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
         getBatchTimingData();
       }, 300);
     }
@@ -148,6 +167,9 @@ export default function CustomerRegistration() {
       setEmail(customerDetails.email);
       setMobile(customerDetails.phone);
       setWhatsApp(customerDetails.whatsapp);
+      setCountryId(customerDetails.country);
+      setStateId(customerDetails.state);
+      setAreaId(parseInt(customerDetails.current_location));
       setCourse(customerDetails.enrolled_course);
       setBatchTrack(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
@@ -309,7 +331,6 @@ export default function CustomerRegistration() {
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
     const dateOfJoiningValidate = selectValidator(dateOfJoining);
-    const locationValidate = addressValidator(location);
     const courseValidate = selectValidator(course);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
@@ -337,7 +358,6 @@ export default function CustomerRegistration() {
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
     setDateOfJoiningError(dateOfJoiningValidate);
-    setLocationError(locationValidate);
     setCourseError(courseValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
@@ -352,8 +372,7 @@ export default function CustomerRegistration() {
       whatsAppValidate ||
       dateOfBirthValidate ||
       genderValidate ||
-      dateOfJoiningValidate ||
-      locationValidate
+      dateOfJoiningValidate
     ) {
       setActiveKey("1");
       return;
@@ -370,6 +389,8 @@ export default function CustomerRegistration() {
       return;
 
     setButtonLoading(true);
+
+    const getCustomerArea = areaOptions.find((f) => f.id === areaId);
 
     const payload = {
       id: customer_id,
@@ -392,7 +413,9 @@ export default function CustomerRegistration() {
           : null,
       batch_track_id: batchTrack,
       batch_timing_id: batchTiming,
-      current_location: location,
+      country: countryId,
+      state: stateId,
+      area: getCustomerArea.name,
       signature_image: signatureBase64,
       profile_image: profilePicture,
       placement_support: placementSupport,
@@ -407,6 +430,7 @@ export default function CustomerRegistration() {
         navigate("/success");
       }, 300);
     } catch (error) {
+      console.log("customer update error", error);
       setButtonLoading(false);
       CommonMessage(
         "error",
@@ -423,18 +447,21 @@ export default function CustomerRegistration() {
     };
     try {
       await updateCustomerStatus(payload);
-      handleCustomerTrack();
+      handleCustomerTrack("Form Submitted");
+      setTimeout(() => {
+        handleCustomerTrack("Awaiting Finance");
+      }, 1000);
     } catch (error) {
       console.log("customer status change error", error);
     }
   };
 
-  const handleCustomerTrack = async () => {
+  const handleCustomerTrack = async (updateStatus) => {
     const today = new Date();
 
     const payload = {
       customer_id: customer_id,
-      status: "Awaiting Finance",
+      status: updateStatus,
       status_date: formatToBackendIST(today),
       updated_by: 211,
     };
@@ -786,6 +813,13 @@ export default function CustomerRegistration() {
     },
   ];
 
+  const handleSignatureBase64 = (base64) => {
+    console.log(base64, "base64");
+    setSignatureBase64(base64);
+    setSignatureError("");
+    setIsOpenSignatureModal(false);
+  };
+
   return (
     <div className="login_mainContainer">
       <div className="customerregistration_card">
@@ -832,23 +866,317 @@ export default function CustomerRegistration() {
             <CommonSpinner color="#333" />
           </div>
         ) : (
-          <Tabs
-            activeKey={activeKey}
-            onTabClick={handleTabClick}
-            items={tabItems}
-            className="trainer_registration_tabs"
-          />
+          // <Tabs
+          //   activeKey={activeKey}
+          //   onTabClick={handleTabClick}
+          //   items={tabItems}
+          //   className="trainer_registration_tabs"
+          // />
+          <>
+            <div style={{ height: "390px", position: "relative" }}>
+              <div className="logincard_innerContainer">
+                <Row gutter={12} style={{ marginTop: "20px" }}>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonInputField
+                      label="Name"
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (validationTrigger) {
+                          setNameError(nameValidator(e.target.value));
+                        }
+                      }}
+                      error={nameError}
+                      required={true}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonInputField
+                      label="Email"
+                      required={true}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (validationTrigger) {
+                          setEmailError(emailValidator(e.target.value));
+                        }
+                      }}
+                      value={email}
+                      error={emailError}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonInputField
+                      label="Mobile"
+                      required={true}
+                      maxLength={10}
+                      type="number"
+                      onChange={(e) => {
+                        setMobile(e.target.value);
+                        if (validationTrigger) {
+                          setMobileError(mobileValidator(e.target.value));
+                        }
+                      }}
+                      value={mobile}
+                      error={mobileError}
+                      onInput={(e) => {
+                        if (e.target.value.length > 10) {
+                          e.target.value = e.target.value.slice(0, 10);
+                        }
+                      }}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonOutlinedInput
+                      label="Whatsapp Number"
+                      icon={<SiWhatsapp color="#39AE41" />}
+                      required={true}
+                      maxLength={10}
+                      type="number"
+                      onChange={(e) => {
+                        setWhatsApp(e.target.value);
+                        if (validationTrigger) {
+                          setWhatsAppError(mobileValidator(e.target.value));
+                        }
+                      }}
+                      value={whatsApp}
+                      error={whatsAppError}
+                      errorFontSize="10px"
+                      onInput={(e) => {
+                        if (e.target.value.length > 10) {
+                          e.target.value = e.target.value.slice(0, 10);
+                        }
+                      }}
+                      disabled={true}
+                    />{" "}
+                  </Col>
+                </Row>
+
+                <Row gutter={12} style={{ marginTop: "30px" }}>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonMuiDatePicker
+                      label="Date Of Birth"
+                      required={true}
+                      onChange={(value) => {
+                        console.log("vallll", value);
+                        setDateOfBirth(value);
+                        if (validationTrigger) {
+                          setDateOfBirthError(selectValidator(value));
+                        }
+                      }}
+                      value={dateOfBirth}
+                      error={dateOfBirthError}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonSelectField
+                      label="Gender"
+                      required={true}
+                      options={[
+                        { id: "Male", name: "Male" },
+                        { id: "Female", name: "Female" },
+                      ]}
+                      onChange={(e) => {
+                        setGender(e.target.value);
+                        if (validationTrigger) {
+                          setGenderError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={gender}
+                      error={genderError}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonMuiDatePicker
+                      label="Date Of Joining"
+                      required={true}
+                      maxLength={10}
+                      onChange={(value) => {
+                        console.log("vallll", value);
+                        setDateOfJoining(value);
+                        if (validationTrigger) {
+                          setDateOfJoiningError(selectValidator(value));
+                        }
+                      }}
+                      value={dateOfJoining}
+                      error={dateOfJoiningError}
+                      onInput={(e) => {
+                        if (e.target.value.length > 10) {
+                          e.target.value = e.target.value.slice(0, 10);
+                        }
+                      }}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonSelectField
+                      label="Area"
+                      required={true}
+                      options={areaOptions}
+                      value={areaId}
+                      disabled={true}
+                    />
+                  </Col>
+                </Row>
+
+                <p className="customer_registration_courseheading">
+                  Course Details
+                </p>
+                <Row gutter={12} style={{ marginTop: "16px" }}>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonSelectField
+                      label="Enrolled Course"
+                      required={true}
+                      options={courseOptions}
+                      onChange={(e) => {
+                        setCourse(e.target.value);
+                        if (validationTrigger) {
+                          setCourseError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={course}
+                      error={courseError}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonSelectField
+                      label="Batch Track"
+                      required={true}
+                      options={batchTrackOptions}
+                      onChange={(e) => {
+                        setBatchTrack(e.target.value);
+                        if (validationTrigger) {
+                          setBatchTrackError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={batchTrack}
+                      error={batchTrackError}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={24} lg={6}>
+                    <CommonSelectField
+                      label="Batch Type"
+                      required={true}
+                      options={batchTimingOptions}
+                      onChange={(e) => {
+                        setBatchTiming(e.target.value);
+                        if (validationTrigger) {
+                          setBatchTimingError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={batchTiming}
+                      error={batchTimingError}
+                      disabled={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "20px", marginBottom: "30px" }}>
+                  <Col
+                    span={6}
+                    style={{ position: "relative", display: "flex" }}
+                  >
+                    {signatureBase64 ? (
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <div>
+                          <p style={{ fontWeight: 500, color: "#333" }}>
+                            Signature
+                          </p>
+                          <img
+                            src={signatureBase64}
+                            alt="Trainer Signature"
+                            className="customer_signature_image"
+                          />
+                        </div>
+                        <button
+                          className="trainer_registration_signature_createbutton"
+                          onClick={() => setIsOpenSignatureModal(true)}
+                        >
+                          Update
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          className="customer_registration_addsign_button"
+                          onClick={() => {
+                            setIsOpenSignatureModal(true);
+                          }}
+                        >
+                          Add E-Signature
+                        </Button>
+                        {signatureError && (
+                          <p className="trainer_registration_signatureerror">
+                            {signatureError}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </Col>
+                </Row>
+                <div className="customer_registration_terms_container">
+                  <Checkbox
+                    onChange={(e) => {
+                      setIsCheckedTerms(e.target.checked);
+                      if (validationTrigger) {
+                        if (e.target.checked === true) {
+                          setIsCheckedTermsError("");
+                        } else {
+                          setIsCheckedTermsError(" is required");
+                        }
+                      }
+                    }}
+                    value={isCheckedTerms}
+                  >
+                    I have read and agree to the
+                  </Checkbox>
+                  <p
+                    className="customer_registration_terms_text"
+                    onClick={() => setIsOpenTermsModal(true)}
+                  >
+                    Terms and Conditions
+                  </p>
+                </div>
+                {isCheckedTermsError && (
+                  <p className="customer_registration_terms_error">
+                    Please accept the terms and conditions
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="trainer_registration_submitbuttonContainer">
+              {buttonLoading ? (
+                <button className="trainer_registration_loadingsubmitbutton">
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className="trainer_registration_submitbutton"
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
 
       <Modal
-        title="Create Signature"
+        title="Signature"
         open={isOpenSignatureModal}
         onCancel={() => setIsOpenSignatureModal(false)}
         footer={false}
         width="40%"
       >
-        <CommonSignaturePad />
+        <CommonSignaturePad
+          instruction={true}
+          onUpload={handleSignatureBase64}
+        />
       </Modal>
 
       <Modal
@@ -858,150 +1186,15 @@ export default function CustomerRegistration() {
         footer={false}
         width="50%"
         style={{ top: 20 }} // 👈 distance from top
+        centered
       >
         <div className="customer_registration_terms_contentContainer">
           <ul>
             <li>
-              The candidate should be on the date & time once the classes have
-              been scheduled, if found irregular attendance management isn’t
-              responsible for the subject coverage
+              Acte Technologies has rights to postpone/cancel courses due to
+              instructor illness or natural calamities. No refund in this case.
             </li>
-            <li>
-              Candidates are advised to attend the class properly and neatly
-              dressed and are asked to leave their sandals outside (Only shoes
-              allowed inside)
-            </li>
-            <li>
-              The candidate should not be engaged in entertaining activities
-              during class hours other than subject training
-            </li>
-            <li>
-              The candidate should not bring any irrelevant person into ACTE
-              campus except for the course inquiry
-            </li>
-            <li>
-              If the candidate finds any quality lacking in the subject, they
-              should immediately bring into the notice of the Management so that
-              they will take the necessary steps
-            </li>
-            <li>
-              Internal examination score with rich attendance is mandatory for
-              the candidate, to apply for the certification
-            </li>
-            <li>
-              On successful completion of training candidates need to register
-              for their Certificate to the Management
-            </li>
-            <li>
-              Certification will be issued to the candidate after 15 days which
-              is required for management processing for a soft copy.
-            </li>
-            <li>
-              Candidates discussing other than placement activities in the ACTE
-              forum What Sapp group will be removed from the group if required
-            </li>
-            <li>
-              They need to drop an e-mail regarding their query to
-              support@acte.in or they should communicate with the concerned team
-            </li>
-            <li>
-              Once the enrolment has been done in ACTE the management starts its
-              process of allocating trainer and scheduling the class which will
-              not pave the way to any kind of refund claim.
-            </li>
-            <li>
-              Raise refund requests within 7 days of purchase of course. A
-              money-back guarantee is void if the participant has accessed more
-              than 30% of the content or downloaded the E-Book.
-            </li>
-            <li>
-              On figuring out any kind of quality issues necessary steps will be
-              taken by the management to retain the training quality if the
-              required trainer will be changed
-            </li>
-            <li>
-              For a change of trainer, the student should submit their
-              attendance record maintained by the trainer. After that management
-              will check the trainer’s quality with other students in their
-              batch
-            </li>
-            <li>
-              ACTE makes its full-fledged effort at maximum level to make the
-              candidates placed and on which candidate’s active performance in
-              class and the candidate’s best performance in the interview are
-              mandatory
-            </li>
-            <li>
-              Management holds the responsibility of providing software that is
-              widely available in the market and if particularly you’ve paid for
-              that software subscription
-            </li>
-            <li>
-              In rare cases if it fails to provide the software then virtual &
-              real-time oriented practical sessions will be provided by the
-              management
-            </li>
-            <li>
-              Candidates are requested to bring their laptops during practical
-              sessions and if not possible management will provide a system
-              based on the availability with respect to time & class
-            </li>
-            <li>
-              Once every 15 days candidates are subjected to quality checks by
-              the management, for that purpose they need their own system
-            </li>
-            <li>
-              Candidates opted for the part payment are asked to clear their
-              pending fee amount within 15 days of time once the course is
-              started
-            </li>
-            <li>
-              Candidates are authorized to utilize the management’s resources
-              like the Internet, and systems only during the class timings
-            </li>
-            <li>
-              ACTE is the brand name of our service and it functions under the
-              care of ACTE Training Institute Private Limited
-            </li>
-            <li>
-              You must update the attendance form we gave you. If you do not
-              keep your attendance record, you will not be eligible for
-              compensation.
-            </li>
-            <li>
-              Once you made the payment the process for your training will be
-              started, it will take a minimum of 24 to 48 HRS to start the
-              session for you.
-            </li>
-            <li>
-              Refunds must be requested within 7 days of the start of the batch
-              in which you registered. If a participant has accessed more than
-              50% of an e-learning course's content or has attended Online
-              Classrooms for more than one day, the money-back promise is null
-              and void.
-            </li>
-            <li>
-              If a cancellation is done by a candidate of the event, no refunds
-              will be made.
-            </li>
-            <li>
-              The attendance record we provided you with needs to be updated.
-              You won't be able to receive a payment if you don't keep a record
-              of your attendance.
-            </li>
-            <li>
-              Following ACTE Technologies Pvt Ltd.’s approval of the refund
-              request, all reimbursements will be executed within 7 to 10
-              working days.
-            </li>
-            <li>
-              ACTE is the brand name of our service and it functions under the
-              care of ACTE Training Institute Private Limited
-            </li>
-            <li>
-              I agree to the above terms and Conditions with my knowledge and
-              consciousness and I wish to join in ACTE
-            </li>
+            <li>The refund requisition will not be accepted</li>
           </ul>
         </div>
       </Modal>
