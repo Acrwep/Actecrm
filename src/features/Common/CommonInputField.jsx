@@ -19,7 +19,7 @@ export default function CommonInputField({
   onInput,
 }) {
   const handleChange = (e) => {
-    if (label === "Email") {
+    if (label === "Email" || label === "Trainer Email") {
       onChange({ target: { value: e.target.value } });
     } else {
       const newValue = capitalizeWords(e.target.value);

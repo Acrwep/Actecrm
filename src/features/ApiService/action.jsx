@@ -656,3 +656,77 @@ export const customerDuePayment = async (payload) => {
     throw error;
   }
 };
+
+//settings
+//group api's
+export const insertGroup = async (payload) => {
+  try {
+    const response = await api.post("/api/insertGroups", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateGroup = async (payload) => {
+  try {
+    const response = await api.put("/api/updateGroup", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getGroups = async () => {
+  try {
+    const response = await api.get(`/api/getGroups`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteGroup = async (groupId) => {
+  try {
+    const response = await api.delete(`/api/deleteGroup?group_id=${groupId}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//role api's
+export const insertRole = async (payload) => {
+  try {
+    const response = await api.post("/api/insertRoles", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateRole = async (payload) => {
+  try {
+    const response = await api.put("/api/updateRole", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRoles = async () => {
+  try {
+    const response = await api.get(`/api/getRoles`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteRole = async (roleId) => {
+  try {
+    const response = await api.delete(`/api/deleteRole?role_id=${roleId}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

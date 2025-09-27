@@ -1343,6 +1343,22 @@ export default function Trainers() {
               {" "}
               <div
                 className={
+                  status === ""
+                    ? "trainers_active_all_container"
+                    : "trainers_all_container"
+                }
+                onClick={() => {
+                  if (status === "") {
+                    return;
+                  }
+                  setStatus("");
+                  getTrainersData(searchValue, null);
+                }}
+              >
+                <p>All {`( ${trainersData.length} )`}</p>
+              </div>
+              <div
+                className={
                   status === "Form Pending"
                     ? "trainers_active_formpending_container"
                     : "customers_feedback_container"

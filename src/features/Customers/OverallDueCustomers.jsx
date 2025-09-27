@@ -620,7 +620,7 @@ export default function OverallDueCustomers({
 
   return (
     <div>
-      <Row>
+      <Row style={{ marginTop: "40px" }}>
         <Col xs={24} sm={24} md={24} lg={12}>
           <div className="overallduecustomers_filterContainer">
             {/* Search Input */}
@@ -722,7 +722,7 @@ export default function OverallDueCustomers({
             </div>
 
             {/* Date Picker on the Right */}
-            <div style={{ marginLeft: "16px" }}>
+            <div style={{ marginLeft: "16px", position: "relative" }}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -731,6 +731,7 @@ export default function OverallDueCustomers({
                   getPendingFeesCustomersData(dates[0], dates[1], searchValue);
                 }}
               />
+              <p className="pendingcustomers_datepicker_label">Nxt Due Date</p>
             </div>
           </div>
         </Col>
@@ -1102,8 +1103,8 @@ export default function OverallDueCustomers({
           <div className="customerdetails_signatureContainer">
             <p style={{ fontWeight: "500", marginRight: "40px" }}>Signature</p>
             <img
-              src={`data:image/png;base64,${customerDetails.signature_image}`}
-              alt="Trainer Signature"
+              src={`${customerDetails.signature_image}`}
+              alt="Customer Signature"
               className="customer_signature_image"
             />
           </div>

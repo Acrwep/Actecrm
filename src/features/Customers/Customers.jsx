@@ -1095,7 +1095,7 @@ export default function Customers() {
   ]);
 
   const nonChangeColumns = [
-  { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone" },
     { title: "Course ", key: "course_name", dataIndex: "course_name" },
@@ -3642,6 +3642,27 @@ export default function Customers() {
         <div className="customers_status_mainContainer" ref={scrollRef}>
           <div
             className={
+              status === ""
+                ? "trainers_active_all_container"
+                : "trainers_all_container"
+            }
+            onClick={() => {
+              if (status === "") {
+                return;
+              }
+              setStatus("");
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                null
+              );
+            }}
+          >
+            <p>All {`( ${customersData.length} )`}</p>
+          </div>
+          <div
+            className={
               status == "Form Pending"
                 ? "customers_active_formpending_container"
                 : "customers_formpending_container"
@@ -4392,7 +4413,7 @@ export default function Customers() {
             <p style={{ fontWeight: "500", marginRight: "40px" }}>Signature</p>
             <img
               src={`${customerDetails.signature_image}`}
-              alt="Trainer Signature"
+              alt="Customer Signature"
               className="customer_signature_image"
             />
           </div>

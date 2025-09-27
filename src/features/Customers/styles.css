@@ -1330,6 +1330,12 @@
 }
 
 /* pending customers styles */
+.pendingcustomers_datepicker_label {
+  position: absolute;
+  top: -23px;
+  font-size: 12px;
+  font-weight: 500;
+}
 .pendingcustomer_paymentscreenshot_viewbutton {
   color: #5b69ca;
   background-color: transparent !important;

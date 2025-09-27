@@ -3,13 +3,15 @@ import "./styles.css";
 import Users from "./Users";
 import PageAccess from "./PageAccess";
 import { useDispatch } from "react-redux";
-import { getUsers } from "../ApiService/action";
-import { storeUsersList } from "../Redux/Slice";
+import { getGroups, getRoles, getUsers } from "../ApiService/action";
+import { storeGroupList, storeRoleList, storeUsersList } from "../Redux/Slice";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const [activePage, setActivePage] = useState("users");
   const [userTableLoading, setUserTableLoading] = useState(true);
+  const [groupLoading, setGroupLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
     getUsersData();
@@ -26,6 +28,38 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setUserTableLoading(false);
+        getGroupsData();
+      }, 300);
+    }
+  };
+
+  const getGroupsData = async () => {
+    try {
+      const response = await getGroups();
+      console.log("groups response", response);
+      dispatch(storeGroupList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeGroupList([]));
+      console.log("group error", error);
+    } finally {
+      setTimeout(() => {
+        setGroupLoading(false);
+        getRolesData();
+      }, 300);
+    }
+  };
+
+  const getRolesData = async () => {
+    try {
+      const response = await getRoles();
+      console.log("roles response", response);
+      dispatch(storeRoleList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeRoleList([]));
+      console.log("roles error", error);
+    } finally {
+      setTimeout(() => {
+        setRoleLoading(false);
       }, 300);
     }
   };
@@ -73,7 +107,12 @@ export default function Settings() {
           setUserTableLoading={setUserTableLoading}
         />
       ) : activePage === "pageaccess" ? (
-        <PageAccess />
+        <PageAccess
+          groupLoading={groupLoading}
+          setGroupLoading={setGroupLoading}
+          roleLoading={roleLoading}
+          setRoleLoading={setRoleLoading}
+        />
       ) : (
         ""
       )}

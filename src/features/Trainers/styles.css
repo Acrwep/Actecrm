@@ -78,6 +78,31 @@
   display: flex;
   gap: 16px;
 }
+.trainers_all_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid #0959d9c4;
+  background-color: #0959d911;
+  border-radius: 6px;
+  color: #0959d9c4;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.trainers_active_all_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border: 0px solid #0959d9c4;
+  background-color: #0959d9c4;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
 .trainers_active_formpending_container {
   display: flex;
   justify-content: center;

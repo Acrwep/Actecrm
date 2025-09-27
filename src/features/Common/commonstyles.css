@@ -384,3 +384,60 @@
   padding: 8px !important;
   text-align: center !important;
 }
+
+/* common delete modal styles */
+.common_deletemodalContainer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.common_deletemodal_iconContainer {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fde2e2;
+}
+.common_deletemodal_confirmdeletetext {
+  font-weight: 600;
+  margin-top: 12px !important;
+  font-size: 16px;
+}
+.common_deletemodal_text {
+  color: gray;
+  margin-top: 6px !important;
+  line-height: 24px !important;
+}
+.common_deletemodal_footerContainer {
+  display: flex;
+  margin-top: 22px;
+  gap: 24px;
+}
+.common_deletemodal_cancelbutton {
+  width: 85px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.common_deletemodal_cancelbutton:hover {
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+}
+.common_deletemodal_deletebutton {
+  width: 85px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.common_deletemodal_loading_deletebutton {
+  width: 85px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+  opacity: 0.7;
+}

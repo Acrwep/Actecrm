@@ -1062,8 +1062,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           <div className="customerdetails_signatureContainer">
             <p style={{ fontWeight: "500", marginRight: "40px" }}>Signature</p>
             <img
-              src={`data:image/png;base64,${customerDetails.signature_image}`}
-              alt="Trainer Signature"
+              src={`${customerDetails.signature_image}`}
+              alt="Customer Signature"
               className="customer_signature_image"
             />
           </div>

@@ -59,6 +59,36 @@
   opacity: 0.7;
 }
 /* page access styles */
+.settings_group_haeding {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 12px;
+}
+.settings_group_createbutton_container {
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-end;
+}
+.settings_group_createbutton {
+  width: 95px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.settings_group_loading_createbutton {
+  width: 95px;
+  cursor: default;
+  opacity: 0.7;
+}
+.settings_nogroups_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  font-weight: 600;
+  color: #333;
+  width: 100%;
+}
 .settings_groupcard {
   padding: 12px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
@@ -66,13 +96,15 @@
 }
 .groupname_container {
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 600;
   font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .settings_group_contentContainer {
   display: flex;
@@ -159,4 +191,18 @@
 }
 .users_filter_closeIconContainer:hover {
   background-color: #8c8c8c;
+}
+
+.settings_roles_container {
+  margin-top: 12px;
+}
+.settings_roles_heading {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.settings_groupcard_editbutton_conatiner {
+  display: flex;
+  padding-top: 6px;
+  gap: 10px;
 }
