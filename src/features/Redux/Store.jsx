@@ -4,6 +4,9 @@ import {
   nxtFollowupActionIdReducer,
   roleListReducer,
   usersListReducer,
+  permissionsListReducer,
+  leadsModulePermissionListReducer,
+  customersModulePermissionListReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -13,5 +16,8 @@ export const reduxStore = configureStore({
     nxtfollowupactionid: nxtFollowupActionIdReducer,
     grouplist: groupListReducer,
     rolelist: roleListReducer,
+    permissionslist: permissionsListReducer,
+    leadsmodulepermissionlist: leadsModulePermissionListReducer,
+    customersmodulepermissionlist: customersModulePermissionListReducer,
   },
 });

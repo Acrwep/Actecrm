@@ -694,6 +694,27 @@ export const deleteGroup = async (groupId) => {
     throw error;
   }
 };
+
+export const assignUsersToGroup = async (payload) => {
+  try {
+    const response = await api.post("/api/insertUserGroup", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getUsersByGroupId = async (payload) => {
+  try {
+    const response = await api.get("/api/getUserGroupById", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //role api's
 export const insertRole = async (payload) => {
   try {
@@ -725,6 +746,36 @@ export const getRoles = async () => {
 export const deleteRole = async (roleId) => {
   try {
     const response = await api.delete(`/api/deleteRole?role_id=${roleId}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//permissions api's
+export const getAllPermissions = async () => {
+  try {
+    const response = await api.get(`/api/getPermissions`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRolePermissionsByRoleId = async (role_id) => {
+  try {
+    const response = await api.get(
+      `/api/getRolePermissionsById?role_id=${role_id}`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const insertRolePermissions = async (payload) => {
+  try {
+    const response = await api.post("/api/insertRolePermissions", payload);
     return response;
   } catch (error) {
     throw error;

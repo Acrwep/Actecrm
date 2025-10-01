@@ -12,19 +12,21 @@ import {
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonInputField from "../Common/CommonInputField";
-import CommonOptionsMultiSelect from "../Common/CommonOptionsMultiSelect";
-import CommonTable from "../Common/CommonTable";
 import "./styles.css";
-import { addressValidator } from "../Common/Validation";
+import { addressValidator, selectValidator } from "../Common/Validation";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonSpinner from "../Common/CommonSpinner";
 import {
+  assignUsersToGroup,
   deleteGroup,
   deleteRole,
   getGroups,
+  getRolePermissionsByRoleId,
   getRoles,
+  getUsersByGroupId,
   insertGroup,
   insertRole,
+  insertRolePermissions,
   updateGroup,
   updateRole,
 } from "../ApiService/action";
@@ -32,8 +34,15 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-import { storeGroupList, storeRoleList } from "../Redux/Slice";
+import {
+  storeCustomersModulePermissionList,
+  storeGroupList,
+  storeLeadsModulePermissionList,
+  storeRoleList,
+} from "../Redux/Slice";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
+import CommonMultiSelect from "../Common/CommonMultiSelect";
+import CommonSelectField from "../Common/CommonSelectField";
 
 export default function PageAccess({
   groupLoading,
@@ -44,6 +53,14 @@ export default function PageAccess({
   const dispatch = useDispatch();
   const groupsData = useSelector((state) => state.grouplist);
   const rolesData = useSelector((state) => state.rolelist);
+  const usersData = useSelector((state) => state.userslist);
+  const allPermissionsData = useSelector((state) => state.permissionslist);
+  const leadsModulePermissionData = useSelector(
+    (state) => state.leadsmodulepermissionlist
+  );
+  const customersModulePermissionData = useSelector(
+    (state) => state.customersmodulepermissionlist
+  );
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenUserModal, setIsOpenUserModal] = useState(false);
@@ -55,6 +72,9 @@ export default function PageAccess({
   const [description, setDescription] = useState("");
   const [groupFormLoading, setGroupFormLoading] = useState(false);
   const [isOpenGroupDeleteModal, setIsOpenGroupDeleteModal] = useState(false);
+  const [formFields, setFormFields] = useState([
+    { user_id: null, roles: [], user_id_error: "", roles_error: "" },
+  ]);
   //roles usestates
   const [isOpenAddRoleModal, setIsOpenAddRoleModal] = useState(false);
   const [roleId, setRoleId] = useState(null);
@@ -62,24 +82,17 @@ export default function PageAccess({
   const [roleNameError, setRoleNameError] = useState("");
   const [roleFormLoading, setRoleFormLoading] = useState(false);
   const [isOpenRoleDeleteModal, setIsOpenRoleDeleteModal] = useState(false);
-  //
+  //permission usestates
+  const [isOpenPermissionDrawer, setIsOpenPermissionDrawer] = useState(false);
+  const [rolePermissions, setRolePermissions] = useState([]);
+  const [permissionButtonLoading, setPermissionButtonLoading] = useState(false);
+
   const usertableColumns = [
     { title: "Name", key: "name", dataIndex: "name" },
     { title: "Email", key: "email", dataIndex: "email", width: 190 },
     { title: "Mobile", key: "mobile", dataIndex: "mobile" },
     { title: "Fees", key: "fees", dataIndex: "fees" },
     { title: "Balance", key: "balance", dataIndex: "balance" },
-  ];
-
-  const usersData = [
-    {
-      id: 1,
-      name: "Balaji",
-      email: "balaji@gmail.com",
-      mobile: "9787564545",
-      fees: "12000",
-      balance: "3000",
-    },
   ];
 
   //group color functions
@@ -309,6 +322,241 @@ export default function PageAccess({
     }
   };
 
+  const getRolePermissionsData = async (role_id) => {
+    try {
+      const response = await getRolePermissionsByRoleId(role_id);
+      const role_permissions = response?.data?.data?.permissions || [];
+
+      // Update state
+      setRolePermissions(role_permissions);
+
+      console.log("role permissions", role_permissions);
+
+      //leads module
+      const updatedLeadsPermissions = (leadsModulePermissionData || []).map(
+        (lp) => ({
+          ...lp,
+          checked: role_permissions.some(
+            (rp) => rp.permission_id === lp.permission_id
+          ),
+        })
+      );
+      dispatch(storeLeadsModulePermissionList(updatedLeadsPermissions));
+
+      //customers module
+      const updatedCustomersPermissions = (
+        customersModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(storeCustomersModulePermissionList(updatedCustomersPermissions));
+      setIsOpenPermissionDrawer(true);
+    } catch (error) {
+      setRolePermissions([]);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleInsertRolePermissions = async () => {
+    const merged = [
+      ...leadsModulePermissionData,
+      ...customersModulePermissionData,
+    ];
+    console.log("merged", merged);
+
+    const checkedItems = merged.filter((f) => f.checked === true);
+
+    const ids = checkedItems.map((item) => {
+      return item.permission_id;
+    });
+
+    console.log(ids);
+    const payload = {
+      role_id: roleId,
+      permission_ids: ids,
+    };
+    console.log("payload", payload);
+
+    setPermissionButtonLoading(true);
+    try {
+      await insertRolePermissions(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Permissions Updated");
+        formReset();
+      }, 300);
+    } catch (error) {
+      setPermissionButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleGetUsersByGroupId = async (group_id) => {
+    const payload = {
+      group_id: group_id,
+    };
+    try {
+      const response = await getUsersByGroupId(payload);
+      console.log("getusersbygroupid response", response);
+      const users_list = response?.data?.data?.users || [];
+      if (users_list.length >= 1) {
+        setFormFields(users_list);
+      } else {
+        setFormFields([
+          { user_id: null, roles: null, user_id_error: "", roles_error: "" },
+        ]);
+      }
+      setIsOpenUserModal(true);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const addFormfields = () => {
+    const obj = {
+      user_id: null,
+      roles: [],
+      user_id_error: "",
+      roles_error: "",
+    };
+    setFormFields([...formFields, obj]);
+  };
+
+  // const handleFormFields = (index, field, value) => {
+  //   const updatedDetails = [...formFields];
+  //   if (field === "user_id") {
+  //     updatedDetails[index].user_id_error = selectValidator(value);
+  //   }
+  //   if (field === "roles") {
+  //     updatedDetails[index].roles_error = selectValidator(value);
+  //   }
+  //   updatedDetails[index][field] = value;
+  //   console.log("updatedDetails", updatedDetails);
+  //   setFormFields(updatedDetails);
+  // };
+
+  const handleFormFields = (index, field, value) => {
+    const updatedDetails = [...formFields];
+
+    // update value
+    updatedDetails[index][field] = value;
+
+    // run field-specific validation
+    if (field === "user_id") {
+      updatedDetails[index].user_id_error = selectValidator(value);
+    }
+    if (field === "roles") {
+      updatedDetails[index].roles_error = selectValidator(value);
+    }
+
+    // check for duplicate users
+    const userCounts = updatedDetails.reduce((acc, curr) => {
+      if (curr.user_id) {
+        acc[curr.user_id] = (acc[curr.user_id] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    updatedDetails.forEach((item) => {
+      if (item.user_id && userCounts[item.user_id] > 1) {
+        item.user_id_error = " is already mapped";
+      } else {
+        // keep existing error only if it's not duplicate-related
+        if (item.user_id_error === " is already mapped") {
+          item.user_id_error = "";
+        }
+      }
+    });
+
+    setFormFields(updatedDetails);
+  };
+
+  const deleteFormFields = (index) => {
+    if (formFields.length <= 1) {
+      return;
+    }
+    let data = [...formFields];
+    data.splice(index, 1);
+    setFormFields(data);
+  };
+
+  const handleAssignUsers = async () => {
+    console.log(formFields);
+
+    // First run normal field validation
+    let validateFormFields = formFields.map((item) => ({
+      ...item,
+      user_id_error: selectValidator(item.user_id),
+      roles_error: selectValidator(item.roles),
+    }));
+
+    // Check for duplicate users
+    const userCounts = validateFormFields.reduce((acc, curr) => {
+      if (curr.user_id) {
+        acc[curr.user_id] = (acc[curr.user_id] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    validateFormFields = validateFormFields.map((item) => {
+      if (item.user_id && userCounts[item.user_id] > 1) {
+        return {
+          ...item,
+          user_id_error: " is already mapped",
+        };
+      }
+      return item;
+    });
+
+    setFormFields(validateFormFields);
+
+    // If any row has error, stop
+    const isError = validateFormFields.filter(
+      (f) => f.user_id_error !== "" || f.roles_error !== ""
+    );
+
+    console.log("isError", isError);
+
+    if (isError.length >= 1) return;
+
+    const payload = {
+      group_id: groupId,
+      users: formFields,
+    };
+    console.log("payyyyyyy", payload);
+    setGroupFormLoading(true);
+    try {
+      await assignUsersToGroup(payload);
+      setTimeout(() => {
+        CommonMessage("success", "User Assigned");
+        formReset();
+      }, 300);
+    } catch (error) {
+      setTimeout(() => {
+        setGroupFormLoading(false);
+      }, 300);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   //reset function
   const formReset = () => {
     setIsOpenAddDrawer(false);
@@ -327,6 +575,14 @@ export default function PageAccess({
     setRoleFormLoading(false);
     setRoleId(null);
     setIsOpenRoleDeleteModal(false);
+    //permission usestates
+    setIsOpenPermissionDrawer(false);
+    setPermissionButtonLoading(false);
+    //user assign usestates
+    setIsOpenUserModal(false);
+    setFormFields([
+      { user_id: null, roles: null, user_id_error: "", roles_error: "" },
+    ]);
   };
 
   return (
@@ -382,7 +638,7 @@ export default function PageAccess({
             <>
               {groupsData.map((item, index) => {
                 return (
-                  <React.Fragment>
+                  <React.Fragment key={index}>
                     <Col span={8} style={{ marginBottom: "20px" }}>
                       <div
                         className="settings_groupcard"
@@ -453,9 +709,12 @@ export default function PageAccess({
                               </div>
                               <button
                                 className="settings_group_footer_buttons"
-                                onClick={() => setIsOpenUserModal(true)}
+                                onClick={() => {
+                                  setGroupId(item.group_id);
+                                  handleGetUsersByGroupId(item.group_id);
+                                }}
                               >
-                                View Users
+                                Add Users
                               </button>
                             </div>
                           </>
@@ -481,7 +740,7 @@ export default function PageAccess({
               <>
                 {rolesData.map((item, index) => {
                   return (
-                    <React.Fragment>
+                    <React.Fragment key={index}>
                       <Col span={8} style={{ marginBottom: "20px" }}>
                         <div
                           className="settings_groupcard"
@@ -553,9 +812,12 @@ export default function PageAccess({
                                 </div>
                                 <button
                                   className="settings_group_footer_buttons"
-                                  onClick={() => setIsOpenUserModal(true)}
+                                  onClick={() => {
+                                    setRoleId(item.role_id);
+                                    getRolePermissionsData(item.role_id);
+                                  }}
                                 >
-                                  View Permissions
+                                  Add Permissions
                                 </button>
                               </div>
                             </>
@@ -573,95 +835,6 @@ export default function PageAccess({
             )}
           </Row>
         </div>
-
-        {/* add group drawer */}
-        <Drawer
-          title="Add Group"
-          open={isOpenAddDrawer}
-          onClose={formReset}
-          width="48%"
-          className="settings_addgroup_drawer"
-          style={{ position: "relative", paddingBottom: 65 }}
-        >
-          <Row gutter={16} style={{ padding: "24px 24px 0px 24px" }}>
-            <Col span={12}>
-              <CommonInputField label="Name" required={true} />
-            </Col>
-            <Col span={12}>
-              <CommonOptionsMultiSelect
-                label="Users"
-                required={true}
-                options={[{ id: 1, title: "Balaji" }]}
-              />
-            </Col>
-          </Row>
-
-          <p className="settings_permission_heading">Permissions</p>
-
-          <p className="settings_permission_subheading">Dashboard Access</p>
-          <div style={{ padding: "0px 24px 0px 24px" }}>
-            <Row style={{ marginTop: "16px" }}>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  Dashboard
-                </Checkbox>{" "}
-              </Col>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  Academic Dashboard
-                </Checkbox>
-              </Col>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  SALES Report Dashboard
-                </Checkbox>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "20px" }}>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  BDE Report Dashboard
-                </Checkbox>{" "}
-              </Col>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  HR Report Dashboard
-                </Checkbox>
-              </Col>
-            </Row>
-          </div>
-
-          <Divider className="settings_addgroupdrawer_divider" />
-          <p className="settings_permission_subheading">Target Access</p>
-          <div style={{ padding: "0px 24px 0px 24px" }}>
-            <Row style={{ marginTop: "16px" }}>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  Ledger Board
-                </Checkbox>{" "}
-              </Col>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  Monthly
-                </Checkbox>
-              </Col>
-              <Col span={8}>
-                <Checkbox className="settings_pageaccess_checkbox">
-                  Weekly
-                </Checkbox>
-              </Col>
-            </Row>
-          </div>
-
-          <div className="leadmanager_tablefiler_footer">
-            <div className="leadmanager_submitlead_buttoncontainer">
-              <button className="leadmanager_tablefilter_applybutton">
-                Add
-              </button>
-            </div>
-          </div>
-        </Drawer>
 
         {/* add group modal */}
         <Modal
@@ -758,39 +931,192 @@ export default function PageAccess({
 
         {/* add users modal */}
         <Modal
-          title="Users"
+          title="Add User"
           open={isOpenUserModal}
-          onCancel={() => setIsOpenUserModal(false)}
+          onCancel={formReset}
           footer={false}
-          width="60%"
+          width="50%"
         >
-          <div style={{ marginTop: "20px" }}>
-            <CommonTable
-              scroll={{ x: 700 }}
-              columns={usertableColumns}
-              dataSource={usersData}
-              dataPerPage={10}
-              checkBox="false"
-              size="small"
-              paginationStatus={false}
-              className="questionupload_table"
-            />{" "}
+          {formFields.map((item, index) => {
+            return (
+              <React.Fragment key={index}>
+                <Row
+                  gutter={16}
+                  style={{
+                    marginTop: "12px",
+                    marginBottom:
+                      formFields.length - 1 === index ? "0px" : "22px",
+                  }}
+                >
+                  <Col span={8}>
+                    <CommonSelectField
+                      label="User"
+                      required={true}
+                      options={usersData}
+                      onChange={(e) => {
+                        const u_id = e.target.value;
+                        handleFormFields(index, "user_id", u_id);
+                      }}
+                      value={item.user_id}
+                      error={item.user_id_error}
+                    />
+                  </Col>
+
+                  <Col span={8}>
+                    <CommonMultiSelect
+                      label="Roles"
+                      required={true}
+                      options={rolesData}
+                      onChange={(e, selectedValues) => {
+                        handleFormFields(index, "roles", selectedValues);
+                      }}
+                      value={item.roles}
+                      dontallowFreeSolo={true}
+                      error={item.roles_error}
+                    />
+                  </Col>
+
+                  <Col span={8}>
+                    <Button
+                      className="settings_formfields_deletebutton"
+                      onClick={() => {
+                        deleteFormFields(index);
+                      }}
+                    >
+                      Delete{" "}
+                    </Button>
+                  </Col>
+                </Row>
+              </React.Fragment>
+            );
+          })}
+          {/* <Button
+            type="primary"
+            className="settings_formfields_addbutton"
+            onClick={addFormfields}
+          >
+            Add
+          </Button> */}
+
+          <div className="settings_formfields_submitbutton_container">
+            <Button type="primary" onClick={addFormfields}>
+              Add
+            </Button>
+            {groupFormLoading ? (
+              <Button
+                type="primary"
+                className="settings_formfields_submitbutton"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                className="settings_formfields_submitbutton"
+                onClick={handleAssignUsers}
+              >
+                Submit
+              </Button>
+            )}
           </div>
-
-          <p className="batch_usermodal_addcandidate">Add User</p>
-
-          <Row>
-            <Col span={12}>
-              <div className="batch_usermodal_addcandidate_buttonContainer">
-                <CommonInputField label="User Name" />
-                <button className="batch_usermodal_addcandidate_button">
-                  + Add
-                </button>
-              </div>
-            </Col>
-          </Row>
         </Modal>
 
+        {/* permission drawer */}
+        <Drawer
+          title="Manage Permission"
+          open={isOpenPermissionDrawer}
+          onClose={formReset}
+          width="48%"
+          className="settings_addgroup_drawer"
+          style={{ position: "relative", paddingBottom: 65 }}
+        >
+          <p className="settings_permission_subheading">Leads Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row style={{ marginTop: "16px" }}>
+              {leadsModulePermissionData.map((item) => {
+                return (
+                  <Col span={8}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = leadsModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(storeLeadsModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Customers Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row style={{ marginTop: "16px" }}>
+              {customersModulePermissionData.map((item) => {
+                return (
+                  <Col span={8}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = customersModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeCustomersModulePermissionList(updateItem)
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+          <div className="leadmanager_tablefiler_footer">
+            <div className="leadmanager_submitlead_buttoncontainer">
+              {permissionButtonLoading ? (
+                <Button
+                  type="primary"
+                  className="settings_permissions_loading_savebutton"
+                >
+                  <CommonSpinner />
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  className="settings_permissions_savebutton"
+                  onClick={handleInsertRolePermissions}
+                >
+                  Save
+                </Button>
+              )}
+            </div>
+          </div>
+        </Drawer>
         {/* delete group modal */}
         <CommonDeleteModal
           open={isOpenGroupDeleteModal}

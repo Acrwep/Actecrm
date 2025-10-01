@@ -66,8 +66,6 @@ export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
   const [status, setStatus] = useState("");
-  const [onBoardingCount, setOnboardingCount] = useState("");
-  const [onGoingCount, setOnGoingCount] = useState("");
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -111,10 +109,13 @@ export default function Trainers() {
   const [ifscCode, setIfscCode] = useState("");
   const [signatureImage, setSignatureImage] = useState("");
   //status count usestates
+  const [allTrainersCount, setAllTrainersCount] = useState(0);
   const [formPendingCount, setFormPendingCount] = useState(0);
   const [verifyPendingCount, setVerifyPendingCount] = useState(0);
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [onBoardingCount, setOnboardingCount] = useState("");
+  const [onGoingCount, setOnGoingCount] = useState("");
   //add course usestates
   const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
   const [courseName, setCourseName] = useState("");
@@ -568,6 +569,7 @@ export default function Trainers() {
       const statusCountList = response?.data?.data?.trainer_status_count || [];
 
       if (statusCountList.length >= 1) {
+        setAllTrainersCount(statusCountList[0].total_count);
         setFormPendingCount(statusCountList[0].form_pending);
         setVerifyPendingCount(statusCountList[0].verify_pending);
         setVerifiedCount(statusCountList[0].verified);
@@ -1355,7 +1357,7 @@ export default function Trainers() {
                   getTrainersData(searchValue, null);
                 }}
               >
-                <p>All {`( ${trainersData.length} )`}</p>
+                <p>All {`( ${allTrainersCount} )`}</p>
               </div>
               <div
                 className={

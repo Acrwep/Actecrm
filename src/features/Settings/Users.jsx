@@ -10,6 +10,7 @@ import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import {
+  addressValidator,
   confirmPasswordValidator,
   nameValidator,
   passwordValidator,
@@ -147,7 +148,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
 
   const handleSubmit = async () => {
     setValidationTrigger(true);
-    const userIdValidate = userIdValidator(userId);
+    const userIdValidate = addressValidator(userId);
     const profileNameValidate = nameValidator(profileName);
     const passwordValidate = passwordValidator(password);
     const confirmPasswordValidate = confirmPasswordValidator(
@@ -356,7 +357,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
               onChange={(e) => {
                 setUserId(e.target.value);
                 if (validationTrigger) {
-                  setUserIdError(userIdValidator(e.target.value));
+                  setUserIdError(addressValidator(e.target.value));
                 }
               }}
               value={userId}

@@ -406,7 +406,25 @@ export default function LeadFollowUp({
     };
     try {
       const response = await getBranches(payload);
-      setBranchOptions(response?.data?.result || []);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          const reordered = [
+            ...branch_data.filter((item) => item.name == "Online"),
+            ...branch_data.filter((item) => item.name != "Online"),
+          ];
+          setBranchOptions(reordered);
+        }
+      } else {
+        setBranchOptions([]);
+      }
     } catch (error) {
       setBranchOptions([]);
       console.log("response status error", error);

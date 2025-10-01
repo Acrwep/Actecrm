@@ -63,7 +63,11 @@ export default function CommonSelectField({
       >
         <Autocomplete
           options={options}
-          value={options.find((opt) => opt.id === value) || null}
+          value={
+            options.find(
+              (opt) => String(opt.user_id ?? opt.id) === String(value)
+            ) || null
+          }
           getOptionLabel={(option) =>
             showLabelStatus === "Name"
               ? option?.name
@@ -71,11 +75,15 @@ export default function CommonSelectField({
               ? option?.email
               : showLabelStatus === "Mobile"
               ? option?.mobile
-              : option?.exp_range || option?.name || ""
+              : option?.exp_range || option?.name || option?.user_name || ""
           }
           onChange={(event, newValue) =>
             onChange({
-              target: { value: newValue ? newValue.id : "" },
+              target: {
+                value: newValue
+                  ? String(newValue.user_id ?? newValue.id ?? "")
+                  : "",
+              },
             })
           }
           disableClearable={disableClearable ?? true}

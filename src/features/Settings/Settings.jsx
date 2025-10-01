@@ -3,8 +3,20 @@ import "./styles.css";
 import Users from "./Users";
 import PageAccess from "./PageAccess";
 import { useDispatch } from "react-redux";
-import { getGroups, getRoles, getUsers } from "../ApiService/action";
-import { storeGroupList, storeRoleList, storeUsersList } from "../Redux/Slice";
+import {
+  getAllPermissions,
+  getGroups,
+  getRoles,
+  getUsers,
+} from "../ApiService/action";
+import {
+  storeCustomersModulePermissionList,
+  storeGroupList,
+  storeLeadsModulePermissionList,
+  storePermissionsList,
+  storeRoleList,
+  storeUsersList,
+} from "../Redux/Slice";
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -60,7 +72,37 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setRoleLoading(false);
+        getPermissionsData();
       }, 300);
+    }
+  };
+
+  const getPermissionsData = async () => {
+    try {
+      const response = await getAllPermissions();
+      console.log("all permissions response", response);
+      const allPermissions = response?.data?.data || [];
+      dispatch(storePermissionsList(allPermissions));
+      //filter lead module
+      const leadsModule = allPermissions.filter(
+        (f) => f.section === "Leads Module"
+      );
+      const updateLeadsModule = leadsModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeLeadsModulePermissionList(updateLeadsModule));
+
+      //filter customers module
+      const customersModule = allPermissions.filter(
+        (f) => f.section === "Customers Module"
+      );
+      const updateCustomersModule = customersModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeCustomersModulePermissionList(updateCustomersModule));
+    } catch (error) {
+      dispatch(storePermissionsList([]));
+      console.log("all permissions error", error);
     }
   };
 

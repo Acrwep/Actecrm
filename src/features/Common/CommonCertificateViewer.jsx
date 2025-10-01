@@ -4,6 +4,7 @@ import html2canvas from "html2canvas";
 import { Button } from "antd";
 import { LuDownload } from "react-icons/lu";
 import CommonSpinner from "./CommonSpinner";
+import "./commonstyles.css";
 
 export default function CommonCertificateViewer({
   htmlTemplate,
@@ -41,24 +42,10 @@ export default function CommonCertificateViewer({
       <div
         ref={certificateRef}
         dangerouslySetInnerHTML={{ __html: htmlTemplate }}
-        style={{
-          width: "794px", // A4 width in px
-          height: "1250px", // A4 height in px
-          margin: 0,
-          padding: 0,
-          position: "relative", // needed for absolute images
-          backgroundColor: "transparent",
-        }}
+        className="common_certviewer_certificate"
       ></div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "16px",
-          marginRight: "20px",
-        }}
-      >
+      <div className="common_certviewer_downloadbutton_container">
         {loading ? (
           <Button type="primary" style={{ width: 160, cursor: "default" }}>
             <CommonSpinner />

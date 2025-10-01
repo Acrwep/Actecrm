@@ -3659,7 +3659,16 @@ export default function Customers() {
               );
             }}
           >
-            <p>All {`( ${customersData.length} )`}</p>
+            <p>
+              All{" "}
+              {`( ${
+                customerStatusCount &&
+                customerStatusCount.total_count !== undefined &&
+                customerStatusCount.total_count !== null
+                  ? customerStatusCount.total_count
+                  : "-"
+              } )`}
+            </p>
           </div>
           <div
             className={
@@ -6959,10 +6968,10 @@ export default function Customers() {
         }}
         footer={false}
         width="64%"
-        style={{ marginBottom: "20px" }}
+        style={{ marginBottom: "20px", top: 10 }}
         className="customer_certificate_viewmodal"
         zIndex={1100}
-        centered
+        // centered={true}
         closeIcon={
           <span
             style={{

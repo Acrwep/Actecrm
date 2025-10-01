@@ -19,21 +19,30 @@ export default function CommonMultiSelect({
   optionsFontSize,
   required,
   error,
+  dontallowFreeSolo,
 }) {
   return (
     <div>
       <FormControl fullWidth className="common_selectfield" required={required}>
         <Autocomplete
           multiple
-          freeSolo
+          freeSolo={dontallowFreeSolo ? false : true}
           limitTags={2}
           size="small"
           id="multiple-limit-tags"
-          options={[]}
+          options={options}
           getOptionLabel={(option) =>
-            typeof option === "string" ? option : option.title
+            typeof option === "string"
+              ? option
+              : option.role_name
+              ? option.role_name
+              : option.name
           }
           defaultValue={defaultValue}
+          {...(dontallowFreeSolo && {
+            isOptionEqualToValue: (option, value) =>
+              option.role_id === value.role_id,
+          })}
           renderInput={(params) => (
             <TextField
               {...params}
