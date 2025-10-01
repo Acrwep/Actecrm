@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
-import { userIdValidator, passwordValidator } from "../Common/Validation";
+import { passwordValidator, addressValidator } from "../Common/Validation";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -65,7 +65,7 @@ export default function Login() {
     e.preventDefault();
     setValidationTrigger(true);
 
-    const emailValidate = userIdValidator(userId);
+    const emailValidate = addressValidator(userId);
     const passwordValidate = passwordValidator(password);
 
     setUserIdError(emailValidate);
@@ -119,7 +119,7 @@ export default function Login() {
                     onChange={(e) => {
                       setUserId(e.target.value);
                       if (validationTrigger) {
-                        setUserIdError(userIdValidator(e.target.value));
+                        setUserIdError(addressValidator(e.target.value));
                       }
                     }}
                     value={userId}
