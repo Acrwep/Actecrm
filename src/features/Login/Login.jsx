@@ -115,7 +115,7 @@ export default function Login() {
               <form className="login_formContainer">
                 <div style={{ position: "relative" }}>
                   <CommonInputField
-                    label="UserId"
+                    label="User Id"
                     onChange={(e) => {
                       setUserId(e.target.value);
                       if (validationTrigger) {
