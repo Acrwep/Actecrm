@@ -1078,7 +1078,7 @@ export default function Customers() {
                   getCustomerHistoryData(record.id);
                   setTimeout(() => {
                     const container = document.getElementById(
-                      "customer_history_modal_maincontainer"
+                      "customer_history_profilecontainer"
                     );
                     container.scrollIntoView({
                       behavior: "smooth",
@@ -1883,7 +1883,7 @@ export default function Customers() {
                   getCustomerHistoryData(record.id);
                   setTimeout(() => {
                     const container = document.getElementById(
-                      "customer_history_modal_maincontainer"
+                      "customer_history_profilecontainer"
                     );
                     container.scrollIntoView({
                       behavior: "smooth",
@@ -7039,9 +7039,28 @@ export default function Customers() {
         className="customer_history_drawer"
       >
         <div
-          id="customer_history_modal_maincontainer"
-          style={{ marginBottom: "20px" }}
-        />
+          className="customer_profileContainer"
+          id="customer_history_profilecontainer"
+          style={{ marginBottom: "30px" }}
+        >
+          {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
+          <FaRegUser size={50} color="#333" />
+
+          <div>
+            <p className="customer_nametext">
+              {" "}
+              {customerDetails && customerDetails.name
+                ? customerDetails.name
+                : "-"}
+            </p>
+            <p className="customer_coursenametext">
+              {" "}
+              {customerDetails && customerDetails.course_name
+                ? customerDetails.course_name
+                : "-"}
+            </p>
+          </div>
+        </div>
         {customerHistoryLoading ? (
           <CommonSpinner />
         ) : (

@@ -153,7 +153,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
     label: <span style={{ whiteSpace: "nowrap" }}>{item.status}</span>,
     children: (
       <>
-        {item.status === "Payment Verified" ? (
+        {item.status === "Payment Verified" ||
+        item.status === "Part Payment Verified" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}

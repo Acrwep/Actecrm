@@ -149,6 +149,9 @@
 .settings_pageaccess_checkbox {
   font-size: 13px;
 }
+.settings_pageaccess_checkbox .ant-checkbox-inner {
+  border: 1px solid #c9c9c9 !important;
+}
 .settings_addgroupdrawer_divider {
   margin: 18px 0px !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;

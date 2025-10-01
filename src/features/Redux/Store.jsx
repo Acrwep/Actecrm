@@ -7,6 +7,8 @@ import {
   permissionsListReducer,
   leadsModulePermissionListReducer,
   customersModulePermissionListReducer,
+  trainersModulePermissionListReducer,
+  settingsModulePermissionListReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -19,5 +21,7 @@ export const reduxStore = configureStore({
     permissionslist: permissionsListReducer,
     leadsmodulepermissionlist: leadsModulePermissionListReducer,
     customersmodulepermissionlist: customersModulePermissionListReducer,
+    trainersmodulepermissionlist: trainersModulePermissionListReducer,
+    settingsmodulepermissionlist: settingsModulePermissionListReducer,
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Drawer, Flex, Tooltip, Button, Radio } from "antd";
+import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Modal } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -14,6 +14,7 @@ import {
   confirmPasswordValidator,
   nameValidator,
   passwordValidator,
+  selectValidator,
   userIdValidator,
 } from "../Common/Validation";
 import { createUser, getUsers, updateUser } from "../ApiService/action";
@@ -23,10 +24,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { storeUsersList } from "../Redux/Slice";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
+import CommonMultiSelect from "../Common/CommonMultiSelect";
+import { PiUserCirclePlus } from "react-icons/pi";
 
 export default function Users({ userTableLoading, setUserTableLoading }) {
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
+  const rolesData = useSelector((state) => state.rolelist);
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const departmentOptions = [
@@ -34,6 +38,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     { id: 2, name: "Admin" },
   ];
   const [department, setDepartment] = useState(1);
+  const [assignUsersData, setAssignUsersData] = useState(usersData);
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
   const [profileName, setProfileName] = useState("");
@@ -44,21 +49,59 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [childUsers, setChildUsers] = useState([]);
+  const [userRoles, setUserRoles] = useState([]);
+  const [userRolesError, setUserRolesError] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   // const [usersData, setUsersData] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
 
   const columns = [
     { title: "User Id", key: "user_id", dataIndex: "user_id" },
-    { title: "Profile Name", key: "user_name", dataIndex: "user_name" },
+    {
+      title: "Profile Name",
+      key: "user_name",
+      dataIndex: "user_name",
+      width: 180,
+    },
     { title: "Password", key: "password", dataIndex: "password" },
+    {
+      title: "Assigned Users",
+      key: "child_users",
+      dataIndex: "child_users",
+      width: 180,
+      render: (text, record) => {
+        return (
+          <p>
+            {record.child_users &&
+              record.child_users.map((user) => user.user_name).join(", ")}
+          </p>
+        );
+      },
+    },
+    {
+      title: "Roles",
+      key: "roles",
+      dataIndex: "roles",
+      width: 160,
+      render: (text, record) => {
+        return (
+          <p>
+            {record.roles &&
+              record.roles.map((user) => user.role_name).join(", ")}
+          </p>
+        );
+      },
+    },
     {
       title: "Status",
       key: "is_active",
       dataIndex: "is_active",
+      width: 140,
       render: (text, record) => {
         return (
           <div>
@@ -71,6 +114,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       title: "Action",
       key: "action",
       dataIndex: "action",
+      width: 130,
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
@@ -79,11 +123,8 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
-            <RiDeleteBinLine
-              size={19}
-              color="#d32f2f"
-              className="trainers_action_icons"
-            />
+
+            <RiDeleteBinLine color="#d32f2f" size={19} />
           </div>
         );
       },
@@ -119,6 +160,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setProfileName(item.user_name);
     setPassword(item.password);
     setConfirmPassword(item.password);
+    const alterUserData = usersData.filter((f) => f.id != item.id);
+    setAssignUsersData(alterUserData);
+    setChildUsers(item.child_users);
+    setUserRoles(item.roles);
     setIsOpenAddDrawer(true);
   };
 
@@ -144,6 +189,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setValidationTrigger(false);
     setButtonLoading(false);
     setEditUserId(null);
+    setAssignUsersData(usersData);
   };
 
   const handleSubmit = async () => {
@@ -155,26 +201,51 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       password,
       confirmPassword
     );
+    const userRolesValidate = selectValidator(userRoles);
 
     setUserIdError(userIdValidate);
     setProfileNameError(profileNameValidate);
     setPasswordError(passwordValidate);
     setConfirmPasswordError(confirmPasswordValidate);
+    setUserRolesError(userRolesValidate);
 
     if (
       userIdValidate ||
       profileNameValidate ||
       passwordValidate ||
-      confirmPasswordValidate
+      confirmPasswordValidate ||
+      userRolesValidate
     )
       return;
     setButtonLoading(true);
+
+    let alterChildUsers;
+
+    if (childUsers.length >= 1) {
+      alterChildUsers = childUsers.map((item) => {
+        return { user_id: item.user_id, user_name: item.user_name };
+      });
+    } else {
+      alterChildUsers = [];
+    }
+
+    let alterUserRoles;
+
+    if (userRoles.length >= 1) {
+      alterUserRoles = userRoles.map((item) => {
+        return { role_id: item.role_id, role_name: item.role_name };
+      });
+    } else {
+      alterUserRoles = [];
+    }
 
     const payload = {
       ...(editUserId && { id: editUserId }),
       user_id: userId,
       user_name: profileName,
       password: password,
+      users: alterChildUsers,
+      roles: alterUserRoles,
     };
 
     if (editUserId) {
@@ -291,21 +362,6 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
                 </Tooltip>
               </Flex>
             </div>
-            {/* <CommonSelectField
-              label="Select"
-              height="39px"
-              style={{ width: "36%" }}
-              labelFontSize="12px"
-              options={departmentOptions}
-              value={department}
-              labelMarginTop="-1px"
-              valueMarginTop="-6px"
-              downArrowIconTop="43%"
-              fontSize="13px"
-              onChange={(e) => {
-                setDepartment(e.target.value);
-              }}
-            /> */}
           </div>
         </Col>
         <Col
@@ -331,7 +387,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 800 }}
+          scroll={{ x: 1000 }}
           columns={columns}
           dataSource={usersData}
           dataPerPage={10}
@@ -472,6 +528,34 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
           </Col>
         </Row>
 
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={12}>
+            <CommonMultiSelect
+              label="Assign Users"
+              dontallowFreeSolo={true}
+              options={assignUsersData}
+              onChange={(e, selectedValues) => {
+                setChildUsers(selectedValues);
+              }}
+              value={childUsers}
+            />
+          </Col>
+          <Col span={12}>
+            <CommonMultiSelect
+              label="Roles"
+              dontallowFreeSolo={true}
+              options={rolesData}
+              onChange={(e, selectedValues) => {
+                setUserRoles(selectedValues);
+                if (validationTrigger) {
+                  setUserRolesError(selectValidator(selectedValues));
+                }
+              }}
+              value={userRoles}
+              error={userRolesError}
+            />
+          </Col>
+        </Row>
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {buttonLoading ? (
@@ -489,6 +573,14 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        title="Assign Users and Role"
+        open={isOpenRoleModal}
+        onCancel={() => setIsOpenRoleModal(false)}
+        footer={false}
+        width="35%"
+      ></Modal>
     </div>
   );
 }

@@ -36,12 +36,21 @@ export default function CommonMultiSelect({
               ? option
               : option.role_name
               ? option.role_name
+              : option.user_name
+              ? option.user_name
               : option.name
           }
           defaultValue={defaultValue}
           {...(dontallowFreeSolo && {
-            isOptionEqualToValue: (option, value) =>
-              option.role_id === value.role_id,
+            isOptionEqualToValue: (option, value) => {
+              if (option?.role_id && value?.role_id) {
+                return option.role_id === value.role_id;
+              }
+              if (option?.user_id && value?.user_id) {
+                return option.user_id === value.user_id;
+              }
+              return option?.id === value?.id;
+            },
           })}
           renderInput={(params) => (
             <TextField
@@ -89,6 +98,9 @@ export default function CommonMultiSelect({
               padding: "2px 4px",
               display: "flex",
               alignItems: "center",
+            },
+            "& .MuiAutocomplete-tag": {
+              margin: "2px 2px 8px 2px",
             },
           }}
           slotProps={{

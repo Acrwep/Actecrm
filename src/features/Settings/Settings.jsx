@@ -15,6 +15,8 @@ import {
   storeLeadsModulePermissionList,
   storePermissionsList,
   storeRoleList,
+  storeSettingsModulePermissionList,
+  storeTrainersModulePermissionList,
   storeUsersList,
 } from "../Redux/Slice";
 
@@ -40,7 +42,7 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setUserTableLoading(false);
-        getGroupsData();
+        getRolesData();
       }, 300);
     }
   };
@@ -100,6 +102,24 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeCustomersModulePermissionList(updateCustomersModule));
+
+      //filter trainers module
+      const trainersModule = allPermissions.filter(
+        (f) => f.section === "Trainers Module"
+      );
+      const updateTrainersModule = trainersModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeTrainersModulePermissionList(updateTrainersModule));
+
+      //filter settings module
+      const settingsModule = allPermissions.filter(
+        (f) => f.section === "Settings Module"
+      );
+      const updateSettingsModule = settingsModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeSettingsModulePermissionList(updateSettingsModule));
     } catch (error) {
       dispatch(storePermissionsList([]));
       console.log("all permissions error", error);
