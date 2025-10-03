@@ -39,6 +39,21 @@
   color: #202020;
   margin-bottom: 12px !important;
 }
+.comment-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.comment-cell:hover {
+  white-space: normal;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
 .leadmanager_submitlead_buttoncontainer {
   display: flex;
   justify-content: flex-end;

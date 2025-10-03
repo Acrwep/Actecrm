@@ -398,7 +398,7 @@ export default function CustomerRegistration() {
 
     setButtonLoading(true);
 
-    const getCustomerArea = areaOptions.find((f) => f.id === areaId);
+    const getCustomerArea = areaOptions.find((f) => f.id == areaId);
 
     const payload = {
       id: customer_id,

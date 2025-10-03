@@ -195,6 +195,7 @@ export default function Leads({
   //add area usestates
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
 
   const [defaultColumns, setDefaultColumns] = useState([
     {
@@ -278,6 +279,7 @@ export default function Leads({
       title: "Comments",
       key: "comments",
       dataIndex: "comments",
+      width: 220,
       isChecked: true,
     },
     {
@@ -367,7 +369,12 @@ export default function Leads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 180,
+      width: 200,
+      render: (text) => {
+        if (!text) return "-";
+
+        return <div className="comment-cell">{text}</div>;
+      },
     },
     {
       title: "Action",
@@ -788,8 +795,17 @@ export default function Leads({
   };
 
   //onclick functions
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     console.log("clicked itemmm", item);
+    let areasList;
+    try {
+      const response = await getAllAreas();
+      areasList = response?.data?.data || [];
+    } catch (error) {
+      areasList = [];
+      console.log("response status error", error);
+    }
+
     setIsOpenAddDrawer(true);
     setLeadId(item.id);
     setName(item.name);
@@ -801,10 +817,18 @@ export default function Leads({
     const updateSates = stateList.map((s) => {
       return { ...s, id: s.isoCode };
     });
-    console.log(updateSates, "updateSates");
     setStateOptions(updateSates);
     setStateId(item.state);
-    setAreaId(parseInt(item.area_id));
+    // setAreaId(parseInt(item.area_id));
+    console.log("areaOptions", areasList);
+    const findArea = areasList.find((f) => f.name == item.area_id);
+    console.log("findArea", findArea);
+
+    if (findArea) {
+      setAreaId(parseInt(findArea.id));
+    } else {
+      setAreaId(null);
+    }
 
     setPrimaryCourse(item.primary_course_id);
     setPrimaryFees(item.primary_fees);

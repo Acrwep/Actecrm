@@ -781,3 +781,12 @@ export const insertRolePermissions = async (payload) => {
     throw error;
   }
 };
+
+export const getUserPermissions = async (payload) => {
+  try {
+    const response = await api.post("/api/getUserPermissions", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
