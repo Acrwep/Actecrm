@@ -190,6 +190,9 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setButtonLoading(false);
     setEditUserId(null);
     setAssignUsersData(usersData);
+    setChildUsers([]);
+    setUserRoles([]);
+    setUserRolesError("");
   };
 
   const handleSubmit = async () => {
@@ -278,7 +281,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         setButtonLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }

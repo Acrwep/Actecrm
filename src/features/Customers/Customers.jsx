@@ -145,7 +145,7 @@ export default function Customers() {
   const [paymentModeError, setPaymentModeError] = useState(null);
   const [subTotal, setSubTotal] = useState("");
   const [convenienceFees, setConvenienceFees] = useState("");
-  const [taxType, setTaxType] = useState("");
+  const [taxType, setTaxType] = useState(null);
   const [taxTypeError, setTaxTypeError] = useState("");
   const [amount, setAmount] = useState(0);
   const [paidNow, setPaidNow] = useState("");
@@ -413,7 +413,7 @@ export default function Customers() {
                                     ? 3
                                     : record.payments.tax_type === "VAT (18%)"
                                     ? 4
-                                    : record.payments.tax_type === "No tax"
+                                    : record.payments.tax_type === "No Tax"
                                     ? 5
                                     : 0
                                   : 0
@@ -4076,8 +4076,14 @@ export default function Customers() {
         style={{ position: "relative" }}
       >
         <div className="customer_profileContainer">
-          {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
-          <FaRegUser size={50} color="#333" />
+          {customerDetails && customerDetails.profile_image ? (
+            <img
+              src={customerDetails.profile_image}
+              className="cutomer_profileimage"
+            />
+          ) : (
+            <FaRegUser size={50} color="#333" />
+          )}
 
           <div>
             <p className="customer_nametext">
@@ -4325,7 +4331,8 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.is_server_required
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
                         ? customerDetails.is_server_required === 1
                           ? "Required"
                           : "Not Required"
@@ -4500,8 +4507,14 @@ export default function Customers() {
         className="customer_statusupdate_drawer"
       >
         <div className="customer_statusupdate_drawer_profileContainer">
-          {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
-          <FaRegUser size={50} color="#333" />
+          {customerDetails && customerDetails.profile_image ? (
+            <img
+              src={customerDetails.profile_image}
+              className="cutomer_profileimage"
+            />
+          ) : (
+            <FaRegUser size={50} color="#333" />
+          )}
 
           <div>
             <p
@@ -4705,7 +4718,8 @@ export default function Customers() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.is_server_required
+                  {customerDetails &&
+                  customerDetails.is_server_required !== undefined
                     ? customerDetails.is_server_required === 1
                       ? "Required"
                       : "Not Required"
@@ -5076,7 +5090,7 @@ export default function Customers() {
                             </Col>
                           </Row>
 
-                          {item.payment_status === "Rejected" && (
+                          {item.payment_status === "Rejected" ? (
                             <Row
                               gutter={16}
                               style={{
@@ -5084,7 +5098,26 @@ export default function Customers() {
                                 marginBottom: "8px",
                               }}
                             >
-                              <Col span={12}></Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Nxt Due Date
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.next_due_date
+                                        ? moment(item.next_due_date).format(
+                                            "DD/MM/YYYY"
+                                          )
+                                        : "-"}{" "}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
                               <Col span={12}>
                                 <Row>
                                   <Col span={12}>
@@ -5097,6 +5130,51 @@ export default function Customers() {
                                   <Col span={12}>
                                     <p className="customerdetails_text">
                                       {item.reason}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+                          ) : (
+                            <Row
+                              gutter={16}
+                              style={{
+                                marginTop: "12px",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Nxt Due Date
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.next_due_date
+                                        ? moment(item.next_due_date).format(
+                                            "DD/MM/YYYY"
+                                          )
+                                        : "-"}{" "}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Status
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      Waiting to Verify
                                     </p>
                                   </Col>
                                 </Row>
@@ -5347,7 +5425,26 @@ export default function Customers() {
                                   marginBottom: "8px",
                                 }}
                               >
-                                <Col span={12}></Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Nxt Due Date
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.next_due_date
+                                          ? moment(item.next_due_date).format(
+                                              "DD/MM/YYYY"
+                                            )
+                                          : "-"}{" "}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
                                 <Col span={12}>
                                   <Row>
                                     <Col span={12}>
@@ -7043,8 +7140,14 @@ export default function Customers() {
           id="customer_history_profilecontainer"
           style={{ marginBottom: "30px" }}
         >
-          {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
-          <FaRegUser size={50} color="#333" />
+          {customerDetails && customerDetails.profile_image ? (
+            <img
+              src={customerDetails.profile_image}
+              className="cutomer_profileimage"
+            />
+          ) : (
+            <FaRegUser size={50} color="#333" />
+          )}
 
           <div>
             <p className="customer_nametext">

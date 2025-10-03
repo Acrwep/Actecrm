@@ -235,6 +235,13 @@ export default function TrainerRegistration() {
     }
   };
 
+  const handleSignatureBase64 = (base64) => {
+    console.log(base64, "base64");
+    setSignatureBase64(base64);
+    setSignatureError("");
+    setIsOpenSignatureModal(false);
+  };
+
   const handleTabClick = (key, e) => {
     setActiveKey(key);
   };
@@ -705,38 +712,39 @@ export default function TrainerRegistration() {
               />
             </Col>
             <Col span={6} style={{ position: "relative", display: "flex" }}>
-              <p className="trainer_registration_signaturelabel">
-                Signature <span style={{ color: "#d32f2f" }}>*</span>
-              </p>
-              <Upload
-                style={{ width: "100%", marginTop: "6px" }}
-                beforeUpload={(file) => {
-                  return false; // Prevent auto-upload
-                }}
-                accept=".png"
-                onChange={handleSignature}
-                fileList={signatureArray}
-                multiple={false}
-              >
-                <Button
-                  icon={<UploadOutlined />}
-                  className="leadmanager_payment_screenshotbutton"
-                  style={{ borderRadius: "4px" }}
-                >
-                  Choose file
-                  <span style={{ fontSize: "10px" }}>(PNG, JPEG, & PNG)</span>
-                </Button>
-              </Upload>{" "}
-              <button
-                className="trainer_registration_signature_createbutton"
-                onClick={() => setIsOpenSignatureModal(true)}
-              >
-                <IoIosAdd size={18} /> Create
-              </button>
-              {signatureError && (
-                <p className="trainer_registration_signatureerror">
-                  {signatureError}
-                </p>
+              {signatureBase64 ? (
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <div>
+                    <p style={{ fontWeight: 500, color: "#333" }}>Signature</p>
+                    <img
+                      src={signatureBase64}
+                      alt="Trainer Signature"
+                      className="customer_signature_image"
+                    />
+                  </div>
+                  <button
+                    className="trainer_registration_signature_createbutton"
+                    onClick={() => setIsOpenSignatureModal(true)}
+                  >
+                    Update
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    className="customer_registration_addsign_button"
+                    onClick={() => {
+                      setIsOpenSignatureModal(true);
+                    }}
+                  >
+                    Add E-Signature
+                  </Button>
+                  {signatureError && (
+                    <p className="trainer_registration_signatureerror">
+                      {signatureError}
+                    </p>
+                  )}
+                </>
               )}
             </Col>
           </Row>
@@ -784,7 +792,10 @@ export default function TrainerRegistration() {
     const file = newFileList[0].originFileObj; // actual File object
 
     // ✅ Check file type
-    const isValidType = file.type === "image/png";
+    const isValidType =
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/jpg";
 
     // ✅ Check file size (1MB = 1,048,576 bytes)
     const isValidSize = file.size <= 1024 * 1024;
@@ -797,7 +808,7 @@ export default function TrainerRegistration() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        const base64String = reader.result; // Extract Base64 content
         setProfilePicture(base64String); // Store in state
       };
     } else {
@@ -862,7 +873,7 @@ export default function TrainerRegistration() {
             </div>
             <Upload
               listType="picture-circle"
-              accept=".png"
+              accept=".png,.jpg,.jpeg"
               fileList={profilePictureArray}
               onPreview={handlePreview}
               onChange={handleProfileAttachment}
@@ -900,13 +911,16 @@ export default function TrainerRegistration() {
       </div>
 
       <Modal
-        title="Create Signature"
+        title="Signature"
         open={isOpenSignatureModal}
         onCancel={() => setIsOpenSignatureModal(false)}
         footer={false}
         width="40%"
       >
-        <CommonSignaturePad />
+        <CommonSignaturePad
+          instruction={true}
+          onUpload={handleSignatureBase64}
+        />
       </Modal>
 
       <Modal

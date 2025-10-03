@@ -882,10 +882,7 @@ export default function Trainers() {
         {profileImage && (
           <div className="trainer_profilephoto_container">
             <p style={{ fontWeight: 500 }}>Profile Photo</p>
-            <img
-              src={`data:image/png;base64,${profileImage}`}
-              className="trainer_profilephoto"
-            />
+            <img src={profileImage} className="trainer_profilephoto" />
           </div>
         )}
         <Row gutter={16}>

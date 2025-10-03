@@ -706,7 +706,7 @@ export default function Leads({
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
-    if (paymentMode === 2 || paymentMode === 5) {
+    if (paymentMode == 2 || paymentMode == 5) {
       const conve_fees = getConvenienceFees(value);
       setConvenienceFees(conve_fees);
     } else {
@@ -725,7 +725,7 @@ export default function Leads({
     }
     const amnt = calculateAmount(
       parseInt(subTotal),
-      e.target.value === 5 ? 0 : 18
+      e.target.value == 5 ? 0 : 18
     );
     if (isNaN(amnt)) {
       setAmount("");
@@ -754,7 +754,7 @@ export default function Leads({
   const handlePaymentType = (e) => {
     const value = e.target.value;
     setPaymentMode(value);
-    const amnt = calculateAmount(parseInt(subTotal), taxType === 5 ? 0 : 18);
+    const amnt = calculateAmount(parseInt(subTotal), taxType == 5 ? 0 : 18);
     setAmount(amnt);
 
     if (paymentValidationTrigger) {
@@ -779,7 +779,7 @@ export default function Leads({
     );
 
     //handle convenience fees
-    if (value === 2 || value === 5) {
+    if (value == 2 || value == 5) {
       const conve_fees = getConvenienceFees(paidNow ? paidNow : 0);
       setConvenienceFees(conve_fees);
     } else {
@@ -985,6 +985,8 @@ export default function Leads({
 
     const today = new Date();
 
+    const getArea = areaOptions.find((f) => f.id == areaId);
+
     const payload = {
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
@@ -995,7 +997,7 @@ export default function Leads({
       email: email,
       country: countryId,
       state: stateId,
-      district: areaId,
+      district: getArea.name,
       primary_course_id: primaryCourse,
       primary_fees: primaryFees,
       price_category: priceCategory(primaryFees),

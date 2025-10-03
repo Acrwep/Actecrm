@@ -420,7 +420,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
-    if (paymentMode === 2 || paymentMode === 5) {
+    if (paymentMode == 2 || paymentMode == 5) {
       const conve_fees = getConvenienceFees(value);
       setConvenienceFees(conve_fees);
     } else {
@@ -461,7 +461,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     );
 
     //handle convenience fees
-    if (value === 2 || value === 5) {
+    if (value == 2 || value == 5) {
       const conve_fees = getConvenienceFees(payAmount ? payAmount : 0);
       setConvenienceFees(conve_fees);
     } else {

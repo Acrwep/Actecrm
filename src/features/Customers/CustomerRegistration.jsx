@@ -119,20 +119,6 @@ export default function CustomerRegistration() {
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
-        getAreasData();
-      }, 300);
-    }
-  };
-
-  const getAreasData = async () => {
-    try {
-      const response = await getAllAreas();
-      setAreaOptions(response?.data?.data || []);
-    } catch (error) {
-      setAreaOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
         getBatchTimingData();
       }, 300);
     }
@@ -148,12 +134,28 @@ export default function CustomerRegistration() {
       console.log("batch error", error);
     } finally {
       setTimeout(() => {
-        getCustomerData();
+        getAreasData();
       }, 300);
     }
   };
 
-  const getCustomerData = async () => {
+  const getAreasData = async () => {
+    let all_areas;
+    try {
+      const response = await getAllAreas();
+      all_areas = response?.data?.data || [];
+      setAreaOptions(all_areas);
+    } catch (error) {
+      setAreaOptions([]);
+      console.log("area response error", error);
+    } finally {
+      setTimeout(() => {
+        getCustomerData(all_areas);
+      }, 300);
+    }
+  };
+
+  const getCustomerData = async (all_areas) => {
     try {
       const response = await getCustomerById(customer_id);
       console.log("customer response", response);
@@ -169,11 +171,14 @@ export default function CustomerRegistration() {
       setWhatsApp(customerDetails.whatsapp);
       setCountryId(customerDetails.country);
       setStateId(customerDetails.state);
-      setAreaId(parseInt(customerDetails.current_location));
       setCourse(customerDetails.enrolled_course);
       setBatchTrack(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
       setPlacementSupport(customerDetails.placement_support);
+      const findArea = all_areas.find(
+        (f) => f.name == customerDetails.current_location
+      );
+      setAreaId(parseInt(findArea.id));
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerFullDetails(null);
@@ -196,7 +201,10 @@ export default function CustomerRegistration() {
     const file = newFileList[0].originFileObj; // actual File object
 
     // ✅ Check file type
-    const isValidType = file.type === "image/png";
+    const isValidType =
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/jpg";
 
     // ✅ Check file size (1MB = 1,048,576 bytes)
     const isValidSize = file.size <= 1024 * 1024;
@@ -209,7 +217,7 @@ export default function CustomerRegistration() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
+        const base64String = reader.result; // Extract Base64 content
         setProfilePicture(base64String); // Store in state
       };
     } else {
@@ -847,7 +855,7 @@ export default function CustomerRegistration() {
               onRemove={(file) => handleRemoveProfile(file)}
               beforeUpload={() => false} // prevent auto upload
               style={{ width: 90, height: 90 }} // reduce size
-              accept=".png"
+              accept=".png,.jpg,.jpeg"
             >
               {profilePictureArray.length >= 1 ? null : (
                 <div>

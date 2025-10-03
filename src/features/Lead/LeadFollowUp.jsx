@@ -573,6 +573,8 @@ export default function LeadFollowUp({
 
     const today = new Date();
 
+    const getArea = areaOptions.find((f) => f.id == areaId);
+
     const payload = {
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
@@ -583,7 +585,7 @@ export default function LeadFollowUp({
       email: email,
       country: countryId,
       state: stateId,
-      district: areaId,
+      district: getArea.name,
       primary_course_id: primaryCourse,
       primary_fees: primaryFees,
       price_category: priceCategory(primaryFees),

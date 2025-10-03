@@ -23,7 +23,8 @@ export default function CommonInputField({
       label === "Email" ||
       label === "Trainer Email" ||
       label === "User Id" ||
-      label === "Role Name"
+      label === "Role Name" ||
+      label === "IFSC Code"
     ) {
       onChange({ target: { value: e.target.value } });
     } else {
