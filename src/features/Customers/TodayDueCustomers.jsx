@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Row,
   Col,
@@ -55,8 +55,13 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import PrismaZoom from "react-prismazoom";
+import { useSelector } from "react-redux";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+  const childUsers = useSelector((state) => state.childusers);
+
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
@@ -222,13 +227,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </div>
             ) : text === "Awaiting Class" ? (
               <div>
-                <Button className="customers_status_awaitclassschedule_button">
+                <Button className="customers_status_awaitingclass_button">
                   {text}
                 </Button>
               </div>
             ) : text === "Class Scheduled" ? (
               <div>
-                <Button className="customers_status_awaitclassschedule_button">
+                <Button className="customers_status_classscheduled_button">
                   {text}
                 </Button>
               </div>
@@ -293,30 +298,18 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         );
       },
     },
-    {
+  ]);
+
+  const actionColumn = useMemo(
+    () => ({
       title: "Action",
-      key: "update",
-      dataIndex: "update",
+      key: "action",
+      dataIndex: "action",
       width: 140,
       fixed: "right",
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip
-              placement="top"
-              title="Send Form Link"
-              trigger={["hover", "click"]}
-            >
-              {loadingRowId === record.id ? (
-                <CommonSpinner color="#333" />
-              ) : (
-                <LuSend
-                  size={17}
-                  className="trainers_action_icons"
-                  onClick={() => handleSendFormLink(record.email, record.id)}
-                />
-              )}
-            </Tooltip> */}
             <Tooltip
               placement="top"
               title="View Details"
@@ -332,32 +325,41 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               />
             </Tooltip>
 
-            <Tooltip
-              placement="top"
-              title="Pay Amount"
-              trigger={["hover", "click"]}
-            >
-              <GiReceiveMoney
-                size={17}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsOpenPaymentDrawer(true);
-                  setCustomerDetails(record);
-                  setPendingAmount(record.balance_amount);
-                  setBalanceAmount(record.balance_amount);
-                  setPaymentHistory(
-                    record.payment && record.payment.payment_trans
-                      ? record.payment.payment_trans
-                      : []
-                  );
-                }}
-              />
-            </Tooltip>
+            {permissions?.includes("Add Part Payment") && (
+              <Tooltip
+                placement="top"
+                title="Pay Amount"
+                trigger={["hover", "click"]}
+              >
+                <GiReceiveMoney
+                  size={17}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenPaymentDrawer(true);
+                    setCustomerDetails(record);
+                    setCollapseDefaultKey(["1"]);
+                    setPendingAmount(record.balance_amount);
+                    setBalanceAmount(record.balance_amount);
+                    setPaymentHistory(
+                      record.payment && record.payment.payment_trans
+                        ? record.payment.payment_trans
+                        : []
+                    );
+                  }}
+                />
+              </Tooltip>
+            )}
           </div>
         );
       },
-    },
-  ]);
+    }),
+    [permissions]
+  );
+
+  const finalColumns = useMemo(() => {
+    const filtered = columns.filter((col) => col.key !== "action");
+    return [...filtered, actionColumn];
+  }, [columns, actionColumn]);
 
   useEffect(() => {
     getPendingFeesCustomersData();
@@ -381,6 +383,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         : searchvalue && filterType === 4
         ? { course: searchvalue }
         : {}),
+      user_ids: childUsers,
     };
     try {
       const response = await getPendingFeesCustomers(payload);
@@ -699,7 +702,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       <div style={{ marginTop: "22px" }}>
         <CommonTable
           scroll={{ x: 2200 }}
-          columns={columns}
+          columns={finalColumns}
           dataSource={customersData}
           dataPerPage={10}
           loading={loading}

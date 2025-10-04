@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Row,
   Col,
@@ -51,6 +51,7 @@ import { FiFilter } from "react-icons/fi";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import CommonDnd from "../Common/CommonDnd";
 import { FaRegCopy } from "react-icons/fa6";
+import { useSelector } from "react-redux";
 
 export default function Trainers() {
   const scrollRef = useRef();
@@ -61,6 +62,10 @@ export default function Trainers() {
       behavior: "smooth",
     });
   };
+
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+  const childUsers = useSelector((state) => state.childusers);
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -242,79 +247,6 @@ export default function Trainers() {
         );
       },
     },
-    {
-      title: "Status",
-      key: "status",
-      dataIndex: "status",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
-        return (
-          <Flex style={{ whiteSpace: "nowrap" }}>
-            <Tooltip
-              placement="bottomLeft"
-              color="#fff"
-              title={
-                <Radio.Group
-                  value={text}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    handleStatusChange(record.id, e.target.value);
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <Radio
-                      value="Verify Pending"
-                      style={{ marginTop: "6px", marginBottom: "12px" }}
-                    >
-                      Pending
-                    </Radio>
-                    <Radio value="Verified" style={{ marginBottom: "12px" }}>
-                      Verified
-                    </Radio>
-                    <Radio value="Rejected" style={{ marginBottom: "6px" }}>
-                      Rejected
-                    </Radio>
-                  </div>
-                </Radio.Group>
-              }
-            >
-              {text === "Pending" ||
-              text === "PENDING" ||
-              text === "Verify Pending" ? (
-                <Button className="trainers_pending_button">Pending</Button>
-              ) : text === "Verified" || text === "VERIFIED" ? (
-                <div className="trainers_verifieddiv">
-                  <Button className="trainers_verified_button">Verified</Button>
-                </div>
-              ) : text === "Rejected" || text === "REJECTED" ? (
-                <Button className="trainers_rejected_button">Rejected</Button>
-              ) : (
-                <p style={{ marginLeft: "6px" }}>-</p>
-              )}
-            </Tooltip>
-          </Flex>
-        );
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={20}
-              className="trainers_action_icons"
-              onClick={() => handleEdit(record)}
-            />
-          </div>
-        );
-      },
-    },
   ]);
 
   const nonChangeColumns = [
@@ -437,7 +369,10 @@ export default function Trainers() {
                 <Radio.Group
                   value={text}
                   onChange={(e) => {
-                    console.log(e.target.value);
+                    if (!permissions.includes("Update Trainer")) {
+                      CommonMessage("error", "Access Denied");
+                      return;
+                    }
                     handleStatusChange(record.id, e.target.value);
                   }}
                 >
@@ -482,6 +417,7 @@ export default function Trainers() {
       dataIndex: "action",
       fixed: "right",
       width: 120,
+      hidden: !permissions.includes("Update Trainer") ? true : false,
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
@@ -495,6 +431,103 @@ export default function Trainers() {
       },
     },
   ];
+
+  const actionColumn = useMemo(
+    () => [
+      {
+        title: "Status",
+        key: "status",
+        dataIndex: "status",
+        fixed: "right",
+        width: 120,
+        render: (text, record) => {
+          return (
+            <Flex style={{ whiteSpace: "nowrap" }}>
+              <Tooltip
+                placement="bottomLeft"
+                color="#fff"
+                title={
+                  <Radio.Group
+                    value={text}
+                    onChange={(e) => {
+                      if (!permissions.includes("Update Trainer")) {
+                        CommonMessage("error", "Access Denied");
+                        return;
+                      }
+                      handleStatusChange(record.id, e.target.value);
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <Radio
+                        value="Verify Pending"
+                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                      >
+                        Pending
+                      </Radio>
+                      <Radio value="Verified" style={{ marginBottom: "12px" }}>
+                        Verified
+                      </Radio>
+                      <Radio value="Rejected" style={{ marginBottom: "6px" }}>
+                        Rejected
+                      </Radio>
+                    </div>
+                  </Radio.Group>
+                }
+              >
+                {text === "Pending" ||
+                text === "PENDING" ||
+                text === "Verify Pending" ? (
+                  <Button className="trainers_pending_button">Pending</Button>
+                ) : text === "Verified" || text === "VERIFIED" ? (
+                  <div className="trainers_verifieddiv">
+                    <Button className="trainers_verified_button">
+                      Verified
+                    </Button>
+                  </div>
+                ) : text === "Rejected" || text === "REJECTED" ? (
+                  <Button className="trainers_rejected_button">Rejected</Button>
+                ) : (
+                  <p style={{ marginLeft: "6px" }}>-</p>
+                )}
+              </Tooltip>
+            </Flex>
+          );
+        },
+      },
+      {
+        title: "Action",
+        key: "action",
+        dataIndex: "action",
+        fixed: "right",
+        width: 120,
+        hidden: !permissions.includes("Update Trainer") ? true : false,
+        render: (text, record) => {
+          return (
+            <div className="trainers_actionbuttonContainer">
+              <AiOutlineEdit
+                size={20}
+                className="trainers_action_icons"
+                onClick={() => handleEdit(record)}
+              />
+            </div>
+          );
+        },
+      },
+    ],
+    [permissions]
+  );
+
+  const finalColumns = useMemo(() => {
+    const formStatusIndex = columns.findIndex(
+      (col) => col.key === "form_status"
+    );
+    const insertIndex =
+      formStatusIndex >= 0 ? formStatusIndex + 1 : columns.length;
+
+    const newColumns = [...columns];
+    newColumns.splice(insertIndex, 0, ...actionColumn); // insert after Mobile
+    return newColumns;
+  }, [columns, actionColumn]);
 
   useEffect(() => {
     getTechnologiesData();
@@ -544,11 +577,11 @@ export default function Trainers() {
   const getTrainersData = async (searchvalue, trainerStatus) => {
     setLoading(true);
     const payload = {
-      ...(searchvalue && filterType === 1
+      ...(searchvalue && filterType == 1
         ? { name: searchvalue }
-        : searchvalue && filterType === 2
+        : searchvalue && filterType == 2
         ? { email: searchvalue }
-        : searchvalue && filterType === 3
+        : searchvalue && filterType == 3
         ? { mobile: searchvalue }
         : {}),
       ...(trainerStatus && trainerStatus == "Form Pending"
@@ -1309,14 +1342,16 @@ export default function Trainers() {
             gap: "12px",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Add Trainer
-          </button>
+          {permissions.includes("Add Trainer") && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add Trainer
+            </button>
+          )}
 
           <Tooltip placement="top" title="Refresh">
             <Button
@@ -1482,7 +1517,7 @@ export default function Trainers() {
       <div style={{ marginTop: "22px" }}>
         <CommonTable
           scroll={{ x: 2500 }}
-          columns={columns}
+          columns={finalColumns}
           dataSource={trainersData}
           dataPerPage={10}
           loading={loading}

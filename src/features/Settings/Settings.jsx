@@ -11,7 +11,9 @@ import {
 } from "../ApiService/action";
 import {
   storeCustomersModulePermissionList,
+  storeFeesPendingModulePermissionList,
   storeGroupList,
+  storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
   storePermissionsList,
   storeRoleList,
@@ -94,6 +96,15 @@ export default function Settings() {
       });
       dispatch(storeLeadsModulePermissionList(updateLeadsModule));
 
+      //filter lead followup module
+      const leadsFollowupModule = allPermissions.filter(
+        (f) => f.section === "Lead Followup Module"
+      );
+      const updateLeadFollowupModule = leadsFollowupModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeLeadFollowupModulePermissionList(updateLeadFollowupModule));
+
       //filter customers module
       const customersModule = allPermissions.filter(
         (f) => f.section === "Customers Module"
@@ -102,6 +113,15 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeCustomersModulePermissionList(updateCustomersModule));
+
+      //filter fees pending module
+      const feesPendingModule = allPermissions.filter(
+        (f) => f.section === "Fees Pending Module"
+      );
+      const updateFeesPendingModule = feesPendingModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeFeesPendingModulePermissionList(updateFeesPendingModule));
 
       //filter trainers module
       const trainersModule = allPermissions.filter(
@@ -116,7 +136,25 @@ export default function Settings() {
       const settingsModule = allPermissions.filter(
         (f) => f.section === "Settings Module"
       );
-      const updateSettingsModule = settingsModule.map((u) => {
+      // Define the custom order
+      const customOrder = [
+        "Settings Page",
+        "Add User",
+        "Update User",
+        "Delete User",
+        "Add Role",
+        "Update Role",
+        "Delete Role",
+        "Add Permission",
+      ];
+
+      const sortedArray = settingsModule.sort(
+        (a, b) =>
+          customOrder.indexOf(a.permission_name) -
+          customOrder.indexOf(b.permission_name)
+      );
+
+      const updateSettingsModule = sortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeSettingsModulePermissionList(updateSettingsModule));

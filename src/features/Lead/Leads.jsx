@@ -5,7 +5,8 @@ import {
   Drawer,
   Tooltip,
   Divider,
-  Upload,
+  Flex,
+  Radio,
   Button,
   Checkbox,
   Modal,
@@ -47,7 +48,7 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State, City } from "country-state-city";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
+import { IoFilter } from "react-icons/io5";
 import {
   createArea,
   createLead,
@@ -56,6 +57,8 @@ import {
   getBranches,
   getLeads,
   getTechnologies,
+  getUserDownline,
+  getUserPermissions,
   leadPayment,
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
@@ -72,19 +75,20 @@ import ImgCrop from "antd-img-crop";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { useSelector } from "react-redux";
 
 export default function Leads({
   refreshLeadFollowUp,
   setLeadCount,
   leadTypeOptions,
-  leadStatusOptions,
   regionOptions,
-  batchTrackOptions,
   courseOptions,
   setCourseOptions,
   areaOptions,
   setAreaOptions,
 }) {
+  const [leadData, setLeadData] = useState([]);
+
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
 
@@ -119,6 +123,24 @@ export default function Leads({
   const [secondaryFees, setSecondaryFees] = useState("");
   const [leadType, setLeadType] = useState(null);
   const [leadTypeError, setLeadTypeError] = useState("");
+  const leadStatusOptions = [
+    {
+      id: 1,
+      name: "High",
+    },
+    {
+      id: 2,
+      name: "Medium",
+    },
+    {
+      id: 3,
+      name: "Low",
+    },
+    {
+      id: 4,
+      name: "Junk",
+    },
+  ];
   const [leadStatus, setLeadStatus] = useState(null);
   const [leadStatusError, setLeadStatusError] = useState("");
   const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
@@ -131,6 +153,20 @@ export default function Leads({
   const [branchOptions, setBranchOptions] = useState([]);
   const [branch, setBranch] = useState("");
   const [branchError, setBranchError] = useState("");
+  const batchTrackOptions = [
+    {
+      id: 1,
+      name: "Normal",
+    },
+    {
+      id: 2,
+      name: "Fastrack",
+    },
+    {
+      id: 3,
+      name: "Custom",
+    },
+  ];
   const [batchTrack, setBatchTrack] = useState(1);
   const [batchTrackError, setBatchTrackError] = useState("");
   const [rating, setRating] = useState(null);
@@ -143,6 +179,7 @@ export default function Leads({
   const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
+  const [filterType, setFilterType] = useState(1);
 
   //payment usestates
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
@@ -195,7 +232,9 @@ export default function Leads({
   //add area usestates
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+  const childUsers = useSelector((state) => state.childusers);
 
   const [defaultColumns, setDefaultColumns] = useState([
     {
@@ -296,7 +335,7 @@ export default function Leads({
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     { title: "Country", key: "country", dataIndex: "country", width: 120 },
     { title: "State", key: "state", dataIndex: "state", width: 120 },
-    { title: "City ", key: "district", dataIndex: "district", width: 120 },
+    { title: "City ", key: "area_id", dataIndex: "area_id", width: 120 },
     {
       title: "Lead Source",
       key: "lead_type",
@@ -331,8 +370,8 @@ export default function Leads({
     },
     {
       title: "Branch",
-      key: "branche_name",
-      dataIndex: "branche_name",
+      key: "branch_name",
+      dataIndex: "branch_name",
       width: 190,
     },
     {
@@ -371,61 +410,29 @@ export default function Leads({
       fixed: "right",
       width: 200,
       render: (text) => {
-        if (!text) return "-";
-
-        return <div className="comment-cell">{text}</div>;
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
         return (
-          <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={20}
-              className="trainers_action_icons"
-              onClick={() => handleEdit(record)}
-            />
-
-            {record.is_customer_reg === 1 ? (
+          <>
+            {text.length > 25 ? (
               <Tooltip
+                color="#fff"
                 placement="bottom"
-                title="Already a Customer"
-                className="leadtable_customertooltip"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
               >
-                <FaRegAddressCard
-                  size={19}
-                  color="#2ed573"
-                  className="trainers_action_icons"
-                />
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
               </Tooltip>
             ) : (
-              <Tooltip
-                placement="bottom"
-                title="Make as customer"
-                className="leadtable_customertooltip"
-              >
-                <FaRegAddressCard
-                  size={19}
-                  color="#d32f2f"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setIsOpenPaymentDrawer(true);
-                    setSubTotal(parseInt(record.primary_fees));
-                    setAmount(parseInt(record.primary_fees));
-                    setBalanceAmount(parseInt(record.primary_fees));
-                    setCustomerCourseId(record.primary_course_id);
-                    setCustomerBatchTrackId(record.batch_track_id);
-                    setClickedLeadItem(record);
-                  }}
-                />
-              </Tooltip>
+              <p>{text}</p>
             )}
-          </div>
+          </>
         );
       },
     },
@@ -437,7 +444,7 @@ export default function Leads({
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     { title: "Country", key: "country", dataIndex: "country", width: 120 },
     { title: "State", key: "state", dataIndex: "state", width: 120 },
-    { title: "City ", key: "district", dataIndex: "district", width: 120 },
+    { title: "City ", key: "area_id", dataIndex: "area_id", width: 120 },
     {
       title: "Lead Source",
       key: "lead_type",
@@ -472,8 +479,8 @@ export default function Leads({
     },
     {
       title: "Branch",
-      key: "branche_name",
-      dataIndex: "branche_name",
+      key: "branch_name",
+      dataIndex: "branch_name",
       width: 190,
     },
     {
@@ -510,61 +517,103 @@ export default function Leads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 180,
+      width: 200,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 25 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
     },
-    {
+  ];
+
+  const actionColumn = useMemo(
+    () => ({
       title: "Action",
       key: "action",
       dataIndex: "action",
       fixed: "right",
       width: 120,
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
+      render: (text, record) => (
+        <div className="trainers_actionbuttonContainer">
+          {permissions.includes("Edit Lead Button") && (
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
+          )}
 
-            {record.is_customer_reg === 1 ? (
-              <Tooltip
-                placement="bottom"
-                title="Already a Customer"
-                className="leadtable_customertooltip"
-              >
-                <FaRegAddressCard
-                  size={19}
-                  color="#2ed573"
-                  className="trainers_action_icons"
-                />
-              </Tooltip>
-            ) : (
-              <Tooltip
-                placement="bottom"
-                title="Make as customer"
-                className="leadtable_customertooltip"
-              >
-                <FaRegAddressCard
-                  size={19}
-                  color="#d32f2f"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setIsOpenPaymentDrawer(true);
-                    setSubTotal(parseInt(record.primary_fees));
-                    setAmount(parseInt(record.primary_fees));
-                    setBalanceAmount(parseInt(record.primary_fees));
-                    setClickedLeadItem(record);
-                  }}
-                />
-              </Tooltip>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
-  const [leadData, setLeadData] = useState([]);
+          {record.is_customer_reg === 1 ? (
+            <Tooltip placement="bottom" title="Already a Customer">
+              <FaRegAddressCard
+                size={19}
+                color="#2ed573"
+                className="trainers_action_icons"
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip placement="bottom" title="Make as customer">
+              <FaRegAddressCard
+                size={19}
+                color="#d32f2f"
+                className="trainers_action_icons"
+                onClick={() => {
+                  setIsOpenPaymentDrawer(true);
+                  setSubTotal(parseInt(record.primary_fees));
+                  setAmount(parseInt(record.primary_fees));
+                  setBalanceAmount(parseInt(record.primary_fees));
+                  setCustomerCourseId(record.primary_course_id);
+                  setCustomerBatchTrackId(record.batch_track_id);
+                  setClickedLeadItem(record);
+                }}
+              />
+            </Tooltip>
+          )}
+        </div>
+      ),
+    }),
+    [permissions]
+  );
+
+  const finalColumns = useMemo(() => {
+    // Start with columns selected in DnD
+    const filtered = columns.filter(
+      (col) => col.key !== actionColumn.key // remove actionColumn to avoid duplicates
+    );
+
+    // Check if actionColumn is selected
+    const isActionChecked = defaultColumns.find(
+      (dc) => dc.title.trim() === "Action"
+    )?.isChecked;
+
+    // Add actionColumn only if checked
+    if (isActionChecked) {
+      filtered.push(actionColumn); // always at the end
+    }
+
+    return filtered;
+  }, [columns, actionColumn]);
 
   useEffect(() => {
     const countries = Country.getAllCountries();
@@ -575,14 +624,21 @@ export default function Leads({
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     getAllLeadData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
-  }, []);
+  }, [childUsers]);
 
-  const getAllLeadData = async (nameValue, startDate, endDate) => {
+  const getAllLeadData = async (searchvalue, startDate, endDate) => {
     setLoading(true);
     const payload = {
-      name: nameValue,
+      ...(searchvalue && filterType == 1
+        ? { name: searchvalue }
+        : searchvalue && filterType == 2
+        ? { email: searchvalue }
+        : searchvalue && filterType == 3
+        ? { phone: searchvalue }
+        : {}),
       start_date: startDate,
       end_date: endDate,
+      user_ids: childUsers,
     };
     try {
       const response = await getLeads(payload);
@@ -683,7 +739,7 @@ export default function Leads({
   const debouncedSearch = useMemo(
     () =>
       debounce((val) => {
-        getAllLeadData(val, selectedDates[0], selectedDates[1], false);
+        getAllLeadData(val, selectedDates[0], selectedDates[1], childUsers);
       }, 300),
     [selectedDates]
   );
@@ -1048,7 +1104,12 @@ export default function Leads({
         CommonMessage("success", "Lead updated");
         setTimeout(() => {
           formReset();
-          getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            childUsers
+          );
           refreshLeadFollowUp();
         }, 300);
       } catch (error) {
@@ -1071,7 +1132,12 @@ export default function Leads({
           } else {
             formReset(true);
           }
-          getAllLeadData(searchValue, selectedDates[0], selectedDates[1]);
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            childUsers
+          );
           refreshLeadFollowUp();
         }, 300);
       } catch (error) {
@@ -1184,7 +1250,12 @@ export default function Leads({
         setButtonLoading(false);
         setInvoiceButtonLoading(false);
         formReset();
-        getAllLeadData(searchValue, selectedDates[0], selectedDates[1], false);
+        getAllLeadData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          childUsers
+        );
         handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
     } catch (error) {
@@ -1336,15 +1407,36 @@ export default function Leads({
     return countryName;
   };
 
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setLoading(true);
+    setTimeout(() => {
+      getAllLeadData(
+        e.target.value,
+        selectedDates[0],
+        selectedDates[1],
+        childUsers
+      );
+    }, 300);
+  };
+
   return (
     <div>
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="leadmanager_filterContainer">
+          <div className="overallduecustomers_filterContainer">
             <CommonOutlinedInput
-              label="Search by Name"
-              width="36%"
-              height="34px"
+              label={
+                filterType === 1
+                  ? "Search By Name"
+                  : filterType === 2
+                  ? "Search By Email"
+                  : filterType === 3
+                  ? "Search by Mobile"
+                  : ""
+              }
+              width="40%"
+              height="33px"
               labelFontSize="12px"
               icon={
                 searchValue ? (
@@ -1352,7 +1444,12 @@ export default function Leads({
                     className="users_filter_closeIconContainer"
                     onClick={() => {
                       setSearchValue("");
-                      getAllLeadData(null, selectedDates[0], selectedDates[1]);
+                      getAllLeadData(
+                        null,
+                        selectedDates[0],
+                        selectedDates[1],
+                        childUsers
+                      );
                     }}
                   >
                     <IoIosClose size={11} />
@@ -1362,19 +1459,73 @@ export default function Leads({
                 )
               }
               labelMarginTop="-1px"
+              style={{
+                borderTopRightRadius: "0px",
+                borderBottomRightRadius: "0px",
+              }}
               value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-                debouncedSearch(e.target.value);
-              }}
+              onChange={handleSearch}
             />
-            <CommonMuiCustomDatePicker
-              value={selectedDates}
-              onDateChange={(dates) => {
-                setSelectedDates(dates);
-                getAllLeadData(searchValue, dates[0], dates[1], false);
-              }}
-            />
+            {/* Filter Button */}
+            <div>
+              <Flex
+                justify="center"
+                align="center"
+                style={{ whiteSpace: "nowrap" }}
+              >
+                <Tooltip
+                  placement="bottomLeft"
+                  color="#fff"
+                  title={
+                    <Radio.Group
+                      value={filterType}
+                      onChange={(e) => {
+                        console.log("filllllll", e.target.value);
+                        setFilterType(e.target.value);
+                        if (searchValue === "") {
+                          return;
+                        } else {
+                          setSearchValue("");
+                          getAllLeadData(
+                            null,
+                            selectedDates[0],
+                            selectedDates[1],
+                            childUsers
+                          );
+                        }
+                      }}
+                    >
+                      <Radio
+                        value={1}
+                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                      >
+                        Search by Name
+                      </Radio>
+                      <Radio value={2} style={{ marginBottom: "12px" }}>
+                        Search by Email
+                      </Radio>
+                      <Radio value={3} style={{ marginBottom: "6px" }}>
+                        Search by Mobile
+                      </Radio>
+                    </Radio.Group>
+                  }
+                >
+                  <Button className="users_filterbutton">
+                    <IoFilter size={18} />
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </div>
+
+            <div style={{ marginLeft: "16px" }}>
+              <CommonMuiCustomDatePicker
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  getAllLeadData(searchValue, dates[0], dates[1], childUsers);
+                }}
+              />
+            </div>
           </div>
         </Col>
         <Col
@@ -1388,14 +1539,16 @@ export default function Leads({
             alignItems: "center",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Add Lead
-          </button>
+          {permissions.includes("Add Lead Button") && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add Lead
+            </button>
+          )}
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -1408,7 +1561,7 @@ export default function Leads({
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 3200 }}
-          columns={columns}
+          columns={finalColumns}
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}

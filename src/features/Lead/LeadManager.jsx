@@ -21,9 +21,7 @@ export default function LeadManager() {
   const [leadCount, setLeadCount] = useState(0);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
-  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
-  const [batchTrackOptions, setBatchTrackOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
 
@@ -73,20 +71,6 @@ export default function LeadManager() {
       console.log("lead type error", error);
     } finally {
       setTimeout(() => {
-        getLeadStatusData();
-      }, 300);
-    }
-  };
-
-  const getLeadStatusData = async () => {
-    try {
-      const response = await getLeadStatus();
-      setLeadStatusOptions(response?.data?.result || []);
-    } catch (error) {
-      setLeadStatusOptions([]);
-      console.log("lead status error", error);
-    } finally {
-      setTimeout(() => {
         getRegionData();
       }, 300);
     }
@@ -98,20 +82,6 @@ export default function LeadManager() {
       setRegionOptions(response?.data?.data || []);
     } catch (error) {
       setRegionOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getBatchTrackData();
-      }, 300);
-    }
-  };
-
-  const getBatchTrackData = async () => {
-    try {
-      const response = await getBatchTrack();
-      setBatchTrackOptions(response?.data?.result || []);
-    } catch (error) {
-      setBatchTrackOptions([]);
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
@@ -220,9 +190,7 @@ export default function LeadManager() {
             setFollowupCount={setFollowupCount}
             refreshLeads={refreshLeads}
             leadTypeOptions={leadTypeOptions}
-            leadStatusOptions={leadStatusOptions}
             regionOptions={regionOptions}
-            batchTrackOptions={batchTrackOptions}
             courseOptions={courseOptions}
             setCourseOptions={setCourseOptions}
             areaOptions={areaOptions}
@@ -239,9 +207,7 @@ export default function LeadManager() {
           refreshLeadFollowUp={refreshLeadFollowUp}
           setLeadCount={setLeadCount}
           leadTypeOptions={leadTypeOptions}
-          leadStatusOptions={leadStatusOptions}
           regionOptions={regionOptions}
-          batchTrackOptions={batchTrackOptions}
           courseOptions={courseOptions}
           setCourseOptions={setCourseOptions}
           areaOptions={areaOptions}

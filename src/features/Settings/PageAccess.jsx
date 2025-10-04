@@ -36,7 +36,9 @@ import { RiDeleteBinLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import {
   storeCustomersModulePermissionList,
+  storeFeesPendingModulePermissionList,
   storeGroupList,
+  storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
   storeRoleList,
   storeSettingsModulePermissionList,
@@ -53,6 +55,9 @@ export default function PageAccess({
   setRoleLoading,
 }) {
   const dispatch = useDispatch();
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+
   const groupsData = useSelector((state) => state.grouplist);
   const rolesData = useSelector((state) => state.rolelist);
   const usersData = useSelector((state) => state.userslist);
@@ -60,8 +65,14 @@ export default function PageAccess({
   const leadsModulePermissionData = useSelector(
     (state) => state.leadsmodulepermissionlist
   );
+  const leadFollowupModulePermissionData = useSelector(
+    (state) => state.leadfollowupmodulepermissionlist
+  );
   const customersModulePermissionData = useSelector(
     (state) => state.customersmodulepermissionlist
+  );
+  const feesPendingModulePermissionData = useSelector(
+    (state) => state.feespendingmodulepermissionlist
   );
   const trainersModulePermissionData = useSelector(
     (state) => state.trainersmodulepermissionlist
@@ -351,6 +362,19 @@ export default function PageAccess({
       );
       dispatch(storeLeadsModulePermissionList(updatedLeadsPermissions));
 
+      //leads module
+      const updatedLeadFollowupPermissions = (
+        leadFollowupModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(
+        storeLeadFollowupModulePermissionList(updatedLeadFollowupPermissions)
+      );
+
       //customers module
       const updatedCustomersPermissions = (
         customersModulePermissionData || []
@@ -361,6 +385,19 @@ export default function PageAccess({
         ),
       }));
       dispatch(storeCustomersModulePermissionList(updatedCustomersPermissions));
+
+      //fees pending module
+      const updatedFeesPendingPermissions = (
+        feesPendingModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(
+        storeFeesPendingModulePermissionList(updatedFeesPendingPermissions)
+      );
 
       //trainers module
       const updatedTrainersPermissions = (
@@ -397,7 +434,9 @@ export default function PageAccess({
   const handleInsertRolePermissions = async () => {
     const merged = [
       ...leadsModulePermissionData,
+      ...leadFollowupModulePermissionData,
       ...customersModulePermissionData,
+      ...feesPendingModulePermissionData,
       ...trainersModulePermissionData,
       ...settingsModulePermissionData,
     ];
@@ -653,14 +692,16 @@ export default function PageAccess({
             >
               Add Group
             </button> */}
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAddRoleModal(true);
-              }}
-            >
-              Add Role
-            </button>
+            {permissions.includes("Add Role") && (
+              <button
+                className="leadmanager_addleadbutton"
+                onClick={() => {
+                  setIsOpenAddRoleModal(true);
+                }}
+              >
+                Add Role
+              </button>
+            )}
           </Col>
         </Row>
 
@@ -823,34 +864,41 @@ export default function PageAccess({
 
                               <div className="settings_groupcard_footer_container">
                                 <div className="settings_groupcard_editbutton_conatiner">
-                                  <AiOutlineEdit
-                                    size={19}
-                                    className="trainers_action_icons"
-                                    onClick={() => {
-                                      setRoleName(item.role_name);
-                                      setRoleId(item.role_id);
-                                      setIsOpenAddRoleModal(true);
-                                    }}
-                                  />
-                                  <RiDeleteBinLine
-                                    size={18}
-                                    color="#d32f2f"
-                                    className="trainers_action_icons"
-                                    onClick={() => {
-                                      setRoleId(item.role_id);
-                                      setIsOpenRoleDeleteModal(true);
-                                    }}
-                                  />
+                                  {permissions.includes("Update Role") && (
+                                    <AiOutlineEdit
+                                      size={19}
+                                      className="trainers_action_icons"
+                                      onClick={() => {
+                                        setRoleName(item.role_name);
+                                        setRoleId(item.role_id);
+                                        setIsOpenAddRoleModal(true);
+                                      }}
+                                    />
+                                  )}
+
+                                  {permissions.includes("Delete Role") && (
+                                    <RiDeleteBinLine
+                                      size={18}
+                                      color="#d32f2f"
+                                      className="trainers_action_icons"
+                                      onClick={() => {
+                                        setRoleId(item.role_id);
+                                        setIsOpenRoleDeleteModal(true);
+                                      }}
+                                    />
+                                  )}
                                 </div>
-                                <button
-                                  className="settings_group_footer_buttons"
-                                  onClick={() => {
-                                    setRoleId(item.role_id);
-                                    getRolePermissionsData(item.role_id);
-                                  }}
-                                >
-                                  Add Permissions
-                                </button>
+                                {permissions.includes("Add Permission") && (
+                                  <button
+                                    className="settings_group_footer_buttons"
+                                    onClick={() => {
+                                      setRoleId(item.role_id);
+                                      getRolePermissionsData(item.role_id);
+                                    }}
+                                  >
+                                    Add Permissions
+                                  </button>
+                                )}
                               </div>
                             </>
                           )}
@@ -1100,6 +1148,46 @@ export default function PageAccess({
           </div>
 
           <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Lead Followup Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {leadFollowupModulePermissionData.map((item) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = leadFollowupModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeLeadFollowupModulePermissionList(updateItem)
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
           <p className="settings_permission_subheading">Customers Page</p>
           <div className="settings_permission_rowcontainer">
             <Row>
@@ -1128,6 +1216,46 @@ export default function PageAccess({
                         console.log("updateItem", updateItem);
                         dispatch(
                           storeCustomersModulePermissionList(updateItem)
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Fee Pending Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {feesPendingModulePermissionData.map((item, index) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = feesPendingModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeFeesPendingModulePermissionList(updateItem)
                         );
                       }}
                     >

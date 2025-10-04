@@ -31,6 +31,8 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
   const rolesData = useSelector((state) => state.rolelist);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const departmentOptions = [
@@ -115,16 +117,23 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       key: "action",
       dataIndex: "action",
       width: 130,
+      hidden: !["Update User", "Delete User"].some((p) =>
+        permissions.includes(p)
+      ),
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={20}
-              className="trainers_action_icons"
-              onClick={() => handleEdit(record)}
-            />
+            {permissions.includes("Update User") && (
+              <AiOutlineEdit
+                size={20}
+                className="trainers_action_icons"
+                onClick={() => handleEdit(record)}
+              />
+            )}
 
-            <RiDeleteBinLine color="#d32f2f" size={19} />
+            {permissions.includes("Delete User") && (
+              <RiDeleteBinLine color="#d32f2f" size={19} />
+            )}
           </div>
         );
       },
@@ -378,14 +387,16 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
             alignItems: "center",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Add User
-          </button>
+          {permissions.includes("Add User") && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add User
+            </button>
+          )}
         </Col>
       </Row>
       <div style={{ marginTop: "20px" }}>

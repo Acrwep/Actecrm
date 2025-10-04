@@ -6,9 +6,13 @@ import {
   usersListReducer,
   permissionsListReducer,
   leadsModulePermissionListReducer,
+  leadFollowupModulePermissionListReducer,
   customersModulePermissionListReducer,
+  feesPendingModulePermissionListReducer,
   trainersModulePermissionListReducer,
   settingsModulePermissionListReducer,
+  childUsersReducer,
+  userPermissionsReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -18,9 +22,13 @@ export const reduxStore = configureStore({
     nxtfollowupactionid: nxtFollowupActionIdReducer,
     grouplist: groupListReducer,
     rolelist: roleListReducer,
+    childusers: childUsersReducer,
+    userpermissions: userPermissionsReducer,
     permissionslist: permissionsListReducer,
     leadsmodulepermissionlist: leadsModulePermissionListReducer,
+    leadfollowupmodulepermissionlist: leadFollowupModulePermissionListReducer,
     customersmodulepermissionlist: customersModulePermissionListReducer,
+    feespendingmodulepermissionlist: feesPendingModulePermissionListReducer,
     trainersmodulepermissionlist: trainersModulePermissionListReducer,
     settingsmodulepermissionlist: settingsModulePermissionListReducer,
   },

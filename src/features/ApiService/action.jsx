@@ -358,9 +358,7 @@ export const getLeadAndFollowupCount = async () => {
 
 export const getLeadFollowUps = async (payload) => {
   try {
-    const response = await api.get("/api/getLeadFollowUps", {
-      params: payload,
-    });
+    const response = await api.post("/api/getLeadFollowUps", payload);
     return response;
   } catch (error) {
     throw error;
@@ -785,6 +783,15 @@ export const insertRolePermissions = async (payload) => {
 export const getUserPermissions = async (payload) => {
   try {
     const response = await api.post("/api/getUserPermissions", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getUserDownline = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getUsersDownline?user_id=${user_id}`);
     return response;
   } catch (error) {
     throw error;

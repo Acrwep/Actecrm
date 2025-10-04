@@ -10,13 +10,17 @@ import { FaChalkboardTeacher } from "react-icons/fa";
 import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
+import { getUserDownline, getUserPermissions } from "../ApiService/action";
+import { useDispatch } from "react-redux";
+import { storeChildUsers, storeUserPermissions } from "../Redux/Slice";
 
 export default function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation("");
+  const dispatch = useDispatch();
 
   const [selectedKey, setSelectedKey] = useState("");
-  const sideMenuOptions = {
+  const [sideMenuOptions, setSideMenuOptions] = useState({
     1: {
       title: "Dashboard",
       icon: <GrAppsRounded size={17} />,
@@ -27,11 +31,49 @@ export default function SideMenu() {
       icon: <PiHandCoins size={17} />,
       path: "lead-manager",
     },
-    // 3: {
-    //   title: "Lead Followup",
-    //   icon: <FiPhoneCall size={17} />,
-    //   path: "lead-followup",
-    // },
+    3: {
+      title: "Customers",
+      icon: <PiUsersThreeBold size={17} />,
+      path: "customers",
+    },
+    4: {
+      title: "Fee Pending",
+      icon: <MdOutlinePendingActions size={17} />,
+      path: "fee-pending-customers",
+    },
+    5: {
+      title: "Batches",
+      icon: <MdOutlineGroupAdd size={17} />,
+      path: "batches",
+    },
+    6: {
+      title: "Trainers",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainers",
+    },
+    7: {
+      title: "Server",
+      icon: <IoServerOutline size={17} />,
+      path: "server",
+    },
+    8: {
+      title: "Settings",
+      icon: <IoSettingsOutline size={17} />,
+      path: "settings",
+    },
+  });
+
+  const nonChangeMenuOptions = {
+    1: {
+      title: "Dashboard",
+      icon: <GrAppsRounded size={17} />,
+      path: "dashboard",
+    },
+    2: {
+      title: "Lead Manager",
+      icon: <PiHandCoins size={17} />,
+      path: "lead-manager",
+    },
     3: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
@@ -67,7 +109,62 @@ export default function SideMenu() {
   useEffect(() => {
     const pathName = location.pathname.split("/")[1];
     setSelectedKey(pathName);
+    getUserDownlineData();
   }, [location.pathname]);
+
+  const getUserDownlineData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    let child_users;
+    let user_roles;
+    try {
+      const response = await getUserDownline(convertAsJson?.user_id);
+      console.log("user downline response", response);
+      child_users = response?.data?.data?.child_users || [];
+      user_roles = response?.data?.data?.roles || [];
+      dispatch(storeChildUsers(child_users));
+    } catch (error) {
+      user_roles = [];
+      child_users = [];
+      console.log("user downline error", error);
+    } finally {
+      setTimeout(() => {
+        getPermissionsData(user_roles);
+      }, 300);
+    }
+  };
+
+  const getPermissionsData = async (user_roles) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      role_ids: user_roles,
+    };
+    try {
+      const response = await getUserPermissions(payload);
+      console.log("user permissions response", response);
+      const permission = response?.data?.data;
+      if (permission.length >= 1) {
+        const updateData = permission.map((item) => {
+          return item.permission_name;
+        });
+        console.log("permissions", updateData);
+        dispatch(storeUserPermissions(updateData));
+        let updatedMenu = { ...nonChangeMenuOptions };
+
+        // Remove Trainers if permission is not present
+        if (!updateData.includes("Trainers Page")) {
+          // Assuming Trainers has key 6
+          delete updatedMenu[6];
+        }
+
+        setSideMenuOptions(updatedMenu);
+      }
+    } catch (error) {
+      console.log("user permissions error", error);
+    }
+  };
 
   const renderMenuItems = (menuConfig) => {
     return Object.entries(menuConfig).map(([key, item]) => {

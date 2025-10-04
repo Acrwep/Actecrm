@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import CommonTable from "../Common/CommonTable";
 import {
   Row,
@@ -24,6 +24,7 @@ import {
   getBranches,
   getLeadFollowUps,
   getTechnologies,
+  getUserPermissions,
   updateFollowUp,
 } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
@@ -49,6 +50,7 @@ import {
   selectValidator,
   shortRelativeTime,
   priceCategory,
+  getCurrentandPreviousweekDate,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
@@ -57,6 +59,8 @@ import CommonTextArea from "../Common/CommonTextArea";
 import { Country, State, City } from "country-state-city";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonAvatar from "../Common/CommonAvatar";
+import { useSelector } from "react-redux";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
 const { TextArea } = Input;
 
@@ -64,20 +68,23 @@ export default function LeadFollowUp({
   setFollowupCount,
   refreshLeads,
   leadTypeOptions,
-  leadStatusOptions,
   regionOptions,
-  batchTrackOptions,
   courseOptions,
   setCourseOptions,
   areaOptions,
   setAreaOptions,
 }) {
   const chatBoxRef = useRef();
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+  const childUsers = useSelector((state) => state.childusers);
+
   const dateFilterOptions = [
     { id: "Today", name: "Today" },
     { id: "Carry Over", name: "Carry Over" },
   ];
   const [dateFilter, setDateFilter] = useState("Today");
+  const [selectedDates, setSelectedDates] = useState([]);
   const [followUpData, setFollowUpData] = useState([]);
   const [isOpenChat, setIsOpenChat] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
@@ -102,17 +109,6 @@ export default function LeadFollowUp({
   const [leadId, setLeadId] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Lead Owner", isChecked: true },
-    { title: "Next Follow Up", isChecked: true },
-    { title: "Candidate Name", isChecked: true },
-    { title: "Mobile", isChecked: true },
-    { title: "Course ", isChecked: true },
-    { title: "Course Fees ", isChecked: true },
-    { title: "Last Update ", isChecked: true },
-    { title: "Recent Comments", isChecked: true },
-  ]);
   const [currentIndex, setCurrentIndex] = useState(null);
   //add lead usestates
   const [leadDetails, setLeadDetails] = useState(null);
@@ -145,6 +141,24 @@ export default function LeadFollowUp({
   const [secondaryFees, setSecondaryFees] = useState("");
   const [leadType, setLeadType] = useState(null);
   const [leadTypeError, setLeadTypeError] = useState("");
+  const leadStatusOptions = [
+    {
+      id: 1,
+      name: "High",
+    },
+    {
+      id: 2,
+      name: "Medium",
+    },
+    {
+      id: 3,
+      name: "Low",
+    },
+    {
+      id: 4,
+      name: "Junk",
+    },
+  ];
   const [leadStatus, setLeadStatus] = useState(null);
   const [leadStatusError, setLeadStatusError] = useState("");
   const [leadNxtFollowupDate, setLeadNxtFollowupDate] = useState(null);
@@ -158,6 +172,20 @@ export default function LeadFollowUp({
   const [branchOptions, setBranchOptions] = useState([]);
   const [branch, setBranch] = useState("");
   const [branchError, setBranchError] = useState("");
+  const batchTrackOptions = [
+    {
+      id: 1,
+      name: "Normal",
+    },
+    {
+      id: 2,
+      name: "Fastrack",
+    },
+    {
+      id: 3,
+      name: "Custom",
+    },
+  ];
   const [batchTrack, setBatchTrack] = useState(1);
   const [batchTrackError, setBatchTrackError] = useState("");
   const [rating, setRating] = useState(null);
@@ -175,9 +203,142 @@ export default function LeadFollowUp({
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
 
+  const [defaultColumns, setDefaultColumns] = useState([
+    { title: "Lead Owner", isChecked: true },
+    { title: "Next Follow Up", isChecked: true },
+    { title: "Candidate Name", isChecked: true },
+    { title: "Mobile", isChecked: true },
+    { title: "Course ", isChecked: true },
+    { title: "Course Fees ", isChecked: true },
+    { title: "Last Update ", isChecked: true },
+    { title: "Recent Comments", isChecked: true },
+  ]);
+
   const [columns, setColumns] = useState([
     { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
     {
+      title: "Candidate Name",
+      key: "candidate_name",
+      dataIndex: "candidate_name",
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Course",
+      key: "primary_course",
+      dataIndex: "primary_course",
+      width: 180,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+      render: (text, record) => {
+        return <p>{"₹" + text}</p>;
+      },
+    },
+    {
+      title: "Recent Comments",
+      key: "comments",
+      dataIndex: "comments",
+      fixed: "right",
+      width: 200,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 25 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
+  ]);
+
+  const nonChangeColumns = [
+    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
+    {
+      title: "Candidate Name",
+      key: "candidate_name",
+      dataIndex: "candidate_name",
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Course",
+      key: "primary_course",
+      dataIndex: "primary_course",
+      width: 180,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+      render: (text, record) => {
+        return <p>{"₹" + text}</p>;
+      },
+    },
+    {
+      title: "Recent Comments",
+      key: "comments",
+      dataIndex: "comments",
+      fixed: "right",
+      width: 200,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 25 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
+  ];
+
+  const messages = [
+    { id: 1, text: "Hey there!", type: "receiver" },
+    { id: 2, text: "Hello! How are you?", type: "sender" },
+    { id: 3, text: "I’m doing well, thanks!", type: "receiver" },
+    { id: 4, text: "Glad to hear!", type: "sender" },
+  ];
+
+  const actionColumn = useMemo(
+    () => ({
       title: "Next Follow Up",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
@@ -187,6 +348,10 @@ export default function LeadFollowUp({
             className="leadfollowup_tabledateContainer"
             onClick={() => {
               // setIsOpenCommentModal(true);
+              if (!permissions.includes("Update Lead Followup")) {
+                CommonMessage("error", "Access Denied");
+                return;
+              }
               setIsOpenFollowUpDrawer(true);
               setCommentsHistory(record.histories);
               setLeadId(record.id);
@@ -202,98 +367,37 @@ export default function LeadFollowUp({
           </div>
         );
       },
-    },
-    {
-      title: "Candidate Name",
-      key: "candidate_name",
-      dataIndex: "candidate_name",
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
-    {
-      title: "Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-      width: 180,
-    },
-    {
-      title: "Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      width: 120,
-      render: (text, record) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Recent Comments",
-      key: "comments",
-      dataIndex: "comments",
-      fixed: "right",
-      width: 200,
-    },
-  ]);
+    }),
+    [permissions]
+  );
 
-  const nonChangeColumns = [
-    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
-    {
-      title: "Next Follow Up",
-      key: "next_follow_up_date",
-      dataIndex: "next_follow_up_date",
-      render: (text, record) => {
-        return (
-          <div
-            className="leadfollowup_tabledateContainer"
-            onClick={() => {
-              setIsOpenCommentModal(true);
-              setCommentsHistory(record.histories);
-              setLeadId(record.id);
-              setLeadHistoryId(record.lead_history_id);
-            }}
-          >
-            <p>{moment(text).format("DD/MM/YYYY")}</p>
-            <div className="leadfollowup_tablecommentContainer">
-              <p>{record.histories.length}</p>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Candidate Name",
-      key: "candidate_name",
-      dataIndex: "candidate_name",
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
-    {
-      title: "Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-      width: 180,
-    },
-    {
-      title: "Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      width: 120,
-      render: (text, record) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Recent Comments",
-      key: "comments",
-      dataIndex: "comments",
-      fixed: "right",
-      width: 200,
-    },
-  ];
+  const finalColumns = useMemo(() => {
+    // Start with user-selected columns from DnD
+    const filteredColumns = columns.filter((col) =>
+      defaultColumns.some(
+        (dc) => dc.isChecked && dc.title.trim() === col.title.trim()
+      )
+    );
 
-  const messages = [
-    { id: 1, text: "Hey there!", type: "receiver" },
-    { id: 2, text: "Hello! How are you?", type: "sender" },
-    { id: 3, text: "I’m doing well, thanks!", type: "receiver" },
-    { id: 4, text: "Glad to hear!", type: "sender" },
-  ];
+    const leadOwnerIndex = filteredColumns.findIndex(
+      (col) => col.key === "user_name"
+    );
+    const insertIndex =
+      leadOwnerIndex >= 0 ? leadOwnerIndex + 1 : filteredColumns.length;
+
+    const newColumns = [...filteredColumns];
+
+    // Only insert "Next Follow Up" if it is checked in DnD
+    const isNextFollowUpChecked = defaultColumns.find(
+      (dc) => dc.title.trim() === "Next Follow Up"
+    )?.isChecked;
+
+    if (isNextFollowUpChecked) {
+      newColumns.splice(insertIndex, 0, actionColumn);
+    }
+
+    return newColumns;
+  }, [columns, actionColumn]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -314,13 +418,17 @@ export default function LeadFollowUp({
       return { ...c, id: c.isoCode };
     });
     setCountryOptions(updateCountries);
-    getLeadFollowUpsData("Today");
-  }, []);
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+    getLeadFollowUpsData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+  }, [childUsers]);
 
-  const getLeadFollowUpsData = async (dateType, updateStatus) => {
+  const getLeadFollowUpsData = async (startDate, endDate, updateStatus) => {
     setLoading(true);
     const payload = {
-      date_type: dateType,
+      from_date: startDate,
+      to_date: endDate,
+      user_ids: childUsers,
     };
     try {
       const response = await getLeadFollowUps(payload);
@@ -471,7 +579,7 @@ export default function LeadFollowUp({
       await updateFollowUp(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
-        getLeadFollowUpsData(dateFilter, true);
+        getLeadFollowUpsData(selectedDates[0], selectedDates[1], true);
         refreshLeads();
         setNewComment("");
         setNewCommentError("");
@@ -615,7 +723,7 @@ export default function LeadFollowUp({
         } else {
           formReset(true);
         }
-        getLeadFollowUpsData(dateFilter);
+        getLeadFollowUpsData(selectedDates[0], selectedDates[1]);
         refreshLeads();
       }, 300);
     } catch (error) {
@@ -841,7 +949,7 @@ export default function LeadFollowUp({
               icon={<CiSearch size={16} />}
               labelMarginTop="-1px"
             />
-            <CommonSelectField
+            {/* <CommonSelectField
               label="Select"
               height="35px"
               style={{ width: "36%" }}
@@ -857,7 +965,16 @@ export default function LeadFollowUp({
                 setDateFilter(e.target.value);
                 getLeadFollowUpsData(e.target.value);
               }}
-            />
+            /> */}
+            <div>
+              <CommonMuiCustomDatePicker
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  getLeadFollowUpsData(dates[0], dates[1]);
+                }}
+              />
+            </div>
           </div>
         </Col>
         <Col
@@ -871,14 +988,16 @@ export default function LeadFollowUp({
             alignItems: "center",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Add Lead
-          </button>
+          {permissions.includes("Add Lead Button") && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add Lead
+            </button>
+          )}
 
           <FiFilter
             size={20}
@@ -892,7 +1011,7 @@ export default function LeadFollowUp({
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 1100 }}
-          columns={columns}
+          columns={finalColumns}
           dataSource={followUpData}
           dataPerPage={10}
           loading={loading}
