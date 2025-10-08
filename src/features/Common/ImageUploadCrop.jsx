@@ -79,61 +79,59 @@ export default function ImageUploadCrop({
         {label} {required && <span style={{ color: "#d32f2f" }}>*</span>}
       </p>
 
-      <ImgCrop rotationSlider cropShape="rect" aspect={aspect}>
-        <Upload
-          style={{ width: "100%" }}
-          fileList={fileList}
-          multiple={false}
-          accept={allowedTypes.map((t) => `.${t.split("/")[1]}`).join(",")}
-          beforeUpload={handleFileSelect}
-          onRemove={() => {
-            setFileList([]);
-            setPreviewImage("");
-            reportError(required ? "is required" : "");
-            onChange?.("");
-          }}
-          showUploadList={{ showRemoveIcon: false, showPreviewIcon: false }}
-          itemRender={(originNode) => (
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
-              {originNode}
-              {previewImage && (
-                <Button
-                  type="link"
-                  size="small"
-                  style={{ padding: 0, paddingTop: 10 }}
-                  onClick={() => setPreviewVisible(true)}
-                >
-                  <EyeOutlined style={{ color: "gray" }} />
-                </Button>
-              )}
+      {/* <ImgCrop rotationSlider cropShape="rect" aspect={aspect}> */}
+      <Upload
+        style={{ width: "100%" }}
+        fileList={fileList}
+        multiple={false}
+        accept={allowedTypes.map((t) => `.${t.split("/")[1]}`).join(",")}
+        beforeUpload={handleFileSelect}
+        onRemove={() => {
+          setFileList([]);
+          setPreviewImage("");
+          reportError(required ? "is required" : "");
+          onChange?.("");
+        }}
+        showUploadList={{ showRemoveIcon: false, showPreviewIcon: false }}
+        itemRender={(originNode) => (
+          <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            {originNode}
+            {previewImage && (
               <Button
                 type="link"
                 size="small"
-                style={{ padding: 0, paddingTop: 10, paddingLeft: 8 }}
-                onClick={() => {
-                  setFileList([]);
-                  setPreviewImage("");
-                  reportError(required ? "is required" : "");
-                  onChange?.("");
-                }}
+                style={{ padding: 0, paddingTop: 10 }}
+                onClick={() => setPreviewVisible(true)}
               >
-                <DeleteOutlined style={{ color: "gray" }} />
+                <EyeOutlined style={{ color: "gray" }} />
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              type="link"
+              size="small"
+              style={{ padding: 0, paddingTop: 10, paddingLeft: 8 }}
+              onClick={() => {
+                setFileList([]);
+                setPreviewImage("");
+                reportError(required ? "is required" : "");
+                onChange?.("");
+              }}
+            >
+              <DeleteOutlined style={{ color: "gray" }} />
+            </Button>
+          </div>
+        )}
+      >
+        <Button
+          className="imgcrop_uploadbutton"
+          icon={<UploadOutlined />}
+          style={{ width: "100%", marginTop: 8 }}
         >
-          <Button
-            className="imgcrop_uploadbutton"
-            icon={<UploadOutlined />}
-            style={{ width: "100%", marginTop: 8 }}
-          >
-            Choose file{" "}
-            <span style={{ fontSize: "10px" }}>(PNG, JPEG & JPG)</span>
-          </Button>
-        </Upload>
-      </ImgCrop>
+          Choose file{" "}
+          <span style={{ fontSize: "10px" }}>(PNG, JPEG & JPG)</span>
+        </Button>
+      </Upload>
+      {/* </ImgCrop> */}
 
       <Modal
         title="Preview Image"
@@ -141,6 +139,7 @@ export default function ImageUploadCrop({
         footer={null}
         onCancel={() => setPreviewVisible(false)}
         centered
+        width="30%"
       >
         <img alt="Preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>

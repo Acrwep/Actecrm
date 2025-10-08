@@ -7,8 +7,10 @@ import TodayDueCustomers from "./TodayDueCustomers";
 import OverallDueCustomers from "./OverallDueCustomers";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import UrgentDueCustomers from "./UrgentDueCustomers";
+import { useSelector } from "react-redux";
 
 export default function PendingFeesCustomers() {
+  const childUsers = useSelector((state) => state.childusers);
   const [activePage, setActivePage] = useState("todaydue");
   const [dueSelectedDates, setDueSelectedDates] = useState([]);
   const [todayDueCount, setTodayDueCount] = useState(0);
@@ -44,18 +46,20 @@ export default function PendingFeesCustomers() {
     // } else {
     //   getPendingCustomersCountData(dueSelectedDates[0], dueSelectedDates[1]);
     // }
+    if (childUsers.length <= 0) return;
     if (callCountApi) {
       getPendingCustomersCountData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1]
       );
     }
-  }, []);
+  }, [childUsers]);
 
   const getPendingCustomersCountData = async (startdate, enddate) => {
     const payload = {
       from_date: startdate,
       to_date: enddate,
+      user_ids: childUsers,
     };
     try {
       const response = await getPendingFeesCustomersCount(payload);

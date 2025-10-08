@@ -11,13 +11,14 @@ import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import { getUserDownline, getUserPermissions } from "../ApiService/action";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { storeChildUsers, storeUserPermissions } from "../Redux/Slice";
 
 export default function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation("");
   const dispatch = useDispatch();
+  const permissions = useSelector((state) => state.userpermissions);
 
   const [selectedKey, setSelectedKey] = useState("");
   const [sideMenuOptions, setSideMenuOptions] = useState({
@@ -37,24 +38,24 @@ export default function SideMenu() {
       path: "customers",
     },
     4: {
-      title: "Fee Pending",
-      icon: <MdOutlinePendingActions size={17} />,
-      path: "fee-pending-customers",
-    },
-    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    6: {
-      title: "Trainers",
-      icon: <FaChalkboardTeacher size={17} />,
-      path: "trainers",
+    5: {
+      title: "Fee Pending",
+      icon: <MdOutlinePendingActions size={17} />,
+      path: "fee-pending-customers",
     },
-    7: {
+    6: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
+    },
+    7: {
+      title: "Trainers",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainers",
     },
     8: {
       title: "Settings",
@@ -80,24 +81,24 @@ export default function SideMenu() {
       path: "customers",
     },
     4: {
-      title: "Fee Pending",
-      icon: <MdOutlinePendingActions size={17} />,
-      path: "fee-pending-customers",
-    },
-    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    6: {
-      title: "Trainers",
-      icon: <FaChalkboardTeacher size={17} />,
-      path: "trainers",
+    5: {
+      title: "Fee Pending",
+      icon: <MdOutlinePendingActions size={17} />,
+      path: "fee-pending-customers",
     },
-    7: {
+    6: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
+    },
+    7: {
+      title: "Trainers",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainers",
     },
     8: {
       title: "Settings",
@@ -105,6 +106,25 @@ export default function SideMenu() {
       path: "settings",
     },
   };
+
+  useEffect(() => {
+    let updatedMenu = { ...nonChangeMenuOptions };
+
+    // Remove Trainers if permission is not present
+    if (!permissions.includes("Lead Manager Page")) {
+      delete updatedMenu[2];
+    }
+
+    if (!permissions.includes("Trainers Page")) {
+      delete updatedMenu[7];
+    }
+
+    if (!permissions.includes("Settings Page")) {
+      delete updatedMenu[8];
+    }
+
+    setSideMenuOptions(updatedMenu);
+  }, [permissions]);
 
   useEffect(() => {
     const pathName = location.pathname.split("/")[1];
@@ -157,6 +177,11 @@ export default function SideMenu() {
         if (!updateData.includes("Trainers Page")) {
           // Assuming Trainers has key 6
           delete updatedMenu[6];
+        }
+
+        if (!updateData.includes("Settings Page")) {
+          // Assuming Trainers has key 6
+          delete updatedMenu[8];
         }
 
         setSideMenuOptions(updatedMenu);

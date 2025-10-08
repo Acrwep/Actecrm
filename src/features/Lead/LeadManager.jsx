@@ -13,8 +13,11 @@ import {
   getRegions,
   getTechnologies,
 } from "../ApiService/action";
+import { useSelector } from "react-redux";
 
 export default function LeadManager() {
+  const childUsers = useSelector((state) => state.childusers);
+
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
@@ -40,12 +43,16 @@ export default function LeadManager() {
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
   useEffect(() => {
+    if (childUsers.length <= 0) return;
     getLeadAndFollowupCountData();
-  }, []);
+  }, [childUsers]);
 
   const getLeadAndFollowupCountData = async () => {
+    const payload = {
+      user_ids: childUsers,
+    };
     try {
-      const response = await getLeadAndFollowupCount();
+      const response = await getLeadAndFollowupCount(payload);
       console.log("lead count response", response);
       const countDetails = response?.data?.data;
       setFollowupCount(countDetails.follow_up_count);

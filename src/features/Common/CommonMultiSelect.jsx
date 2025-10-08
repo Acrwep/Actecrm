@@ -31,6 +31,7 @@ export default function CommonMultiSelect({
           size="small"
           id="multiple-limit-tags"
           options={options}
+          disableCloseOnSelect
           getOptionLabel={(option) =>
             typeof option === "string"
               ? option
@@ -79,6 +80,8 @@ export default function CommonMultiSelect({
               minHeight: height || "46px",
               alignItems: "start",
               flexWrap: "wrap",
+              maxHeight: "80px", // 👈 restrict height
+              overflowY: "auto", // 👈 enable scrolling when exceeded
             },
             "& .MuiSelect-select": {
               display: "flex",

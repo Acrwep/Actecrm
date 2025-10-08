@@ -21,7 +21,7 @@ import { createUser, getUsers, updateUser } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { useDispatch, useSelector } from "react-redux";
-import { storeUsersList } from "../Redux/Slice";
+import { storeAllUsersList, storeUsersList } from "../Redux/Slice";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
@@ -30,6 +30,7 @@ import { PiUserCirclePlus } from "react-icons/pi";
 export default function Users({ userTableLoading, setUserTableLoading }) {
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
+  const allUsersData = useSelector((state) => state.alluserslist);
   const rolesData = useSelector((state) => state.rolelist);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -40,7 +41,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     { id: 2, name: "Admin" },
   ];
   const [department, setDepartment] = useState(1);
-  const [assignUsersData, setAssignUsersData] = useState(usersData);
+  const [assignUsersData, setAssignUsersData] = useState(allUsersData);
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
   const [profileName, setProfileName] = useState("");
@@ -77,11 +78,61 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       dataIndex: "child_users",
       width: 180,
       render: (text, record) => {
+        const childUsers = record.child_users || [];
+
+        // Short inline text for display
+        const shortText = childUsers.map((u) => u.user_name).join(", ");
+
+        // Numbered multiline text for tooltip
+        const longText = childUsers
+          .map((user, index) => `${index + 1}. ${user.user_name}`)
+          .join("\n");
+
+        // Only show tooltip if text is long
+        const isLong = shortText.length > 25;
+
         return (
-          <p>
-            {record.child_users &&
-              record.child_users.map((user) => user.user_name).join(", ")}
-          </p>
+          <>
+            {isLong ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={
+                  <div
+                    style={{
+                      maxHeight: "140px",
+                      overflowY: "auto",
+                      whiteSpace: "pre-line",
+                      lineHeight: "26px",
+                    }}
+                  >
+                    {longText}
+                  </div>
+                }
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p
+                  style={{
+                    cursor: "pointer",
+                    marginBottom: 0,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {shortText.slice(0, 20) + "..."}
+                </p>
+              </Tooltip>
+            ) : (
+              <p style={{ marginBottom: 0 }}>{shortText}</p>
+            )}
+          </>
         );
       },
     },
@@ -91,11 +142,61 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       dataIndex: "roles",
       width: 160,
       render: (text, record) => {
+        const roles = record.roles || [];
+
+        // Short inline text for display
+        const shortText = roles.map((r) => r.role_name).join(", ");
+
+        // Numbered multiline text for tooltip
+        const longText = roles
+          .map((user, index) => `${index + 1}. ${user.role_name}`)
+          .join("\n");
+
+        // Only show tooltip if text is long
+        const isLong = shortText.length > 25;
+
         return (
-          <p>
-            {record.roles &&
-              record.roles.map((user) => user.role_name).join(", ")}
-          </p>
+          <>
+            {isLong ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={
+                  <div
+                    style={{
+                      maxHeight: "140px",
+                      overflowY: "auto",
+                      whiteSpace: "pre-line",
+                      lineHeight: "26px",
+                    }}
+                  >
+                    {longText}
+                  </div>
+                }
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p
+                  style={{
+                    cursor: "pointer",
+                    marginBottom: 0,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {shortText.slice(0, 20) + "..."}
+                </p>
+              </Tooltip>
+            ) : (
+              <p style={{ marginBottom: 0 }}>{shortText}</p>
+            )}
+          </>
         );
       },
     },
@@ -139,6 +240,11 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       },
     },
   ];
+
+  useEffect(() => {
+    setAssignUsersData(allUsersData);
+  }, [allUsersData]);
+
   const getUsersData = async (searchvalue) => {
     setUserTableLoading(true);
     const payload = {
@@ -162,6 +268,16 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     }
   };
 
+  const getAllUsersData = async () => {
+    try {
+      const response = await getUsers();
+      dispatch(storeAllUsersList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeAllUsersList([]));
+      console.log(error);
+    }
+  };
+
   const handleEdit = (item) => {
     console.log("clicked user", item);
     setEditUserId(item.id);
@@ -169,7 +285,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setProfileName(item.user_name);
     setPassword(item.password);
     setConfirmPassword(item.password);
-    const alterUserData = usersData.filter((f) => f.id != item.id);
+    const alterUserData = allUsersData.filter((f) => f.id != item.id);
     setAssignUsersData(alterUserData);
     setChildUsers(item.child_users);
     setUserRoles(item.roles);
@@ -198,7 +314,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setValidationTrigger(false);
     setButtonLoading(false);
     setEditUserId(null);
-    setAssignUsersData(usersData);
+    setAssignUsersData(allUsersData);
     setChildUsers([]);
     setUserRoles([]);
     setUserRolesError("");
@@ -266,7 +382,8 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         console.log(response);
         CommonMessage("success", "User Updated");
         setTimeout(() => {
-          getUsersData();
+          getUsersData(searchValue);
+          getAllUsersData();
           formReset();
         }, 300);
       } catch (error) {
@@ -283,7 +400,8 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         console.log(response);
         CommonMessage("success", "User Created");
         setTimeout(() => {
-          getUsersData();
+          getUsersData(searchValue);
+          getAllUsersData();
           formReset();
         }, 300);
       } catch (error) {
@@ -432,6 +550,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
               }}
               value={userId}
               error={userIdError}
+              disabled={editUserId ? true : false}
             />
           </Col>
           <Col span={12}>

@@ -179,6 +179,10 @@
   font-size: 12px;
   margin-top: 3px;
 }
+.leadmanager_countrycode_select_container {
+  position: absolute;
+  top: 50%;
+}
 .leadmanager_paymentdetails_drawer .ant-drawer-body {
   padding: 0px !important;
   overflow-x: hidden;

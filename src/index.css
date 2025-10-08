@@ -328,7 +328,9 @@ button:focus-visible {
   > th {
   padding: 11px !important;
 }
-
+.ant-checkbox-indeterminate .ant-checkbox-inner:after {
+  background-color: #535bf2 !important;
+}
 /* progress bar styles */
 .ant-progress .ant-progress-bg {
   background: #5b69ca !important;

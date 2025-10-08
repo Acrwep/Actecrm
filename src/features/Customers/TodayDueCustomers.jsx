@@ -362,8 +362,9 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   }, [columns, actionColumn]);
 
   useEffect(() => {
+    if (childUsers.length <= 0) return;
     getPendingFeesCustomersData();
-  }, []);
+  }, [childUsers]);
 
   const getPendingFeesCustomersData = async (searchvalue) => {
     const today = new Date();
@@ -637,6 +638,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
+                padding: "0px 26px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}

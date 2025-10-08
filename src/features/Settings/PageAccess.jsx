@@ -23,6 +23,8 @@ import {
   getGroups,
   getRolePermissionsByRoleId,
   getRoles,
+  getUserDownline,
+  getUserPermissions,
   getUsersByGroupId,
   insertGroup,
   insertRole,
@@ -35,6 +37,7 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  storeChildUsers,
   storeCustomersModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
@@ -43,6 +46,7 @@ import {
   storeRoleList,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
+  storeUserPermissions,
 } from "../Redux/Slice";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
@@ -461,6 +465,7 @@ export default function PageAccess({
       setTimeout(() => {
         CommonMessage("success", "Permissions Updated");
         formReset();
+        getUserDownlineData();
       }, 300);
     } catch (error) {
       setPermissionButtonLoading(false);
@@ -469,6 +474,51 @@ export default function PageAccess({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const getUserDownlineData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    let child_users;
+    let user_roles;
+    try {
+      const response = await getUserDownline(convertAsJson?.user_id);
+      console.log("user downline response", response);
+      child_users = response?.data?.data?.child_users || [];
+      user_roles = response?.data?.data?.roles || [];
+      dispatch(storeChildUsers(child_users));
+    } catch (error) {
+      user_roles = [];
+      child_users = [];
+      console.log("user downline error", error);
+    } finally {
+      setTimeout(() => {
+        getPermissionsData(user_roles);
+      }, 300);
+    }
+  };
+
+  const getPermissionsData = async (user_roles) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      role_ids: user_roles,
+    };
+    try {
+      const response = await getUserPermissions(payload);
+      console.log("user permissions response", response);
+      const permission = response?.data?.data;
+      if (permission.length >= 1) {
+        const updateData = permission.map((item) => {
+          return item.permission_name;
+        });
+        console.log("permissions", updateData);
+        dispatch(storeUserPermissions(updateData));
+      }
+    } catch (error) {
+      console.log("user permissions error", error);
     }
   };
 

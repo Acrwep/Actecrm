@@ -1336,6 +1336,10 @@
 }
 
 /* customer history styles */
+.customer_history_drawer .ant-drawer-body {
+  padding: 0px !important;
+  overflow-x: hidden;
+}
 .customer_history_drawer .ant-drawer-header {
   padding: 12px 24px !important;
 }

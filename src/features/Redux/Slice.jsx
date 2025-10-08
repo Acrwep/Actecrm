@@ -13,6 +13,17 @@ const usersListSlice = createSlice({
   },
 });
 
+const allUsersListSlice = createSlice({
+  name: "alluserslist",
+  initialState,
+  reducers: {
+    storeAllUsersList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const groupListSlice = createSlice({
   name: "grouplist",
   initialState,
@@ -130,8 +141,7 @@ const childUsersSlice = createSlice({
   initialState,
   reducers: {
     storeChildUsers(state, action) {
-      state = action.payload;
-      return state;
+      return [...action.payload]; // ensures new array reference
     },
   },
 });
@@ -148,6 +158,7 @@ const userPermissionsSlice = createSlice({
 
 //define slice
 export const { storeUsersList } = usersListSlice.actions;
+export const { storeAllUsersList } = allUsersListSlice.actions;
 export const { storeNxtFollowupActionId } = nxtFollowupActionIdSlice.actions;
 export const { storeGroupList } = groupListSlice.actions;
 export const { storeRoleList } = roleListSlice.actions;
@@ -168,6 +179,7 @@ export const { storeChildUsers } = childUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 //create reducer
 export const usersListReducer = usersListSlice.reducer;
+export const allUsersListReducer = allUsersListSlice.reducer;
 export const groupListReducer = groupListSlice.reducer;
 export const roleListReducer = roleListSlice.reducer;
 export const permissionsListReducer = permissionsListSlice.reducer;

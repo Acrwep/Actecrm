@@ -214,131 +214,9 @@ export default function LeadFollowUp({
     { title: "Recent Comments", isChecked: true },
   ]);
 
-  const [columns, setColumns] = useState([
-    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
-    {
-      title: "Candidate Name",
-      key: "candidate_name",
-      dataIndex: "candidate_name",
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
-    {
-      title: "Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-      width: 180,
-    },
-    {
-      title: "Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      width: 120,
-      render: (text, record) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Recent Comments",
-      key: "comments",
-      dataIndex: "comments",
-      fixed: "right",
-      width: 200,
-      render: (text) => {
-        return (
-          <>
-            {text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
-      },
-    },
-  ]);
-
   const nonChangeColumns = [
     { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
     {
-      title: "Candidate Name",
-      key: "candidate_name",
-      dataIndex: "candidate_name",
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
-    {
-      title: "Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-      width: 180,
-    },
-    {
-      title: "Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      width: 120,
-      render: (text, record) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Recent Comments",
-      key: "comments",
-      dataIndex: "comments",
-      fixed: "right",
-      width: 200,
-      render: (text) => {
-        return (
-          <>
-            {text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
-      },
-    },
-  ];
-
-  const messages = [
-    { id: 1, text: "Hey there!", type: "receiver" },
-    { id: 2, text: "Hello! How are you?", type: "sender" },
-    { id: 3, text: "I’m doing well, thanks!", type: "receiver" },
-    { id: 4, text: "Glad to hear!", type: "sender" },
-  ];
-
-  const actionColumn = useMemo(
-    () => ({
       title: "Next Follow Up",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
@@ -367,37 +245,75 @@ export default function LeadFollowUp({
           </div>
         );
       },
-    }),
-    [permissions]
-  );
+    },
+    {
+      title: "Candidate Name",
+      key: "candidate_name",
+      dataIndex: "candidate_name",
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Course",
+      key: "primary_course",
+      dataIndex: "primary_course",
+      width: 180,
+    },
+    {
+      title: "Course Fees",
+      key: "primary_fees",
+      dataIndex: "primary_fees",
+      width: 120,
+      render: (text, record) => {
+        return <p>{"₹" + text}</p>;
+      },
+    },
+    {
+      title: "Recent Comments",
+      key: "comments",
+      dataIndex: "comments",
+      fixed: "right",
+      width: 200,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 25 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
+  ];
 
-  const finalColumns = useMemo(() => {
-    // Start with user-selected columns from DnD
-    const filteredColumns = columns.filter((col) =>
-      defaultColumns.some(
-        (dc) => dc.isChecked && dc.title.trim() === col.title.trim()
-      )
-    );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
-    const leadOwnerIndex = filteredColumns.findIndex(
-      (col) => col.key === "user_name"
-    );
-    const insertIndex =
-      leadOwnerIndex >= 0 ? leadOwnerIndex + 1 : filteredColumns.length;
+  const messages = [
+    { id: 1, text: "Hey there!", type: "receiver" },
+    { id: 2, text: "Hello! How are you?", type: "sender" },
+    { id: 3, text: "I’m doing well, thanks!", type: "receiver" },
+    { id: 4, text: "Glad to hear!", type: "sender" },
+  ];
 
-    const newColumns = [...filteredColumns];
-
-    // Only insert "Next Follow Up" if it is checked in DnD
-    const isNextFollowUpChecked = defaultColumns.find(
-      (dc) => dc.title.trim() === "Next Follow Up"
-    )?.isChecked;
-
-    if (isNextFollowUpChecked) {
-      newColumns.splice(insertIndex, 0, actionColumn);
-    }
-
-    return newColumns;
-  }, [columns, actionColumn]);
+  useEffect(() => {
+    setTableColumns(nonChangeColumns);
+  }, [permissions]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -420,6 +336,7 @@ export default function LeadFollowUp({
     setCountryOptions(updateCountries);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    if (childUsers.length <= 0) return;
     getLeadFollowUpsData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   }, [childUsers]);
 
@@ -1011,7 +928,7 @@ export default function LeadFollowUp({
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 1100 }}
-          columns={finalColumns}
+          columns={tableColumns}
           dataSource={followUpData}
           dataPerPage={10}
           loading={loading}
@@ -1057,7 +974,7 @@ export default function LeadFollowUp({
 
                 console.log("Reordered Columns:", reorderedColumns);
 
-                setColumns(reorderedColumns);
+                setTableColumns(reorderedColumns);
                 setIsOpenFilterDrawer(false);
               }}
             >
@@ -1905,8 +1822,8 @@ export default function LeadFollowUp({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.district
-                    ? leadDetails.district
+                  {leadDetails && leadDetails.area_id
+                    ? leadDetails.area_id
                     : "-"}
                 </p>
               </Col>

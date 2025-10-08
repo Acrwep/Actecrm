@@ -10,6 +10,7 @@ import {
   getUsers,
 } from "../ApiService/action";
 import {
+  storeAllUsersList,
   storeCustomersModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
@@ -39,8 +40,10 @@ export default function Settings() {
       const response = await getUsers();
       console.log("users response", response);
       dispatch(storeUsersList(response?.data?.data || []));
+      dispatch(storeAllUsersList(response?.data?.data || []));
     } catch (error) {
       dispatch(storeUsersList([]));
+      dispatch(storeAllUsersList([]));
     } finally {
       setTimeout(() => {
         setUserTableLoading(false);
@@ -91,10 +94,24 @@ export default function Settings() {
       const leadsModule = allPermissions.filter(
         (f) => f.section === "Leads Module"
       );
-      const updateLeadsModule = leadsModule.map((u) => {
+      const leadsCustomOrder = [
+        "Lead Manager Page",
+        "Add Lead Button",
+        "Edit Lead Button",
+        "Assign Lead",
+      ];
+
+      const leadsSortedArray = leadsModule.sort(
+        (a, b) =>
+          leadsCustomOrder.indexOf(a.permission_name) -
+          leadsCustomOrder.indexOf(b.permission_name)
+      );
+
+      const updateLeadssModule = leadsSortedArray.map((u) => {
         return { ...u, checked: false };
       });
-      dispatch(storeLeadsModulePermissionList(updateLeadsModule));
+
+      dispatch(storeLeadsModulePermissionList(updateLeadssModule));
 
       //filter lead followup module
       const leadsFollowupModule = allPermissions.filter(

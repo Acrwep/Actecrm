@@ -371,12 +371,12 @@ export default function UrgentDueCustomers({
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-
+    if (childUsers.length <= 0) return;
     getPendingFeesCustomersData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1]
     );
-  }, []);
+  }, [childUsers]);
 
   const getPendingFeesCustomersData = async (
     startDate,
@@ -664,6 +664,7 @@ export default function UrgentDueCustomers({
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
+                padding: "0px 26px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}

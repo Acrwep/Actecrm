@@ -4,6 +4,7 @@ import {
   nxtFollowupActionIdReducer,
   roleListReducer,
   usersListReducer,
+  allUsersListReducer,
   permissionsListReducer,
   leadsModulePermissionListReducer,
   leadFollowupModulePermissionListReducer,
@@ -19,6 +20,7 @@ export const reduxStore = configureStore({
   devTools: true,
   reducer: {
     userslist: usersListReducer,
+    alluserslist: allUsersListReducer,
     nxtfollowupactionid: nxtFollowupActionIdReducer,
     grouplist: groupListReducer,
     rolelist: roleListReducer,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Row,
   Col,
@@ -127,127 +127,27 @@ export default function Trainers() {
   const [courseNameError, setCourseNameError] = useState("");
   const [addCourseLoading, setAddCourseLoading] = useState(false);
 
-  const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Trainer Name", isChecked: true },
-    { title: "Email", isChecked: true },
-    { title: "Technology", isChecked: true },
-    { title: "Overall Experience", isChecked: true },
-    { title: "Relevent Experience ", isChecked: true },
-    { title: "Batch", isChecked: true },
-    { title: "Avaibility Time", isChecked: true },
-    { title: "Secondary Time", isChecked: true },
-    { title: "Skills", isChecked: true },
-    { title: "Location", isChecked: true },
-    { title: "Form Status", isChecked: true },
-    { title: "Status", isChecked: true },
-    { title: "Action", isChecked: true },
-  ]);
+  const [defaultColumns, setDefaultColumns] = useState(() => {
+    const dnd_columns = [
+      { title: "Trainer Name", isChecked: true },
+      { title: "Email", isChecked: true },
+      { title: "Technology", isChecked: true },
+      { title: "Overall Experience", isChecked: true },
+      { title: "Relevent Experience", isChecked: true },
+      { title: "Batch", isChecked: true },
+      { title: "Avaibility Time", isChecked: true },
+      { title: "Secondary Time", isChecked: true },
+      { title: "Skills", isChecked: true },
+      { title: "Location", isChecked: true },
+      { title: "Form Status", isChecked: true },
+      { title: "Status", isChecked: true },
+      { title: "Action", isChecked: true },
+    ];
 
-  const [columns, setColumns] = useState([
-    {
-      title: "Trainer Name",
-      key: "name",
-      dataIndex: "name",
-      width: 190,
-      fixed: "left",
-    },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    {
-      title: "Technology",
-      key: "technology",
-      dataIndex: "technology",
-      width: 220,
-    },
-    {
-      title: "Overall Experience",
-      key: "overall_exp_year",
-      dataIndex: "overall_exp_year",
-      render: (text, record) => {
-        return <p>{text + " Years"}</p>;
-      },
-    },
-    {
-      title: "Relevent Experience",
-      key: "relavant_exp_year",
-      dataIndex: "relavant_exp_year",
-      render: (text, record) => {
-        return <p>{text + " Years"}</p>;
-      },
-    },
-    { title: "Batch", key: "batch", dataIndex: "batch" },
-    {
-      title: "Avaibility Time",
-      key: "availability_time",
-      dataIndex: "availability_time",
-      render: (text, record) => {
-        return <p>{moment(text, "HH:mm:ss").format("hh:mm A")}</p>;
-      },
-    },
-    {
-      title: "Secondary Time",
-      key: "secondary_time",
-      dataIndex: "secondary_time",
-      render: (text, record) => {
-        return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
-      },
-    },
-    {
-      title: "Skills",
-      key: "skills",
-      dataIndex: "skills",
-      width: 200,
-      render: (text) => {
-        // const convertAsJson = JSON.parse(text);
-        return (
-          <div style={{ display: "flex" }}>
-            <p>{text.join(", ")}</p>
-          </div>
-        );
-      },
-    },
-    { title: "Location", key: "location", dataIndex: "location", width: 120 },
-    {
-      title: "Form Status",
-      key: "form_status",
-      dataIndex: "form_status",
-      width: 120,
-      fixed: "right",
-      render: (text, record) => {
-        return (
-          <>
-            {record.is_bank_updated === 1 ? (
-              <p>Completed</p>
-            ) : (
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p>Pending</p>
-                <Tooltip
-                  placement="top"
-                  title="Copy form link"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegCopy
-                    size={14}
-                    className="customers_formlink_copybutton"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `${
-                          import.meta.env.VITE_EMAIL_URL
-                        }/trainer-registration/${record.id}`
-                      );
-                      CommonMessage("success", "Link Copied");
-                      console.log("Copied: eeee");
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            )}
-          </>
-        );
-      },
-    },
-  ]);
+    return !permissions.includes("Update Trainer")
+      ? dnd_columns.filter((col) => col.title !== "Action")
+      : dnd_columns;
+  });
 
   const nonChangeColumns = [
     {
@@ -432,102 +332,11 @@ export default function Trainers() {
     },
   ];
 
-  const actionColumn = useMemo(
-    () => [
-      {
-        title: "Status",
-        key: "status",
-        dataIndex: "status",
-        fixed: "right",
-        width: 120,
-        render: (text, record) => {
-          return (
-            <Flex style={{ whiteSpace: "nowrap" }}>
-              <Tooltip
-                placement="bottomLeft"
-                color="#fff"
-                title={
-                  <Radio.Group
-                    value={text}
-                    onChange={(e) => {
-                      if (!permissions.includes("Update Trainer")) {
-                        CommonMessage("error", "Access Denied");
-                        return;
-                      }
-                      handleStatusChange(record.id, e.target.value);
-                    }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <Radio
-                        value="Verify Pending"
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
-                      >
-                        Pending
-                      </Radio>
-                      <Radio value="Verified" style={{ marginBottom: "12px" }}>
-                        Verified
-                      </Radio>
-                      <Radio value="Rejected" style={{ marginBottom: "6px" }}>
-                        Rejected
-                      </Radio>
-                    </div>
-                  </Radio.Group>
-                }
-              >
-                {text === "Pending" ||
-                text === "PENDING" ||
-                text === "Verify Pending" ? (
-                  <Button className="trainers_pending_button">Pending</Button>
-                ) : text === "Verified" || text === "VERIFIED" ? (
-                  <div className="trainers_verifieddiv">
-                    <Button className="trainers_verified_button">
-                      Verified
-                    </Button>
-                  </div>
-                ) : text === "Rejected" || text === "REJECTED" ? (
-                  <Button className="trainers_rejected_button">Rejected</Button>
-                ) : (
-                  <p style={{ marginLeft: "6px" }}>-</p>
-                )}
-              </Tooltip>
-            </Flex>
-          );
-        },
-      },
-      {
-        title: "Action",
-        key: "action",
-        dataIndex: "action",
-        fixed: "right",
-        width: 120,
-        hidden: !permissions.includes("Update Trainer") ? true : false,
-        render: (text, record) => {
-          return (
-            <div className="trainers_actionbuttonContainer">
-              <AiOutlineEdit
-                size={20}
-                className="trainers_action_icons"
-                onClick={() => handleEdit(record)}
-              />
-            </div>
-          );
-        },
-      },
-    ],
-    [permissions]
-  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
-  const finalColumns = useMemo(() => {
-    const formStatusIndex = columns.findIndex(
-      (col) => col.key === "form_status"
-    );
-    const insertIndex =
-      formStatusIndex >= 0 ? formStatusIndex + 1 : columns.length;
-
-    const newColumns = [...columns];
-    newColumns.splice(insertIndex, 0, ...actionColumn); // insert after Mobile
-    return newColumns;
-  }, [columns, actionColumn]);
+  useEffect(() => {
+    setTableColumns(nonChangeColumns);
+  }, [permissions]);
 
   useEffect(() => {
     getTechnologiesData();
@@ -1280,6 +1089,7 @@ export default function Trainers() {
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
+                padding: "0px 26px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}
@@ -1517,7 +1327,7 @@ export default function Trainers() {
       <div style={{ marginTop: "22px" }}>
         <CommonTable
           scroll={{ x: 2500 }}
-          columns={finalColumns}
+          columns={tableColumns}
           dataSource={trainersData}
           dataPerPage={10}
           loading={loading}
@@ -1588,18 +1398,26 @@ export default function Trainers() {
             <button
               className="leadmanager_tablefilter_applybutton"
               onClick={() => {
+                // We already sync via the effect above, but if you prefer an explicit apply you can:
                 const reorderedColumns = defaultColumns
-                  .filter((item) => item.isChecked) // only include checked items
-                  .map((defaultItem) =>
+                  .filter((item) => item.isChecked)
+                  .map((item) =>
                     nonChangeColumns.find(
-                      (col) => col.title.trim() === defaultItem.title.trim()
+                      (col) =>
+                        col.key === item.key ||
+                        col.title.trim() === item.title.trim()
                     )
                   )
-                  .filter(Boolean); // remove unmatched/null entries
+                  .filter(Boolean)
+                  .filter(
+                    (col) =>
+                      !(
+                        col.key === "action" &&
+                        !permissions.includes("Update Trainer")
+                      )
+                  );
 
-                console.log("Reordered Columns:", reorderedColumns);
-
-                setColumns(reorderedColumns);
+                setTableColumns(reorderedColumns);
                 setIsOpenFilterDrawer(false);
               }}
             >

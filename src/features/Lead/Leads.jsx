@@ -47,9 +47,10 @@ import { FaRegUser } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
 import CommonDnd from "../Common/CommonDnd";
-import { Country, State, City } from "country-state-city";
+import { Country, State } from "country-state-city";
 import { IoFilter } from "react-icons/io5";
 import {
+  assignLead,
   createArea,
   createLead,
   createTechnology,
@@ -57,8 +58,8 @@ import {
   getBranches,
   getLeads,
   getTechnologies,
-  getUserDownline,
-  getUserPermissions,
+  getUsers,
+  leadEmailAndMobileValidator,
   leadPayment,
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
@@ -70,8 +71,6 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
 import { SlGlobe } from "react-icons/sl";
-import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
-import ImgCrop from "antd-img-crop";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
@@ -91,6 +90,9 @@ export default function Leads({
 
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [isShowEdit, setIsShowEdit] = useState(true);
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
@@ -101,8 +103,14 @@ export default function Leads({
   const [emailError, setEmailError] = useState("");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [phoneCode, setPhoneCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
+  const [emailAndMobileValidation, setEmailAndMobileValidation] = useState({
+    email: 0,
+    mobile: 0,
+    whatsApp: 0,
+  });
   const [countryOptions, setCountryOptions] = useState([]);
   const [countryId, setCountryId] = useState(null);
   const [countryError, setCountryError] = useState("");
@@ -232,6 +240,13 @@ export default function Leads({
   //add area usestates
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
+  //assign lead
+  const [isOpenAssignDrawer, setIsOpenAssignDrawer] = useState(false);
+  const [isOpenAssignModal, setIsOpenAssignModal] = useState(false);
+  const [leadDetails, setLeadDetails] = useState(null);
+  const [allUsersList, setAllUsersList] = useState([]);
+  const [assignId, setAssignId] = useState(null);
+  const [assignIdError, setAssignIdError] = useState("");
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -329,121 +344,36 @@ export default function Leads({
     },
   ]);
 
-  const [columns, setColumns] = useState([
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
-    { title: "Email", key: "email", dataIndex: "email", width: 240 },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
-    { title: "Country", key: "country", dataIndex: "country", width: 120 },
-    { title: "State", key: "state", dataIndex: "state", width: 120 },
-    { title: "City ", key: "area_id", dataIndex: "area_id", width: 120 },
-    {
-      title: "Lead Source",
-      key: "lead_type",
-      dataIndex: "lead_type",
-      width: 140,
-    },
-    {
-      title: "Primary Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-    },
-    {
-      title: "Primary Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-    },
-    {
-      title: "Secondary Course ",
-      key: "secondary_course",
-      dataIndex: "secondary_course",
-    },
-    {
-      title: "Secondary Course Fees",
-      key: "secondary_fees",
-      dataIndex: "secondary_fees",
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 140,
-    },
-    {
-      title: "Branch",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 190,
-    },
-    {
-      title: "Batch Track",
-      key: "batch_track",
-      dataIndex: "batch_track",
-      width: 120,
-    },
-    {
-      title: "Next Followup Date",
-      key: "next_follow_up_date",
-      dataIndex: "next_follow_up_date",
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    {
-      title: "Expected Join Date",
-      key: "expected_join_date",
-      dataIndex: "expected_join_date",
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    {
-      title: "Lead Status",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      fixed: "right",
-      width: 140,
-    },
-    {
-      title: "Comments",
-      key: "comments",
-      dataIndex: "comments",
-      fixed: "right",
-      width: 200,
-      render: (text) => {
-        return (
-          <>
-            {text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
-      },
-    },
-  ]);
-
   const nonChangeColumns = [
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 240 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
-    { title: "Country", key: "country", dataIndex: "country", width: 120 },
-    { title: "State", key: "state", dataIndex: "state", width: 120 },
+    {
+      title: "Country",
+      key: "country",
+      dataIndex: "country",
+      width: 120,
+      render: (text) => {
+        return (
+          <div>
+            <p> {getCountryName(text)}</p>
+          </div>
+        );
+      },
+    },
+    {
+      title: "State",
+      key: "state",
+      dataIndex: "state",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {getStateName(record.country, text)}</p>
+          </div>
+        );
+      },
+    },
     { title: "City ", key: "area_id", dataIndex: "area_id", width: 120 },
     {
       title: "Lead Source",
@@ -545,10 +475,7 @@ export default function Leads({
         );
       },
     },
-  ];
-
-  const actionColumn = useMemo(
-    () => ({
+    {
       title: "Action",
       key: "action",
       dataIndex: "action",
@@ -556,12 +483,14 @@ export default function Leads({
       width: 120,
       render: (text, record) => (
         <div className="trainers_actionbuttonContainer">
-          {permissions.includes("Edit Lead Button") && (
+          {permissions.includes("Edit Lead Button") && isShowEdit ? (
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
+          ) : (
+            ""
           )}
 
           {record.is_customer_reg === 1 ? (
@@ -592,28 +521,29 @@ export default function Leads({
           )}
         </div>
       ),
-    }),
-    [permissions]
-  );
+    },
+  ];
 
-  const finalColumns = useMemo(() => {
-    // Start with columns selected in DnD
-    const filtered = columns.filter(
-      (col) => col.key !== actionColumn.key // remove actionColumn to avoid duplicates
-    );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
-    // Check if actionColumn is selected
-    const isActionChecked = defaultColumns.find(
-      (dc) => dc.title.trim() === "Action"
-    )?.isChecked;
+  useEffect(() => {
+    setTableColumns(nonChangeColumns);
+  }, [permissions, isShowEdit]);
 
-    // Add actionColumn only if checked
-    if (isActionChecked) {
-      filtered.push(actionColumn); // always at the end
+  useEffect(() => {
+    getUsersData();
+  }, []);
+
+  const getUsersData = async () => {
+    try {
+      const response = await getUsers();
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data || []);
+    } catch (error) {
+      setAllUsersList([]);
+      console.log("get all users error", error);
     }
-
-    return filtered;
-  }, [columns, actionColumn]);
+  };
 
   useEffect(() => {
     const countries = Country.getAllCountries();
@@ -623,6 +553,7 @@ export default function Leads({
     setCountryOptions(updateCountries);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    if (childUsers.length <= 0) return;
     getAllLeadData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   }, [childUsers]);
 
@@ -685,6 +616,7 @@ export default function Leads({
     setAreaId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
+    setPhoneCode(selectedCountry.phonecode);
 
     const stateList = State.getStatesOfCountry(selectedCountry.id);
     const updateSates = stateList.map((s) => {
@@ -751,6 +683,105 @@ export default function Leads({
     if (startDate != "" && endDate != "") {
       console.log("call function");
       getAllLeadData(searchValue, startDate, endDate, false);
+    }
+  };
+
+  //onchange functions
+  const handleEmail = async (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    const emailValidate = emailValidator(value);
+
+    setEmailError(emailValidate);
+
+    if (emailValidate) return;
+
+    const payload = {
+      email: value,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead email validator res", response);
+      if (response?.data?.data === true) {
+        setEmailError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          email: 0,
+        }));
+      } else {
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          email: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
+    }
+  };
+
+  const handleMobileNumber = async (e) => {
+    const value = e.target.value;
+    setMobile(value);
+    const mobileValidate = mobileValidator(value);
+
+    setMobileError(mobileValidate);
+
+    if (mobileValidate) return;
+
+    const payload = {
+      mobile: value,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead mobile validator res", response);
+      if (response?.data?.data === true) {
+        setMobileError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          mobile: 0,
+        }));
+      } else {
+        setMobileError("");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          mobile: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
+    }
+  };
+
+  const handleWhatsAppNumber = async (e) => {
+    const value = e.target.value;
+    setWhatsApp(value);
+    const whatsAppValidate = mobileValidator(value);
+
+    setWhatsAppError(whatsAppValidate);
+
+    if (whatsAppValidate) return;
+
+    const payload = {
+      mobile: value,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead mobile validator res", response);
+      if (response?.data?.data === true) {
+        setWhatsAppError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          whatsApp: 0,
+        }));
+      } else {
+        setWhatsAppError("");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          whatsApp: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
     }
   };
 
@@ -868,6 +899,11 @@ export default function Leads({
     setEmail(item.email);
     setMobile(item.phone);
     setWhatsApp(item.whatsapp);
+    setEmailAndMobileValidation({
+      email: 1,
+      mobile: 1,
+      whatsApp: 1,
+    });
     setCountryId(item.country);
     const stateList = State.getStatesOfCountry(item.country);
     const updateSates = stateList.map((s) => {
@@ -902,90 +938,8 @@ export default function Leads({
     setComments(item.comments);
   };
 
-  const formReset = (dontCloseAddDrawer) => {
-    if (dontCloseAddDrawer === true) {
-      setIsOpenAddDrawer(true);
-    } else {
-      setIsOpenAddDrawer(false);
-    }
-    setIsOpenFilterDrawer(false);
-    setValidationTrigger(false);
-    setTimeout(() => {
-      setLeadId(null);
-    }, 300);
-    setName("");
-    setNameError("");
-    setEmail("");
-    setEmailError("");
-    setMobile("");
-    setMobileError("");
-    setWhatsApp("");
-    setWhatsAppError("");
-    setCountryId(null);
-    setCountryError("");
-    setStateId(null);
-    setStateError("");
-    setAreaId(null);
-    setAreaError("");
-    setPrimaryCourse(null);
-    setPrimaryCourseError("");
-    setPrimaryFees("");
-    setPrimaryFeesError("");
-    setIsShowSecondaryCourse(false);
-    setSecondaryCourse(null);
-    setSecondaryFees("");
-    setLeadType(null);
-    setLeadTypeError("");
-    setLeadStatus(null);
-    setLeadStatusError("");
-    setNxtFollowupDate(null);
-    setNxtFollowupDateError("");
-    setExpectDateJoin(null);
-    setExpectDateJoinError("");
-    setRegionId(null);
-    setRegionError("");
-    setBranch("");
-    setBranchError("");
-    setBatchTrack(1);
-    setBatchTrackError("");
-    setRating(null);
-    setRatingError("");
-    setComments("");
-    setCommentsError("");
-    setButtonLoading(false);
-    setSaveOnlyLoading(false);
-
-    //payment drawer usestates
-    setIsOpenPaymentDrawer(false);
-    setPaymentValidationTrigger(false);
-    setClickedLeadItem(null);
-    setPaymentMode(null);
-    setPaymentModeError("");
-    setSubTotal("");
-    setConvenienceFees("");
-    setTaxType(null);
-    setTaxTypeError("");
-    setAmount("");
-    setPaidNow("");
-    setPaidNowError("");
-    setPaymentDate(null);
-    setPaymentDateError("");
-    setPaymentScreenShotBase64("");
-    setPaymentScreenShotError("");
-    setIsShowDueDate(true);
-    setBalanceAmount("");
-    setDueDate(null);
-    setDueDateError("");
-    setCustomerCourseId(null);
-    setCustomerBatchTrackId(null);
-    setCustomerBatchTimingId(null);
-    setCustomerBatchTimingIdError("");
-    setPlacementSupport("");
-    setPlacementSupportError("");
-    setServerRequired(false);
-  };
-
   const handleSubmit = async (saveType) => {
+    console.log("emailAndMobileValidation", emailAndMobileValidation);
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     console.log("convertAsJson", convertAsJson);
@@ -1003,9 +957,9 @@ export default function Leads({
     }
 
     const nameValidate = nameValidator(name);
-    const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile);
-    const whatsAppValidate = mobileValidator(whatsApp);
+    let emailValidate = emailValidator(email);
+    let mobileValidate = mobileValidator(mobile);
+    let whatsAppValidate = mobileValidator(whatsApp);
     const countryValidate = selectValidator(countryId);
     const stateValidate = selectValidator(stateId);
     const cityValidate = selectValidator(areaId);
@@ -1018,6 +972,30 @@ export default function Leads({
     const batchTrackValidate = selectValidator(batchTrack);
     const commentsValidate = addressValidator(comments);
 
+    if (emailAndMobileValidation.email == 0) {
+      emailValidate = " is already exist";
+    }
+    if (emailAndMobileValidation.mobile == 0) {
+      mobileValidate = " is already exist";
+    }
+    if (emailAndMobileValidation.whatsApp == 0) {
+      whatsAppValidate = " is already exist";
+    }
+    console.log("emailValidate", emailValidate);
+    if (
+      nameValidate ||
+      emailValidate ||
+      mobileValidate ||
+      whatsAppValidate ||
+      countryValidate ||
+      stateValidate ||
+      cityValidate
+    ) {
+      const container = document.getElementById("leadform_basicinfo_heading");
+      container.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
     setNameError(nameValidate);
     setEmailError(emailValidate);
     setMobileError(mobileValidate);
@@ -1057,6 +1035,7 @@ export default function Leads({
     )
       return;
 
+    //-----------------
     if (saveType === "Save Only") {
       setSaveOnlyLoading(true);
     } else {
@@ -1071,7 +1050,7 @@ export default function Leads({
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
       name: name,
-      phone_code: "+91",
+      phone_code: `+${phoneCode}`,
       phone: mobile,
       whatsapp: whatsApp,
       email: email,
@@ -1395,16 +1374,127 @@ export default function Leads({
     }
   };
 
+  const formReset = (dontCloseAddDrawer) => {
+    if (dontCloseAddDrawer === true) {
+      setIsOpenAddDrawer(true);
+    } else {
+      setIsOpenAddDrawer(false);
+    }
+    setIsOpenFilterDrawer(false);
+    setValidationTrigger(false);
+    setTimeout(() => {
+      setLeadId(null);
+    }, 300);
+    setName("");
+    setNameError("");
+    setEmail("");
+    setEmailError("");
+    setMobile("");
+    setMobileError("");
+    setWhatsApp("");
+    setWhatsAppError("");
+    setEmailAndMobileValidation({
+      email: 0,
+      mobile: 0,
+      whatsApp: 0,
+    });
+    setCountryId(null);
+    setCountryError("");
+    setStateId(null);
+    setStateError("");
+    setAreaId(null);
+    setAreaError("");
+    setPrimaryCourse(null);
+    setPrimaryCourseError("");
+    setPrimaryFees("");
+    setPrimaryFeesError("");
+    setIsShowSecondaryCourse(false);
+    setSecondaryCourse(null);
+    setSecondaryFees("");
+    setLeadType(null);
+    setLeadTypeError("");
+    setLeadStatus(null);
+    setLeadStatusError("");
+    setNxtFollowupDate(null);
+    setNxtFollowupDateError("");
+    setExpectDateJoin(null);
+    setExpectDateJoinError("");
+    setRegionId(null);
+    setRegionError("");
+    setBranch("");
+    setBranchError("");
+    setBatchTrack(1);
+    setBatchTrackError("");
+    setRating(null);
+    setRatingError("");
+    setComments("");
+    setCommentsError("");
+    setButtonLoading(false);
+    setSaveOnlyLoading(false);
+    setIsOpenAssignDrawer(false);
+    setIsOpenAssignModal(false);
+    setAssignId(null);
+    setAssignIdError("");
+
+    //payment drawer usestates
+    setIsOpenPaymentDrawer(false);
+    setPaymentValidationTrigger(false);
+    setClickedLeadItem(null);
+    setPaymentMode(null);
+    setPaymentModeError("");
+    setSubTotal("");
+    setConvenienceFees("");
+    setTaxType(null);
+    setTaxTypeError("");
+    setAmount("");
+    setPaidNow("");
+    setPaidNowError("");
+    setPaymentDate(null);
+    setPaymentDateError("");
+    setPaymentScreenShotBase64("");
+    setPaymentScreenShotError("");
+    setIsShowDueDate(true);
+    setBalanceAmount("");
+    setDueDate(null);
+    setDueDateError("");
+    setCustomerCourseId(null);
+    setCustomerBatchTrackId(null);
+    setCustomerBatchTimingId(null);
+    setCustomerBatchTimingIdError("");
+    setPlacementSupport("");
+    setPlacementSupportError("");
+    setServerRequired(false);
+  };
+
   const getCountryName = (countryCode) => {
     let countryName = "";
+    const countries = Country.getAllCountries();
 
-    const findCountry = countryOptions.find((f) => f.isoCode === countryCode);
+    const findCountry = countries.find((f) => f.isoCode == countryCode);
+
     if (findCountry) {
       countryName = findCountry.name;
     } else {
       countryName = "";
     }
     return countryName;
+  };
+
+  const getStateName = (countryCode, stateCode) => {
+    const stateList = State.getStatesOfCountry(countryCode);
+    const updateSates = stateList.map((s) => {
+      return { ...s, id: s.isoCode };
+    });
+
+    let stateName = "";
+
+    const findState = updateSates.find((f) => f.id === stateCode);
+    if (findState) {
+      stateName = findState.name;
+    } else {
+      stateName = "";
+    }
+    return stateName;
   };
 
   const handleSearch = (e) => {
@@ -1418,6 +1508,80 @@ export default function Leads({
         childUsers
       );
     }, 300);
+  };
+
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
+    if (row.length >= 1) {
+      setIsShowEdit(false);
+    } else {
+      setIsShowEdit(true);
+    }
+  };
+
+  const handleAssignLead = async () => {
+    console.log(selectedRows);
+    const assignIdValidate = selectValidator(assignId);
+
+    setAssignIdError(assignIdValidate);
+
+    if (assignIdValidate) return;
+
+    if (selectedRows.length >= 1) {
+      //multi assign
+      const updateLeadItems = selectedRows.map((item) => {
+        return { assigned_to: assignId, id: item?.id };
+      });
+      setAddCourseLoading(true);
+      const payload = {
+        leads: updateLeadItems,
+      };
+      try {
+        await assignLead(payload);
+        setTimeout(() => {
+          getAllLeadData();
+          formReset();
+          setAddCourseLoading(false);
+          setIsShowEdit(true);
+          setSelectedRowKeys([]);
+          setSelectedRows([]);
+        }, 300);
+      } catch (error) {
+        setAddCourseLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
+      }
+    } else {
+      //single assign
+      let updateLeadItem = [];
+
+      updateLeadItem.push({ assigned_to: assignId, id: leadDetails?.id });
+      const payload = {
+        leads: updateLeadItem,
+      };
+      setAddCourseLoading(true);
+      try {
+        await assignLead(payload);
+        setTimeout(() => {
+          getAllLeadData();
+          formReset();
+          setAddCourseLoading(false);
+        }, 300);
+      } catch (error) {
+        setAddCourseLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
+      }
+    }
   };
 
   return (
@@ -1462,6 +1626,7 @@ export default function Leads({
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
+                padding: "0px 26px 0px 0px",
               }}
               value={searchValue}
               onChange={handleSearch}
@@ -1539,7 +1704,7 @@ export default function Leads({
             alignItems: "center",
           }}
         >
-          {permissions.includes("Add Lead Button") && (
+          {permissions.includes("Add Lead Button") && isShowEdit === true ? (
             <button
               className="leadmanager_addleadbutton"
               onClick={() => {
@@ -1548,7 +1713,21 @@ export default function Leads({
             >
               Add Lead
             </button>
+          ) : (
+            ""
           )}
+
+          {permissions.includes("Assign Lead") && isShowEdit === false && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAssignModal(true);
+              }}
+            >
+              Assign Lead
+            </button>
+          )}
+
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -1557,17 +1736,18 @@ export default function Leads({
           />
         </Col>
       </Row>
-
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 3200 }}
-          columns={finalColumns}
+          columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
-          checkBox="false"
+          checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
           size="small"
           className="questionupload_table"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
         />
       </div>
       <Drawer
@@ -1577,7 +1757,9 @@ export default function Leads({
         width="52%"
         style={{ position: "relative" }}
       >
-        <p className="addleaddrawer_headings">Basic Information</p>
+        <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
+          Basic Information
+        </p>
         <Row gutter={16}>
           <Col span={8}>
             <CommonInputField
@@ -1598,35 +1780,37 @@ export default function Leads({
               label="Email"
               required={true}
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (validationTrigger) {
-                  setEmailError(emailValidator(e.target.value));
-                }
-              }}
+              onChange={handleEmail}
               error={emailError}
             />
           </Col>
           <Col span={8}>
-            <CommonInputField
-              label="Mobile Number"
-              required={true}
-              maxLength={10}
-              type="number"
-              value={mobile}
-              onChange={(e) => {
-                setMobile(e.target.value);
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
-                }
-              }}
-              error={mobileError}
-              onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
-                }
-              }}
-            />
+            <div style={{ position: "relative" }}>
+              <CommonInputField
+                label="Mobile Number"
+                required={true}
+                maxLength={10}
+                type="number"
+                value={mobile}
+                onChange={handleMobileNumber}
+                error={mobileError}
+                onInput={(e) => {
+                  if (e.target.value.length > 10) {
+                    e.target.value = e.target.value.slice(0, 10);
+                  }
+                }}
+                errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
+              />
+              {/* <div className="leadmanager_countrycode_select_container">
+                <CommonCountryCodeSelect
+                  label="Select Country"
+                  value={phoneCode}
+                  onChange={(e) => setPhoneCode(e.target.value)}
+                  required
+                  error={phoneCode === "" ? "is required" : ""}
+                />{" "}
+              </div> */}
+            </div>
           </Col>
         </Row>
 
@@ -1639,18 +1823,14 @@ export default function Leads({
               maxLength={10}
               type="number"
               value={whatsApp}
-              onChange={(e) => {
-                setWhatsApp(e.target.value);
-                if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(e.target.value));
-                }
-              }}
+              onChange={handleWhatsAppNumber}
               error={whatsAppError}
               onInput={(e) => {
                 if (e.target.value.length > 10) {
                   e.target.value = e.target.value.slice(0, 10);
                 }
               }}
+              errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
             />
           </Col>
           <Col span={8}>
@@ -2055,9 +2235,7 @@ export default function Leads({
           </div>
         </div>
       </Drawer>
-
       {/* table filter drawer */}
-
       <Drawer
         title="Manage Table"
         open={isOpenFilterDrawer}
@@ -2092,7 +2270,7 @@ export default function Leads({
 
                 console.log("Reordered Columns:", reorderedColumns);
 
-                setColumns(reorderedColumns);
+                setTableColumns(reorderedColumns);
                 setIsOpenFilterDrawer(false);
               }}
             >
@@ -2101,7 +2279,6 @@ export default function Leads({
           </div>
         </div>
       </Drawer>
-
       <Drawer
         title="Make as Customer"
         open={isOpenPaymentDrawer}
@@ -2202,8 +2379,8 @@ export default function Leads({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.district
-                    ? clickedLeadItem.district
+                  {clickedLeadItem && clickedLeadItem.area_id
+                    ? clickedLeadItem.area_id
                     : "-"}
                 </p>
               </Col>
@@ -2292,13 +2469,13 @@ export default function Leads({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.user_name
-                    ? clickedLeadItem.user_name
+                  {clickedLeadItem && clickedLeadItem.lead_assigned_to_name
+                    ? clickedLeadItem.lead_assigned_to_name
                     : "-"}
                 </p>
               </Col>
@@ -2591,6 +2768,293 @@ export default function Leads({
         </div>
       </Drawer>
 
+      {/* assign lead drawer */}
+      <Drawer
+        title="Assign Lead"
+        open={isOpenAssignDrawer}
+        onClose={formReset}
+        width="52%"
+        style={{ position: "relative", paddingBottom: "65px" }}
+        className="customer_statusupdate_drawer"
+      >
+        <p
+          className="leadfollowup_leaddetails_heading"
+          id="leadfollowup_leaddetails_heading"
+        >
+          Lead Details
+        </p>
+        <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegCircleUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Name</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.name ? leadDetails.name : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineEmail size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Email</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.email ? leadDetails.email : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoCallOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Mobile</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.phone ? leadDetails.phone : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaWhatsapp size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Whatsapp</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.whatsapp
+                    ? leadDetails.whatsapp
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            {/* <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <SlGlobe size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Country</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {leadDetails && leadDetails.country
+                          ? getCountryName(leadDetails.country)
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row> */}
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoLocationOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Area</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.area_id
+                    ? leadDetails.area_id
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Executive</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.lead_assigned_to_name
+                    ? leadDetails.lead_assigned_to_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineDateRange size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Next Followup</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.next_follow_up_date
+                    ? moment(leadDetails.next_follow_up_date).format(
+                        "DD/MM/YYYY"
+                      )
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.primary_course
+                    ? leadDetails.primary_course
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#333", fontWeight: 700 }}
+                >
+                  {leadDetails && leadDetails.primary_fees
+                    ? "₹" + leadDetails.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Region</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.region_name
+                    ? leadDetails.region_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.branch_name
+                    ? leadDetails.branch_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Batch Track</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.batch_track
+                    ? leadDetails.batch_track
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Source</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.lead_type
+                    ? leadDetails.lead_type
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Status</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.lead_status
+                    ? leadDetails.lead_status
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+        <Divider className="customer_statusupdate_divider" />
+        <div className="customer_statusupdate_adddetailsContainer">
+          <p className="customer_statusupdate_adddetails_heading">
+            Assign Lead
+          </p>{" "}
+          <div style={{ marginTop: "16px" }}>
+            <CommonSelectField
+              label="Lead Executive"
+              options={allUsersList}
+              onChange={(e) => {
+                setAssignId(e.target.value);
+                setAssignIdError(selectValidator(e.target.value));
+              }}
+              value={assignId}
+              error={assignIdError}
+            />
+          </div>
+        </div>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            {addCourseLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={handleAssignLead}
+              >
+                Submit
+              </button>
+            )}
+          </div>
+        </div>
+      </Drawer>
       {/* add course modal */}
       <Modal
         title="Add Course"
@@ -2662,7 +3126,6 @@ export default function Leads({
           </ul>
         </div>
       </Modal>
-
       {/* add area modal */}
       <Modal
         title="Add Area"
@@ -2732,6 +3195,63 @@ export default function Leads({
             <li>Velachery</li>
             <li>Perungudi</li>
           </ul>
+        </div>
+      </Modal>
+
+      {/* assign lead modal */}
+      <Modal
+        title="Assign Leads"
+        open={isOpenAssignModal}
+        onCancel={() => {
+          setIsOpenAssignModal(false);
+          setAssignId(null);
+          setAssignIdError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAssignModal(false);
+              setAssignId(null);
+              setAssignIdError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleAssignLead}
+              className="leads_coursemodal_createbutton"
+            >
+              Assign
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonSelectField
+            label="Lead Executive"
+            options={allUsersList}
+            onChange={(e) => {
+              setAssignId(e.target.value);
+              setAssignIdError(selectValidator(e.target.value));
+            }}
+            value={assignId}
+            error={assignIdError}
+          />
         </div>
       </Modal>
     </div>

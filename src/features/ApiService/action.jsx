@@ -104,6 +104,14 @@ export const LoginApi = async (payload) => {
   }
 };
 
+export const changePassword = async (payload) => {
+  try {
+    const response = await api.put("/api/changePassword", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // users api's
 export const createUser = async (payload) => {
   try {
@@ -320,6 +328,17 @@ export const getBatchTrack = async (payload) => {
   }
 };
 
+export const leadEmailAndMobileValidator = async (payload) => {
+  try {
+    const response = await api.get("/api/checkEmailMblExists", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const createLead = async (payload) => {
   try {
     const response = await api.post("/api/insertLead", payload);
@@ -347,9 +366,18 @@ export const getLeads = async (payload) => {
   }
 };
 
-export const getLeadAndFollowupCount = async () => {
+export const assignLead = async (payload) => {
   try {
-    const response = await api.get("/api/getLeadCount");
+    const response = await api.put("/api/assignLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getLeadAndFollowupCount = async (payload) => {
+  try {
+    const response = await api.post("/api/getLeadCount", payload);
     return response;
   } catch (error) {
     throw error;
@@ -413,9 +441,7 @@ export const getPendingFeesCustomers = async (payload) => {
 
 export const getPendingFeesCustomersCount = async (payload) => {
   try {
-    const response = await api.get("/api/getPendingFeesCount", {
-      params: payload,
-    });
+    const response = await api.post("/api/getPendingFeesCount", payload);
     return response;
   } catch (error) {
     throw error;
