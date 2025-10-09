@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CommonTable from "../Common/CommonTable";
 import {
   Row,
@@ -78,6 +78,7 @@ export default function LeadFollowUp({
   setAreaOptions,
 }) {
   const chatBoxRef = useRef();
+  const mounted = useRef(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -357,17 +358,19 @@ export default function LeadFollowUp({
     setCountryOptions(updateCountries);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    if (childUsers.length <= 0) return;
-    setLeadExecutives(downlineUsers);
-    getLeadFollowUpsData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      false,
-      null,
-      1,
-      10
-    );
+    if (childUsers.length > 0 && !mounted.current) {
+      setLeadExecutives(downlineUsers);
+      mounted.current = true;
+      getLeadFollowUpsData(
+        null,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        false,
+        null,
+        1,
+        10
+      );
+    }
   }, [childUsers]);
 
   const getLeadFollowUpsData = async (

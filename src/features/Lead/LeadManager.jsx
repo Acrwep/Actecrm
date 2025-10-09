@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
@@ -16,6 +16,7 @@ import {
 import { useSelector } from "react-redux";
 
 export default function LeadManager() {
+  const mounted = useRef(false);
   const childUsers = useSelector((state) => state.childusers);
 
   const [activePage, setActivePage] = useState("followup");
@@ -43,8 +44,10 @@ export default function LeadManager() {
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
   useEffect(() => {
-    if (childUsers.length <= 0) return;
-    getLeadAndFollowupCountData();
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      getLeadAndFollowupCountData();
+    }
   }, [childUsers]);
 
   const getLeadAndFollowupCountData = async () => {

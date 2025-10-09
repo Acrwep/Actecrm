@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Col,
   Row,
@@ -86,6 +86,8 @@ export default function Leads({
   areaOptions,
   setAreaOptions,
 }) {
+  const mounted = useRef(false);
+
   const [leadData, setLeadData] = useState([]);
 
   const [searchValue, setSearchValue] = useState("");
@@ -581,21 +583,28 @@ export default function Leads({
     setCountryOptions(updateCountries);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    if (childUsers.length <= 0) return;
-    setLeadExecutives(downlineUsers);
-    getAllLeadData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null
-    );
+
+    if (childUsers.length > 0 && !mounted.current) {
+      setLeadExecutives(downlineUsers);
+      mounted.current = true;
+      getAllLeadData(
+        null,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null,
+        1,
+        10
+      );
+    }
   }, [childUsers]);
 
   const getAllLeadData = async (
     searchvalue,
     startDate,
     endDate,
-    executive_id
+    executive_id,
+    pageNumber,
+    limit
   ) => {
     console.log("executive_id", executive_id);
     setLoading(true);
@@ -616,6 +625,8 @@ export default function Leads({
       start_date: startDate,
       end_date: endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getLeads(payload);
@@ -623,7 +634,7 @@ export default function Leads({
       const pagination = response?.data?.data?.pagination;
 
       setLeadData(response?.data?.data?.data || []);
-      setLeadCount(response?.data?.data?.data.length || 0);
+      setLeadCount(pagination.total || 0);
 
       setPagination({
         page: pagination.page,
@@ -1124,11 +1135,16 @@ export default function Leads({
         CommonMessage("success", "Lead updated");
         setTimeout(() => {
           formReset();
+          setPagination({
+            page: 1,
+          });
           getAllLeadData(
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId
+            leadExecutiveId,
+            1,
+            pagination.limit
           );
           refreshLeadFollowUp();
         }, 300);
@@ -1152,11 +1168,16 @@ export default function Leads({
           } else {
             formReset(true);
           }
+          setPagination({
+            page: 1,
+          });
           getAllLeadData(
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId
+            leadExecutiveId,
+            1,
+            pagination.limit
           );
           refreshLeadFollowUp();
         }, 300);
@@ -1270,11 +1291,16 @@ export default function Leads({
         setButtonLoading(false);
         setInvoiceButtonLoading(false);
         formReset();
+        setPagination({
+          page: 1,
+        });
         getAllLeadData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
-          leadExecutiveId
+          leadExecutiveId,
+          1,
+          pagination.limit
         );
         handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
@@ -1541,11 +1567,16 @@ export default function Leads({
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
+      setPagination({
+        page: 1,
+      });
       getAllLeadData(
         e.target.value,
         selectedDates[0],
         selectedDates[1],
-        leadExecutiveId
+        leadExecutiveId,
+        1,
+        pagination.limit
       );
     }, 300);
   };
@@ -1582,11 +1613,16 @@ export default function Leads({
       try {
         await assignLead(payload);
         setTimeout(() => {
+          setPagination({
+            page: 1,
+          });
           getAllLeadData(
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId
+            leadExecutiveId,
+            1,
+            pagination.limit
           );
           formReset();
           setAddCourseLoading(false);
@@ -1614,11 +1650,16 @@ export default function Leads({
       try {
         await assignLead(payload);
         setTimeout(() => {
+          setPagination({
+            page: 1,
+          });
           getAllLeadData(
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId
+            leadExecutiveId,
+            1,
+            pagination.limit
           );
           formReset();
           setAddCourseLoading(false);
@@ -1635,15 +1676,14 @@ export default function Leads({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    // getLeadFollowUpsData(
-    //   searchValue,
-    //   selectedDates[0],
-    //   selectedDates[1],
-    //   false,
-    //   leadExecutiveId,
-    //   page,
-    //   limit
-    // );
+    getAllLeadData(
+      searchValue,
+      selectedDates[0],
+      selectedDates[1],
+      leadExecutiveId,
+      page,
+      limit
+    );
   };
 
   return (
@@ -1672,11 +1712,16 @@ export default function Leads({
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
                           getAllLeadData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
-                            leadExecutiveId
+                            leadExecutiveId,
+                            1,
+                            pagination.limit
                           );
                         }}
                       >
@@ -1717,11 +1762,16 @@ export default function Leads({
                               return;
                             } else {
                               setSearchValue("");
+                              setPagination({
+                                page: 1,
+                              });
                               getAllLeadData(
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
-                                leadExecutiveId
+                                leadExecutiveId,
+                                1,
+                                pagination.limit
                               );
                             }
                           }}
@@ -1759,11 +1809,16 @@ export default function Leads({
                 onChange={(e) => {
                   console.log(e.target.value);
                   setLeadExecutiveId(e.target.value);
+                  setPagination({
+                    page: 1,
+                  });
                   getAllLeadData(
                     searchValue,
                     selectedDates[0],
                     selectedDates[1],
-                    e.target.value
+                    e.target.value,
+                    1,
+                    pagination.limit
                   );
                 }}
                 value={leadExecutiveId}
@@ -1775,11 +1830,16 @@ export default function Leads({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
                   getAllLeadData(
                     searchValue,
                     dates[0],
                     dates[1],
-                    leadExecutiveId
+                    leadExecutiveId,
+                    1,
+                    pagination.limit
                   );
                 }}
               />
