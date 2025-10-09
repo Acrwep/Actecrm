@@ -250,6 +250,7 @@ export default function Leads({
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const [leadExecutives, setLeadExecutives] = useState([]);
 
   const [defaultColumns, setDefaultColumns] = useState([
     {
@@ -1602,7 +1603,7 @@ export default function Leads({
     <div>
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
-          <Row>
+          <Row gutter={16}>
             <Col span={7}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
@@ -1702,26 +1703,22 @@ export default function Leads({
               </div>
             </Col>
             <Col span={7}>
-              <div
-                style={{
-                  marginLeft: "16px",
-                  minWidth: "180px",
-                  maxWidth: "300px",
-                }}
-              >
-                <CommonSelectField height="36px" />
-              </div>
+              <CommonSelectField
+                height="35px"
+                label="Select Lead Executive"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={childUsers}
+              />
             </Col>
             <Col span={10}>
-              <div style={{ marginLeft: "16px" }}>
-                <CommonMuiCustomDatePicker
-                  value={selectedDates}
-                  onDateChange={(dates) => {
-                    setSelectedDates(dates);
-                    getAllLeadData(searchValue, dates[0], dates[1], childUsers);
-                  }}
-                />
-              </div>
+              <CommonMuiCustomDatePicker
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  getAllLeadData(searchValue, dates[0], dates[1], childUsers);
+                }}
+              />
             </Col>
           </Row>
         </Col>

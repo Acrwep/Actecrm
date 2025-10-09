@@ -81,7 +81,7 @@ export default function CustomerHistory({
       balance_amount:
         findTrans.balance_amount != undefined ||
         findTrans.balance_amount != null
-          ? parseFloat(findTrans?.balance_amount.toFixed(2))
+          ? parseFloat(findTrans?.balance_amount).toFixed(2)
           : "",
       course_name:
         customerDetails && customerDetails.course_name
