@@ -205,6 +205,14 @@ export default function LeadFollowUp({
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
 
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+
   const [defaultColumns, setDefaultColumns] = useState([
     { title: "Lead Executive", isChecked: true },
     { title: "Next Follow Up", isChecked: true },
@@ -356,7 +364,9 @@ export default function LeadFollowUp({
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       false,
-      null
+      null,
+      1,
+      10
     );
   }, [childUsers]);
 
@@ -365,7 +375,9 @@ export default function LeadFollowUp({
     startDate,
     endDate,
     updateStatus,
-    executive_id
+    executive_id,
+    pageNumber,
+    limit
   ) => {
     setLoading(true);
     let lead_executive = [];
@@ -385,15 +397,23 @@ export default function LeadFollowUp({
       from_date: startDate,
       to_date: endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getLeadFollowUps(payload);
       console.log("follow up response", response);
-      const followup_data = response?.data?.data || [];
+      const followup_data = response?.data?.data?.data || [];
+      const pagination = response?.data?.data?.pagination;
 
       setFollowUpData(followup_data);
-      setFollowupCount(response?.data?.data.length || 0);
-
+      setFollowupCount(pagination.totalPages);
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
       if (updateStatus === true) {
         const record = followup_data[currentIndex];
         if (!record) return;
@@ -413,6 +433,18 @@ export default function LeadFollowUp({
         setLoading(false);
       }, 300);
     }
+  };
+
+  const handlePaginationChange = ({ page, limit }) => {
+    getLeadFollowUpsData(
+      searchValue,
+      selectedDates[0],
+      selectedDates[1],
+      false,
+      leadExecutiveId,
+      page,
+      limit
+    );
   };
 
   const getCourseData = async () => {
@@ -535,12 +567,17 @@ export default function LeadFollowUp({
       await updateFollowUp(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
+        setPagination({
+          page: 1,
+        });
         getLeadFollowUpsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
           true,
-          leadHistoryId
+          leadHistoryId,
+          1,
+          pagination.limit
         );
         refreshLeads();
         setNewComment("");
@@ -565,13 +602,18 @@ export default function LeadFollowUp({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    setPagination({
+      page: 1,
+    });
     setTimeout(() => {
       getLeadFollowUpsData(
-        searchValue,
+        e.target.value,
         selectedDates[0],
         selectedDates[1],
         false,
-        e.target.value
+        leadExecutiveId,
+        1,
+        pagination.limit
       );
     }, 300);
   };
@@ -694,12 +736,17 @@ export default function LeadFollowUp({
         } else {
           formReset(true);
         }
+        setPagination({
+          page: 1,
+        });
         getLeadFollowUpsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
           false,
-          leadExecutiveId
+          leadExecutiveId,
+          1,
+          pagination.limit
         );
         refreshLeads();
       }, 300);
@@ -910,12 +957,17 @@ export default function LeadFollowUp({
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
                           getLeadFollowUpsData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
                             false,
-                            leadExecutiveId
+                            leadExecutiveId,
+                            1,
+                            pagination.limit
                           );
                         }}
                       >
@@ -950,18 +1002,22 @@ export default function LeadFollowUp({
                         <Radio.Group
                           value={filterType}
                           onChange={(e) => {
-                            console.log("filllllll", e.target.value);
                             setFilterType(e.target.value);
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              setPagination({
+                                page: 1,
+                              });
                               getLeadFollowUpsData(
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
                                 false,
-                                leadExecutiveId
+                                leadExecutiveId,
+                                1,
+                                pagination.limit
                               );
                             }
                           }}
@@ -999,12 +1055,17 @@ export default function LeadFollowUp({
                 onChange={(e) => {
                   console.log(e.target.value);
                   setLeadExecutiveId(e.target.value);
+                  setPagination({
+                    page: 1,
+                  });
                   getLeadFollowUpsData(
                     searchValue,
                     selectedDates[0],
                     selectedDates[1],
                     false,
-                    e.target.value
+                    e.target.value,
+                    1,
+                    pagination.limit
                   );
                 }}
                 value={leadExecutiveId}
@@ -1016,12 +1077,17 @@ export default function LeadFollowUp({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
                   getLeadFollowUpsData(
                     searchValue,
                     dates[0],
                     dates[1],
                     false,
-                    leadExecutiveId
+                    leadExecutiveId,
+                    1,
+                    pagination.limit
                   );
                 }}
               />
@@ -1066,6 +1132,10 @@ export default function LeadFollowUp({
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 

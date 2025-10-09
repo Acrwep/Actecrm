@@ -253,6 +253,13 @@ export default function Leads({
   const downlineUsers = useSelector((state) => state.downlineusers);
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const [defaultColumns, setDefaultColumns] = useState([
     { title: "Lead Executive", isChecked: true },
@@ -613,8 +620,17 @@ export default function Leads({
     try {
       const response = await getLeads(payload);
       console.log("lead response", response);
-      setLeadData(response?.data?.data || []);
-      setLeadCount(response?.data?.data.length || 0);
+      const pagination = response?.data?.data?.pagination;
+
+      setLeadData(response?.data?.data?.data || []);
+      setLeadCount(response?.data?.data?.data.length || 0);
+
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
     } catch (error) {
       setLeadData([]);
       setLeadCount(0);
@@ -1618,6 +1634,18 @@ export default function Leads({
     }
   };
 
+  const handlePaginationChange = ({ page, limit }) => {
+    // getLeadFollowUpsData(
+    //   searchValue,
+    //   selectedDates[0],
+    //   selectedDates[1],
+    //   false,
+    //   leadExecutiveId,
+    //   page,
+    //   limit
+    // );
+  };
+
   return (
     <div>
       <Row>
@@ -1811,6 +1839,10 @@ export default function Leads({
           className="questionupload_table"
           selectedDatas={handleSelectedRow}
           selectedRowKeys={selectedRowKeys}
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
       <Drawer

@@ -311,20 +311,30 @@ button:focus-visible {
   min-width: 27px;
   font-size: 12px !important;
 }
-.ant-pagination .ant-pagination-item a {
-  color: #fff !important;
-}
-.ant-pagination .ant-pagination-item-active a:hover {
+.ant-pagination .ant-pagination-item-active a {
   color: #fff !important;
 }
 .ant-pagination.ant-pagination-mini .ant-pagination-item {
   line-height: 23px !important;
+}
+.ant-pagination .ant-pagination-item-active {
   background-color: #535bf2 !important;
-  width: 28px;
-  height: 28px !important;
+  border-color: #535bf2 !important;
+  width: 26px;
+  height: 26px !important;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 4px !important;
+}
+.ant-pagination .ant-pagination-item {
+  border-color: rgba(128, 128, 128, 0.548) !important;
+  width: 26px;
+  height: 26px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px !important;
 }
 .ant-pagination .ant-pagination-item:not(.ant-pagination-item-active):hover {
   background-color: none !important;
@@ -340,6 +350,18 @@ button:focus-visible {
 }
 .ant-checkbox-indeterminate .ant-checkbox-inner:after {
   background-color: #535bf2 !important;
+}
+.ant-pagination
+  .ant-pagination-jump-next
+  .ant-pagination-item-container
+  .ant-pagination-item-link-icon {
+  color: #535bf2 !important;
+}
+.ant-pagination
+  .ant-pagination-jump-prev
+  .ant-pagination-item-container
+  .ant-pagination-item-link-icon {
+  color: #535bf2 !important;
 }
 /* progress bar styles */
 .ant-progress .ant-progress-bg {

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "antd";
+import { GrFormPrevious, GrFormNext } from "react-icons/gr";
 import "./commonstyles.css";
+
 const CommonTable = ({
   columns,
   dataSource,
@@ -14,11 +16,24 @@ const CommonTable = ({
   size,
   className,
   selectedRowKeys,
+  limit,
+  page_number,
+  totalPageNumber,
+  onPaginationChange,
 }) => {
-  const [pageSize, setPageSize] = useState(dataPerPage || 10);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    setPageSize(limit || 10);
+  }, [limit, page_number]);
+
+  useEffect(() => {
+    setCurrentPage(page_number || 1);
+  }, [page_number]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
       const sizeChanger = document.querySelector(
         ".ant-pagination-options-size-changer"
       );
@@ -29,16 +44,47 @@ const CommonTable = ({
         const label = document.createElement("span");
         label.innerText = "Show Rows ";
         label.className = "commontable_paginationlabel";
-        label.style.marginRight = "4px";
         sizeChanger.prepend(label);
+      }
+
+      // Watch for DOM changes under the table container instead of body
+      const tableContainer = document.querySelector(".ant-table-wrapper");
+      if (tableContainer) {
+        const observer = new MutationObserver(() => {
+          const sizeChangerUpdated = document.querySelector(
+            ".ant-pagination-options-size-changer"
+          );
+          if (
+            sizeChangerUpdated &&
+            !sizeChangerUpdated.querySelector(".commontable_paginationlabel")
+          ) {
+            const label = document.createElement("span");
+            label.innerText = "Show Rows ";
+            label.className = "commontable_paginationlabel";
+            sizeChangerUpdated.prepend(label);
+          }
+        });
+        observer.observe(tableContainer, {
+          childList: true,
+          subtree: true,
+        });
+
+        return () => observer.disconnect();
       }
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, []);
 
   const handleTableChange = (pagination, filters, sorter) => {
     setPageSize(pagination.pageSize);
+    setCurrentPage(pagination.current);
+    if (onPaginationChange) {
+      onPaginationChange({
+        page: pagination.current,
+        limit: pagination.pageSize,
+      });
+    }
   };
 
   const rowSelection =
@@ -53,18 +99,43 @@ const CommonTable = ({
           },
         };
 
-  const paginationConfig =
-    paginationStatus === false
-      ? false
-      : {
-          pageSize: pageSize,
-          showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "50", "100", "250", "500"],
-          showQuickJumper: false,
-          total: dataSource.length,
-          position: ["bottomRight"],
-          // itemRender: () => null,
-        };
+  const paginationConfig = {
+    current: page_number || 1,
+    pageSize: limit || 10,
+    showSizeChanger: true,
+    total: totalPageNumber || 0,
+    pageSizeOptions: ["10", "20", "50", "100", "250", "500"],
+    position: ["bottomRight"],
+    showLessItems: true, // <--- this reduces visible page buttons
+    itemRender: (page, type, originalElement) => {
+      const safeLimit = limit || 10;
+      const totalPages = Math.ceil((totalPageNumber || 0) / safeLimit);
+
+      if (type === "prev") {
+        const isDisabled = page_number === 1;
+        return (
+          <div
+            className="commontable_pagination_prevbutton"
+            style={{ opacity: isDisabled ? 0.6 : 1 }}
+          >
+            <GrFormPrevious size={15} />
+          </div>
+        );
+      }
+      if (type === "next") {
+        const isDisabled = page_number === totalPages;
+        return (
+          <div
+            style={{ opacity: isDisabled ? 0.6 : 1 }}
+            className="commontable_pagination_prevbutton"
+          >
+            <GrFormNext size={15} />
+          </div>
+        );
+      }
+      return originalElement;
+    },
+  };
 
   return (
     <Table
