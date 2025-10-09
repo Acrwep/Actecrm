@@ -407,7 +407,7 @@ export default function LeadFollowUp({
       const pagination = response?.data?.data?.pagination;
 
       setFollowUpData(followup_data);
-      setFollowupCount(pagination.totalPages);
+      setFollowupCount(pagination.total);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
