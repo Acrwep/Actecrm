@@ -63,7 +63,7 @@ const CommonTable = ({
           showQuickJumper: false,
           total: dataSource.length,
           position: ["bottomRight"],
-          itemRender: () => null, // Hides page numbers
+          // itemRender: () => null,
         };
 
   return (

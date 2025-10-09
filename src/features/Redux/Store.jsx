@@ -13,6 +13,7 @@ import {
   trainersModulePermissionListReducer,
   settingsModulePermissionListReducer,
   childUsersReducer,
+  downlineUsersReducer,
   userPermissionsReducer,
 } from "./Slice";
 
@@ -25,6 +26,7 @@ export const reduxStore = configureStore({
     grouplist: groupListReducer,
     rolelist: roleListReducer,
     childusers: childUsersReducer,
+    downlineusers: downlineUsersReducer,
     userpermissions: userPermissionsReducer,
     permissionslist: permissionsListReducer,
     leadsmodulepermissionlist: leadsModulePermissionListReducer,

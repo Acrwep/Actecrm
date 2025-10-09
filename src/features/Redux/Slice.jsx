@@ -146,6 +146,16 @@ const childUsersSlice = createSlice({
   },
 });
 
+const downlineUsersSlice = createSlice({
+  name: "downlineusers",
+  initialState,
+  reducers: {
+    storeDownlineUsers(state, action) {
+      return [...action.payload]; // ensures new array reference
+    },
+  },
+});
+
 const userPermissionsSlice = createSlice({
   name: "userpermissions",
   initialState,
@@ -176,6 +186,7 @@ export const { storeTrainersModulePermissionList } =
 export const { storeSettingsModulePermissionList } =
   settingsModulePermissionListSlice.actions;
 export const { storeChildUsers } = childUsersSlice.actions;
+export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 //create reducer
 export const usersListReducer = usersListSlice.reducer;
@@ -184,6 +195,7 @@ export const groupListReducer = groupListSlice.reducer;
 export const roleListReducer = roleListSlice.reducer;
 export const permissionsListReducer = permissionsListSlice.reducer;
 export const childUsersReducer = childUsersSlice.reducer;
+export const downlineUsersReducer = downlineUsersSlice.reducer;
 export const userPermissionsReducer = userPermissionsSlice.reducer;
 export const leadsModulePermissionListReducer =
   leadsModulePermissionListSlice.reducer;

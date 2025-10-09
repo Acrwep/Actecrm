@@ -250,9 +250,12 @@ export default function Leads({
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
   const [leadExecutives, setLeadExecutives] = useState([]);
+  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
 
   const [defaultColumns, setDefaultColumns] = useState([
+    { title: "Lead Executive", isChecked: true },
     {
       title: "Candidate Name",
       key: "name",
@@ -346,6 +349,12 @@ export default function Leads({
   ]);
 
   const nonChangeColumns = [
+    {
+      title: "Lead Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 160,
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 240 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -566,11 +575,29 @@ export default function Leads({
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     if (childUsers.length <= 0) return;
-    getAllLeadData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+    setLeadExecutives(downlineUsers);
+    getAllLeadData(
+      null,
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+      null
+    );
   }, [childUsers]);
 
-  const getAllLeadData = async (searchvalue, startDate, endDate) => {
+  const getAllLeadData = async (
+    searchvalue,
+    startDate,
+    endDate,
+    executive_id
+  ) => {
+    console.log("executive_id", executive_id);
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       ...(searchvalue && filterType == 1
         ? { name: searchvalue }
@@ -581,7 +608,7 @@ export default function Leads({
         : {}),
       start_date: startDate,
       end_date: endDate,
-      user_ids: childUsers,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getLeads(payload);
@@ -591,7 +618,7 @@ export default function Leads({
     } catch (error) {
       setLeadData([]);
       setLeadCount(0);
-      console.log("get leads error");
+      console.log("get leads error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -677,24 +704,6 @@ export default function Leads({
     } catch (error) {
       setBranchOptions([]);
       console.log("response status error", error);
-    }
-  };
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((val) => {
-        getAllLeadData(val, selectedDates[0], selectedDates[1], childUsers);
-      }, 300),
-    [selectedDates]
-  );
-
-  const handleDateChange = (dates, dateStrings) => {
-    setSelectedDates(dateStrings);
-    const startDate = dateStrings[0];
-    const endDate = dateStrings[1];
-    if (startDate != "" && endDate != "") {
-      console.log("call function");
-      getAllLeadData(searchValue, startDate, endDate, false);
     }
   };
 
@@ -1103,7 +1112,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            childUsers
+            leadExecutiveId
           );
           refreshLeadFollowUp();
         }, 300);
@@ -1131,7 +1140,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            childUsers
+            leadExecutiveId
           );
           refreshLeadFollowUp();
         }, 300);
@@ -1249,7 +1258,7 @@ export default function Leads({
           searchValue,
           selectedDates[0],
           selectedDates[1],
-          childUsers
+          leadExecutiveId
         );
         handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
@@ -1520,7 +1529,7 @@ export default function Leads({
         e.target.value,
         selectedDates[0],
         selectedDates[1],
-        childUsers
+        leadExecutiveId
       );
     }, 300);
   };
@@ -1557,7 +1566,12 @@ export default function Leads({
       try {
         await assignLead(payload);
         setTimeout(() => {
-          getAllLeadData();
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            leadExecutiveId
+          );
           formReset();
           setAddCourseLoading(false);
           setIsShowEdit(true);
@@ -1584,7 +1598,12 @@ export default function Leads({
       try {
         await assignLead(payload);
         setTimeout(() => {
-          getAllLeadData();
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            leadExecutiveId
+          );
           formReset();
           setAddCourseLoading(false);
         }, 300);
@@ -1629,7 +1648,7 @@ export default function Leads({
                             null,
                             selectedDates[0],
                             selectedDates[1],
-                            childUsers
+                            leadExecutiveId
                           );
                         }}
                       >
@@ -1674,7 +1693,7 @@ export default function Leads({
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
-                                childUsers
+                                leadExecutiveId
                               );
                             }
                           }}
@@ -1708,7 +1727,19 @@ export default function Leads({
                 label="Select Lead Executive"
                 labelMarginTop="0px"
                 labelFontSize="13px"
-                options={childUsers}
+                options={leadExecutives}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setLeadExecutiveId(e.target.value);
+                  getAllLeadData(
+                    searchValue,
+                    selectedDates[0],
+                    selectedDates[1],
+                    e.target.value
+                  );
+                }}
+                value={leadExecutiveId}
+                disableClearable={false}
               />
             </Col>
             <Col span={10}>
@@ -1716,7 +1747,12 @@ export default function Leads({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  getAllLeadData(searchValue, dates[0], dates[1], childUsers);
+                  getAllLeadData(
+                    searchValue,
+                    dates[0],
+                    dates[1],
+                    leadExecutiveId
+                  );
                 }}
               />
             </Col>
@@ -1765,7 +1801,7 @@ export default function Leads({
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3250 }}
+          scroll={{ x: 3350 }}
           columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}

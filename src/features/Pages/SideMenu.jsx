@@ -12,7 +12,11 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import { getUserDownline, getUserPermissions } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
-import { storeChildUsers, storeUserPermissions } from "../Redux/Slice";
+import {
+  storeChildUsers,
+  storeDownlineUsers,
+  storeUserPermissions,
+} from "../Redux/Slice";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -136,16 +140,21 @@ export default function SideMenu() {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     let child_users;
+    let downline_users;
     let user_roles;
     try {
       const response = await getUserDownline(convertAsJson?.user_id);
       console.log("user downline response", response);
       child_users = response?.data?.data?.child_users || [];
+      downline_users = response?.data?.data?.downline_users || [];
       user_roles = response?.data?.data?.roles || [];
       dispatch(storeChildUsers(child_users));
+      dispatch(storeDownlineUsers(downline_users));
     } catch (error) {
       user_roles = [];
       child_users = [];
+      dispatch(storeChildUsers([]));
+      dispatch(storeDownlineUsers([]));
       console.log("user downline error", error);
     } finally {
       setTimeout(() => {

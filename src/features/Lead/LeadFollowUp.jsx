@@ -10,6 +10,8 @@ import {
   Tooltip,
   Button,
   Divider,
+  Radio,
+  Flex,
 } from "antd";
 import { FiFilter } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
@@ -40,7 +42,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
-import { SlGlobe } from "react-icons/sl";
+import { IoFilter } from "react-icons/io5";
 import { BiMapPin } from "react-icons/bi";
 import {
   nameValidator,
@@ -79,13 +81,13 @@ export default function LeadFollowUp({
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
-  const dateFilterOptions = [
-    { id: "Today", name: "Today" },
-    { id: "Carry Over", name: "Carry Over" },
-  ];
-  const [dateFilter, setDateFilter] = useState("Today");
+  const [filterType, setFilterType] = useState(1);
+  const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
+  const [leadExecutives, setLeadExecutives] = useState([]);
+  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
   const [followUpData, setFollowUpData] = useState([]);
   const [isOpenChat, setIsOpenChat] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
@@ -207,6 +209,7 @@ export default function LeadFollowUp({
     { title: "Lead Executive", isChecked: true },
     { title: "Next Follow Up", isChecked: true },
     { title: "Candidate Name", isChecked: true },
+    { title: "Email", isChecked: true },
     { title: "Mobile", isChecked: true },
     { title: "Course ", isChecked: true },
     { title: "Course Fees ", isChecked: true },
@@ -215,7 +218,11 @@ export default function LeadFollowUp({
   ]);
 
   const nonChangeColumns = [
-    { title: "Lead Executive", key: "user_name", dataIndex: "user_name" },
+    {
+      title: "Lead Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+    },
     {
       title: "Next Follow Up",
       key: "next_follow_up_date",
@@ -250,6 +257,12 @@ export default function LeadFollowUp({
       title: "Candidate Name",
       key: "candidate_name",
       dataIndex: "candidate_name",
+    },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 200,
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
     {
@@ -337,15 +350,41 @@ export default function LeadFollowUp({
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     if (childUsers.length <= 0) return;
-    getLeadFollowUpsData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+    setLeadExecutives(downlineUsers);
+    getLeadFollowUpsData(
+      null,
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+      false,
+      null
+    );
   }, [childUsers]);
 
-  const getLeadFollowUpsData = async (startDate, endDate, updateStatus) => {
+  const getLeadFollowUpsData = async (
+    searchvalue,
+    startDate,
+    endDate,
+    updateStatus,
+    executive_id
+  ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
+      ...(searchvalue && filterType == 1
+        ? { name: searchvalue }
+        : searchvalue && filterType == 2
+        ? { email: searchvalue }
+        : searchvalue && filterType == 3
+        ? { phone: searchvalue }
+        : {}),
       from_date: startDate,
       to_date: endDate,
-      user_ids: childUsers,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getLeadFollowUps(payload);
@@ -496,7 +535,13 @@ export default function LeadFollowUp({
       await updateFollowUp(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
-        getLeadFollowUpsData(selectedDates[0], selectedDates[1], true);
+        getLeadFollowUpsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          true,
+          leadHistoryId
+        );
         refreshLeads();
         setNewComment("");
         setNewCommentError("");
@@ -515,6 +560,20 @@ export default function LeadFollowUp({
           "Something went wrong. Try again later"
       );
     }
+  };
+
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setLoading(true);
+    setTimeout(() => {
+      getLeadFollowUpsData(
+        searchValue,
+        selectedDates[0],
+        selectedDates[1],
+        false,
+        e.target.value
+      );
+    }, 300);
   };
 
   const handleSubmit = async (saveType) => {
@@ -635,7 +694,13 @@ export default function LeadFollowUp({
         } else {
           formReset(true);
         }
-        getLeadFollowUpsData(selectedDates[0], selectedDates[1]);
+        getLeadFollowUpsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          false,
+          leadExecutiveId
+        );
         refreshLeads();
       }, 300);
     } catch (error) {
@@ -713,35 +778,6 @@ export default function LeadFollowUp({
           "Something went wrong. Try again later"
       );
     }
-  };
-
-  const getCountryName = (countryCode) => {
-    let countryName = "";
-
-    const findCountry = countryOptions.find((f) => f.isoCode === countryCode);
-    if (findCountry) {
-      countryName = findCountry.name;
-    } else {
-      countryName = "";
-    }
-    return countryName;
-  };
-
-  const getStateName = (countryCode, stateCode) => {
-    const stateList = State.getStatesOfCountry(countryCode);
-    const updateSates = stateList.map((s) => {
-      return { ...s, id: s.isoCode };
-    });
-
-    let stateName = "";
-
-    const findState = updateSates.find((f) => f.id === stateCode);
-    if (findState) {
-      stateName = findState.name;
-    } else {
-      stateName = "";
-    }
-    return stateName;
   };
 
   const updateDetailsByIndex = (index) => {
@@ -851,78 +887,178 @@ export default function LeadFollowUp({
   return (
     <div style={{ position: "relative" }}>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="leadmanager_filterContainer">
-            <CommonOutlinedInput
-              label="Search"
-              width="36%"
-              height="33px"
-              labelFontSize="12px"
-              icon={<CiSearch size={16} />}
-              labelMarginTop="-1px"
-            />
-            {/* <CommonSelectField
-              label="Select"
-              height="35px"
-              style={{ width: "36%" }}
-              labelFontSize="12px"
-              options={dateFilterOptions}
-              value={dateFilter}
-              labelMarginTop="-1px"
-              valueMarginTop="-6px"
-              downArrowIconTop="43%"
-              fontSize="13px"
-              onChange={(e) => {
-                console.log(e.target.value);
-                setDateFilter(e.target.value);
-                getLeadFollowUpsData(e.target.value);
-              }}
-            /> */}
-            <div>
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={7}>
+              <div className="overallduecustomers_filterContainer">
+                <CommonOutlinedInput
+                  label={
+                    filterType == 1
+                      ? "Search By Name"
+                      : filterType == 2
+                      ? "Search By Email"
+                      : filterType == 3
+                      ? "Search by Mobile"
+                      : ""
+                  }
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          getLeadFollowUpsData(
+                            null,
+                            selectedDates[0],
+                            selectedDates[1],
+                            false,
+                            leadExecutiveId
+                          );
+                        }}
+                      >
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  value={searchValue}
+                  onChange={handleSearch}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            console.log("filllllll", e.target.value);
+                            setFilterType(e.target.value);
+                            if (searchValue == "") {
+                              return;
+                            } else {
+                              setSearchValue("");
+                              getLeadFollowUpsData(
+                                null,
+                                selectedDates[0],
+                                selectedDates[1],
+                                false,
+                                leadExecutiveId
+                              );
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                            Search by Mobile
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            <Col span={7}>
+              <CommonSelectField
+                height="35px"
+                label="Select Lead Executive"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={leadExecutives}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setLeadExecutiveId(e.target.value);
+                  getLeadFollowUpsData(
+                    searchValue,
+                    selectedDates[0],
+                    selectedDates[1],
+                    false,
+                    e.target.value
+                  );
+                }}
+                value={leadExecutiveId}
+                disableClearable={false}
+              />
+            </Col>
+            <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  getLeadFollowUpsData(dates[0], dates[1]);
+                  getLeadFollowUpsData(
+                    searchValue,
+                    dates[0],
+                    dates[1],
+                    false,
+                    leadExecutiveId
+                  );
                 }}
               />
-            </div>
+            </Col>
+          </Row>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={7}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            {permissions.includes("Add Lead Button") && (
+              <button
+                className="leadmanager_addleadbutton"
+                onClick={() => {
+                  setIsOpenAddDrawer(true);
+                }}
+              >
+                Add Lead
+              </button>
+            )}
+
+            <FiFilter
+              size={20}
+              color="#5b69ca"
+              style={{ marginLeft: "12px", cursor: "pointer" }}
+              onClick={() => setIsOpenFilterDrawer(true)}
+            />
           </div>
         </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          {permissions.includes("Add Lead Button") && (
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAddDrawer(true);
-              }}
-            >
-              Add Lead
-            </button>
-          )}
-
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ marginLeft: "12px", cursor: "pointer" }}
-            onClick={() => setIsOpenFilterDrawer(true)}
-          />
-        </Col>
       </Row>
-
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1100 }}
+          scroll={{ x: 1250 }}
           columns={tableColumns}
           dataSource={followUpData}
           dataPerPage={10}
