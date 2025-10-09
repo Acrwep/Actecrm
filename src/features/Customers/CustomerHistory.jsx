@@ -18,7 +18,11 @@ import { viewCertForCustomer, viewPaymentInvoice } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
 
-export default function CustomerHistory({ data = [], customerDetails }) {
+export default function CustomerHistory({
+  data = [],
+  customerDetails,
+  trainersData,
+}) {
   const [isOpenProofViewModal, setIsOpenProofViewModal] = useState(false);
   const [proofScreenshotBase64, setProofScreenshotBase64] = useState("");
   const [imgType, setImgType] = useState("");
@@ -74,7 +78,11 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       total_amount: customerDetails?.payments?.total_amount
         ? customerDetails.payments.total_amount
         : "",
-      balance_amount: findTrans?.balance_amount || "",
+      balance_amount:
+        findTrans.balance_amount != undefined ||
+        findTrans.balance_amount != null
+          ? parseFloat(findTrans?.balance_amount.toFixed(2))
+          : "",
       course_name:
         customerDetails && customerDetails.course_name
           ? customerDetails.course_name
@@ -118,6 +126,15 @@ export default function CustomerHistory({ data = [], customerDetails }) {
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const getTrainerName = (trainer_id) => {
+    const findTrainer = trainersData.find((f) => f.id == trainer_id);
+    if (findTrainer) {
+      return findTrainer.name;
+    } else {
+      return "-";
     }
   };
 
@@ -224,7 +241,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
                   </Col>
                   <Col span={12}>
                     <p className="customer_history_details_text">
-                      {item.details.trainer_name}
+                      {getTrainerName(item.details.trainer_id)}
                     </p>
                   </Col>
                 </Row>

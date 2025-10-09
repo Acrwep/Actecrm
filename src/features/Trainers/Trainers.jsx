@@ -1089,7 +1089,7 @@ export default function Trainers() {
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
-                padding: "0px 26px 0px 0px",
+                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}

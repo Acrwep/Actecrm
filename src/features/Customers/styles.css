@@ -668,6 +668,11 @@
   font-weight: 500;
   font-size: 13px;
 }
+.customerdetails_coursegst {
+  font-size: 9px;
+  position: relative;
+  top: -2px !important;
+}
 .customerdetails_text {
   color: gray;
   font-size: 13px;

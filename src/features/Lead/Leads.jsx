@@ -195,18 +195,18 @@ export default function Leads({
   const [paymentDateError, setPaymentDateError] = useState("");
   const [paymentMode, setPaymentMode] = useState(null);
   const [paymentModeError, setPaymentModeError] = useState(null);
-  const [subTotal, setSubTotal] = useState("");
+  const [subTotal, setSubTotal] = useState();
   const [convenienceFees, setConvenienceFees] = useState("");
   const [taxType, setTaxType] = useState("");
   const [taxTypeError, setTaxTypeError] = useState("");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState();
   const [paidNow, setPaidNow] = useState("");
   const [paidNowError, setPaidNowError] = useState("");
   const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
     useState(false);
-  const [balanceAmount, setBalanceAmount] = useState("");
+  const [balanceAmount, setBalanceAmount] = useState();
   const [isShowDueDate, setIsShowDueDate] = useState(true);
   const [dueDate, setDueDate] = useState(null);
   const [dueDateError, setDueDateError] = useState("");
@@ -365,7 +365,7 @@ export default function Leads({
       title: "State",
       key: "state",
       dataIndex: "state",
-      width: 120,
+      width: 150,
       render: (text, record) => {
         return (
           <div>
@@ -411,7 +411,7 @@ export default function Leads({
       title: "Branch",
       key: "branch_name",
       dataIndex: "branch_name",
-      width: 190,
+      width: 160,
     },
     {
       title: "Batch Track",
@@ -423,6 +423,7 @@ export default function Leads({
       title: "Next Followup Date",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
+      width: 160,
       render: (text, record) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
@@ -431,6 +432,16 @@ export default function Leads({
       title: "Expected Join Date",
       key: "expected_join_date",
       dataIndex: "expected_join_date",
+      width: 160,
+      render: (text, record) => {
+        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+      },
+    },
+    {
+      title: "Created At",
+      key: "created_date",
+      dataIndex: "created_date",
+      width: 120,
       render: (text, record) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
@@ -509,9 +520,9 @@ export default function Leads({
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenPaymentDrawer(true);
-                  setSubTotal(parseInt(record.primary_fees));
-                  setAmount(parseInt(record.primary_fees));
-                  setBalanceAmount(parseInt(record.primary_fees));
+                  setSubTotal(parseFloat(record.primary_fees));
+                  setAmount(parseFloat(record.primary_fees));
+                  setBalanceAmount(parseFloat(record.primary_fees));
                   setCustomerCourseId(record.primary_course_id);
                   setCustomerBatchTrackId(record.batch_track_id);
                   setClickedLeadItem(record);
@@ -786,29 +797,39 @@ export default function Leads({
   };
 
   const handlePaidNow = (e) => {
-    const value = parseInt(e.target.value);
-    const amt = parseInt(amount);
-    if (value < amt || isNaN(value) || value === "" || value === null) {
+    const input = e.target.value;
+
+    // Allow numbers, decimal point, or empty string
+    if (!/^\d*\.?\d*$/.test(input)) return;
+
+    setPaidNow(input); // store as string for user input
+
+    const value = parseFloat(input); // parse for calculations
+    const amt = parseFloat(amount);
+
+    if (value < amt || isNaN(value) || input == "" || input == null) {
       setIsShowDueDate(true);
     } else {
       setIsShowDueDate(false);
       setDueDate(null);
       setDueDateError("");
     }
-    setPaidNow(isNaN(value) ? "" : value);
+
     setBalanceAmount(
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
     if (paymentMode == 2 || paymentMode == 5) {
-      const conve_fees = getConvenienceFees(value);
+      const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
     }
 
     if (paymentValidationTrigger) {
-      setPaidNowError(priceValidator(value, parseInt(amt)));
+      setPaidNowError(
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+      );
     }
   };
 
@@ -818,22 +839,17 @@ export default function Leads({
       setTaxTypeError(selectValidator(e.target.value));
     }
     const amnt = calculateAmount(
-      parseInt(subTotal),
+      parseFloat(subTotal),
       e.target.value == 5 ? 0 : 18
     );
     if (isNaN(amnt)) {
       setAmount("");
     } else {
-      setAmount(String(amnt));
+      setAmount(parseFloat(amnt));
     }
 
     //handle balance amount
-    if (
-      paidNow < amnt ||
-      isNaN(paidNow) ||
-      paidNow === "" ||
-      paidNow === null
-    ) {
+    if (paidNow < amnt || isNaN(paidNow) || paidNow == "" || paidNow == null) {
       setIsShowDueDate(true);
     } else {
       setIsShowDueDate(false);
@@ -848,7 +864,11 @@ export default function Leads({
   const handlePaymentType = (e) => {
     const value = e.target.value;
     setPaymentMode(value);
-    const amnt = calculateAmount(parseInt(subTotal), taxType == 5 ? 0 : 18);
+    console.log("taxType", taxType);
+    const amnt = calculateAmount(
+      parseFloat(subTotal),
+      taxType == 5 || taxType == "" || taxType == null ? 0 : 18
+    );
     setAmount(amnt);
 
     if (paymentValidationTrigger) {
@@ -946,14 +966,11 @@ export default function Leads({
     setValidationTrigger(true);
 
     let nxtFollowupDateValidate;
-    let expectDateJoinValidate;
 
-    if (leadStatus === 4) {
+    if (leadStatus == 4) {
       nxtFollowupDateValidate = "";
-      expectDateJoinValidate = "";
     } else {
       nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
-      expectDateJoinValidate = selectValidator(expectDateJoin);
     }
 
     const nameValidate = nameValidator(name);
@@ -1008,7 +1025,6 @@ export default function Leads({
     setLeadTypeError(leadTypeValidate);
     setLeadStatusError(leadStatusValidate);
     setNxtFollowupDateError(nxtFollowupDateValidate);
-    setExpectDateJoinError(expectDateJoinValidate);
     setRegionError(regionIdValidate);
     setBranchError(branchValidate);
     setBatchTrackError(batchTrackValidate);
@@ -1027,7 +1043,6 @@ export default function Leads({
       leadTypeValidate ||
       leadStatusValidate ||
       nxtFollowupDateValidate ||
-      expectDateJoinValidate ||
       regionIdValidate ||
       branchValidate ||
       batchTrackValidate ||
@@ -1189,17 +1204,17 @@ export default function Leads({
       lead_id: clickedLeadItem.id,
       invoice_date: formatToBackendIST(paymentDate),
       tax_type:
-        taxType === 1
+        taxType == 1
           ? "GST (18%)"
-          : taxType === 2
+          : taxType == 2
           ? "SGST (18%)"
-          : taxType === 3
+          : taxType == 3
           ? "IGST (18%)"
-          : taxType === 4
+          : taxType == 4
           ? "VAT (18%)"
           : "No Tax",
-      gst_percentage: taxType === 5 ? "0%" : "18%",
-      gst_amount: gstAmount,
+      gst_percentage: taxType == 5 ? "0%" : "18%",
+      gst_amount: parseFloat(gstAmount.toFixed(2)),
       total_amount: amount,
       convenience_fees: convenienceFees,
       paymode_id: paymentMode,
@@ -1375,7 +1390,7 @@ export default function Leads({
   };
 
   const formReset = (dontCloseAddDrawer) => {
-    if (dontCloseAddDrawer === true) {
+    if (dontCloseAddDrawer == true) {
       setIsOpenAddDrawer(true);
     } else {
       setIsOpenAddDrawer(false);
@@ -1418,7 +1433,6 @@ export default function Leads({
     setNxtFollowupDate(null);
     setNxtFollowupDateError("");
     setExpectDateJoin(null);
-    setExpectDateJoinError("");
     setRegionId(null);
     setRegionError("");
     setBranch("");
@@ -1442,11 +1456,11 @@ export default function Leads({
     setClickedLeadItem(null);
     setPaymentMode(null);
     setPaymentModeError("");
-    setSubTotal("");
+    setSubTotal();
     setConvenienceFees("");
     setTaxType(null);
     setTaxTypeError("");
-    setAmount("");
+    setAmount();
     setPaidNow("");
     setPaidNowError("");
     setPaymentDate(null);
@@ -1454,7 +1468,7 @@ export default function Leads({
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
     setIsShowDueDate(true);
-    setBalanceAmount("");
+    setBalanceAmount();
     setDueDate(null);
     setDueDateError("");
     setCustomerCourseId(null);
@@ -1488,7 +1502,7 @@ export default function Leads({
 
     let stateName = "";
 
-    const findState = updateSates.find((f) => f.id === stateCode);
+    const findState = updateSates.find((f) => f.id == stateCode);
     if (findState) {
       stateName = findState.name;
     } else {
@@ -1587,69 +1601,28 @@ export default function Leads({
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="overallduecustomers_filterContainer">
-            <CommonOutlinedInput
-              label={
-                filterType === 1
-                  ? "Search By Name"
-                  : filterType === 2
-                  ? "Search By Email"
-                  : filterType === 3
-                  ? "Search by Mobile"
-                  : ""
-              }
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      getAllLeadData(
-                        null,
-                        selectedDates[0],
-                        selectedDates[1],
-                        childUsers
-                      );
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                borderTopRightRadius: "0px",
-                borderBottomRightRadius: "0px",
-                padding: "0px 26px 0px 0px",
-              }}
-              value={searchValue}
-              onChange={handleSearch}
-            />
-            {/* Filter Button */}
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        console.log("filllllll", e.target.value);
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row>
+            <Col span={7}>
+              <div className="overallduecustomers_filterContainer">
+                <CommonOutlinedInput
+                  label={
+                    filterType == 1
+                      ? "Search By Name"
+                      : filterType == 2
+                      ? "Search By Email"
+                      : filterType == 3
+                      ? "Search by Mobile"
+                      : ""
+                  }
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
                           setSearchValue("");
                           getAllLeadData(
                             null,
@@ -1657,88 +1630,145 @@ export default function Leads({
                             selectedDates[1],
                             childUsers
                           );
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                        }}
                       >
-                        Search by Name
-                      </Radio>
-                      <Radio value={2} style={{ marginBottom: "12px" }}>
-                        Search by Email
-                      </Radio>
-                      <Radio value={3} style={{ marginBottom: "6px" }}>
-                        Search by Mobile
-                      </Radio>
-                    </Radio.Group>
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
                   }
-                >
-                  <Button className="users_filterbutton">
-                    <IoFilter size={18} />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
-
-            <div style={{ marginLeft: "16px" }}>
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  getAllLeadData(searchValue, dates[0], dates[1], childUsers);
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  value={searchValue}
+                  onChange={handleSearch}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            console.log("filllllll", e.target.value);
+                            setFilterType(e.target.value);
+                            if (searchValue == "") {
+                              return;
+                            } else {
+                              setSearchValue("");
+                              getAllLeadData(
+                                null,
+                                selectedDates[0],
+                                selectedDates[1],
+                                childUsers
+                              );
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                            Search by Mobile
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            <Col span={7}>
+              <div
+                style={{
+                  marginLeft: "16px",
+                  minWidth: "180px",
+                  maxWidth: "300px",
                 }}
-              />
-            </div>
-          </div>
+              >
+                <CommonSelectField height="36px" />
+              </div>
+            </Col>
+            <Col span={10}>
+              <div style={{ marginLeft: "16px" }}>
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    getAllLeadData(searchValue, dates[0], dates[1], childUsers);
+                  }}
+                />
+              </div>
+            </Col>
+          </Row>
         </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          {permissions.includes("Add Lead Button") && isShowEdit === true ? (
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAddDrawer(true);
-              }}
-            >
-              Add Lead
-            </button>
-          ) : (
-            ""
-          )}
+        <Col xs={24} sm={24} md={24} lg={7}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            {permissions.includes("Add Lead Button") && isShowEdit === true ? (
+              <button
+                className="leadmanager_addleadbutton"
+                onClick={() => {
+                  setIsOpenAddDrawer(true);
+                }}
+              >
+                Add Lead
+              </button>
+            ) : (
+              ""
+            )}
 
-          {permissions.includes("Assign Lead") && isShowEdit === false && (
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAssignModal(true);
-              }}
-            >
-              Assign Lead
-            </button>
-          )}
+            {permissions.includes("Assign Lead") && isShowEdit === false && (
+              <button
+                className="leadmanager_addleadbutton"
+                onClick={() => {
+                  setIsOpenAssignModal(true);
+                }}
+              >
+                Assign Lead
+              </button>
+            )}
 
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ marginLeft: "12px", cursor: "pointer" }}
-            onClick={() => setIsOpenFilterDrawer(true)}
-          />
+            <FiFilter
+              size={20}
+              color="#5b69ca"
+              style={{ marginLeft: "12px", cursor: "pointer" }}
+              onClick={() => setIsOpenFilterDrawer(true)}
+            />
+          </div>
         </Col>
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3200 }}
+          scroll={{ x: 3250 }}
           columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}
@@ -2085,12 +2115,12 @@ export default function Leads({
               options={leadStatusOptions}
               onChange={(e) => {
                 const value = e.target.value;
+                console.log("value", value);
                 setLeadStatus(value);
-                if (value === 4) {
+                if (value == 4) {
                   setNxtFollowupDate(null);
                   setNxtFollowupDateError("");
                   setExpectDateJoin(null);
-                  setExpectDateJoinError("");
                 }
                 if (validationTrigger) {
                   setLeadStatusError(selectValidator(value));
@@ -2101,7 +2131,7 @@ export default function Leads({
             />
           </Col>
 
-          {leadStatus === 4 ? (
+          {leadStatus == 4 ? (
             ""
           ) : (
             <>
@@ -2125,17 +2155,13 @@ export default function Leads({
               <Col span={8}>
                 <CommonMuiDatePicker
                   label="Expected Date Join"
-                  required={true}
+                  required={false}
                   onChange={(value) => {
                     console.log("vallll", value);
                     setExpectDateJoin(value);
-                    if (validationTrigger) {
-                      setExpectDateJoinError(selectValidator(value));
-                    }
                   }}
                   value={expectDateJoin}
                   disablePreviousDates={true}
-                  error={expectDateJoinError}
                 />
               </Col>
             </>
@@ -2638,6 +2664,7 @@ export default function Leads({
             <Col span={8}>
               <CommonMuiDatePicker
                 label="Next Due Date"
+                required={true}
                 onChange={(value) => {
                   setDueDate(value);
                   setDueDateError(selectValidator(value));

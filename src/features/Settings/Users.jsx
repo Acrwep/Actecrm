@@ -26,6 +26,7 @@ import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import { PiUserCirclePlus } from "react-icons/pi";
+import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 
 export default function Users({ userTableLoading, setUserTableLoading }) {
   const dispatch = useDispatch();
@@ -287,8 +288,24 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setConfirmPassword(item.password);
     const alterUserData = allUsersData.filter((f) => f.id != item.id);
     setAssignUsersData(alterUserData);
-    setChildUsers(item.child_users);
-    setUserRoles(item.roles);
+
+    if (item.child_users.length >= 1) {
+      const alterChildUsers = item.child_users.map((c) => {
+        return c.user_id;
+      });
+      setChildUsers(alterChildUsers);
+    } else {
+      setChildUsers([]);
+    }
+
+    if (item.roles.length >= 1) {
+      const alterRoles = item.roles.map((r) => {
+        return r.role_id;
+      });
+      setUserRoles(alterRoles);
+    } else {
+      setUserRoles([]);
+    }
     setIsOpenAddDrawer(true);
   };
 
@@ -347,33 +364,65 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
       return;
     setButtonLoading(true);
 
-    let alterChildUsers;
+    const uniqueUsers = new Map();
 
-    if (childUsers.length >= 1) {
-      alterChildUsers = childUsers.map((item) => {
-        return { user_id: item.user_id, user_name: item.user_name };
+    allUsersData.forEach((user) => {
+      // check top level user
+      if (childUsers.includes(user.user_id)) {
+        uniqueUsers.set(user.user_id, {
+          user_id: user.user_id,
+          user_name: user.user_name,
+        });
+      }
+
+      // check child users
+      user.child_users.forEach((child) => {
+        if (childUsers.includes(child.user_id)) {
+          uniqueUsers.set(child.user_id, {
+            user_id: child.user_id,
+            user_name: child.user_name,
+          });
+        }
       });
-    } else {
-      alterChildUsers = [];
-    }
+    });
 
-    let alterUserRoles;
+    const matchedUsers = Array.from(uniqueUsers.values());
+    console.log(matchedUsers);
 
-    if (userRoles.length >= 1) {
-      alterUserRoles = userRoles.map((item) => {
-        return { role_id: item.role_id, role_name: item.role_name };
-      });
-    } else {
-      alterUserRoles = [];
-    }
+    const uniqueRoles = new Map();
+
+    rolesData.forEach((role) => {
+      // Check top level role
+      if (userRoles.includes(role.role_id)) {
+        uniqueRoles.set(role.role_id, {
+          role_id: role.role_id,
+          role_name: role.role_name,
+        });
+      }
+
+      // Check child users if exists
+      if (Array.isArray(role.child_users)) {
+        role.child_users.forEach((child) => {
+          if (childUsers.includes(child.role_id)) {
+            uniqueRoles.set(child.role_id, {
+              role_id: child.role_id,
+              role_name: child.role_name,
+            });
+          }
+        });
+      }
+    });
+
+    const matchedRoles = Array.from(uniqueRoles.values());
+    console.log(matchedRoles);
 
     const payload = {
       ...(editUserId && { id: editUserId }),
       user_id: userId,
       user_name: profileName,
       password: password,
-      users: alterChildUsers,
-      roles: alterUserRoles,
+      users: matchedUsers,
+      roles: matchedRoles,
     };
 
     if (editUserId) {
@@ -605,9 +654,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
               }}
               value={password}
               error={passwordError}
+              errorFontSize="10px"
               helperTextContainerStyle={{
                 position: "absolute",
-                bottom: "-21px",
+                bottom: "-18px",
                 width: "100%",
               }}
             />
@@ -651,19 +701,24 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
               }}
               value={confirmPassword}
               error={confirmPasswordError}
+              errorFontSize="10px"
               helperTextContainerStyle={{
                 position: "absolute",
-                bottom:
-                  confirmPasswordError === " is required" ? "0px" : "-21px",
+                bottom: "0px",
                 width: "100%",
               }}
             />{" "}
           </Col>
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
+        <Row
+          gutter={16}
+          style={{
+            marginTop: passwordError || confirmPasswordError ? "38px" : "20px",
+          }}
+        >
           <Col span={12}>
-            <CommonMultiSelect
+            {/* <CommonMultiSelect
               label="Assign Users"
               dontallowFreeSolo={true}
               options={assignUsersData}
@@ -671,10 +726,21 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
                 setChildUsers(selectedValues);
               }}
               value={childUsers}
+              checkBox={true}
+              height="46px"
+            /> */}
+            <CommonAntdMultiSelect
+              label="Assign Users"
+              options={assignUsersData}
+              onChange={(value) => {
+                setChildUsers(value);
+              }}
+              value={childUsers}
+              error=""
             />
           </Col>
           <Col span={12}>
-            <CommonMultiSelect
+            {/* <CommonMultiSelect
               label="Roles"
               dontallowFreeSolo={true}
               options={rolesData}
@@ -682,6 +748,18 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
                 setUserRoles(selectedValues);
                 if (validationTrigger) {
                   setUserRolesError(selectValidator(selectedValues));
+                }
+              }}
+              value={userRoles}
+              error={userRolesError}
+            /> */}
+            <CommonAntdMultiSelect
+              label="Roles"
+              options={rolesData}
+              onChange={(value) => {
+                setUserRoles(value);
+                if (validationTrigger) {
+                  setUserRolesError(selectValidator(value));
                 }
               }}
               value={userRoles}

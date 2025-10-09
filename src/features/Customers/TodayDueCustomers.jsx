@@ -75,7 +75,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
   //payment usestates
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [pendingAmount, setPendingAmount] = useState(0);
+  const [pendingAmount, setPendingAmount] = useState();
   const [payAmount, setPayAmount] = useState("");
   const [payAmountError, setPayAmountError] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
@@ -87,7 +87,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
   const [paymentValidationTrigger, setPaymentValidationTrigger] =
     useState(false);
-  const [balanceAmount, setBalanceAmount] = useState(0);
+  const [balanceAmount, setBalanceAmount] = useState();
   const [isShowDueDate, setIsShowDueDate] = useState(true);
   const [dueDate, setDueDate] = useState(null);
   const [dueDateError, setDueDateError] = useState("");
@@ -338,8 +338,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     setIsOpenPaymentDrawer(true);
                     setCustomerDetails(record);
                     setCollapseDefaultKey(["1"]);
-                    setPendingAmount(record.balance_amount);
-                    setBalanceAmount(record.balance_amount);
+                    setPendingAmount(parseFloat(record.balance_amount));
+                    setBalanceAmount(parseFloat(record.balance_amount));
                     setPaymentHistory(
                       record.payment && record.payment.payment_trans
                         ? record.payment.payment_trans
@@ -410,29 +410,40 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   };
 
   const handlePaidNow = (e) => {
-    const value = parseInt(e.target.value);
-    const amt = parseInt(pendingAmount);
-    if (value < amt || isNaN(value) || value === "" || value === null) {
+    const input = e.target.value;
+
+    // Allow numbers, decimal point, or empty string
+    if (!/^\d*\.?\d*$/.test(input)) return;
+
+    // Keep the input as string
+    setPayAmount(input);
+
+    const value = parseFloat(input); // parse for calculations
+    const amt = parseFloat(pendingAmount);
+
+    if (value < amt || isNaN(value) || input === "" || input === null) {
       setIsShowDueDate(true);
     } else {
       setIsShowDueDate(false);
       setDueDate(null);
       setDueDateError("");
     }
-    setPayAmount(isNaN(value) ? "" : value);
+
     setBalanceAmount(
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
     if (paymentMode == 2 || paymentMode == 5) {
-      const conve_fees = getConvenienceFees(value);
+      const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
     }
 
     if (paymentValidationTrigger) {
-      setPayAmountError(priceValidator(value, parseInt(amt)));
+      setPayAmountError(
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+      );
     }
   };
 
@@ -448,8 +459,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     if (
       payAmount < pendingAmount ||
       isNaN(payAmount) ||
-      payAmount === "" ||
-      payAmount === null
+      payAmount == "" ||
+      payAmount == null
     ) {
       setIsShowDueDate(true);
     } else {
@@ -524,7 +535,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       paymode_id: paymentMode,
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
-      next_due_date: formatToBackendIST(dueDate),
+      next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
       created_date: formatToBackendIST(today),
       paid_date: formatToBackendIST(paymentDate),
     };
@@ -577,7 +588,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
     setIsOpenPaymentDrawer(false);
-    setPendingAmount(0);
+    setPendingAmount();
     setPayAmount("");
     setPayAmountError("");
     setPaymentMode(null);
@@ -587,7 +598,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     setPaymentDateError("");
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
-    setBalanceAmount(0);
+    setBalanceAmount();
     setDueDate(null);
     setDueDateError("");
     setPaymentValidationTrigger(false);
@@ -638,7 +649,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
-                padding: "0px 26px 0px 0px",
+                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}
@@ -867,14 +878,14 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <LuCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
                   {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.lead_assigned_to_name
+                    ? customerDetails.lead_assigned_to_name
                     : "-"}
                 </p>
               </Col>
@@ -908,7 +919,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Fees</p>
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
@@ -916,8 +930,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                       className="customerdetails_text"
                       style={{ fontWeight: 700 }}
                     >
-                      {customerDetails && customerDetails.course_fees
-                        ? "₹" + customerDetails.course_fees
+                      {customerDetails && customerDetails.payment.total_amount
+                        ? "₹" + customerDetails.payment.total_amount
                         : "-"}
                     </p>
                   </Col>
@@ -971,7 +985,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.is_server_required
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
                         ? customerDetails.is_server_required === 1
                           ? "Required"
                           : "Not Required"
@@ -1214,13 +1229,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.lead_assigned_to_name
+                    ? customerDetails.lead_assigned_to_name
                     : "-"}
                 </p>
               </Col>
@@ -1246,13 +1261,16 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">
+                    Course Fees
+                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                  </p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.course_fees
-                    ? "₹" + customerDetails.course_fees
+                  {customerDetails && customerDetails.payment.total_amount
+                    ? "₹" + customerDetails.payment.total_amount
                     : "-"}
                 </p>
               </Col>
@@ -1286,7 +1304,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.is_server_required
+                  {customerDetails &&
+                  customerDetails.is_server_required !== undefined
                     ? customerDetails.is_server_required === 1
                       ? "Required"
                       : "Not Required"
@@ -1776,6 +1795,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Col span={8}>
               <CommonMuiDatePicker
                 label="Next Due Date"
+                required={true}
                 onChange={(value) => {
                   setDueDate(value);
                   setDueDateError(selectValidator(value));

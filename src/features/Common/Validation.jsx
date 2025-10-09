@@ -312,19 +312,17 @@ export const calculateAmount = (price, gst = 0) => {
     finalPrice += (finalPrice * gst) / 100;
   }
 
-  return parseInt(finalPrice); // keep 2 decimals
+  return parseFloat(finalPrice.toFixed(2)); // keep 2 decimals
 };
 
 export const getConvenienceFees = (totalAmount) => {
-  if (typeof totalAmount !== "number" || totalAmount < 0) {
-    throw new Error("Total amount must be a positive number");
-  }
-
+  console.log(typeof totalAmount, totalAmount);
+  const value = parseFloat(totalAmount);
   // Calculate 3% of the amount
-  const fees = (totalAmount * 3) / 100;
+  const fees = (value * 3) / 100;
 
   // Round to 2 decimals
-  return parseInt(fees);
+  return parseFloat(fees.toFixed(2));
 };
 
 export const accountNumberValidator = (accountnumber) => {

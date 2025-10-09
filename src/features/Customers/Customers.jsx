@@ -385,7 +385,6 @@ export default function Customers() {
             <Tooltip
               placement="bottomLeft"
               className="customers_statustooltip"
-              trigger={["click"]}
               color="#fff"
               styles={{
                 body: {
@@ -1041,11 +1040,7 @@ export default function Customers() {
               )}
             </Tooltip>
             {record.status === "Form Pending" && (
-              <Tooltip
-                placement="top"
-                title="Copy form link"
-                trigger={["click"]}
-              >
+              <Tooltip placement="top" title="Copy form link">
                 <FaRegCopy
                   size={14}
                   className="customers_formlink_copybutton"
@@ -1062,11 +1057,7 @@ export default function Customers() {
               </Tooltip>
             )}
             {record.status === "Completed" && (
-              <Tooltip
-                placement="top"
-                title="View Certificate"
-                trigger={["click"]}
-              >
+              <Tooltip placement="top" title="View Certificate">
                 <GrCertificate
                   size={14}
                   color="#5a5858"
@@ -1742,7 +1733,11 @@ export default function Customers() {
       total_amount: customerDetails?.payments?.total_amount
         ? customerDetails.payments.total_amount
         : "",
-      balance_amount: transactiondetails?.balance_amount || "",
+      balance_amount:
+        transactiondetails.balance_amount != undefined ||
+        transactiondetails.balance_amount != null
+          ? parseFloat(transactiondetails?.balance_amount.toFixed(2))
+          : "",
       course_name:
         customerDetails && customerDetails.course_name
           ? customerDetails.course_name
@@ -2792,7 +2787,7 @@ export default function Customers() {
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
-                padding: "0px 26px 0px 0px",
+                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}
@@ -3530,7 +3525,10 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Fees</p>
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
@@ -3538,8 +3536,8 @@ export default function Customers() {
                       className="customerdetails_text"
                       style={{ fontWeight: 700 }}
                     >
-                      {customerDetails && customerDetails.primary_fees
-                        ? "₹" + customerDetails.primary_fees
+                      {customerDetails && customerDetails.payments.total_amount
+                        ? "₹" + customerDetails.payments.total_amount
                         : "-"}
                     </p>
                   </Col>
@@ -3940,13 +3938,16 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">
+                    Course Fees
+                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                  </p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
+                  {customerDetails && customerDetails.payments.total_amount
+                    ? "₹" + customerDetails.payments.total_amount
                     : "-"}
                 </p>
               </Col>
@@ -4112,26 +4113,6 @@ export default function Customers() {
                           ) : (
                             "-"
                           )}
-                        </p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Balance Amount
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p
-                          className="customerdetails_text"
-                          style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
-                        >
-                          {customerDetails && customerDetails.balance_amount
-                            ? "₹" + customerDetails.balance_amount
-                            : "-"}
                         </p>
                       </Col>
                     </Row>
@@ -5349,7 +5330,7 @@ export default function Customers() {
                             customerDetails.commercial_percentage !== null
                               ? customerDetails.commercial_percentage < 18
                                 ? "#3c9111" // green
-                                : customerDetails.commercial_percentage > 19 &&
+                                : customerDetails.commercial_percentage > 18 &&
                                   customerDetails.commercial_percentage <= 22
                                 ? "#ffa502" // orange
                                 : customerDetails.commercial_percentage > 22
@@ -6567,13 +6548,16 @@ export default function Customers() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
+                  <p className="customerdetails_rowheading">
+                    Course Fees
+                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                  </p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
+                  {customerDetails && customerDetails.payments.total_amount
+                    ? "₹" + customerDetails.payments.total_amount
                     : "-"}
                 </p>
               </Col>
@@ -6640,6 +6624,7 @@ export default function Customers() {
             <CustomerHistory
               data={customerHistory}
               customerDetails={customerDetails}
+              trainersData={trainersData}
             />
           )}
         </div>

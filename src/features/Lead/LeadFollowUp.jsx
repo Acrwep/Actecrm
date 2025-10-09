@@ -20,6 +20,7 @@ import { IoIosClose } from "react-icons/io";
 import {
   createArea,
   createLead,
+  createTechnology,
   getAllAreas,
   getBranches,
   getLeadFollowUps,
@@ -165,7 +166,6 @@ export default function LeadFollowUp({
   const [leadNxtFollowupDateError, setLeadNxtFollowupDateError] =
     useState(null);
   const [expectDateJoin, setExpectDateJoin] = useState(null);
-  const [expectDateJoinError, setExpectDateJoinError] = useState("");
 
   const [regionId, setRegionId] = useState(null);
   const [regionError, setRegionError] = useState("");
@@ -204,7 +204,7 @@ export default function LeadFollowUp({
   const [areaNameError, setAreaNameError] = useState("");
 
   const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Lead Owner", isChecked: true },
+    { title: "Lead Executive", isChecked: true },
     { title: "Next Follow Up", isChecked: true },
     { title: "Candidate Name", isChecked: true },
     { title: "Mobile", isChecked: true },
@@ -215,7 +215,7 @@ export default function LeadFollowUp({
   ]);
 
   const nonChangeColumns = [
-    { title: "Lead Owner", key: "user_name", dataIndex: "user_name" },
+    { title: "Lead Executive", key: "user_name", dataIndex: "user_name" },
     {
       title: "Next Follow Up",
       key: "next_follow_up_date",
@@ -525,14 +525,11 @@ export default function LeadFollowUp({
     setValidationTrigger(true);
 
     let nxtFollowupDateValidate;
-    let expectDateJoinValidate;
 
-    if (leadStatus === 4) {
+    if (leadStatus == 4) {
       nxtFollowupDateValidate = "";
-      expectDateJoinValidate = "";
     } else {
       nxtFollowupDateValidate = selectValidator(leadNxtFollowupDate);
-      expectDateJoinValidate = selectValidator(expectDateJoin);
     }
 
     const nameValidate = nameValidator(name);
@@ -563,7 +560,6 @@ export default function LeadFollowUp({
     setLeadTypeError(leadTypeValidate);
     setLeadStatusError(leadStatusValidate);
     setLeadNxtFollowupDateError(nxtFollowupDateValidate);
-    setExpectDateJoinError(expectDateJoinValidate);
     setRegionError(regionIdValidate);
     setBranchError(branchValidate);
     setBatchTrackError(batchTrackValidate);
@@ -582,7 +578,6 @@ export default function LeadFollowUp({
       leadTypeValidate ||
       leadStatusValidate ||
       nxtFollowupDateValidate ||
-      expectDateJoinValidate ||
       regionIdValidate ||
       branchValidate ||
       batchTrackValidate ||
@@ -678,6 +673,7 @@ export default function LeadFollowUp({
         getCourseData();
       }, 300);
     } catch (error) {
+      console.log(error);
       setAddCourseLoading(false);
       CommonMessage(
         "error",
@@ -838,7 +834,6 @@ export default function LeadFollowUp({
     setLeadNxtFollowupDate(null);
     setLeadNxtFollowupDateError("");
     setExpectDateJoin(null);
-    setExpectDateJoinError("");
     setRegionId(null);
     setRegionError("");
     setBranch("");
@@ -1014,7 +1009,7 @@ export default function LeadFollowUp({
               />
             </Col>
 
-            {actionId === 1 && (
+            {actionId == 1 && (
               <Col span={12}>
                 <CommonDatePicker
                   placeholder="Next Followup Date"
@@ -1481,11 +1476,10 @@ export default function LeadFollowUp({
               onChange={(e) => {
                 const value = e.target.value;
                 setLeadStatus(value);
-                if (value === 4) {
+                if (value == 4) {
                   setNxtFollowupDate(null);
                   setNxtFollowupDateError("");
                   setExpectDateJoin(null);
-                  setExpectDateJoinError("");
                 }
                 if (validationTrigger) {
                   setLeadStatusError(selectValidator(value));
@@ -1496,7 +1490,7 @@ export default function LeadFollowUp({
             />
           </Col>
 
-          {leadStatus === 4 ? (
+          {leadStatus == 4 ? (
             ""
           ) : (
             <>
@@ -1520,17 +1514,13 @@ export default function LeadFollowUp({
               <Col span={8}>
                 <CommonMuiDatePicker
                   label="Expected Date Join"
-                  required={true}
+                  required={false}
                   onChange={(value) => {
                     console.log("vallll", value);
                     setExpectDateJoin(value);
-                    if (validationTrigger) {
-                      setExpectDateJoinError(selectValidator(value));
-                    }
                   }}
                   value={expectDateJoin}
                   disablePreviousDates={true}
-                  error={expectDateJoinError}
                 />
               </Col>
             </>
@@ -1833,13 +1823,13 @@ export default function LeadFollowUp({
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
                   <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.user_name
-                    ? leadDetails.user_name
+                  {leadDetails && leadDetails.lead_assigned_to_name
+                    ? leadDetails.lead_assigned_to_name
                     : "-"}
                 </p>
               </Col>
@@ -2046,7 +2036,7 @@ export default function LeadFollowUp({
               />{" "}
             </Col>
 
-            {actionId === 1 || actionId === null ? (
+            {actionId == 1 || actionId == null ? (
               <Col span={12}>
                 <CommonMuiDatePicker
                   label="Next Followup Date"

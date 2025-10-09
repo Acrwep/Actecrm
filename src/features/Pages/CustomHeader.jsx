@@ -169,11 +169,14 @@ export default function CustomHeader() {
     }
   };
 
-  const getCustomerData = async (customer_id) => {
+  const getCustomerData = async (customer_email) => {
+    const payload = {
+      email: customer_email,
+    };
     try {
-      const response = await getCustomerById(customer_id);
+      const response = await getCustomers(payload);
       console.log("customer response", response);
-      const customerDetails = response?.data?.data;
+      const customerDetails = response?.data?.data?.customers[0];
       setCustomerDetails(customerDetails);
       setTimeout(() => {
         setIsOpenLeadDetailsDrawer(false);
@@ -809,8 +812,8 @@ export default function CustomHeader() {
                         style={{ marginTop: "2px", cursor: "pointer" }}
                         onClick={() => {
                           getCustomerData(
-                            leadDetails && leadDetails.customer_id
-                              ? leadDetails.customer_id
+                            leadDetails && leadDetails.email
+                              ? leadDetails.email
                               : null
                           );
                         }}
@@ -981,15 +984,14 @@ export default function CustomHeader() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <LuCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Owner</p>
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_by
-                    ? customerDetails.lead_by
+                  {customerDetails && customerDetails.lead_assigned_to_name
+                    ? customerDetails.lead_assigned_to_name
                     : "-"}
                 </p>
               </Col>

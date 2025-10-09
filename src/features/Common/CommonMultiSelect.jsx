@@ -6,6 +6,9 @@ import {
   TextField,
 } from "@mui/material";
 import "./commonstyles.css";
+import Checkbox from "@mui/material/Checkbox";
+import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
+import { IoMdCheckbox } from "react-icons/io";
 
 export default function CommonMultiSelect({
   options = [],
@@ -20,7 +23,11 @@ export default function CommonMultiSelect({
   required,
   error,
   dontallowFreeSolo,
+  checkBox,
 }) {
+  const icon = <MdOutlineCheckBoxOutlineBlank size={18} />;
+  const checkedIcon = <IoMdCheckbox size={18} color="#535bf2" />;
+
   return (
     <div>
       <FormControl fullWidth className="common_selectfield" required={required}>
@@ -53,6 +60,30 @@ export default function CommonMultiSelect({
               return option?.id === value?.id;
             },
           })}
+          {...(dontallowFreeSolo && checkBox === true
+            ? {
+                renderOption: (props, option, { selected }) => {
+                  const { key, ...optionProps } = props;
+                  return (
+                    <li key={key} {...optionProps}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {typeof option === "string"
+                        ? option
+                        : option.role_name
+                        ? option.role_name
+                        : option.user_name
+                        ? option.user_name
+                        : option.name}
+                    </li>
+                  );
+                },
+              }
+            : {})}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -76,12 +107,10 @@ export default function CommonMultiSelect({
           sx={{
             width: "100%",
             "& .MuiInputBase-root": {
-              height: height || "auto",
               minHeight: height || "46px",
-              alignItems: "start",
-              flexWrap: "wrap",
-              maxHeight: "80px", // 👈 restrict height
-              overflowY: "auto", // 👈 enable scrolling when exceeded
+              alignItems: "flex-start",
+              // flexWrap: "wrap",
+              // overflowX: "hidden",
             },
             "& .MuiSelect-select": {
               display: "flex",
