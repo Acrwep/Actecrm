@@ -423,6 +423,14 @@ export default function Trainers() {
       setOnGoingCount(response?.data?.data?.on_going ?? "-");
 
       const statusCountList = response?.data?.data?.trainer_status_count || [];
+      const pagination = response?.data?.data?.pagination;
+
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
 
       if (statusCountList.length >= 1) {
         setAllTrainersCount(statusCountList[0].total_count);
