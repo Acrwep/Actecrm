@@ -294,30 +294,36 @@ export default function LeadFollowUp({
       fixed: "right",
       width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        if (text) {
+          return (
+            <>
+              {text.length > 25 ? (
+                <Tooltip
+                  color="#fff"
+                  placement="bottom"
+                  title={text}
+                  className="leadtable_comments_tooltip"
+                  styles={{
+                    body: {
+                      backgroundColor: "#fff", // Tooltip background
+                      color: "#333", // Tooltip text color
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    },
+                  }}
+                >
+                  <p style={{ cursor: "pointer" }}>
+                    {text.slice(0, 24) + "..."}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p>{text}</p>
+              )}
+            </>
+          );
+        } else {
+          <p>-</p>;
+        }
       },
     },
   ];
