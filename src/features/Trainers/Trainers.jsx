@@ -817,8 +817,8 @@ export default function Trainers() {
               value={mobile}
               error={mobileError}
               onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
+                if (e.target.value.length > 13) {
+                  e.target.value = e.target.value.slice(0, 13);
                 }
               }}
             />
@@ -843,8 +843,8 @@ export default function Trainers() {
               error={whatsAppError}
               errorFontSize="10px"
               onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
+                if (e.target.value.length > 13) {
+                  e.target.value = e.target.value.slice(0, 13);
                 }
               }}
             />

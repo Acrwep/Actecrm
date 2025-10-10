@@ -617,8 +617,8 @@ const CustomerUpdate = forwardRef(
                   value={mobile}
                   error={mobileError}
                   onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
+                    if (e.target.value.length > 15) {
+                      e.target.value = e.target.value.slice(0, 15);
                     }
                   }}
                 />
@@ -643,8 +643,8 @@ const CustomerUpdate = forwardRef(
                   error={whatsAppError}
                   errorFontSize="10px"
                   onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
+                    if (e.target.value.length > 15) {
+                      e.target.value = e.target.value.slice(0, 15);
                     }
                   }}
                 />{" "}
@@ -692,7 +692,6 @@ const CustomerUpdate = forwardRef(
                   required={true}
                   maxLength={10}
                   onChange={(value) => {
-                    console.log("vallll", value);
                     setDateOfJoining(value);
                     if (validationTrigger) {
                       setDateOfJoiningError(selectValidator(value));
@@ -700,11 +699,6 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={dateOfJoining}
                   error={dateOfJoiningError}
-                  onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
-                    }
-                  }}
                 />
               </Col>
 

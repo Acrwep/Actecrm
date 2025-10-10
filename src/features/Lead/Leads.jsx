@@ -513,7 +513,9 @@ export default function Leads({
       width: 120,
       render: (text, record) => (
         <div className="trainers_actionbuttonContainer">
-          {permissions.includes("Edit Lead Button") && isShowEdit ? (
+          {permissions.includes("Edit Lead Button") &&
+          isShowEdit &&
+          record.is_customer_reg === 0 ? (
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
@@ -565,10 +567,14 @@ export default function Leads({
   }, []);
 
   const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
     try {
-      const response = await getUsers();
+      const response = await getUsers(payload);
       console.log("users response", response);
-      setAllUsersList(response?.data?.data || []);
+      setAllUsersList(response?.data?.data?.data || []);
     } catch (error) {
       setAllUsersList([]);
       console.log("get all users error", error);
@@ -1460,6 +1466,7 @@ export default function Leads({
     setMobileError("");
     setWhatsApp("");
     setWhatsAppError("");
+    setPhoneCode("");
     setEmailAndMobileValidation({
       email: 0,
       mobile: 0,
@@ -1952,8 +1959,8 @@ export default function Leads({
                 onChange={handleMobileNumber}
                 error={mobileError}
                 onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
+                  if (e.target.value.length > 15) {
+                    e.target.value = e.target.value.slice(0, 15);
                   }
                 }}
                 errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
@@ -1983,8 +1990,8 @@ export default function Leads({
               onChange={handleWhatsAppNumber}
               error={whatsAppError}
               onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
+                if (e.target.value.length > 15) {
+                  e.target.value = e.target.value.slice(0, 15);
                 }
               }}
               errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}

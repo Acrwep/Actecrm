@@ -124,6 +124,7 @@ export default function LeadFollowUp({
   const [mobileError, setMobileError] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
+  const [phoneCode, setPhoneCode] = useState("");
   const [countryOptions, setCountryOptions] = useState([]);
   const [countryId, setCountryId] = useState(null);
   const [countryError, setCountryError] = useState("");
@@ -482,6 +483,7 @@ export default function LeadFollowUp({
     setStateId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
+    setPhoneCode(selectedCountry.phonecode);
 
     const stateList = State.getStatesOfCountry(selectedCountry.id);
     const updateSates = stateList.map((s) => {
@@ -707,7 +709,7 @@ export default function LeadFollowUp({
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
       name: name,
-      phone_code: "+91",
+      phone_code: `+${phoneCode}`,
       phone: mobile,
       whatsapp: whatsApp,
       email: email,
@@ -904,6 +906,7 @@ export default function LeadFollowUp({
     setMobileError("");
     setWhatsApp("");
     setWhatsAppError("");
+    setPhoneCode("");
     setCountryId(null);
     setCountryError("");
     setStateId(null);
@@ -1405,8 +1408,8 @@ export default function LeadFollowUp({
               }}
               error={mobileError}
               onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
+                if (e.target.value.length > 15) {
+                  e.target.value = e.target.value.slice(0, 15);
                 }
               }}
             />
@@ -1430,8 +1433,8 @@ export default function LeadFollowUp({
               }}
               error={whatsAppError}
               onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
+                if (e.target.value.length > 15) {
+                  e.target.value = e.target.value.slice(0, 15);
                 }
               }}
             />

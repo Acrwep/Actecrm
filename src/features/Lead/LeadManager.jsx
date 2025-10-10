@@ -130,8 +130,6 @@ export default function LeadManager() {
   };
 
   const handleRefresh = () => {
-    getLeadAndFollowupCountData();
-
     setTabKeys((prev) => ({
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount

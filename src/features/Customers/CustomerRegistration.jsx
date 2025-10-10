@@ -528,8 +528,8 @@ export default function CustomerRegistration() {
                 value={mobile}
                 error={mobileError}
                 onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
+                  if (e.target.value.length > 15) {
+                    e.target.value = e.target.value.slice(0, 15);
                   }
                 }}
               />
@@ -551,8 +551,8 @@ export default function CustomerRegistration() {
                 error={whatsAppError}
                 errorFontSize="10px"
                 onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
+                  if (e.target.value.length > 15) {
+                    e.target.value = e.target.value.slice(0, 15);
                   }
                 }}
               />{" "}
@@ -607,11 +607,6 @@ export default function CustomerRegistration() {
                 }}
                 value={dateOfJoining}
                 error={dateOfJoiningError}
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
               />
             </Col>
 
@@ -627,11 +622,6 @@ export default function CustomerRegistration() {
                 }}
                 value={location}
                 error={locationError}
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
               />
             </Col>
           </Row>
@@ -929,8 +919,8 @@ export default function CustomerRegistration() {
                       value={mobile}
                       error={mobileError}
                       onInput={(e) => {
-                        if (e.target.value.length > 10) {
-                          e.target.value = e.target.value.slice(0, 10);
+                        if (e.target.value.length > 15) {
+                          e.target.value = e.target.value.slice(0, 15);
                         }
                       }}
                       disabled={true}
@@ -953,8 +943,8 @@ export default function CustomerRegistration() {
                       error={whatsAppError}
                       errorFontSize="10px"
                       onInput={(e) => {
-                        if (e.target.value.length > 10) {
-                          e.target.value = e.target.value.slice(0, 10);
+                        if (e.target.value.length > 15) {
+                          e.target.value = e.target.value.slice(0, 15);
                         }
                       }}
                       disabled={true}
@@ -1010,11 +1000,6 @@ export default function CustomerRegistration() {
                       }}
                       value={dateOfJoining}
                       error={dateOfJoiningError}
-                      onInput={(e) => {
-                        if (e.target.value.length > 10) {
-                          e.target.value = e.target.value.slice(0, 10);
-                        }
-                      }}
                     />
                   </Col>
                   <Col xs={24} sm={24} md={24} lg={6}>
