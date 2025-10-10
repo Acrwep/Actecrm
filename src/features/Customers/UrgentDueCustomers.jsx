@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   Row,
   Col,
@@ -61,9 +61,11 @@ export default function UrgentDueCustomers({
   setUrgentDueCount,
   setDueSelectedDates,
 }) {
+  const mounted = useRef(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
@@ -97,8 +99,17 @@ export default function UrgentDueCustomers({
   const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
     useState(false);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
-  const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
+  //lead executive filter
+  const [leadExecutives, setLeadExecutives] = useState([]);
+  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const [columns, setColumns] = useState([
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
@@ -371,19 +382,35 @@ export default function UrgentDueCustomers({
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    if (childUsers.length <= 0) return;
-    getPendingFeesCustomersData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1]
-    );
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      setLeadExecutives(downlineUsers);
+      getPendingFeesCustomersData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null,
+        null,
+        1,
+        10
+      );
+    }
   }, [childUsers]);
 
   const getPendingFeesCustomersData = async (
     startDate,
     endDate,
-    searchvalue
+    searchvalue,
+    executive_id,
+    pageNumber,
+    limit
   ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const from_date = formatToBackendIST(startDate);
     const to_date = formatToBackendIST(endDate);
 
@@ -401,12 +428,24 @@ export default function UrgentDueCustomers({
         : {}),
       urgent_due: "Urgent Due",
       user_ids: childUsers,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getPendingFeesCustomers(payload);
       console.log("urgent due customer response", response);
-      setCustomersData(response?.data?.data || []);
-      setUrgentDueCount(response?.data?.data.length || 0);
+      setCustomersData(response?.data?.data?.data || []);
+      const pagination = response?.data?.data?.pagination;
+      setUrgentDueCount(pagination?.total || 0);
+
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
+
       setTimeout(() => {
         setLoading(false);
       }, 300);
@@ -417,14 +456,31 @@ export default function UrgentDueCustomers({
     }
   };
 
+  const handlePaginationChange = ({ page, limit }) => {
+    getPendingFeesCustomersData(
+      selectedDates[0],
+      selectedDates[1],
+      searchValue,
+      leadExecutiveId,
+      page,
+      limit
+    );
+  };
+
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
+      setPagination({
+        page: 1,
+      });
       getPendingFeesCustomersData(
         selectedDates[0],
         selectedDates[1],
-        e.target.value
+        e.target.value,
+        leadExecutiveId,
+        1,
+        pagination.limit
       );
     }, 300);
   };
@@ -598,10 +654,16 @@ export default function UrgentDueCustomers({
       await inserCustomerTrack(payload);
       setTimeout(() => {
         setButtonLoading(false);
+        setPagination({
+          page: 1,
+        });
         getPendingFeesCustomersData(
           selectedDates[0],
           selectedDates[1],
-          searchValue
+          searchValue,
+          leadExecutiveId,
+          pagination.page,
+          pagination.limit
         );
         formReset();
       }, 300);
@@ -634,120 +696,178 @@ export default function UrgentDueCustomers({
   return (
     <div>
       <Row style={{ marginTop: "40px" }}>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="overallduecustomers_filterContainer">
-            {/* Search Input */}
-            <CommonOutlinedInput
-              label={
-                filterType === 1
-                  ? "Search By Name"
-                  : filterType === 2
-                  ? "Search By Email"
-                  : filterType === 3
-                  ? "Search by Mobile"
-                  : filterType === 4
-                  ? "Search by Course"
-                  : ""
-              }
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      getPendingFeesCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        null
-                      );
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                borderTopRightRadius: "0px",
-                borderBottomRightRadius: "0px",
-                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-              }}
-              onChange={handleSearch}
-              value={searchValue}
-            />
-            {/* Filter Button */}
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={7}>
+              <div className="overallduecustomers_filterContainer">
+                {/* Search Input */}
+                <CommonOutlinedInput
+                  label={
+                    filterType === 1
+                      ? "Search By Name"
+                      : filterType === 2
+                      ? "Search By Email"
+                      : filterType === 3
+                      ? "Search by Mobile"
+                      : filterType === 4
+                      ? "Search by Course"
+                      : ""
+                  }
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
                           setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
                           getPendingFeesCustomersData(
                             selectedDates[0],
                             selectedDates[1],
-                            null
+                            null,
+                            leadExecutiveId,
+                            1,
+                            pagination.limit
                           );
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                        }}
                       >
-                        Search by Name
-                      </Radio>
-                      <Radio value={2} style={{ marginBottom: "12px" }}>
-                        Search by Email
-                      </Radio>
-                      <Radio value={3} style={{ marginBottom: "6px" }}>
-                        Search by Mobile
-                      </Radio>
-                      <Radio
-                        value={4}
-                        style={{ marginTop: "6px", marginBottom: "6px" }}
-                      >
-                        Search by Course
-                      </Radio>
-                    </Radio.Group>
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
                   }
-                >
-                  <Button className="users_filterbutton">
-                    <IoFilter size={18} />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
-
-            {/* Date Picker on the Right */}
-            <div style={{ marginLeft: "16px", position: "relative" }}>
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setDueSelectedDates(dates);
-                  getPendingFeesCustomersData(dates[0], dates[1], searchValue);
-                }}
-              />
-              <p className="pendingcustomers_datepicker_label">Nxt Due Date</p>
-            </div>
-          </div>
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            setFilterType(e.target.value);
+                            if (searchValue === "") {
+                              return;
+                            } else {
+                              setPagination({
+                                page: 1,
+                              });
+                              setSearchValue("");
+                              getPendingFeesCustomersData(
+                                selectedDates[0],
+                                selectedDates[1],
+                                null,
+                                leadExecutiveId,
+                                1,
+                                pagination.limit
+                              );
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                            Search by Mobile
+                          </Radio>
+                          <Radio
+                            value={4}
+                            style={{ marginTop: "6px", marginBottom: "6px" }}
+                          >
+                            Search by Course
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={7}>
+                <CommonSelectField
+                  height="35px"
+                  label="Select Lead Executive"
+                  labelMarginTop="0px"
+                  labelFontSize="13px"
+                  options={leadExecutives}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setLeadExecutiveId(e.target.value);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPendingFeesCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      e.target.value,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                  value={leadExecutiveId}
+                  disableClearable={false}
+                />
+              </Col>
+            )}
+            <Col span={10}>
+              <div style={{ position: "relative" }}>
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    setDueSelectedDates(dates);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPendingFeesCustomersData(
+                      dates[0],
+                      dates[1],
+                      searchValue,
+                      leadExecutiveId,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                />
+                <p className="pendingcustomers_datepicker_label">
+                  Nxt Due Date
+                </p>
+              </div>
+            </Col>
+          </Row>
         </Col>
       </Row>
 
@@ -761,6 +881,10 @@ export default function UrgentDueCustomers({
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 

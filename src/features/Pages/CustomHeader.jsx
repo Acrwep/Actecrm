@@ -154,11 +154,13 @@ export default function CustomHeader() {
         ? { phone: searchvalue }
         : {}),
       user_ids: [],
+      page: 1,
+      limit: 1000,
     };
     try {
       const response = await getLeads(payload);
       console.log("global lead response", response);
-      setLeadData(response?.data?.data || []);
+      setLeadData(response?.data?.data?.data || []);
     } catch (error) {
       setLeadData([]);
       console.log("get leads error");
@@ -769,13 +771,13 @@ export default function CustomHeader() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Status</p>
+                  <p className="customerdetails_rowheading">Created At</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_status
-                    ? leadDetails.lead_status
+                  {leadDetails && leadDetails.created_date
+                    ? moment(leadDetails.created_date).format("DD/MM/YYYY")
                     : "-"}
                 </p>
               </Col>

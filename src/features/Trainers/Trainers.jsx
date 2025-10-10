@@ -126,6 +126,13 @@ export default function Trainers() {
   const [courseName, setCourseName] = useState("");
   const [courseNameError, setCourseNameError] = useState("");
   const [addCourseLoading, setAddCourseLoading] = useState(false);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const [defaultColumns, setDefaultColumns] = useState(() => {
     const dnd_columns = [
@@ -378,12 +385,17 @@ export default function Trainers() {
       console.log("experience error", error);
     } finally {
       setTimeout(() => {
-        getTrainersData();
+        getTrainersData(null, null, 1, 10);
       }, 300);
     }
   };
 
-  const getTrainersData = async (searchvalue, trainerStatus) => {
+  const getTrainersData = async (
+    searchvalue,
+    trainerStatus,
+    pageNumber,
+    limit
+  ) => {
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
@@ -400,6 +412,8 @@ export default function Trainers() {
         : trainerStatus == "Ongoing"
         ? { ongoing: "Ongoing" }
         : trainerStatus && { status: trainerStatus }),
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getTrainers(payload);
@@ -425,6 +439,10 @@ export default function Trainers() {
         setLoading(false);
       }, 300);
     }
+  };
+
+  const handlePaginationChange = ({ page, limit }) => {
+    getTrainersData(searchValue, status, page, limit);
   };
 
   const getCourseData = async () => {
@@ -472,7 +490,10 @@ export default function Trainers() {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
-      getTrainersData(e.target.value, status);
+      setPagination({
+        page: 1,
+      });
+      getTrainersData(e.target.value, status, 1, pagination.limit);
     }, 300);
   };
 
@@ -633,7 +654,15 @@ export default function Trainers() {
         setTimeout(() => {
           setButtonLoading(false);
           formReset();
-          getTrainersData(searchValue);
+          setPagination({
+            page: 1,
+          });
+          getTrainersData(
+            searchValue,
+            status,
+            pagination.page,
+            pagination.limit
+          );
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -674,7 +703,10 @@ export default function Trainers() {
       await trainerStatusUpdate(payload);
       CommonMessage("success", "Status Updated");
       setTimeout(() => {
-        getTrainersData(searchValue);
+        setPagination({
+          page: 1,
+        });
+        getTrainersData(searchValue, status, pagination.page, pagination.limit);
       });
     } catch (error) {
       console.log("trainer status change error", error);
@@ -688,7 +720,10 @@ export default function Trainers() {
 
   const handleRefresh = () => {
     setStatus("");
-    getTrainersData(null, null);
+    setPagination({
+      page: 1,
+    });
+    getTrainersData(null, null, 1, pagination.limit);
   };
 
   const handleSendFormLink = async (trainerEmail, trainerId) => {
@@ -713,7 +748,10 @@ export default function Trainers() {
       setTimeout(() => {
         setButtonLoading(false);
         formReset();
-        getTrainersData(searchValue);
+        setPagination({
+          page: 1,
+        });
+        getTrainersData(searchValue, status, pagination.page, pagination.limit);
       }, 300);
     }
   };
@@ -1076,7 +1114,10 @@ export default function Trainers() {
                     className="users_filter_closeIconContainer"
                     onClick={() => {
                       setSearchValue("");
-                      getTrainersData(null);
+                      setPagination({
+                        page: 1,
+                      });
+                      getTrainersData(null, status, 1, pagination.limit);
                     }}
                   >
                     <IoIosClose size={11} />
@@ -1113,7 +1154,10 @@ export default function Trainers() {
                           return;
                         } else {
                           setSearchValue("");
-                          getTrainersData(null);
+                          setPagination({
+                            page: 1,
+                          });
+                          getTrainersData(null, status, 1, pagination.limit);
                         }
                       }}
                     >
@@ -1196,7 +1240,10 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("");
-                  getTrainersData(searchValue, null);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(searchValue, null, 1, pagination.limit);
                 }}
               >
                 <p>All {`( ${allTrainersCount} )`}</p>
@@ -1212,7 +1259,15 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("Form Pending");
-                  getTrainersData(searchValue, "Form Pending");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(
+                    searchValue,
+                    "Form Pending",
+                    1,
+                    pagination.limit
+                  );
                 }}
               >
                 <p>Form Pending {`( ${formPendingCount} )`}</p>
@@ -1228,7 +1283,15 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("Verify Pending");
-                  getTrainersData(searchValue, "Verify Pending");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(
+                    searchValue,
+                    "Verify Pending",
+                    1,
+                    pagination.limit
+                  );
                 }}
               >
                 <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
@@ -1244,7 +1307,10 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("Verified");
-                  getTrainersData(searchValue, "Verified");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(searchValue, "Verified", 1, pagination.limit);
                 }}
               >
                 <p>Verified Trainers {`( ${verifiedCount} )`}</p>
@@ -1260,7 +1326,15 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("Onboarded");
-                  getTrainersData(searchValue, "Onboarded");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(
+                    searchValue,
+                    "Onboarded",
+                    1,
+                    pagination.limit
+                  );
                 }}
               >
                 <p>Onboarded Trainers {`( ${onBoardingCount} )`}</p>
@@ -1276,7 +1350,10 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("OnGoing");
-                  getTrainersData(searchValue, "Ongoing");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(searchValue, "Ongoing", 1, pagination.limit);
                 }}
               >
                 <p>On-Going Trainers {`( ${onGoingCount} )`}</p>
@@ -1292,7 +1369,10 @@ export default function Trainers() {
                     return;
                   }
                   setStatus("Rejected");
-                  getTrainersData(searchValue, "Rejected");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(searchValue, "Rejected", 1, pagination.limit);
                 }}
               >
                 <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
@@ -1334,6 +1414,10 @@ export default function Trainers() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 

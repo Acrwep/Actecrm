@@ -27,7 +27,6 @@ import {
   getBranches,
   getLeadFollowUps,
   getTechnologies,
-  getUserPermissions,
   updateFollowUp,
 } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
@@ -191,8 +190,6 @@ export default function LeadFollowUp({
   ];
   const [batchTrack, setBatchTrack] = useState(1);
   const [batchTrackError, setBatchTrackError] = useState("");
-  const [rating, setRating] = useState(null);
-  const [ratingError, setRatingError] = useState(null);
   const [comments, setComments] = useState("");
   const [commentsError, setCommentsError] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
@@ -246,6 +243,7 @@ export default function LeadFollowUp({
                 CommonMessage("error", "Access Denied");
                 return;
               }
+              console.log("recordddd", record);
               setIsOpenFollowUpDrawer(true);
               setCommentsHistory(record.histories);
               setLeadId(record.id);
@@ -578,8 +576,8 @@ export default function LeadFollowUp({
           selectedDates[0],
           selectedDates[1],
           true,
-          leadHistoryId,
-          1,
+          leadExecutiveId,
+          pagination.page,
           pagination.limit
         );
         refreshLeads();
@@ -926,8 +924,6 @@ export default function LeadFollowUp({
     setBranchError("");
     setBatchTrack(1);
     setBatchTrackError("");
-    setRating(null);
-    setRatingError("");
     setComments("");
     setCommentsError("");
     setButtonLoading(false);
@@ -1048,33 +1044,35 @@ export default function LeadFollowUp({
                 </div>
               </div>
             </Col>
-            <Col span={7}>
-              <CommonSelectField
-                height="35px"
-                label="Select Lead Executive"
-                labelMarginTop="0px"
-                labelFontSize="13px"
-                options={leadExecutives}
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  setLeadExecutiveId(e.target.value);
-                  setPagination({
-                    page: 1,
-                  });
-                  getLeadFollowUpsData(
-                    searchValue,
-                    selectedDates[0],
-                    selectedDates[1],
-                    false,
-                    e.target.value,
-                    1,
-                    pagination.limit
-                  );
-                }}
-                value={leadExecutiveId}
-                disableClearable={false}
-              />
-            </Col>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={7}>
+                <CommonSelectField
+                  height="35px"
+                  label="Select Lead Executive"
+                  labelMarginTop="0px"
+                  labelFontSize="13px"
+                  options={leadExecutives}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setLeadExecutiveId(e.target.value);
+                    setPagination({
+                      page: 1,
+                    });
+                    getLeadFollowUpsData(
+                      searchValue,
+                      selectedDates[0],
+                      selectedDates[1],
+                      false,
+                      e.target.value,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                  value={leadExecutiveId}
+                  disableClearable={false}
+                />
+              </Col>
+            )}
             <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}

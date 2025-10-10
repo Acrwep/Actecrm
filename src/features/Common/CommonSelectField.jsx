@@ -75,7 +75,9 @@ export default function CommonSelectField({
               ? option?.email
               : showLabelStatus === "Mobile"
               ? option?.mobile
-              : option?.exp_range || option?.name || option?.user_name || ""
+              : option?.user_name
+              ? `${option.user_name} - ${option.user_id}`
+              : option?.exp_range || option?.name || ""
           }
           onChange={(event, newValue) =>
             onChange({

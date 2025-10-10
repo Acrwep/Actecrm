@@ -104,7 +104,7 @@ const CommonTable = ({
     pageSize: limit || 10,
     showSizeChanger: true,
     total: totalPageNumber || 0,
-    pageSizeOptions: ["10", "20", "50", "100", "250", "500"],
+    pageSizeOptions: ["2", "10", "20", "50", "100", "250", "500"],
     position: ["bottomRight"],
     showLessItems: true, // <--- this reduces visible page buttons
     itemRender: (page, type, originalElement) => {

@@ -1143,7 +1143,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             leadExecutiveId,
-            1,
+            pagination.page,
             pagination.limit
           );
           refreshLeadFollowUp();
@@ -1799,32 +1799,34 @@ export default function Leads({
                 </div>
               </div>
             </Col>
-            <Col span={7}>
-              <CommonSelectField
-                height="35px"
-                label="Select Lead Executive"
-                labelMarginTop="0px"
-                labelFontSize="13px"
-                options={leadExecutives}
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  setLeadExecutiveId(e.target.value);
-                  setPagination({
-                    page: 1,
-                  });
-                  getAllLeadData(
-                    searchValue,
-                    selectedDates[0],
-                    selectedDates[1],
-                    e.target.value,
-                    1,
-                    pagination.limit
-                  );
-                }}
-                value={leadExecutiveId}
-                disableClearable={false}
-              />
-            </Col>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={7}>
+                <CommonSelectField
+                  height="35px"
+                  label="Select Lead Executive"
+                  labelMarginTop="0px"
+                  labelFontSize="13px"
+                  options={leadExecutives}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setLeadExecutiveId(e.target.value);
+                    setPagination({
+                      page: 1,
+                    });
+                    getAllLeadData(
+                      searchValue,
+                      selectedDates[0],
+                      selectedDates[1],
+                      e.target.value,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                  value={leadExecutiveId}
+                  disableClearable={false}
+                />
+              </Col>
+            )}
             <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}

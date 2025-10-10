@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Row,
   Col,
@@ -33,7 +33,6 @@ import {
   getCustomers,
   getTrainerById,
   getTrainers,
-  getUserPermissions,
   inserCustomerTrack,
   rejectCustomerPayment,
   rejectTrainerForCustomer,
@@ -89,7 +88,6 @@ import { FcGoogle } from "react-icons/fc";
 import { FaLinkedin } from "react-icons/fa";
 import { GrCertificate } from "react-icons/gr";
 import { CloseOutlined } from "@ant-design/icons";
-import { GrNotes } from "react-icons/gr";
 import { LuFileClock } from "react-icons/lu";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import PrismaZoom from "react-prismazoom";
@@ -105,6 +103,7 @@ const { Step } = Steps;
 export default function Customers() {
   const scrollRef = useRef();
   const customerUpdateRef = useRef();
+  const mounted = useRef(false);
 
   const scroll = (scrollOffset) => {
     scrollRef.current.scrollBy({
@@ -115,6 +114,7 @@ export default function Customers() {
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
@@ -283,6 +283,16 @@ export default function Customers() {
 
   const prev = () => setCurrent(current - 1);
   const [loading, setLoading] = useState(true);
+  //executive filter
+  const [leadExecutives, setLeadExecutives] = useState([]);
+  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const [defaultColumns, setDefaultColumns] = useState([
     { title: "Candidate Name", isChecked: true },
@@ -1198,8 +1208,11 @@ export default function Customers() {
   }, [permissions]);
 
   useEffect(() => {
-    if (childUsers.length <= 0) return;
-    getTrainersData();
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      setLeadExecutives(downlineUsers);
+      getTrainersData();
+    }
   }, [childUsers]);
 
   const getTrainersData = async () => {
@@ -1222,7 +1235,10 @@ export default function Customers() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           null,
-          null
+          null,
+          null,
+          1,
+          10
         );
       }, 300);
     }
@@ -1233,9 +1249,18 @@ export default function Customers() {
     endDate,
     searchvalue,
     customerStatus,
+    executive_id,
+    pageNumber,
+    limit,
     is_generate_certificate
   ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       ...(searchvalue && filterType == 1
         ? { name: searchvalue }
@@ -1254,14 +1279,24 @@ export default function Customers() {
             ? ["Awaiting Trainer", "Trainer Rejected"]
             : customerStatus,
       }),
-      user_ids: childUsers,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      page: pageNumber,
+      limit: limit,
     };
 
     try {
       const response = await getCustomers(payload);
       console.log("customers response", response);
       const customers = response?.data?.data?.customers || [];
+      const pagination = response?.data?.data?.pagination;
+
       setCustomersData(customers);
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
       setCustomerStatusCount(
         response?.data?.data?.customer_status_count || null
       );
@@ -1302,6 +1337,18 @@ export default function Customers() {
     }
   };
 
+  const handlePaginationChange = ({ page, limit }) => {
+    getCustomersData(
+      selectedDates[0],
+      selectedDates[1],
+      searchValue,
+      status,
+      leadExecutiveId,
+      page,
+      limit
+    );
+  };
+
   const getCustomerHistoryData = async (customerid) => {
     setIsOpenCustomerHistoryDrawer(true);
     setCustomerHistoryLoading(true);
@@ -1332,12 +1379,18 @@ export default function Customers() {
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    setPagination({
+      page: 1,
+    });
     setTimeout(() => {
       getCustomersData(
         selectedDates[0],
         selectedDates[1],
         e.target.value,
-        status
+        status,
+        leadExecutiveId,
+        1,
+        pagination.limit
       );
     }, 300);
   };
@@ -1419,13 +1472,20 @@ export default function Customers() {
   const handleRefresh = () => {
     setStatus("");
     setSearchValue("");
+    setLeadExecutiveId(null);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    setPagination({
+      page: 1,
+    });
     getCustomersData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
-      null
+      null,
+      null,
+      1,
+      pagination.limit
     );
   };
 
@@ -1592,11 +1652,17 @@ export default function Customers() {
           return;
         }
         updateStatusDrawerReset();
+        setPagination({
+          page: 1,
+        });
         getCustomersData(
           selectedDates[0],
           selectedDates[1],
           searchValue,
-          status
+          status,
+          leadExecutiveId,
+          pagination.page,
+          pagination.limit
         );
       }, 300);
     } catch (error) {
@@ -2434,11 +2500,17 @@ export default function Customers() {
       };
       try {
         await updatefeedbackForCustomer(payload);
+        setPagination({
+          page: 1,
+        });
         getCustomersData(
           selectedDates[0],
           selectedDates[1],
           searchValue,
-          status
+          status,
+          leadExecutiveId,
+          pagination.page,
+          pagination.limit
         );
         if (callCusTrack) {
           handleCustomerTrack("Google Review Added");
@@ -2508,11 +2580,17 @@ export default function Customers() {
       CommonMessage("success", "Certificate Generated Successfully");
       setTimeout(() => {
         handleCustomerTrack("Certificate Generated");
+        setPagination({
+          page: 1,
+        });
         getCustomersData(
           selectedDates[0],
           selectedDates[1],
           searchValue,
           status,
+          leadExecutiveId,
+          pagination.page,
+          pagination.limit,
           true
         );
       }, 300);
@@ -2745,126 +2823,182 @@ export default function Customers() {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="overallduecustomers_filterContainer">
-            {/* Search Input */}
-            <CommonOutlinedInput
-              label={
-                filterType === 1
-                  ? "Search By Name"
-                  : filterType === 2
-                  ? "Search By Email"
-                  : filterType === 3
-                  ? "Search by Mobile"
-                  : filterType === 4
-                  ? "Search by Course"
-                  : ""
-              }
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        null,
-                        status
-                      );
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                borderTopRightRadius: "0px",
-                borderBottomRightRadius: "0px",
-                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-              }}
-              onChange={handleSearch}
-              value={searchValue}
-            />
-            {/* Filter Button */}
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={7}>
+              <div className="overallduecustomers_filterContainer">
+                {/* Search Input */}
+                <CommonOutlinedInput
+                  label={
+                    filterType === 1
+                      ? "Search By Name"
+                      : filterType === 2
+                      ? "Search By Email"
+                      : filterType === 3
+                      ? "Search by Mobile"
+                      : filterType === 4
+                      ? "Search by Course"
+                      : ""
+                  }
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
                           setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
                           getCustomersData(
                             selectedDates[0],
                             selectedDates[1],
                             null,
-                            status
+                            status,
+                            leadExecutiveId,
+                            1,
+                            pagination.limit
                           );
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
+                        }}
                       >
-                        Search by Name
-                      </Radio>
-                      <Radio value={2} style={{ marginBottom: "12px" }}>
-                        Search by Email
-                      </Radio>
-                      <Radio value={3} style={{ marginBottom: "6px" }}>
-                        Search by Mobile
-                      </Radio>
-                      <Radio
-                        value={4}
-                        style={{ marginTop: "6px", marginBottom: "6px" }}
-                      >
-                        Search by Course
-                      </Radio>
-                    </Radio.Group>
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
                   }
-                >
-                  <Button className="users_filterbutton">
-                    <IoFilter size={18} />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
-
-            {/* Date Picker on the Right */}
-            <div style={{ marginLeft: "16px" }}>
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            setFilterType(e.target.value);
+                            if (searchValue === "") {
+                              return;
+                            } else {
+                              setSearchValue("");
+                              setPagination({
+                                page: 1,
+                              });
+                              getCustomersData(
+                                selectedDates[0],
+                                selectedDates[1],
+                                null,
+                                status,
+                                leadExecutiveId,
+                                1,
+                                pagination.limit
+                              );
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                            Search by Mobile
+                          </Radio>
+                          <Radio
+                            value={4}
+                            style={{ marginTop: "6px", marginBottom: "6px" }}
+                          >
+                            Search by Course
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={7}>
+                <CommonSelectField
+                  height="35px"
+                  label="Select Lead Executive"
+                  labelMarginTop="0px"
+                  labelFontSize="13px"
+                  options={leadExecutives}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setLeadExecutiveId(e.target.value);
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      e.target.value,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                  value={leadExecutiveId}
+                  disableClearable={false}
+                />
+              </Col>
+            )}
+            <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  getCustomersData(dates[0], dates[1], searchValue, status);
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    dates[0],
+                    dates[1],
+                    searchValue,
+                    status,
+                    leadExecutiveId,
+                    1,
+                    pagination.limit
+                  );
                 }}
               />
-            </div>
-          </div>
+            </Col>
+          </Row>
         </Col>
         <Col
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={7}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -2908,11 +3042,17 @@ export default function Customers() {
                 return;
               }
               setStatus("");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                null
+                null,
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -2938,11 +3078,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Form Pending");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Form Pending"
+                "Form Pending",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -2968,11 +3114,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Awaiting Finance");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Finance"
+                "Awaiting Finance",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -2999,11 +3151,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Awaiting Verify");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Verify"
+                "Awaiting Verify",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3030,11 +3188,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Awaiting Trainer");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Trainer"
+                "Awaiting Trainer",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3061,11 +3225,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Awaiting Trainer Verify");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Trainer Verify"
+                "Awaiting Trainer Verify",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3093,11 +3263,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Awaiting Class");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Awaiting Class"
+                "Awaiting Class",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3125,11 +3301,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Class Scheduled");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Class Scheduled"
+                "Class Scheduled",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3156,11 +3338,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Class Going");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Class Going"
+                "Class Going",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3188,11 +3376,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Passedout process");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Passedout Process"
+                "Passedout Process",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3219,11 +3413,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Completed");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Completed"
+                "Completed",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3251,11 +3451,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Escalated");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Escalated"
+                "Escalated",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3283,11 +3489,17 @@ export default function Customers() {
                 return;
               }
               setStatus("Others");
+              setPagination({
+                page: 1,
+              });
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
                 searchValue,
-                "Others"
+                "Others",
+                leadExecutiveId,
+                1,
+                pagination.limit
               );
             }}
           >
@@ -3322,6 +3534,10 @@ export default function Customers() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 
@@ -3716,14 +3932,20 @@ export default function Customers() {
           setUpdateDrawerTabKey={setUpdateDrawerTabKey}
           setUpdateButtonLoading={setUpdateButtonLoading}
           setIsOpenEditDrawer={setIsOpenEditDrawer}
-          callgetCustomersApi={() =>
+          callgetCustomersApi={() => {
+            setPagination({
+              page: 1,
+            });
             getCustomersData(
               selectedDates[0],
               selectedDates[1],
               searchValue,
-              status
-            )
-          } // pass function as prop
+              status,
+              leadExecutiveId,
+              pagination.page,
+              pagination.limit
+            );
+          }} // pass function as prop
         />
 
         <div className="leadmanager_tablefiler_footer">

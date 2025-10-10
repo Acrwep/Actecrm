@@ -133,8 +133,11 @@ export default function SideMenu() {
   useEffect(() => {
     const pathName = location.pathname.split("/")[1];
     setSelectedKey(pathName);
-    getUserDownlineData();
   }, [location.pathname]);
+
+  useEffect(() => {
+    getUserDownlineData();
+  }, []);
 
   const getUserDownlineData = async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");

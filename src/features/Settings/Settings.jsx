@@ -99,6 +99,7 @@ export default function Settings() {
         "Add Lead Button",
         "Edit Lead Button",
         "Assign Lead",
+        "Lead Executive Filter",
       ];
 
       const leadsSortedArray = leadsModule.sort(

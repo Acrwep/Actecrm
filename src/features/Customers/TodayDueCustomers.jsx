@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   Row,
   Col,
@@ -58,9 +58,11 @@ import PrismaZoom from "react-prismazoom";
 import { useSelector } from "react-redux";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
+  const mounted = useRef(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
@@ -95,6 +97,16 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     useState(false);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
+  //lead executive filter
+  const [leadExecutives, setLeadExecutives] = useState([]);
+  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const [columns, setColumns] = useState([
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
@@ -362,11 +374,26 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   }, [columns, actionColumn]);
 
   useEffect(() => {
-    if (childUsers.length <= 0) return;
-    getPendingFeesCustomersData();
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      setLeadExecutives(downlineUsers);
+      getPendingFeesCustomersData(null, null, 1, 10);
+    }
   }, [childUsers]);
 
-  const getPendingFeesCustomersData = async (searchvalue) => {
+  const getPendingFeesCustomersData = async (
+    searchvalue,
+    executive_id,
+    pageNumber,
+    limit
+  ) => {
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
+
     const today = new Date();
     setLoading(true);
     const from_date = formatToBackendIST(today);
@@ -384,13 +411,23 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         : searchvalue && filterType === 4
         ? { course: searchvalue }
         : {}),
-      user_ids: childUsers,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getPendingFeesCustomers(payload);
       console.log("today pending fee customer response", response);
-      setCustomersData(response?.data?.data || []);
-      setTodayDueCount(response?.data?.data.length || 0);
+      setCustomersData(response?.data?.data?.data || []);
+      const pagination = response?.data?.data?.pagination;
+      setTodayDueCount(pagination?.total || 0);
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
+
       setTimeout(() => {
         setLoading(false);
       }, 300);
@@ -401,11 +438,23 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     }
   };
 
+  const handlePaginationChange = ({ page, limit }) => {
+    getPendingFeesCustomersData(searchValue, leadExecutiveId, page, limit);
+  };
+
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
-      getPendingFeesCustomersData(e.target.value);
+      setPagination({
+        page: 1,
+      });
+      getPendingFeesCustomersData(
+        e.target.value,
+        leadExecutiveId,
+        1,
+        pagination.limit
+      );
     }, 300);
   };
 
@@ -576,7 +625,15 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       await inserCustomerTrack(payload);
       setTimeout(() => {
         setButtonLoading(false);
-        getPendingFeesCustomersData(searchValue);
+        setPagination({
+          page: 1,
+        });
+        getPendingFeesCustomersData(
+          searchValue,
+          leadExecutiveId,
+          pagination.page,
+          pagination.limit
+        );
         formReset();
       }, 300);
     } catch (error) {
@@ -608,107 +665,147 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="overallduecustomers_filterContainer">
-            {/* Search Input */}
-            <CommonOutlinedInput
-              label={
-                filterType === 1
-                  ? "Search By Name"
-                  : filterType === 2
-                  ? "Search By Email"
-                  : filterType === 3
-                  ? "Search by Mobile"
-                  : filterType === 4
-                  ? "Search by Course"
-                  : ""
-              }
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      getPendingFeesCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        null
-                      );
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                borderTopRightRadius: "0px",
-                borderBottomRightRadius: "0px",
-                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-              }}
-              onChange={handleSearch}
-              value={searchValue}
-            />
-            {/* Filter Button */}
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
-                          setSearchValue("");
-                          getPendingFeesCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            null
-                          );
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
-                      >
-                        Search by Name
-                      </Radio>
-                      <Radio value={2} style={{ marginBottom: "12px" }}>
-                        Search by Email
-                      </Radio>
-                      <Radio value={3} style={{ marginBottom: "6px" }}>
-                        Search by Mobile
-                      </Radio>
-                      <Radio
-                        value={4}
-                        style={{ marginTop: "6px", marginBottom: "6px" }}
-                      >
-                        Search by Course
-                      </Radio>
-                    </Radio.Group>
+        <Col xs={24} sm={24} md={24} lg={10}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <div className="overallduecustomers_filterContainer">
+                {/* Search Input */}
+                <CommonOutlinedInput
+                  label={
+                    filterType === 1
+                      ? "Search By Name"
+                      : filterType === 2
+                      ? "Search By Email"
+                      : filterType === 3
+                      ? "Search by Mobile"
+                      : filterType === 4
+                      ? "Search by Course"
+                      : ""
                   }
-                >
-                  <Button className="users_filterbutton">
-                    <IoFilter size={18} />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
-          </div>
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
+                          getPendingFeesCustomersData(
+                            null,
+                            leadExecutiveId,
+                            1,
+                            pagination.limit
+                          );
+                        }}
+                      >
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            setFilterType(e.target.value);
+                            if (searchValue === "") {
+                              return;
+                            } else {
+                              setSearchValue("");
+                              setPagination({
+                                page: 1,
+                              });
+                              getPendingFeesCustomersData(
+                                null,
+                                leadExecutiveId,
+                                1,
+                                pagination.limit
+                              );
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                            Search by Mobile
+                          </Radio>
+                          <Radio
+                            value={4}
+                            style={{ marginTop: "6px", marginBottom: "6px" }}
+                          >
+                            Search by Course
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={12}>
+                <CommonSelectField
+                  height="35px"
+                  label="Select Lead Executive"
+                  labelMarginTop="0px"
+                  labelFontSize="13px"
+                  options={leadExecutives}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    setLeadExecutiveId(e.target.value);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPendingFeesCustomersData(
+                      searchValue,
+                      e.target.value,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                  value={leadExecutiveId}
+                  disableClearable={false}
+                />
+              </Col>
+            )}
+          </Row>
         </Col>
       </Row>
 
@@ -722,6 +819,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 
