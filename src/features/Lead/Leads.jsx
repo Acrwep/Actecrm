@@ -1261,7 +1261,7 @@ export default function Leads({
           ? "VAT (18%)"
           : "No Tax",
       gst_percentage: taxType == 5 ? "0%" : "18%",
-      gst_amount: parseFloat(gstAmount.toFixed(2)),
+      gst_amount: parseFloat(gstAmount).toFixed(2),
       total_amount: amount,
       convenience_fees: convenienceFees,
       paymode_id: paymentMode,
@@ -2664,7 +2664,7 @@ export default function Leads({
                 { id: 2, name: "SGST (18%)" },
                 { id: 3, name: "IGST (18%)" },
                 { id: 4, name: "VAT (18%)" },
-                { id: 5, name: "No tax" },
+                { id: 5, name: "No Tax" },
               ]}
               onChange={handleTaxType}
               value={taxType}

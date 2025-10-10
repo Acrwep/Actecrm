@@ -149,11 +149,11 @@ export default function Customers() {
   const [paymentDateError, setPaymentDateError] = useState("");
   const [paymentMode, setPaymentMode] = useState(null);
   const [paymentModeError, setPaymentModeError] = useState(null);
-  const [subTotal, setSubTotal] = useState("");
+  const [subTotal, setSubTotal] = useState();
   const [convenienceFees, setConvenienceFees] = useState("");
   const [taxType, setTaxType] = useState(null);
   const [taxTypeError, setTaxTypeError] = useState("");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState();
   const [paidNow, setPaidNow] = useState("");
   const [paidNowError, setPaidNowError] = useState("");
   const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
@@ -311,6 +311,12 @@ export default function Customers() {
   ]);
 
   const nonChangeColumns = [
+    {
+      title: "Lead Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 160,
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone" },
@@ -413,6 +419,10 @@ export default function Customers() {
                           <button
                             className="customers_finance_updatepayment_button"
                             onClick={() => {
+                              if (!permissions.includes("Update Payment")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
                               setDrawerContentStatus("Update Payment");
                               setCustomerId(record.id);
                               setCustomerDetails(record);
@@ -423,26 +433,31 @@ export default function Customers() {
                                   ? record.payments.payment_trans
                                   : []
                               );
-                              setSubTotal(record.primary_fees);
+                              setSubTotal(
+                                parseFloat(record.primary_fees).toFixed(2)
+                              );
                               setTaxType(
                                 record.payments && record.payments.tax_type
-                                  ? record.payments.tax_type === "GST (18%)"
+                                  ? record.payments.tax_type == "GST (18%)"
                                     ? 1
-                                    : record.payments.tax_type === "SGST (18%)"
+                                    : record.payments.tax_type == "SGST (18%)"
                                     ? 2
-                                    : record.payments.tax_type === "IGST (18%)"
+                                    : record.payments.tax_type == "IGST (18%)"
                                     ? 3
-                                    : record.payments.tax_type === "VAT (18%)"
+                                    : record.payments.tax_type == "VAT (18%)"
                                     ? 4
-                                    : record.payments.tax_type === "No Tax"
+                                    : record.payments.tax_type == "No Tax"
                                     ? 5
                                     : 0
                                   : 0
                               );
                               setAmount(
-                                record.payments && record.payments.total_amount
-                                  ? record.payments.total_amount
-                                  : 0
+                                parseFloat(
+                                  record.payments &&
+                                    record.payments.total_amount
+                                    ? record.payments.total_amount
+                                    : 0
+                                ).toFixed(2)
                               );
                               //transaction handling
                               const rejectedItem =
@@ -456,9 +471,11 @@ export default function Customers() {
                                   : null
                               );
                               setPaidNow(
-                                rejectedItem && rejectedItem.amount
-                                  ? rejectedItem.amount
-                                  : 0
+                                parseFloat(
+                                  rejectedItem && rejectedItem.amount
+                                    ? rejectedItem.amount
+                                    : 0
+                                ).toFixed(2)
                               );
                               setPaymentMode(
                                 rejectedItem && rejectedItem.paymode_id
@@ -466,9 +483,11 @@ export default function Customers() {
                                   : 0
                               );
                               setConvenienceFees(
-                                rejectedItem && rejectedItem.convenience_fees
-                                  ? rejectedItem.convenience_fees
-                                  : 0
+                                parseFloat(
+                                  rejectedItem && rejectedItem.convenience_fees
+                                    ? rejectedItem.convenience_fees
+                                    : 0
+                                ).toFixed(2)
                               );
                               setPaymentDate(
                                 rejectedItem && rejectedItem.paid_date
@@ -1397,6 +1416,7 @@ export default function Customers() {
 
   const handleEdit = (item) => {
     setCustomerId(item.id);
+    setCustomerDetails(item);
     setIsOpenEditDrawer(true);
   };
 
@@ -1407,36 +1427,46 @@ export default function Customers() {
   };
 
   const handlePaidNow = (e) => {
-    const value = parseInt(e.target.value);
-    const amt = parseInt(amount);
-    if (value < amt || isNaN(value) || value === "" || value === null) {
+    const input = e.target.value;
+
+    // Allow numbers, decimal point, or empty string
+    if (!/^\d*\.?\d*$/.test(input)) return;
+
+    setPaidNow(input); // store as string for user input
+
+    const value = parseFloat(input); // parse for calculations
+    const amt = parseFloat(amount);
+
+    if (value < amt || isNaN(value) || input == "" || input == null) {
       setIsShowDueDate(true);
     } else {
       setIsShowDueDate(false);
       setDueDate(null);
       setDueDateError("");
     }
-    setPaidNow(isNaN(value) ? "" : value);
+
     setBalanceAmount(
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
-    if (paymentMode === 2 || paymentMode === 5) {
-      const conve_fees = getConvenienceFees(value);
+    if (paymentMode == 2 || paymentMode == 5) {
+      const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
     }
 
     if (paymentValidationTrigger) {
-      setPaidNowError(priceValidator(value, parseInt(amt)));
+      setPaidNowError(
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+      );
     }
   };
 
   const handlePaymentType = (e) => {
     const value = e.target.value;
     setPaymentMode(value);
-    const amnt = calculateAmount(parseInt(subTotal), taxType === 5 ? 0 : 18);
+    const amnt = calculateAmount(parseInt(subTotal), taxType == 5 ? 0 : 18);
     setAmount(amnt);
 
     if (paymentValidationTrigger) {
@@ -1444,12 +1474,7 @@ export default function Customers() {
     }
 
     //handle balance amount
-    if (
-      paidNow < amnt ||
-      isNaN(paidNow) ||
-      paidNow === "" ||
-      paidNow === null
-    ) {
+    if (paidNow < amnt || isNaN(paidNow) || paidNow == "" || paidNow == null) {
       setIsShowDueDate(true);
     } else {
       setIsShowDueDate(false);
@@ -1461,7 +1486,7 @@ export default function Customers() {
     );
 
     //handle convenience fees
-    if (value === 2 || value === 5) {
+    if (value == 2 || value == 5) {
       const conve_fees = getConvenienceFees(paidNow ? parseInt(paidNow) : 0);
       setConvenienceFees(conve_fees);
     } else {
@@ -1802,7 +1827,7 @@ export default function Customers() {
       balance_amount:
         transactiondetails.balance_amount != undefined ||
         transactiondetails.balance_amount != null
-          ? parseFloat(transactiondetails?.balance_amount.toFixed(2))
+          ? parseFloat(transactiondetails?.balance_amount).toFixed(2)
           : "",
       course_name:
         customerDetails && customerDetails.course_name
@@ -2742,11 +2767,11 @@ export default function Customers() {
     //update payment
     setPaymentMode(null);
     setPaymentModeError("");
-    setSubTotal("");
+    setSubTotal();
     setConvenienceFees("");
     setTaxType(null);
     setTaxTypeError("");
-    setAmount("");
+    setAmount();
     setPaidNow("");
     setPaidNowError("");
     setPaymentDate(null);
@@ -3526,7 +3551,7 @@ export default function Customers() {
 
       <div>
         <CommonTable
-          scroll={{ x: 2200 }}
+          scroll={{ x: 2350 }}
           columns={tableColumns}
           dataSource={customersData}
           dataPerPage={10}
@@ -3920,11 +3945,12 @@ export default function Customers() {
         onClose={() => {
           setIsOpenEditDrawer(false);
           setCustomerId(null);
+          setCustomerDetails(null);
           customerUpdateRef.current?.formReset();
         }}
         width="50%"
         className="customerupdate_drawer"
-        style={{ position: "relative" }}
+        style={{ position: "relative", paddingBottom: 65 }}
       >
         <CustomerUpdate
           ref={customerUpdateRef}
@@ -3932,6 +3958,11 @@ export default function Customers() {
           setUpdateDrawerTabKey={setUpdateDrawerTabKey}
           setUpdateButtonLoading={setUpdateButtonLoading}
           setIsOpenEditDrawer={setIsOpenEditDrawer}
+          paymentMasterDetails={
+            customerDetails && customerDetails.payments
+              ? customerDetails.payments
+              : null
+          }
           callgetCustomersApi={() => {
             setPagination({
               page: 1,
@@ -3951,22 +3982,24 @@ export default function Customers() {
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {updateButtonLoading ? (
-              <button className="users_adddrawer_loadingcreatebutton">
+              <button className="customerupdate_loadingsubmitbutton">
                 <CommonSpinner />
               </button>
             ) : (
               <button
-                className="users_adddrawer_createbutton"
+                className="customerupdate_submitbutton"
                 // onClick={handleSubmit}
                 onClick={() => {
                   if (updateDrawerTabKey === "1") {
-                    customerUpdateRef.current?.handlePersonalDetails();
+                    customerUpdateRef.current?.handleCustomerUpdate();
                   } else {
-                    customerUpdateRef.current?.handleSubmit();
+                    customerUpdateRef.current?.handlePaymentUpdate();
                   }
                 }}
               >
-                {updateDrawerTabKey === "1" ? "Next" : "Update"}
+                {updateDrawerTabKey === "1"
+                  ? "Update Customer Details"
+                  : "Update Payment Master"}
               </button>
             )}
           </div>
@@ -4969,7 +5002,7 @@ export default function Customers() {
                       { id: 2, name: "SGST (18%)" },
                       { id: 3, name: "IGST (18%)" },
                       { id: 4, name: "VAT (18%)" },
-                      { id: 5, name: "No tax" },
+                      { id: 5, name: "No Tax" },
                     ]}
                     value={taxType}
                     error={taxTypeError}

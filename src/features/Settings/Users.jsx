@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Modal } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
-import CommonSelectField from "../Common/CommonSelectField";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -15,7 +14,6 @@ import {
   nameValidator,
   passwordValidator,
   selectValidator,
-  userIdValidator,
 } from "../Common/Validation";
 import { createUser, getUsers, updateUser } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -24,11 +22,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { storeAllUsersList, storeUsersList } from "../Redux/Slice";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
-import CommonMultiSelect from "../Common/CommonMultiSelect";
-import { PiUserCirclePlus } from "react-icons/pi";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 
-export default function Users({ userTableLoading, setUserTableLoading }) {
+export default function Users({
+  userTableLoading,
+  setUserTableLoading,
+  pagination,
+  setPagination,
+}) {
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
   const allUsersData = useSelector((state) => state.alluserslist);
@@ -246,7 +247,7 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     setAssignUsersData(allUsersData);
   }, [allUsersData]);
 
-  const getUsersData = async (searchvalue) => {
+  const getUsersData = async (searchvalue, pageNumber, limit) => {
     setUserTableLoading(true);
     const payload = {
       ...(searchvalue && filterType === 1
@@ -254,11 +255,20 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         : searchvalue && filterType === 2
         ? { user_id: searchvalue }
         : {}),
+      page: pageNumber,
+      limit: limit,
     };
     try {
       const response = await getUsers(payload);
       console.log("users response", response);
-      dispatch(storeUsersList(response?.data?.data || []));
+      dispatch(storeUsersList(response?.data?.data?.data || []));
+      const pagination = response?.data?.data?.pagination;
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
     } catch (error) {
       dispatch(storeUsersList([]));
       console.log(error);
@@ -269,10 +279,18 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
     }
   };
 
+  const handlePaginationChange = ({ page, limit }) => {
+    getUsersData(searchValue, page, limit);
+  };
+
   const getAllUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
     try {
-      const response = await getUsers();
-      dispatch(storeAllUsersList(response?.data?.data || []));
+      const response = await getUsers(payload);
+      dispatch(storeAllUsersList(response?.data?.data?.data || []));
     } catch (error) {
       dispatch(storeAllUsersList([]));
       console.log(error);
@@ -312,7 +330,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setTimeout(() => {
-      getUsersData(e.target.value);
+      setPagination({
+        page: 1,
+      });
+      getUsersData(e.target.value, 1, pagination.limit);
     }, 300);
   };
 
@@ -431,7 +452,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         console.log(response);
         CommonMessage("success", "User Updated");
         setTimeout(() => {
-          getUsersData(searchValue);
+          setPagination({
+            page: 1,
+          });
+          getUsersData(searchValue, pagination.page, pagination.limit);
           getAllUsersData();
           formReset();
         }, 300);
@@ -449,7 +473,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
         console.log(response);
         CommonMessage("success", "User Created");
         setTimeout(() => {
-          getUsersData(searchValue);
+          setPagination({
+            page: 1,
+          });
+          getUsersData(searchValue, 1, pagination.limit);
           getAllUsersData();
           formReset();
         }, 300);
@@ -483,7 +510,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
                     className="users_filter_closeIconContainer"
                     onClick={() => {
                       setSearchValue("");
-                      getUsersData(null);
+                      setPagination({
+                        page: 1,
+                      });
+                      getUsersData(null, 1, pagination.limit);
                     }}
                   >
                     <IoIosClose size={11} />
@@ -519,7 +549,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
                           return;
                         } else {
                           setSearchValue("");
-                          getUsersData(null);
+                          setPagination({
+                            page: 1,
+                          });
+                          getUsersData(null, 1, pagination.limit);
                         }
                       }}
                     >
@@ -576,6 +609,10 @@ export default function Users({ userTableLoading, setUserTableLoading }) {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 

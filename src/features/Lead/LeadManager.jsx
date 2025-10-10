@@ -46,31 +46,31 @@ export default function LeadManager() {
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
-      getLeadAndFollowupCountData();
+      getLeadTypeData();
     }
   }, [childUsers]);
 
-  const getLeadAndFollowupCountData = async () => {
-    const payload = {
-      user_ids: childUsers,
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setFollowupCount(countDetails.follow_up_count);
-      setLeadCount(countDetails.total_lead_count);
-      // dispatch(storeUsersList(response?.data?.data || []));
-    } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
-    } finally {
-      setTimeout(() => {
-        // setUserTableLoading(false);
-        getLeadTypeData();
-      }, 300);
-    }
-  };
+  // const getLeadAndFollowupCountData = async () => {
+  //   const payload = {
+  //     user_ids: childUsers,
+  //   };
+  //   try {
+  //     const response = await getLeadAndFollowupCount(payload);
+  //     console.log("lead count response", response);
+  //     const countDetails = response?.data?.data;
+  //     setFollowupCount(countDetails.follow_up_count);
+  //     setLeadCount(countDetails.total_lead_count);
+  //     // dispatch(storeUsersList(response?.data?.data || []));
+  //   } catch (error) {
+  //     console.log("lead count error", error);
+  //     // dispatch(storeUsersList([]));
+  //   } finally {
+  //     setTimeout(() => {
+  //       // setUserTableLoading(false);
+  //       getLeadTypeData();
+  //     }, 300);
+  //   }
+  // };
 
   const getLeadTypeData = async () => {
     try {

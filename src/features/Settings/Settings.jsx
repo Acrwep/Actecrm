@@ -29,6 +29,13 @@ export default function Settings() {
   const [userTableLoading, setUserTableLoading] = useState(true);
   const [groupLoading, setGroupLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   useEffect(() => {
     getUsersData();
@@ -36,17 +43,46 @@ export default function Settings() {
 
   const getUsersData = async () => {
     setUserTableLoading(true);
+    const payload = {
+      page: 1,
+      limit: 10,
+    };
     try {
-      const response = await getUsers();
+      const response = await getUsers(payload);
       console.log("users response", response);
-      dispatch(storeUsersList(response?.data?.data || []));
-      dispatch(storeAllUsersList(response?.data?.data || []));
+      dispatch(storeUsersList(response?.data?.data?.data || []));
+      const pagination = response?.data?.data?.pagination;
+      setPagination({
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      });
     } catch (error) {
       dispatch(storeUsersList([]));
       dispatch(storeAllUsersList([]));
     } finally {
       setTimeout(() => {
         setUserTableLoading(false);
+        getAllUsersData();
+      }, 300);
+    }
+  };
+
+  const getAllUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("all usersss", response);
+      dispatch(storeAllUsersList(response?.data?.data?.data || []));
+    } catch (error) {
+      dispatch(storeAllUsersList([]));
+      console.log(error);
+    } finally {
+      setTimeout(() => {
         getRolesData();
       }, 300);
     }
@@ -108,11 +144,11 @@ export default function Settings() {
           leadsCustomOrder.indexOf(b.permission_name)
       );
 
-      const updateLeadssModule = leadsSortedArray.map((u) => {
+      const updateLeadsModule = leadsSortedArray.map((u) => {
         return { ...u, checked: false };
       });
 
-      dispatch(storeLeadsModulePermissionList(updateLeadssModule));
+      dispatch(storeLeadsModulePermissionList(updateLeadsModule));
 
       //filter lead followup module
       const leadsFollowupModule = allPermissions.filter(
@@ -127,7 +163,26 @@ export default function Settings() {
       const customersModule = allPermissions.filter(
         (f) => f.section === "Customers Module"
       );
-      const updateCustomersModule = customersModule.map((u) => {
+      const customersCustomOrder = [
+        "Update Customer",
+        "Update Payment",
+        "Update Payment Master",
+        "Finance Verify",
+        "Student Verify",
+        "Trainer Assign",
+        "Trainer Verify",
+        "Class Schedule",
+        "Update Class Going",
+        "Passedout Process",
+      ];
+
+      const customersSortedArray = customersModule.sort(
+        (a, b) =>
+          customersCustomOrder.indexOf(a.permission_name) -
+          customersCustomOrder.indexOf(b.permission_name)
+      );
+
+      const updateCustomersModule = customersSortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeCustomersModulePermissionList(updateCustomersModule));
@@ -223,6 +278,8 @@ export default function Settings() {
         <Users
           userTableLoading={userTableLoading}
           setUserTableLoading={setUserTableLoading}
+          pagination={pagination}
+          setPagination={setPagination}
         />
       ) : activePage === "pageaccess" ? (
         <PageAccess

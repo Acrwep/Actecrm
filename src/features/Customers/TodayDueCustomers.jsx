@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Row,
   Col,
@@ -8,7 +8,6 @@ import {
   Button,
   Drawer,
   Divider,
-  Upload,
   Collapse,
   Modal,
 } from "antd";
@@ -25,7 +24,6 @@ import {
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
-  getCurrentandPreviousweekDate,
   priceValidator,
   selectValidator,
 } from "../Common/Validation";
@@ -40,13 +38,11 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { LuCircleUser } from "react-icons/lu";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import { UploadOutlined } from "@ant-design/icons";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
@@ -108,7 +104,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     totalPages: 0,
   });
 
-  const [columns, setColumns] = useState([
+  const columns = [
+    {
+      title: "Lead Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 160,
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone" },
@@ -310,10 +312,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         );
       },
     },
-  ]);
-
-  const actionColumn = useMemo(
-    () => ({
+    {
       title: "Action",
       key: "action",
       dataIndex: "action",
@@ -364,14 +363,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           </div>
         );
       },
-    }),
-    [permissions]
-  );
-
-  const finalColumns = useMemo(() => {
-    const filtered = columns.filter((col) => col.key !== "action");
-    return [...filtered, actionColumn];
-  }, [columns, actionColumn]);
+    },
+  ];
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -811,8 +804,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2200 }}
-          columns={finalColumns}
+          scroll={{ x: 2350 }}
+          columns={columns}
           dataSource={customersData}
           dataPerPage={10}
           loading={loading}

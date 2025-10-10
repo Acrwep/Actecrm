@@ -943,6 +943,7 @@ export default function PageAccess({
                                     className="settings_group_footer_buttons"
                                     onClick={() => {
                                       setRoleId(item.role_id);
+                                      setRoleName(item.role_name);
                                       getRolePermissionsData(item.role_id);
                                     }}
                                   >
@@ -1153,7 +1154,24 @@ export default function PageAccess({
 
         {/* permission drawer */}
         <Drawer
-          title="Manage Permission"
+          title={
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>Manage Permission</span>
+              <div
+                style={{ fontSize: "13.5px", paddingTop: "3px", color: "#333" }}
+              >
+                <span style={{ fontWeight: 600, color: "#333" }}>
+                  Role: {roleName}
+                </span>
+              </div>
+            </div>
+          }
           open={isOpenPermissionDrawer}
           onClose={formReset}
           width="48%"

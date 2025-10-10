@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Row,
   Col,
@@ -8,7 +8,6 @@ import {
   Button,
   Drawer,
   Divider,
-  Upload,
   Collapse,
   Modal,
 } from "antd";
@@ -39,8 +38,6 @@ import { FaWhatsapp } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
-import { LuCircleUser } from "react-icons/lu";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
 import CommonInputField from "../Common/CommonInputField";
@@ -111,7 +108,13 @@ export default function UrgentDueCustomers({
     totalPages: 0,
   });
 
-  const [columns, setColumns] = useState([
+  const columns = [
+    {
+      title: "Lead Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 160,
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone" },
@@ -316,10 +319,7 @@ export default function UrgentDueCustomers({
         );
       },
     },
-  ]);
-
-  const actionColumn = useMemo(
-    () => ({
+    {
       title: "Action",
       key: "action",
       dataIndex: "action",
@@ -370,14 +370,8 @@ export default function UrgentDueCustomers({
           </div>
         );
       },
-    }),
-    [permissions]
-  );
-
-  const finalColumns = useMemo(() => {
-    const filtered = columns.filter((col) => col.key !== "action");
-    return [...filtered, actionColumn];
-  }, [columns, actionColumn]);
+    },
+  ];
 
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -873,8 +867,8 @@ export default function UrgentDueCustomers({
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2200 }}
-          columns={finalColumns}
+          scroll={{ x: 2350 }}
+          columns={columns}
           dataSource={customersData}
           dataPerPage={10}
           loading={loading}

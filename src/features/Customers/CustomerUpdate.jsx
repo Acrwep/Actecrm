@@ -10,6 +10,7 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import {
   addressValidator,
+  calculateAmount,
   emailValidator,
   formatToBackendIST,
   mobileValidator,
@@ -29,10 +30,12 @@ import {
   getRegions,
   getTechnologies,
   getTrainingMode,
+  paymentMasterUpdate,
   updateCustomer,
 } from "../ApiService/action";
 import { Country, State } from "country-state-city";
 import { CommonMessage } from "../Common/CommonMessage";
+import { useSelector } from "react-redux";
 
 const CustomerUpdate = forwardRef(
   (
@@ -42,9 +45,13 @@ const CustomerUpdate = forwardRef(
       customerId,
       setUpdateButtonLoading,
       setIsOpenEditDrawer,
+      paymentMasterDetails,
     },
     ref
   ) => {
+    //permissions
+    const permissions = useSelector((state) => state.userpermissions);
+
     const [activeKey, setActiveKey] = useState("1");
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
@@ -95,6 +102,15 @@ const CustomerUpdate = forwardRef(
     const [loading, setLoading] = useState(true);
     const [validationTrigger, setValidationTrigger] = useState(false);
     const [callCustomerApi, setCallCustomerApi] = useState(false);
+
+    //payment master usestaes
+    const [subTotal, setSubTotal] = useState();
+    const [subTotalError, setSubTotalError] = useState("");
+    const [taxType, setTaxType] = useState("");
+    const [taxTypeError, setTaxTypeError] = useState("");
+    const [amount, setAmount] = useState();
+    const [paymentValidationTrigger, setPaymentValidationTrigger] =
+      useState(false);
 
     useEffect(() => {
       setActiveKey("1");
@@ -229,6 +245,28 @@ const CustomerUpdate = forwardRef(
         setSignatureBase64(customerDetails.signature_image);
         setRegionId(customerDetails.region_id);
         getBranchesData(customerDetails, true);
+        console.log("paymentMasterDetails", paymentMasterDetails);
+        //payment usestaes
+        setSubTotal(parseFloat(customerDetails.primary_fees));
+        // { id: 1, name: "GST (18%)" },
+        //           { id: 2, name: "SGST (18%)" },
+        //           { id: 3, name: "IGST (18%)" },
+        //           { id: 4, name: "VAT (18%)" },
+        //           { id: 5, name: "No tax" },
+        setTaxType(
+          paymentMasterDetails?.tax_type == "GST (18%)"
+            ? 1
+            : paymentMasterDetails?.tax_type == "SGST (18%)"
+            ? 2
+            : paymentMasterDetails?.tax_type == "IGST (18%)"
+            ? 3
+            : paymentMasterDetails?.tax_type == "VAT (18%)"
+            ? 4
+            : paymentMasterDetails?.tax_type == "No Tax"
+            ? 5
+            : ""
+        );
+        setAmount(parseFloat(paymentMasterDetails?.total_amount));
       } catch (error) {
         console.log("getcustomer by id error", error);
       } finally {
@@ -259,8 +297,8 @@ const CustomerUpdate = forwardRef(
     };
 
     useImperativeHandle(ref, () => ({
-      handlePersonalDetails,
-      handleSubmit,
+      handleCustomerUpdate,
+      handlePaymentUpdate,
       formReset,
     }));
 
@@ -284,49 +322,45 @@ const CustomerUpdate = forwardRef(
       }
     };
 
-    const handlePersonalDetails = () => {
-      setValidationTrigger(true);
-      const nameValidate = nameValidator(name);
-      const emailValidate = emailValidator(email);
-      const mobileValidate = mobileValidator(mobile);
-      const whatsAppValidate = mobileValidator(whatsApp);
-      const dateOfBirthValidate = selectValidator(dateOfBirth);
-      const genderValidate = selectValidator(gender);
-      const dateOfJoiningValidate = selectValidator(dateOfJoining);
-      const countryValidate = selectValidator(countryId);
-      const stateValidate = selectValidator(stateId);
-      const areaValidate = selectValidator(areaId);
+    const handleSubTotal = (e) => {
+      const input = e.target.value;
 
-      setNameError(nameValidate);
-      setEmailError(emailValidate);
-      setMobileError(mobileValidate);
-      setWhatsAppError(whatsAppValidate);
-      setDateOfBirthError(dateOfBirthValidate);
-      setGenderError(genderValidate);
-      setDateOfJoiningError(dateOfJoiningValidate);
-      setCountryIdError(countryValidate);
-      setStateIdError(stateValidate);
-      setAreaIdError(areaValidate);
+      // Allow numbers, decimal point, or empty string
+      if (!/^\d*\.?\d*$/.test(input)) return;
 
-      if (
-        nameValidate ||
-        emailValidate ||
-        mobileValidate ||
-        whatsAppValidate ||
-        dateOfBirthValidate ||
-        genderValidate ||
-        dateOfJoiningValidate ||
-        countryValidate ||
-        stateValidate ||
-        areaValidate
-      )
-        return;
+      setSubTotal(input); // store as string for user input
 
-      setActiveKey("2");
-      setUpdateDrawerTabKey("2");
+      const value = parseFloat(input); // parse for calculations
+
+      if (paymentValidationTrigger) {
+        setSubTotalError(selectValidator(value));
+      }
+      //handle total amount
+      const amnt = calculateAmount(value, taxType == 5 ? 0 : 18);
+      if (isNaN(amnt)) {
+        setAmount("");
+      } else {
+        setAmount(parseFloat(amnt));
+      }
     };
 
-    const handleSubmit = async () => {
+    const handleTaxType = (e) => {
+      setTaxType(e.target.value);
+      if (paymentValidationTrigger) {
+        setTaxTypeError(selectValidator(e.target.value));
+      }
+      const amnt = calculateAmount(
+        parseFloat(subTotal),
+        e.target.value == 5 ? 0 : 18
+      );
+      if (isNaN(amnt)) {
+        setAmount("");
+      } else {
+        setAmount(parseFloat(amnt));
+      }
+    };
+
+    const handleCustomerUpdate = async () => {
       setValidationTrigger(true);
       const nameValidate = nameValidator(name);
       const emailValidate = emailValidator(email);
@@ -389,7 +423,7 @@ const CustomerUpdate = forwardRef(
         return;
 
       setUpdateButtonLoading(true);
-      const getCustomerArea = areaOptions.find((f) => f.id === areaId);
+      const getCustomerArea = areaOptions.find((f) => f.id == areaId);
 
       const payload = {
         id: customerId,
@@ -434,6 +468,63 @@ const CustomerUpdate = forwardRef(
       }
     };
 
+    const handlePaymentUpdate = async () => {
+      if (!permissions.includes("Update Payment Master")) {
+        CommonMessage("error", "Access Denied");
+        return;
+      }
+
+      setPaymentValidationTrigger(true);
+      const subTotalValidate = selectValidator(subTotal);
+      const taxTypeValidate = selectValidator(taxType);
+
+      setSubTotalError(subTotalValidate);
+      setTaxTypeError(taxTypeValidate);
+
+      if (subTotalValidate || taxTypeValidate) return;
+
+      setUpdateButtonLoading(true);
+      const gstAmount = amount - subTotal;
+
+      console.log("GST Amount:", gstAmount);
+
+      const payload = {
+        payment_master_id: paymentMasterDetails?.id,
+        tax_type:
+          taxType == 1
+            ? "GST (18%)"
+            : taxType == 2
+            ? "SGST (18%)"
+            : taxType == 3
+            ? "IGST (18%)"
+            : taxType == 4
+            ? "VAT (18%)"
+            : "No Tax",
+        gst_percentage: taxType == 5 ? "0%" : "18%",
+        gst_amount: parseFloat(gstAmount).toFixed(2),
+        total_amount: amount,
+      };
+      try {
+        await paymentMasterUpdate(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          setUpdateButtonLoading(false);
+          setIsOpenEditDrawer(false);
+          setUpdateDrawerTabKey("1");
+          setActiveKey("1");
+          callgetCustomersApi();
+        }, 300);
+      } catch (error) {
+        console.log("paymant master error", error);
+        setUpdateButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
+      }
+    };
+
     const handleTabClick = (key, e) => {
       setActiveKey(key);
       setUpdateDrawerTabKey(key);
@@ -469,6 +560,13 @@ const CustomerUpdate = forwardRef(
       setPlacementSupport("");
       setPlacementSupportError("");
       setUpdateDrawerTabKey("1");
+      //payment usestates
+      setPaymentValidationTrigger(false);
+      setSubTotal();
+      setSubTotalError("");
+      setTaxType("");
+      setTaxTypeError("");
+      setAmount();
     };
 
     const renderPersonalDetails = () => {
@@ -645,6 +743,7 @@ const CustomerUpdate = forwardRef(
                   required={true}
                   options={areaOptions}
                   onChange={(e) => {
+                    console.log("aaaaaaaa", e.target.value);
                     setAreaId(e.target.value);
                     if (validationTrigger) {
                       setAreaIdError(selectValidator(e.target.value));
@@ -656,13 +755,8 @@ const CustomerUpdate = forwardRef(
               </Col>
             </Row>
           </div>
-        </div>
-      );
-    };
 
-    const renderCourseDetails = () => {
-      return (
-        <div>
+          <p className="customerupdate_coursedetails_heading">Course Details</p>
           <div className="customerupdate_maincontainer">
             <Row gutter={12} style={{ marginTop: "8px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
@@ -767,7 +861,52 @@ const CustomerUpdate = forwardRef(
                 />
               </Col>
             </Row>
-          </div>{" "}
+          </div>
+        </div>
+      );
+    };
+
+    const renderPaymentMaster = () => {
+      return (
+        <div>
+          <div className="customerupdate_maincontainer">
+            <Row gutter={12} style={{ marginTop: "8px" }}>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonInputField
+                  label="Fees"
+                  value={subTotal}
+                  onChange={handleSubTotal}
+                  error={subTotalError}
+                  required={true}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="Tax Type"
+                  required={true}
+                  options={[
+                    { id: 1, name: "GST (18%)" },
+                    { id: 2, name: "SGST (18%)" },
+                    { id: 3, name: "IGST (18%)" },
+                    { id: 4, name: "VAT (18%)" },
+                    { id: 5, name: "No Tax" },
+                  ]}
+                  onChange={handleTaxType}
+                  value={taxType}
+                  error={taxTypeError}
+                  height="41px"
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonInputField
+                  label="Total Amount"
+                  required={true}
+                  disabled
+                  value={amount}
+                />
+              </Col>
+            </Row>
+          </div>
         </div>
       );
     };
@@ -775,13 +914,13 @@ const CustomerUpdate = forwardRef(
     const tabItems = [
       {
         key: "1",
-        label: "Personal Details",
+        label: "Candidate Details",
         children: renderPersonalDetails(),
       },
       {
         key: "2",
-        label: "Course Details",
-        children: renderCourseDetails(),
+        label: "Payment Details",
+        children: renderPaymentMaster(),
       },
     ];
 

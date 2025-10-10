@@ -124,7 +124,7 @@ export const createUser = async (payload) => {
 
 export const getUsers = async (payload) => {
   try {
-    const response = await api.get("/api/getUsers", { params: payload });
+    const response = await api.post("/api/getUsers", payload);
     return response;
   } catch (error) {
     throw error;
@@ -672,6 +672,15 @@ export const getCustomerFullHistory = async (customerid) => {
 };
 
 //payment api's
+export const paymentMasterUpdate = async (payload) => {
+  try {
+    const response = await api.put("/api/updatePaymentMaster", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const customerDuePayment = async (payload) => {
   try {
     const response = await api.post("/api/partPayment", payload);

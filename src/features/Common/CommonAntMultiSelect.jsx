@@ -83,11 +83,19 @@ export default function CommonAntdMultiSelect({
         {/* Normal Options */}
         {options.map((item) => {
           const itemValue = item.user_id ?? item.role_id ?? item.id;
-          const itemLabel = item.user_name ?? item.role_name ?? item.name;
+          const itemLabel = item.user_name
+            ? `${item.user_name} - ${item.user_id}`
+            : item.role_name ?? item.name;
 
           return (
             <Select.Option key={itemValue} value={itemValue} label={itemLabel}>
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textWrap: "wrap",
+                }}
+              >
                 <Checkbox
                   checked={value.includes(itemValue)}
                   style={{ marginRight: 8 }}
