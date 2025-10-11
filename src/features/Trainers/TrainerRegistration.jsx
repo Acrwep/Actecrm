@@ -445,20 +445,19 @@ export default function TrainerRegistration() {
               <CommonInputField
                 label="Mobile"
                 required={true}
-                maxLength={10}
+                maxLength={13}
                 onChange={(e) => {
-                  setMobile(e.target.value);
+                  const value = e.target.value;
+                  const cleanedMobile = value
+                    .replace(/\D/g, "")
+                    .replace(/^0+/, "");
+                  setMobile(cleanedMobile);
                   if (validationTrigger) {
-                    setMobileError(mobileValidator(e.target.value));
+                    setMobileError(mobileValidator(cleanedMobile));
                   }
                 }}
                 value={mobile}
                 error={mobileError}
-                onInput={(e) => {
-                  if (e.target.value.length > 13) {
-                    e.target.value = e.target.value.slice(0, 13);
-                  }
-                }}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
@@ -466,21 +465,20 @@ export default function TrainerRegistration() {
                 label="Whatsapp Number"
                 icon={<SiWhatsapp color="#39AE41" />}
                 required={true}
-                maxLength={10}
+                maxLength={13}
                 onChange={(e) => {
-                  setWhatsApp(e.target.value);
+                  const value = e.target.value;
+                  const cleanedMobile = value
+                    .replace(/\D/g, "")
+                    .replace(/^0+/, "");
+                  setWhatsApp(cleanedMobile);
                   if (validationTrigger) {
-                    setWhatsAppError(mobileValidator(e.target.value));
+                    setWhatsAppError(mobileValidator(cleanedMobile));
                   }
                 }}
                 value={whatsApp}
                 error={whatsAppError}
                 errorFontSize="10px"
-                onInput={(e) => {
-                  if (e.target.value.length > 13) {
-                    e.target.value = e.target.value.slice(0, 13);
-                  }
-                }}
               />{" "}
             </Col>
           </Row>

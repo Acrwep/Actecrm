@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Upload, Button, Tabs } from "antd";
+import { Row, Col, Upload, Modal, Tabs } from "antd";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -19,6 +19,7 @@ import {
 } from "../Common/Validation";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { SiWhatsapp } from "react-icons/si";
+import { PlusOutlined } from "@ant-design/icons";
 import "./styles.css";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import {
@@ -53,6 +54,10 @@ const CustomerUpdate = forwardRef(
     const permissions = useSelector((state) => state.userpermissions);
 
     const [activeKey, setActiveKey] = useState("1");
+    const [profilePictureArray, setProfilePictureArray] = useState([]);
+    const [profilePictureBase64, setProfilePictureBase64] = useState("");
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [email, setEmail] = useState("");
@@ -93,11 +98,11 @@ const CustomerUpdate = forwardRef(
     const [batchTimingError, setBatchTimingError] = useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
     const [placementSupportError, setPlacementSupportError] = useState(null);
+    const [server, setServer] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
     const [branchId, setBranchId] = useState(null);
     const [branchIdError, setBranchIdError] = useState("");
 
-    const [profilePictureBase64, setProfilePictureBase64] = useState("");
     const [signatureBase64, setSignatureBase64] = useState("");
     const [loading, setLoading] = useState(true);
     const [validationTrigger, setValidationTrigger] = useState(false);
@@ -240,7 +245,22 @@ const CustomerUpdate = forwardRef(
         setBatchTiming(customerDetails.batch_timing_id);
         setBranchId(customerDetails.branch_id);
         setPlacementSupport(customerDetails.placement_support);
+        setServer(
+          customerDetails.is_server_required === 1 ? "Need" : "Not Need"
+        );
         setCourse(customerDetails.enrolled_course);
+        if (customerDetails.profile_image) {
+          setProfilePictureArray([
+            {
+              uid: "-1",
+              name: "profile.jpg",
+              status: "done",
+              url: customerDetails.profile_image, // Base64 string directly usable
+            },
+          ]);
+        } else {
+          setProfilePictureArray([]);
+        }
         setProfilePictureBase64(customerDetails.profile_image);
         setSignatureBase64(customerDetails.signature_image);
         setRegionId(customerDetails.region_id);
@@ -248,11 +268,6 @@ const CustomerUpdate = forwardRef(
         console.log("paymentMasterDetails", paymentMasterDetails);
         //payment usestaes
         setSubTotal(parseFloat(customerDetails.primary_fees));
-        // { id: 1, name: "GST (18%)" },
-        //           { id: 2, name: "SGST (18%)" },
-        //           { id: 3, name: "IGST (18%)" },
-        //           { id: 4, name: "VAT (18%)" },
-        //           { id: 5, name: "No tax" },
         setTaxType(
           paymentMasterDetails?.tax_type == "GST (18%)"
             ? 1
@@ -303,6 +318,74 @@ const CustomerUpdate = forwardRef(
     }));
 
     //onchange function
+    const handleProfileAttachment = ({ fileList: newFileList }) => {
+      console.log("newww", newFileList);
+
+      if (newFileList.length <= 0) {
+        setProfilePictureArray([]);
+        setProfilePictureBase64("");
+        return;
+      }
+
+      const file = newFileList[0].originFileObj; // actual File object
+
+      // ✅ Check file type
+      const isValidType =
+        file.type === "image/png" ||
+        file.type === "image/jpeg" ||
+        file.type === "image/jpg";
+
+      // ✅ Check file size (1MB = 1,048,576 bytes)
+      const isValidSize = file.size <= 1024 * 1024;
+
+      if (isValidType && isValidSize) {
+        console.log("fileeeee", newFileList);
+        setProfilePictureArray(newFileList);
+        CommonMessage("success", "Profile uploaded");
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result; // Extract Base64 content
+          setProfilePictureBase64(base64String); // Store in state
+        };
+      } else {
+        if (!isValidType) {
+          CommonMessage("error", "Accept only .png");
+        } else if (!isValidSize) {
+          CommonMessage("error", "File size must be 1MB or less");
+        }
+        setProfilePictureArray([]);
+        setProfilePictureBase64("");
+      }
+    };
+
+    const handlePreview = async (file) => {
+      if (file.url) {
+        setPreviewImage(file.url);
+        setPreviewOpen(true);
+        return;
+      }
+      setPreviewOpen(true);
+      const rawFile = file.originFileObj || file;
+      const reader = new FileReader();
+      reader.readAsDataURL(rawFile);
+      reader.onload = () => {
+        const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+        console.log("urlllll", dataUrl);
+        setPreviewImage(dataUrl); // Show in Modal
+        setPreviewOpen(true);
+      };
+    };
+
+    const handleRemoveProfile = (fileToRemove) => {
+      const newFileList = profilePictureArray.filter(
+        (file) => file.uid !== fileToRemove.uid
+      );
+      setProfilePictureArray(newFileList);
+      // CommonToaster("Profile removed");
+    };
+
     const handleCountry = (e) => {
       const value = e.target.value;
       console.log(value, countryOptions);
@@ -531,6 +614,8 @@ const CustomerUpdate = forwardRef(
     };
 
     const formReset = () => {
+      setProfilePictureArray([]);
+      setProfilePictureBase64("");
       setName("");
       setNameError("");
       setEmail("");
@@ -559,6 +644,7 @@ const CustomerUpdate = forwardRef(
       setBranchIdError("");
       setPlacementSupport("");
       setPlacementSupportError("");
+      setServer("");
       setUpdateDrawerTabKey("1");
       //payment usestates
       setPaymentValidationTrigger(false);
@@ -573,6 +659,28 @@ const CustomerUpdate = forwardRef(
       return (
         <div>
           <div className="customerupdate_maincontainer">
+            <div className="customerupdate_profilepicture_container">
+              <Upload
+                listType="picture-circle"
+                fileList={profilePictureArray}
+                onPreview={handlePreview}
+                onChange={handleProfileAttachment}
+                onRemove={(file) => handleRemoveProfile(file)}
+                beforeUpload={() => false} // prevent auto upload
+                style={{ width: 90, height: 90 }} // reduce size
+                accept=".png,.jpg,.jpeg"
+              >
+                {profilePictureArray.length >= 1 ? null : (
+                  <div>
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8, fontSize: "12px" }}>
+                      Upload <br /> Profile
+                    </div>
+                  </div>
+                )}
+              </Upload>
+            </div>
+
             <Row gutter={12} style={{ marginTop: "8px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonInputField
@@ -606,21 +714,19 @@ const CustomerUpdate = forwardRef(
                 <CommonInputField
                   label="Mobile"
                   required={true}
-                  maxLength={10}
-                  type="number"
+                  maxLength={13}
                   onChange={(e) => {
-                    setMobile(e.target.value);
+                    const value = e.target.value;
+                    const cleanedMobile = value
+                      .replace(/\D/g, "")
+                      .replace(/^0+/, "");
+                    setMobile(cleanedMobile);
                     if (validationTrigger) {
-                      setMobileError(mobileValidator(e.target.value));
+                      setMobileError(mobileValidator(cleanedMobile));
                     }
                   }}
                   value={mobile}
                   error={mobileError}
-                  onInput={(e) => {
-                    if (e.target.value.length > 15) {
-                      e.target.value = e.target.value.slice(0, 15);
-                    }
-                  }}
                 />
               </Col>
             </Row>
@@ -631,22 +737,20 @@ const CustomerUpdate = forwardRef(
                   label="Whatsapp Number"
                   icon={<SiWhatsapp color="#39AE41" />}
                   required={true}
-                  maxLength={10}
-                  type="number"
+                  maxLength={13}
                   onChange={(e) => {
-                    setWhatsApp(e.target.value);
+                    const value = e.target.value;
+                    const cleanedMobile = value
+                      .replace(/\D/g, "")
+                      .replace(/^0+/, "");
+                    setWhatsApp(cleanedMobile);
                     if (validationTrigger) {
-                      setWhatsAppError(mobileValidator(e.target.value));
+                      setWhatsAppError(mobileValidator(cleanedMobile));
                     }
                   }}
                   value={whatsApp}
                   error={whatsAppError}
                   errorFontSize="10px"
-                  onInput={(e) => {
-                    if (e.target.value.length > 15) {
-                      e.target.value = e.target.value.slice(0, 15);
-                    }
-                  }}
                 />{" "}
               </Col>
 
@@ -855,6 +959,23 @@ const CustomerUpdate = forwardRef(
                 />
               </Col>
             </Row>
+
+            <Row gutter={12} style={{ marginTop: "30px" }}>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  label="Server"
+                  required={true}
+                  options={[
+                    { id: "Need", name: "Need" },
+                    { id: "Not Need", name: "Not Need" },
+                  ]}
+                  onChange={(e) => {
+                    setServer(e.target.value);
+                  }}
+                  value={server}
+                />
+              </Col>
+            </Row>
           </div>
         </div>
       );
@@ -932,6 +1053,14 @@ const CustomerUpdate = forwardRef(
             className="customer_update_tab"
           />
         )}
+        <Modal
+          open={previewOpen}
+          title="Preview Profile"
+          footer={null}
+          onCancel={() => setPreviewOpen(false)}
+        >
+          <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+        </Modal>
       </>
     );
   }

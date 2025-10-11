@@ -41,6 +41,7 @@ export default function CommonSelectField({
         size="small"
         sx={{
           flex: 1,
+          width: width ? width : "100%",
           "& .MuiInputLabel-root": {
             fontSize: labelFontSize || "14px",
             padding: "0px 0px",
@@ -76,7 +77,7 @@ export default function CommonSelectField({
               : showLabelStatus === "Mobile"
               ? option?.mobile
               : option?.user_name
-              ? `${option.user_name} - ${option.user_id}`
+              ? `${option.user_id} - ${option.user_name} `
               : option?.exp_range || option?.name || ""
           }
           onChange={(event, newValue) =>

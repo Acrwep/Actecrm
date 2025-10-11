@@ -13,6 +13,18 @@ const usersListSlice = createSlice({
   },
 });
 
+const userSearchValue = null;
+const userSearchValueSlice = createSlice({
+  name: "usersearchvalue",
+  initialState: userSearchValue,
+  reducers: {
+    storeUserSearchValue(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const allUsersListSlice = createSlice({
   name: "alluserslist",
   initialState,
@@ -40,6 +52,18 @@ const roleListSlice = createSlice({
   initialState,
   reducers: {
     storeRoleList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
+const roleSearchValue = null;
+const roleSearchValueSlice = createSlice({
+  name: "rolesearchvalue",
+  initialState: roleSearchValue,
+  reducers: {
+    storeRoleSearchValue(state, action) {
       state = action.payload;
       return state;
     },
@@ -167,11 +191,13 @@ const userPermissionsSlice = createSlice({
 });
 
 //define slice
+export const { storeUserSearchValue } = userSearchValueSlice.actions;
 export const { storeUsersList } = usersListSlice.actions;
 export const { storeAllUsersList } = allUsersListSlice.actions;
 export const { storeNxtFollowupActionId } = nxtFollowupActionIdSlice.actions;
 export const { storeGroupList } = groupListSlice.actions;
 export const { storeRoleList } = roleListSlice.actions;
+export const { storeRoleSearchValue } = roleSearchValueSlice.actions;
 export const { storePermissionsList } = permissionsListSlice.actions;
 export const { storeLeadsModulePermissionList } =
   leadsModulePermissionListSlice.actions;
@@ -190,9 +216,11 @@ export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 //create reducer
 export const usersListReducer = usersListSlice.reducer;
+export const userSearchValueReducer = userSearchValueSlice.reducer;
 export const allUsersListReducer = allUsersListSlice.reducer;
 export const groupListReducer = groupListSlice.reducer;
 export const roleListReducer = roleListSlice.reducer;
+export const roleSearchValueReducer = roleSearchValueSlice.reducer;
 export const permissionsListReducer = permissionsListSlice.reducer;
 export const childUsersReducer = childUsersSlice.reducer;
 export const downlineUsersReducer = downlineUsersSlice.reducer;

@@ -11,6 +11,7 @@ import {
   Checkbox,
   Modal,
   Switch,
+  Spin,
 } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -32,6 +33,7 @@ import {
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { SiWhatsapp } from "react-icons/si";
+import { MdFormatListNumbered } from "react-icons/md";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
@@ -57,6 +59,7 @@ import {
   getAllAreas,
   getBranches,
   getLeads,
+  getLeadsCountByUserIds,
   getTechnologies,
   getUsers,
   leadEmailAndMobileValidator,
@@ -255,6 +258,8 @@ export default function Leads({
   const downlineUsers = useSelector((state) => state.downlineusers);
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
+  const [leadCountLoading, setLeadCountLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -775,15 +780,17 @@ export default function Leads({
 
   const handleMobileNumber = async (e) => {
     const value = e.target.value;
-    setMobile(value);
-    const mobileValidate = mobileValidator(value);
+    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+    console.log("cleanedMobile", cleanedMobile);
+    setMobile(cleanedMobile);
+    const mobileValidate = mobileValidator(cleanedMobile);
 
     setMobileError(mobileValidate);
 
     if (mobileValidate) return;
 
     const payload = {
-      mobile: value,
+      mobile: cleanedMobile,
     };
     try {
       const response = await leadEmailAndMobileValidator(payload);
@@ -808,15 +815,16 @@ export default function Leads({
 
   const handleWhatsAppNumber = async (e) => {
     const value = e.target.value;
-    setWhatsApp(value);
-    const whatsAppValidate = mobileValidator(value);
+    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+    setWhatsApp(cleanedMobile);
+    const whatsAppValidate = mobileValidator(cleanedMobile);
 
     setWhatsAppError(whatsAppValidate);
 
     if (whatsAppValidate) return;
 
     const payload = {
-      mobile: value,
+      mobile: cleanedMobile,
     };
     try {
       const response = await leadEmailAndMobileValidator(payload);
@@ -1174,6 +1182,12 @@ export default function Leads({
           } else {
             formReset(true);
           }
+          const container = document.getElementById(
+            "leadform_basicinfo_heading"
+          );
+          container.scrollIntoView({
+            behavior: "smooth",
+          });
           setPagination({
             page: 1,
           });
@@ -1693,6 +1707,33 @@ export default function Leads({
     );
   };
 
+  const handleLeadCountByExecutive = async () => {
+    setLeadCountLoading(true);
+    let lead_executive = [];
+    if (leadExecutiveId) {
+      lead_executive.push(leadExecutiveId);
+    } else {
+      lead_executive = [];
+    }
+    const payload = {
+      start_date: selectedDates[0],
+      end_date: selectedDates[1],
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+    };
+    try {
+      const response = await getLeadsCountByUserIds(payload);
+      console.log("leads count response", response);
+      setLeadCountByExecutives(response?.data?.data || []);
+      setTimeout(() => {
+        setLeadCountLoading(false);
+      }, 200);
+    } catch (error) {
+      setLeadCountLoading(false);
+      setLeadCountByExecutives([]);
+      console.log("error", error);
+    }
+  };
+
   return (
     <div>
       <Row>
@@ -1808,30 +1849,86 @@ export default function Leads({
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
-                <CommonSelectField
-                  height="35px"
-                  label="Select Lead Executive"
-                  labelMarginTop="0px"
-                  labelFontSize="13px"
-                  options={leadExecutives}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setLeadExecutiveId(e.target.value);
-                    setPagination({
-                      page: 1,
-                    });
-                    getAllLeadData(
-                      searchValue,
-                      selectedDates[0],
-                      selectedDates[1],
-                      e.target.value,
-                      1,
-                      pagination.limit
-                    );
-                  }}
-                  value={leadExecutiveId}
-                  disableClearable={false}
-                />
+                <div className="overallduecustomers_filterContainer">
+                  <div style={{ flex: 1 }}>
+                    <CommonSelectField
+                      width="100%"
+                      height="35px"
+                      label="Select Lead Executive"
+                      labelMarginTop="0px"
+                      labelFontSize="12px"
+                      options={leadExecutives}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        setLeadExecutiveId(e.target.value);
+                        setPagination({
+                          page: 1,
+                        });
+                        getAllLeadData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          e.target.value,
+                          1,
+                          pagination.limit
+                        );
+                      }}
+                      value={leadExecutiveId}
+                      disableClearable={false}
+                      borderRightNone={true}
+                    />
+                  </div>
+                  <div onClick={handleLeadCountByExecutive}>
+                    <Flex
+                      justify="center"
+                      align="center"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <Tooltip
+                        placement="bottomLeft"
+                        color="#fff"
+                        title={
+                          <>
+                            {leadCountLoading ? (
+                              <div className="leadsmanager_executivecount_loader_container">
+                                <Spin size="small" />
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  maxHeight: "140px",
+                                  overflowY: "auto",
+                                  whiteSpace: "pre-line",
+                                  lineHeight: "26px",
+                                }}
+                              >
+                                {leadCountByExecutives.map((item, index) => {
+                                  return (
+                                    <p className="leadsmanager_executivecount_text">
+                                      {`${index + 1}. ${item.user_name} - ${
+                                        item.lead_count
+                                      }`}
+                                    </p>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </>
+                        }
+                        trigger={["click"]}
+                        onOpenChange={(value) => {
+                          if (value === false) {
+                            setLeadCountByExecutives([]);
+                          }
+                        }}
+                      >
+                        <Button className="leadsmanager_executivecount_iconcontainer">
+                          <MdFormatListNumbered size={16} />
+                        </Button>
+                      </Tooltip>
+                    </Flex>
+                  </div>
+                </div>
               </Col>
             )}
             <Col span={10}>
@@ -1953,27 +2050,12 @@ export default function Leads({
               <CommonInputField
                 label="Mobile Number"
                 required={true}
-                maxLength={10}
-                type="number"
+                maxLength={13}
                 value={mobile}
                 onChange={handleMobileNumber}
                 error={mobileError}
-                onInput={(e) => {
-                  if (e.target.value.length > 15) {
-                    e.target.value = e.target.value.slice(0, 15);
-                  }
-                }}
                 errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
               />
-              {/* <div className="leadmanager_countrycode_select_container">
-                <CommonCountryCodeSelect
-                  label="Select Country"
-                  value={phoneCode}
-                  onChange={(e) => setPhoneCode(e.target.value)}
-                  required
-                  error={phoneCode === "" ? "is required" : ""}
-                />{" "}
-              </div> */}
             </div>
           </Col>
         </Row>
@@ -1984,16 +2066,10 @@ export default function Leads({
               label="Whatsapp Number"
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
-              maxLength={10}
-              type="number"
+              maxLength={13}
               value={whatsApp}
               onChange={handleWhatsAppNumber}
               error={whatsAppError}
-              onInput={(e) => {
-                if (e.target.value.length > 15) {
-                  e.target.value = e.target.value.slice(0, 15);
-                }
-              }}
               errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
             />
           </Col>

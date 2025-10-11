@@ -375,6 +375,15 @@ export const assignLead = async (payload) => {
   }
 };
 
+export const getLeadsCountByUserIds = async (payload) => {
+  try {
+    const response = await api.post("/api/getLeadCountByUser", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getLeadAndFollowupCount = async (payload) => {
   try {
     const response = await api.post("/api/getLeadCount", payload);
@@ -396,6 +405,15 @@ export const getLeadFollowUps = async (payload) => {
 export const updateFollowUp = async (payload) => {
   try {
     const response = await api.put("/api/updateFollowUp", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getLeadFollowUpsCountByUserIds = async (payload) => {
+  try {
+    const response = await api.post("/api/getFollowupCountByUser", payload);
     return response;
   } catch (error) {
     throw error;
@@ -767,9 +785,9 @@ export const updateRole = async (payload) => {
   }
 };
 
-export const getRoles = async () => {
+export const getRoles = async (payload) => {
   try {
-    const response = await api.get(`/api/getRoles`);
+    const response = await api.get(`/api/getRoles`, { params: payload });
     return response;
   } catch (error) {
     throw error;

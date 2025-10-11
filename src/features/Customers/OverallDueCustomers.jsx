@@ -1072,6 +1072,24 @@ export default function OverallDueCustomers({
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.course_fees
+                        ? "₹" + customerDetails.course_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
                         Course Fees
                         <span className="customerdetails_coursegst">{` (+Gst)`}</span>
@@ -1125,24 +1143,6 @@ export default function OverallDueCustomers({
                         ? moment(customerDetails.date_of_joining).format(
                             "DD/MM/YYYY"
                           )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
@@ -1210,7 +1210,7 @@ export default function OverallDueCustomers({
                   </Col>
                 </Row>
 
-                <Row style={{ marginTop: "12px" }}>
+                {/* <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
@@ -1222,6 +1222,24 @@ export default function OverallDueCustomers({
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row> */}
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
@@ -1534,7 +1552,10 @@ export default function OverallDueCustomers({
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
                         {customerDetails && customerDetails.course_fees
                           ? "₹" + customerDetails.course_fees
                           : "-"}
@@ -1759,7 +1780,7 @@ export default function OverallDueCustomers({
                                 className="customerdetails_text"
                                 style={{
                                   color: "#3c9111",
-                                  fontWeight: 500,
+                                  fontWeight: 700,
                                 }}
                               >
                                 {"₹" + item.amount}

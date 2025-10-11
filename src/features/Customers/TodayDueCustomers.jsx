@@ -1013,6 +1013,24 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.course_fees
+                        ? "₹" + customerDetails.course_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
                         Course Fees
                         <span className="customerdetails_coursegst">{` (+Gst)`}</span>
@@ -1475,7 +1493,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
                         {customerDetails && customerDetails.course_fees
                           ? "₹" + customerDetails.course_fees
                           : "-"}
@@ -1722,7 +1743,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                                 className="customerdetails_text"
                                 style={{
                                   color: "#3c9111",
-                                  fontWeight: 500,
+                                  fontWeight: 700,
                                 }}
                               >
                                 {"₹" + item.amount}

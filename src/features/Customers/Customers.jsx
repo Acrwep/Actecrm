@@ -2122,7 +2122,6 @@ export default function Customers() {
         }, 300);
       } else {
         setTrainerHistory([]);
-        console.log("hiiiiiiiiiiiiiii");
         setTimeout(() => {
           setHistoryLoading(false);
         }, 300);
@@ -3570,7 +3569,7 @@ export default function Customers() {
         title="Customer Details"
         open={isOpenDetailsDrawer}
         onClose={formReset}
-        width="45%"
+        width="50%"
         style={{ position: "relative" }}
       >
         <div className="customer_profileContainer">
@@ -3737,6 +3736,22 @@ export default function Customers() {
                 </p>
               </Col>
             </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineDateRange size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Created At</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.created_date
+                    ? moment(customerDetails.created_date).format("DD/MM/YYYY")
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
           </Col>
         </Row>
 
@@ -3758,6 +3773,24 @@ export default function Customers() {
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.course_name
                         ? customerDetails.course_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
                         : "-"}
                     </p>
                   </Col>
@@ -3819,24 +3852,6 @@ export default function Customers() {
                         ? moment(customerDetails.date_of_joining).format(
                             "DD/MM/YYYY"
                           )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
@@ -3907,6 +3922,24 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                {/* <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
                         Placement Support
                       </p>
@@ -3919,7 +3952,7 @@ export default function Customers() {
                         : "-"}
                     </p>
                   </Col>
-                </Row>
+                </Row> */}
               </Col>
             </Row>
           </div>
@@ -4185,6 +4218,21 @@ export default function Customers() {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.primary_fees
+                    ? "₹" + customerDetails.primary_fees
                     : "-"}
                 </p>
               </Col>
@@ -6795,6 +6843,21 @@ export default function Customers() {
                 <p className="customerdetails_text">
                   {customerDetails && customerDetails.course_name
                     ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.primary_fees
+                    ? "₹" + customerDetails.primary_fees
                     : "-"}
                 </p>
               </Col>

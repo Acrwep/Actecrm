@@ -806,21 +806,19 @@ export default function Trainers() {
             <CommonInputField
               label="Trainer Mobile"
               required={true}
-              maxLength={10}
-              type="number"
+              maxLength={13}
               onChange={(e) => {
-                setMobile(e.target.value);
+                const value = e.target.value;
+                const cleanedMobile = value
+                  .replace(/\D/g, "")
+                  .replace(/^0+/, "");
+                setMobile(cleanedMobile);
                 if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
+                  setMobileError(mobileValidator(cleanedMobile));
                 }
               }}
               value={mobile}
               error={mobileError}
-              onInput={(e) => {
-                if (e.target.value.length > 13) {
-                  e.target.value = e.target.value.slice(0, 13);
-                }
-              }}
             />
           </Col>
         </Row>
@@ -831,22 +829,20 @@ export default function Trainers() {
               label="Whatsapp Number"
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
-              maxLength={10}
-              type="number"
+              maxLength={13}
               onChange={(e) => {
-                setWhatsApp(e.target.value);
+                const value = e.target.value;
+                const cleanedMobile = value
+                  .replace(/\D/g, "")
+                  .replace(/^0+/, "");
+                setWhatsApp(cleanedMobile);
                 if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(e.target.value));
+                  setWhatsAppError(mobileValidator(cleanedMobile));
                 }
               }}
               value={whatsApp}
               error={whatsAppError}
               errorFontSize="10px"
-              onInput={(e) => {
-                if (e.target.value.length > 13) {
-                  e.target.value = e.target.value.slice(0, 13);
-                }
-              }}
             />
           </Col>
 

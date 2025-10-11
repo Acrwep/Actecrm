@@ -19,7 +19,11 @@ import { createUser, getUsers, updateUser } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { useDispatch, useSelector } from "react-redux";
-import { storeAllUsersList, storeUsersList } from "../Redux/Slice";
+import {
+  storeAllUsersList,
+  storeUserSearchValue,
+  storeUsersList,
+} from "../Redux/Slice";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
@@ -32,6 +36,7 @@ export default function Users({
 }) {
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
+  const userSearchValue = useSelector((state) => state.usersearchvalue);
   const allUsersData = useSelector((state) => state.alluserslist);
   const rolesData = useSelector((state) => state.rolelist);
   //permissions
@@ -244,6 +249,14 @@ export default function Users({
   ];
 
   useEffect(() => {
+    if (userSearchValue) {
+      setSearchValue(userSearchValue);
+    } else {
+      setSearchValue("");
+    }
+  }, []);
+
+  useEffect(() => {
     setAssignUsersData(allUsersData);
   }, [allUsersData]);
 
@@ -328,12 +341,14 @@ export default function Users({
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
+    dispatch(storeUserSearchValue(input));
     setTimeout(() => {
       setPagination({
         page: 1,
       });
-      getUsersData(e.target.value, 1, pagination.limit);
+      getUsersData(input, 1, pagination.limit);
     }, 300);
   };
 
@@ -398,7 +413,10 @@ export default function Users({
 
       // check child users
       user.child_users.forEach((child) => {
-        if (childUsers.includes(child.user_id)) {
+        if (
+          childUsers.includes(child.user_id) &&
+          !uniqueUsers.has(child.user_id)
+        ) {
           uniqueUsers.set(child.user_id, {
             user_id: child.user_id,
             user_name: child.user_name,
@@ -408,7 +426,7 @@ export default function Users({
     });
 
     const matchedUsers = Array.from(uniqueUsers.values());
-    console.log(matchedUsers);
+    console.log("matchedUsers", matchedUsers);
 
     const uniqueRoles = new Map();
 
@@ -424,7 +442,10 @@ export default function Users({
       // Check child users if exists
       if (Array.isArray(role.child_users)) {
         role.child_users.forEach((child) => {
-          if (childUsers.includes(child.role_id)) {
+          if (
+            childUsers.includes(child.role_id) &&
+            !uniqueRoles.has(child.role_id)
+          ) {
             uniqueRoles.set(child.role_id, {
               role_id: child.role_id,
               role_name: child.role_name,
@@ -435,7 +456,7 @@ export default function Users({
     });
 
     const matchedRoles = Array.from(uniqueRoles.values());
-    console.log(matchedRoles);
+    console.log("matchedRoles", matchedRoles);
 
     const payload = {
       ...(editUserId && { id: editUserId }),
@@ -510,6 +531,7 @@ export default function Users({
                     className="users_filter_closeIconContainer"
                     onClick={() => {
                       setSearchValue("");
+                      dispatch(storeUserSearchValue(null));
                       setPagination({
                         page: 1,
                       });
@@ -526,6 +548,7 @@ export default function Users({
               style={{
                 borderTopRightRadius: "0px",
                 borderBottomRightRadius: "0px",
+                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
               }}
               onChange={handleSearch}
               value={searchValue}
@@ -549,6 +572,7 @@ export default function Users({
                           return;
                         } else {
                           setSearchValue("");
+                          dispatch(storeUserSearchValue(null));
                           setPagination({
                             page: 1,
                           });

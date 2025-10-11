@@ -18,8 +18,10 @@ import {
   storeLeadsModulePermissionList,
   storePermissionsList,
   storeRoleList,
+  storeRoleSearchValue,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
+  storeUserSearchValue,
   storeUsersList,
 } from "../Redux/Slice";
 
@@ -38,6 +40,8 @@ export default function Settings() {
   });
 
   useEffect(() => {
+    dispatch(storeUserSearchValue(null));
+    dispatch(storeRoleSearchValue(null));
     getUsersData();
   }, []);
 
@@ -218,7 +222,7 @@ export default function Settings() {
         "Add Role",
         "Update Role",
         "Delete Role",
-        "Add Permission",
+        "Add Permissions",
       ];
 
       const sortedArray = settingsModule.sort(

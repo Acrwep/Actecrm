@@ -53,6 +53,31 @@
   position: relative;
   z-index: 1;
 }
+.leadsmanager_executivecount_iconcontainer {
+  border-radius: 0px !important;
+  border-top-right-radius: 3px !important;
+  border-bottom-right-radius: 3px !important;
+  border-color: rgb(128 128 128 / 44%) !important;
+  height: 35px;
+  padding: 10px !important;
+  color: #333 !important;
+}
+.leadsmanager_executivecount_text {
+  color: #333;
+  padding: 0px 12px 0px 0px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.leadsmanager_executivecount_loader_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  width: 55px;
+}
+.users_filterbutton:hover {
+  color: #5b69ca !important;
+}
 
 .leadmanager_submitlead_buttoncontainer {
   display: flex;

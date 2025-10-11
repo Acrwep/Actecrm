@@ -76,9 +76,11 @@ export default function CommonInputField({
           },
         }}
         inputRef={ref}
+        inputP
         slotProps={{
+          htmlInput: { maxLength: maxLength },
           input: {
-            maxLength: maxLength,
+            maxLength: { maxLength },
           },
         }}
         onInput={onInput}

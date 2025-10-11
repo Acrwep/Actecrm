@@ -11,6 +11,7 @@ import {
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
+import { IoIosClose } from "react-icons/io";
 import CommonInputField from "../Common/CommonInputField";
 import "./styles.css";
 import { addressValidator, selectValidator } from "../Common/Validation";
@@ -44,6 +45,7 @@ import {
   storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
   storeRoleList,
+  storeRoleSearchValue,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserPermissions,
@@ -62,10 +64,9 @@ export default function PageAccess({
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
-  const groupsData = useSelector((state) => state.grouplist);
   const rolesData = useSelector((state) => state.rolelist);
+  const roleSearchValue = useSelector((state) => state.rolesearchvalue);
   const usersData = useSelector((state) => state.userslist);
-  const allPermissionsData = useSelector((state) => state.permissionslist);
   const leadsModulePermissionData = useSelector(
     (state) => state.leadsmodulepermissionlist
   );
@@ -101,6 +102,7 @@ export default function PageAccess({
   //roles usestates
   const [isOpenAddRoleModal, setIsOpenAddRoleModal] = useState(false);
   const [roleId, setRoleId] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
   const [roleName, setRoleName] = useState("");
   const [roleNameError, setRoleNameError] = useState("");
   const [roleFormLoading, setRoleFormLoading] = useState(false);
@@ -110,13 +112,13 @@ export default function PageAccess({
   const [rolePermissions, setRolePermissions] = useState([]);
   const [permissionButtonLoading, setPermissionButtonLoading] = useState(false);
 
-  const usertableColumns = [
-    { title: "Name", key: "name", dataIndex: "name" },
-    { title: "Email", key: "email", dataIndex: "email", width: 190 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Fees", key: "fees", dataIndex: "fees" },
-    { title: "Balance", key: "balance", dataIndex: "balance" },
-  ];
+  useEffect(() => {
+    if (roleSearchValue) {
+      setSearchValue(roleSearchValue);
+    } else {
+      setSearchValue("");
+    }
+  }, []);
 
   //group color functions
   const getInitials = (fullName) => {
@@ -184,13 +186,17 @@ export default function PageAccess({
     }
   };
 
-  const getRolesData = async () => {
+  const getRolesData = async (searchvalue) => {
     setRoleLoading(true);
+    const payload = {
+      ...(searchvalue && { name: searchvalue }),
+    };
     try {
-      const response = await getRoles();
+      const response = await getRoles(payload);
       console.log("roles response", response);
       dispatch(storeRoleList(response?.data?.data || []));
     } catch (error) {
+      setRoleLoading(false);
       dispatch(storeRoleList([]));
       console.log("roles error", error);
     } finally {
@@ -678,6 +684,16 @@ export default function PageAccess({
     }
   };
 
+  const handleSearch = (e) => {
+    const input = e.target.value;
+    setSearchValue(input);
+    dispatch(storeRoleSearchValue(input));
+    setRoleLoading(true);
+    setTimeout(() => {
+      getRolesData(input);
+    }, 300);
+  };
+
   //reset function
   const formReset = () => {
     setIsOpenAddDrawer(false);
@@ -713,12 +729,32 @@ export default function PageAccess({
           <Col xs={24} sm={24} md={24} lg={12}>
             <div className="leadmanager_filterContainer">
               <CommonOutlinedInput
-                label="Search"
+                label="Search By Name"
                 width="40%"
                 height="33px"
                 labelFontSize="12px"
-                icon={<CiSearch size={16} />}
+                icon={
+                  searchValue ? (
+                    <div
+                      className="users_filter_closeIconContainer"
+                      onClick={() => {
+                        setSearchValue("");
+                        dispatch(storeRoleSearchValue(null));
+                        getRolesData(null);
+                      }}
+                    >
+                      <IoIosClose size={11} />
+                    </div>
+                  ) : (
+                    <CiSearch size={16} />
+                  )
+                }
                 labelMarginTop="-1px"
+                style={{
+                  padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
+                }}
+                onChange={handleSearch}
+                value={searchValue}
               />
             </div>
           </Col>
@@ -938,7 +974,7 @@ export default function PageAccess({
                                     />
                                   )}
                                 </div>
-                                {permissions.includes("Add Permission") && (
+                                {permissions.includes("Add Permissions") && (
                                   <button
                                     className="settings_group_footer_buttons"
                                     onClick={() => {
@@ -947,7 +983,7 @@ export default function PageAccess({
                                       getRolePermissionsData(item.role_id);
                                     }}
                                   >
-                                    Add Permissions
+                                    Permissions
                                   </button>
                                 )}
                               </div>

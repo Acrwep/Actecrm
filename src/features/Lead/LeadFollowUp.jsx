@@ -12,6 +12,7 @@ import {
   Divider,
   Radio,
   Flex,
+  Spin,
 } from "antd";
 import { FiFilter } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
@@ -26,7 +27,10 @@ import {
   getAllAreas,
   getBranches,
   getLeadFollowUps,
+  getLeadFollowUpsCountByUserIds,
+  getLeadsCountByUserIds,
   getTechnologies,
+  leadEmailAndMobileValidator,
   updateFollowUp,
 } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
@@ -42,7 +46,7 @@ import { IoLocationOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
-import { BiMapPin } from "react-icons/bi";
+import { MdFormatListNumbered } from "react-icons/md";
 import {
   nameValidator,
   emailValidator,
@@ -88,6 +92,9 @@ export default function LeadFollowUp({
   const [selectedDates, setSelectedDates] = useState([]);
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
+  const [leadCountLoading, setLeadCountLoading] = useState(false);
+
   const [followUpData, setFollowUpData] = useState([]);
   const [isOpenChat, setIsOpenChat] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
@@ -124,6 +131,11 @@ export default function LeadFollowUp({
   const [mobileError, setMobileError] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
+  const [emailAndMobileValidation, setEmailAndMobileValidation] = useState({
+    email: 0,
+    mobile: 0,
+    whatsApp: 0,
+  });
   const [phoneCode, setPhoneCode] = useState("");
   const [countryOptions, setCountryOptions] = useState([]);
   const [countryId, setCountryId] = useState(null);
@@ -608,6 +620,7 @@ export default function LeadFollowUp({
     }
   };
 
+  //onchange functions
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
@@ -627,6 +640,107 @@ export default function LeadFollowUp({
     }, 300);
   };
 
+  const handleEmail = async (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    const emailValidate = emailValidator(value);
+
+    setEmailError(emailValidate);
+
+    if (emailValidate) return;
+
+    const payload = {
+      email: value,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead email validator res", response);
+      if (response?.data?.data === true) {
+        setEmailError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          email: 0,
+        }));
+      } else {
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          email: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
+    }
+  };
+
+  const handleMobileNumber = async (e) => {
+    const value = e.target.value;
+    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+    console.log("cleanedMobile", cleanedMobile);
+    setMobile(cleanedMobile);
+    const mobileValidate = mobileValidator(cleanedMobile);
+
+    setMobileError(mobileValidate);
+
+    if (mobileValidate) return;
+
+    const payload = {
+      mobile: cleanedMobile,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead mobile validator res", response);
+      if (response?.data?.data === true) {
+        setMobileError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          mobile: 0,
+        }));
+      } else {
+        setMobileError("");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          mobile: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
+    }
+  };
+
+  const handleWhatsAppNumber = async (e) => {
+    const value = e.target.value;
+    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+    setWhatsApp(cleanedMobile);
+    const whatsAppValidate = mobileValidator(cleanedMobile);
+
+    setWhatsAppError(whatsAppValidate);
+
+    if (whatsAppValidate) return;
+
+    const payload = {
+      mobile: cleanedMobile,
+    };
+    try {
+      const response = await leadEmailAndMobileValidator(payload);
+      console.log("lead mobile validator res", response);
+      if (response?.data?.data === true) {
+        setWhatsAppError(" is already exist");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          whatsApp: 0,
+        }));
+      } else {
+        setWhatsAppError("");
+        setEmailAndMobileValidation((prev) => ({
+          ...prev,
+          whatsApp: 1,
+        }));
+      }
+    } catch (error) {
+      console.log("validation error", error);
+    }
+  };
+
   const handleSubmit = async (saveType) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -643,9 +757,9 @@ export default function LeadFollowUp({
     }
 
     const nameValidate = nameValidator(name);
-    const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile);
-    const whatsAppValidate = mobileValidator(whatsApp);
+    let emailValidate = emailValidator(email);
+    let mobileValidate = mobileValidator(mobile);
+    let whatsAppValidate = mobileValidator(whatsApp);
     const countryValidate = selectValidator(countryId);
     const stateValidate = selectValidator(stateId);
     const cityValidate = selectValidator(areaId);
@@ -657,6 +771,31 @@ export default function LeadFollowUp({
     const branchValidate = selectValidator(branch);
     const batchTrackValidate = selectValidator(batchTrack);
     const commentsValidate = addressValidator(comments);
+
+    if (emailAndMobileValidation.email == 0) {
+      emailValidate = " is already exist";
+    }
+    if (emailAndMobileValidation.mobile == 0) {
+      mobileValidate = " is already exist";
+    }
+    if (emailAndMobileValidation.whatsApp == 0) {
+      whatsAppValidate = " is already exist";
+    }
+
+    if (
+      nameValidate ||
+      emailValidate ||
+      mobileValidate ||
+      whatsAppValidate ||
+      countryValidate ||
+      stateValidate ||
+      cityValidate
+    ) {
+      const container = document.getElementById("leadform_basicinfo_heading");
+      container.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
 
     setNameError(nameValidate);
     setEmailError(emailValidate);
@@ -745,6 +884,10 @@ export default function LeadFollowUp({
         } else {
           formReset(true);
         }
+        const container = document.getElementById("leadform_basicinfo_heading");
+        container.scrollIntoView({
+          behavior: "smooth",
+        });
         setPagination({
           page: 1,
         });
@@ -871,6 +1014,33 @@ export default function LeadFollowUp({
     }
   };
 
+  const handleLeadCountByExecutive = async () => {
+    setLeadCountLoading(true);
+    let lead_executive = [];
+    if (leadExecutiveId) {
+      lead_executive.push(leadExecutiveId);
+    } else {
+      lead_executive = [];
+    }
+    const payload = {
+      start_date: selectedDates[0],
+      end_date: selectedDates[1],
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+    };
+    try {
+      const response = await getLeadFollowUpsCountByUserIds(payload);
+      console.log("leads count response", response);
+      setLeadCountByExecutives(response?.data?.data || []);
+      setTimeout(() => {
+        setLeadCountLoading(false);
+      }, 200);
+    } catch (error) {
+      setLeadCountLoading(false);
+      setLeadCountByExecutives([]);
+      console.log("error", error);
+    }
+  };
+
   const formReset = (dontCloseAddDrawer) => {
     setIsOpenFilterDrawer(false);
     setIsOpenCommentModal(false);
@@ -907,6 +1077,11 @@ export default function LeadFollowUp({
     setWhatsApp("");
     setWhatsAppError("");
     setPhoneCode("");
+    setEmailAndMobileValidation({
+      email: 0,
+      mobile: 0,
+      whatsApp: 0,
+    });
     setCountryId(null);
     setCountryError("");
     setStateId(null);
@@ -1055,31 +1230,87 @@ export default function LeadFollowUp({
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
-                <CommonSelectField
-                  height="35px"
-                  label="Select Lead Executive"
-                  labelMarginTop="0px"
-                  labelFontSize="13px"
-                  options={leadExecutives}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setLeadExecutiveId(e.target.value);
-                    setPagination({
-                      page: 1,
-                    });
-                    getLeadFollowUpsData(
-                      searchValue,
-                      selectedDates[0],
-                      selectedDates[1],
-                      false,
-                      e.target.value,
-                      1,
-                      pagination.limit
-                    );
-                  }}
-                  value={leadExecutiveId}
-                  disableClearable={false}
-                />
+                <div className="overallduecustomers_filterContainer">
+                  <div style={{ flex: 1 }}>
+                    <CommonSelectField
+                      width="100%"
+                      height="35px"
+                      label="Select Lead Executive"
+                      labelMarginTop="0px"
+                      labelFontSize="12px"
+                      options={leadExecutives}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        setLeadExecutiveId(e.target.value);
+                        setPagination({
+                          page: 1,
+                        });
+                        getLeadFollowUpsData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          false,
+                          e.target.value,
+                          1,
+                          pagination.limit
+                        );
+                      }}
+                      value={leadExecutiveId}
+                      disableClearable={false}
+                      borderRightNone={true}
+                    />
+                  </div>
+                  <div onClick={handleLeadCountByExecutive}>
+                    <Flex
+                      justify="center"
+                      align="center"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <Tooltip
+                        placement="bottomLeft"
+                        color="#fff"
+                        title={
+                          <>
+                            {leadCountLoading ? (
+                              <div className="leadsmanager_executivecount_loader_container">
+                                <Spin size="small" />
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  maxHeight: "140px",
+                                  overflowY: "auto",
+                                  whiteSpace: "pre-line",
+                                  lineHeight: "26px",
+                                }}
+                              >
+                                {leadCountByExecutives.map((item, index) => {
+                                  return (
+                                    <p className="leadsmanager_executivecount_text">
+                                      {`${index + 1}. ${item.user_name} - ${
+                                        item.follow_up_count
+                                      }`}
+                                    </p>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </>
+                        }
+                        trigger={["click"]}
+                        onOpenChange={(value) => {
+                          if (value === false) {
+                            setLeadCountByExecutives([]);
+                          }
+                        }}
+                      >
+                        <Button className="leadsmanager_executivecount_iconcontainer">
+                          <MdFormatListNumbered size={16} />
+                        </Button>
+                      </Tooltip>
+                    </Flex>
+                  </div>
+                </div>
               </Col>
             )}
             <Col span={10}>
@@ -1363,7 +1594,9 @@ export default function LeadFollowUp({
         width="52%"
         style={{ position: "relative" }}
       >
-        <p className="addleaddrawer_headings">Basic Information</p>
+        <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
+          Basic Information
+        </p>
         <Row gutter={16}>
           <Col span={8}>
             <CommonInputField
@@ -1384,12 +1617,7 @@ export default function LeadFollowUp({
               label="Email"
               required={true}
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (validationTrigger) {
-                  setEmailError(emailValidator(e.target.value));
-                }
-              }}
+              onChange={handleEmail}
               error={emailError}
             />
           </Col>
@@ -1397,21 +1625,11 @@ export default function LeadFollowUp({
             <CommonInputField
               label="Mobile Number"
               required={true}
-              maxLength={10}
-              type="number"
+              maxLength={13}
               value={mobile}
-              onChange={(e) => {
-                setMobile(e.target.value);
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
-                }
-              }}
+              onChange={handleMobileNumber}
               error={mobileError}
-              onInput={(e) => {
-                if (e.target.value.length > 15) {
-                  e.target.value = e.target.value.slice(0, 15);
-                }
-              }}
+              errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
             />
           </Col>
         </Row>
@@ -1422,21 +1640,12 @@ export default function LeadFollowUp({
               label="Whatsapp Number"
               icon={<SiWhatsapp color="#39AE41" />}
               required={true}
-              maxLength={10}
+              maxLength={13}
               type="number"
               value={whatsApp}
-              onChange={(e) => {
-                setWhatsApp(e.target.value);
-                if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(e.target.value));
-                }
-              }}
+              onChange={handleWhatsAppNumber}
               error={whatsAppError}
-              onInput={(e) => {
-                if (e.target.value.length > 15) {
-                  e.target.value = e.target.value.slice(0, 15);
-                }
-              }}
+              errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
             />
           </Col>
           <Col span={8}>
