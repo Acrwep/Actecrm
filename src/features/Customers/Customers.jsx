@@ -8,13 +8,10 @@ import {
   Button,
   Radio,
   Divider,
-  Upload,
   Checkbox,
-  Progress,
   Collapse,
   Modal,
   Steps,
-  Timeline,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -143,6 +140,9 @@ export default function Customers() {
   const [financeRejectComment, setFinanceRejectComment] = useState("");
   const [financeRejectCommentError, setFinanceRejectCommentError] =
     useState("");
+  const [isOpenFinanceVerifyModal, setIsOpenFinanceVerifyModal] =
+    useState(false);
+  const [transactionDetails, setTransactionDetails] = useState(null);
   //update payment usestates
   const [updatePaymentTransId, setUpdatePaymentTransId] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
@@ -286,6 +286,15 @@ export default function Customers() {
   //executive filter
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  //branch filter
+  const [branchOptions, setBranchOptions] = useState([
+    { id: 1, name: "Classroom", checked: true },
+    { id: 1, name: "Online", checked: true },
+  ]);
+  const [duplicateBranchOptions, setDuplicateBranchOptions] = useState([
+    { id: 1, name: "Classroom", checked: true },
+    { id: 1, name: "Online", checked: true },
+  ]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -316,6 +325,13 @@ export default function Customers() {
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
       width: 160,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
+          </div>
+        );
+      },
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
@@ -1256,6 +1272,10 @@ export default function Customers() {
           null,
           null,
           null,
+          [
+            { id: 1, name: "Classroom", checked: true },
+            { id: 1, name: "Online", checked: true },
+          ],
           1,
           10
         );
@@ -1269,6 +1289,7 @@ export default function Customers() {
     searchvalue,
     customerStatus,
     executive_id,
+    branch_options,
     pageNumber,
     limit,
     is_generate_certificate
@@ -1280,6 +1301,10 @@ export default function Customers() {
     } else {
       lead_executive = [];
     }
+    const region_data = branch_options
+      .filter((f) => f.checked === true)
+      .map((f) => f.name);
+
     const payload = {
       ...(searchvalue && filterType == 1
         ? { name: searchvalue }
@@ -1299,6 +1324,13 @@ export default function Customers() {
             : customerStatus,
       }),
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      ...(region_data.includes("Classroom") && region_data.includes("Online")
+        ? {}
+        : region_data.includes("Classroom")
+        ? { region: "Classroom" }
+        : region_data.includes("Online")
+        ? { region: "Online" }
+        : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -1363,6 +1395,7 @@ export default function Customers() {
       searchValue,
       status,
       leadExecutiveId,
+      branchOptions,
       page,
       limit
     );
@@ -1408,6 +1441,7 @@ export default function Customers() {
         e.target.value,
         status,
         leadExecutiveId,
+        branchOptions,
         1,
         pagination.limit
       );
@@ -1509,6 +1543,7 @@ export default function Customers() {
       null,
       null,
       null,
+      branchOptions,
       1,
       pagination.limit
     );
@@ -1686,6 +1721,7 @@ export default function Customers() {
           searchValue,
           status,
           leadExecutiveId,
+          branchOptions,
           pagination.page,
           pagination.limit
         );
@@ -1715,11 +1751,11 @@ export default function Customers() {
     }
   };
 
-  const handleFinanceVerify = async (transactiondetails) => {
+  const handleFinanceVerify = async () => {
     setUpdateButtonLoading(true);
     const today = new Date();
     const payload = {
-      payment_trans_id: transactiondetails?.id || "",
+      payment_trans_id: transactionDetails?.id || "",
       verified_date: formatToBackendIST(today),
     };
     try {
@@ -1739,7 +1775,7 @@ export default function Customers() {
             customerDetails?.is_second_due === 1
               ? "Part Payment Verified" ?? "Unknown"
               : "Payment Verified",
-            transactiondetails?.id || ""
+            transactionDetails?.id || ""
           );
           setTimeout(() => {
             if (customerDetails?.is_second_due === 1) {
@@ -1754,7 +1790,7 @@ export default function Customers() {
               "Something went wrong. Try again later"
           );
         }
-        sendInvoiceEmail(transactiondetails);
+        sendInvoiceEmail(transactionDetails);
       }, 300);
     } catch (error) {
       setUpdateButtonLoading(false);
@@ -2533,6 +2569,7 @@ export default function Customers() {
           searchValue,
           status,
           leadExecutiveId,
+          branchOptions,
           pagination.page,
           pagination.limit
         );
@@ -2613,6 +2650,7 @@ export default function Customers() {
           searchValue,
           status,
           leadExecutiveId,
+          branchOptions,
           pagination.page,
           pagination.limit,
           true
@@ -2763,6 +2801,8 @@ export default function Customers() {
     setFinanceRejectComment("");
     setFinanceRejectCommentError("");
     setRejectTransItem(null);
+    setTransactionDetails(null);
+    setIsOpenFinanceVerifyModal(false);
     //update payment
     setPaymentMode(null);
     setPaymentModeError("");
@@ -2882,6 +2922,7 @@ export default function Customers() {
                             null,
                             status,
                             leadExecutiveId,
+                            branchOptions,
                             1,
                             pagination.limit
                           );
@@ -2932,6 +2973,7 @@ export default function Customers() {
                                 null,
                                 status,
                                 leadExecutiveId,
+                                branchOptions,
                                 1,
                                 pagination.limit
                               );
@@ -2987,6 +3029,7 @@ export default function Customers() {
                       searchValue,
                       status,
                       e.target.value,
+                      branchOptions,
                       1,
                       pagination.limit
                     );
@@ -3010,6 +3053,7 @@ export default function Customers() {
                     searchValue,
                     status,
                     leadExecutiveId,
+                    branchOptions,
                     1,
                     pagination.limit
                   );
@@ -3033,7 +3077,10 @@ export default function Customers() {
             size={20}
             color="#5b69ca"
             style={{ marginRight: "16px", cursor: "pointer" }}
-            onClick={() => setIsOpenFilterDrawer(true)}
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              setDuplicateBranchOptions(branchOptions);
+            }}
           />
 
           <Tooltip placement="top" title="Refresh">
@@ -3075,6 +3122,7 @@ export default function Customers() {
                 searchValue,
                 null,
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3111,6 +3159,7 @@ export default function Customers() {
                 searchValue,
                 "Form Pending",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3147,6 +3196,7 @@ export default function Customers() {
                 searchValue,
                 "Awaiting Finance",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3184,6 +3234,7 @@ export default function Customers() {
                 searchValue,
                 "Awaiting Verify",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3221,6 +3272,7 @@ export default function Customers() {
                 searchValue,
                 "Awaiting Trainer",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3258,6 +3310,7 @@ export default function Customers() {
                 searchValue,
                 "Awaiting Trainer Verify",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3296,6 +3349,7 @@ export default function Customers() {
                 searchValue,
                 "Awaiting Class",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3334,6 +3388,7 @@ export default function Customers() {
                 searchValue,
                 "Class Scheduled",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3371,6 +3426,7 @@ export default function Customers() {
                 searchValue,
                 "Class Going",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3409,6 +3465,7 @@ export default function Customers() {
                 searchValue,
                 "Passedout Process",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3446,6 +3503,7 @@ export default function Customers() {
                 searchValue,
                 "Completed",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3484,6 +3542,7 @@ export default function Customers() {
                 searchValue,
                 "Escalated",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3522,6 +3581,7 @@ export default function Customers() {
                 searchValue,
                 "Others",
                 leadExecutiveId,
+                branchOptions,
                 1,
                 pagination.limit
               );
@@ -3729,10 +3789,15 @@ export default function Customers() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>
@@ -4006,6 +4071,7 @@ export default function Customers() {
               searchValue,
               status,
               leadExecutiveId,
+              branchOptions,
               pagination.page,
               pagination.limit
             );
@@ -4199,9 +4265,15 @@ export default function Customers() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>
@@ -4419,6 +4491,26 @@ export default function Customers() {
                         </p>
                       </Col>
                     </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Total Paid Amount
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p
+                          className="customerdetails_text"
+                          style={{ color: "#3c9111", fontWeight: 700 }}
+                        >
+                          {customerDetails && customerDetails.paid_amount
+                            ? "₹" + customerDetails.paid_amount
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
                   </Col>
                 </Row>
               </div>
@@ -4486,7 +4578,10 @@ export default function Customers() {
                                 ) : (
                                   <Button
                                     className="customer_finance_verifybutton"
-                                    onClick={() => handleFinanceVerify(item)}
+                                    onClick={() => {
+                                      setIsOpenFinanceVerifyModal(true);
+                                      setTransactionDetails(item);
+                                    }}
                                   >
                                     Verify
                                   </Button>
@@ -6307,6 +6402,43 @@ export default function Customers() {
                 setDefaultColumns={setDefaultColumns}
               />
             </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div style={{ padding: "0px 12px 20px 24px" }}>
+              <p className="customers_choosebranch_heading">Choose Branch</p>
+              {duplicateBranchOptions.map((item) => {
+                return (
+                  <div className="customers_choosebranch_checkbox_container">
+                    <p>{item.name}</p>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const updateBranchData = duplicateBranchOptions.map(
+                          (u) => {
+                            if (u.name == item.name) {
+                              return { ...u, checked: e.target.checked };
+                            }
+                            return u;
+                          }
+                        );
+                        const bothFalse = updateBranchData.every(
+                          (item) => item.checked === false
+                        );
+
+                        if (bothFalse) {
+                          CommonMessage("error", "Choose Atleast One Branch");
+                          return;
+                        }
+                        setDuplicateBranchOptions(updateBranchData);
+                      }}
+                      value={item.checked}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </Col>
         </Row>
         <div className="leadmanager_tablefiler_footer">
@@ -6326,6 +6458,17 @@ export default function Customers() {
                 console.log("Reordered Columns:", reorderedColumns);
 
                 setTableColumns(reorderedColumns);
+                setBranchOptions(duplicateBranchOptions);
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  status,
+                  leadExecutiveId,
+                  duplicateBranchOptions,
+                  pagination.page,
+                  pagination.limit
+                );
                 setIsOpenFilterDrawer(false);
               }}
             >
@@ -6634,6 +6777,60 @@ export default function Customers() {
       </Modal>
 
       <Modal
+        open={isOpenFinanceVerifyModal}
+        onCancel={() => {
+          setIsOpenFinanceVerifyModal(false);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Verify The Payment Of{" "}
+          <span style={{ fontWeight: 700, color: "#333" }}>
+            {transactionDetails && transactionDetails.amount
+              ? "₹" + transactionDetails.amount
+              : "-"}{" "}
+          </span>
+          for{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "13px" }}>
+            {customerDetails && customerDetails.name
+              ? customerDetails.name
+              : ""}
+          </span>{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenFinanceVerifyModal(false);
+              setTransactionDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {updateButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={handleFinanceVerify}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
         open={isOpenViewCertModal}
         onCancel={() => {
           setIsOpenViewCertModal(false);
@@ -6823,10 +7020,15 @@ export default function Customers() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>

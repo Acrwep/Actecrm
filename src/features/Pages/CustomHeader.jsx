@@ -603,9 +603,15 @@ export default function CustomHeader() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_assigned_to_name
-                    ? leadDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    leadDetails && leadDetails.lead_assigned_to_id
+                      ? leadDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    leadDetails && leadDetails.lead_assigned_to_name
+                      ? leadDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>
@@ -992,9 +998,15 @@ export default function CustomHeader() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>

@@ -110,6 +110,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
       width: 160,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
+          </div>
+        );
+      },
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
@@ -977,10 +984,15 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>
@@ -1346,9 +1358,15 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {customerDetails && customerDetails.lead_assigned_to_name
-                    ? customerDetails.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>

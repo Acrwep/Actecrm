@@ -241,6 +241,13 @@ export default function LeadFollowUp({
       title: "Lead Executive",
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
+          </div>
+        );
+      },
     },
     {
       title: "Next Follow Up",
@@ -533,11 +540,8 @@ export default function LeadFollowUp({
           ];
           setBranchOptions(reordered);
         } else {
-          const reordered = [
-            ...branch_data.filter((item) => item.name == "Online"),
-            ...branch_data.filter((item) => item.name != "Online"),
-          ];
-          setBranchOptions(reordered);
+          setBranchOptions([]);
+          setBranch(branch_data[0]?.id);
         }
       } else {
         setBranchOptions([]);
@@ -1257,10 +1261,10 @@ export default function LeadFollowUp({
                       }}
                       value={leadExecutiveId}
                       disableClearable={false}
-                      borderRightNone={true}
+                      // borderRightNone={true}
                     />
                   </div>
-                  <div onClick={handleLeadCountByExecutive}>
+                  {/* <div onClick={handleLeadCountByExecutive}>
                     <Flex
                       justify="center"
                       align="center"
@@ -1309,7 +1313,7 @@ export default function LeadFollowUp({
                         </Button>
                       </Tooltip>
                     </Flex>
-                  </div>
+                  </div> */}
                 </div>
               </Col>
             )}
@@ -1852,21 +1856,25 @@ export default function LeadFollowUp({
               error={regionError}
             />
           </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Branch Name"
-              required={true}
-              options={branchOptions}
-              onChange={(e) => {
-                setBranch(e.target.value);
-                if (validationTrigger) {
-                  setBranchError(selectValidator(e.target.value));
-                }
-              }}
-              value={branch}
-              error={branchError}
-            />
-          </Col>
+          {regionId == 3 ? (
+            ""
+          ) : (
+            <Col span={8}>
+              <CommonSelectField
+                label="Branch Name"
+                required={true}
+                options={branchOptions}
+                onChange={(e) => {
+                  setBranch(e.target.value);
+                  if (validationTrigger) {
+                    setBranchError(selectValidator(e.target.value));
+                  }
+                }}
+                value={branch}
+                error={branchError}
+              />
+            </Col>
+          )}
           <Col span={8}>
             <CommonSelectField
               label="Batch Track"
@@ -2247,22 +2255,6 @@ export default function LeadFollowUp({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_assigned_to_name
-                    ? leadDetails.lead_assigned_to_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <MdOutlineDateRange size={15} color="gray" />
                   <p className="customerdetails_rowheading">Next Followup</p>
                 </div>
@@ -2316,21 +2308,6 @@ export default function LeadFollowUp({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.region_name
-                    ? leadDetails.region_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Branch</p>
                 </div>
               </Col>
@@ -2361,21 +2338,6 @@ export default function LeadFollowUp({
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Source</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_type
-                    ? leadDetails.lead_type
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
                   <p className="customerdetails_rowheading">Lead Status</p>
                 </div>
               </Col>
@@ -2384,6 +2346,27 @@ export default function LeadFollowUp({
                   {leadDetails && leadDetails.lead_status
                     ? leadDetails.lead_status
                     : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Lead Executive</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {`${
+                    leadDetails && leadDetails.lead_assigned_to_id
+                      ? leadDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    leadDetails && leadDetails.lead_assigned_to_name
+                      ? leadDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>

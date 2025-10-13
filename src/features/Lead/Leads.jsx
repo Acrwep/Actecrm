@@ -368,6 +368,13 @@ export default function Leads({
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
       width: 160,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
+          </div>
+        );
+      },
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 240 },
@@ -730,11 +737,8 @@ export default function Leads({
           ];
           setBranchOptions(reordered);
         } else {
-          const reordered = [
-            ...branch_data.filter((item) => item.name == "Online"),
-            ...branch_data.filter((item) => item.name != "Online"),
-          ];
-          setBranchOptions(reordered);
+          setBranchOptions([]);
+          setBranch(branch_data[0]?.id);
         }
       } else {
         setBranchOptions([]);
@@ -1875,10 +1879,10 @@ export default function Leads({
                       }}
                       value={leadExecutiveId}
                       disableClearable={false}
-                      borderRightNone={true}
+                      // borderRightNone={true}
                     />
                   </div>
-                  <div onClick={handleLeadCountByExecutive}>
+                  {/* <div onClick={handleLeadCountByExecutive}>
                     <Flex
                       justify="center"
                       align="center"
@@ -1927,7 +1931,7 @@ export default function Leads({
                         </Button>
                       </Tooltip>
                     </Flex>
-                  </div>
+                  </div> */}
                 </div>
               </Col>
             )}
@@ -2277,21 +2281,27 @@ export default function Leads({
               error={regionError}
             />
           </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Branch Name"
-              required={true}
-              options={branchOptions}
-              onChange={(e) => {
-                setBranch(e.target.value);
-                if (validationTrigger) {
-                  setBranchError(selectValidator(e.target.value));
-                }
-              }}
-              value={branch}
-              error={branchError}
-            />
-          </Col>
+
+          {regionId == 3 ? (
+            ""
+          ) : (
+            <Col span={8}>
+              <CommonSelectField
+                label="Branch Name"
+                required={true}
+                options={branchOptions}
+                onChange={(e) => {
+                  setBranch(e.target.value);
+                  if (validationTrigger) {
+                    setBranchError(selectValidator(e.target.value));
+                  }
+                }}
+                value={branch}
+                error={branchError}
+              />
+            </Col>
+          )}
+
           <Col span={8}>
             <CommonSelectField
               label="Batch Track"
@@ -2710,9 +2720,15 @@ export default function Leads({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.lead_assigned_to_name
-                    ? clickedLeadItem.lead_assigned_to_name
-                    : "-"}
+                  {`${
+                    clickedLeadItem && clickedLeadItem.lead_assigned_to_id
+                      ? clickedLeadItem.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    clickedLeadItem && clickedLeadItem.lead_assigned_to_name
+                      ? clickedLeadItem.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </Col>
             </Row>
