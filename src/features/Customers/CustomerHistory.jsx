@@ -241,7 +241,9 @@ export default function CustomerHistory({
                   </Col>
                   <Col span={12}>
                     <p className="customer_history_details_text">
-                      {getTrainerName(item.details.trainer_id)}
+                      {item.details.trainer_name
+                        ? item.details.trainer_name
+                        : "-"}
                     </p>
                   </Col>
                 </Row>
@@ -277,7 +279,7 @@ export default function CustomerHistory({
                   </Col>
                   <Col span={12}>
                     <p className="customer_history_details_text">
-                      {item.details.commercial}
+                      {"₹" + item.details.commercial}
                     </p>
                   </Col>
                 </Row>

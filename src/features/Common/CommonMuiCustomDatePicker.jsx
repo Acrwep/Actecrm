@@ -9,12 +9,17 @@ import {
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LuCalendarDays } from "react-icons/lu";
 import dayjs from "dayjs";
 import "./commonstyles.css";
 import CommonMuiDatePicker from "./CommonMuiDatePicker";
 import { CommonMessage } from "./CommonMessage";
 
-export default function CommonMuiCustomDatePicker({ onDateChange, value }) {
+export default function CommonMuiCustomDatePicker({
+  onDateChange,
+  value,
+  isDashboard,
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [option, setOption] = useState("last7days");
   const [startDate, setStartDate] = useState(dayjs().subtract(6, "day"));
@@ -138,28 +143,38 @@ export default function CommonMuiCustomDatePicker({ onDateChange, value }) {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box>
+      <Box sx={{ height: "100%" }}>
         {/* Button to open popover */}
-        <Button
-          className="common_muicustomdatepicker_daterange_button"
-          onClick={handleOpen}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
+        {isDashboard === true ? (
+          <div
+            className="dashboard_scorecard_dateiconContainer"
+            onClick={handleOpen}
           >
-            <span style={{ marginLeft: "4px" }}>
-              {startDate ? startDate.format("YYYY-MM-DD") : ""}
-            </span>
-            <span>→</span>
-            <span style={{ marginRight: "4px" }}>
-              {endDate ? endDate.format("YYYY-MM-DD") : ""}
-            </span>
-          </Box>
-        </Button>
+            <LuCalendarDays size={18} />
+            <p>Date Range</p>
+          </div>
+        ) : (
+          <Button
+            className="common_muicustomdatepicker_daterange_button"
+            onClick={handleOpen}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <span style={{ marginLeft: "4px" }}>
+                {startDate ? startDate.format("YYYY-MM-DD") : ""}
+              </span>
+              <span>→</span>
+              <span style={{ marginRight: "4px" }}>
+                {endDate ? endDate.format("YYYY-MM-DD") : ""}
+              </span>
+            </Box>
+          </Button>
+        )}
 
         <Popover
           open={open}

@@ -76,6 +76,7 @@ export default function CustomerRegistration() {
   const [batchTimingError, setBatchTimingError] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState(null);
+  const [server, setServer] = useState("");
 
   const [profilePictureArray, setProfilePictureArray] = useState([]);
   const [profilePicture, setProfilePicture] = useState("");
@@ -175,6 +176,7 @@ export default function CustomerRegistration() {
       setBatchTrack(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
       setPlacementSupport(customerDetails.placement_support);
+      setServer(customerDetails.is_server_required);
       const findArea = all_areas.find(
         (f) => f.name == customerDetails.current_location
       );
@@ -427,6 +429,7 @@ export default function CustomerRegistration() {
       signature_image: signatureBase64,
       profile_image: profilePicture,
       placement_support: placementSupport,
+      is_server_required: server,
     };
 
     try {

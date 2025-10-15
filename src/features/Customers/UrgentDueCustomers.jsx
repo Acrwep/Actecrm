@@ -428,7 +428,6 @@ export default function UrgentDueCustomers({
         ? { course: searchvalue }
         : {}),
       urgent_due: "Urgent Due",
-      user_ids: childUsers,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       page: pageNumber,
       limit: limit,

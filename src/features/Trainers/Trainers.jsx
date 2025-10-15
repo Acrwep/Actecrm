@@ -92,7 +92,6 @@ export default function Trainers() {
   const [batch, setBatch] = useState("");
   const [batchError, setBatchError] = useState("");
   const [avaibilityTime, setAvaibilityTime] = useState(null);
-  const [avaibilityTimeError, setAvaibilityError] = useState("");
   const [secondaryTime, setSecondaryTime] = useState("");
   const [skills, setSkills] = useState([]);
   const [skillsError, setSkillsError] = useState("");
@@ -157,6 +156,13 @@ export default function Trainers() {
   });
 
   const nonChangeColumns = [
+    {
+      title: "Trainer Id",
+      key: "trainer_code",
+      dataIndex: "trainer_code",
+      width: 140,
+      fixed: "left",
+    },
     {
       title: "Trainer Name",
       key: "name",
@@ -558,7 +564,6 @@ export default function Trainers() {
     setBatch("");
     setBatchError("");
     setAvaibilityTime("");
-    setAvaibilityError("");
     setSecondaryTime("");
     setSkills([]);
     setSkillsError("");
@@ -586,7 +591,6 @@ export default function Trainers() {
     const experienceValidate = selectValidator(experience);
     const relevantExperienceValidate = selectValidator(relevantExperience);
     const batchValidate = selectValidator(batch);
-    const avaibilityTimeValidate = selectValidator(avaibilityTime);
     const skillsValidate = selectValidator(skills);
     const locationValidate = addressValidator(location);
 
@@ -598,7 +602,6 @@ export default function Trainers() {
     setExperienceError(experienceValidate);
     setRelevantExperienceError(relevantExperienceValidate);
     setBatchError(batchValidate);
-    setAvaibilityError(avaibilityTimeValidate);
     setSkillsError(skillsValidate);
     setLocationError(locationValidate);
 
@@ -620,7 +623,6 @@ export default function Trainers() {
       experienceValidate ||
       relevantExperienceValidate ||
       batchValidate ||
-      avaibilityTimeValidate ||
       skillsValidate ||
       locationValidate
     )
@@ -686,6 +688,17 @@ export default function Trainers() {
         const createdTrainerDetails = response?.data?.data;
         CommonMessage("success", "Trainer Created");
         setTimeout(() => {
+          setButtonLoading(false);
+          formReset();
+          setPagination({
+            page: 1,
+          });
+          getTrainersData(
+            searchValue,
+            status,
+            pagination.page,
+            pagination.limit
+          );
           handleSendFormLink(
             createdTrainerDetails.email,
             createdTrainerDetails.insertId
@@ -745,22 +758,12 @@ export default function Trainers() {
 
     try {
       await sendTrainerFormEmail(payload);
-      setLoading(true);
     } catch (error) {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
-    } finally {
-      setTimeout(() => {
-        setButtonLoading(false);
-        formReset();
-        setPagination({
-          page: 1,
-        });
-        getTrainersData(searchValue, status, pagination.page, pagination.limit);
-      }, 300);
     }
   };
 
@@ -925,6 +928,7 @@ export default function Trainers() {
               value={relevantExperience}
               error={relevantExperienceError}
               valueMarginTop="-4px"
+              errorFontSize="10px"
             />
           </Col>
           <Col span={8}>
@@ -947,16 +951,13 @@ export default function Trainers() {
           <Col span={8}>
             <CommonMuiTimePicker
               label="Avaibility Time"
-              required={true}
+              required={false}
               onChange={(value) => {
                 setAvaibilityTime(value);
                 console.log("timeeeeeeee", value);
-                if (validationTrigger) {
-                  setAvaibilityError(selectValidator(value));
-                }
               }}
               value={avaibilityTime}
-              error={avaibilityTimeError}
+              allowClear={true}
             />
           </Col>
         </Row>
@@ -965,7 +966,7 @@ export default function Trainers() {
           <Col span={8}>
             <CommonMuiTimePicker
               label="Secondary Time"
-              required={true}
+              required={false}
               onChange={(value) => {
                 setSecondaryTime(value);
               }}
@@ -1410,7 +1411,7 @@ export default function Trainers() {
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2500 }}
+          scroll={{ x: 2550 }}
           columns={tableColumns}
           dataSource={trainersData}
           dataPerPage={10}
@@ -1430,7 +1431,7 @@ export default function Trainers() {
         open={isOpenAddDrawer}
         onClose={formReset}
         width="50%"
-        style={{ position: "relative" }}
+        style={{ position: "relative", paddingBottom: 65 }}
         className={isShowBankTab ? "trainers_addtrainerdrawer" : ""}
       >
         {isShowBankTab ? (

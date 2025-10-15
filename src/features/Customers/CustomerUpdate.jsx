@@ -529,6 +529,7 @@ const CustomerUpdate = forwardRef(
         signature_image: signatureBase64,
         profile_image: profilePictureBase64,
         placement_support: placementSupport,
+        is_server_required: server == "Need" ? 1 : 0,
       };
 
       try {

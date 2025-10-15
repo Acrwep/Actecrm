@@ -1618,15 +1618,6 @@ export default function LeadFollowUp({
           </Col>
           <Col span={8}>
             <CommonInputField
-              label="Email"
-              required={true}
-              value={email}
-              onChange={handleEmail}
-              error={emailError}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
               label="Mobile Number"
               required={true}
               maxLength={13}
@@ -1636,9 +1627,6 @@ export default function LeadFollowUp({
               errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={8}>
             <CommonOutlinedInput
               label="Whatsapp Number"
@@ -1650,6 +1638,18 @@ export default function LeadFollowUp({
               onChange={handleWhatsAppNumber}
               error={whatsAppError}
               errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonInputField
+              label="Email"
+              required={true}
+              value={email}
+              onChange={handleEmail}
+              error={emailError}
             />
           </Col>
           <Col span={8}>

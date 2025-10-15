@@ -88,6 +88,7 @@ export default function Leads({
   setCourseOptions,
   areaOptions,
   setAreaOptions,
+  setLeadCountLoading,
 }) {
   const mounted = useRef(false);
 
@@ -259,7 +260,6 @@ export default function Leads({
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
   const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
-  const [leadCountLoading, setLeadCountLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -660,6 +660,7 @@ export default function Leads({
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      setLeadCountLoading(false);
     } catch (error) {
       setLeadData([]);
       setLeadCount(0);
@@ -2041,15 +2042,6 @@ export default function Leads({
             />
           </Col>
           <Col span={8}>
-            <CommonInputField
-              label="Email"
-              required={true}
-              value={email}
-              onChange={handleEmail}
-              error={emailError}
-            />
-          </Col>
-          <Col span={8}>
             <div style={{ position: "relative" }}>
               <CommonInputField
                 label="Mobile Number"
@@ -2062,9 +2054,6 @@ export default function Leads({
               />
             </div>
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={8}>
             <CommonOutlinedInput
               label="Whatsapp Number"
@@ -2075,6 +2064,18 @@ export default function Leads({
               onChange={handleWhatsAppNumber}
               error={whatsAppError}
               errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonInputField
+              label="Email"
+              required={true}
+              value={email}
+              onChange={handleEmail}
+              error={emailError}
             />
           </Col>
           <Col span={8}>

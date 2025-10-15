@@ -6,6 +6,8 @@ import { addDays, startOfMonth, endOfMonth } from "date-fns";
 import ReactApexChart from "react-apexcharts";
 import { LuCalendarDays } from "react-icons/lu";
 import moment from "moment";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 
 export default function Dashboard() {
   const wrapperRef = useRef(null);
@@ -14,6 +16,7 @@ export default function Dashboard() {
 
   //card 1
   const [isOpenLeadBoardCalendar, setIsOpenLeadBoardCalendar] = useState(false);
+  const [scoreBoardSelectedDates, setScoreBoardSelectedDates] = useState([]);
   const [leadBoardDate, setLeadBoardDate] = useState([
     {
       startDate: new Date(),
@@ -164,6 +167,11 @@ export default function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setScoreBoardSelectedDates(PreviousAndCurrentDate);
+  }, []);
+
   const handleBoardDates = (item) => {
     setLeadBoardDate([item.selection]);
   };
@@ -189,9 +197,9 @@ export default function Dashboard() {
               <p className="dashboard_scrorecard_heading">Score Board</p>
               <p className="dashboard_daterange_text">
                 <span style={{ fontWeight: "500" }}>Date Range: </span>
-                {`(${moment(leadBoardDate[0].startDate).format(
+                {`(${moment(scoreBoardSelectedDates[0]).format(
                   "DD MMM YYYY"
-                )} to ${moment(leadBoardDate[0].endDate).format(
+                )} to ${moment(scoreBoardSelectedDates[1]).format(
                   "DD MMM YYYY"
                 )})`}
               </p>
@@ -202,7 +210,7 @@ export default function Dashboard() {
             style={{ display: "flex", justifyContent: "flex-end" }}
           >
             <div ref={wrapperRef}>
-              <div
+              {/* <div
                 className="dashboard_scorecard_dateiconContainer"
                 onClick={() =>
                   setIsOpenLeadBoardCalendar(!isOpenLeadBoardCalendar)
@@ -210,8 +218,14 @@ export default function Dashboard() {
               >
                 <LuCalendarDays size={18} />
                 <p>Date Range</p>
-              </div>
-
+              </div> */}
+              <CommonMuiCustomDatePicker
+                isDashboard={true}
+                value={scoreBoardSelectedDates}
+                onDateChange={(dates) => {
+                  setScoreBoardSelectedDates(dates);
+                }}
+              />
               {isOpenLeadBoardCalendar && (
                 <div className="dashboard_daterangeContainer">
                   <CustomDateRangePicker

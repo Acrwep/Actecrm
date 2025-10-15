@@ -1582,7 +1582,7 @@ export default function Customers() {
 
     let trainerName = "";
     if (updatestatus === "Trainer Assigned") {
-      const findTrainer = trainersData.find((f) => f.id === trainerId);
+      const findTrainer = trainersData.find((f) => f.id == trainerId);
       trainerName = findTrainer ? findTrainer.name : "";
     }
 

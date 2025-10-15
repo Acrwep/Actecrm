@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
-import { Button, Tooltip } from "antd";
+import { Button, Tooltip, Skeleton } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import {
   getAllAreas,
@@ -23,6 +23,7 @@ export default function LeadManager() {
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
+  const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
@@ -172,7 +173,24 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("leads")}
           >
-            Leads ( {leadCount} )
+            {leadCountLoading ? (
+              <span
+                style={{
+                  width: "80px",
+                  display: "inline-block",
+                  height: "17px",
+                }}
+              >
+                <Skeleton
+                  active
+                  size="small"
+                  title={false}
+                  paragraph={{ rows: 1, width: "100%" }}
+                />
+              </span>
+            ) : (
+              <p>{`Leads (${leadCount})`}</p>
+            )}
           </button>
         </div>
 
@@ -220,6 +238,7 @@ export default function LeadManager() {
           setCourseOptions={setCourseOptions}
           areaOptions={areaOptions}
           setAreaOptions={setAreaOptions}
+          setLeadCountLoading={setLeadCountLoading}
         />
       </div>
     </div>
