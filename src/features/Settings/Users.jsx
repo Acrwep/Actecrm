@@ -254,7 +254,7 @@ export default function Users({
     } else {
       setSearchValue("");
     }
-  }, []);
+  }, [userSearchValue]);
 
   useEffect(() => {
     setAssignUsersData(allUsersData);

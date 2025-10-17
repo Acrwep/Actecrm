@@ -1,3 +1,5 @@
+import { defaultCountries, parseCountry } from "react-international-phone";
+
 const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
 const descriptionRegex = /^(?!\s*$).+/;
 const emailRegex = /^[a-zA-Z0-9._-]{2,}@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
@@ -375,4 +377,19 @@ export const capitalizeWords = (text) => {
         : ""
     )
     .join(" ");
+};
+
+export const getCountryFromDialCode = (dialCode) => {
+  if (!dialCode) return "in"; // default to India if empty
+
+  // Remove '+' if present
+  const code = dialCode.startsWith("+") ? dialCode.slice(1) : dialCode;
+
+  // Find all countries matching this dial code
+  const countries = defaultCountries.filter(
+    (c) => parseCountry(c).dialCode === code
+  );
+
+  // Return first ISO code if found, otherwise default "in"
+  return countries.length > 0 ? parseCountry(countries[0]).iso2 : "in";
 };

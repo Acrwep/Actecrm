@@ -25,6 +25,7 @@ import {
   addressValidator,
   emailValidator,
   formatToBackendIST,
+  getCountryFromDialCode,
   mobileValidator,
   nameValidator,
   selectValidator,
@@ -52,6 +53,7 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import CommonDnd from "../Common/CommonDnd";
 import { FaRegCopy } from "react-icons/fa6";
 import { useSelector } from "react-redux";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 export default function Trainers() {
   const scrollRef = useRef();
@@ -75,8 +77,12 @@ export default function Trainers() {
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [mobileCountryCode, setMobileCountryCode] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("in");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
+  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
   const [technologyOptions, setTechnologyOptions] = useState("");
@@ -337,7 +343,9 @@ export default function Trainers() {
             <AiOutlineEdit
               size={20}
               className="trainers_action_icons"
-              onClick={() => handleEdit(record)}
+              onClick={() => {
+                handleEdit(record);
+              }}
             />
           </div>
         );
@@ -480,16 +488,33 @@ export default function Trainers() {
     setProfileImage(item.profile_image);
     setName(item.name);
     setEmail(item.email);
+    //mobile fetch
+    setMobileCountryCode(item.mobile_phone_code ? item.mobile_phone_code : "");
+    const selected_mobile_country = getCountryFromDialCode(
+      `+${item.mobile_phone_code ? item.mobile_phone_code : ""}`
+    );
+    setSelectedCountry(selected_mobile_country);
     setMobile(item.mobile);
+    //whatsapp fetch
+    setWhatsAppCountryCode(
+      item.whatsapp_phone_code ? item.whatsapp_phone_code : ""
+    );
+    const selected_whatsapp_country = getCountryFromDialCode(
+      `+${item.whatsapp_phone_code ? item.whatsapp_phone_code : ""}`
+    );
+    setWhatsAppCountry(selected_whatsapp_country);
     setWhatsApp(item.whatsapp);
+    //-----------
     setTechnology(item.technology_id);
     setExperience(parseInt(item.overall_exp_year));
     setRelevantExperience(parseInt(item.relavant_exp_year));
     setBatch(item.batch_id);
     setLocation(item.location);
-    setAvaibilityTime(dayjs(item.availability_time, "HH:mm:ss"));
+    setAvaibilityTime(
+      item.availability_time ? dayjs(item.availability_time, "HH:mm:ss") : ""
+    );
     setSecondaryTime(
-      item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : null
+      item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : ""
     );
     setSkills(item.skills);
     setAccountHolderName(item.account_holder_name);
@@ -551,6 +576,10 @@ export default function Trainers() {
     setNameError("");
     setEmail("");
     setEmailError("");
+    setSelectedCountry("in");
+    setMobileCountryCode("");
+    setWhatsAppCountry("in");
+    setWhatsAppCountryCode("");
     setMobile("");
     setMobileError("");
     setWhatsApp("");
@@ -582,6 +611,7 @@ export default function Trainers() {
   };
 
   const handleSubmit = async () => {
+    console.log(mobileCountryCode, mobile, whatsAppCountryCode, whatsApp);
     setValidationTrigger(true);
     const nameValidate = nameValidator(name);
     const emailValidate = emailValidator(email);
@@ -634,7 +664,9 @@ export default function Trainers() {
       ...(editTrainerId && { id: editTrainerId }),
       trainer_name: name,
       email: email,
+      mobile_phone_code: mobileCountryCode,
       mobile: mobile,
+      whatsapp_phone_code: whatsAppCountryCode,
       whatsapp: whatsApp,
       technology_id: technology,
       overall_exp_year: experience,
@@ -806,46 +838,49 @@ export default function Trainers() {
             />
           </Col>
           <Col span={8}>
-            <CommonInputField
-              label="Trainer Mobile"
-              required={true}
-              maxLength={13}
-              onChange={(e) => {
-                const value = e.target.value;
-                const cleanedMobile = value
-                  .replace(/\D/g, "")
-                  .replace(/^0+/, "");
-                setMobile(cleanedMobile);
+            <PhoneWithCountry
+              label="Mobile Number"
+              onChange={(value) => {
+                console.log("mobbbb", value);
+                setMobile(value);
                 if (validationTrigger) {
-                  setMobileError(mobileValidator(cleanedMobile));
+                  setMobileError(mobileValidator(value));
                 }
               }}
-              value={mobile}
+              selectedCountry={selectedCountry}
+              countryCode={(code) => {
+                setMobileCountryCode(code);
+              }}
               error={mobileError}
+              onCountryChange={(iso2) => {
+                setSelectedCountry(iso2);
+                setWhatsAppCountry(iso2);
+              }}
+              value={mobile}
             />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={8}>
-            <CommonOutlinedInput
-              label="Whatsapp Number"
-              icon={<SiWhatsapp color="#39AE41" />}
-              required={true}
-              maxLength={13}
-              onChange={(e) => {
-                const value = e.target.value;
-                const cleanedMobile = value
-                  .replace(/\D/g, "")
-                  .replace(/^0+/, "");
-                setWhatsApp(cleanedMobile);
+            <PhoneWithCountry
+              label="WhatsApp Number"
+              onChange={(value) => {
+                setWhatsApp(value);
                 if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(cleanedMobile));
+                  setWhatsAppError(mobileValidator(value));
                 }
               }}
+              countryCode={(code) => {
+                setWhatsAppCountryCode(code);
+              }}
+              selectedCountry={whatsAppCountry}
               value={whatsApp}
               error={whatsAppError}
               errorFontSize="10px"
+              onCountryChange={(iso2) => {
+                setWhatsAppCountry(iso2);
+              }}
             />
           </Col>
 

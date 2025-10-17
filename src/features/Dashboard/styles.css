@@ -47,9 +47,15 @@
   font-size: 15px;
 }
 .dashboard_leadcountcard_count {
-  font-size: 35px;
+  font-size: 30px;
   color: #5b69ca;
   font-weight: 600;
+  margin-top: 8px;
+  word-break: break-all;
+}
+.dashboard_leadfollowup_headings {
+  font-weight: 500;
+  font-size: 13.5px;
 }
 .dashboard_leadcountcard_progressbar {
   margin-top: 8px;
@@ -88,4 +94,8 @@
 }
 .dashboard_performchannel_data_col {
   font-size: 13px;
+}
+
+.dadhboard_chartsContainer {
+  padding: 12px;
 }

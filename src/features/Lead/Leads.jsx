@@ -257,9 +257,12 @@ export default function Leads({
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //lead executive
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
   const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
+  const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
+  const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -270,6 +273,10 @@ export default function Leads({
 
   const [defaultColumns, setDefaultColumns] = useState([
     { title: "Lead Executive", isChecked: true },
+    {
+      title: "Created At",
+      isChecked: true,
+    },
     {
       title: "Candidate Name",
       key: "name",
@@ -376,6 +383,15 @@ export default function Leads({
         );
       },
     },
+    {
+      title: "Created At",
+      key: "created_date",
+      dataIndex: "created_date",
+      width: 120,
+      render: (text, record) => {
+        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+      },
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 240 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -465,16 +481,7 @@ export default function Leads({
       dataIndex: "expected_join_date",
       width: 160,
       render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    {
-      title: "Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 120,
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
@@ -1713,7 +1720,7 @@ export default function Leads({
   };
 
   const handleLeadCountByExecutive = async () => {
-    setLeadCountLoading(true);
+    setLeadExeCountLoading(true);
     let lead_executive = [];
     if (leadExecutiveId) {
       lead_executive.push(leadExecutiveId);
@@ -1730,10 +1737,10 @@ export default function Leads({
       console.log("leads count response", response);
       setLeadCountByExecutives(response?.data?.data || []);
       setTimeout(() => {
-        setLeadCountLoading(false);
+        setLeadExeCountLoading(false);
       }, 200);
     } catch (error) {
-      setLeadCountLoading(false);
+      setLeadExeCountLoading(false);
       setLeadCountByExecutives([]);
       console.log("error", error);
     }
@@ -1880,10 +1887,17 @@ export default function Leads({
                       }}
                       value={leadExecutiveId}
                       disableClearable={false}
-                      // borderRightNone={true}
+                      borderRightNone={true}
                     />
                   </div>
-                  {/* <div onClick={handleLeadCountByExecutive}>
+                  <div
+                    onClick={() => {
+                      if (executiveCountTooltip) {
+                        return;
+                      }
+                      handleLeadCountByExecutive();
+                    }}
+                  >
                     <Flex
                       justify="center"
                       align="center"
@@ -1894,7 +1908,7 @@ export default function Leads({
                         color="#fff"
                         title={
                           <>
-                            {leadCountLoading ? (
+                            {leadExeCountLoading ? (
                               <div className="leadsmanager_executivecount_loader_container">
                                 <Spin size="small" />
                               </div>
@@ -1922,6 +1936,7 @@ export default function Leads({
                         }
                         trigger={["click"]}
                         onOpenChange={(value) => {
+                          setExecutiveCountTooltip(value);
                           if (value === false) {
                             setLeadCountByExecutives([]);
                           }
@@ -1932,7 +1947,7 @@ export default function Leads({
                         </Button>
                       </Tooltip>
                     </Flex>
-                  </div> */}
+                  </div>
                 </div>
               </Col>
             )}

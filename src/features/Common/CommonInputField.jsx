@@ -17,6 +17,7 @@ export default function CommonInputField({
   type,
   disabled,
   onInput,
+  borderLeftNone,
 }) {
   const handleChange = (e) => {
     if (
@@ -64,6 +65,14 @@ export default function CommonInputField({
           "& .MuiInputLabel-root": {
             fontSize: labelFontSize ? labelFontSize : "14px",
           },
+          "& .MuiInputBase-root.MuiOutlinedInput-root": {
+            borderLeft: "0px",
+            borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
+            borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
+          },
+          "& fieldset": {
+            borderLeft: borderLeftNone ? "0px" : "", // ✅ this controls the visible border
+          },
           "& .MuiInputBase-input": {
             height: height || "auto",
             boxSizing: "border-box",
@@ -76,7 +85,6 @@ export default function CommonInputField({
           },
         }}
         inputRef={ref}
-        inputP
         slotProps={{
           htmlInput: { maxLength: maxLength },
           input: {

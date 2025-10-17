@@ -30,6 +30,7 @@ export default function CommonSelectField({
   groupBy,
   showLabelStatus,
   borderRightNone,
+  borderLeftNone,
   onFocus,
   onBlur,
 }) {
@@ -113,8 +114,11 @@ export default function CommonSelectField({
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "", // ⬅️ removes the right border
+                  borderLeft: borderLeftNone ? "none" : "",
                   borderTopRightRadius: borderRightNone ? "0px" : "4px",
                   borderBottomRightRadius: borderRightNone ? "0px" : "4px",
+                  borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
+                  borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
                 },
               }}
               className="common_inputfield"

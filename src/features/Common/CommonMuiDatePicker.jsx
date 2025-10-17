@@ -70,6 +70,9 @@ export default function CommonMuiDatePicker({
               },
             },
           },
+          actionBar: {
+            actions: ["clear"], // ✅ add "clear" action
+          },
           textField: {
             fullWidth: true,
             size: "small",

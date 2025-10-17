@@ -850,3 +850,40 @@ export const getUserDownline = async (user_id) => {
     throw error;
   }
 };
+
+//dashboard api's
+export const getScoreBoard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTopPerformance = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTopPerformance`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRADashboard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getRADashboard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getHRDashboard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getHRDashboard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

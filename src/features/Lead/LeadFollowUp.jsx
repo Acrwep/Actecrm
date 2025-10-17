@@ -93,7 +93,8 @@ export default function LeadFollowUp({
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
   const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
-  const [leadCountLoading, setLeadCountLoading] = useState(false);
+  const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
+  const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
 
   const [followUpData, setFollowUpData] = useState([]);
   const [isOpenChat, setIsOpenChat] = useState(false);
@@ -1019,7 +1020,7 @@ export default function LeadFollowUp({
   };
 
   const handleLeadCountByExecutive = async () => {
-    setLeadCountLoading(true);
+    setLeadExeCountLoading(true);
     let lead_executive = [];
     if (leadExecutiveId) {
       lead_executive.push(leadExecutiveId);
@@ -1036,10 +1037,10 @@ export default function LeadFollowUp({
       console.log("leads count response", response);
       setLeadCountByExecutives(response?.data?.data || []);
       setTimeout(() => {
-        setLeadCountLoading(false);
+        setLeadExeCountLoading(false);
       }, 200);
     } catch (error) {
-      setLeadCountLoading(false);
+      setLeadExeCountLoading(false);
       setLeadCountByExecutives([]);
       console.log("error", error);
     }
@@ -1261,10 +1262,17 @@ export default function LeadFollowUp({
                       }}
                       value={leadExecutiveId}
                       disableClearable={false}
-                      // borderRightNone={true}
+                      borderRightNone={true}
                     />
                   </div>
-                  {/* <div onClick={handleLeadCountByExecutive}>
+                  <div
+                    onClick={() => {
+                      if (executiveCountTooltip) {
+                        return;
+                      }
+                      handleLeadCountByExecutive();
+                    }}
+                  >
                     <Flex
                       justify="center"
                       align="center"
@@ -1275,7 +1283,7 @@ export default function LeadFollowUp({
                         color="#fff"
                         title={
                           <>
-                            {leadCountLoading ? (
+                            {leadExeCountLoading ? (
                               <div className="leadsmanager_executivecount_loader_container">
                                 <Spin size="small" />
                               </div>
@@ -1303,6 +1311,7 @@ export default function LeadFollowUp({
                         }
                         trigger={["click"]}
                         onOpenChange={(value) => {
+                          setExecutiveCountTooltip(value);
                           if (value === false) {
                             setLeadCountByExecutives([]);
                           }
@@ -1313,7 +1322,7 @@ export default function LeadFollowUp({
                         </Button>
                       </Tooltip>
                     </Flex>
-                  </div> */}
+                  </div>
                 </div>
               </Col>
             )}
