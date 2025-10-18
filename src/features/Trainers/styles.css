@@ -230,10 +230,16 @@
 .trainer_registration_signature_createbutton:hover {
   color: #5b69ca !important;
 }
+.trainer_registration_nextbuttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 32px;
+  margin-top: 20px;
+}
 .trainer_registration_submitbuttonContainer {
   position: absolute;
   bottom: 2px;
-  right: 24px;
+  right: 32px;
   display: flex;
   justify-content: center;
   align-items: center;

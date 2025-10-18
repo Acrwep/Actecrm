@@ -445,7 +445,7 @@ export default function TrainerRegistration() {
 
   const renderPersonalDetails = () => {
     return (
-      <div style={{ height: "365px", position: "relative" }}>
+      <div style={{ height: "auto", position: "relative" }}>
         <div className="logincard_innerContainer">
           <p className="trainer_registration_headings">Primary Details</p>
           <Row gutter={12}>
@@ -658,7 +658,7 @@ export default function TrainerRegistration() {
             </Col>
           </Row>
         </div>
-        <div className="trainer_registration_submitbuttonContainer">
+        <div className="trainer_registration_nextbuttonContainer">
           <button
             className="trainer_registration_submitbutton"
             onClick={handlePersonalDetails}

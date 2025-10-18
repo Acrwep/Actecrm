@@ -96,7 +96,8 @@ export default function CustomHeader() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("AccessToken");
+    localStorage.removeItem("loginUserDetails");
     sessionStorage.clear();
     navigate("/login");
   };

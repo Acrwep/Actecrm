@@ -9,13 +9,14 @@ import {
   Radio,
   Tabs,
   Modal,
+  Upload,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RedoOutlined } from "@ant-design/icons";
-import { SiWhatsapp } from "react-icons/si";
+import { PlusOutlined } from "@ant-design/icons";
 import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -115,9 +116,15 @@ export default function Trainers() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [trainerCurrentStatus, setTrainerCurrentStatus] =
+    useState("Verify Pending");
   //bank details usestates
   const [isShowBankTab, setIsShowBankTab] = useState(false);
-  const [profileImage, setProfileImage] = useState("");
+  const [trainerBankId, setTrainerBankId] = useState(null);
+  const [profilePictureArray, setProfilePictureArray] = useState([]);
+  const [profilePictureBase64, setProfilePictureBase64] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [bankName, setBankName] = useState("");
@@ -529,7 +536,19 @@ export default function Trainers() {
 
     setIsOpenAddDrawer(true);
     setEditTrainerId(item.id);
-    setProfileImage(item.profile_image);
+    if (item.profile_image) {
+      setProfilePictureArray([
+        {
+          uid: "-1",
+          name: "profile.jpg",
+          status: "done",
+          url: item.profile_image, // Base64 string directly usable
+        },
+      ]);
+    } else {
+      setProfilePictureArray([]);
+    }
+    setProfilePictureBase64(item.profile_image);
     setName(item.name);
     setEmail(item.email);
     //mobile fetch
@@ -549,6 +568,7 @@ export default function Trainers() {
     setWhatsAppCountry(selected_whatsapp_country);
     setWhatsApp(item.whatsapp);
     //-----------
+    setTrainerCurrentStatus(item.status);
     setTechnology(item.technology_id);
     setExperience(parseInt(item.overall_exp_year));
     setRelevantExperience(parseInt(item.relavant_exp_year));
@@ -561,6 +581,8 @@ export default function Trainers() {
       item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : ""
     );
     setSkills(item.skills);
+    //fetch bank details
+    setTrainerBankId(item.trainer_bank_id);
     setAccountHolderName(item.account_holder_name);
     setAccountNumber(item.account_number);
     setBankName(item.bank_name);
@@ -578,6 +600,75 @@ export default function Trainers() {
       });
       getTrainersData(e.target.value, status, hrId, 1, pagination.limit);
     }, 300);
+  };
+
+  //onchange function
+  const handleProfileAttachment = ({ fileList: newFileList }) => {
+    console.log("newww", newFileList);
+
+    if (newFileList.length <= 0) {
+      setProfilePictureArray([]);
+      setProfilePictureBase64("");
+      return;
+    }
+
+    const file = newFileList[0].originFileObj; // actual File object
+
+    // ✅ Check file type
+    const isValidType =
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/jpg";
+
+    // ✅ Check file size (1MB = 1,048,576 bytes)
+    const isValidSize = file.size <= 1024 * 1024;
+
+    if (isValidType && isValidSize) {
+      console.log("fileeeee", newFileList);
+      setProfilePictureArray(newFileList);
+      CommonMessage("success", "Profile uploaded");
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result; // Extract Base64 content
+        setProfilePictureBase64(base64String); // Store in state
+      };
+    } else {
+      if (!isValidType) {
+        CommonMessage("error", "Accept only .png");
+      } else if (!isValidSize) {
+        CommonMessage("error", "File size must be 1MB or less");
+      }
+      setProfilePictureArray([]);
+      setProfilePictureBase64("");
+    }
+  };
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
+  };
+
+  const handleRemoveProfile = (fileToRemove) => {
+    const newFileList = profilePictureArray.filter(
+      (file) => file.uid !== fileToRemove.uid
+    );
+    setProfilePictureArray(newFileList);
+    // CommonToaster("Profile removed");
   };
 
   const handleCreateCourse = async () => {
@@ -660,6 +751,7 @@ export default function Trainers() {
     setMobileError("");
     setWhatsApp("");
     setWhatsAppError("");
+    setTrainerCurrentStatus("Verify Pending");
     setTechnology("");
     setTechnologyError("");
     setExperience("");
@@ -674,12 +766,14 @@ export default function Trainers() {
     setSkillsError("");
     setLocation("");
     setLocationError("");
+    setTrainerBankId(null);
     setAccountHolderName("");
     setAccountNumber("");
     setBankName("");
     setBranchName("");
     setIfscCode("");
-    setProfileImage("");
+    setProfilePictureArray([]);
+    setProfilePictureBase64("");
     setSignatureImage("");
     setIsOpenAddDrawer(false);
     setValidationTrigger(false);
@@ -759,12 +853,13 @@ export default function Trainers() {
       secondary_time: secondaryTime,
       skills: getSkillsIds,
       location: location,
-      status: "Verify Pending",
-      profile_image: profileImage,
+      status: trainerCurrentStatus,
+      profile_image: profilePictureBase64,
+      trainer_bank_id: trainerBankId,
       account_holder_name: accountHolderName,
       account_number: accountNumber,
       bank_name: bankName,
-      branche_name: branchName,
+      branch_name: branchName,
       ifsc_code: ifscCode,
       signature_image: signatureImage,
       ...(!editTrainerId
@@ -800,7 +895,7 @@ export default function Trainers() {
         setButtonLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }
@@ -831,7 +926,7 @@ export default function Trainers() {
         setButtonLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }
@@ -901,10 +996,27 @@ export default function Trainers() {
   const renderPersonalDetails = () => {
     return (
       <div style={{ marginBottom: "60px" }}>
-        {profileImage && (
-          <div className="trainer_profilephoto_container">
-            <p style={{ fontWeight: 500 }}>Profile Photo</p>
-            <img src={profileImage} className="trainer_profilephoto" />
+        {editTrainerId && (
+          <div className="customerupdate_profilepicture_container">
+            <Upload
+              listType="picture-circle"
+              fileList={profilePictureArray}
+              onPreview={handlePreview}
+              onChange={handleProfileAttachment}
+              onRemove={(file) => handleRemoveProfile(file)}
+              beforeUpload={() => false} // prevent auto upload
+              style={{ width: 90, height: 90 }} // reduce size
+              accept=".png,.jpg,.jpeg"
+            >
+              {profilePictureArray.length >= 1 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8, fontSize: "12px" }}>
+                    Upload <br /> Profile
+                  </div>
+                </div>
+              )}
+            </Upload>
           </div>
         )}
         <Row gutter={16}>
@@ -1180,60 +1292,71 @@ export default function Trainers() {
     return (
       <div>
         <Row gutter={16}>
-          <Col span={12}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Account Holder Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {accountHolderName ? accountHolderName : "-"}
-              </span>
-            </p>
+          <Col span={8}>
+            <CommonInputField
+              label="Account Holder Name"
+              required={true}
+              onChange={(e) => {
+                setAccountHolderName(e.target.value);
+              }}
+              value={accountHolderName}
+              errorFontSize="9px"
+            />
           </Col>
-          <Col span={12}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Account Number:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {accountNumber ? accountNumber : "-"}
-              </span>
-            </p>
+          <Col span={8}>
+            <CommonInputField
+              label="Account Number"
+              required={true}
+              onChange={(e) => {
+                setAccountNumber(e.target.value);
+              }}
+              value={accountNumber}
+            />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "20px" }}>
-          <Col span={12}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Bank Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {bankName ? bankName : "-"}
-              </span>
-            </p>
-          </Col>
-          <Col span={12}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Branch Name:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {branchName ? branchName : "-"}
-              </span>
-            </p>
+          <Col span={8}>
+            <CommonInputField
+              label="Bank Name"
+              required={true}
+              onChange={(e) => {
+                setBankName(e.target.value);
+              }}
+              value={bankName}
+            />
           </Col>
         </Row>
 
         <Row gutter={16} style={{ marginTop: "20px" }}>
-          <Col span={12}>
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Ifsc Code:{" "}
-              <span className="leadmanager_paymentdrawer_userdetails">
-                {ifscCode ? ifscCode : "-"}
-              </span>
-            </p>
+          <Col span={8}>
+            <CommonInputField
+              label="Branch Name"
+              required={true}
+              onChange={(e) => {
+                setBranchName(e.target.value);
+              }}
+              value={branchName}
+            />
           </Col>
-          <Col span={12} style={{ display: "flex", gap: "4px" }}>
+          <Col span={8}>
+            <CommonInputField
+              label="IFSC Code"
+              required={true}
+              onChange={(e) => {
+                setIfscCode(e.target.value.toUpperCase());
+              }}
+              value={ifscCode}
+            />
+          </Col>
+          <Col
+            span={8}
+            style={{ display: "flex", gap: "4px", alignItems: "center" }}
+          >
             <p className="leadmanager_paymentdrawer_userheadings">
               Signature:{" "}
             </p>
 
             {signatureImage ? (
               <img
-                src={`data:image/png;base64,${signatureImage}`}
+                src={`${signatureImage}`}
                 alt="Trainer Signature"
                 className="trainer_signature_image"
               />
@@ -1242,6 +1365,8 @@ export default function Trainers() {
             )}
           </Col>
         </Row>
+
+        <Row gutter={16} style={{ marginTop: "20px" }}></Row>
       </div>
     );
   };
@@ -1886,6 +2011,15 @@ export default function Trainers() {
             <li>Python</li>
           </ul>
         </div>
+      </Modal>
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

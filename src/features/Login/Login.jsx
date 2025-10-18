@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Input } from "antd";
+import { Row, Col, Input, Checkbox } from "antd";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -23,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +59,15 @@ export default function Login() {
   };
 
   useEffect(() => {
-    localStorage.clear();
+    const savedUserId = localStorage.getItem("rememberedUserId");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    const savedRemember = localStorage.getItem("rememberMe") === "true";
+    console.log(savedUserId, savedRemember);
+    if (savedRemember) {
+      setUserId(savedUserId || "");
+      setPassword(savedPassword || "");
+      setRememberMe(true);
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -74,6 +83,16 @@ export default function Login() {
     if (emailValidate || passwordValidate) return;
 
     setLoading(true);
+    if (rememberMe) {
+      localStorage.setItem("rememberedUserId", userId);
+      localStorage.setItem("rememberedPassword", password);
+      localStorage.setItem("rememberMe", "true");
+    } else {
+      localStorage.removeItem("rememberedUserId");
+      localStorage.removeItem("rememberedPassword");
+      localStorage.removeItem("rememberMe");
+    }
+
     const payload = {
       user_id: userId,
       password: password,
@@ -167,7 +186,14 @@ export default function Login() {
                 </div>
 
                 <div className="login_forgotpasswordtextContainer">
-                  <p className="login_forgotpasswordtext">Forgot Password?</p>
+                  <Checkbox
+                    className="login_remenberme_checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  >
+                    Remember Me
+                  </Checkbox>
+                  {/* <p className="login_forgotpasswordtext">Forgot Password?</p> */}
                 </div>
                 {loading ? (
                   <button className="login_loadingsigninbutton">
@@ -180,7 +206,7 @@ export default function Login() {
                 )}
               </form>
 
-              <p className="login_signupnow_text">
+              {/* <p className="login_signupnow_text">
                 Don't have a account?{" "}
                 <span
                   style={{
@@ -191,7 +217,7 @@ export default function Login() {
                 >
                   Sign up now
                 </span>
-              </p>
+              </p> */}
             </div>
           </Col>
           <Col span={11} className="login_card_slidercolumn_Container">

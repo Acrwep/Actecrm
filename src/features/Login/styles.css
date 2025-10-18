@@ -119,6 +119,7 @@
   position: relative;
   z-index: 1;
   margin-top: 30px;
+  margin-bottom: 55px;
 }
 .login_formlabels {
   font-weight: 500;
@@ -187,16 +188,20 @@
   transition: all 0.3s ease-in-out;
 }
 .login_forgotpasswordtextContainer {
-  margin-top: 6px;
+  margin-top: 8px;
   font-weight: 400;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+}
+.login_remenberme_checkbox {
+  font-size: 13px;
+  color: #333;
 }
 .login_forgotpasswordtext {
   width: max-content;
   cursor: pointer;
   font-size: 13px;
-  color: black;
+  color: #333;
 }
 .login_signinbutton {
   background-color: #5b69ca;

@@ -18,8 +18,6 @@ import {
   nameValidator,
   selectValidator,
 } from "../Common/Validation";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import { SiWhatsapp } from "react-icons/si";
 import { PlusOutlined } from "@ant-design/icons";
 import "./styles.css";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";

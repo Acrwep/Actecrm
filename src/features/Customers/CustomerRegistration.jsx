@@ -459,6 +459,7 @@ export default function CustomerRegistration() {
       profile_image: profilePicture,
       placement_support: placementSupport,
       is_server_required: server,
+      is_customer_updated: 1,
     };
 
     try {
