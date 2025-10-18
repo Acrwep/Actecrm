@@ -574,12 +574,12 @@ export default function Trainers() {
     setRelevantExperience(parseInt(item.relavant_exp_year));
     setBatch(item.batch_id);
     setLocation(item.location);
-    setAvaibilityTime(
-      item.availability_time ? dayjs(item.availability_time, "HH:mm:ss") : ""
+    console.log(
+      "item.availability_time",
+      dayjs(item.availability_time, "HH:mm:ss")
     );
-    setSecondaryTime(
-      item.secondary_time ? dayjs(item.secondary_time, "HH:mm:ss") : ""
-    );
+    setAvaibilityTime(item.availability_time ? item.availability_time : "");
+    setSecondaryTime(item.secondary_time ? item.secondary_time : "");
     setSkills(item.skills);
     //fetch bank details
     setTrainerBankId(item.trainer_bank_id);
@@ -781,6 +781,7 @@ export default function Trainers() {
   };
 
   const handleSubmit = async () => {
+    console.log("avaibilityTime", avaibilityTime);
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     console.log(converAsJson);

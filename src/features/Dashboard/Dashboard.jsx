@@ -524,9 +524,9 @@ export default function Dashboard() {
                         {scoreCardDetails &&
                         (scoreCardDetails.follow_up_handled != undefined ||
                           scoreCardDetails.follow_up_handled != null)
-                          ? Number(scoreCardDetails.total_leads).toLocaleString(
-                              "en-IN"
-                            )
+                          ? Number(
+                              scoreCardDetails.follow_up_handled
+                            ).toLocaleString("en-IN")
                           : "-"}
                       </p>
                       <p
@@ -545,7 +545,7 @@ export default function Dashboard() {
                           (scoreCardDetails.follow_up_handled != undefined ||
                             scoreCardDetails.follow_up_handled != null)
                             ? Number(
-                                scoreCardDetails.total_leads
+                                scoreCardDetails.follow_up_handled
                               ).toLocaleString("en-IN")
                             : "-"}
                         </span>

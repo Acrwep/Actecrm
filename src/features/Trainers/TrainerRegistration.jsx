@@ -199,11 +199,11 @@ export default function TrainerRegistration() {
       setExperience(parseInt(trainerDetails.overall_exp_year));
       setRelevantExperience(parseInt(trainerDetails.relavant_exp_year));
       setBatch(trainerDetails.batch_id);
-      setAvaibilityTime(dayjs(trainerDetails.availability_time, "HH:mm:ss"));
+      setAvaibilityTime(
+        trainerDetails.availability_time ? trainerDetails.availability_time : ""
+      );
       setSecondaryTime(
-        trainerDetails.secondary_time
-          ? dayjs(trainerDetails.secondary_time, "HH:mm:ss")
-          : null
+        trainerDetails.secondary_time ? trainerDetails.secondary_time : ""
       );
       setSkills(trainerDetails.skills);
       setLocation(trainerDetails.location);
@@ -396,6 +396,10 @@ export default function TrainerRegistration() {
       return;
     }
 
+    const getSkillsIds = skills.map((s) => {
+      return s.id;
+    });
+
     const payload = {
       id: trainer_id,
       trainer_name: name,
@@ -411,7 +415,7 @@ export default function TrainerRegistration() {
       batch_id: batch,
       availability_time: avaibilityTime,
       secondary_time: secondaryTime,
-      skills: skills,
+      skills: getSkillsIds,
       location: location,
       status: trainerStatus,
       profile_image: profilePicture,
