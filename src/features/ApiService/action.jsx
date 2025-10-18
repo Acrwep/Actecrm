@@ -179,6 +179,24 @@ export const getExperience = async (payload) => {
   }
 };
 
+export const createTrainerSkill = async (payload) => {
+  try {
+    const response = await api.post("/api/addSkills", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTrainerSkills = async (payload) => {
+  try {
+    const response = await api.get("/api/getSkills", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTrainers = async (payload) => {
   try {
     const response = await api.post("/api/getTrainers", payload);

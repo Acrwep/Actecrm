@@ -13,6 +13,7 @@ import {
   calculateAmount,
   emailValidator,
   formatToBackendIST,
+  getCountryFromDialCode,
   mobileValidator,
   nameValidator,
   selectValidator,
@@ -37,6 +38,7 @@ import {
 import { Country, State } from "country-state-city";
 import { CommonMessage } from "../Common/CommonMessage";
 import { useSelector } from "react-redux";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 const CustomerUpdate = forwardRef(
   (
@@ -62,8 +64,12 @@ const CustomerUpdate = forwardRef(
     const [nameError, setNameError] = useState("");
     const [email, setEmail] = useState("");
     const [emailError, setEmailError] = useState("");
+    const [mobileCountryCode, setMobileCountryCode] = useState("");
+    const [mobileCountry, setMobileCountry] = useState("in");
     const [mobile, setMobile] = useState("");
     const [mobileError, setMobileError] = useState("");
+    const [whatsAppCountry, setWhatsAppCountry] = useState("in");
+    const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
     const [whatsApp, setWhatsApp] = useState("");
     const [whatsAppError, setWhatsAppError] = useState("");
 
@@ -210,8 +216,31 @@ const CustomerUpdate = forwardRef(
         const customerDetails = response?.data?.data;
         setName(customerDetails.name);
         setEmail(customerDetails.email);
+        //mobile fetch
+        setMobileCountryCode(
+          customerDetails.phonecode ? customerDetails.phonecode : ""
+        );
+        const selected_mobile_country = getCountryFromDialCode(
+          `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`
+        );
+        setMobileCountry(selected_mobile_country);
         setMobile(customerDetails.phone);
+        //whatsapp fetch
+        setWhatsAppCountryCode(
+          customerDetails.whatsapp_phone_code
+            ? customerDetails.whatsapp_phone_code
+            : ""
+        );
+        const selected_whatsapp_country = getCountryFromDialCode(
+          `+${
+            customerDetails.whatsapp_phone_code
+              ? customerDetails.whatsapp_phone_code
+              : ""
+          }`
+        );
+        setWhatsAppCountry(selected_whatsapp_country);
         setWhatsApp(customerDetails.whatsapp);
+        //--------
         setDateOfBirth(customerDetails.date_of_birth);
         setGender(customerDetails.gender);
         setDateOfJoining(customerDetails.date_of_joining);
@@ -512,8 +541,9 @@ const CustomerUpdate = forwardRef(
         id: customerId,
         name: name,
         email: email,
-        phonecode: "+91",
+        phonecode: mobileCountryCode,
         phone: mobile,
+        whatsapp_phone_code: whatsAppCountryCode,
         whatsapp: whatsApp,
         date_of_birth: formatToBackendIST(dateOfBirth),
         gender: gender,
@@ -621,6 +651,10 @@ const CustomerUpdate = forwardRef(
       setNameError("");
       setEmail("");
       setEmailError("");
+      setMobileCountry("in");
+      setMobileCountryCode("");
+      setWhatsAppCountry("in");
+      setWhatsAppCountryCode("");
       setMobile("");
       setMobileError("");
       setDateOfBirth(null);
@@ -712,19 +746,21 @@ const CustomerUpdate = forwardRef(
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonInputField
-                  label="Mobile"
-                  required={true}
-                  maxLength={13}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const cleanedMobile = value
-                      .replace(/\D/g, "")
-                      .replace(/^0+/, "");
-                    setMobile(cleanedMobile);
+                <PhoneWithCountry
+                  label="Mobile Number"
+                  onChange={(value) => {
+                    setMobile(value);
                     if (validationTrigger) {
-                      setMobileError(mobileValidator(cleanedMobile));
+                      setMobileError(mobileValidator(value));
                     }
+                  }}
+                  selectedCountry={mobileCountry}
+                  countryCode={(code) => {
+                    setMobileCountryCode(code);
+                  }}
+                  onCountryChange={(iso2) => {
+                    setMobileCountry(iso2);
+                    setWhatsAppCountry(iso2);
                   }}
                   value={mobile}
                   error={mobileError}
@@ -734,25 +770,25 @@ const CustomerUpdate = forwardRef(
 
             <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonOutlinedInput
-                  label="Whatsapp Number"
-                  icon={<SiWhatsapp color="#39AE41" />}
-                  required={true}
-                  maxLength={13}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const cleanedMobile = value
-                      .replace(/\D/g, "")
-                      .replace(/^0+/, "");
-                    setWhatsApp(cleanedMobile);
+                <PhoneWithCountry
+                  label="WhatsApp Number"
+                  onChange={(value) => {
+                    setWhatsApp(value);
                     if (validationTrigger) {
-                      setWhatsAppError(mobileValidator(cleanedMobile));
+                      setWhatsAppError(mobileValidator(value));
                     }
                   }}
+                  countryCode={(code) => {
+                    setWhatsAppCountryCode(code);
+                  }}
+                  selectedCountry={whatsAppCountry}
                   value={whatsApp}
                   error={whatsAppError}
-                  errorFontSize="10px"
-                />{" "}
+                  onCountryChange={(iso2) => {
+                    setWhatsAppCountry(iso2);
+                  }}
+                  errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
+                />
               </Col>
 
               <Col xs={24} sm={24} md={24} lg={8}>

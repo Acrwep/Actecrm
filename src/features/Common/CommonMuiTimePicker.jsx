@@ -15,6 +15,7 @@ export default function CommonMuiTimePicker({
   error,
   errorFontSize,
   allowClear = false,
+  disabled = false,
 }) {
   // const [value, setValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
@@ -32,6 +33,7 @@ export default function CommonMuiTimePicker({
           }
         }}
         open={open}
+        disabled={disabled}
         views={["hours", "minutes"]}
         onAccept={(newValue) => {
           if (newValue && newValue.isValid()) {
@@ -41,7 +43,12 @@ export default function CommonMuiTimePicker({
         }}
         ampm={true}
         onClose={() => setOpen(false)}
-        onOpen={() => setOpen(true)}
+        onOpen={() => {
+          if (disabled === true) {
+            return;
+          }
+          setOpen(true);
+        }}
         slotProps={{
           day: {
             sx: {
@@ -89,7 +96,12 @@ export default function CommonMuiTimePicker({
                 {label + error}
               </span>
             ) : null,
-            onClick: () => setOpen(true),
+            onClick: () => {
+              if (disabled === true) {
+                return;
+              }
+              setOpen(true);
+            },
             InputProps: {
               endAdornment: (
                 <>

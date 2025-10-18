@@ -24,13 +24,27 @@ export default function CommonMultiSelect({
   error,
   dontallowFreeSolo,
   checkBox,
+  disabled = false,
+  onFocus,
+  onBlur,
+  borderRightNone,
 }) {
   const icon = <MdOutlineCheckBoxOutlineBlank size={18} />;
   const checkedIcon = <IoMdCheckbox size={18} color="#535bf2" />;
 
   return (
     <div>
-      <FormControl fullWidth className="common_selectfield" required={required}>
+      <FormControl
+        fullWidth
+        className="common_selectfield"
+        required={required}
+        sx={{
+          "& .Mui-disabled": {
+            color: "#888", // change text color
+            WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+          },
+        }}
+      >
         <Autocomplete
           multiple
           freeSolo={dontallowFreeSolo ? false : true}
@@ -38,7 +52,10 @@ export default function CommonMultiSelect({
           size="small"
           id="multiple-limit-tags"
           options={options}
+          disabled={disabled}
           disableCloseOnSelect
+          onFocus={onFocus}
+          onBlur={onBlur}
           getOptionLabel={(option) =>
             typeof option === "string"
               ? option
@@ -119,6 +136,9 @@ export default function CommonMultiSelect({
             },
             "& .MuiOutlinedInput-notchedOutline": {
               height: "100%", // Ensure the outline stretches
+              borderRight: borderRightNone ? "none" : "",
+              borderTopRightRadius: borderRightNone ? "0px" : "4px",
+              borderBottomRightRadius: borderRightNone ? "0px" : "4px",
             },
             "& .MuiInputLabel-root": {
               fontSize: "14px", // Change this value as needed

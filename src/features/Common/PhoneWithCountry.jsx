@@ -2,6 +2,7 @@ import React from "react";
 import "react-international-phone/style.css";
 import "./commonstyles.css";
 import {
+  FormControl,
   InputAdornment,
   MenuItem,
   Select,
@@ -26,6 +27,7 @@ export default function PhoneWithCountry({
   countryCode,
   onCountryChange,
   selectedCountry,
+  disabled = false,
   disableCountrySelect = false,
   errorFontSize,
   ...restProps
@@ -132,106 +134,117 @@ export default function PhoneWithCountry({
   };
 
   return (
-    <TextField
-      variant="outlined"
-      label={label}
-      required
-      value={internalValue}
-      onChange={handleInputChange}
-      type="tel"
-      inputRef={inputRef}
-      className="common_inputfield"
-      error={!!error}
-      helperText={
-        error && (
-          <span style={{ fontSize: errorFontSize || "11px" }}>
-            {label !== "Paid Now" && label}
-            {error}
-          </span>
-        )
-      }
+    <FormControl
       sx={{
-        width: "100%",
-        "& .MuiInputLabel-root": { fontSize: labelFontSize || "14px" },
-        "& .MuiInputBase-root.MuiOutlinedInput-root": {
-          borderLeft: "0px",
-          borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
-          borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
-        },
-        "& fieldset": { borderLeft: borderLeftNone ? "0px" : "" },
-        "& .MuiInputBase-input": {
-          height: height || "42px",
-          boxSizing: "border-box",
-          fontSize: "14px",
+        "& .Mui-disabled": {
+          backgroundColor: "#f5f5f5", // change background
+          color: "#888", // change text color
+          WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
         },
       }}
-      slotProps={{
-        htmlInput: { maxLength: 17 },
-        input: {
-          startAdornment: (
-            <InputAdornment
-              position="start"
-              style={{ marginRight: "-10px", marginLeft: "-8px" }}
-            >
-              <Select
-                disabled={disableCountrySelect}
-                MenuProps={{
-                  style: {
-                    height: "300px",
-                    width: "360px",
-                    top: "10px",
-                    left: "-34px",
-                  },
-                  transformOrigin: { vertical: "top", horizontal: "left" },
-                }}
-                sx={{
-                  width: "max-content",
-                  fieldset: { display: "none" },
-                  ".MuiSelect-select": {
-                    padding: "8px 0px 8px 8px",
-                  },
-                }}
-                value={country.iso2}
-                onChange={handleCountryChange}
-                renderValue={(v) => (
-                  <FlagImage iso2={v} style={{ display: "flex" }} />
-                )}
+    >
+      <TextField
+        variant="outlined"
+        label={label}
+        required
+        value={internalValue}
+        onChange={handleInputChange}
+        type="tel"
+        inputRef={inputRef}
+        className="common_inputfield"
+        error={!!error}
+        disabled={disabled}
+        helperText={
+          error && (
+            <span style={{ fontSize: errorFontSize || "11px" }}>
+              {label !== "Paid Now" && label}
+              {error}
+            </span>
+          )
+        }
+        sx={{
+          width: "100%",
+          "& .MuiInputLabel-root": { fontSize: labelFontSize || "14px" },
+          "& .MuiInputBase-root.MuiOutlinedInput-root": {
+            borderLeft: "0px",
+            borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
+            borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
+          },
+          "& fieldset": { borderLeft: borderLeftNone ? "0px" : "" },
+          "& .MuiInputBase-input": {
+            height: height || "42px",
+            boxSizing: "border-box",
+            fontSize: "14px",
+          },
+        }}
+        slotProps={{
+          htmlInput: { maxLength: 17 },
+          input: {
+            startAdornment: (
+              <InputAdornment
+                position="start"
+                style={{ marginRight: "-10px", marginLeft: "-8px" }}
               >
-                {defaultCountries.map((c) => {
-                  const countryItem = parseCountry(c);
-                  return (
-                    <MenuItem key={countryItem.iso2} value={countryItem.iso2}>
-                      <FlagImage
-                        iso2={countryItem.iso2}
-                        style={{ marginRight: "8px" }}
-                      />
-                      <Typography
-                        marginRight="8px"
-                        sx={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontSize: "13px",
-                        }}
-                      >
-                        {countryItem.name}
-                      </Typography>
-                      <Typography
-                        color="gray"
-                        sx={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontSize: "13px",
-                        }}
-                      >
-                        +({countryItem.dialCode})
-                      </Typography>
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </InputAdornment>
-          ),
-        },
-      }}
-      {...restProps}
-    />
+                <Select
+                  disabled={disableCountrySelect}
+                  MenuProps={{
+                    style: {
+                      height: "300px",
+                      width: "360px",
+                      top: "10px",
+                      left: "-34px",
+                    },
+                    transformOrigin: { vertical: "top", horizontal: "left" },
+                  }}
+                  sx={{
+                    width: "max-content",
+                    fieldset: { display: "none" },
+                    ".MuiSelect-select": {
+                      padding: "8px 0px 8px 8px",
+                    },
+                  }}
+                  value={country.iso2}
+                  onChange={handleCountryChange}
+                  renderValue={(v) => (
+                    <FlagImage iso2={v} style={{ display: "flex" }} />
+                  )}
+                >
+                  {defaultCountries.map((c) => {
+                    const countryItem = parseCountry(c);
+                    return (
+                      <MenuItem key={countryItem.iso2} value={countryItem.iso2}>
+                        <FlagImage
+                          iso2={countryItem.iso2}
+                          style={{ marginRight: "8px" }}
+                        />
+                        <Typography
+                          marginRight="8px"
+                          sx={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontSize: "13px",
+                          }}
+                        >
+                          {countryItem.name}
+                        </Typography>
+                        <Typography
+                          color="gray"
+                          sx={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontSize: "13px",
+                          }}
+                        >
+                          +({countryItem.dialCode})
+                        </Typography>
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </InputAdornment>
+            ),
+          },
+        }}
+        {...restProps}
+      />
+    </FormControl>
   );
 }

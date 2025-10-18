@@ -67,6 +67,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonAvatar from "../Common/CommonAvatar";
 import { useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 const { TextArea } = Input;
 
@@ -128,8 +129,12 @@ export default function LeadFollowUp({
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [mobileCountryCode, setMobileCountryCode] = useState("");
+  const [mobileCountry, setMobileCountry] = useState("in");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
+  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
   const [emailAndMobileValidation, setEmailAndMobileValidation] = useState({
@@ -137,7 +142,6 @@ export default function LeadFollowUp({
     mobile: 0,
     whatsApp: 0,
   });
-  const [phoneCode, setPhoneCode] = useState("");
   const [countryOptions, setCountryOptions] = useState([]);
   const [countryId, setCountryId] = useState(null);
   const [countryError, setCountryError] = useState("");
@@ -503,7 +507,6 @@ export default function LeadFollowUp({
     setStateId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
-    setPhoneCode(selectedCountry.phonecode);
 
     const stateList = State.getStatesOfCountry(selectedCountry.id);
     const updateSates = stateList.map((s) => {
@@ -677,10 +680,8 @@ export default function LeadFollowUp({
     }
   };
 
-  const handleMobileNumber = async (e) => {
-    const value = e.target.value;
-    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
-    console.log("cleanedMobile", cleanedMobile);
+  const handleMobileNumber = async (value) => {
+    const cleanedMobile = value;
     setMobile(cleanedMobile);
     const mobileValidate = mobileValidator(cleanedMobile);
 
@@ -712,9 +713,8 @@ export default function LeadFollowUp({
     }
   };
 
-  const handleWhatsAppNumber = async (e) => {
-    const value = e.target.value;
-    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+  const handleWhatsAppNumber = async (value) => {
+    const cleanedMobile = value;
     setWhatsApp(cleanedMobile);
     const whatsAppValidate = mobileValidator(cleanedMobile);
 
@@ -853,8 +853,9 @@ export default function LeadFollowUp({
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
       name: name,
-      phone_code: `+${phoneCode}`,
+      phone_code: mobileCountryCode,
       phone: mobile,
+      whatsapp_phone_code: whatsAppCountryCode,
       whatsapp: whatsApp,
       email: email,
       country: countryId,
@@ -1077,11 +1078,14 @@ export default function LeadFollowUp({
     setNameError("");
     setEmail("");
     setEmailError("");
+    setMobileCountry("in");
+    setMobileCountryCode("");
+    setWhatsAppCountry("in");
+    setWhatsAppCountryCode("");
     setMobile("");
     setMobileError("");
     setWhatsApp("");
     setWhatsAppError("");
-    setPhoneCode("");
     setEmailAndMobileValidation({
       email: 0,
       mobile: 0,
@@ -1361,6 +1365,17 @@ export default function LeadFollowUp({
                 className="leadmanager_addleadbutton"
                 onClick={() => {
                   setIsOpenAddDrawer(true);
+                  setTimeout(() => {
+                    const drawerBody = document.querySelector(
+                      "#leadfollowup_addlead_drawer .ant-drawer-body"
+                    );
+                    if (drawerBody) {
+                      drawerBody.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                    }
+                  }, 300);
                 }}
               >
                 Add Lead
@@ -1606,6 +1621,7 @@ export default function LeadFollowUp({
         onClose={formReset}
         width="52%"
         style={{ position: "relative" }}
+        id="leadfollowup_addlead_drawer"
       >
         <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
           Basic Information
@@ -1626,27 +1642,36 @@ export default function LeadFollowUp({
             />
           </Col>
           <Col span={8}>
-            <CommonInputField
+            <PhoneWithCountry
               label="Mobile Number"
-              required={true}
-              maxLength={13}
-              value={mobile}
               onChange={handleMobileNumber}
+              selectedCountry={mobileCountry}
+              countryCode={(code) => {
+                setMobileCountryCode(code);
+              }}
+              onCountryChange={(iso2) => {
+                setMobileCountry(iso2);
+                setWhatsAppCountry(iso2);
+              }}
+              value={mobile}
               error={mobileError}
               errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
             />
           </Col>
           <Col span={8}>
-            <CommonOutlinedInput
-              label="Whatsapp Number"
-              icon={<SiWhatsapp color="#39AE41" />}
-              required={true}
-              maxLength={13}
-              type="number"
-              value={whatsApp}
+            <PhoneWithCountry
+              label="WhatsApp Number"
               onChange={handleWhatsAppNumber}
+              countryCode={(code) => {
+                setWhatsAppCountryCode(code);
+              }}
+              selectedCountry={whatsAppCountry}
+              value={whatsApp}
               error={whatsAppError}
-              errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
+              onCountryChange={(iso2) => {
+                setWhatsAppCountry(iso2);
+              }}
+              errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
             />
           </Col>
         </Row>
@@ -2067,7 +2092,7 @@ export default function LeadFollowUp({
         ]}
         width="35%"
       >
-        <div style={{ marginTop: "20px", marginBottom: "40px" }}>
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
           <CommonInputField
             label="Course Name"
             required={true}
@@ -2078,6 +2103,20 @@ export default function LeadFollowUp({
             value={courseName}
             error={courseNameError}
           />
+        </div>
+        <div className="lead_course_instruction_container">
+          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
+          <p style={{ fontSize: "13px", marginTop: "2px" }}>
+            Make sure the course name remains exactly as{" "}
+            <span style={{ fontWeight: 600 }}>‘Google’</span>
+          </p>
+          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
+            Example:
+          </p>
+          <ul>
+            <li>Full Stack Development</li>
+            <li>Core Java</li>
+          </ul>
         </div>
       </Modal>
 

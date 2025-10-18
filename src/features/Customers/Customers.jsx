@@ -2032,8 +2032,10 @@ export default function Customers() {
                 }}
               >
                 <span>
-                  Trainer Name -{" "}
-                  <span style={{ fontWeight: "500" }}>{item.trainer_name}</span>
+                  Trainer Id -{" "}
+                  <span style={{ fontWeight: "500" }}>
+                    {item.trainer_code ? item.trainer_code : "-"}
+                  </span>
                 </span>
                 <p style={{ color: "gray" }}>
                   Status: <span style={{ color: "#d32f2f" }}>Rejected</span>
@@ -5428,9 +5430,11 @@ export default function Customers() {
                         error={trainerIdError}
                         borderRightNone={true}
                         showLabelStatus={
-                          trainerFilterType === 1
+                          trainerFilterType == 1
                             ? "Name"
-                            : trainerFilterType === 2
+                            : trainerFilterType == 2
+                            ? "Trainer Id"
+                            : trainerFilterType == 3
                             ? "Email"
                             : "Mobile"
                         }
@@ -5465,9 +5469,12 @@ export default function Customers() {
                                 Search by Name
                               </Radio>
                               <Radio value={2} style={{ marginBottom: "12px" }}>
-                                Search by Email
+                                Search by Trainer Id
                               </Radio>
                               <Radio value={3} style={{ marginBottom: "12px" }}>
+                                Search by Email
+                              </Radio>
+                              <Radio value={4} style={{ marginBottom: "12px" }}>
                                 Search by Mobile
                               </Radio>
                             </Radio.Group>
@@ -5613,7 +5620,11 @@ export default function Customers() {
                     <Col span={12}>
                       <p className="customerdetails_text">
                         {assignTrainerData && assignTrainerData.name
-                          ? assignTrainerData.name
+                          ? `${assignTrainerData.name} (${
+                              assignTrainerData.trainer_code
+                                ? assignTrainerData.trainer_code
+                                : "-"
+                            })`
                           : "-"}
                       </p>
                     </Col>
@@ -5693,7 +5704,9 @@ export default function Customers() {
                       <p className="customerdetails_text">
                         {" "}
                         {assignTrainerData && assignTrainerData.skills
-                          ? assignTrainerData.skills.join(", ")
+                          ? assignTrainerData.skills
+                              .map((item) => item.name)
+                              .join(", ")
                           : "-"}
                       </p>
                     </Col>
@@ -6497,7 +6510,13 @@ export default function Customers() {
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">{item.name}</p>
+                    <p className="customerdetails_text">
+                      {item.name
+                        ? `${item.name} (${
+                            item.trainer_code ? item.trainer_code : "-"
+                          })`
+                        : "-"}
+                    </p>
                   </Col>
                 </Row>
 
@@ -6600,9 +6619,11 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {moment(item.availability_time, "HH:mm:ss").format(
-                        "hh:mm A"
-                      )}
+                      {item.availability_time
+                        ? moment(item.availability_time, "HH:mm:ss").format(
+                            "hh:mm A"
+                          )
+                        : "-"}
                     </p>
                   </Col>
                 </Row>
@@ -6617,9 +6638,11 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {moment(item.secondary_time, "HH:mm:ss").format(
-                        "hh:mm A"
-                      )}
+                      {item.secondary_time
+                        ? moment(item.secondary_time, "HH:mm:ss").format(
+                            "hh:mm A"
+                          )
+                        : "-"}
                     </p>
                   </Col>
                 </Row>
@@ -6632,7 +6655,7 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {item.skills.join(", ")}
+                      {item.skills.map((item) => item.name).join(", ")}
                     </p>
                   </Col>
                 </Row>

@@ -16,6 +16,7 @@ import {
   accountNumberValidator,
   addressValidator,
   emailValidator,
+  getCountryFromDialCode,
   ifscValidator,
   mobileValidator,
   nameValidator,
@@ -32,6 +33,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonSignaturePad from "../Common/CommonSignaturePad";
 import dayjs from "dayjs";
 import "./styles.css";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
@@ -43,8 +45,12 @@ export default function TrainerRegistration() {
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [mobileCountryCode, setMobileCountryCode] = useState("");
+  const [mobileCountry, setMobileCountry] = useState("in");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
+  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
   const [technologyOptions, setTechnologyOptions] = useState("");
@@ -160,8 +166,35 @@ export default function TrainerRegistration() {
       }
       setName(trainerDetails?.name);
       setEmail(trainerDetails.email);
+      //mobile fetch
+      setMobileCountryCode(
+        trainerDetails.mobile_phone_code ? trainerDetails.mobile_phone_code : ""
+      );
+      const selected_mobile_country = getCountryFromDialCode(
+        `+${
+          trainerDetails.mobile_phone_code
+            ? trainerDetails.mobile_phone_code
+            : ""
+        }`
+      );
+      setMobileCountry(selected_mobile_country);
       setMobile(trainerDetails.mobile);
+      //whatsapp fetch
+      setWhatsAppCountryCode(
+        trainerDetails.whatsapp_phone_code
+          ? trainerDetails.whatsapp_phone_code
+          : ""
+      );
+      const selected_whatsapp_country = getCountryFromDialCode(
+        `+${
+          trainerDetails.whatsapp_phone_code
+            ? trainerDetails.whatsapp_phone_code
+            : ""
+        }`
+      );
+      setWhatsAppCountry(selected_whatsapp_country);
       setWhatsApp(trainerDetails.whatsapp);
+      //-----------
       setTechnology(trainerDetails.technology_id);
       setExperience(parseInt(trainerDetails.overall_exp_year));
       setRelevantExperience(parseInt(trainerDetails.relavant_exp_year));
@@ -311,7 +344,7 @@ export default function TrainerRegistration() {
     const ifscCodeValidate = ifscValidator(ifscCode);
     let signatureValidate;
 
-    if (signatureBase64 === "") {
+    if (signatureBase64 == "") {
       signatureValidate = "Signature is required";
     } else {
       signatureValidate = "";
@@ -386,6 +419,7 @@ export default function TrainerRegistration() {
       branch_name: branchName,
       ifsc_code: ifscCode,
       signature_image: signatureBase64,
+      is_bank_updated: 1,
     };
 
     setButtonLoading(true);
@@ -425,6 +459,7 @@ export default function TrainerRegistration() {
                 }}
                 error={nameError}
                 required={true}
+                disabled={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
@@ -439,47 +474,45 @@ export default function TrainerRegistration() {
                 }}
                 value={email}
                 error={emailError}
+                disabled={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Mobile"
-                required={true}
-                maxLength={13}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const cleanedMobile = value
-                    .replace(/\D/g, "")
-                    .replace(/^0+/, "");
-                  setMobile(cleanedMobile);
-                  if (validationTrigger) {
-                    setMobileError(mobileValidator(cleanedMobile));
-                  }
+              <PhoneWithCountry
+                label="Mobile Number"
+                onChange={(value) => {
+                  setMobile(value);
+                }}
+                selectedCountry={mobileCountry}
+                countryCode={(code) => {
+                  setMobileCountryCode(code);
+                }}
+                onCountryChange={(iso2) => {
+                  setMobileCountry(iso2);
+                  setWhatsAppCountry(iso2);
                 }}
                 value={mobile}
-                error={mobileError}
+                disabled={true}
+                disableCountrySelect={true}
               />
             </Col>
             <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonOutlinedInput
-                label="Whatsapp Number"
-                icon={<SiWhatsapp color="#39AE41" />}
-                required={true}
-                maxLength={13}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const cleanedMobile = value
-                    .replace(/\D/g, "")
-                    .replace(/^0+/, "");
-                  setWhatsApp(cleanedMobile);
-                  if (validationTrigger) {
-                    setWhatsAppError(mobileValidator(cleanedMobile));
-                  }
+              <PhoneWithCountry
+                label="WhatsApp Number"
+                onChange={(value) => {
+                  setWhatsApp(value);
                 }}
+                countryCode={(code) => {
+                  setWhatsAppCountryCode(code);
+                }}
+                selectedCountry={whatsAppCountry}
                 value={whatsApp}
-                error={whatsAppError}
-                errorFontSize="10px"
-              />{" "}
+                onCountryChange={(iso2) => {
+                  setWhatsAppCountry(iso2);
+                }}
+                disabled={true}
+                disableCountrySelect={true}
+              />
             </Col>
           </Row>
         </div>
@@ -503,6 +536,7 @@ export default function TrainerRegistration() {
                 value={technology}
                 error={technologyError}
                 valueMarginTop="-4px"
+                disabled={true}
               />
             </Col>
 
@@ -520,6 +554,7 @@ export default function TrainerRegistration() {
                 value={experience}
                 error={experienceError}
                 valueMarginTop="-4px"
+                disabled={true}
               />
             </Col>
 
@@ -538,6 +573,7 @@ export default function TrainerRegistration() {
                 error={relevantExperienceError}
                 valueMarginTop="-4px"
                 errorFontSize="9.9px"
+                disabled={true}
               />
             </Col>
 
@@ -555,6 +591,7 @@ export default function TrainerRegistration() {
                 value={batch}
                 error={batchError}
                 valueMarginTop="-4px"
+                disabled={true}
               />
             </Col>
           </Row>
@@ -573,6 +610,7 @@ export default function TrainerRegistration() {
                 }}
                 value={avaibilityTime}
                 error={avaibilityTimeError}
+                disabled={true}
               />
             </Col>
             <Col span={6}>
@@ -583,6 +621,7 @@ export default function TrainerRegistration() {
                   setSecondaryTime(value);
                 }}
                 value={secondaryTime}
+                disabled={true}
               />
             </Col>
             <Col span={6}>
@@ -597,6 +636,7 @@ export default function TrainerRegistration() {
                 }}
                 value={skills}
                 error={skillsError}
+                disabled={true}
               />
             </Col>
             <Col span={6}>
@@ -611,6 +651,7 @@ export default function TrainerRegistration() {
                 }}
                 value={location}
                 error={locationError}
+                disabled={true}
               />
             </Col>
           </Row>

@@ -77,6 +77,8 @@ export default function CommonSelectField({
               ? option?.email
               : showLabelStatus === "Mobile"
               ? option?.mobile
+              : showLabelStatus === "Trainer Id"
+              ? option?.trainer_code
               : option?.user_name
               ? `${option.user_id} - ${option.user_name} `
               : option?.exp_range || option?.name || ""

@@ -12,6 +12,7 @@ import {
   addressValidator,
   emailValidator,
   formatToBackendIST,
+  getCountryFromDialCode,
   mobileValidator,
   nameValidator,
   selectValidator,
@@ -34,6 +35,7 @@ import {
   updateCustomerStatus,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 export default function CustomerRegistration() {
   const sigCanvasRef = useRef(null);
@@ -46,8 +48,12 @@ export default function CustomerRegistration() {
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [mobileCountryCode, setMobileCountryCode] = useState("");
+  const [mobileCountry, setMobileCountry] = useState("in");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
+  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
 
@@ -168,8 +174,31 @@ export default function CustomerRegistration() {
       setCustomerFullDetails(customerDetails);
       setName(customerDetails.name);
       setEmail(customerDetails.email);
+      //mobile fetch
+      setMobileCountryCode(
+        customerDetails.phonecode ? customerDetails.phonecode : ""
+      );
+      const selected_mobile_country = getCountryFromDialCode(
+        `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`
+      );
+      setMobileCountry(selected_mobile_country);
       setMobile(customerDetails.phone);
+      //whatsapp fetch
+      setWhatsAppCountryCode(
+        customerDetails.whatsapp_phone_code
+          ? customerDetails.whatsapp_phone_code
+          : ""
+      );
+      const selected_whatsapp_country = getCountryFromDialCode(
+        `+${
+          customerDetails.whatsapp_phone_code
+            ? customerDetails.whatsapp_phone_code
+            : ""
+        }`
+      );
+      setWhatsAppCountry(selected_whatsapp_country);
       setWhatsApp(customerDetails.whatsapp);
+      //-------
       setCountryId(customerDetails.country);
       setStateId(customerDetails.state);
       setCourse(customerDetails.enrolled_course);
@@ -904,50 +933,41 @@ export default function CustomerRegistration() {
                     />
                   </Col>
                   <Col xs={24} sm={24} md={24} lg={6}>
-                    <CommonInputField
-                      label="Mobile"
-                      required={true}
-                      maxLength={10}
-                      type="number"
-                      onChange={(e) => {
-                        setMobile(e.target.value);
-                        if (validationTrigger) {
-                          setMobileError(mobileValidator(e.target.value));
-                        }
+                    <PhoneWithCountry
+                      label="Mobile Number"
+                      onChange={(value) => {
+                        setMobile(value);
+                      }}
+                      selectedCountry={mobileCountry}
+                      countryCode={(code) => {
+                        setMobileCountryCode(code);
+                      }}
+                      onCountryChange={(iso2) => {
+                        setMobileCountry(iso2);
+                        setWhatsAppCountry(iso2);
                       }}
                       value={mobile}
-                      error={mobileError}
-                      onInput={(e) => {
-                        if (e.target.value.length > 15) {
-                          e.target.value = e.target.value.slice(0, 15);
-                        }
-                      }}
                       disabled={true}
+                      disableCountrySelect={true}
                     />
                   </Col>
                   <Col xs={24} sm={24} md={24} lg={6}>
-                    <CommonOutlinedInput
-                      label="Whatsapp Number"
-                      icon={<SiWhatsapp color="#39AE41" />}
-                      required={true}
-                      maxLength={10}
-                      type="number"
-                      onChange={(e) => {
-                        setWhatsApp(e.target.value);
-                        if (validationTrigger) {
-                          setWhatsAppError(mobileValidator(e.target.value));
-                        }
+                    <PhoneWithCountry
+                      label="WhatsApp Number"
+                      onChange={(value) => {
+                        setWhatsApp(value);
                       }}
+                      countryCode={(code) => {
+                        setWhatsAppCountryCode(code);
+                      }}
+                      selectedCountry={whatsAppCountry}
                       value={whatsApp}
-                      error={whatsAppError}
-                      errorFontSize="10px"
-                      onInput={(e) => {
-                        if (e.target.value.length > 15) {
-                          e.target.value = e.target.value.slice(0, 15);
-                        }
+                      onCountryChange={(iso2) => {
+                        setWhatsAppCountry(iso2);
                       }}
                       disabled={true}
-                    />{" "}
+                      disableCountrySelect={true}
+                    />
                   </Col>
                 </Row>
 

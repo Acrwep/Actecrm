@@ -23,6 +23,7 @@ import {
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
+  getCountryFromDialCode,
   getCurrentandPreviousweekDate,
   mobileValidator,
   nameValidator,
@@ -78,6 +79,7 @@ import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
+import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -107,10 +109,16 @@ export default function Leads({
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [duplicateEmail, setDuplicateEmail] = useState("");
+  const [mobileCountryCode, setMobileCountryCode] = useState("");
+  const [mobileCountry, setMobileCountry] = useState("in");
   const [mobile, setMobile] = useState("");
+  const [duplicateMobile, setDuplicateMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
-  const [phoneCode, setPhoneCode] = useState("");
+  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
+  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
   const [whatsApp, setWhatsApp] = useState("");
+  const [duplicateWhatsApp, setDuplicateWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
   const [emailAndMobileValidation, setEmailAndMobileValidation] = useState({
     email: 0,
@@ -160,7 +168,6 @@ export default function Leads({
   const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
   const [expectDateJoin, setExpectDateJoin] = useState(null);
-  const [expectDateJoinError, setExpectDateJoinError] = useState("");
 
   const [regionId, setRegionId] = useState(null);
   const [regionError, setRegionError] = useState("");
@@ -566,6 +573,17 @@ export default function Leads({
                   setCustomerCourseId(record.primary_course_id);
                   setCustomerBatchTrackId(record.batch_track_id);
                   setClickedLeadItem(record);
+                  setTimeout(() => {
+                    const drawerBody = document.querySelector(
+                      "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                    );
+                    if (drawerBody) {
+                      drawerBody.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                    }
+                  }, 300);
                 }}
               />
             </Tooltip>
@@ -708,7 +726,6 @@ export default function Leads({
     setAreaId("");
     const selectedCountry = countryOptions.find((f) => f.id === value);
     console.log("selected country", value, selectedCountry);
-    setPhoneCode(selectedCountry.phonecode);
 
     const stateList = State.getStatesOfCountry(selectedCountry.id);
     const updateSates = stateList.map((s) => {
@@ -767,6 +784,8 @@ export default function Leads({
 
     if (emailValidate) return;
 
+    if (value == duplicateEmail) return;
+
     const payload = {
       email: value,
     };
@@ -790,9 +809,8 @@ export default function Leads({
     }
   };
 
-  const handleMobileNumber = async (e) => {
-    const value = e.target.value;
-    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+  const handleMobileNumber = async (value) => {
+    const cleanedMobile = value;
     console.log("cleanedMobile", cleanedMobile);
     setMobile(cleanedMobile);
     const mobileValidate = mobileValidator(cleanedMobile);
@@ -800,6 +818,8 @@ export default function Leads({
     setMobileError(mobileValidate);
 
     if (mobileValidate) return;
+
+    if (cleanedMobile == duplicateMobile) return;
 
     const payload = {
       mobile: cleanedMobile,
@@ -825,15 +845,16 @@ export default function Leads({
     }
   };
 
-  const handleWhatsAppNumber = async (e) => {
-    const value = e.target.value;
-    const cleanedMobile = value.replace(/\D/g, "").replace(/^0+/, "");
+  const handleWhatsAppNumber = async (value) => {
+    const cleanedMobile = value;
     setWhatsApp(cleanedMobile);
     const whatsAppValidate = mobileValidator(cleanedMobile);
 
     setWhatsAppError(whatsAppValidate);
 
     if (whatsAppValidate) return;
+
+    if (cleanedMobile == duplicateWhatsApp) return;
 
     const payload = {
       mobile: cleanedMobile,
@@ -967,6 +988,19 @@ export default function Leads({
   //onclick functions
   const handleEdit = async (item) => {
     console.log("clicked itemmm", item);
+    setIsOpenAddDrawer(true);
+    setTimeout(() => {
+      const drawerBody = document.querySelector(
+        "#leadform_addlead_drawer .ant-drawer-body"
+      );
+      if (drawerBody) {
+        drawerBody.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    }, 300);
+
     let areasList;
     try {
       const response = await getAllAreas();
@@ -975,13 +1009,29 @@ export default function Leads({
       areasList = [];
       console.log("response status error", error);
     }
-
-    setIsOpenAddDrawer(true);
     setLeadId(item.id);
     setName(item.name);
     setEmail(item.email);
+    setDuplicateEmail(item.email);
+    //mobile fetch
+    setMobileCountryCode(item.phone_code ? item.phone_code : "");
+    const selected_mobile_country = getCountryFromDialCode(
+      `+${item.phone_code ? item.phone_code : ""}`
+    );
+    setMobileCountry(selected_mobile_country);
     setMobile(item.phone);
+    setDuplicateMobile(item.phone);
+    //whatsapp fetch
+    setWhatsAppCountryCode(
+      item.whatsapp_phone_code ? item.whatsapp_phone_code : ""
+    );
+    const selected_whatsapp_country = getCountryFromDialCode(
+      `+${item.whatsapp_phone_code ? item.whatsapp_phone_code : ""}`
+    );
+    setWhatsAppCountry(selected_whatsapp_country);
     setWhatsApp(item.whatsapp);
+    setDuplicateWhatsApp(item.whatsapp);
+    //----------
     setEmailAndMobileValidation({
       email: 1,
       mobile: 1,
@@ -1128,8 +1178,9 @@ export default function Leads({
       ...(leadId && { lead_id: leadId }),
       user_id: convertAsJson?.user_id,
       name: name,
-      phone_code: `+${phoneCode}`,
+      phone_code: mobileCountryCode,
       phone: mobile,
+      whatsapp_phone_code: whatsAppCountryCode,
       whatsapp: whatsApp,
       email: email,
       country: countryId,
@@ -1487,12 +1538,18 @@ export default function Leads({
     setName("");
     setNameError("");
     setEmail("");
+    setDuplicateEmail("");
     setEmailError("");
+    setMobileCountry("in");
+    setMobileCountryCode("");
+    setWhatsAppCountry("in");
+    setWhatsAppCountryCode("");
     setMobile("");
+    setDuplicateMobile("");
     setMobileError("");
     setWhatsApp("");
+    setDuplicateWhatsApp("");
     setWhatsAppError("");
-    setPhoneCode("");
     setEmailAndMobileValidation({
       email: 0,
       mobile: 0,
@@ -1918,7 +1975,7 @@ export default function Leads({
                                   maxHeight: "140px",
                                   overflowY: "auto",
                                   whiteSpace: "pre-line",
-                                  lineHeight: "26px",
+                                  lineHeight: "24px",
                                 }}
                               >
                                 {leadCountByExecutives.map((item, index) => {
@@ -1985,6 +2042,17 @@ export default function Leads({
                 className="leadmanager_addleadbutton"
                 onClick={() => {
                   setIsOpenAddDrawer(true);
+                  setTimeout(() => {
+                    const drawerBody = document.querySelector(
+                      "#leadform_addlead_drawer .ant-drawer-body"
+                    );
+                    if (drawerBody) {
+                      drawerBody.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                    }
+                  }, 300);
                 }}
               >
                 Add Lead
@@ -2037,6 +2105,7 @@ export default function Leads({
         onClose={formReset}
         width="52%"
         style={{ position: "relative" }}
+        id="leadform_addlead_drawer"
       >
         <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
           Basic Information
@@ -2058,27 +2127,39 @@ export default function Leads({
           </Col>
           <Col span={8}>
             <div style={{ position: "relative" }}>
-              <CommonInputField
+              <PhoneWithCountry
                 label="Mobile Number"
-                required={true}
-                maxLength={13}
-                value={mobile}
                 onChange={handleMobileNumber}
+                selectedCountry={mobileCountry}
+                countryCode={(code) => {
+                  setMobileCountryCode(code);
+                }}
+                onCountryChange={(iso2) => {
+                  setMobileCountry(iso2);
+                  setWhatsAppCountry(iso2);
+                }}
+                value={mobile}
                 error={mobileError}
                 errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
+                disabled={leadId ? true : false}
+                disableCountrySelect={leadId ? true : false}
               />
             </div>
           </Col>
           <Col span={8}>
-            <CommonOutlinedInput
-              label="Whatsapp Number"
-              icon={<SiWhatsapp color="#39AE41" />}
-              required={true}
-              maxLength={13}
-              value={whatsApp}
+            <PhoneWithCountry
+              label="WhatsApp Number"
               onChange={handleWhatsAppNumber}
+              countryCode={(code) => {
+                setWhatsAppCountryCode(code);
+              }}
+              selectedCountry={whatsAppCountry}
+              value={whatsApp}
               error={whatsAppError}
-              errorFontSize={whatsAppError.length >= 10 ? "9px" : "13px"}
+              onCountryChange={(iso2) => {
+                setWhatsAppCountry(iso2);
+              }}
+              errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
             />
           </Col>
         </Row>
@@ -2548,6 +2629,7 @@ export default function Leads({
         width="54%"
         style={{ position: "relative", padding: "0px", paddingBottom: 50 }}
         className="leadmanager_paymentdetails_drawer"
+        id="leadmanager_paymentdetails_drawer"
       >
         <p className="leadfollowup_leaddetails_heading">Lead Details</p>
         <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
