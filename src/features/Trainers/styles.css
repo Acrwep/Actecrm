@@ -189,6 +189,96 @@
   width: 100px;
   height: 100%;
 }
+.trainer_skillslabel {
+  position: absolute;
+  top: -8px;
+  background: #fff;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: -16px;
+}
+
+.trainer_skillslabel_error {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+  top: -30%;
+  color: #d32f2f;
+}
+.trainer_skills_error {
+  color: #d32f2f;
+  margin-top: 4px;
+  font-size: 11.5px;
+}
+.trainer_skills_multiselect .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+  border-right: none !important;
+}
+.trainer_skills_multiselect .ant-select-selector:focus {
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect:hover.ant-select:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect_two .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+.trainer_skills_multiselect_two .ant-select-selector:focus {
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect_two:hover.ant-select:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+/* skill error field */
+.trainer_skills_multiselect_error .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: rgba(128, 128, 128, 0.56) !important;
+  box-shadow: none !important;
+  border-right: none !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+.trainer_skills_multiselect_error .ant-select-selector:focus {
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect_error:hover.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
 /* trainer registration styles */
 .logincard_innerContainer {
   padding: 0px 35px 0px 35px !important;

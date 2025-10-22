@@ -11,7 +11,7 @@ import {
   Collapse,
   Modal,
 } from "antd";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
@@ -19,15 +19,16 @@ import {
   customerDuePayment,
   getPendingFeesCustomers,
   inserCustomerTrack,
-} from "../ApiService/action";
+} from "../../ApiService/action";
 import {
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
+  getCurrentandPreviousweekDate,
   priceValidator,
   selectValidator,
-} from "../Common/Validation";
-import CommonTable from "../Common/CommonTable";
+} from "../../Common/Validation";
+import CommonTable from "../../Common/CommonTable";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -37,23 +38,26 @@ import { FaWhatsapp } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
-import { LuCircleUser } from "react-icons/lu";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
-import CommonInputField from "../Common/CommonInputField";
-import CommonSelectField from "../Common/CommonSelectField";
-import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import CommonSpinner from "../Common/CommonSpinner";
-import { CommonMessage } from "../Common/CommonMessage";
+import CommonInputField from "../../Common/CommonInputField";
+import CommonSelectField from "../../Common/CommonSelectField";
+import CommonMuiDatePicker from "../../Common/CommonMuiDatePicker";
+import CommonSpinner from "../../Common/CommonSpinner";
+import { CommonMessage } from "../../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
-import ImageUploadCrop from "../Common/ImageUploadCrop";
 import PrismaZoom from "react-prismazoom";
+import ImageUploadCrop from "../../Common/ImageUploadCrop";
+import CommonMuiCustomDatePicker from "../../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
 
-export default function TodayDueCustomers({ setTodayDueCount }) {
+export default function OverallDueCustomers({
+  setOverAllDueCount,
+  setDueSelectedDates,
+}) {
   const mounted = useRef(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -200,6 +204,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       key: "status",
       dataIndex: "status",
       fixed: "right",
+      width: 180,
       render: (text, record) => {
         let classPercent = 0;
 
@@ -212,10 +217,12 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         }
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {text === "Pending" ||
-            text === "PENDING" ||
-            text === "Verify Pending" ? (
-              <Button className="trainers_pending_button">Pending</Button>
+            {record.is_second_due === 1 ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Awaiting Finance
+                </Button>
+              </div>
             ) : text === "Form Pending" ? (
               <div>
                 <Button className="customers_status_formpending_button">
@@ -374,30 +381,39 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   ];
 
   useEffect(() => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setLeadExecutives(downlineUsers);
-      getPendingFeesCustomersData(null, null, 1, 10);
+      getPendingFeesCustomersData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null,
+        null,
+        1,
+        10
+      );
     }
   }, [childUsers]);
 
   const getPendingFeesCustomersData = async (
+    startDate,
+    endDate,
     searchvalue,
     executive_id,
     pageNumber,
     limit
   ) => {
+    setLoading(true);
     let lead_executive = [];
     if (executive_id) {
       lead_executive.push(executive_id);
     } else {
       lead_executive = [];
     }
-
-    const today = new Date();
-    setLoading(true);
-    const from_date = formatToBackendIST(today);
-    const to_date = formatToBackendIST(today);
+    const from_date = formatToBackendIST(startDate);
+    const to_date = formatToBackendIST(endDate);
 
     const payload = {
       from_date: moment(from_date).format("YYYY-MM-DD"),
@@ -417,10 +433,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
     };
     try {
       const response = await getPendingFeesCustomers(payload);
-      console.log("today pending fee customer response", response);
+      console.log("pending fee customer response", response);
       setCustomersData(response?.data?.data?.data || []);
       const pagination = response?.data?.data?.pagination;
-      setTodayDueCount(pagination?.total || 0);
+      setOverAllDueCount(pagination?.total || 0);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -439,7 +455,14 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getPendingFeesCustomersData(searchValue, leadExecutiveId, page, limit);
+    getPendingFeesCustomersData(
+      selectedDates[0],
+      selectedDates[1],
+      searchValue,
+      leadExecutiveId,
+      page,
+      limit
+    );
   };
 
   const handleSearch = (e) => {
@@ -450,6 +473,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         page: 1,
       });
       getPendingFeesCustomersData(
+        selectedDates[0],
+        selectedDates[1],
         e.target.value,
         leadExecutiveId,
         1,
@@ -526,7 +551,9 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
     //handle convenience fees
     if (value == 2 || value == 5) {
-      const conve_fees = getConvenienceFees(payAmount ? payAmount : 0);
+      const conve_fees = getConvenienceFees(
+        payAmount ? parseInt(payAmount) : 0
+      );
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
@@ -629,6 +656,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           page: 1,
         });
         getPendingFeesCustomersData(
+          selectedDates[0],
+          selectedDates[1],
           searchValue,
           leadExecutiveId,
           pagination.page,
@@ -664,10 +693,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={10}>
+      <Row style={{ marginTop: "40px" }}>
+        <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={7}>
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
@@ -695,6 +724,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                             page: 1,
                           });
                           getPendingFeesCustomersData(
+                            selectedDates[0],
+                            selectedDates[1],
                             null,
                             leadExecutiveId,
                             1,
@@ -737,11 +768,13 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                             if (searchValue === "") {
                               return;
                             } else {
-                              setSearchValue("");
                               setPagination({
                                 page: 1,
                               });
+                              setSearchValue("");
                               getPendingFeesCustomersData(
+                                selectedDates[0],
+                                selectedDates[1],
                                 null,
                                 leadExecutiveId,
                                 1,
@@ -780,7 +813,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={12}>
+              <Col span={7}>
                 <CommonSelectField
                   height="35px"
                   label="Select Lead Executive"
@@ -794,6 +827,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                       page: 1,
                     });
                     getPendingFeesCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
                       searchValue,
                       e.target.value,
                       1,
@@ -805,6 +840,31 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 />
               </Col>
             )}
+            <Col span={10}>
+              <div style={{ position: "relative" }}>
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    setDueSelectedDates(dates);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPendingFeesCustomersData(
+                      dates[0],
+                      dates[1],
+                      searchValue,
+                      leadExecutiveId,
+                      1,
+                      pagination.limit
+                    );
+                  }}
+                />
+                <p className="pendingcustomers_datepicker_label">
+                  Nxt Due Date
+                </p>
+              </div>
+            </Col>
           </Row>
         </Col>
       </Row>
@@ -978,7 +1038,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <LuCircleUser size={15} color="gray" />
+                  <FaRegUser size={15} color="gray" />
                   <p className="customerdetails_rowheading">Lead Executive</p>
                 </div>
               </Col>
@@ -1100,24 +1160,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     </p>
                   </Col>
                 </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
               </Col>
 
               <Col span={12}>
@@ -1181,7 +1223,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   </Col>
                 </Row>
 
-                <Row style={{ marginTop: "12px" }}>
+                {/* <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
@@ -1193,6 +1235,24 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row> */}
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
@@ -1622,28 +1682,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                             {moment(item.invoice_date).format("DD/MM/YYYY")}
                           </span>
                         </span>
-
-                        {/* <p
-                            style={{
-                              color: "#333",
-                            }}
-                          >
-                            Status:{" "}
-                            <span
-                              style={{
-                                color:
-                                  item.payment_status === "Verified"
-                                    ? "#3c9111"
-                                    : item.payment_status === "Verify Pending"
-                                    ? "gray"
-                                    : "#d32f2f",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {item.payment_status}
-                            </span>
-                          </p> */}
-
                         {item.payment_status === "Verify Pending" ? (
                           <div className="customer_trans_statustext_container">
                             <PiClockCounterClockwiseBold

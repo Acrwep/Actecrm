@@ -1,16 +1,22 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Col, Divider, Row, Upload, Button, Modal, Tabs } from "antd";
+import {
+  Col,
+  Divider,
+  Row,
+  Upload,
+  Button,
+  Modal,
+  Tabs,
+  Select,
+  Checkbox,
+} from "antd";
 import CommonInputField from "../Common/CommonInputField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import { SiWhatsapp } from "react-icons/si";
+import { IoCaretDownSharp } from "react-icons/io5";
 import Logo from "../../assets/acte-logo.png";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
-import CommonMultiSelect from "../Common/CommonMultiSelect";
-import { UploadOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
-import { IoIosAdd } from "react-icons/io";
 import { PlusOutlined } from "@ant-design/icons";
 import {
   accountNumberValidator,
@@ -27,6 +33,7 @@ import {
   getExperience,
   getTechnologies,
   getTrainerById,
+  getTrainerSkills,
   updateTrainer,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -67,6 +74,7 @@ export default function TrainerRegistration() {
   const [avaibilityTime, setAvaibilityTime] = useState(null);
   const [avaibilityTimeError, setAvaibilityError] = useState("");
   const [secondaryTime, setSecondaryTime] = useState("");
+  const [skillsOptions, setSkillsOptions] = useState([]);
   const [skills, setSkills] = useState([]);
   const [skillsError, setSkillsError] = useState("");
   const [location, setLocation] = useState("");
@@ -134,6 +142,21 @@ export default function TrainerRegistration() {
     } catch (error) {
       setExperienceOptions([]);
       console.log("experience error", error);
+    } finally {
+      setTimeout(() => {
+        getSkillsData();
+      }, 300);
+    }
+  };
+
+  const getSkillsData = async (call_api) => {
+    try {
+      const response = await getTrainerSkills();
+      console.log("skills response", response);
+      setSkillsOptions(response?.data?.data || []);
+    } catch (error) {
+      setSkillsOptions([]);
+      console.log("skills error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -205,7 +228,10 @@ export default function TrainerRegistration() {
       setSecondaryTime(
         trainerDetails.secondary_time ? trainerDetails.secondary_time : ""
       );
-      setSkills(trainerDetails.skills);
+      const getSkillsIds = trainerDetails.skills.map((s) => {
+        return s.id;
+      });
+      setSkills(getSkillsIds);
       setLocation(trainerDetails.location);
       setTrainerstatus(trainerDetails.status);
       setTrainerBankId(trainerDetails.trainer_bank_id);
@@ -289,7 +315,6 @@ export default function TrainerRegistration() {
     const experienceValidate = selectValidator(experience);
     const relevantExperienceValidate = selectValidator(relevantExperience);
     const batchValidate = selectValidator(batch);
-    const avaibilityTimeValidate = selectValidator(avaibilityTime);
     const skillsValidate = selectValidator(skills);
     const locationValidate = addressValidator(location);
 
@@ -301,7 +326,6 @@ export default function TrainerRegistration() {
     setExperienceError(experienceValidate);
     setRelevantExperienceError(relevantExperienceValidate);
     setBatchError(batchValidate);
-    setAvaibilityError(avaibilityTimeValidate);
     setSkillsError(skillsValidate);
     setLocationError(locationValidate);
 
@@ -314,7 +338,6 @@ export default function TrainerRegistration() {
       experienceValidate ||
       relevantExperienceValidate ||
       batchValidate ||
-      avaibilityTimeValidate ||
       skillsValidate ||
       locationValidate
     )
@@ -334,7 +357,6 @@ export default function TrainerRegistration() {
     const experienceValidate = selectValidator(experience);
     const relevantExperienceValidate = selectValidator(relevantExperience);
     const batchValidate = selectValidator(batch);
-    const avaibilityTimeValidate = selectValidator(avaibilityTime);
     const skillsValidate = selectValidator(skills);
     const locationValidate = addressValidator(location);
     const accountHolderNameValidate = nameValidator(accountHolderName);
@@ -358,7 +380,6 @@ export default function TrainerRegistration() {
     setExperienceError(experienceValidate);
     setRelevantExperienceError(relevantExperienceValidate);
     setBatchError(batchValidate);
-    setAvaibilityError(avaibilityTimeValidate);
     setSkillsError(skillsValidate);
     setLocationError(locationValidate);
     setAccountHolderNameError(accountHolderNameValidate);
@@ -377,7 +398,6 @@ export default function TrainerRegistration() {
       experienceValidate ||
       relevantExperienceValidate ||
       batchValidate ||
-      avaibilityTimeValidate ||
       skillsValidate ||
       locationValidate
     ) {
@@ -396,10 +416,6 @@ export default function TrainerRegistration() {
       return;
     }
 
-    const getSkillsIds = skills.map((s) => {
-      return s.id;
-    });
-
     const payload = {
       id: trainer_id,
       trainer_name: name,
@@ -415,7 +431,7 @@ export default function TrainerRegistration() {
       batch_id: batch,
       availability_time: avaibilityTime,
       secondary_time: secondaryTime,
-      skills: getSkillsIds,
+      skills: skills,
       location: location,
       status: trainerStatus,
       profile_image: profilePicture,
@@ -631,19 +647,80 @@ export default function TrainerRegistration() {
               />
             </Col>
             <Col span={6}>
-              <CommonMultiSelect
-                label="Skills"
-                required={true}
-                onChange={(e, selectedValues) => {
-                  setSkills(selectedValues);
-                  if (validationTrigger) {
-                    setSkillsError(selectValidator(selectedValues));
-                  }
-                }}
-                value={skills}
-                error={skillsError}
-                disabled={true}
-              />
+              <div style={{ position: "relative", height: "auto" }}>
+                <p className={"trainer_skillslabel"}>Skills</p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "3px",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <Select
+                      className={
+                        skills.length <= 0 && !skillsError
+                          ? "trainer_skills_multiselect"
+                          : skills.length >= 1 && !skillsError
+                          ? "trainer_skills_multiselect_two"
+                          : skills.length <= 0 && skillsError
+                          ? "trainer_skills_multiselect_error"
+                          : "trainer_skills_multiselect"
+                      }
+                      style={{ width: "100%" }}
+                      suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
+                      disabled={true}
+                      mode="multiple"
+                      allowClear
+                      showSearch
+                      value={skills} // Only real selected values
+                      onChange={(value) => {
+                        console.log("skilllll", value);
+                        setSkills(value);
+                        if (validationTrigger) {
+                          setSkillsError(selectValidator(value));
+                        }
+                      }}
+                      status={skillsError ? "error" : ""}
+                      optionLabelProp="label"
+                      filterOption={(input, option) =>
+                        option.label.toLowerCase().includes(input.toLowerCase())
+                      }
+                    >
+                      {skillsOptions.map((item) => {
+                        const itemValue = item.id;
+                        const itemLabel = item.name;
+
+                        return (
+                          <Select.Option
+                            key={itemValue}
+                            value={itemValue}
+                            label={itemLabel}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                textWrap: "wrap",
+                              }}
+                            >
+                              <Checkbox
+                                checked={skills.includes(itemValue)}
+                                style={{ marginRight: 8 }}
+                                className="common_antdmultiselect_checkbox"
+                              />
+                              {itemLabel}
+                            </div>
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </div>
+                </div>
+                {skillsError && (
+                  <p className="trainer_skills_error">Skills {skillsError}</p>
+                )}
+              </div>
             </Col>
             <Col span={6}>
               <CommonInputField

@@ -26,7 +26,7 @@ import Batches from "../Batches/Batches";
 import Dashboard from "../Dashboard/Dashboard";
 import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
-import PendingFeesCustomers from "../Customers/PendingFeesCustomers";
+import PendingFeesCustomers from "../Customers/Pending Fees/PendingFeesCustomers";
 
 export default function Pages() {
   const navigate = useNavigate();

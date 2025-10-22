@@ -1,3 +1,17 @@
+.dashboard_leadnumber_card {
+  border-radius: 7px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  height: 100%;
+  padding: 12px;
+}
+.dashboard_leadnumbers {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 12px;
+  color: #5b69ca;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .dashboard_leadcount_card {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   height: 100%;
@@ -97,5 +111,13 @@
 }
 
 .dadhboard_chartsContainer {
+  padding: 0px 12px;
+}
+.dashboard_skeleton_container {
   padding: 12px;
+}
+.dashboard_leadcount_divider {
+  margin: 6px 0px 6px 0px !important;
+  width: 60% !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
 }

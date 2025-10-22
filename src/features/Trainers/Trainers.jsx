@@ -10,6 +10,8 @@ import {
   Tabs,
   Modal,
   Upload,
+  Select,
+  Checkbox,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
@@ -22,6 +24,7 @@ import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
+import { IoCaretDownSharp } from "react-icons/io5";
 import {
   addressValidator,
   emailValidator,
@@ -574,13 +577,12 @@ export default function Trainers() {
     setRelevantExperience(parseInt(item.relavant_exp_year));
     setBatch(item.batch_id);
     setLocation(item.location);
-    console.log(
-      "item.availability_time",
-      dayjs(item.availability_time, "HH:mm:ss")
-    );
     setAvaibilityTime(item.availability_time ? item.availability_time : "");
     setSecondaryTime(item.secondary_time ? item.secondary_time : "");
-    setSkills(item.skills);
+    const getSkillsIds = item.skills.map((s) => {
+      return s.id;
+    });
+    setSkills(getSkillsIds);
     //fetch bank details
     setTrainerBankId(item.trainer_bank_id);
     setAccountHolderName(item.account_holder_name);
@@ -781,7 +783,7 @@ export default function Trainers() {
   };
 
   const handleSubmit = async () => {
-    console.log("avaibilityTime", avaibilityTime);
+    console.log("avaibilityTime", skills);
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     console.log(converAsJson);
@@ -833,9 +835,6 @@ export default function Trainers() {
       return;
 
     setButtonLoading(true);
-    const getSkillsIds = skills.map((s) => {
-      return s.id;
-    });
 
     const today = new Date();
     const payload = {
@@ -852,7 +851,7 @@ export default function Trainers() {
       batch_id: batch,
       availability_time: avaibilityTime,
       secondary_time: secondaryTime,
-      skills: getSkillsIds,
+      skills: skills,
       location: location,
       status: trainerCurrentStatus,
       profile_image: profilePictureBase64,
@@ -1209,7 +1208,7 @@ export default function Trainers() {
           </Col>
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
+        <Row gutter={16} style={{ marginTop: batchError ? "45px" : "35px" }}>
           <Col span={8}>
             <CommonMuiTimePicker
               label="Secondary Time"
@@ -1223,50 +1222,100 @@ export default function Trainers() {
           </Col>
 
           <Col span={8}>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <div style={{ flex: 1 }}>
-                <CommonMultiSelect
-                  label="Skills"
-                  required={true}
-                  height="46px"
-                  onChange={(e, selectedValues) => {
-                    setSkills(selectedValues);
-                    if (validationTrigger) {
-                      setSkillsError(selectValidator(selectedValues));
-                    }
-                  }}
-                  options={skillsOptions}
-                  value={skills}
-                  error={skillsError}
-                  dontallowFreeSolo={true}
-                  onFocus={() => setIsSkillFocused(true)}
-                  onBlur={() => setIsSkillFocused(false)}
-                  borderRightNone={skills.length >= 1 ? false : true}
-                />
-              </div>
-
+            <div style={{ position: "relative", height: "auto" }}>
+              <p className={"trainer_skillslabel"}>Skills</p>
               <div
-                className={
-                  skillsError
-                    ? "leads_errorcourse_addcontainer"
-                    : isSkillFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
-                }
-                style={{ height: "41px", marginTop: "-5px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "3px",
+                }}
               >
-                <Tooltip
-                  placement="bottom"
-                  title="Add Skill"
-                  className="leadtable_customertooltip"
+                <div style={{ flex: 1 }}>
+                  <Select
+                    className={
+                      skills.length <= 0 && !skillsError
+                        ? "trainer_skills_multiselect"
+                        : skills.length >= 1 && !skillsError
+                        ? "trainer_skills_multiselect_two"
+                        : skills.length <= 0 && skillsError
+                        ? "trainer_skills_multiselect_error"
+                        : "trainer_skills_multiselect"
+                    }
+                    style={{ width: "100%" }}
+                    suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
+                    mode="multiple"
+                    allowClear
+                    showSearch
+                    value={skills} // Only real selected values
+                    onChange={(value) => {
+                      setSkills(value);
+                      if (validationTrigger) {
+                        setSkillsError(selectValidator(value));
+                      }
+                    }}
+                    status={skillsError ? "error" : ""}
+                    optionLabelProp="label"
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().includes(input.toLowerCase())
+                    }
+                  >
+                    {skillsOptions.map((item) => {
+                      const itemValue = item.id;
+                      const itemLabel = item.name;
+
+                      return (
+                        <Select.Option
+                          key={itemValue}
+                          value={itemValue}
+                          label={itemLabel}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              textWrap: "wrap",
+                            }}
+                          >
+                            <Checkbox
+                              checked={skills.includes(itemValue)}
+                              style={{ marginRight: 8 }}
+                              className="common_antdmultiselect_checkbox"
+                            />
+                            {itemLabel}
+                          </div>
+                        </Select.Option>
+                      );
+                    })}
+                  </Select>
+                </div>
+
+                <div
+                  className={
+                    skillsError
+                      ? "leads_errorcourse_addcontainer"
+                      : isSkillFocused
+                      ? "leads_focusedcourse_addcontainer"
+                      : "leads_course_addcontainer"
+                  }
+                  style={{ height: "41px" }}
                 >
-                  <MdAdd
-                    size={19}
-                    style={{ color: "#333333af", cursor: "pointer" }}
-                    onClick={() => setIsOpenAddSkillModal(true)}
-                  />
-                </Tooltip>
+                  <Tooltip
+                    placement="bottom"
+                    title="Add Skill"
+                    className="leadtable_customertooltip"
+                  >
+                    <MdAdd
+                      size={19}
+                      style={{ color: "#333333af", cursor: "pointer" }}
+                      onClick={() => setIsOpenAddSkillModal(true)}
+                    />
+                  </Tooltip>
+                </div>
               </div>
+              {skillsError && (
+                <p className="trainer_skills_error">Skills {skillsError}</p>
+              )}
             </div>
           </Col>
 

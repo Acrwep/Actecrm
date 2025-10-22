@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Row,
   Col,
@@ -101,6 +102,7 @@ export default function Customers() {
   const scrollRef = useRef();
   const customerUpdateRef = useRef();
   const mounted = useRef(false);
+  const location = useLocation();
 
   const scroll = (scrollOffset) => {
     scrollRef.current.scrollBy({
@@ -1265,12 +1267,26 @@ export default function Customers() {
       setTrainersData([]);
       console.log(error);
     } finally {
+      const receivedValueFromDashboard = location.state;
+      console.log("Received value from dashboard:", receivedValueFromDashboard);
+      setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
+      if (
+        receivedValueFromDashboard == "Awaiting Trainer" ||
+        receivedValueFromDashboard == "Awaiting Class" ||
+        receivedValueFromDashboard == "Class Scheduled" ||
+        receivedValueFromDashboard == "Class Going"
+      ) {
+        scroll(600);
+      }
+      if (receivedValueFromDashboard == "Escalated") {
+        scroll(1200);
+      }
       setTimeout(() => {
         getCustomersData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           null,
-          null,
+          receivedValueFromDashboard ? receivedValueFromDashboard : null,
           null,
           [
             { id: 1, name: "Classroom", checked: true },
@@ -2017,144 +2033,7 @@ export default function Customers() {
       setHistoryLoading(true);
       if (historyData.length >= 1) {
         const reverseData = historyData.reverse();
-        const addChildren = reverseData.map((item, index) => {
-          return {
-            ...item,
-            key: index + 1,
-            label: (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  fontSize: "13px",
-                  alignItems: "center",
-                }}
-              >
-                <span>
-                  Trainer Id -{" "}
-                  <span style={{ fontWeight: "500" }}>
-                    {item.trainer_code ? item.trainer_code : "-"}
-                  </span>
-                </span>
-                <p style={{ color: "gray" }}>
-                  Status: <span style={{ color: "#d32f2f" }}>Rejected</span>
-                </p>{" "}
-              </div>
-            ),
-            children: (
-              <div>
-                <Row gutter={16} style={{ marginTop: "6px" }}>
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Trainer Name
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.trainer_name}
-                        </p>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Commercial
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {"₹" + item.commercial}
-                        </p>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-
-                <Row gutter={16} style={{ marginTop: "16px" }}>
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Mode Of Class
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.mode_of_class}
-                        </p>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Trainer Type
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.trainer_type}
-                        </p>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-
-                <Row
-                  gutter={16}
-                  style={{ marginTop: "16px", marginBottom: "12px" }}
-                >
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Rejected Date
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {moment(item.rejected_date).format("DD/MM/YYYY")}
-                        </p>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Reason for Rejection
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">{item.comments}</p>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-              </div>
-            ),
-          };
-        });
-
-        setTrainerHistory(addChildren);
+        setTrainerHistory(reverseData);
         setTimeout(() => {
           setHistoryLoading(false);
         }, 300);
@@ -5376,12 +5255,164 @@ export default function Customers() {
                     <div style={{ marginTop: "12px", marginBottom: "20px" }}>
                       <Collapse
                         className="assesmntresult_collapse"
-                        items={trainerHistory}
+                        // items={trainerHistory}
                         activeKey={collapseDefaultKey}
                         onChange={(keys) => {
                           setCollapseDefaultKey(keys);
                         }}
-                      ></Collapse>
+                      >
+                        {trainerHistory.map((item, index) => (
+                          <Collapse.Panel
+                            key={index + 1}
+                            header={
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  width: "100%",
+                                  fontSize: "13px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <span>
+                                  Trainer Id -{" "}
+                                  <span style={{ fontWeight: "500" }}>
+                                    {item.trainer_code
+                                      ? item.trainer_code
+                                      : "-"}
+                                  </span>
+                                </span>
+                                <div className="customer_trans_statustext_container">
+                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <p
+                                    style={{
+                                      color: "#d32f2f",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Rejected
+                                  </p>
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div>
+                              <Row gutter={16} style={{ marginTop: "6px" }}>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Trainer Name
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.trainer_name}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Commercial
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {"₹" + item.commercial}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+
+                              <Row gutter={16} style={{ marginTop: "16px" }}>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Mode Of Class
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.mode_of_class}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Trainer Type
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.trainer_type}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+
+                              <Row
+                                gutter={16}
+                                style={{
+                                  marginTop: "16px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Rejected Date
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {moment(item.rejected_date).format(
+                                          "DD/MM/YYYY"
+                                        )}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Reason for Rejection
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.comments}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            </div>
+                          </Collapse.Panel>
+                        ))}
+                      </Collapse>
                     </div>
                   ) : (
                     <p className="customer_trainerhistory_nodatatext">

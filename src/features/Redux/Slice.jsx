@@ -93,6 +93,17 @@ const permissionsListSlice = createSlice({
   },
 });
 
+const dashboardModulePermissionListSlice = createSlice({
+  name: "dashboardmodulepermissionlist",
+  initialState,
+  reducers: {
+    storeDashboardModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const leadsModulePermissionListSlice = createSlice({
   name: "leadsmodulepermissionlist",
   initialState,
@@ -199,6 +210,8 @@ export const { storeGroupList } = groupListSlice.actions;
 export const { storeRoleList } = roleListSlice.actions;
 export const { storeRoleSearchValue } = roleSearchValueSlice.actions;
 export const { storePermissionsList } = permissionsListSlice.actions;
+export const { storeDashboardModulePermissionList } =
+  dashboardModulePermissionListSlice.actions;
 export const { storeLeadsModulePermissionList } =
   leadsModulePermissionListSlice.actions;
 export const { storeLeadFollowupModulePermissionList } =
@@ -225,6 +238,8 @@ export const permissionsListReducer = permissionsListSlice.reducer;
 export const childUsersReducer = childUsersSlice.reducer;
 export const downlineUsersReducer = downlineUsersSlice.reducer;
 export const userPermissionsReducer = userPermissionsSlice.reducer;
+export const dashboardModulePermissionListReducer =
+  dashboardModulePermissionListSlice.reducer;
 export const leadsModulePermissionListReducer =
   leadsModulePermissionListSlice.reducer;
 export const leadFollowupModulePermissionListReducer =

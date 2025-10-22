@@ -230,7 +230,6 @@ button:focus-visible {
   ):not(.ant-pagination-size-changer)
   .ant-select-selector {
   border-color: #d32f2f !important;
-  box-shadow: 0 0 0 2px rgba(255, 38, 5, 0.06) !important;
 }
 .ant-pagination .ant-pagination-item-active {
   border-color: #5b69ca !important;
@@ -267,14 +266,12 @@ button:focus-visible {
   ):not(.ant-pagination-size-changer):hover
   .ant-select-selector {
   border-color: #5b69ca !important;
-  box-shadow: 0 0 0 2px #0057b31c !important;
 }
 .ant-select-focused.ant-select:not(.ant-select-disabled):not(
     .ant-select-customize-input
   ):not(.ant-pagination-size-changer)
   .ant-select-selector {
   border-color: #5b69ca !important;
-  box-shadow: 0 0 0 2px #0057b31c !important;
 }
 .ant-table-thead .ant-table-cell {
   background-color: #e0e3e8 !important;

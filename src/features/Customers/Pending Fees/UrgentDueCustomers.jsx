@@ -11,7 +11,7 @@ import {
   Collapse,
   Modal,
 } from "antd";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
@@ -19,7 +19,7 @@ import {
   customerDuePayment,
   getPendingFeesCustomers,
   inserCustomerTrack,
-} from "../ApiService/action";
+} from "../../ApiService/action";
 import {
   formatToBackendIST,
   getBalanceAmount,
@@ -27,8 +27,8 @@ import {
   getCurrentandPreviousweekDate,
   priceValidator,
   selectValidator,
-} from "../Common/Validation";
-import CommonTable from "../Common/CommonTable";
+} from "../../Common/Validation";
+import CommonTable from "../../Common/CommonTable";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -40,22 +40,22 @@ import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
-import CommonInputField from "../Common/CommonInputField";
-import CommonSelectField from "../Common/CommonSelectField";
-import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import CommonSpinner from "../Common/CommonSpinner";
-import { CommonMessage } from "../Common/CommonMessage";
+import CommonInputField from "../../Common/CommonInputField";
+import CommonSelectField from "../../Common/CommonSelectField";
+import CommonMuiDatePicker from "../../Common/CommonMuiDatePicker";
+import CommonSpinner from "../../Common/CommonSpinner";
+import { CommonMessage } from "../../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import PrismaZoom from "react-prismazoom";
-import ImageUploadCrop from "../Common/ImageUploadCrop";
-import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import ImageUploadCrop from "../../Common/ImageUploadCrop";
+import CommonMuiCustomDatePicker from "../../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
 
-export default function OverallDueCustomers({
-  setOverAllDueCount,
+export default function UrgentDueCustomers({
+  setUrgentDueCount,
   setDueSelectedDates,
 }) {
   const mounted = useRef(false);
@@ -427,16 +427,18 @@ export default function OverallDueCustomers({
         : searchvalue && filterType === 4
         ? { course: searchvalue }
         : {}),
+      urgent_due: "Urgent Due",
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       page: pageNumber,
       limit: limit,
     };
     try {
       const response = await getPendingFeesCustomers(payload);
-      console.log("pending fee customer response", response);
+      console.log("urgent due customer response", response);
       setCustomersData(response?.data?.data?.data || []);
       const pagination = response?.data?.data?.pagination;
-      setOverAllDueCount(pagination?.total || 0);
+      setUrgentDueCount(pagination?.total || 0);
+
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -1160,6 +1162,24 @@ export default function OverallDueCustomers({
                     </p>
                   </Col>
                 </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
               </Col>
 
               <Col span={12}>
@@ -1223,7 +1243,7 @@ export default function OverallDueCustomers({
                   </Col>
                 </Row>
 
-                {/* <Row style={{ marginTop: "12px" }}>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">
@@ -1235,24 +1255,6 @@ export default function OverallDueCustomers({
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.placement_support
                         ? customerDetails.placement_support
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row> */}
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
@@ -1682,6 +1684,28 @@ export default function OverallDueCustomers({
                             {moment(item.invoice_date).format("DD/MM/YYYY")}
                           </span>
                         </span>
+
+                        {/* <p
+                          style={{
+                            color: "#333",
+                          }}
+                        >
+                          Status:{" "}
+                          <span
+                            style={{
+                              color:
+                                item.payment_status === "Verified"
+                                  ? "#3c9111"
+                                  : item.payment_status === "Verify Pending"
+                                  ? "gray"
+                                  : "#d32f2f",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {item.payment_status}
+                          </span>
+                        </p> */}
+
                         {item.payment_status === "Verify Pending" ? (
                           <div className="customer_trans_statustext_container">
                             <PiClockCounterClockwiseBold

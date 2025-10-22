@@ -12,6 +12,7 @@ import {
 import {
   storeAllUsersList,
   storeCustomersModulePermissionList,
+  storeDashboardModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
   storeLeadFollowupModulePermissionList,
@@ -130,6 +131,30 @@ export default function Settings() {
       console.log("all permissions response", response);
       const allPermissions = response?.data?.data || [];
       dispatch(storePermissionsList(allPermissions));
+      //filter dashboard module
+      const dashboardModule = allPermissions.filter(
+        (f) => f.section === "Dashboard Module"
+      );
+      const dashboardCustomOrder = [
+        "Score Board",
+        "Sale Performance",
+        "Top Performing Channels",
+        "HR Dashboard",
+        "RA Dashboard",
+      ];
+
+      const dashboardSortedArray = dashboardModule.sort(
+        (a, b) =>
+          dashboardCustomOrder.indexOf(a.permission_name) -
+          dashboardCustomOrder.indexOf(b.permission_name)
+      );
+
+      const updateDashboardModule = dashboardSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+
+      dispatch(storeDashboardModulePermissionList(updateDashboardModule));
+
       //filter lead module
       const leadsModule = allPermissions.filter(
         (f) => f.section === "Leads Module"

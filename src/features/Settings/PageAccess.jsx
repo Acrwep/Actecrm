@@ -40,6 +40,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   storeChildUsers,
   storeCustomersModulePermissionList,
+  storeDashboardModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
   storeLeadFollowupModulePermissionList,
@@ -67,6 +68,9 @@ export default function PageAccess({
   const rolesData = useSelector((state) => state.rolelist);
   const roleSearchValue = useSelector((state) => state.rolesearchvalue);
   const usersData = useSelector((state) => state.userslist);
+  const dashboardModulePermissionData = useSelector(
+    (state) => state.dashboardmodulepermissionlist
+  );
   const leadsModulePermissionData = useSelector(
     (state) => state.leadsmodulepermissionlist
   );
@@ -361,6 +365,17 @@ export default function PageAccess({
 
       console.log("role permissions", role_permissions);
 
+      //dashboard module
+      const updatedDashboardPermissions = (
+        dashboardModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(storeDashboardModulePermissionList(updatedDashboardPermissions));
+
       //leads module
       const updatedLeadsPermissions = (leadsModulePermissionData || []).map(
         (lp) => ({
@@ -443,6 +458,7 @@ export default function PageAccess({
 
   const handleInsertRolePermissions = async () => {
     const merged = [
+      ...dashboardModulePermissionData,
       ...leadsModulePermissionData,
       ...leadFollowupModulePermissionData,
       ...customersModulePermissionData,
@@ -1214,6 +1230,45 @@ export default function PageAccess({
           className="settings_addgroup_drawer"
           style={{ position: "relative", paddingBottom: 65 }}
         >
+          <p className="settings_permission_subheading">Dashboard Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {dashboardModulePermissionData.map((item) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = dashboardModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeDashboardModulePermissionList(updateItem)
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+          <Divider className="settings_addgroupdrawer_divider" />
           <p className="settings_permission_subheading">Leads Page</p>
           <div className="settings_permission_rowcontainer">
             <Row>

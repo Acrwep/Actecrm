@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import "./styles.css";
+import "../styles.css";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { getPendingFeesCustomersCount } from "../ApiService/action";
+import { getPendingFeesCustomersCount } from "../../ApiService/action";
 import TodayDueCustomers from "./TodayDueCustomers";
 import OverallDueCustomers from "./OverallDueCustomers";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import { getCurrentandPreviousweekDate } from "../../Common/Validation";
 import UrgentDueCustomers from "./UrgentDueCustomers";
 import { useSelector } from "react-redux";
 

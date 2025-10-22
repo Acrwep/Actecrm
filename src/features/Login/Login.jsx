@@ -59,6 +59,9 @@ export default function Login() {
   };
 
   useEffect(() => {
+    localStorage.removeItem("AccessToken");
+    localStorage.removeItem("loginUserDetails");
+    sessionStorage.clear();
     const savedUserId = localStorage.getItem("rememberedUserId");
     const savedPassword = localStorage.getItem("rememberedPassword");
     const savedRemember = localStorage.getItem("rememberMe") === "true";
