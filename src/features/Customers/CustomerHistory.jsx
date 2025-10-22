@@ -18,11 +18,7 @@ import { viewCertForCustomer, viewPaymentInvoice } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
 
-export default function CustomerHistory({
-  data = [],
-  customerDetails,
-  trainersData,
-}) {
+export default function CustomerHistory({ data = [], customerDetails }) {
   const [isOpenProofViewModal, setIsOpenProofViewModal] = useState(false);
   const [proofScreenshotBase64, setProofScreenshotBase64] = useState("");
   const [imgType, setImgType] = useState("");
@@ -126,15 +122,6 @@ export default function CustomerHistory({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
-    }
-  };
-
-  const getTrainerName = (trainer_id) => {
-    const findTrainer = trainersData.find((f) => f.id == trainer_id);
-    if (findTrainer) {
-      return findTrainer.name;
-    } else {
-      return "-";
     }
   };
 
