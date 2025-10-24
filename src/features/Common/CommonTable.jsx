@@ -145,7 +145,7 @@ const CommonTable = ({
       scroll={scroll}
       pagination={paginationConfig}
       onChange={handleTableChange}
-      tableLayout="fixed"
+      // tableLayout="fixed"
       bordered={bordered === "true"}
       loading={loading}
       size={size}

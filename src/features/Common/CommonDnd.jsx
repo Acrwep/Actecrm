@@ -61,7 +61,7 @@ const SortableItem = ({ item, index, lastIndex, handleColumnCheck }) => {
   );
 };
 
-export default function CommonDnd({ onDragEnd, data, setDefaultColumns }) {
+export default function CommonDnd({ data, setColumns }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -76,44 +76,37 @@ export default function CommonDnd({ onDragEnd, data, setDefaultColumns }) {
     if (active.id !== over.id) {
       const oldIndex = data.findIndex((i) => i.title === active.id);
       const newIndex = data.findIndex((i) => i.title === over.id);
-      setDefaultColumns((items) => arrayMove(items, oldIndex, newIndex));
+      setColumns((items) => arrayMove(items, oldIndex, newIndex));
     }
   };
 
-  const handleColumnCheck = (e, colIndex) => {
-    const updateData = data.map((item, index) => {
-      if (colIndex === index) {
-        return { ...item, isChecked: e };
-      } else {
-        return { ...item };
-      }
-    });
-    console.log("updateeee", updateData);
-    setDefaultColumns(updateData);
+  const handleColumnCheck = (checked, colIndex) => {
+    const updated = data.map((item, index) =>
+      index === colIndex ? { ...item, isChecked: checked } : item
+    );
+    setColumns(updated);
   };
 
   return (
-    <div>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={data.map((item) => item.title)}
+        strategy={verticalListSortingStrategy}
       >
-        <SortableContext
-          items={data.map((item) => item.title)} // ✅ fix here
-          strategy={verticalListSortingStrategy}
-        >
-          {data.map((item, index) => (
-            <SortableItem
-              key={item.title}
-              item={item}
-              index={index}
-              lastIndex={data.length - 1}
-              handleColumnCheck={handleColumnCheck}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
-    </div>
+        {data.map((item, index) => (
+          <SortableItem
+            key={item.title}
+            item={item}
+            index={index}
+            lastIndex={data.length - 1}
+            handleColumnCheck={handleColumnCheck}
+          />
+        ))}
+      </SortableContext>
+    </DndContext>
   );
 }

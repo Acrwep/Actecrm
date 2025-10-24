@@ -15,6 +15,8 @@ import "./styles.css";
 //lead
 import LeadManager from "../Lead/LeadManager";
 import LeadFollowUp from "../Lead/LeadFollowUp";
+//bulk search
+import BulkSearch from "../BulkSearch/BulkSearch";
 //trainers
 import Trainers from "../Trainers/Trainers";
 import TrainerRegistration from "../Trainers/TrainerRegistration";
@@ -184,6 +186,7 @@ export default function Pages() {
                 <Route element={<Dashboard />} path="/dashboard" />
                 <Route element={<LeadManager />} path="/lead-manager" />
                 <Route element={<LeadFollowUp />} path="/lead-followup" />
+                <Route element={<BulkSearch />} path="/bulk-search" />
                 <Route element={<Customers />} path="/customers" />
                 <Route
                   element={<PendingFeesCustomers />}

@@ -16,6 +16,7 @@ import { RedoOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonHorizontalBarChart from "../Common/CommonHorizontalBarChart";
+import CommonPieChart from "../Common/CommonPieChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -265,6 +266,19 @@ export default function Dashboard() {
         Number(ra_data?.linkedin_review_count || 0),
         Number(ra_data?.escalated || 0),
       ];
+      if (
+        ra_data?.awaiting_class == 0 &&
+        ra_data?.awaiting_verify == 0 &&
+        ra_data?.class_scheduled == 0 &&
+        ra_data?.class_going == 0 &&
+        ra_data?.google_review_count == 0 &&
+        ra_data?.linkedin_review_count == 0 &&
+        ra_data?.escalated == 0
+      ) {
+        setRaDataSeries([]);
+        return;
+      }
+
       setRaDataSeries(ra_series);
     } catch (error) {
       setRaDataSeries([]);
@@ -312,6 +326,15 @@ export default function Dashboard() {
         Number(hr_data?.verified_trainer || 0),
         Number(hr_data?.rejected_trainer || 0),
       ];
+      if (
+        hr_data?.awaiting_trainer == 0 &&
+        hr_data?.awaiting_trainer_verify == 0 &&
+        hr_data?.verified_trainer == 0 &&
+        hr_data?.rejected_trainer == 0
+      ) {
+        setHrDataSeries([]);
+        return;
+      }
       setHrDataSeries(hr_series);
     } catch (error) {
       setHrDataSeries([]);
@@ -533,6 +556,23 @@ export default function Dashboard() {
 
                   <Row className="dashboard_leadcountcard_progressbar_mainContainer">
                     <Col span={12}>
+                      <p className="dashboard_leadcountcard_subheadings">
+                        Follow-Up Pending
+                      </p>
+                      <p
+                        className="dashboard_leadcountcard_count"
+                        style={{ color: "#b22021" }}
+                      >
+                        {scoreCardDetails &&
+                        (scoreCardDetails.follow_up_unhandled != undefined ||
+                          scoreCardDetails.follow_up_unhandled != null)
+                          ? Number(
+                              scoreCardDetails.follow_up_unhandled
+                            ).toLocaleString("en-IN")
+                          : "-"}
+                      </p>
+                    </Col>
+                    <Col span={12}>
                       <div>
                         <p className="dashboard_leadcountcard_subheadings">
                           Follow-Up Handled
@@ -547,23 +587,6 @@ export default function Dashboard() {
                             : "-"}
                         </p>
                       </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="dashboard_leadcountcard_subheadings">
-                        Follow-Up UnHandled
-                      </p>
-                      <p
-                        className="dashboard_leadcountcard_count"
-                        style={{ color: "#b22021" }}
-                      >
-                        {scoreCardDetails &&
-                        (scoreCardDetails.follow_up_unhandled != undefined ||
-                          scoreCardDetails.follow_up_unhandled != null)
-                          ? Number(
-                              scoreCardDetails.follow_up_unhandled
-                            ).toLocaleString("en-IN")
-                          : "-"}
-                      </p>
                     </Col>
                   </Row>
                 </>
@@ -872,8 +895,28 @@ export default function Dashboard() {
                 ) : (
                   <>
                     {hrDataSeries.length >= 1 ? (
-                      <CommonHorizontalBarChart
-                        xaxis={[
+                      // <CommonHorizontalBarChart
+                      //   xaxis={[
+                      //     "Awaiting Trainer",
+                      //     "Awaiting Trainer Verify",
+                      //     "Trainer Verified",
+                      //     "Trainer Rejected",
+                      //   ]}
+                      //   colors={[
+                      //     "#ffa602c7",
+                      //     "#1e8fffbe",
+                      //     "#00cecbd0",
+                      //     "#d32f2fcc",
+                      //   ]}
+                      //   series={hrDataSeries}
+                      //   // series={[12, 34, 56, 4]}
+                      //   height={290}
+                      //   clickedBar={handleHrDashboard}
+                      //   enablePointer={true}
+                      //   fontSize="11px"
+                      // />
+                      <CommonPieChart
+                        labels={[
                           "Awaiting Trainer",
                           "Awaiting Trainer Verify",
                           "Trainer Verified",
@@ -885,15 +928,16 @@ export default function Dashboard() {
                           "#00cecbd0",
                           "#d32f2fcc",
                         ]}
-                        series={hrDataSeries}
                         // series={[12, 34, 56, 4]}
+                        series={hrDataSeries}
                         height={290}
                         clickedBar={handleHrDashboard}
                         enablePointer={true}
-                        fontSize="11px"
                       />
                     ) : (
-                      ""
+                      <div className="dashboard_chart_nodata_conatiner">
+                        <p>No data found</p>
+                      </div>
                     )}
                   </>
                 )}
@@ -961,8 +1005,34 @@ export default function Dashboard() {
                 ) : (
                   <>
                     {raDataSeries.length >= 1 ? (
-                      <CommonHorizontalBarChart
-                        xaxis={[
+                      // <CommonHorizontalBarChart
+                      //   xaxis={[
+                      //     "Awaiting Class",
+                      //     "Awaiting Student Verify",
+                      //     "Class Scheduled",
+                      //     "Class Going",
+                      //     "G-Review",
+                      //     "L-Review",
+                      //     "Escalated",
+                      //   ]}
+                      //   series={raDataSeries}
+                      //   // series={[12, 34, 56, 4, 9, 18, 20]}
+                      //   colors={[
+                      //     "#ffa602c7",
+                      //     "#1e8fffbe",
+                      //     "#a29bfec7",
+                      //     "#00cecbd0",
+                      //     "#a1c60c",
+                      //     "rgba(10 102 194)",
+                      //     "#d32f2fcc",
+                      //   ]}
+                      //   clickedBar={handleRaDashboard}
+                      //   fontSize="11px"
+                      //   enablePointer={true}
+                      //   height={380}
+                      // />
+                      <CommonPieChart
+                        labels={[
                           "Awaiting Class",
                           "Awaiting Student Verify",
                           "Class Scheduled",
@@ -983,12 +1053,13 @@ export default function Dashboard() {
                           "#d32f2fcc",
                         ]}
                         clickedBar={handleRaDashboard}
-                        fontSize="11px"
                         enablePointer={true}
-                        height={380}
+                        height={320}
                       />
                     ) : (
-                      ""
+                      <div className="dashboard_chart_nodata_conatiner">
+                        <p>No data found</p>
+                      </div>
                     )}
                   </>
                 )}

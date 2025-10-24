@@ -107,7 +107,7 @@ export const mobileValidator = (mobile) => {
   let error = "";
 
   if (!mobile || mobile.length <= 0) error = " is required";
-  else if (!mobileRegex.test(mobile) || mobile.length < 10)
+  else if (!mobileRegex.test(mobile) || mobile.length < 9)
     error = " is not valid";
   return error;
 };

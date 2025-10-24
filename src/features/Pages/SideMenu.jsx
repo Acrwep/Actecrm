@@ -3,14 +3,18 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "antd";
 import { GrAppsRounded } from "react-icons/gr";
 import { PiUsersThreeBold } from "react-icons/pi";
-import { FiPhoneCall } from "react-icons/fi";
 import { PiHandCoins } from "react-icons/pi";
 import { MdOutlineGroupAdd } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
-import { getUserDownline, getUserPermissions } from "../ApiService/action";
+import { IoSearch } from "react-icons/io5";
+import {
+  getTableColumns,
+  getUserDownline,
+  getUserPermissions,
+} from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import {
   storeChildUsers,
@@ -37,31 +41,36 @@ export default function SideMenu() {
       path: "lead-manager",
     },
     3: {
+      title: "Bulk Search",
+      icon: <IoSearch size={17} />,
+      path: "bulk-search",
+    },
+    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    4: {
+    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    5: {
+    6: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    6: {
+    7: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    7: {
+    8: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    8: {
+    9: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -80,31 +89,36 @@ export default function SideMenu() {
       path: "lead-manager",
     },
     3: {
+      title: "Bulk Search",
+      icon: <IoSearch size={17} />,
+      path: "bulk-search",
+    },
+    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    4: {
+    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    5: {
+    6: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    6: {
+    7: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    7: {
+    8: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    8: {
+    9: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -119,12 +133,16 @@ export default function SideMenu() {
       delete updatedMenu[2];
     }
 
+    if (!permissions.includes("Bulk Search Page")) {
+      delete updatedMenu[3];
+    }
+
     if (!permissions.includes("Trainers Page")) {
-      delete updatedMenu[7];
+      delete updatedMenu[8];
     }
 
     if (!permissions.includes("Settings Page")) {
-      delete updatedMenu[8];
+      delete updatedMenu[9];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -185,15 +203,20 @@ export default function SideMenu() {
         dispatch(storeUserPermissions(updateData));
         let updatedMenu = { ...nonChangeMenuOptions };
 
-        // Remove Trainers if permission is not present
+        if (!permissions.includes("Lead Manager Page")) {
+          delete updatedMenu[2];
+        }
+
+        if (!permissions.includes("Bulk Search Page")) {
+          delete updatedMenu[3];
+        }
+
         if (!updateData.includes("Trainers Page")) {
-          // Assuming Trainers has key 6
-          delete updatedMenu[6];
+          delete updatedMenu[8];
         }
 
         if (!updateData.includes("Settings Page")) {
-          // Assuming Trainers has key 6
-          delete updatedMenu[8];
+          delete updatedMenu[9];
         }
 
         setSideMenuOptions(updatedMenu);

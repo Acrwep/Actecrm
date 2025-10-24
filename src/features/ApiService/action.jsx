@@ -905,3 +905,32 @@ export const getHRDashboard = async (payload) => {
     throw error;
   }
 };
+//bulk search
+
+export const bulkSearch = async (payload) => {
+  try {
+    const response = await api.post(`/api/bulkSearch`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//table columns
+
+export const getTableColumns = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getPageColumns?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateTableColumns = async (payload) => {
+  try {
+    const response = await api.post(`/api/updatePageColumns`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

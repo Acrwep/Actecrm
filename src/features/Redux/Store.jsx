@@ -13,11 +13,13 @@ import {
   leadFollowupModulePermissionListReducer,
   customersModulePermissionListReducer,
   feesPendingModulePermissionListReducer,
+  bulkSearchModulePermissionListReducer,
   trainersModulePermissionListReducer,
   settingsModulePermissionListReducer,
   childUsersReducer,
   downlineUsersReducer,
   userPermissionsReducer,
+  tableColumnsReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -39,7 +41,9 @@ export const reduxStore = configureStore({
     leadfollowupmodulepermissionlist: leadFollowupModulePermissionListReducer,
     customersmodulepermissionlist: customersModulePermissionListReducer,
     feespendingmodulepermissionlist: feesPendingModulePermissionListReducer,
+    bulksearchmodulepermissionlist: bulkSearchModulePermissionListReducer,
     trainersmodulepermissionlist: trainersModulePermissionListReducer,
     settingsmodulepermissionlist: settingsModulePermissionListReducer,
+    tablecolumns: tableColumnsReducer,
   },
 });

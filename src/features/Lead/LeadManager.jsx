@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
@@ -17,6 +18,7 @@ import { useSelector } from "react-redux";
 
 export default function LeadManager() {
   const mounted = useRef(false);
+  const navigate = useNavigate();
   const childUsers = useSelector((state) => state.childusers);
 
   const [activePage, setActivePage] = useState("followup");
@@ -29,6 +31,8 @@ export default function LeadManager() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
@@ -45,11 +49,15 @@ export default function LeadManager() {
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
   useEffect(() => {
-    if (childUsers.length > 0 && !mounted.current) {
+    if (childUsers.length > 0 && !mounted.current && permissions.length >= 1) {
       mounted.current = true;
+      if (!permissions.includes("Lead Manager Page")) {
+        navigate("/dashboard");
+        return;
+      }
       getLeadTypeData();
     }
-  }, [childUsers]);
+  }, [childUsers, permissions]);
 
   // const getLeadAndFollowupCountData = async () => {
   //   const payload = {

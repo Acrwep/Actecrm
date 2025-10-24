@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ReactApexChart from "react-apexcharts";
 
 export default function CommonPieChart({
@@ -10,32 +10,58 @@ export default function CommonPieChart({
   timebased,
   height,
   clickedBar,
+  enablePointer,
 }) {
   const [mobileView, setMobileView] = useState(false);
+  const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.outerWidth <= 768) {
-        setMobileView(true);
-      } else {
-        setMobileView(false);
-      }
+      setMobileView(window.outerWidth <= 768);
     };
-
-    handleResize(); // run once on mount
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Format time if timebased
-  const formatTime = (value) => {
-    if (isNaN(value) || value === null || value === undefined)
-      return "0hr 0m 0s";
-    const hours = Math.floor(value);
-    const minutes = Math.floor((value % 1) * 60);
-    const seconds = Math.floor(((value % 1) * 3600) % 60);
-    return `${hours}hr ${minutes}m ${seconds}s`;
-  };
+  useEffect(() => {
+    if (!enablePointer) return;
+
+    // create style that targets most apexcharts series elements
+    const styleEl = document.createElement("style");
+    styleEl.setAttribute("data-apex-pointer", chartId.current);
+    styleEl.innerHTML = `
+      /* target any series path / slice / area inside this chart wrapper */
+      #${chartId.current} .apexcharts-series path,
+      #${chartId.current} .apexcharts-pie-area path,
+      #${chartId.current} .apexcharts-pie-slice,
+      #${chartId.current} .apexcharts-markers .apexcharts-marker {
+        cursor: pointer !important;
+      }
+      /* fallback: if path not used, make the svg container pointer */
+      #${chartId.current} svg {
+        cursor: default;
+      }
+      #${chartId.current} .apexcharts-series:hover,
+      #${chartId.current} .apexcharts-pie-area:hover {
+        cursor: pointer !important;
+      }
+    `;
+    document.head.appendChild(styleEl);
+
+    // small delay to let chart render DOM first (ensures selector finds nodes)
+    const t = setTimeout(() => {}, 0);
+
+    return () => {
+      clearTimeout(t);
+      const existing = document.querySelector(
+        'style[data-apex-pointer="' + chartId.current + '"]'
+      );
+      if (existing) existing.remove();
+    };
+  }, [enablePointer]);
+
+  // ... rest of your component (formatTime, options etc.)
 
   const options = {
     chart: {
@@ -97,13 +123,13 @@ export default function CommonPieChart({
   };
 
   return (
-    <div style={style}>
+    // IMPORTANT: set the id on this wrapper so the style can scope to this chart
+    <div id={chartId.current} style={style}>
       <ReactApexChart
         options={options}
         series={series}
         type="pie"
         height={height ? height : 270}
-        timebased={timebased}
       />
     </div>
   );

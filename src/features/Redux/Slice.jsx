@@ -148,6 +148,17 @@ const feesPendingModulePermissionListSlice = createSlice({
   },
 });
 
+const bulkSearchModulePermissionListSlice = createSlice({
+  name: "bulksearchmodulepermissionlist",
+  initialState,
+  reducers: {
+    storeBulkSearchModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const trainersModulePermissionListSlice = createSlice({
   name: "trainersmodulepermissionlist",
   initialState,
@@ -200,6 +211,16 @@ const userPermissionsSlice = createSlice({
     },
   },
 });
+//table columns
+const tableColumnsSlice = createSlice({
+  name: "tablecolumns",
+  initialState,
+  reducers: {
+    storeTableColumns(state, action) {
+      return [...action.payload]; // ensures new array reference
+    },
+  },
+});
 
 //define slice
 export const { storeUserSearchValue } = userSearchValueSlice.actions;
@@ -220,6 +241,8 @@ export const { storeCustomersModulePermissionList } =
   customersModulePermissionListSlice.actions;
 export const { storeFeesPendingModulePermissionList } =
   feesPendingModulePermissionListSlice.actions;
+export const { storeBulkSearchModulePermissionList } =
+  bulkSearchModulePermissionListSlice.actions;
 export const { storeTrainersModulePermissionList } =
   trainersModulePermissionListSlice.actions;
 export const { storeSettingsModulePermissionList } =
@@ -227,6 +250,7 @@ export const { storeSettingsModulePermissionList } =
 export const { storeChildUsers } = childUsersSlice.actions;
 export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
+export const { storeTableColumns } = tableColumnsSlice.actions;
 //create reducer
 export const usersListReducer = usersListSlice.reducer;
 export const userSearchValueReducer = userSearchValueSlice.reducer;
@@ -248,8 +272,11 @@ export const customersModulePermissionListReducer =
   customersModulePermissionListSlice.reducer;
 export const feesPendingModulePermissionListReducer =
   feesPendingModulePermissionListSlice.reducer;
+export const bulkSearchModulePermissionListReducer =
+  bulkSearchModulePermissionListSlice.reducer;
 export const trainersModulePermissionListReducer =
   trainersModulePermissionListSlice.reducer;
 export const settingsModulePermissionListReducer =
   settingsModulePermissionListSlice.reducer;
 export const nxtFollowupActionIdReducer = nxtFollowupActionIdSlice.reducer;
+export const tableColumnsReducer = tableColumnsSlice.reducer;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -40,11 +41,13 @@ import {
   createTrainerSkill,
   getBatches,
   getExperience,
+  getTableColumns,
   getTechnologies,
   getTrainers,
   getTrainerSkills,
   sendTrainerFormEmail,
   trainerStatusUpdate,
+  updateTableColumns,
   updateTrainer,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -71,7 +74,7 @@ export default function Trainers() {
       behavior: "smooth",
     });
   };
-
+  const navigate = useNavigate();
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const downlineUsers = useSelector((state) => state.downlineusers);
@@ -160,28 +163,9 @@ export default function Trainers() {
     total: 0,
     totalPages: 0,
   });
-
-  const [defaultColumns, setDefaultColumns] = useState(() => {
-    const dnd_columns = [
-      { title: "Trainer Name", isChecked: true },
-      { title: "Email", isChecked: true },
-      { title: "Technology", isChecked: true },
-      { title: "Overall Experience", isChecked: true },
-      { title: "Relevent Experience", isChecked: true },
-      { title: "Batch", isChecked: true },
-      { title: "Avaibility Time", isChecked: true },
-      { title: "Secondary Time", isChecked: true },
-      { title: "Skills", isChecked: true },
-      { title: "Location", isChecked: true },
-      { title: "Form Status", isChecked: true },
-      { title: "Status", isChecked: true },
-      { title: "Action", isChecked: true },
-    ];
-
-    return !permissions.includes("Update Trainer")
-      ? dnd_columns.filter((col) => col.title !== "Action")
-      : dnd_columns;
-  });
+  //table dnd
+  const [loginUserId, setLoginUserId] = useState("");
+  const [updateTableId, setUpdateTableId] = useState(null);
 
   const nonChangeColumns = [
     {
@@ -388,15 +372,32 @@ export default function Trainers() {
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
   useEffect(() => {
-    setTableColumns(nonChangeColumns);
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Trainers Page")) {
+        navigate("/dashboard");
+        return;
+      }
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      setLoginUserId(convertAsJson?.user_id);
+      setTimeout(() => {
+        getTableColumnsData(convertAsJson?.user_id);
+      }, 300);
+      setTableColumns(nonChangeColumns);
+      getTechnologiesData();
+    }
   }, [permissions]);
 
-  useEffect(() => {
-    getTechnologiesData();
-  }, []);
+  // useEffect(() => {
+  //   getTechnologiesData();
+  // }, []);
 
   const getTechnologiesData = async () => {
     try {
@@ -514,6 +515,254 @@ export default function Trainers() {
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Trainers");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "hr_head":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <div>
+                      <p>{text ? `${record.created_by} - ${text}` : "-"}</p>
+                    </div>
+                  );
+                },
+              };
+            case "overall_exp_year":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return <p>{text + " Years"}</p>;
+                },
+              };
+            case "relavant_exp_year":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return <p>{text + " Years"}</p>;
+                },
+              };
+            case "availability_time":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <p>
+                      {text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}
+                    </p>
+                  );
+                },
+              };
+            case "secondary_time":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <p>
+                      {text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}
+                    </p>
+                  );
+                },
+              };
+            case "skills":
+              return {
+                ...col,
+                render: (text) => {
+                  const skillNames = text.map((item) => item.name).join(", ");
+                  return (
+                    <div style={{ display: "flex" }}>
+                      <p>{skillNames}</p>
+                    </div>
+                  );
+                },
+              };
+            case "form_status":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <>
+                      {record.is_bank_updated === 1 ? (
+                        <p>Completed</p>
+                      ) : (
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <p>Pending</p>
+                          <Tooltip
+                            placement="top"
+                            title="Copy form link"
+                            trigger={["hover", "click"]}
+                          >
+                            <FaRegCopy
+                              size={14}
+                              className="customers_formlink_copybutton"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${
+                                    import.meta.env.VITE_EMAIL_URL
+                                  }/trainer-registration/${record.id}`
+                                );
+                                CommonMessage("success", "Link Copied");
+                                console.log("Copied: eeee");
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "status":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <Flex style={{ whiteSpace: "nowrap" }}>
+                      <Tooltip
+                        placement="bottomLeft"
+                        color="#fff"
+                        title={
+                          <Radio.Group
+                            value={text}
+                            onChange={(e) => {
+                              if (!permissions.includes("Update Trainer")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              handleStatusChange(record.id, e.target.value);
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+                              <Radio
+                                value="Verify Pending"
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                Pending
+                              </Radio>
+                              <Radio
+                                value="Verified"
+                                style={{ marginBottom: "12px" }}
+                              >
+                                Verified
+                              </Radio>
+                              <Radio
+                                value="Rejected"
+                                style={{ marginBottom: "6px" }}
+                              >
+                                Rejected
+                              </Radio>
+                            </div>
+                          </Radio.Group>
+                        }
+                      >
+                        {text === "Pending" ||
+                        text === "PENDING" ||
+                        text === "Verify Pending" ? (
+                          <Button className="trainers_pending_button">
+                            Pending
+                          </Button>
+                        ) : text === "Verified" || text === "VERIFIED" ? (
+                          <div className="trainers_verifieddiv">
+                            <Button className="trainers_verified_button">
+                              Verified
+                            </Button>
+                          </div>
+                        ) : text === "Rejected" || text === "REJECTED" ? (
+                          <Button className="trainers_rejected_button">
+                            Rejected
+                          </Button>
+                        ) : (
+                          <p style={{ marginLeft: "6px" }}>-</p>
+                        )}
+                      </Tooltip>
+                    </Flex>
+                  );
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                hidden: !permissions.includes("Update Trainer") ? true : false,
+                render: (text, record) => {
+                  return (
+                    <div className="trainers_actionbuttonContainer">
+                      <AiOutlineEdit
+                        size={20}
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          handleEdit(record);
+                        }}
+                      />
+                    </div>
+                  );
+                },
+              };
+            default:
+              return col;
+          }
+        });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Trainers",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
     }
   };
 
@@ -1807,7 +2056,10 @@ export default function Trainers() {
             size={20}
             color="#5b69ca"
             style={{ marginLeft: "12px", cursor: "pointer" }}
-            onClick={() => setIsOpenFilterDrawer(true)}
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              getTableColumnsData(loginUserId);
+            }}
           />
         </Col>
       </Row>
@@ -1873,15 +2125,12 @@ export default function Trainers() {
         onClose={formReset}
         width="35%"
         className="leadmanager_tablefilterdrawer"
-        style={{ position: "relative", paddingBottom: "60px" }}
+        style={{ position: "relative", paddingBottom: 50 }}
       >
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd
-                data={defaultColumns}
-                setDefaultColumns={setDefaultColumns}
-              />
+              <CommonDnd data={columns} setColumns={setColumns} />
             </div>
           </Col>
         </Row>
@@ -1889,28 +2138,26 @@ export default function Trainers() {
           <div className="leadmanager_submitlead_buttoncontainer">
             <button
               className="leadmanager_tablefilter_applybutton"
-              onClick={() => {
-                // We already sync via the effect above, but if you prefer an explicit apply you can:
-                const reorderedColumns = defaultColumns
-                  .filter((item) => item.isChecked)
-                  .map((item) =>
-                    nonChangeColumns.find(
-                      (col) =>
-                        col.key === item.key ||
-                        col.title.trim() === item.title.trim()
-                    )
-                  )
-                  .filter(Boolean)
-                  .filter(
-                    (col) =>
-                      !(
-                        col.key === "action" &&
-                        !permissions.includes("Update Trainer")
-                      )
-                  );
-
-                setTableColumns(reorderedColumns);
+              onClick={async () => {
+                const visibleColumns = columns.filter((col) => col.isChecked);
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
                 setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Trainers",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
               }}
             >
               Apply

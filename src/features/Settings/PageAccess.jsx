@@ -38,6 +38,7 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  storeBulkSearchModulePermissionList,
   storeChildUsers,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
@@ -82,6 +83,9 @@ export default function PageAccess({
   );
   const feesPendingModulePermissionData = useSelector(
     (state) => state.feespendingmodulepermissionlist
+  );
+  const bulkSearchModulePermissionData = useSelector(
+    (state) => state.bulksearchmodulepermissionlist
   );
   const trainersModulePermissionData = useSelector(
     (state) => state.trainersmodulepermissionlist
@@ -424,6 +428,19 @@ export default function PageAccess({
         storeFeesPendingModulePermissionList(updatedFeesPendingPermissions)
       );
 
+      //fees pending module
+      const updatedBulkSearchPermissions = (
+        bulkSearchModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(
+        storeBulkSearchModulePermissionList(updatedBulkSearchPermissions)
+      );
+
       //trainers module
       const updatedTrainersPermissions = (
         trainersModulePermissionData || []
@@ -463,6 +480,7 @@ export default function PageAccess({
       ...leadFollowupModulePermissionData,
       ...customersModulePermissionData,
       ...feesPendingModulePermissionData,
+      ...bulkSearchModulePermissionData,
       ...trainersModulePermissionData,
       ...settingsModulePermissionData,
     ];
@@ -1335,6 +1353,46 @@ export default function PageAccess({
                         console.log("updateItem", updateItem);
                         dispatch(
                           storeLeadFollowupModulePermissionList(updateItem)
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Bulk Search Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {bulkSearchModulePermissionData.map((item) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = bulkSearchModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeBulkSearchModulePermissionList(updateItem)
                         );
                       }}
                     >

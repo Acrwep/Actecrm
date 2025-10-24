@@ -61,6 +61,7 @@ import {
   getBranches,
   getLeads,
   getLeadsCountByUserIds,
+  getTableColumns,
   getTechnologies,
   getUsers,
   leadEmailAndMobileValidator,
@@ -69,6 +70,7 @@ import {
   sendCustomerPaymentVerificationEmail,
   sendCustomerWelcomeEmail,
   updateLead,
+  updateTableColumns,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -277,104 +279,9 @@ export default function Leads({
     total: 0,
     totalPages: 0,
   });
-
-  const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Lead Executive", isChecked: true },
-    {
-      title: "Created At",
-      isChecked: true,
-    },
-    {
-      title: "Candidate Name",
-      key: "name",
-      dataIndex: "name",
-      isChecked: true,
-    },
-    { title: "Email", key: "email", dataIndex: "email", isChecked: true },
-    { title: "Mobile", key: "phone", dataIndex: "phone", isChecked: true },
-    { title: "Country", key: "country", dataIndex: "country", isChecked: true },
-    { title: "State", key: "state", dataIndex: "state", isChecked: true },
-    { title: "City ", key: "district", dataIndex: "district", isChecked: true },
-    {
-      title: "Lead Source",
-      key: "lead_type",
-      dataIndex: "lead_type",
-      isChecked: true,
-    },
-    {
-      title: "Primary Course",
-      key: "primary_course",
-      dataIndex: "primary_course",
-      isChecked: true,
-    },
-    {
-      title: "Primary Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      isChecked: true,
-    },
-    {
-      title: "Secondary Course ",
-      key: "secondary_course",
-      dataIndex: "secondary_course",
-      isChecked: true,
-    },
-    {
-      title: "Secondary Course Fees",
-      key: "secondary_fees",
-      dataIndex: "secondary_fees",
-      isChecked: true,
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      isChecked: true,
-    },
-    {
-      title: "Branch",
-      key: "branche_name",
-      dataIndex: "branche_name",
-      isChecked: true,
-    },
-    {
-      title: "Batch Track",
-      key: "batch_track",
-      dataIndex: "batch_track",
-      isChecked: true,
-    },
-    {
-      title: "Lead Status",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      isChecked: true,
-    },
-    {
-      title: "Next Followup Date",
-      key: "next_follow_up_date",
-      dataIndex: "next_follow_up_date",
-      isChecked: true,
-    },
-    {
-      title: "Expected Join Date",
-      key: "expected_join_date",
-      dataIndex: "expected_join_date",
-      isChecked: true,
-    },
-    {
-      title: "Comments",
-      key: "comments",
-      dataIndex: "comments",
-      width: 220,
-      isChecked: true,
-    },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      isChecked: true,
-    },
-  ]);
+  //table dnd
+  const [loginUserId, setLoginUserId] = useState("");
+  const [updateTableId, setUpdateTableId] = useState(null);
 
   const nonChangeColumns = [
     {
@@ -593,6 +500,10 @@ export default function Leads({
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
+
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
   useEffect(() => {
@@ -619,6 +530,9 @@ export default function Leads({
   };
 
   useEffect(() => {
+    if (!permissions.includes("Lead Manager Page")) {
+      return;
+    }
     const countries = Country.getAllCountries();
     const updateCountries = countries.map((c) => {
       return { ...c, id: c.isoCode };
@@ -627,9 +541,17 @@ export default function Leads({
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
 
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     if (childUsers.length > 0 && !mounted.current) {
       setLeadExecutives(downlineUsers);
       mounted.current = true;
+      setLoginUserId(convertAsJson?.user_id);
+      setTimeout(() => {
+        getTableColumnsData(convertAsJson?.user_id);
+      }, 300);
+
       getAllLeadData(
         null,
         PreviousAndCurrentDate[0],
@@ -640,6 +562,196 @@ export default function Leads({
       );
     }
   }, [childUsers]);
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Leads");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "lead_assigned_to_name":
+              return {
+                ...col,
+                render: (text, record) => (
+                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
+                ),
+              };
+            case "created_date":
+              return {
+                ...col,
+                render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+              };
+            case "country":
+              return {
+                ...col,
+                render: (text) => {
+                  return (
+                    <div>
+                      <p> {getCountryName(text)}</p>
+                    </div>
+                  );
+                },
+              };
+            case "state":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <div>
+                      <p> {getStateName(record.country, text)}</p>
+                    </div>
+                  );
+                },
+              };
+            case "comments":
+              return {
+                ...col,
+                render: (text) => {
+                  return (
+                    <>
+                      {text.length > 25 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 24) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                render: (text, record) => (
+                  <div className="trainers_actionbuttonContainer">
+                    {permissions.includes("Edit Lead Button") &&
+                    isShowEdit &&
+                    record.is_customer_reg === 0 ? (
+                      <AiOutlineEdit
+                        size={20}
+                        className="trainers_action_icons"
+                        onClick={() => handleEdit(record)}
+                      />
+                    ) : (
+                      ""
+                    )}
+
+                    {record.is_customer_reg === 1 ? (
+                      <Tooltip placement="bottom" title="Already a Customer">
+                        <FaRegAddressCard
+                          size={19}
+                          color="#2ed573"
+                          className="trainers_action_icons"
+                        />
+                      </Tooltip>
+                    ) : (
+                      <Tooltip placement="bottom" title="Make as customer">
+                        <FaRegAddressCard
+                          size={19}
+                          color="#d32f2f"
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenPaymentDrawer(true);
+                            setSubTotal(parseFloat(record.primary_fees));
+                            setAmount(parseFloat(record.primary_fees));
+                            setBalanceAmount(parseFloat(record.primary_fees));
+                            setCustomerCourseId(record.primary_course_id);
+                            setCustomerBatchTrackId(record.batch_track_id);
+                            setClickedLeadItem(record);
+                            setTimeout(() => {
+                              const drawerBody = document.querySelector(
+                                "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                              );
+                              if (drawerBody) {
+                                drawerBody.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }
+                            }, 300);
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                ),
+              };
+            case "next_follow_up_date":
+            case "expected_join_date":
+              return {
+                ...col,
+                render: (text) => (
+                  <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                ),
+              };
+            default:
+              return col;
+          }
+        });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Leads",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
+    }
+  };
 
   const getAllLeadData = async (
     searchvalue,
@@ -2076,7 +2188,10 @@ export default function Leads({
               size={20}
               color="#5b69ca"
               style={{ marginLeft: "12px", cursor: "pointer" }}
-              onClick={() => setIsOpenFilterDrawer(true)}
+              onClick={() => {
+                setIsOpenFilterDrawer(true);
+                getTableColumnsData(loginUserId);
+              }}
             />
           </div>
         </Col>
@@ -2590,10 +2705,7 @@ export default function Leads({
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd
-                data={defaultColumns}
-                setDefaultColumns={setDefaultColumns}
-              />
+              <CommonDnd data={columns} setColumns={setColumns} />
             </div>
           </Col>
         </Row>
@@ -2601,20 +2713,26 @@ export default function Leads({
           <div className="leadmanager_submitlead_buttoncontainer">
             <button
               className="leadmanager_tablefilter_applybutton"
-              onClick={() => {
-                const reorderedColumns = defaultColumns
-                  .filter((item) => item.isChecked) // only include checked items
-                  .map((defaultItem) =>
-                    nonChangeColumns.find(
-                      (col) => col.title.trim() === defaultItem.title.trim()
-                    )
-                  )
-                  .filter(Boolean); // remove unmatched/null entries
-
-                console.log("Reordered Columns:", reorderedColumns);
-
-                setTableColumns(reorderedColumns);
+              onClick={async () => {
+                const visibleColumns = columns.filter((col) => col.isChecked);
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
                 setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Leads",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
               }}
             >
               Apply
@@ -2622,6 +2740,7 @@ export default function Leads({
           </div>
         </div>
       </Drawer>
+
       <Drawer
         title="Make as Customer"
         open={isOpenPaymentDrawer}

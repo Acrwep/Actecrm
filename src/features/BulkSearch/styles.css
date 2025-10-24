@@ -1,0 +1,126 @@
+.bulksearch_download_button {
+  background-color: #ffffff;
+  border-color: #d9d9d9;
+  height: 32px;
+  padding: 4px 15px;
+  border-radius: 6px;
+  border-width: 1px;
+  width: 32px;
+  margin-left: 12px;
+  margin-right: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.bulksearch_download_button:hover {
+  border-color: #5b69ca !important;
+}
+.bulksearch_download_button:hover .download_icon {
+  color: #5b69ca !important;
+}
+.bulksearch_bulkmodal_upload .ant-upload.ant-upload-drag {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+}
+.bulksearch_bulkmodal_upload .ant-upload.ant-upload-drag:hover {
+  border-color: #5b69ca;
+}
+.bulksearch_bulkmodal_upload .ant-upload-drag-container {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+.bulksearch_excelicon {
+  width: 50px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.bulksearch_bulkmodal_dragtext {
+  color: gray;
+  font-weight: 500;
+  font-size: 13px;
+}
+.bulksearch_bulkmodal_choosefile {
+  color: #5b69ca;
+  text-decoration: underline;
+  font-weight: 600;
+}
+.bulksearch_excelsupportContainer {
+  display: flex;
+  justify-content: space-between;
+  color: gray;
+  font-size: 11px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+.bulksearch_bulkupload_templateContainer {
+  border: 2px solid rgba(128, 128, 128, 0.445);
+  margin-top: 30px;
+  padding: 12px;
+  border-radius: 6px;
+}
+.bulksearch_templateheading {
+  font-weight: 600;
+  font-size: 12px;
+  margin-top: 2px !important;
+}
+.bulksearch_templatetext {
+  color: gray;
+  font-weight: 500;
+  font-size: 11px;
+}
+.bulksearch_templatedownload_button {
+  border: 2px solid rgba(128, 128, 128, 0.295);
+  font-weight: 600;
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 4px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.bulksearch_templatedownload_button:hover {
+  color: #5b69ca;
+  border-color: #0057b36e;
+}
+.bulksearch_templatedownload_button:active {
+  transform: scale(0.9);
+  transition: all 0.3s ease;
+}
+.bulksearch_bulkmodal_footerContainer {
+  display: flex;
+  margin-top: 16px;
+  gap: 16px;
+  justify-content: flex-end;
+}
+.bulksearch_bulkmodal_footercancel_button {
+  width: 90px;
+}
+.bulksearch_bulkmodal_footercancel_button:hover {
+  color: #5b69ca !important;
+  border-color: #5b69ca !important;
+}
+.bulksearch_bulkmodal_footerimport_button {
+  background-color: #5b69ca;
+  border-color: #5b69ca;
+  color: #fff;
+  font-weight: 600;
+  width: 90px;
+}
+.bulksearch_bulkmodal_footerimport_button:hover {
+  opacity: 0.7;
+  background-color: #5b69ca !important;
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}
+.bulksearch_bulkerrorContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0px;
+}

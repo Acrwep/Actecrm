@@ -111,7 +111,8 @@
 }
 
 .dadhboard_chartsContainer {
-  padding: 0px 12px;
+  padding: 12px 12px;
+  height: 100%;
 }
 .dashboard_skeleton_container {
   padding: 12px;
@@ -120,4 +121,13 @@
   margin: 6px 0px 6px 0px !important;
   width: 60% !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.dashboard_chart_nodata_conatiner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #333;
+  font-weight: 500;
+  margin-top: -12px;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import Users from "./Users";
 import PageAccess from "./PageAccess";
@@ -11,6 +12,7 @@ import {
 } from "../ApiService/action";
 import {
   storeAllUsersList,
+  storeBulkSearchModulePermissionList,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
   storeFeesPendingModulePermissionList,
@@ -25,13 +27,19 @@ import {
   storeUserSearchValue,
   storeUsersList,
 } from "../Redux/Slice";
+import { useSelector } from "react-redux";
 
 export default function Settings() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [activePage, setActivePage] = useState("users");
   const [userTableLoading, setUserTableLoading] = useState(true);
   const [groupLoading, setGroupLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -43,8 +51,14 @@ export default function Settings() {
   useEffect(() => {
     dispatch(storeUserSearchValue(null));
     dispatch(storeRoleSearchValue(null));
-    getUsersData();
-  }, []);
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Settings Page")) {
+        navigate("/dashboard");
+        return;
+      }
+      getUsersData();
+    }
+  }, [permissions]);
 
   const getUsersData = async () => {
     setUserTableLoading(true);
@@ -224,6 +238,23 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeFeesPendingModulePermissionList(updateFeesPendingModule));
+
+      //filter bulk search module
+      const bulkSearchModule = allPermissions.filter(
+        (f) => f.section === "Bulk Search"
+      );
+      const bulkSearchCustomOrder = ["Bulk Search Page", "Download Access"];
+
+      const bulkSearchSortedArray = bulkSearchModule.sort(
+        (a, b) =>
+          bulkSearchCustomOrder.indexOf(a.permission_name) -
+          bulkSearchCustomOrder.indexOf(b.permission_name)
+      );
+
+      const updateBulkSearchModule = bulkSearchSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeBulkSearchModulePermissionList(updateBulkSearchModule));
 
       //filter trainers module
       const trainersModule = allPermissions.filter(

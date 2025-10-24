@@ -29,21 +29,21 @@ import {
   getLeadFollowUps,
   getLeadFollowUpsCountByUserIds,
   getLeadsCountByUserIds,
+  getTableColumns,
   getTechnologies,
   leadEmailAndMobileValidator,
   updateFollowUp,
+  updateTableColumns,
 } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
 import moment from "moment";
 import CommonDatePicker from "../Common/CommonDatePicker";
 import { MdAdd } from "react-icons/md";
-import { SiWhatsapp } from "react-icons/si";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { FaRegUser } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { MdFormatListNumbered } from "react-icons/md";
@@ -228,18 +228,9 @@ export default function LeadFollowUp({
     total: 0,
     totalPages: 0,
   });
-
-  const [defaultColumns, setDefaultColumns] = useState([
-    { title: "Lead Executive", isChecked: true },
-    { title: "Next Follow Up", isChecked: true },
-    { title: "Candidate Name", isChecked: true },
-    { title: "Email", isChecked: true },
-    { title: "Mobile", isChecked: true },
-    { title: "Course ", isChecked: true },
-    { title: "Course Fees ", isChecked: true },
-    { title: "Last Update ", isChecked: true },
-    { title: "Recent Comments", isChecked: true },
-  ]);
+  //table dnd
+  const [loginUserId, setLoginUserId] = useState("");
+  const [updateTableId, setUpdateTableId] = useState(null);
 
   const nonChangeColumns = [
     {
@@ -353,6 +344,9 @@ export default function LeadFollowUp({
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
   const messages = [
@@ -380,6 +374,9 @@ export default function LeadFollowUp({
   }, []);
 
   useEffect(() => {
+    if (!permissions.includes("Lead Manager Page")) {
+      return;
+    }
     const countries = Country.getAllCountries();
     const updateCountries = countries.map((c) => {
       return { ...c, id: c.isoCode };
@@ -390,6 +387,13 @@ export default function LeadFollowUp({
     if (childUsers.length > 0 && !mounted.current) {
       setLeadExecutives(downlineUsers);
       mounted.current = true;
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      setLoginUserId(convertAsJson?.user_id);
+      setTimeout(() => {
+        getTableColumnsData(convertAsJson?.user_id);
+      }, 300);
       getLeadFollowUpsData(
         null,
         PreviousAndCurrentDate[0],
@@ -464,6 +468,145 @@ export default function LeadFollowUp({
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Lead Followup");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "lead_assigned_to_name":
+              return {
+                ...col,
+                render: (text, record) => (
+                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
+                ),
+              };
+            case "next_follow_up_date":
+              return {
+                ...col,
+                render: (text, record, index) => {
+                  return (
+                    <div
+                      className="leadfollowup_tabledateContainer"
+                      onClick={() => {
+                        // setIsOpenCommentModal(true);
+                        if (!permissions.includes("Update Lead Followup")) {
+                          CommonMessage("error", "Access Denied");
+                          return;
+                        }
+                        console.log("recordddd", record);
+                        setIsOpenFollowUpDrawer(true);
+                        setCommentsHistory(record.histories);
+                        setLeadId(record.id);
+                        setLeadHistoryId(record.lead_history_id);
+                        setLeadDetails(record);
+                        setCurrentIndex(index);
+                      }}
+                    >
+                      <p>{moment(text).format("DD/MM/YYYY")}</p>
+                      <div className="leadfollowup_tablecommentContainer">
+                        <p>{record.histories.length}</p>
+                      </div>
+                    </div>
+                  );
+                },
+              };
+            case "primary_fees":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return <p>{"₹" + text}</p>;
+                },
+              };
+            case "comments":
+              return {
+                ...col,
+                render: (text) => {
+                  if (text) {
+                    return (
+                      <>
+                        {text.length > 25 ? (
+                          <Tooltip
+                            color="#fff"
+                            placement="bottom"
+                            title={text}
+                            className="leadtable_comments_tooltip"
+                            styles={{
+                              body: {
+                                backgroundColor: "#fff", // Tooltip background
+                                color: "#333", // Tooltip text color
+                                fontWeight: 500,
+                                fontSize: "13px",
+                              },
+                            }}
+                          >
+                            <p style={{ cursor: "pointer" }}>
+                              {text.slice(0, 24) + "..."}
+                            </p>
+                          </Tooltip>
+                        ) : (
+                          <p>{text}</p>
+                        )}
+                      </>
+                    );
+                  } else {
+                    <p>-</p>;
+                  }
+                },
+              };
+            default:
+              return col;
+          }
+        });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Lead Followup",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
     }
   };
 
@@ -1386,7 +1529,10 @@ export default function LeadFollowUp({
               size={20}
               color="#5b69ca"
               style={{ marginLeft: "12px", cursor: "pointer" }}
-              onClick={() => setIsOpenFilterDrawer(true)}
+              onClick={() => {
+                setIsOpenFilterDrawer(true);
+                getTableColumnsData(loginUserId);
+              }}
             />
           </div>
         </Col>
@@ -1416,15 +1562,12 @@ export default function LeadFollowUp({
         onClose={formReset}
         width="35%"
         className="leadmanager_tablefilterdrawer"
-        style={{ position: "relative" }}
+        style={{ position: "relative", paddingBottom: 50 }}
       >
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd
-                data={defaultColumns}
-                setDefaultColumns={setDefaultColumns}
-              />
+              <CommonDnd data={columns} setColumns={setColumns} />
             </div>
           </Col>
         </Row>
@@ -1432,20 +1575,26 @@ export default function LeadFollowUp({
           <div className="leadmanager_submitlead_buttoncontainer">
             <button
               className="leadmanager_tablefilter_applybutton"
-              onClick={() => {
-                const reorderedColumns = defaultColumns
-                  .filter((item) => item.isChecked) // only include checked items
-                  .map((defaultItem) =>
-                    nonChangeColumns.find(
-                      (col) => col.title.trim() === defaultItem.title.trim()
-                    )
-                  )
-                  .filter(Boolean); // remove unmatched/null entries
-
-                console.log("Reordered Columns:", reorderedColumns);
-
-                setTableColumns(reorderedColumns);
+              onClick={async () => {
+                const visibleColumns = columns.filter((col) => col.isChecked);
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
                 setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Lead Followup",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
               }}
             >
               Apply
