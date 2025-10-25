@@ -10,12 +10,23 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { LoginApi } from "../ApiService/action";
+import {
+  getUserDownline,
+  getUserPermissions,
+  LoginApi,
+} from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
+import {
+  storeChildUsers,
+  storeDownlineUsers,
+  storeUserPermissions,
+} from "../Redux/Slice";
+import { useDispatch } from "react-redux";
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [userId, setUserId] = useState("");
@@ -110,8 +121,7 @@ export default function Login() {
         JSON.stringify(loginUserDetails)
       );
       setTimeout(() => {
-        setLoading(false);
-        navigate("/dashboard");
+        getUserDownlineData(loginUserDetails?.user_id);
       }, 300);
     } catch (error) {
       console.log("login error");
@@ -121,6 +131,56 @@ export default function Login() {
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
+    }
+  };
+
+  const getUserDownlineData = async (user_id) => {
+    let child_users;
+    let downline_users;
+    let user_roles;
+    try {
+      const response = await getUserDownline(user_id);
+      console.log("user downline response", response);
+      child_users = response?.data?.data?.child_users || [];
+      downline_users = response?.data?.data?.downline_users || [];
+      user_roles = response?.data?.data?.roles || [];
+      dispatch(storeChildUsers(child_users));
+      dispatch(storeDownlineUsers(downline_users));
+    } catch (error) {
+      user_roles = [];
+      child_users = [];
+      dispatch(storeChildUsers([]));
+      dispatch(storeDownlineUsers([]));
+      console.log("user downline error", error);
+    } finally {
+      setTimeout(() => {
+        getPermissionsData(user_roles);
+      }, 300);
+    }
+  };
+
+  const getPermissionsData = async (user_roles) => {
+    const payload = {
+      role_ids: user_roles,
+    };
+    try {
+      const response = await getUserPermissions(payload);
+      console.log("user permissions response", response);
+      const permission = response?.data?.data;
+      if (permission.length >= 1) {
+        const updateData = permission.map((item) => {
+          return item.permission_name;
+        });
+        console.log("permissions", updateData);
+        dispatch(storeUserPermissions(updateData));
+      }
+    } catch (error) {
+      console.log("user permissions error", error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        navigate("/dashboard");
+      }, 300);
     }
   };
 

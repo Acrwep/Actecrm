@@ -131,6 +131,10 @@ export default function Customers() {
     { id: 1, name: "Classroom", checked: true },
     { id: 1, name: "Online", checked: true },
   ]);
+  const [duplicateBranchOptions, setDuplicateBranchOptions] = useState([
+    { id: 1, name: "Classroom", checked: true },
+    { id: 1, name: "Online", checked: true },
+  ]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -3957,6 +3961,43 @@ export default function Customers() {
             <div className="leadmanager_tablefiler_container">
               <CommonDnd data={columns} setColumns={setColumns} />
             </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div style={{ padding: "0px 12px 20px 24px" }}>
+              <p className="customers_choosebranch_heading">Choose Branch</p>
+              {duplicateBranchOptions.map((item) => {
+                return (
+                  <div className="customers_choosebranch_checkbox_container">
+                    <p>{item.name}</p>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const updateBranchData = duplicateBranchOptions.map(
+                          (u) => {
+                            if (u.name == item.name) {
+                              return { ...u, checked: e.target.checked };
+                            }
+                            return u;
+                          }
+                        );
+                        const bothFalse = updateBranchData.every(
+                          (item) => item.checked === false
+                        );
+
+                        if (bothFalse) {
+                          CommonMessage("error", "Choose Atleast One Branch");
+                          return;
+                        }
+                        setDuplicateBranchOptions(updateBranchData);
+                      }}
+                      value={item.checked}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </Col>
         </Row>
         <div className="leadmanager_tablefiler_footer">
@@ -3975,6 +4016,17 @@ export default function Customers() {
                   page_name: "Customers",
                   column_names: columns,
                 };
+                setBranchOptions(duplicateBranchOptions);
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  status,
+                  leadExecutiveId,
+                  duplicateBranchOptions,
+                  pagination.page,
+                  pagination.limit
+                );
                 try {
                   await updateTableColumns(payload);
                   setTimeout(() => {

@@ -20,6 +20,8 @@ export default function CommonInputField({
   borderLeftNone,
 }) {
   const handleChange = (e) => {
+    let value = e.target.value.replace(/^\s+/, ""); // Removes leading spaces
+
     if (
       label === "Email" ||
       label === "Trainer Email" ||
@@ -27,9 +29,9 @@ export default function CommonInputField({
       label === "Role Name" ||
       label === "IFSC Code"
     ) {
-      onChange({ target: { value: e.target.value } });
+      onChange({ target: { value } });
     } else {
-      const newValue = capitalizeWords(e.target.value);
+      const newValue = capitalizeWords(value);
       if (onChange) {
         onChange({ target: { value: newValue } });
       }

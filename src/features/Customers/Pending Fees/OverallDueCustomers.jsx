@@ -341,7 +341,8 @@ export default function OverallDueCustomers({
               trigger={["hover", "click"]}
             >
               <FaRegEye
-                size={17}
+                size={16}
+                style={{ marginTop: "1px" }}
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
@@ -1146,6 +1147,27 @@ export default function OverallDueCustomers({
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Next Due Date
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.next_due_date !== undefined &&
+                      customerDetails.next_due_date !== null
+                        ? moment(customerDetails.next_due_date).format(
+                            "DD/MM/YYYY"
+                          )
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Joining Date</p>
                     </div>
                   </Col>
@@ -1223,23 +1245,6 @@ export default function OverallDueCustomers({
                   </Col>
                 </Row>
 
-                {/* <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Placement Support
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.placement_support
-                        ? customerDetails.placement_support
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row> */}
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -1253,6 +1258,23 @@ export default function OverallDueCustomers({
                         ? customerDetails.is_server_required === 1
                           ? "Required"
                           : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Placement Support
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.placement_support
+                        ? customerDetails.placement_support
                         : "-"}
                     </p>
                   </Col>

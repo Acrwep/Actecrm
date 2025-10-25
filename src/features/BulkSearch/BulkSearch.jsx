@@ -142,13 +142,13 @@ export default function BulkSearch() {
     } else {
       setXlsxArray([]);
       setExcelData([]);
-      CommonToaster("Only .xls, .xlsx, or .csv files are accepted");
+      CommonMessage("error", "Only .xls, .xlsx, or .csv files are accepted");
     }
   };
 
   const handleBulkUploadSubmit = async () => {
     if (xlsxArray.length <= 0) {
-      CommonToaster("Please upload .xls or .xlsx or .csv");
+      CommonMessage("error", "Please upload .xls or .xlsx or .csv");
       return;
     }
     const header = excelData[0];

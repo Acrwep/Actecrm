@@ -267,13 +267,13 @@ export default function Dashboard() {
         Number(ra_data?.escalated || 0),
       ];
       if (
-        ra_data?.awaiting_class == 0 &&
-        ra_data?.awaiting_verify == 0 &&
-        ra_data?.class_scheduled == 0 &&
-        ra_data?.class_going == 0 &&
-        ra_data?.google_review_count == 0 &&
-        ra_data?.linkedin_review_count == 0 &&
-        ra_data?.escalated == 0
+        ra_series[0] == 0 &&
+        ra_series[1] == 0 &&
+        ra_series[2] == 0 &&
+        ra_series[3] == 0 &&
+        ra_series[4] == 0 &&
+        ra_series[5] == 0 &&
+        ra_series[6] == 0
       ) {
         setRaDataSeries([]);
         return;
@@ -327,11 +327,12 @@ export default function Dashboard() {
         Number(hr_data?.rejected_trainer || 0),
       ];
       if (
-        hr_data?.awaiting_trainer == 0 &&
-        hr_data?.awaiting_trainer_verify == 0 &&
-        hr_data?.verified_trainer == 0 &&
-        hr_data?.rejected_trainer == 0
+        hr_series[0] == 0 &&
+        hr_series[1] == 0 &&
+        hr_series[2] == 0 &&
+        hr_series[3] == 0
       ) {
+        console.log();
         setHrDataSeries([]);
         return;
       }

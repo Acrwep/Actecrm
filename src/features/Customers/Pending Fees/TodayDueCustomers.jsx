@@ -334,7 +334,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               trigger={["hover", "click"]}
             >
               <FaRegEye
-                size={17}
+                size={16}
+                style={{ marginTop: "1px" }}
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
@@ -1086,14 +1087,17 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Joining Date</p>
+                      <p className="customerdetails_rowheading">
+                        Next Due Date
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {" "}
-                      {customerDetails && customerDetails.date_of_joining
-                        ? moment(customerDetails.date_of_joining).format(
+                      {customerDetails &&
+                      customerDetails.next_due_date !== undefined &&
+                      customerDetails.next_due_date !== null
+                        ? moment(customerDetails.next_due_date).format(
                             "DD/MM/YYYY"
                           )
                         : "-"}
@@ -1104,16 +1108,16 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
+                      <p className="customerdetails_rowheading">Joining Date</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
+                      {" "}
+                      {customerDetails && customerDetails.date_of_joining
+                        ? moment(customerDetails.date_of_joining).format(
+                            "DD/MM/YYYY"
+                          )
                         : "-"}
                     </p>
                   </Col>
@@ -1176,6 +1180,24 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                     <p className="customerdetails_text">
                       {customerDetails && customerDetails.batch_tracking
                         ? customerDetails.batch_tracking
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
                         : "-"}
                     </p>
                   </Col>
