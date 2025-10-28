@@ -555,9 +555,16 @@ export default function Trainers() {
                   );
                 },
               };
+            case "mobile": {
+              return {
+                ...col,
+                width: 140,
+              };
+            }
             case "overall_exp_year":
               return {
                 ...col,
+                width: 160,
                 render: (text, record) => {
                   return <p>{text + " Years"}</p>;
                 },
@@ -565,6 +572,7 @@ export default function Trainers() {
             case "relavant_exp_year":
               return {
                 ...col,
+                width: 160,
                 render: (text, record) => {
                   return <p>{text + " Years"}</p>;
                 },
@@ -572,6 +580,7 @@ export default function Trainers() {
             case "availability_time":
               return {
                 ...col,
+                width: 140,
                 render: (text, record) => {
                   return (
                     <p>
@@ -583,6 +592,7 @@ export default function Trainers() {
             case "secondary_time":
               return {
                 ...col,
+                width: 140,
                 render: (text, record) => {
                   return (
                     <p>

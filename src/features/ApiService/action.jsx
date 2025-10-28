@@ -140,6 +140,14 @@ export const updateUser = async (payload) => {
   }
 };
 
+export const setUserTarget = async (payload) => {
+  try {
+    const response = await api.post("/api/setTarget", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // trainer api's
 export const createTechnology = async (payload) => {
   try {

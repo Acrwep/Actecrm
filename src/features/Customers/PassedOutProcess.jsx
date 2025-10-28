@@ -241,6 +241,7 @@ const PassesOutProcess = forwardRef(
               handleSendCertByEmail();
             }, 300);
           } catch (error) {
+            setUpdateButtonLoading(false);
             CommonMessage(
               "error",
               error?.response?.data?.details ||

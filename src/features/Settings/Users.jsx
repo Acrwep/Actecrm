@@ -17,7 +17,12 @@ import {
   passwordValidator,
   selectValidator,
 } from "../Common/Validation";
-import { createUser, getUsers, updateUser } from "../ApiService/action";
+import {
+  createUser,
+  getUsers,
+  setUserTarget,
+  updateUser,
+} from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,11 +52,6 @@ export default function Users({
   const permissions = useSelector((state) => state.userpermissions);
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const departmentOptions = [
-    { id: 1, name: "All" },
-    { id: 2, name: "Admin" },
-  ];
-  const [department, setDepartment] = useState(1);
   const [assignUsersData, setAssignUsersData] = useState(allUsersData);
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
@@ -77,6 +77,21 @@ export default function Users({
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
+
+  //set target usestates
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [isShowAddTarget, setIsShowAddTarget] = useState(false);
+  const [isOpenAssignTargetModal, setIsOpenAssignTargetModal] = useState(false);
+  const [assignTargetMonth, setAssignTargetMonth] = useState(null);
+  const [assignTargetMonthError, setAssignTargetMonthError] = useState(null);
+  const [assignTargetMonthStartDate, setAssignTargetMonthStartDate] =
+    useState(null);
+  const [assignTargetMonthEndDate, setAssignTargetMonthEndDate] =
+    useState(null);
+  const [assignTargetValue, setAssignTargetValue] = useState("");
+  const [assignTargetValueError, setAssignTargetValueError] = useState("");
+  const [targetLoader, setTargetLoader] = useState(false);
 
   const columns = [
     { title: "User Id", key: "user_id", dataIndex: "user_id" },
@@ -549,6 +564,72 @@ export default function Users({
     }
   };
 
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
+    if (row.length >= 1) {
+      setIsShowAddTarget(true);
+    } else {
+      setIsShowAddTarget(false);
+    }
+  };
+
+  const handleSetTarget = async () => {
+    const targetMonthValidate = selectValidator(assignTargetMonth);
+    const targetValueValidate = selectValidator(assignTargetValue);
+
+    setAssignTargetMonthError(targetMonthValidate);
+    setAssignTargetValueError(targetValueValidate);
+
+    if (targetMonthValidate || targetValueValidate) return;
+
+    setTargetLoader(true);
+    const user_ids = selectedRows.map((item) => {
+      return { user_id: item.user_id };
+    });
+    const payload = {
+      user_ids: user_ids,
+      target_start: assignTargetMonthStartDate,
+      target_end: assignTargetMonthEndDate,
+      target_value: assignTargetValue,
+    };
+
+    try {
+      await setUserTarget(payload);
+      setSelectedRows([]);
+      setSelectedRowKeys([]);
+      setTimeout(() => {
+        setTargetLoader(false);
+        setIsShowAddTarget(false);
+        setPagination({
+          page: 1,
+        });
+        getUsersData(searchValue, pagination.page, pagination.limit);
+        getAllUsersData();
+        assignTargetReset();
+      }, 300);
+    } catch (error) {
+      setTargetLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const assignTargetReset = () => {
+    setIsOpenAssignTargetModal(false);
+    setAssignTargetMonth(null);
+    setAssignTargetMonthError("");
+    setAssignTargetMonthStartDate(null);
+    setAssignTargetMonthEndDate(null);
+    setAssignTargetValue("");
+    setAssignTargetValueError("");
+  };
+
   return (
     <div>
       <Row>
@@ -648,7 +729,7 @@ export default function Users({
             alignItems: "center",
           }}
         >
-          {permissions.includes("Add User") && (
+          {permissions.includes("Add User") && isShowAddTarget === false && (
             <button
               className="leadmanager_addleadbutton"
               onClick={() => {
@@ -656,6 +737,17 @@ export default function Users({
               }}
             >
               Add User
+            </button>
+          )}
+
+          {permissions.includes("Add User") && isShowAddTarget === true && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAssignTargetModal(true);
+              }}
+            >
+              Assign Target
             </button>
           )}
         </Col>
@@ -667,9 +759,11 @@ export default function Users({
           dataSource={usersData}
           dataPerPage={10}
           loading={userTableLoading}
-          checkBox="false"
+          checkBox="true"
           size="small"
           className="questionupload_table"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
@@ -883,17 +977,6 @@ export default function Users({
         >
           <Col span={12}>
             <CommonAntdMultiSelect
-              label="Assign Users"
-              options={assignUsersData}
-              onChange={(value) => {
-                setChildUsers(value);
-              }}
-              value={childUsers}
-              error=""
-            />
-          </Col>
-          <Col span={12}>
-            <CommonAntdMultiSelect
               label="Roles"
               options={rolesData}
               onChange={(value) => {
@@ -904,6 +987,18 @@ export default function Users({
               }}
               value={userRoles}
               error={userRolesError}
+            />
+          </Col>
+          <Col span={12}>
+            <CommonAntdMultiSelect
+              label="Assign Users"
+              options={assignUsersData}
+              onChange={(value) => {
+                setChildUsers(value);
+              }}
+              value={childUsers}
+              error=""
+              height="55px"
             />
           </Col>
         </Row>
@@ -932,6 +1027,100 @@ export default function Users({
         footer={false}
         width="35%"
       ></Modal>
+
+      {/* set modal */}
+      <Modal
+        title="Set Target"
+        open={isOpenAssignTargetModal}
+        onCancel={assignTargetReset}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={assignTargetReset}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          targetLoader ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleSetTarget}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="32%"
+      >
+        <div style={{ marginTop: "20px" }}>
+          <TargetMonthPicker
+            label="Target Month"
+            required={false}
+            onChange={(value) => {
+              console.log(value, "monthhh");
+              setAssignTargetMonth(value);
+              setAssignTargetMonthError(selectValidator(value));
+              if (value) {
+                const [monthName, year] = value.split(" - ");
+                const selectedMonth = moment(
+                  `${monthName} ${year}`,
+                  "MMMM YYYY"
+                );
+
+                // Start date: 25th of previous month
+                const startDate = selectedMonth
+                  .clone()
+                  .subtract(1, "month")
+                  .date(25)
+                  .format("YYYY-MM-DD");
+
+                // End date: 25th of selected month
+                const endDate = selectedMonth
+                  .clone()
+                  .date(25)
+                  .format("YYYY-MM-DD");
+
+                setAssignTargetMonthStartDate(startDate);
+                setAssignTargetMonthEndDate(endDate);
+              }
+            }}
+            value={assignTargetMonth}
+            error={assignTargetMonthError}
+            labelMarginTop="2px"
+          />
+        </div>
+
+        <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+          <CommonOutlinedInput
+            label="Target"
+            type="number"
+            required={false}
+            onChange={(e) => {
+              setAssignTargetValue(e.target.value);
+              setAssignTargetValueError(selectValidator(e.target.value));
+            }}
+            value={assignTargetValue}
+            onInput={(e) => {
+              if (e.target.value.length > 10) {
+                e.target.value = e.target.value.slice(0, 10);
+              }
+            }}
+            icon={<LuIndianRupee size={16} />}
+            error={assignTargetValueError}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

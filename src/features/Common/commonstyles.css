@@ -484,7 +484,7 @@
 }
 .commonMultiselectfield .ant-select-selector {
   min-height: 41px;
-  max-height: 80px;
+  max-height: 120px;
   overflow-y: auto;
   border-radius: 4px !important;
   scrollbar-width: thin;

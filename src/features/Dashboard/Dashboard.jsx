@@ -467,6 +467,7 @@ export default function Dashboard() {
         Number(ra_data?.google_review_count || 0),
         Number(ra_data?.linkedin_review_count || 0),
         Number(ra_data?.escalated || 0),
+        Number(ra_data?.class_completed || 0),
       ];
       if (
         ra_series[0] == 0 &&
@@ -475,7 +476,8 @@ export default function Dashboard() {
         ra_series[3] == 0 &&
         ra_series[4] == 0 &&
         ra_series[5] == 0 &&
-        ra_series[6] == 0
+        ra_series[6] == 0 &&
+        ra_series[7] == 0
       ) {
         setRaDataSeries([]);
         return;
@@ -1481,6 +1483,7 @@ export default function Dashboard() {
                           "G-Review",
                           "L-Review",
                           "Escalated",
+                          "Completed",
                         ]}
                         // series={[12, 34, 56, 4, 9, 18, 20]}
                         series={raDataSeries}
@@ -1493,9 +1496,10 @@ export default function Dashboard() {
                           "#a1c60c",
                           "rgba(10 102 194)",
                           "#d32f2fcc",
+                          "#258a25",
                         ]}
                         height={320}
-                        clickedBar={handleHrDashboard}
+                        clickedBar={handleRaDashboard}
                         enablePointer={true}
                       />
                     ) : (
