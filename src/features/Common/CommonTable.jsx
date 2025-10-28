@@ -76,6 +76,19 @@ const CommonTable = ({
     return () => clearTimeout(timeout);
   }, []);
 
+  useEffect(() => {
+    const handleCopy = (e) => {
+      const selection = window.getSelection().toString();
+      if (selection) {
+        e.clipboardData.setData("text/plain", selection.trim());
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("copy", handleCopy);
+    return () => document.removeEventListener("copy", handleCopy);
+  }, []);
+
   const handleTableChange = (pagination, filters, sorter) => {
     setPageSize(pagination.pageSize);
     setCurrentPage(pagination.current);
@@ -145,7 +158,7 @@ const CommonTable = ({
       scroll={scroll}
       pagination={paginationConfig}
       onChange={handleTableChange}
-      // tableLayout="fixed"
+      tableLayout="fixed"
       bordered={bordered === "true"}
       loading={loading}
       size={size}

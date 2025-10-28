@@ -231,12 +231,14 @@ export default function LeadFollowUp({
   //table dnd
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
 
   const nonChangeColumns = [
     {
       title: "Lead Executive",
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
+      width: 160,
       render: (text, record) => {
         return (
           <div>
@@ -249,6 +251,7 @@ export default function LeadFollowUp({
       title: "Next Follow Up",
       key: "next_follow_up_date",
       dataIndex: "next_follow_up_date",
+      width: 160,
       render: (text, record, index) => {
         return (
           <div
@@ -280,6 +283,7 @@ export default function LeadFollowUp({
       title: "Candidate Name",
       key: "candidate_name",
       dataIndex: "candidate_name",
+      width: 180,
     },
     {
       title: "Email",
@@ -287,7 +291,7 @@ export default function LeadFollowUp({
       dataIndex: "email",
       width: 200,
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 130 },
     {
       title: "Course",
       key: "primary_course",
@@ -361,6 +365,13 @@ export default function LeadFollowUp({
   }, [permissions]);
 
   useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (chatBoxRef.current && !chatBoxRef.current.contains(event.target)) {
         setIsOpenChat(false);
@@ -374,37 +385,38 @@ export default function LeadFollowUp({
   }, []);
 
   useEffect(() => {
-    if (!permissions.includes("Lead Manager Page")) {
-      return;
-    }
-    const countries = Country.getAllCountries();
-    const updateCountries = countries.map((c) => {
-      return { ...c, id: c.isoCode };
-    });
-    setCountryOptions(updateCountries);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
-    if (childUsers.length > 0 && !mounted.current) {
-      setLeadExecutives(downlineUsers);
-      mounted.current = true;
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Lead Manager Page")) {
+        return;
+      }
+      const countries = Country.getAllCountries();
+      const updateCountries = countries.map((c) => {
+        return { ...c, id: c.isoCode };
+      });
+      setCountryOptions(updateCountries);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-
-      setLoginUserId(convertAsJson?.user_id);
       setTimeout(() => {
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
-      getLeadFollowUpsData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        false,
-        null,
-        1,
-        10
-      );
+      if (childUsers.length > 0 && !mounted.current) {
+        setLeadExecutives(downlineUsers);
+        mounted.current = true;
+        setLoginUserId(convertAsJson?.user_id);
+        getLeadFollowUpsData(
+          null,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          false,
+          null,
+          1,
+          10
+        );
+      }
     }
-  }, [childUsers]);
+  }, [childUsers, permissions]);
 
   const getLeadFollowUpsData = async (
     searchvalue,
@@ -424,11 +436,11 @@ export default function LeadFollowUp({
     }
     const payload = {
       ...(searchvalue && filterType == 1
-        ? { name: searchvalue }
-        : searchvalue && filterType == 2
-        ? { email: searchvalue }
-        : searchvalue && filterType == 3
         ? { phone: searchvalue }
+        : searchvalue && filterType == 2
+        ? { name: searchvalue }
+        : searchvalue && filterType == 3
+        ? { email: searchvalue }
         : {}),
       from_date: startDate,
       to_date: endDate,
@@ -452,7 +464,10 @@ export default function LeadFollowUp({
       });
       if (updateStatus === true) {
         const record = followup_data[currentIndex];
-        if (!record) return;
+        if (!record) {
+          setIsOpenFollowUpDrawer(false);
+          return;
+        }
 
         setCurrentIndex(currentIndex);
         setLeadDetails(record);
@@ -494,13 +509,35 @@ export default function LeadFollowUp({
             case "lead_assigned_to_name":
               return {
                 ...col,
+                width: 160,
                 render: (text, record) => (
                   <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
                 ),
               };
+            case "candidate_name":
+              return {
+                ...col,
+                width: 180,
+              };
+            case "email":
+              return {
+                ...col,
+                width: 200,
+              };
+            case "phone":
+              return {
+                ...col,
+                width: 130,
+              };
+            case "primary_course":
+              return {
+                ...col,
+                width: 180,
+              };
             case "next_follow_up_date":
               return {
                 ...col,
+                width: 160,
                 render: (text, record, index) => {
                   return (
                     <div
@@ -705,7 +742,7 @@ export default function LeadFollowUp({
 
     let nxtFollowdateValidate = "";
 
-    if (actionId === 1) {
+    if (actionId == 1) {
       nxtFollowdateValidate = selectValidator(nxtFollowupDate);
     } else {
       nxtFollowdateValidate = "";
@@ -1276,11 +1313,11 @@ export default function LeadFollowUp({
                 <CommonOutlinedInput
                   label={
                     filterType == 1
-                      ? "Search By Name"
+                      ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Email"
+                      ? "Search By Name"
                       : filterType == 3
-                      ? "Search by Mobile"
+                      ? "Search by Email"
                       : ""
                   }
                   width="100%"
@@ -1361,13 +1398,13 @@ export default function LeadFollowUp({
                             value={1}
                             style={{ marginTop: "6px", marginBottom: "12px" }}
                           >
-                            Search by Name
+                            Search by Mobile
                           </Radio>
                           <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Email
+                            Search by Name
                           </Radio>
                           <Radio value={3} style={{ marginBottom: "6px" }}>
-                            Search by Mobile
+                            Search by Email
                           </Radio>
                         </Radio.Group>
                       }
@@ -1539,7 +1576,13 @@ export default function LeadFollowUp({
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1250 }}
+          // scroll={{ x: 1250 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
           columns={tableColumns}
           dataSource={followUpData}
           dataPerPage={10}
@@ -1557,7 +1600,34 @@ export default function LeadFollowUp({
       {/* table filter drawer */}
 
       <Drawer
-        title="Manage Table"
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
         open={isOpenFilterDrawer}
         onClose={formReset}
         width="35%"
@@ -1576,7 +1646,12 @@ export default function LeadFollowUp({
             <button
               className="leadmanager_tablefilter_applybutton"
               onClick={async () => {
-                const visibleColumns = columns.filter((col) => col.isChecked);
+                const visibleColumns = columns
+                  .filter((col) => col.isChecked)
+                  .map((col) => ({
+                    ...col,
+                    width: col.width || 150, // fallback width for consistent layout
+                  }));
                 console.log("visibleColumns", visibleColumns);
                 setTableColumns(visibleColumns);
                 setIsOpenFilterDrawer(false);

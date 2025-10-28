@@ -52,7 +52,6 @@ import {
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
-import dayjs from "dayjs";
 import moment from "moment/moment";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
@@ -63,7 +62,6 @@ import CommonDnd from "../Common/CommonDnd";
 import { FaRegCopy } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
-import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 
 export default function Trainers() {
   const scrollRef = useRef();
@@ -166,6 +164,7 @@ export default function Trainers() {
   //table dnd
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
 
   const nonChangeColumns = [
     {
@@ -378,6 +377,13 @@ export default function Trainers() {
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
   useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  useEffect(() => {
     if (permissions.length >= 1) {
       if (!permissions.includes("Trainers Page")) {
         navigate("/dashboard");
@@ -467,11 +473,11 @@ export default function Trainers() {
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
-        ? { name: searchvalue }
-        : searchvalue && filterType == 2
-        ? { email: searchvalue }
-        : searchvalue && filterType == 3
         ? { mobile: searchvalue }
+        : searchvalue && filterType == 2
+        ? { name: searchvalue }
+        : searchvalue && filterType == 3
+        ? { email: searchvalue }
         : {}),
       ...(trainerStatus && trainerStatus == "Form Pending"
         ? { is_form_sent: 1 }
@@ -1692,12 +1698,12 @@ export default function Trainers() {
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
-                    filterType === 1
+                    filterType == 1
+                      ? "Search By Mobile"
+                      : filterType == 2
                       ? "Search By Name"
-                      : filterType === 2
-                      ? "Search By Email"
-                      : filterType === 3
-                      ? "Search by Mobile"
+                      : filterType == 3
+                      ? "Search by Email"
                       : ""
                   }
                   width="100%"
@@ -1775,13 +1781,13 @@ export default function Trainers() {
                             value={1}
                             style={{ marginTop: "6px", marginBottom: "12px" }}
                           >
-                            Search by Name
+                            Search by Mobile
                           </Radio>
                           <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Email
+                            Search by Name
                           </Radio>
                           <Radio value={3} style={{ marginBottom: "6px" }}>
-                            Search by Mobile
+                            Search by Email
                           </Radio>
                         </Radio.Group>
                       }
@@ -2066,7 +2072,13 @@ export default function Trainers() {
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2700 }}
+          // scroll={{ x: 2700 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
           columns={tableColumns}
           dataSource={trainersData}
           dataPerPage={10}
@@ -2120,7 +2132,34 @@ export default function Trainers() {
       {/* table filter drawer */}
 
       <Drawer
-        title="Manage Table"
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
         open={isOpenFilterDrawer}
         onClose={formReset}
         width="35%"

@@ -282,6 +282,7 @@ export default function Leads({
   //table dnd
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
 
   const nonChangeColumns = [
     {
@@ -351,6 +352,7 @@ export default function Leads({
       title: "Primary Course Fees",
       key: "primary_fees",
       dataIndex: "primary_fees",
+      width: 180,
     },
     {
       title: "Secondary Course ",
@@ -507,6 +509,13 @@ export default function Leads({
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
   useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  useEffect(() => {
     setTableColumns(nonChangeColumns);
   }, [permissions, isShowEdit]);
 
@@ -530,38 +539,40 @@ export default function Leads({
   };
 
   useEffect(() => {
-    if (!permissions.includes("Lead Manager Page")) {
-      return;
-    }
-    const countries = Country.getAllCountries();
-    const updateCountries = countries.map((c) => {
-      return { ...c, id: c.isoCode };
-    });
-    setCountryOptions(updateCountries);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Lead Manager Page")) {
+        return;
+      }
+      const countries = Country.getAllCountries();
+      const updateCountries = countries.map((c) => {
+        return { ...c, id: c.isoCode };
+      });
+      setCountryOptions(updateCountries);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
 
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-
-    if (childUsers.length > 0 && !mounted.current) {
-      setLeadExecutives(downlineUsers);
-      mounted.current = true;
-      setLoginUserId(convertAsJson?.user_id);
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
       setTimeout(() => {
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
 
-      getAllLeadData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        null,
-        1,
-        10
-      );
+      if (childUsers.length > 0 && !mounted.current) {
+        setLeadExecutives(downlineUsers);
+        mounted.current = true;
+        setLoginUserId(convertAsJson?.user_id);
+
+        getAllLeadData(
+          null,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          null,
+          1,
+          10
+        );
+      }
     }
-  }, [childUsers]);
+  }, [childUsers, permissions]);
 
   const getTableColumnsData = async (user_id) => {
     try {
@@ -616,6 +627,26 @@ export default function Leads({
                     </div>
                   );
                 },
+              };
+            case "primary_course":
+              return {
+                ...col,
+                width: 200,
+              };
+            case "primary_fees":
+              return {
+                ...col,
+                width: 160,
+              };
+            case "secondary_course":
+              return {
+                ...col,
+                width: 160,
+              };
+            case "secondary_fees":
+              return {
+                ...col,
+                width: 180,
               };
             case "comments":
               return {
@@ -771,11 +802,11 @@ export default function Leads({
     }
     const payload = {
       ...(searchvalue && filterType == 1
-        ? { name: searchvalue }
-        : searchvalue && filterType == 2
-        ? { email: searchvalue }
-        : searchvalue && filterType == 3
         ? { phone: searchvalue }
+        : searchvalue && filterType == 2
+        ? { name: searchvalue }
+        : searchvalue && filterType == 3
+        ? { email: searchvalue }
         : {}),
       start_date: startDate,
       end_date: endDate,
@@ -1925,11 +1956,11 @@ export default function Leads({
                 <CommonOutlinedInput
                   label={
                     filterType == 1
-                      ? "Search By Name"
+                      ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Email"
+                      ? "Search By Name"
                       : filterType == 3
-                      ? "Search by Mobile"
+                      ? "Search by Email"
                       : ""
                   }
                   width="100%"
@@ -1985,7 +2016,6 @@ export default function Leads({
                         <Radio.Group
                           value={filterType}
                           onChange={(e) => {
-                            console.log("filllllll", e.target.value);
                             setFilterType(e.target.value);
                             if (searchValue == "") {
                               return;
@@ -2009,13 +2039,13 @@ export default function Leads({
                             value={1}
                             style={{ marginTop: "6px", marginBottom: "12px" }}
                           >
-                            Search by Name
+                            Search by Mobile
                           </Radio>
                           <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Email
+                            Search by Name
                           </Radio>
                           <Radio value={3} style={{ marginBottom: "6px" }}>
-                            Search by Mobile
+                            Search by Email
                           </Radio>
                         </Radio.Group>
                       }
@@ -2198,7 +2228,13 @@ export default function Leads({
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 3350 }}
+          // scroll={{ x: 3350 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
           columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}
@@ -2256,8 +2292,21 @@ export default function Leads({
                 value={mobile}
                 error={mobileError}
                 errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
-                disabled={leadId ? true : false}
-                disableCountrySelect={leadId ? true : false}
+                // disabled={leadId ? true : false}
+                disabled={
+                  permissions.includes("Edit Lead Mobile Number")
+                    ? false
+                    : leadId
+                    ? true
+                    : false
+                }
+                disableCountrySelect={
+                  permissions.includes("Edit Lead Mobile Number")
+                    ? false
+                    : leadId
+                    ? true
+                    : false
+                }
               />
             </div>
           </Col>
@@ -2695,7 +2744,34 @@ export default function Leads({
       </Drawer>
       {/* table filter drawer */}
       <Drawer
-        title="Manage Table"
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}>Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
         open={isOpenFilterDrawer}
         onClose={formReset}
         width="35%"

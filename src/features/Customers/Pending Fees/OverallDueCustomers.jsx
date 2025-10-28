@@ -10,6 +10,7 @@ import {
   Divider,
   Collapse,
   Modal,
+  Checkbox,
 } from "antd";
 import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
@@ -18,7 +19,9 @@ import { IoFilter } from "react-icons/io5";
 import {
   customerDuePayment,
   getPendingFeesCustomers,
+  getTableColumns,
   inserCustomerTrack,
+  updateTableColumns,
 } from "../../ApiService/action";
 import {
   formatToBackendIST,
@@ -29,6 +32,7 @@ import {
   selectValidator,
 } from "../../Common/Validation";
 import CommonTable from "../../Common/CommonTable";
+import CommonDnd from "../../Common/CommonDnd";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -48,6 +52,7 @@ import { CommonMessage } from "../../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { FiFilter } from "react-icons/fi";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import PrismaZoom from "react-prismazoom";
 import ImageUploadCrop from "../../Common/ImageUploadCrop";
@@ -107,8 +112,13 @@ export default function OverallDueCustomers({
     total: 0,
     totalPages: 0,
   });
+  //table dnd
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [loginUserId, setLoginUserId] = useState("");
+  const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
 
-  const columns = [
+  const nonChangeColumns = [
     {
       title: "Lead Executive",
       key: "lead_assigned_to_name",
@@ -124,13 +134,24 @@ export default function OverallDueCustomers({
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "phone", dataIndex: "phone" },
-    { title: "Course ", key: "course_name", dataIndex: "course_name" },
-    { title: "Joined ", key: "date_of_joining", dataIndex: "date_of_joining" },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
+    {
+      title: "Course ",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 180,
+    },
+    {
+      title: "Joined ",
+      key: "date_of_joining",
+      dataIndex: "date_of_joining",
+      width: 140,
+    },
     {
       title: "Fees",
       key: "course_fees",
       dataIndex: "course_fees",
+      width: 140,
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
@@ -139,15 +160,16 @@ export default function OverallDueCustomers({
       title: "Balance",
       key: "balance_amount",
       dataIndex: "balance_amount",
+      width: 140,
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
     },
-    { title: "Lead By", key: "lead_by", dataIndex: "lead_by" },
     {
       title: "Trainer",
       key: "trainer_name",
       dataIndex: "trainer_name",
+      width: 170,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -160,6 +182,7 @@ export default function OverallDueCustomers({
       title: "TR Number",
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
+      width: 150,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -204,7 +227,7 @@ export default function OverallDueCustomers({
       key: "status",
       dataIndex: "status",
       fixed: "right",
-      width: 180,
+      width: 190,
       render: (text, record) => {
         let classPercent = 0;
 
@@ -217,12 +240,10 @@ export default function OverallDueCustomers({
         }
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {record.is_second_due === 1 ? (
-              <div>
-                <Button className="customers_status_awaitfinance_button">
-                  Awaiting Finance
-                </Button>
-              </div>
+            {text === "Pending" ||
+            text === "PENDING" ||
+            text === "Verify Pending" ? (
+              <Button className="trainers_pending_button">Pending</Button>
             ) : text === "Form Pending" ? (
               <div>
                 <Button className="customers_status_formpending_button">
@@ -381,6 +402,29 @@ export default function OverallDueCustomers({
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+
+  useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    setLoginUserId(convertAsJson?.user_id);
+    setTimeout(() => {
+      getTableColumnsData(convertAsJson?.user_id);
+    }, 300);
+
+    setTableColumns(nonChangeColumns);
+  }, [permissions]);
+
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -419,13 +463,13 @@ export default function OverallDueCustomers({
     const payload = {
       from_date: moment(from_date).format("YYYY-MM-DD"),
       to_date: moment(to_date).format("YYYY-MM-DD"),
-      ...(searchvalue && filterType === 1
-        ? { name: searchvalue }
-        : searchvalue && filterType === 2
-        ? { email: searchvalue }
-        : searchvalue && filterType === 3
+      ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
-        : searchvalue && filterType === 4
+        : searchvalue && filterType == 2
+        ? { name: searchvalue }
+        : searchvalue && filterType == 3
+        ? { email: searchvalue }
+        : searchvalue && filterType == 4
         ? { course: searchvalue }
         : {}),
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
@@ -452,6 +496,326 @@ export default function OverallDueCustomers({
       setCustomersData([]);
       setLoading(false);
       console.log("pending fee customer error", error);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Overall Due");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols
+          .filter((col) => col.key !== "lead_by") // remove 'lead_by' column
+          .map((col) => {
+            switch (col.key) {
+              case "lead_assigned_to_name":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    return (
+                      <div>
+                        <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
+                      </div>
+                    );
+                  },
+                };
+              case "course_fees":
+                return {
+                  ...col,
+                  render: (text) => {
+                    return <p>{"₹" + text}</p>;
+                  },
+                };
+              case "balance_amount":
+                return {
+                  ...col,
+                  render: (text) => {
+                    return <p>{"₹" + text}</p>;
+                  },
+                };
+              case "trainer_name":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    if (record.is_trainer_verified === 1) {
+                      return <p>{text}</p>;
+                    } else {
+                      return <p>-</p>;
+                    }
+                  },
+                };
+              case "trainer_mobile":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    if (record.is_trainer_verified === 1) {
+                      return <p>{text}</p>;
+                    } else {
+                      return <p>-</p>;
+                    }
+                  },
+                };
+              case "form_status":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    return (
+                      <>
+                        {record.is_customer_updated === 1 ? (
+                          <p>Completed</p>
+                        ) : (
+                          <p>Pending</p>
+                        )}
+                      </>
+                    );
+                  },
+                };
+              case "next_due_date":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    return (
+                      <>
+                        <p>{moment(text).format("DD/MM/YYYY")}</p>
+                      </>
+                    );
+                  },
+                };
+              case "status":
+                return {
+                  ...col,
+                  width: 180,
+                  render: (text, record) => {
+                    let classPercent = 0;
+
+                    if (
+                      record.class_percentage !== null &&
+                      record.class_percentage !== undefined
+                    ) {
+                      const parsed = parseFloat(record.class_percentage);
+                      classPercent = isNaN(parsed) ? 0 : parsed;
+                    }
+                    return (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        {text === "Pending" ||
+                        text === "PENDING" ||
+                        text === "Verify Pending" ? (
+                          <Button className="trainers_pending_button">
+                            Pending
+                          </Button>
+                        ) : text === "Form Pending" ? (
+                          <div>
+                            <Button className="customers_status_formpending_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Finance" ? (
+                          <div>
+                            <Button className="customers_status_awaitfinance_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Verify" ? (
+                          <div>
+                            <Button className="customers_status_awaitverify_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Trainer" ? (
+                          <div>
+                            <Button className="customers_status_awaittrainer_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Trainer Verify" ? (
+                          <div>
+                            <Button className="customers_status_awaittrainerverify_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Class" ? (
+                          <div>
+                            <Button className="customers_status_awaitingclass_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Class Scheduled" ? (
+                          <div>
+                            <Button className="customers_status_classscheduled_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Passedout process" ? (
+                          <div>
+                            <Button className="customers_status_awaitfeedback_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Completed" ? (
+                          <div>
+                            <Button className="customers_status_completed_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Rejected" ||
+                          text === "REJECTED" ||
+                          text === "Trainer Rejected" ||
+                          text === "Payment Rejected" ||
+                          text === "Escalated" ||
+                          text === "Hold" ||
+                          text === "Partially Closed" ||
+                          text === "Discontinued" ||
+                          text === "Refund" ? (
+                          <Button className="trainers_rejected_button">
+                            {text}
+                          </Button>
+                        ) : text === "Class Going" ? (
+                          <div style={{ display: "flex", gap: "12px" }}>
+                            <Button className="customers_status_classgoing_button">
+                              {text}
+                            </Button>
+
+                            <p className="customer_classgoing_percentage">{`${parseFloat(
+                              classPercent
+                            )}%`}</p>
+                          </div>
+                        ) : (
+                          <p style={{ marginLeft: "6px" }}>-</p>
+                        )}
+                        {record.status === "Form Pending" && (
+                          <Tooltip
+                            placement="top"
+                            title="Copy form link"
+                            trigger={["hover", "click"]}
+                          >
+                            <FaRegCopy
+                              size={14}
+                              className="customers_formlink_copybutton"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${
+                                    import.meta.env.VITE_EMAIL_URL
+                                  }/customer-registration/${record.id}`
+                                );
+                                CommonMessage("success", "Link Copied");
+                                console.log("Copied: eeee");
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </div>
+                    );
+                  },
+                };
+              case "action":
+                return {
+                  ...col,
+                  render: (text, record) => {
+                    return (
+                      <div className="trainers_actionbuttonContainer">
+                        <Tooltip
+                          placement="top"
+                          title="View Details"
+                          trigger={["hover", "click"]}
+                        >
+                          <FaRegEye
+                            size={16}
+                            style={{ marginTop: "1px" }}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsOpenDetailsDrawer(true);
+                              setCustomerDetails(record);
+                            }}
+                          />
+                        </Tooltip>
+
+                        {permissions?.includes("Add Part Payment") && (
+                          <Tooltip
+                            placement="top"
+                            title="Pay Amount"
+                            trigger={["hover", "click"]}
+                          >
+                            <GiReceiveMoney
+                              size={17}
+                              className="trainers_action_icons"
+                              onClick={() => {
+                                setIsOpenPaymentDrawer(true);
+                                setCustomerDetails(record);
+                                setCollapseDefaultKey(["1"]);
+                                setPendingAmount(
+                                  parseFloat(record.balance_amount)
+                                );
+                                setBalanceAmount(
+                                  parseFloat(record.balance_amount)
+                                );
+                                setPaymentHistory(
+                                  record.payment && record.payment.payment_trans
+                                    ? record.payment.payment_trans
+                                    : []
+                                );
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </div>
+                    );
+                  },
+                };
+              default:
+                return col;
+            }
+          });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Overall Due",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
     }
   };
 
@@ -702,13 +1066,13 @@ export default function OverallDueCustomers({
                 {/* Search Input */}
                 <CommonOutlinedInput
                   label={
-                    filterType === 1
+                    filterType == 1
+                      ? "Search By Mobile"
+                      : filterType == 2
                       ? "Search By Name"
-                      : filterType === 2
-                      ? "Search By Email"
-                      : filterType === 3
-                      ? "Search by Mobile"
-                      : filterType === 4
+                      : filterType == 3
+                      ? "Search by Email"
+                      : filterType == 4
                       ? "Search by Course"
                       : ""
                   }
@@ -788,18 +1152,15 @@ export default function OverallDueCustomers({
                             value={1}
                             style={{ marginTop: "6px", marginBottom: "12px" }}
                           >
-                            Search by Name
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "6px" }}>
                             Search by Mobile
                           </Radio>
-                          <Radio
-                            value={4}
-                            style={{ marginTop: "6px", marginBottom: "6px" }}
-                          >
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Name
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={4} style={{ marginBottom: "6px" }}>
                             Search by Course
                           </Radio>
                         </Radio.Group>
@@ -868,12 +1229,36 @@ export default function OverallDueCustomers({
             </Col>
           </Row>
         </Col>
+        <Col
+          span={7}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <FiFilter
+            size={20}
+            color="#5b69ca"
+            style={{ marginRight: "16px", cursor: "pointer" }}
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              getTableColumnsData(loginUserId);
+            }}
+          />
+        </Col>
       </Row>
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
-          scroll={{ x: 2350 }}
-          columns={columns}
+          // scroll={{ x: 2350 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
+          columns={tableColumns}
           dataSource={customersData}
           dataPerPage={10}
           loading={loading}
@@ -2048,6 +2433,85 @@ export default function OverallDueCustomers({
           </PrismaZoom>
         </div>
       </Modal>
+
+      {/* table filter drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}>Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
+        open={isOpenFilterDrawer}
+        onClose={() => {
+          setIsOpenFilterDrawer(false);
+        }}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: 50 }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd data={columns} setColumns={setColumns} />
+            </div>
+
+            <Divider className="customer_statusupdate_divider" />
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={async () => {
+                const visibleColumns = columns.filter((col) => col.isChecked);
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
+                setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Overall Due",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

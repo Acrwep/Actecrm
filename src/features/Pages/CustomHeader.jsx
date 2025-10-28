@@ -56,7 +56,7 @@ export default function CustomHeader() {
   const [userName, setUserName] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
-  const [filterType, setFilterType] = useState(3);
+  const [filterType, setFilterType] = useState(1);
   const [leadData, setLeadData] = useState([]);
   const [isOpenSearchOptions, setIsOpenSearchOptions] = useState(true);
   const [isOpenLeadDetailsDrawer, setIsOpenLeadDetailsDrawer] = useState(false);
@@ -148,11 +148,11 @@ export default function CustomHeader() {
     setSearchLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
-        ? { name: searchvalue }
-        : searchvalue && filterType == 2
-        ? { email: searchvalue }
-        : searchvalue && filterType == 3
         ? { phone: searchvalue }
+        : searchvalue && filterType == 2
+        ? { name: searchvalue }
+        : searchvalue && filterType == 3
+        ? { email: searchvalue }
         : {}),
       user_ids: [],
       page: 1,
@@ -342,13 +342,13 @@ export default function CustomHeader() {
             <input
               className="header_searchbar"
               placeholder={
-                filterType === 1
+                filterType == 1
+                  ? "Search By Mobile"
+                  : filterType == 2
                   ? "Search By Name"
-                  : filterType === 2
-                  ? "Search By Email"
-                  : filterType === 3
-                  ? "Search by Mobile"
-                  : filterType === 4
+                  : filterType == 3
+                  ? "Search by Email"
+                  : filterType == 4
                   ? "Search by Course"
                   : ""
               }
@@ -394,29 +394,22 @@ export default function CustomHeader() {
                           fontSize: "13px",
                         }}
                       >
-                        Search by Name
+                        Search by Mobile
                       </Radio>
                       <Radio
                         value={2}
-                        style={{ marginBottom: "12px", fontSize: "13px" }}
+                        style={{
+                          marginBottom: "12px",
+                          fontSize: "13px",
+                        }}
                       >
-                        Search by Email
+                        Search by Name
                       </Radio>
                       <Radio
                         value={3}
                         style={{ marginBottom: "6px", fontSize: "13px" }}
                       >
-                        Search by Mobile
-                      </Radio>
-                      <Radio
-                        value={4}
-                        style={{
-                          marginTop: "6px",
-                          marginBottom: "6px",
-                          fontSize: "13px",
-                        }}
-                      >
-                        Search by Course
+                        Search by Email
                       </Radio>
                     </Radio.Group>
                   }

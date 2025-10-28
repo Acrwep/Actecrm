@@ -177,6 +177,7 @@ export default function Settings() {
         "Lead Manager Page",
         "Add Lead Button",
         "Edit Lead Button",
+        "Edit Lead Mobile Number",
         "Assign Lead",
         "Lead Executive Filter",
       ];

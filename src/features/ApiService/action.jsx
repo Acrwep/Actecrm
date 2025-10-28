@@ -879,6 +879,15 @@ export const getScoreBoard = async (payload) => {
   }
 };
 
+export const getUserWiseScoreBoard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getUserWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTopPerformance = async (payload) => {
   try {
     const response = await api.post(`/api/getTopPerformance`, payload);

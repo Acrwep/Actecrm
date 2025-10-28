@@ -5,7 +5,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import moment from "moment";
 
-export default function CommonMuiMonthPicker({
+export default function TargetMonthPicker({
   label,
   required,
   onChange,
@@ -16,12 +16,19 @@ export default function CommonMuiMonthPicker({
   labelMarginTop,
 }) {
   const [open, setOpen] = React.useState(false);
+  // ✅ Get today's month and next month
+  const today = dayjs();
+  const currentMonth = today.startOf("month");
+  const nextMonth = today.add(1, "month").startOf("month");
+
+  // ✅ If today is 26th or later, allow next month instead of current
+  const activeMonth = today.date() >= 26 ? nextMonth : currentMonth;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DatePicker
         label={label}
-        views={["month", "year"]}
+        views={["month"]}
         value={value ? dayjs(value) : null}
         onChange={(newValue) => {
           if (newValue) {
@@ -30,6 +37,11 @@ export default function CommonMuiMonthPicker({
           } else {
             onChange(null);
           }
+        }}
+        // ✅ Disable all months except the active one
+        shouldDisableMonth={(monthDate) => {
+          const monthStart = monthDate.startOf("month");
+          return !monthStart.isSame(activeMonth, "month");
         }}
         open={!disabled && open}
         onClose={() => setOpen(false)}

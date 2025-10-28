@@ -5,12 +5,14 @@ import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { LuIndianRupee } from "react-icons/lu";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import {
   addressValidator,
   confirmPasswordValidator,
+  formatToBackendIST,
   nameValidator,
   passwordValidator,
   selectValidator,
@@ -27,6 +29,8 @@ import {
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
+import moment from "moment";
+import TargetMonthPicker from "./TargetMonthPicker";
 
 export default function Users({
   userTableLoading,
@@ -62,6 +66,10 @@ export default function Users({
   const [childUsers, setChildUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [userRolesError, setUserRolesError] = useState("");
+  const [targetMonth, setTargetMonth] = useState(null);
+  const [targetMonthStartDate, setTargetMonthStartDate] = useState(null);
+  const [targetMonthEndDate, setTargetMonthEndDate] = useState(null);
+  const [target, setTarget] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   // const [usersData, setUsersData] = useState([]);
@@ -263,10 +271,10 @@ export default function Users({
   const getUsersData = async (searchvalue, pageNumber, limit) => {
     setUserTableLoading(true);
     const payload = {
-      ...(searchvalue && filterType === 1
-        ? { user_name: searchvalue }
-        : searchvalue && filterType === 2
+      ...(searchvalue && filterType == 1
         ? { user_id: searchvalue }
+        : searchvalue && filterType == 2
+        ? { user_name: searchvalue }
         : {}),
       page: pageNumber,
       limit: limit,
@@ -337,6 +345,27 @@ export default function Users({
     } else {
       setUserRoles([]);
     }
+    if (item.target_month) {
+      const month = item.target_month.split("-")[1];
+      console.log("monthhhh", month);
+      setTargetMonth(month);
+      const [monthName, year] = month.split(" - ");
+      const selectedMonth = moment(`${monthName} ${year}`, "MMMM YYYY");
+
+      // Start date: 25th of previous month
+      const startDate = selectedMonth
+        .clone()
+        .subtract(1, "month")
+        .date(25)
+        .format("YYYY-MM-DD");
+
+      // End date: 25th of selected month
+      const endDate = selectedMonth.clone().date(25).format("YYYY-MM-DD");
+
+      setTargetMonthStartDate(startDate);
+      setTargetMonthEndDate(endDate);
+    }
+    setTarget(item.target_value);
     setIsOpenAddDrawer(true);
   };
 
@@ -371,6 +400,10 @@ export default function Users({
     setChildUsers([]);
     setUserRoles([]);
     setUserRolesError("");
+    setTargetMonth(null);
+    setTargetMonthStartDate(null);
+    setTargetMonthEndDate(null);
+    setTarget("");
   };
 
   const handleSubmit = async () => {
@@ -458,6 +491,7 @@ export default function Users({
     const matchedRoles = Array.from(uniqueRoles.values());
     console.log("matchedRoles", matchedRoles);
 
+    const today = new Date();
     const payload = {
       ...(editUserId && { id: editUserId }),
       user_id: userId,
@@ -465,6 +499,9 @@ export default function Users({
       password: password,
       users: matchedUsers,
       roles: matchedRoles,
+      target_start: targetMonthStartDate,
+      target_end: targetMonthEndDate,
+      target_value: target,
     };
 
     if (editUserId) {
@@ -521,7 +558,7 @@ export default function Users({
             style={{ position: "relative" }}
           >
             <CommonOutlinedInput
-              label={filterType === 1 ? "Search By Name" : "Search By User Id"}
+              label={filterType == 1 ? "Search By User Id" : "Search By Name"}
               width="40%"
               height="33px"
               labelFontSize="12px"
@@ -584,10 +621,10 @@ export default function Users({
                         value={1}
                         style={{ marginTop: "6px", marginBottom: "12px" }}
                       >
-                        Search by Name
+                        Search by User Id
                       </Radio>
                       <Radio value={2} style={{ marginBottom: "6px" }}>
-                        Search by User Id
+                        Search by Name
                       </Radio>
                     </Radio.Group>
                   }
@@ -775,21 +812,76 @@ export default function Users({
         <Row
           gutter={16}
           style={{
-            marginTop: passwordError || confirmPasswordError ? "38px" : "20px",
+            marginTop: passwordError || confirmPasswordError ? "45px" : "30px",
           }}
         >
           <Col span={12}>
-            {/* <CommonMultiSelect
-              label="Assign Users"
-              dontallowFreeSolo={true}
-              options={assignUsersData}
-              onChange={(e, selectedValues) => {
-                setChildUsers(selectedValues);
+            <TargetMonthPicker
+              label="Target Month"
+              required={false}
+              onChange={(value) => {
+                console.log(value, "monthhh");
+                setTargetMonth(value);
+                if (value) {
+                  const [monthName, year] = value.split(" - ");
+                  const selectedMonth = moment(
+                    `${monthName} ${year}`,
+                    "MMMM YYYY"
+                  );
+
+                  // Start date: 25th of previous month
+                  const startDate = selectedMonth
+                    .clone()
+                    .subtract(1, "month")
+                    .date(25)
+                    .format("YYYY-MM-DD");
+
+                  // End date: 25th of selected month
+                  const endDate = selectedMonth
+                    .clone()
+                    .date(25)
+                    .format("YYYY-MM-DD");
+
+                  setTargetMonthStartDate(startDate);
+                  setTargetMonthEndDate(endDate);
+                  console.log("Start Date:", startDate);
+                  console.log("End Date:", endDate);
+
+                  // Example API call
+                  // getRAData(startDate, endDate, leadExecutiveId, false);
+                }
               }}
-              value={childUsers}
-              checkBox={true}
-              height="46px"
-            /> */}
+              value={targetMonth}
+              error=""
+              labelMarginTop="2px"
+            />
+          </Col>
+          <Col span={12}>
+            <CommonOutlinedInput
+              label="Target"
+              type="number"
+              required={false}
+              onChange={(e) => {
+                setTarget(e.target.value);
+              }}
+              value={target}
+              onInput={(e) => {
+                if (e.target.value.length > 10) {
+                  e.target.value = e.target.value.slice(0, 10);
+                }
+              }}
+              icon={<LuIndianRupee size={16} />}
+            />
+          </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          style={{
+            marginTop: "25px",
+          }}
+        >
+          <Col span={12}>
             <CommonAntdMultiSelect
               label="Assign Users"
               options={assignUsersData}
@@ -801,19 +893,6 @@ export default function Users({
             />
           </Col>
           <Col span={12}>
-            {/* <CommonMultiSelect
-              label="Roles"
-              dontallowFreeSolo={true}
-              options={rolesData}
-              onChange={(e, selectedValues) => {
-                setUserRoles(selectedValues);
-                if (validationTrigger) {
-                  setUserRolesError(selectValidator(selectedValues));
-                }
-              }}
-              value={userRoles}
-              error={userRolesError}
-            /> */}
             <CommonAntdMultiSelect
               label="Roles"
               options={rolesData}

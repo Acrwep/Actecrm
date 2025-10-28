@@ -5,18 +5,25 @@ import "./styles.css";
 import ReactApexChart from "react-apexcharts";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  selectValidator,
+} from "../Common/Validation";
 import {
   getHRDashboard,
   getRADashboard,
   getScoreBoard,
   getTopPerformance,
+  getUserWiseScoreBoard,
 } from "../ApiService/action";
 import { RedoOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonHorizontalBarChart from "../Common/CommonHorizontalBarChart";
 import CommonPieChart from "../Common/CommonPieChart";
+import CommonMuiMonthPicker from "../Common/CommonMuiMonthPicker";
+import UserwiseSalesChart from "./UserwiseSalesChart";
+import CommonDonutChart from "../Common/CommonDonutChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -40,6 +47,21 @@ export default function Dashboard() {
   const [saleDetailsSelectedDates, setSaleDetailsSelectedDates] = useState([]);
   const [saleDetailsSeries, setSaleDetailsSeries] = useState([]);
   const [saleDetailsLoader, setSaleDetailsLoader] = useState(true);
+  //User-Wise Sales Analysis
+  const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
+  const [userWiseStartDate, setUserWiseStartDate] = useState(
+    moment().subtract(1, "month").date(25).format("YYYY-MM-DD") // previous month 25
+  );
+
+  const [userWiseEndDate, setUserWiseEndDate] = useState(
+    moment().date(25).format("YYYY-MM-DD") // current month 25
+  );
+  const [userWiseType, setUserWiseType] = useState(1);
+  const [userWiseXaxis, setUserWiseXaxis] = useState([]);
+  const [userWiseSeries, setUserWiseSeries] = useState([]);
+  const [userWiseTargets, setUserWiseTargets] = useState([]);
+  const [userWiseCollection, setUserWiseCollection] = useState([]);
+  const [userWiseLoader, setUserWiseLoader] = useState(true);
   //RA
   const [raSelectedDates, setRaSelectedDates] = useState([]);
   const [raDataSeries, setRaDataSeries] = useState([]);
@@ -166,6 +188,87 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setSaleDetailsLoader(false);
+        const start_date = moment()
+          .subtract(1, "month")
+          .date(25)
+          .format("YYYY-MM-DD");
+
+        const end_date = moment().date(25).format("YYYY-MM-DD");
+        if (call_api == true) {
+          getUserWiseScoreBoardData(
+            start_date,
+            end_date,
+            executive_id,
+            true,
+            userWiseType ? userWiseType : 1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getUserWiseScoreBoardData = async (
+    startDate,
+    endDate,
+    executive_id,
+    call_api,
+    type
+  ) => {
+    setUserWiseLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
+    const payload = {
+      start_date: startDate,
+      end_date: endDate,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
+    };
+    try {
+      const response = await getUserWiseScoreBoard(payload);
+      console.log("userwise score response", response);
+      const userwise_scorecard = response?.data?.data;
+      console.log(userwise_scorecard);
+
+      const xaxis = userwise_scorecard.map(
+        (item) => `${item.user_id} (${item.user_name})`
+      );
+      const series = userwise_scorecard.map((item) =>
+        type == 1
+          ? Number(item.sale_volume)
+          : type == 2
+          ? Number(item.percentage)
+          : Number(item.pending)
+      ); // for bar values
+      const targets = userwise_scorecard.map((item) =>
+        Number(item.target_value)
+      );
+      const collections = userwise_scorecard.map((item) =>
+        Number(item.total_collection)
+      ); // for tooltip
+
+      setUserWiseXaxis(xaxis);
+      setUserWiseSeries(series);
+      if (type == 2) {
+        setUserWiseTargets(targets);
+        setUserWiseCollection(collections);
+      } else {
+        setUserWiseTargets([]);
+        setUserWiseCollection([]);
+      }
+    } catch (error) {
+      setUserWiseLoader(false);
+      setUserWiseXaxis([]);
+      setUserWiseSeries([]);
+      setUserWiseTargets([]);
+      setUserWiseCollection([]);
+      console.log("userwise error", error);
+    } finally {
+      setTimeout(() => {
+        setUserWiseLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
           getTopPerformanceData(
@@ -837,6 +940,178 @@ export default function Dashboard() {
             </div>
           </Col>
         )}
+
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={12}
+          style={{
+            marginTop: "30px",
+          }}
+        >
+          <div className="dashboard_leadcount_card">
+            <Row className="dashboard_leadcount_header_container">
+              <Col span={16}>
+                <div style={{ padding: "12px 12px 8px 12px" }}>
+                  <p className="dashboard_scrorecard_heading">
+                    User-Wise Sales Analysis
+                  </p>
+                  <p className="dashboard_daterange_text">
+                    <span style={{ fontWeight: "500" }}>Date Range: </span>
+                    {`(${moment(userWiseStartDate).format(
+                      "DD MMM YYYY"
+                    )} to ${moment(userWiseEndDate).format("DD MMM YYYY")})`}
+                  </p>
+                </div>
+              </Col>
+              <Col
+                span={8}
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  padding: "0px 12px 0px 0px",
+                }}
+              >
+                <div style={{ width: "100%" }}>
+                  <CommonMuiMonthPicker
+                    label="Month"
+                    required={true}
+                    onChange={(value) => {
+                      console.log(value, "monthhh");
+                      setMonth(value);
+                      if (value) {
+                        const [monthName, year] = value.split(" - ");
+                        const selectedMonth = moment(
+                          `${monthName} ${year}`,
+                          "MMMM YYYY"
+                        );
+
+                        // Start date: 25th of previous month
+                        const startDate = selectedMonth
+                          .clone()
+                          .subtract(1, "month")
+                          .date(25)
+                          .format("YYYY-MM-DD");
+
+                        // End date: 25th of selected month
+                        const endDate = selectedMonth
+                          .clone()
+                          .date(25)
+                          .format("YYYY-MM-DD");
+
+                        setUserWiseStartDate(startDate);
+                        setUserWiseEndDate(endDate);
+                        console.log("Start Date:", startDate);
+                        console.log("End Date:", endDate);
+                        getUserWiseScoreBoardData(
+                          startDate,
+                          endDate,
+                          leadExecutiveId,
+                          false,
+                          userWiseType
+                        );
+                        // Example API call
+                        // getRAData(startDate, endDate, leadExecutiveId, false);
+                      }
+                    }}
+                    value={month}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col span={15}></Col>
+              <Col span={9} className="dashboard_userwise_typefield_container">
+                <CommonSelectField
+                  label="Type"
+                  height="35px"
+                  labelMarginTop="-1px"
+                  labelFontSize="12px"
+                  width="100%"
+                  options={[
+                    {
+                      id: 1,
+                      name: "Sale Volume",
+                    },
+                    {
+                      id: 2,
+                      name: "Collection",
+                    },
+                    {
+                      id: 3,
+                      name: "Pending",
+                    },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setUserWiseType(value);
+                    getUserWiseScoreBoardData(
+                      userWiseStartDate,
+                      userWiseEndDate,
+                      leadExecutiveId,
+                      false,
+                      value
+                    );
+                  }}
+                  value={userWiseType}
+                />
+              </Col>
+            </Row>
+
+            <div
+              style={{
+                padding: "0px 12px 12px 12px",
+                height: 310,
+                overflowY: "scroll",
+              }}
+            >
+              {userWiseLoader ? (
+                <div className="dashboard_skeleton_container">
+                  <Skeleton
+                    active
+                    style={{ height: "40vh" }}
+                    title={{ width: 140 }}
+                    paragraph={{
+                      rows: 0,
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  {userWiseSeries.length >= 1 ? (
+                    <UserwiseSalesChart
+                      xaxis={userWiseXaxis}
+                      // series={[12, 34, 45]}
+                      series={userWiseSeries}
+                      targets={userWiseTargets}
+                      collections={userWiseCollection}
+                      colors={[
+                        userWiseType == 1
+                          ? "#5b6aca"
+                          : userWiseType == 2
+                          ? "#258a25"
+                          : "#b22021",
+                      ]}
+                      type={
+                        userWiseType == 1
+                          ? "Sale"
+                          : userWiseType == 2
+                          ? "Collection"
+                          : "Pending"
+                      }
+                    />
+                  ) : (
+                    ""
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </Col>
+
         {permissions.includes("HR Dashboard") && (
           <Col
             xs={24}
@@ -896,8 +1171,8 @@ export default function Dashboard() {
                 ) : (
                   <>
                     {hrDataSeries.length >= 1 ? (
-                      // <CommonHorizontalBarChart
-                      //   xaxis={[
+                      // <CommonPieChart
+                      //   labels={[
                       //     "Awaiting Trainer",
                       //     "Awaiting Trainer Verify",
                       //     "Trainer Verified",
@@ -909,31 +1184,29 @@ export default function Dashboard() {
                       //     "#00cecbd0",
                       //     "#d32f2fcc",
                       //   ]}
-                      //   series={hrDataSeries}
                       //   // series={[12, 34, 56, 4]}
+                      //   series={hrDataSeries}
                       //   height={290}
                       //   clickedBar={handleHrDashboard}
                       //   enablePointer={true}
-                      //   fontSize="11px"
                       // />
-                      <CommonPieChart
+                      <CommonDonutChart
                         labels={[
                           "Awaiting Trainer",
                           "Awaiting Trainer Verify",
                           "Trainer Verified",
                           "Trainer Rejected",
                         ]}
+                        // series={[12, 34, 56, 4]}
+                        series={hrDataSeries}
+                        labelsfontSize="11px"
                         colors={[
                           "#ffa602c7",
                           "#1e8fffbe",
                           "#00cecbd0",
                           "#d32f2fcc",
                         ]}
-                        // series={[12, 34, 56, 4]}
-                        series={hrDataSeries}
-                        height={290}
-                        clickedBar={handleHrDashboard}
-                        enablePointer={true}
+                        height={315}
                       />
                     ) : (
                       <div className="dashboard_chart_nodata_conatiner">
@@ -1006,33 +1279,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     {raDataSeries.length >= 1 ? (
-                      // <CommonHorizontalBarChart
-                      //   xaxis={[
-                      //     "Awaiting Class",
-                      //     "Awaiting Student Verify",
-                      //     "Class Scheduled",
-                      //     "Class Going",
-                      //     "G-Review",
-                      //     "L-Review",
-                      //     "Escalated",
-                      //   ]}
-                      //   series={raDataSeries}
-                      //   // series={[12, 34, 56, 4, 9, 18, 20]}
-                      //   colors={[
-                      //     "#ffa602c7",
-                      //     "#1e8fffbe",
-                      //     "#a29bfec7",
-                      //     "#00cecbd0",
-                      //     "#a1c60c",
-                      //     "rgba(10 102 194)",
-                      //     "#d32f2fcc",
-                      //   ]}
-                      //   clickedBar={handleRaDashboard}
-                      //   fontSize="11px"
-                      //   enablePointer={true}
-                      //   height={380}
-                      // />
-                      <CommonPieChart
+                      <CommonDonutChart
                         labels={[
                           "Awaiting Class",
                           "Awaiting Student Verify",
@@ -1042,8 +1289,9 @@ export default function Dashboard() {
                           "L-Review",
                           "Escalated",
                         ]}
-                        series={raDataSeries}
                         // series={[12, 34, 56, 4, 9, 18, 20]}
+                        series={raDataSeries}
+                        labelsfontSize="11px"
                         colors={[
                           "#ffa602c7",
                           "#1e8fffbe",
@@ -1053,8 +1301,6 @@ export default function Dashboard() {
                           "rgba(10 102 194)",
                           "#d32f2fcc",
                         ]}
-                        clickedBar={handleRaDashboard}
-                        enablePointer={true}
                         height={320}
                       />
                     ) : (

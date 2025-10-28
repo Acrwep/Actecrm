@@ -50,11 +50,11 @@ export default function LeadManager() {
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current && permissions.length >= 1) {
-      mounted.current = true;
       if (!permissions.includes("Lead Manager Page")) {
         navigate("/dashboard");
         return;
       }
+      mounted.current = true;
       getLeadTypeData();
     }
   }, [childUsers, permissions]);

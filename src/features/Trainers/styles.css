@@ -466,3 +466,10 @@
   .ant-upload-list-item {
   height: 18% !important;
 } */
+.managetable_checkbox_container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 2px;
+  color: #333;
+}
