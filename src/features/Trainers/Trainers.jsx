@@ -195,7 +195,7 @@ export default function Trainers() {
       width: 190,
     },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
+    { title: "Mobile", key: "mobile", dataIndex: "mobile", width: 140 },
     {
       title: "Technology",
       key: "technology",
@@ -206,6 +206,7 @@ export default function Trainers() {
       title: "Overall Experience",
       key: "overall_exp_year",
       dataIndex: "overall_exp_year",
+      width: 160,
       render: (text, record) => {
         return <p>{text + " Years"}</p>;
       },
@@ -214,15 +215,17 @@ export default function Trainers() {
       title: "Relevent Experience",
       key: "relavant_exp_year",
       dataIndex: "relavant_exp_year",
+      width: 160,
       render: (text, record) => {
         return <p>{text + " Years"}</p>;
       },
     },
-    { title: "Batch", key: "batch", dataIndex: "batch" },
+    { title: "Batch", key: "batch", dataIndex: "batch", width: 130 },
     {
       title: "Avaibility Time",
       key: "availability_time",
       dataIndex: "availability_time",
+      width: 140,
       render: (text, record) => {
         return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
       },
@@ -231,6 +234,7 @@ export default function Trainers() {
       title: "Secondary Time",
       key: "secondary_time",
       dataIndex: "secondary_time",
+      width: 140,
       render: (text, record) => {
         return <p>{text ? moment(text, "HH:mm:ss").format("hh:mm A") : "-"}</p>;
       },

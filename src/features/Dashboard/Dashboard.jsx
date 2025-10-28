@@ -557,19 +557,27 @@ export default function Dashboard() {
       return;
     }
     navigate("/customers", {
-      state: label == "Awaiting Student Verify" ? "Awaiting Verify" : label,
+      state: {
+        status: label === "Awaiting Student Verify" ? "Awaiting Verify" : label,
+        startDate: raSelectedDates[0],
+        endDate: raSelectedDates[1],
+      },
     });
   };
 
   const handleHrDashboard = (label) => {
     console.log("hr dashboard clicked bar", label);
     navigate("/customers", {
-      state:
-        label == "Trainer Rejected"
-          ? "Awaiting Trainer"
-          : label == "Trainer Verified"
-          ? "Awaiting Class"
-          : label,
+      state: {
+        status:
+          label == "Trainer Rejected"
+            ? "Awaiting Trainer"
+            : label == "Trainer Verified"
+            ? "Awaiting Class"
+            : label,
+        startDate: HrSelectedDates[0],
+        endDate: HrSelectedDates[1],
+      },
     });
   };
 

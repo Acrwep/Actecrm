@@ -163,13 +163,24 @@ export default function Customers() {
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "phone", dataIndex: "phone" },
-    { title: "Course ", key: "course_name", dataIndex: "course_name" },
-    { title: "Joined ", key: "date_of_joining", dataIndex: "date_of_joining" },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
+    {
+      title: "Course ",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 180,
+    },
+    {
+      title: "Joined ",
+      key: "date_of_joining",
+      dataIndex: "date_of_joining",
+      width: 140,
+    },
     {
       title: "Fees",
       key: "primary_fees",
       dataIndex: "primary_fees",
+      width: 140,
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
@@ -178,15 +189,16 @@ export default function Customers() {
       title: "Balance",
       key: "balance_amount",
       dataIndex: "balance_amount",
+      width: 140,
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
     },
-    { title: "Lead By", key: "lead_by", dataIndex: "lead_by" },
     {
       title: "Trainer",
       key: "trainer_name",
       dataIndex: "trainer_name",
+      width: 170,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -199,6 +211,7 @@ export default function Customers() {
       title: "TR Number",
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
+      width: 150,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -230,6 +243,7 @@ export default function Customers() {
       key: "status",
       dataIndex: "status",
       fixed: "right",
+      width: 182,
       render: (text, record) => {
         let classPercent = 0;
 
@@ -934,7 +948,6 @@ export default function Customers() {
   const getTrainersData = async () => {
     setLoading(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
 
     const payload = {
       status: "Verified",
@@ -948,8 +961,11 @@ export default function Customers() {
       setTrainersData([]);
       console.log(error);
     } finally {
-      const receivedValueFromDashboard = location.state;
-      console.log("Received value from dashboard:", receivedValueFromDashboard);
+      const receivedValueFromDashboard = location.state?.status || null;
+      const receivedStartDateFromDashboard = location.state?.startDate || null;
+      const receivedEndDateFromDashboard = location.state?.endDate || null;
+
+      console.log("Received value from dashboard:", location);
       setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
       if (
         receivedValueFromDashboard == "Awaiting Trainer" ||
@@ -959,13 +975,29 @@ export default function Customers() {
       ) {
         scroll(600);
       }
-      if (receivedValueFromDashboard == "Escalated") {
+      if (
+        receivedValueFromDashboard == "Escalated" ||
+        receivedValueFromDashboard == "Completed"
+      ) {
         scroll(1200);
+      }
+      if (receivedStartDateFromDashboard) {
+        console.log("starrrrrrrrrr", receivedStartDateFromDashboard);
+        setSelectedDates([
+          receivedStartDateFromDashboard,
+          receivedEndDateFromDashboard,
+        ]);
+      } else {
+        setSelectedDates(PreviousAndCurrentDate);
       }
       setTimeout(() => {
         getCustomersData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
+          receivedStartDateFromDashboard
+            ? receivedStartDateFromDashboard
+            : PreviousAndCurrentDate[0],
+          receivedEndDateFromDashboard
+            ? receivedEndDateFromDashboard
+            : PreviousAndCurrentDate[1],
           null,
           receivedValueFromDashboard ? receivedValueFromDashboard : null,
           null,
@@ -1095,529 +1127,492 @@ export default function Customers() {
       }
       // --- ✅ Helper function to reattach render logic ---
       const attachRenderFunctions = (cols) =>
-        cols
-          .filter((col) => col.key !== "lead_by") // remove 'lead_by' column
-          .map((col) => {
-            switch (col.key) {
-              case "lead_assigned_to_name":
-                return {
-                  ...col,
-                  render: (text, record) => (
-                    <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
-                  ),
-                };
-              case "phone":
-                return {
-                  ...col,
-                  width: 140,
-                };
-              case "course_name":
-                return {
-                  ...col,
-                  width: 180,
-                };
-              case "date_of_joining":
-                return {
-                  ...col,
-                  width: 140,
-                };
-              case "primary_fees":
-                return {
-                  ...col,
-                  width: 140,
-                  render: (text) => {
-                    return <p>{"₹" + text}</p>;
-                  },
-                };
-              case "balance_amount":
-                return {
-                  ...col,
-                  width: 140,
-                  render: (text) => {
-                    return <p>{"₹" + text}</p>;
-                  },
-                };
-              case "trainer_name":
-                return {
-                  ...col,
-                  width: 170,
-                  render: (text, record) => {
-                    if (record.is_trainer_verified === 1) {
-                      return <p>{text}</p>;
-                    } else {
-                      return <p>-</p>;
-                    }
-                  },
-                };
-              case "trainer_mobile":
-                return {
-                  ...col,
-                  width: 150,
-                  render: (text, record) => {
-                    if (record.is_trainer_verified === 1) {
-                      return <p>{text}</p>;
-                    } else {
-                      return <p>-</p>;
-                    }
-                  },
-                };
-              case "form_status":
-                return {
-                  ...col,
-                  width: 140,
-                  render: (text, record) => {
-                    return (
-                      <>
-                        {record.is_customer_updated === 1 ? (
-                          <p>Completed</p>
-                        ) : (
-                          <p>Pending</p>
-                        )}
-                      </>
-                    );
-                  },
-                };
-              case "status":
-                return {
-                  ...col,
-                  width: 182,
-                  render: (text, record) => {
-                    let classPercent = 0;
+        cols.map((col) => {
+          switch (col.key) {
+            case "lead_assigned_to_name":
+              return {
+                ...col,
+                render: (text, record) => (
+                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
+                ),
+              };
+            case "phone":
+              return {
+                ...col,
+                width: 140,
+              };
+            case "course_name":
+              return {
+                ...col,
+                width: 180,
+              };
+            case "date_of_joining":
+              return {
+                ...col,
+                width: 140,
+              };
+            case "primary_fees":
+              return {
+                ...col,
+                width: 140,
+                render: (text) => {
+                  return <p>{"₹" + text}</p>;
+                },
+              };
+            case "balance_amount":
+              return {
+                ...col,
+                width: 140,
+                render: (text) => {
+                  return <p>{"₹" + text}</p>;
+                },
+              };
+            case "trainer_name":
+              return {
+                ...col,
+                width: 170,
+                render: (text, record) => {
+                  if (record.is_trainer_verified === 1) {
+                    return <p>{text}</p>;
+                  } else {
+                    return <p>-</p>;
+                  }
+                },
+              };
+            case "trainer_mobile":
+              return {
+                ...col,
+                width: 150,
+                render: (text, record) => {
+                  if (record.is_trainer_verified === 1) {
+                    return <p>{text}</p>;
+                  } else {
+                    return <p>-</p>;
+                  }
+                },
+              };
+            case "form_status":
+              return {
+                ...col,
+                width: 140,
+                render: (text, record) => {
+                  return (
+                    <>
+                      {record.is_customer_updated === 1 ? (
+                        <p>Completed</p>
+                      ) : (
+                        <p>Pending</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "status":
+              return {
+                ...col,
+                width: 182,
+                render: (text, record) => {
+                  let classPercent = 0;
 
-                    if (
-                      record.class_percentage !== null &&
-                      record.class_percentage !== undefined
-                    ) {
-                      const parsed = parseFloat(record.class_percentage);
-                      classPercent = isNaN(parsed) ? 0 : parsed;
-                    }
-                    return (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "6px",
-                          alignItems: "center",
+                  if (
+                    record.class_percentage !== null &&
+                    record.class_percentage !== undefined
+                  ) {
+                    const parsed = parseFloat(record.class_percentage);
+                    classPercent = isNaN(parsed) ? 0 : parsed;
+                  }
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Tooltip
+                        placement="bottomLeft"
+                        className="customers_statustooltip"
+                        color="#fff"
+                        styles={{
+                          body: {
+                            width: "300px",
+                            maxWidth: "none",
+                            whiteSpace: "normal",
+                          },
                         }}
-                      >
-                        <Tooltip
-                          placement="bottomLeft"
-                          className="customers_statustooltip"
-                          color="#fff"
-                          styles={{
-                            body: {
-                              width: "300px",
-                              maxWidth: "none",
-                              whiteSpace: "normal",
-                            },
-                          }}
-                          // open={true}
-                          title={
-                            <>
-                              <Row>
-                                <Col span={12}>
-                                  {record.is_last_pay_rejected === 1 ? (
-                                    <>
-                                      <button
-                                        className="customers_finance_updatepayment_button"
-                                        onClick={() => {
-                                          if (
-                                            !permissions.includes(
-                                              "Update Payment"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setDrawerContentStatus(
-                                            "Update Payment"
-                                          );
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setCollapseDefaultKey(["1"]);
-                                          setIsStatusUpdateDrawer(true);
-                                        }}
-                                      >
-                                        Update Payment
-                                      </button>
-                                    </>
-                                  ) : record.status === "Form Pending" ||
-                                    record.status === "Awaiting Finance" ||
-                                    record.is_second_due === 1 ? (
-                                    <Checkbox
-                                      className="customers_statuscheckbox"
-                                      style={{ marginTop: "6px" }}
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (record.status === "Form Pending") {
-                                          CommonMessage(
-                                            "warning",
-                                            "Form Not Submitted Yet"
-                                          );
-                                        } else {
-                                          if (
-                                            !permissions.includes(
-                                              "Finance Verify"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Finance Verify"
-                                          );
-                                          setCollapseDefaultKey(["1"]);
-                                          setIsStatusUpdateDrawer(true);
-                                        }
-                                      }}
-                                    >
-                                      Finance Verify
-                                    </Checkbox>
-                                  ) : (
-                                    <div
-                                      className="customers_classcompleted_container"
-                                      style={{ marginBottom: "6px" }}
-                                    >
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Finance Verified
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-
-                                <Col span={12}>
-                                  {record.status === "Form Pending" ||
-                                  record.status === "Awaiting Finance" ||
-                                  record.status === "Payment Rejected" ||
-                                  record.status === "Awaiting Verify" ? (
-                                    <Checkbox
-                                      className="customers_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (record.status === "Form Pending") {
-                                          CommonMessage(
-                                            "warning",
-                                            "Form Not Submitted Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Finance"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Finance not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status != "Awaiting Verify"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Already Verified"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Verify"
-                                        ) {
-                                          if (
-                                            !permissions.includes(
-                                              "Student Verify"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Student Verify"
-                                          );
-                                          setIsStatusUpdateDrawer(true);
-                                        }
-                                      }}
-                                    >
-                                      Student Verify
-                                    </Checkbox>
-                                  ) : (
-                                    <div
-                                      className="customers_classcompleted_container"
-                                      style={{ marginBottom: "6px" }}
-                                    >
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Student Verified
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-                              </Row>
-
-                              <Row>
-                                <Col span={12}>
-                                  {record.status === "Form Pending" ||
-                                  record.status === "Awaiting Finance" ||
-                                  record.status === "Awaiting Verify" ||
-                                  record.status === "Awaiting Trainer" ||
-                                  record.status === "Payment Rejected" ||
-                                  record.status === "Trainer Rejected" ? (
-                                    <Checkbox
-                                      className="customers_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (record.status === "Form Pending") {
-                                          CommonMessage(
-                                            "warning",
-                                            "Form Not Submitted Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Finance"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Finance not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Verify"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Customer not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status ===
-                                            "Awaiting Trainer" ||
-                                          record.status === "Trainer Rejected"
-                                        ) {
-                                          if (
-                                            !permissions.includes(
-                                              "Trainer Assign"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Assign Trainer"
-                                          );
-                                          setIsStatusUpdateDrawer(true);
-                                        } else {
-                                          CommonMessage(
-                                            "warning",
-                                            "Trainer Already Assigned"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Assign Trainer
-                                    </Checkbox>
-                                  ) : (
-                                    <div
-                                      className="customers_classcompleted_container"
-                                      style={{ marginBottom: "6px" }}
-                                    >
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Trainer Assigned
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-
-                                <Col span={12}>
-                                  {record.status === "Form Pending" ||
-                                  record.status === "Awaiting Finance" ||
-                                  record.status === "Awaiting Verify" ||
-                                  record.status === "Awaiting Trainer" ||
-                                  record.status === "Awaiting Trainer Verify" ||
-                                  record.status === "Payment Rejected" ||
-                                  record.status === "Trainer Rejected" ? (
-                                    <Checkbox
-                                      className="customers_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (record.status === "Form Pending") {
-                                          CommonMessage(
-                                            "warning",
-                                            "Form Not Submitted Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Finance"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Finance not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Verify"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Customer not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status ===
-                                            "Awaiting Trainer" ||
-                                          record.status === "Trainer Rejected"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Trainer not Assigned yet"
-                                          );
-                                        } else if (
-                                          record.status ===
-                                          "Awaiting Trainer Verify"
-                                        ) {
-                                          if (
-                                            !permissions.includes(
-                                              "Trainer Verify"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Trainer Verify"
-                                          );
-                                          setIsStatusUpdateDrawer(true);
-                                        } else {
-                                          CommonMessage(
-                                            "warning",
-                                            "Trainer Already Verified"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Verify Trainer
-                                    </Checkbox>
-                                  ) : (
-                                    <div
-                                      className="customers_classcompleted_container"
-                                      style={{ marginBottom: "6px" }}
-                                    >
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Trainer Verified
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-                              </Row>
-
-                              <Row>
-                                <Col span={12}>
-                                  {record.status === "Form Pending" ||
-                                  record.status === "Awaiting Finance" ||
-                                  record.status === "Awaiting Verify" ||
-                                  record.status === "Awaiting Trainer" ||
-                                  record.status === "Awaiting Trainer Verify" ||
-                                  record.status === "Payment Rejected" ||
-                                  record.status === "Trainer Rejected" ||
-                                  record.status === "Awaiting Class" ||
-                                  record.status === "Hold" ||
-                                  record.status === "Escalated" ||
-                                  record.status === "Partially Closed" ||
-                                  record.status === "Discontinued" ||
-                                  record.status === "Demo Completed" ||
-                                  record.status === "Refund" ? (
-                                    <Checkbox
-                                      className="customers_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (record.status === "Form Pending") {
-                                          CommonMessage(
-                                            "warning",
-                                            "Form Not Submitted Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Finance"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Finance not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Verify"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Customer not Verified Yet"
-                                          );
-                                        } else if (
-                                          record.status ===
-                                            "Awaiting Trainer" ||
-                                          record.status === "Trainer Rejected"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Trainer not Assigned yet"
-                                          );
-                                        } else if (
-                                          record.status ===
-                                          "Awaiting Trainer Verify"
-                                        ) {
-                                          CommonMessage(
-                                            "warning",
-                                            "Trainer not Verified yet"
-                                          );
-                                        } else if (
-                                          record.status === "Awaiting Class" ||
-                                          record.status === "Hold" ||
-                                          record.status === "Escalated" ||
-                                          record.status ===
-                                            "Partially Closed" ||
-                                          record.status === "Discontinued" ||
-                                          record.status === "Demo Completed" ||
-                                          record.status === "Refund"
-                                        ) {
-                                          if (
-                                            !permissions.includes(
-                                              "Class Schedule"
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied"
-                                            );
-                                            return;
-                                          }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Class Schedule"
-                                          );
-                                          setIsStatusUpdateDrawer(true);
-                                        } else {
-                                          CommonMessage(
-                                            "warning",
-                                            "Class Already Scheduled"
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Schedule Class
-                                    </Checkbox>
-                                  ) : record.status === "Class Scheduled" ? (
+                        // open={true}
+                        title={
+                          <>
+                            <Row>
+                              <Col span={12}>
+                                {record.is_last_pay_rejected === 1 ? (
+                                  <>
                                     <button
-                                      className="customers_updateschedulebutton"
+                                      className="customers_finance_updatepayment_button"
                                       onClick={() => {
+                                        if (
+                                          !permissions.includes(
+                                            "Update Payment"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setDrawerContentStatus(
+                                          "Update Payment"
+                                        );
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setCollapseDefaultKey(["1"]);
+                                        setIsStatusUpdateDrawer(true);
+                                      }}
+                                    >
+                                      Update Payment
+                                    </button>
+                                  </>
+                                ) : record.status === "Form Pending" ||
+                                  record.status === "Awaiting Finance" ||
+                                  record.is_second_due === 1 ? (
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    style={{ marginTop: "6px" }}
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else {
+                                        if (
+                                          !permissions.includes(
+                                            "Finance Verify"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus(
+                                          "Finance Verify"
+                                        );
+                                        setCollapseDefaultKey(["1"]);
+                                        setIsStatusUpdateDrawer(true);
+                                      }
+                                    }}
+                                  >
+                                    Finance Verify
+                                  </Checkbox>
+                                ) : (
+                                  <div
+                                    className="customers_classcompleted_container"
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <BsPatchCheckFill color="#3c9111" />
+                                    <p className="customers_classgoing_completedtext">
+                                      Finance Verified
+                                    </p>
+                                  </div>
+                                )}
+                              </Col>
+
+                              <Col span={12}>
+                                {record.status === "Form Pending" ||
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected" ||
+                                record.status === "Awaiting Verify" ? (
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Finance"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Finance not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status != "Awaiting Verify"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Already Verified"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Verify"
+                                      ) {
+                                        if (
+                                          !permissions.includes(
+                                            "Student Verify"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus(
+                                          "Student Verify"
+                                        );
+                                        setIsStatusUpdateDrawer(true);
+                                      }
+                                    }}
+                                  >
+                                    Student Verify
+                                  </Checkbox>
+                                ) : (
+                                  <div
+                                    className="customers_classcompleted_container"
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <BsPatchCheckFill color="#3c9111" />
+                                    <p className="customers_classgoing_completedtext">
+                                      Student Verified
+                                    </p>
+                                  </div>
+                                )}
+                              </Col>
+                            </Row>
+
+                            <Row>
+                              <Col span={12}>
+                                {record.status === "Form Pending" ||
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Awaiting Verify" ||
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Payment Rejected" ||
+                                record.status === "Trainer Rejected" ? (
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Finance"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Finance not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Verify"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Customer not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Trainer" ||
+                                        record.status === "Trainer Rejected"
+                                      ) {
+                                        if (
+                                          !permissions.includes(
+                                            "Trainer Assign"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus(
+                                          "Assign Trainer"
+                                        );
+                                        setIsStatusUpdateDrawer(true);
+                                      } else {
+                                        CommonMessage(
+                                          "warning",
+                                          "Trainer Already Assigned"
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Assign Trainer
+                                  </Checkbox>
+                                ) : (
+                                  <div
+                                    className="customers_classcompleted_container"
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <BsPatchCheckFill color="#3c9111" />
+                                    <p className="customers_classgoing_completedtext">
+                                      Trainer Assigned
+                                    </p>
+                                  </div>
+                                )}
+                              </Col>
+
+                              <Col span={12}>
+                                {record.status === "Form Pending" ||
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Awaiting Verify" ||
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Awaiting Trainer Verify" ||
+                                record.status === "Payment Rejected" ||
+                                record.status === "Trainer Rejected" ? (
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Finance"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Finance not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Verify"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Customer not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Trainer" ||
+                                        record.status === "Trainer Rejected"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Trainer not Assigned yet"
+                                        );
+                                      } else if (
+                                        record.status ===
+                                        "Awaiting Trainer Verify"
+                                      ) {
+                                        if (
+                                          !permissions.includes(
+                                            "Trainer Verify"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus(
+                                          "Trainer Verify"
+                                        );
+                                        setIsStatusUpdateDrawer(true);
+                                      } else {
+                                        CommonMessage(
+                                          "warning",
+                                          "Trainer Already Verified"
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Verify Trainer
+                                  </Checkbox>
+                                ) : (
+                                  <div
+                                    className="customers_classcompleted_container"
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <BsPatchCheckFill color="#3c9111" />
+                                    <p className="customers_classgoing_completedtext">
+                                      Trainer Verified
+                                    </p>
+                                  </div>
+                                )}
+                              </Col>
+                            </Row>
+
+                            <Row>
+                              <Col span={12}>
+                                {record.status === "Form Pending" ||
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Awaiting Verify" ||
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Awaiting Trainer Verify" ||
+                                record.status === "Payment Rejected" ||
+                                record.status === "Trainer Rejected" ||
+                                record.status === "Awaiting Class" ||
+                                record.status === "Hold" ||
+                                record.status === "Escalated" ||
+                                record.status === "Partially Closed" ||
+                                record.status === "Discontinued" ||
+                                record.status === "Demo Completed" ||
+                                record.status === "Refund" ? (
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Finance"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Finance not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Verify"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Customer not Verified Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Trainer" ||
+                                        record.status === "Trainer Rejected"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Trainer not Assigned yet"
+                                        );
+                                      } else if (
+                                        record.status ===
+                                        "Awaiting Trainer Verify"
+                                      ) {
+                                        CommonMessage(
+                                          "warning",
+                                          "Trainer not Verified yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Class" ||
+                                        record.status === "Hold" ||
+                                        record.status === "Escalated" ||
+                                        record.status === "Partially Closed" ||
+                                        record.status === "Discontinued" ||
+                                        record.status === "Demo Completed" ||
+                                        record.status === "Refund"
+                                      ) {
                                         if (
                                           !permissions.includes(
                                             "Class Schedule"
@@ -1635,89 +1630,64 @@ export default function Customers() {
                                           "Class Schedule"
                                         );
                                         setIsStatusUpdateDrawer(true);
+                                      } else {
+                                        CommonMessage(
+                                          "warning",
+                                          "Class Already Scheduled"
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Schedule Class
+                                  </Checkbox>
+                                ) : record.status === "Class Scheduled" ? (
+                                  <button
+                                    className="customers_updateschedulebutton"
+                                    onClick={() => {
+                                      if (
+                                        !permissions.includes("Class Schedule")
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setCustomerId(record.id);
+                                      setCustomerDetails(record);
+                                      setDrawerContentStatus("Class Schedule");
+                                      setIsStatusUpdateDrawer(true);
+                                    }}
+                                  >
+                                    Update Schedule
+                                  </button>
+                                ) : (
+                                  <div
+                                    className="customers_classcompleted_container"
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <BsPatchCheckFill color="#3c9111" />
+                                    <p className="customers_classgoing_completedtext">
+                                      Class Scheduled
+                                    </p>
+                                  </div>
+                                )}
+                              </Col>
+
+                              {record.status === "Class Going" ||
+                              record.status === "Passedout process" ||
+                              record.status === "Completed" ? (
+                                <Col span={12}>
+                                  {classPercent < 100 ? (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
                                       }}
                                     >
-                                      Update Schedule
-                                    </button>
-                                  ) : (
-                                    <div
-                                      className="customers_classcompleted_container"
-                                      style={{ marginBottom: "6px" }}
-                                    >
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Class Scheduled
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-
-                                {record.status === "Class Going" ||
-                                record.status === "Passedout process" ||
-                                record.status === "Completed" ? (
-                                  <Col span={12}>
-                                    {classPercent < 100 ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <button
-                                          className="customers_classgoing_updatebutton"
-                                          onClick={() => {
-                                            if (
-                                              !permissions.includes(
-                                                "Update Class Going"
-                                              )
-                                            ) {
-                                              CommonMessage(
-                                                "error",
-                                                "Access Denied"
-                                              );
-                                              return;
-                                            }
-                                            setCustomerId(record.id);
-                                            setCustomerDetails(record);
-                                            setDrawerContentStatus(
-                                              "Class Going"
-                                            );
-                                            setIsStatusUpdateDrawer(true);
-                                          }}
-                                        >
-                                          Update Class Going
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className="customers_classcompleted_container">
-                                        <BsPatchCheckFill color="#3c9111" />
-                                        <p className="customers_classgoing_completedtext">
-                                          100% Class Completed
-                                        </p>
-                                      </div>
-                                    )}
-                                  </Col>
-                                ) : (
-                                  ""
-                                )}
-                              </Row>
-
-                              {record.status === "Passedout process" ||
-                              record.status === "Completed" ? (
-                                <Row
-                                  style={{
-                                    marginTop: "0px",
-                                    marginBottom: "6px",
-                                  }}
-                                >
-                                  <Col span={12}>
-                                    {record.status === "Passedout process" ? (
                                       <button
-                                        className="customers_addfeedbackbutton"
+                                        className="customers_classgoing_updatebutton"
                                         onClick={() => {
                                           if (
                                             !permissions.includes(
-                                              "Passedout Process"
+                                              "Update Class Going"
                                             )
                                           ) {
                                             CommonMessage(
@@ -1728,247 +1698,290 @@ export default function Customers() {
                                           }
                                           setCustomerId(record.id);
                                           setCustomerDetails(record);
-                                          setDrawerContentStatus(
-                                            "Add G-Review"
-                                          );
+                                          setDrawerContentStatus("Class Going");
                                           setIsStatusUpdateDrawer(true);
-                                          if (record.google_review === null) {
-                                            setStepIndex(0);
-                                          } else if (
-                                            record.is_certificate_generated ===
-                                            0
-                                          ) {
-                                            setStepIndex(1);
-                                          } else {
-                                            setStepIndex(2);
-                                          }
-                                          setIsCertGenerated(
-                                            record.is_certificate_generated ===
-                                              1
-                                              ? true
-                                              : false
-                                          );
                                         }}
                                       >
-                                        Passedout process
+                                        Update Class Going
                                       </button>
-                                    ) : (
-                                      <div className="customers_classcompleted_container">
-                                        <BsPatchCheckFill color="#3c9111" />
-                                        <p className="customers_classgoing_completedtext">
-                                          PO Process Completed
-                                        </p>
-                                      </div>
-                                    )}
-                                  </Col>
-
-                                  <Col span={12}>
-                                    {record.status === "Completed" ? (
-                                      <div className="customers_classcompleted_container">
-                                        <BsPatchCheckFill color="#3c9111" />
-                                        <p className="customers_classgoing_completedtext">
-                                          Certificate Issued
-                                        </p>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </Col>
-                                </Row>
+                                    </div>
+                                  ) : (
+                                    <div className="customers_classcompleted_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p className="customers_classgoing_completedtext">
+                                        100% Class Completed
+                                      </p>
+                                    </div>
+                                  )}
+                                </Col>
                               ) : (
                                 ""
                               )}
-                            </>
-                          }
-                        >
-                          {record.is_second_due === 1 ? (
-                            <div>
-                              <Button className="customers_status_awaitfinance_button">
-                                Awaiting Finance
-                              </Button>
-                            </div>
-                          ) : text === "Form Pending" ? (
-                            <div>
-                              <Button className="customers_status_formpending_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : record.is_last_pay_rejected === 1 ? (
-                            <div>
-                              <Button className="trainers_rejected_button">
-                                Payment Rejected
-                              </Button>
-                            </div>
-                          ) : text === "Awaiting Finance" ? (
-                            <div>
-                              <Button className="customers_status_awaitfinance_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Awaiting Verify" ? (
-                            <div>
-                              <Button className="customers_status_awaitverify_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Awaiting Trainer" ? (
-                            <div>
-                              <Button className="customers_status_awaittrainer_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Awaiting Trainer Verify" ? (
-                            <div>
-                              <Button className="customers_status_awaittrainerverify_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Awaiting Class" ? (
-                            <div>
-                              <Button className="customers_status_awaitingclass_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Class Scheduled" ? (
-                            <div>
-                              <Button className="customers_status_classscheduled_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Passedout process" ? (
-                            <div>
-                              <Button className="customers_status_awaitfeedback_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Completed" ? (
-                            <div>
-                              <Button className="customers_status_completed_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : text === "Rejected" ||
-                            text === "REJECTED" ||
-                            text === "Payment Rejected" ||
-                            text === "Trainer Rejected" ||
-                            text === "Escalated" ||
-                            text === "Hold" ||
-                            text === "Partially Closed" ||
-                            text === "Discontinued" ||
-                            text === "Demo Completed" ||
-                            text === "Refund" ? (
-                            <Button className="trainers_rejected_button">
+                            </Row>
+
+                            {record.status === "Passedout process" ||
+                            record.status === "Completed" ? (
+                              <Row
+                                style={{
+                                  marginTop: "0px",
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                <Col span={12}>
+                                  {record.status === "Passedout process" ? (
+                                    <button
+                                      className="customers_addfeedbackbutton"
+                                      onClick={() => {
+                                        if (
+                                          !permissions.includes(
+                                            "Passedout Process"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus("Add G-Review");
+                                        setIsStatusUpdateDrawer(true);
+                                        if (record.google_review === null) {
+                                          setStepIndex(0);
+                                        } else if (
+                                          record.is_certificate_generated === 0
+                                        ) {
+                                          setStepIndex(1);
+                                        } else {
+                                          setStepIndex(2);
+                                        }
+                                        setIsCertGenerated(
+                                          record.is_certificate_generated === 1
+                                            ? true
+                                            : false
+                                        );
+                                      }}
+                                    >
+                                      Passedout process
+                                    </button>
+                                  ) : (
+                                    <div className="customers_classcompleted_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p className="customers_classgoing_completedtext">
+                                        PO Process Completed
+                                      </p>
+                                    </div>
+                                  )}
+                                </Col>
+
+                                <Col span={12}>
+                                  {record.status === "Completed" ? (
+                                    <div className="customers_classcompleted_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p className="customers_classgoing_completedtext">
+                                        Certificate Issued
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    ""
+                                  )}
+                                </Col>
+                              </Row>
+                            ) : (
+                              ""
+                            )}
+                          </>
+                        }
+                      >
+                        {record.is_second_due === 1 ? (
+                          <div>
+                            <Button className="customers_status_awaitfinance_button">
+                              Awaiting Finance
+                            </Button>
+                          </div>
+                        ) : text === "Form Pending" ? (
+                          <div>
+                            <Button className="customers_status_formpending_button">
                               {text}
                             </Button>
-                          ) : text === "Class Going" ? (
-                            <div style={{ display: "flex", gap: "12px" }}>
-                              <Button className="customers_status_classgoing_button">
-                                {text}
-                              </Button>
+                          </div>
+                        ) : record.is_last_pay_rejected === 1 ? (
+                          <div>
+                            <Button className="trainers_rejected_button">
+                              Payment Rejected
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Finance" ? (
+                          <div>
+                            <Button className="customers_status_awaitfinance_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Verify" ? (
+                          <div>
+                            <Button className="customers_status_awaitverify_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Trainer" ? (
+                          <div>
+                            <Button className="customers_status_awaittrainer_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Trainer Verify" ? (
+                          <div>
+                            <Button className="customers_status_awaittrainerverify_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Awaiting Class" ? (
+                          <div>
+                            <Button className="customers_status_awaitingclass_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Class Scheduled" ? (
+                          <div>
+                            <Button className="customers_status_classscheduled_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Passedout process" ? (
+                          <div>
+                            <Button className="customers_status_awaitfeedback_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Completed" ? (
+                          <div>
+                            <Button className="customers_status_completed_button">
+                              {text}
+                            </Button>
+                          </div>
+                        ) : text === "Rejected" ||
+                          text === "REJECTED" ||
+                          text === "Payment Rejected" ||
+                          text === "Trainer Rejected" ||
+                          text === "Escalated" ||
+                          text === "Hold" ||
+                          text === "Partially Closed" ||
+                          text === "Discontinued" ||
+                          text === "Demo Completed" ||
+                          text === "Refund" ? (
+                          <Button className="trainers_rejected_button">
+                            {text}
+                          </Button>
+                        ) : text === "Class Going" ? (
+                          <div style={{ display: "flex", gap: "12px" }}>
+                            <Button className="customers_status_classgoing_button">
+                              {text}
+                            </Button>
 
-                              <p className="customer_classgoing_percentage">{`${parseFloat(
-                                classPercent
-                              )}%`}</p>
-                            </div>
-                          ) : (
-                            <p style={{ marginLeft: "6px" }}>-</p>
-                          )}
-                        </Tooltip>
-                        {record.status === "Form Pending" && (
-                          <Tooltip placement="top" title="Copy form link">
-                            <FaRegCopy
-                              size={14}
-                              className="customers_formlink_copybutton"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  `${
-                                    import.meta.env.VITE_EMAIL_URL
-                                  }/customer-registration/${record.id}`
-                                );
-                                CommonMessage("success", "Link Copied");
-                              }}
-                            />
-                          </Tooltip>
+                            <p className="customer_classgoing_percentage">{`${parseFloat(
+                              classPercent
+                            )}%`}</p>
+                          </div>
+                        ) : (
+                          <p style={{ marginLeft: "6px" }}>-</p>
                         )}
-                        {record.status === "Completed" && (
-                          <Tooltip placement="top" title="View Certificate">
-                            <GrCertificate
-                              size={14}
-                              color="#5a5858"
-                              className="customers_formlink_copybutton"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                handleViewCert(record.id);
-                                setCertificateName(record.name);
-                              }}
-                            />
-                          </Tooltip>
-                        )}
-                      </div>
-                    );
-                  },
-                };
-              case "action":
-                return {
-                  ...col,
-                  render: (text, record) => {
-                    return (
-                      <div className="trainers_actionbuttonContainer">
-                        {permissions.includes("Update Customer") && (
-                          <AiOutlineEdit
-                            size={18}
-                            className="trainers_action_icons"
-                            onClick={() => handleEdit(record)}
-                          />
-                        )}
-
-                        <Tooltip
-                          placement="top"
-                          title="View Details"
-                          trigger={["hover", "click"]}
-                        >
-                          <FaRegEye
-                            size={15}
-                            className="trainers_action_icons"
+                      </Tooltip>
+                      {record.status === "Form Pending" && (
+                        <Tooltip placement="top" title="Copy form link">
+                          <FaRegCopy
+                            size={14}
+                            className="customers_formlink_copybutton"
+                            style={{ cursor: "pointer" }}
                             onClick={() => {
-                              setIsOpenDetailsDrawer(true);
-                              setCustomerDetails(record);
+                              navigator.clipboard.writeText(
+                                `${
+                                  import.meta.env.VITE_EMAIL_URL
+                                }/customer-registration/${record.id}`
+                              );
+                              CommonMessage("success", "Link Copied");
                             }}
                           />
                         </Tooltip>
-
-                        <Tooltip
-                          placement="top"
-                          title="View Customer History"
-                          trigger={["hover", "click"]}
-                        >
-                          <LuFileClock
-                            size={15}
-                            className="trainers_action_icons"
+                      )}
+                      {record.status === "Completed" && (
+                        <Tooltip placement="top" title="View Certificate">
+                          <GrCertificate
+                            size={14}
+                            color="#5a5858"
+                            className="customers_formlink_copybutton"
+                            style={{ cursor: "pointer" }}
                             onClick={() => {
-                              setCustomerDetails(record);
-                              getCustomerHistoryData(record.id);
-                              setTimeout(() => {
-                                const container = document.getElementById(
-                                  "customer_history_profilecontainer"
-                                );
-                                container.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "start",
-                                });
-                              }, 300);
+                              handleViewCert(record.id);
+                              setCertificateName(record.name);
                             }}
                           />
                         </Tooltip>
-                      </div>
-                    );
-                  },
-                };
-              default:
-                return col;
-            }
-          });
+                      )}
+                    </div>
+                  );
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                render: (text, record) => {
+                  return (
+                    <div className="trainers_actionbuttonContainer">
+                      {permissions.includes("Update Customer") && (
+                        <AiOutlineEdit
+                          size={18}
+                          className="trainers_action_icons"
+                          onClick={() => handleEdit(record)}
+                        />
+                      )}
+
+                      <Tooltip
+                        placement="top"
+                        title="View Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={15}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenDetailsDrawer(true);
+                            setCustomerDetails(record);
+                          }}
+                        />
+                      </Tooltip>
+
+                      <Tooltip
+                        placement="top"
+                        title="View Customer History"
+                        trigger={["hover", "click"]}
+                      >
+                        <LuFileClock
+                          size={15}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setCustomerDetails(record);
+                            getCustomerHistoryData(record.id);
+                            setTimeout(() => {
+                              const container = document.getElementById(
+                                "customer_history_profilecontainer"
+                              );
+                              container.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
+                            }, 300);
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
+                  );
+                },
+              };
+            default:
+              return col;
+          }
+        });
 
       // --- ✅ Process columns ---
       setUpdateTableId(filterPage.id);

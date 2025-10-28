@@ -347,6 +347,7 @@ export default function Leads({
       title: "Primary Course",
       key: "primary_course",
       dataIndex: "primary_course",
+      width: 200,
     },
     {
       title: "Primary Course Fees",
@@ -358,11 +359,13 @@ export default function Leads({
       title: "Secondary Course ",
       key: "secondary_course",
       dataIndex: "secondary_course",
+      width: 180,
     },
     {
       title: "Secondary Course Fees",
       key: "secondary_fees",
       dataIndex: "secondary_fees",
+      width: 180,
     },
     {
       title: "Region",
