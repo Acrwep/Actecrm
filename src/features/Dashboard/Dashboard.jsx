@@ -1397,7 +1397,9 @@ export default function Dashboard() {
                           "#00cecbd0",
                           "#d32f2fcc",
                         ]}
-                        height={315}
+                        height={300}
+                        clickedBar={handleHrDashboard}
+                        enablePointer={true}
                       />
                     ) : (
                       <div className="dashboard_chart_nodata_conatiner">
@@ -1493,6 +1495,8 @@ export default function Dashboard() {
                           "#d32f2fcc",
                         ]}
                         height={320}
+                        clickedBar={handleHrDashboard}
+                        enablePointer={true}
                       />
                     ) : (
                       <div className="dashboard_chart_nodata_conatiner">

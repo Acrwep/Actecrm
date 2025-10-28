@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Upload, Modal, Button, Tooltip } from "antd";
+import { Row, Col, Upload, Modal, Button, Flex, Tooltip, Radio } from "antd";
 import { useNavigate } from "react-router-dom";
+import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import ExcelLogo from "../../assets/excel_logo.png";
+import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
+import { IoFilter } from "react-icons/io5";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";
@@ -21,6 +24,9 @@ const { Dragger } = Upload;
 export default function BulkSearch() {
   const navigate = useNavigate();
 
+  const [searchValue, setSearchValue] = useState("");
+  const [filterType, setFilterType] = useState(1);
+  const [statusId, setStatusId] = useState("");
   const [bulkUploadModal, setBulkUploadModal] = useState(false);
   const [bulkUploadErrorModal, setBulkUploadErrorModal] = useState(false);
   const [uploadFile, setUploadFile] = useState();
@@ -72,6 +78,9 @@ export default function BulkSearch() {
       key: "lead_by",
       dataIndex: "lead_by",
       width: 180,
+      render: (text, record) => {
+        return <p>{`${record.lead_by_id} - ${text}`}</p>;
+      },
     },
     {
       title: "Created At",
@@ -84,6 +93,7 @@ export default function BulkSearch() {
   ];
 
   const [data, setData] = useState([]);
+  const [duplicateData, setDuplicateData] = useState([]);
 
   useEffect(() => {
     if (permissions.length >= 1) {
@@ -226,12 +236,14 @@ export default function BulkSearch() {
       try {
         const response = await bulkSearch(payload);
         setData(response?.data?.data || []);
+        setDuplicateData(response?.data?.data || []);
         setBulkUploadModal(false);
         setTimeout(() => {
           setLoading(false);
         }, 300);
       } catch (error) {
         setData([]);
+        setDuplicateData([]);
         setLoading(false);
         console.log("blk serach error", error);
       }
@@ -285,6 +297,24 @@ export default function BulkSearch() {
     });
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    const filterData = duplicateData.filter((f) => {
+      const statusMatch = statusId ? f.status === statusId : true; // ✅ only check if statusId exists
+      const typeMatch =
+        filterType == 1
+          ? f.mobile.includes(value)
+          : filterType == 2
+          ? f.name.toLowerCase().includes(value.toLowerCase())
+          : filterType == 3
+          ? f.email.includes(value)
+          : true; // ✅ only check if filterType == 1
+      return statusMatch && typeMatch;
+    });
+    setData(filterData);
+  };
+
   const formReset = () => {
     setBulkUploadModal(false);
     setExcelData([]);
@@ -294,23 +324,155 @@ export default function BulkSearch() {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          {/* <div className="leadmanager_filterContainer">
-            <CommonOutlinedInput
-              label="Search"
-              width="36%"
-              height="33px"
-              labelFontSize="12px"
-              icon={<CiSearch size={16} />}
-              labelMarginTop="-1px"
-            />
-          </div> */}
+        <Col xs={24} sm={24} md={24} lg={10}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <div className="overallduecustomers_filterContainer">
+                {/* Search Input */}
+                <CommonOutlinedInput
+                  label={
+                    filterType == 1
+                      ? "Search By Mobile"
+                      : filterType == 2
+                      ? "Search By Name"
+                      : filterType == 3
+                      ? "Search by Email"
+                      : filterType == 4
+                      ? "Search by Course"
+                      : ""
+                  }
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          const filterData = duplicateData.filter((f) => {
+                            const statusMatch = statusId
+                              ? f.status == statusId
+                              : true; // ✅ only check if statusId exists
+                            return statusMatch;
+                          });
+                          setData(filterData);
+                        }}
+                      >
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="-1px"
+                  style={{
+                    borderTopRightRadius: "0px",
+                    borderBottomRightRadius: "0px",
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+                {/* Filter Button */}
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={filterType}
+                          onChange={(e) => {
+                            setFilterType(e.target.value);
+                            if (searchValue === "") {
+                              return;
+                            } else {
+                              setSearchValue("");
+                              const filterData = duplicateData.filter((f) => {
+                                const statusMatch = statusId
+                                  ? f.status == statusId
+                                  : true; // ✅ only check if statusId exists
+                                return statusMatch;
+                              });
+                              setData(filterData);
+                            }
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{ marginTop: "6px", marginBottom: "12px" }}
+                          >
+                            Search by Mobile
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Name
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button className="users_filterbutton">
+                        <IoFilter size={18} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            <Col span={12}>
+              <CommonSelectField
+                width="90%"
+                height="35px"
+                label="Select Status"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={[
+                  { id: "Success", name: "Success" },
+                  { id: "On Progress", name: "On Progress" },
+                  { id: "Not found", name: "Not found" },
+                ]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  console.log(value);
+                  setStatusId(value);
+
+                  const filterData = duplicateData.filter((f) => {
+                    const statusMatch = value ? f.status == value : true; // ✅ only check if statusId exists
+                    const typeMatch =
+                      filterType == 1
+                        ? f.mobile.includes(searchValue)
+                        : filterType == 2
+                        ? f.name
+                            .toLowerCase()
+                            .includes(searchValue.toLowerCase())
+                        : filterType == 3
+                        ? f.email.includes(searchValue)
+                        : true; // ✅ only check if filterType == 1
+                    return statusMatch && typeMatch;
+                  });
+
+                  setData(filterData);
+                }}
+                value={statusId}
+                disableClearable={false}
+              />
+            </Col>
+          </Row>
         </Col>
         <Col
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={14}
           style={{
             display: "flex",
             justifyContent: "flex-end",

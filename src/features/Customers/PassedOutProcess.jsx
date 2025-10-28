@@ -243,7 +243,7 @@ const PassesOutProcess = forwardRef(
           } catch (error) {
             CommonMessage(
               "error",
-              error?.response?.data?.message ||
+              error?.response?.data?.details ||
                 "Something went wrong. Try again later"
             );
           }
