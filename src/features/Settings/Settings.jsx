@@ -152,6 +152,8 @@ export default function Settings() {
       const dashboardCustomOrder = [
         "Score Board",
         "Sale Performance",
+        "User-Wise Lead Analysis",
+        "User-Wise Sales Analysis",
         "Top Performing Channels",
         "HR Dashboard",
         "RA Dashboard",

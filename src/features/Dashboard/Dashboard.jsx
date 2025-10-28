@@ -14,6 +14,7 @@ import {
   getRADashboard,
   getScoreBoard,
   getTopPerformance,
+  getUserWiseLeadCounts,
   getUserWiseScoreBoard,
 } from "../ApiService/action";
 import { RedoOutlined } from "@ant-design/icons";
@@ -24,6 +25,7 @@ import CommonPieChart from "../Common/CommonPieChart";
 import CommonMuiMonthPicker from "../Common/CommonMuiMonthPicker";
 import UserwiseSalesChart from "./UserwiseSalesChart";
 import CommonDonutChart from "../Common/CommonDonutChart";
+import UserwiseLeadChart from "./UserwiseLeadChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -70,6 +72,15 @@ export default function Dashboard() {
   const [HrSelectedDates, setHrSelectedDates] = useState([]);
   const [hrDataSeries, setHrDataSeries] = useState([]);
   const [hrLoader, setHrLoader] = useState(true);
+  //HR
+  const [userWiseLeadsDates, setUserWiseLeadsDates] = useState([]);
+  const [userWiseLeadsXaxis, setUserWiseLeadsXaxis] = useState([]);
+  const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
+  const [userWiseLeadsCount, setUserWiseLeadsCount] = useState([]);
+  const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
+    []
+  );
+  const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
   //lead executive
   const [leadExecutives, setLeadExecutives] = useState([]);
   const [leadExecutiveId, setLeadExecutiveId] = useState(null);
@@ -82,6 +93,7 @@ export default function Dashboard() {
       setPerformingSelectedDates(PreviousAndCurrentDate);
       setRaSelectedDates(PreviousAndCurrentDate);
       setHrSelectedDates(PreviousAndCurrentDate);
+      setUserWiseLeadsDates(PreviousAndCurrentDate);
       setLeadExecutives(downlineUsers);
       mounted.current = true;
       if (permissions.includes("Score Board")) {
@@ -92,7 +104,6 @@ export default function Dashboard() {
           true
         );
       } else {
-        console.log("oiiiiiiiiii");
         getSaleDetailsData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
@@ -152,7 +163,7 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getTopPerformanceData(
+      getUserWiseLeadCountsData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         executive_id,
@@ -188,21 +199,99 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setSaleDetailsLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api == true) {
+          getUserWiseLeadCountsData(
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            executive_id,
+            true
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getUserWiseLeadCountsData = async (
+    startDate,
+    endDate,
+    executive_id,
+    call_api
+  ) => {
+    if (!permissions.includes("User-Wise Lead Analysis")) {
+      const start_date = moment()
+        .subtract(1, "month")
+        .date(25)
+        .format("YYYY-MM-DD");
+
+      const end_date = moment().date(25).format("YYYY-MM-DD");
+      getUserWiseScoreBoardData(
+        start_date,
+        end_date,
+        executive_id,
+        true,
+        userWiseType ? userWiseType : 1
+      );
+      return;
+    }
+    setUserWiseLeadsLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
+    const payload = {
+      start_date: startDate,
+      end_date: endDate,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+    };
+
+    try {
+      const response = await getUserWiseLeadCounts(payload);
+      console.log("userwise leadcounts response", response);
+      const userwise_leadscount = response?.data?.data;
+      console.log(userwise_leadscount);
+
+      const xaxis = userwise_leadscount.map(
+        (item) => `${item.user_id} (${item.user_name})`
+      );
+      const series = userwise_leadscount.map((item) => Number(item.percentage));
+
+      const leads_count = userwise_leadscount.map((item) =>
+        Number(item.total_leads)
+      );
+
+      const customers_count = userwise_leadscount.map((item) =>
+        Number(item.customer_count)
+      );
+
+      setUserWiseLeadsXaxis(xaxis);
+      setUserWiseLeadsSeries(series);
+      setUserWiseLeadsCount(leads_count);
+      setUserWiseLeadsJoingingsCount(customers_count);
+    } catch (error) {
+      console.log("userwise leadcounts error", error);
+      setUserWiseLeadsXaxis([]);
+      setUserWiseLeadsSeries([]);
+      setUserWiseLeadsCount([]);
+      setUserWiseLeadsJoingingsCount([]);
+    } finally {
+      setTimeout(() => {
+        setUserWiseLeadsLoader(false);
         const start_date = moment()
           .subtract(1, "month")
           .date(25)
           .format("YYYY-MM-DD");
 
         const end_date = moment().date(25).format("YYYY-MM-DD");
-        if (call_api == true) {
-          getUserWiseScoreBoardData(
-            start_date,
-            end_date,
-            executive_id,
-            true,
-            userWiseType ? userWiseType : 1
-          );
-        }
+        getUserWiseScoreBoardData(
+          start_date,
+          end_date,
+          executive_id,
+          true,
+          userWiseType ? userWiseType : 1
+        );
       }, 300);
     }
   };
@@ -214,6 +303,16 @@ export default function Dashboard() {
     call_api,
     type
   ) => {
+    if (!permissions.includes("User-Wise Sales Analysis")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getTopPerformanceData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        executive_id,
+        true
+      );
+      return;
+    }
     setUserWiseLoader(true);
     let lead_executive = [];
     if (executive_id) {
@@ -817,6 +916,269 @@ export default function Dashboard() {
           </Col>
         )}
 
+        {permissions.includes("User-Wise Lead Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      User-Wise Lead Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(userWiseLeadsDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(userWiseLeadsDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={userWiseLeadsDates}
+                      onDateChange={(dates) => {
+                        setUserWiseLeadsDates(dates);
+                        getRAData(dates[0], dates[1], leadExecutiveId, false);
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                  height: 310,
+                  overflowY: "auto",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {userWiseLeadsLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {userWiseLeadsSeries.length >= 1 ? (
+                        <UserwiseLeadChart
+                          xaxis={userWiseLeadsXaxis}
+                          // series={[12, 34, 45]}
+                          series={userWiseLeadsSeries}
+                          leads={userWiseLeadsCount}
+                          customers={userWiseLeadjoiningsCount}
+                          colors={["#258a25", "#5b6aca", "#b22021"]}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Col>
+        )}
+
+        {permissions.includes("User-Wise Sales Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={16}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      User-Wise Sales Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(userWiseStartDate).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(userWiseEndDate).format("DD MMM YYYY")})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={8}
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    padding: "0px 12px 0px 0px",
+                  }}
+                >
+                  <div style={{ width: "100%" }}>
+                    <CommonMuiMonthPicker
+                      label="Month"
+                      required={true}
+                      onChange={(value) => {
+                        console.log(value, "monthhh");
+                        setMonth(value);
+                        if (value) {
+                          const [monthName, year] = value.split(" - ");
+                          const selectedMonth = moment(
+                            `${monthName} ${year}`,
+                            "MMMM YYYY"
+                          );
+
+                          // Start date: 25th of previous month
+                          const startDate = selectedMonth
+                            .clone()
+                            .subtract(1, "month")
+                            .date(25)
+                            .format("YYYY-MM-DD");
+
+                          // End date: 25th of selected month
+                          const endDate = selectedMonth
+                            .clone()
+                            .date(25)
+                            .format("YYYY-MM-DD");
+
+                          setUserWiseStartDate(startDate);
+                          setUserWiseEndDate(endDate);
+                          console.log("Start Date:", startDate);
+                          console.log("End Date:", endDate);
+                          getUserWiseScoreBoardData(
+                            startDate,
+                            endDate,
+                            leadExecutiveId,
+                            false,
+                            userWiseType
+                          );
+                          // Example API call
+                          // getRAData(startDate, endDate, leadExecutiveId, false);
+                        }
+                      }}
+                      value={month}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col span={15}></Col>
+                <Col
+                  span={9}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Sale Volume",
+                      },
+                      {
+                        id: 2,
+                        name: "Collection",
+                      },
+                      {
+                        id: 3,
+                        name: "Pending",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUserWiseType(value);
+                      getUserWiseScoreBoardData(
+                        userWiseStartDate,
+                        userWiseEndDate,
+                        leadExecutiveId,
+                        false,
+                        value
+                      );
+                    }}
+                    value={userWiseType}
+                  />
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                  height: 310,
+                  overflowY: "auto",
+                }}
+              >
+                {userWiseLoader ? (
+                  <div className="dashboard_skeleton_container">
+                    <Skeleton
+                      active
+                      style={{ height: "40vh" }}
+                      title={{ width: 140 }}
+                      paragraph={{
+                        rows: 0,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {userWiseSeries.length >= 1 ? (
+                      <UserwiseSalesChart
+                        xaxis={userWiseXaxis}
+                        // series={[12, 34, 45]}
+                        series={userWiseSeries}
+                        targets={userWiseTargets}
+                        collections={userWiseCollection}
+                        colors={[
+                          userWiseType == 1
+                            ? "#5b6aca"
+                            : userWiseType == 2
+                            ? "#258a25"
+                            : "#b22021",
+                        ]}
+                        type={
+                          userWiseType == 1
+                            ? "Sale"
+                            : userWiseType == 2
+                            ? "Collection"
+                            : "Pending"
+                        }
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </Col>
+        )}
+
         {permissions.includes("Top Performing Channels") && (
           <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>
             <div className="dashboard_leadcount_card">
@@ -940,177 +1302,6 @@ export default function Dashboard() {
             </div>
           </Col>
         )}
-
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            marginTop: "30px",
-          }}
-        >
-          <div className="dashboard_leadcount_card">
-            <Row className="dashboard_leadcount_header_container">
-              <Col span={16}>
-                <div style={{ padding: "12px 12px 8px 12px" }}>
-                  <p className="dashboard_scrorecard_heading">
-                    User-Wise Sales Analysis
-                  </p>
-                  <p className="dashboard_daterange_text">
-                    <span style={{ fontWeight: "500" }}>Date Range: </span>
-                    {`(${moment(userWiseStartDate).format(
-                      "DD MMM YYYY"
-                    )} to ${moment(userWiseEndDate).format("DD MMM YYYY")})`}
-                  </p>
-                </div>
-              </Col>
-              <Col
-                span={8}
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                  padding: "0px 12px 0px 0px",
-                }}
-              >
-                <div style={{ width: "100%" }}>
-                  <CommonMuiMonthPicker
-                    label="Month"
-                    required={true}
-                    onChange={(value) => {
-                      console.log(value, "monthhh");
-                      setMonth(value);
-                      if (value) {
-                        const [monthName, year] = value.split(" - ");
-                        const selectedMonth = moment(
-                          `${monthName} ${year}`,
-                          "MMMM YYYY"
-                        );
-
-                        // Start date: 25th of previous month
-                        const startDate = selectedMonth
-                          .clone()
-                          .subtract(1, "month")
-                          .date(25)
-                          .format("YYYY-MM-DD");
-
-                        // End date: 25th of selected month
-                        const endDate = selectedMonth
-                          .clone()
-                          .date(25)
-                          .format("YYYY-MM-DD");
-
-                        setUserWiseStartDate(startDate);
-                        setUserWiseEndDate(endDate);
-                        console.log("Start Date:", startDate);
-                        console.log("End Date:", endDate);
-                        getUserWiseScoreBoardData(
-                          startDate,
-                          endDate,
-                          leadExecutiveId,
-                          false,
-                          userWiseType
-                        );
-                        // Example API call
-                        // getRAData(startDate, endDate, leadExecutiveId, false);
-                      }
-                    }}
-                    value={month}
-                  />
-                </div>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col span={15}></Col>
-              <Col span={9} className="dashboard_userwise_typefield_container">
-                <CommonSelectField
-                  label="Type"
-                  height="35px"
-                  labelMarginTop="-1px"
-                  labelFontSize="12px"
-                  width="100%"
-                  options={[
-                    {
-                      id: 1,
-                      name: "Sale Volume",
-                    },
-                    {
-                      id: 2,
-                      name: "Collection",
-                    },
-                    {
-                      id: 3,
-                      name: "Pending",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setUserWiseType(value);
-                    getUserWiseScoreBoardData(
-                      userWiseStartDate,
-                      userWiseEndDate,
-                      leadExecutiveId,
-                      false,
-                      value
-                    );
-                  }}
-                  value={userWiseType}
-                />
-              </Col>
-            </Row>
-
-            <div
-              style={{
-                padding: "0px 12px 12px 12px",
-                height: 310,
-                overflowY: "scroll",
-              }}
-            >
-              {userWiseLoader ? (
-                <div className="dashboard_skeleton_container">
-                  <Skeleton
-                    active
-                    style={{ height: "40vh" }}
-                    title={{ width: 140 }}
-                    paragraph={{
-                      rows: 0,
-                    }}
-                  />
-                </div>
-              ) : (
-                <>
-                  {userWiseSeries.length >= 1 ? (
-                    <UserwiseSalesChart
-                      xaxis={userWiseXaxis}
-                      // series={[12, 34, 45]}
-                      series={userWiseSeries}
-                      targets={userWiseTargets}
-                      collections={userWiseCollection}
-                      colors={[
-                        userWiseType == 1
-                          ? "#5b6aca"
-                          : userWiseType == 2
-                          ? "#258a25"
-                          : "#b22021",
-                      ]}
-                      type={
-                        userWiseType == 1
-                          ? "Sale"
-                          : userWiseType == 2
-                          ? "Collection"
-                          : "Pending"
-                      }
-                    />
-                  ) : (
-                    ""
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </Col>
 
         {permissions.includes("HR Dashboard") && (
           <Col

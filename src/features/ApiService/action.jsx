@@ -888,6 +888,15 @@ export const getUserWiseScoreBoard = async (payload) => {
   }
 };
 
+export const getUserWiseLeadCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getUserWiseLeadCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTopPerformance = async (payload) => {
   try {
     const response = await api.post(`/api/getTopPerformance`, payload);
