@@ -285,13 +285,15 @@ export default function Dashboard() {
           .format("YYYY-MM-DD");
 
         const end_date = moment().date(25).format("YYYY-MM-DD");
-        getUserWiseScoreBoardData(
-          start_date,
-          end_date,
-          executive_id,
-          true,
-          userWiseType ? userWiseType : 1
-        );
+        if (call_api == true) {
+          getUserWiseScoreBoardData(
+            start_date,
+            end_date,
+            executive_id,
+            true,
+            userWiseType ? userWiseType : 1
+          );
+        }
       }, 300);
     }
   };
@@ -963,7 +965,12 @@ export default function Dashboard() {
                       value={userWiseLeadsDates}
                       onDateChange={(dates) => {
                         setUserWiseLeadsDates(dates);
-                        getRAData(dates[0], dates[1], leadExecutiveId, false);
+                        getUserWiseLeadCountsData(
+                          dates[0],
+                          dates[1],
+                          leadExecutiveId,
+                          false
+                        );
                       }}
                     />
                   </div>
@@ -973,7 +980,7 @@ export default function Dashboard() {
               <div
                 style={{
                   padding: "0px 12px 12px 12px",
-                  height: 310,
+                  height: 350,
                   overflowY: "auto",
                 }}
               >
@@ -990,7 +997,7 @@ export default function Dashboard() {
                       />
                     </div>
                   ) : (
-                    <>
+                    <div>
                       {userWiseLeadsSeries.length >= 1 ? (
                         <UserwiseLeadChart
                           xaxis={userWiseLeadsXaxis}
@@ -999,13 +1006,14 @@ export default function Dashboard() {
                           leads={userWiseLeadsCount}
                           customers={userWiseLeadjoiningsCount}
                           colors={["#258a25", "#5b6aca", "#b22021"]}
+                          height={userWiseLeadsXaxis.length * 40}
                         />
                       ) : (
                         <div className="dashboard_chart_nodata_conatiner">
                           <p>No data found</p>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1142,6 +1150,7 @@ export default function Dashboard() {
                   padding: "0px 12px 12px 12px",
                   height: 310,
                   overflowY: "auto",
+                  overflowX: "hidden",
                 }}
               >
                 {userWiseLoader ? (
@@ -1178,6 +1187,7 @@ export default function Dashboard() {
                             ? "Collection"
                             : "Pending"
                         }
+                        height={userWiseXaxis.length * 45}
                       />
                     ) : (
                       ""

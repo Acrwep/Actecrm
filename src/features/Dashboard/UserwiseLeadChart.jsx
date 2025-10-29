@@ -31,7 +31,7 @@ export default function UserwiseLeadChart({
       chart: {
         id: chartId.current,
         type: "bar",
-        stacked: true,
+        // stacked: true,
         height: 400,
         toolbar: { show: false },
       },
@@ -46,7 +46,7 @@ export default function UserwiseLeadChart({
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) => `Convertion: ${val}%`,
+        formatter: (val) => "",
         style: {
           fontSize: "12px",
           fontWeight: 500,
@@ -76,18 +76,14 @@ export default function UserwiseLeadChart({
       },
       tooltip: {
         shared: false,
-        fixed: {
-          enabled: true,
-          position: "topRight",
-          offsetX: 0,
-          offsetY: 8,
-        },
+        followCursor: true, // ✅ makes the tooltip move with cursor
         x: { show: false },
         y: {
           formatter: (val, { dataPointIndex, w }) => {
             const userName = w.config.xaxis.categories[dataPointIndex];
             const value = leads[dataPointIndex];
             const joinings = customers[dataPointIndex];
+            const conversion = series[dataPointIndex];
             const color = w.config.colors[0]; //
             return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <span 
@@ -105,6 +101,13 @@ export default function UserwiseLeadChart({
           Total Joinings: 
           <span style="font-weight:600;">
             ${joinings}
+          </span>
+        </div>
+         </div>
+           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
+          Conversion: 
+          <span style="font-weight:600;">
+            ${conversion}%
           </span>
         </div>
       `;

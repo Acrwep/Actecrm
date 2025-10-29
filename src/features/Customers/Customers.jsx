@@ -982,7 +982,6 @@ export default function Customers() {
         scroll(1200);
       }
       if (receivedStartDateFromDashboard) {
-        console.log("starrrrrrrrrr", receivedStartDateFromDashboard);
         setSelectedDates([
           receivedStartDateFromDashboard,
           receivedEndDateFromDashboard,

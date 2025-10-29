@@ -44,7 +44,8 @@ export default function UserwiseSalesChart({
         formatter: (val) =>
           type == "Collection"
             ? val + "%"
-            : Number(val).toLocaleString("en-IN", {
+            : "₹" +
+              Number(val).toLocaleString("en-IN", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               }),
@@ -77,18 +78,14 @@ export default function UserwiseSalesChart({
       },
       tooltip: {
         shared: false,
-        fixed: {
-          enabled: true,
-          position: "topRight",
-          offsetX: 0,
-          offsetY: 8,
-        },
+        followCursor: true, // ✅ makes the tooltip move with cursor
         x: { show: false },
         y: {
           formatter: (val, { dataPointIndex, w }) => {
             const category = w.config.xaxis.categories[dataPointIndex];
             if (type == "Collection") {
               const userName = w.config.xaxis.categories[dataPointIndex];
+              const collection_series = series[dataPointIndex];
               const target = targets[dataPointIndex];
               const collection = collections[dataPointIndex];
               const color = w.config.colors[0]; //
@@ -98,7 +95,7 @@ export default function UserwiseSalesChart({
           </span>
           <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
         </div>
-         <div style="font-weight:400; font-family:Poppins, sans-serif;margin-bottom:4px">
+         <div style="font-weight:400; font-family:Poppins, sans-serif;">
           Target: 
           <span style="font-weight:600;">
             ₹${Number(target).toLocaleString("en-IN", {
@@ -107,13 +104,19 @@ export default function UserwiseSalesChart({
             })}
           </span>
         </div>
-        <div style="font-weight:400; font-family:Poppins, sans-serif;">
+        <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           Collection: 
           <span style="font-weight:600; color:#258a25;">
             ₹${Number(collection).toLocaleString("en-IN", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
+          </span>
+        </div>
+          <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
+          Percentage: 
+          <span style="font-weight:600;">
+            ${collection_series}%
           </span>
         </div>`;
             } else {

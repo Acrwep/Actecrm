@@ -67,7 +67,8 @@ export default function CommonHorizontalBarChart({
         enabled: true,
         formatter: (val) =>
           isRupees
-            ? Number(val).toLocaleString("en-IN", {
+            ? "₹" +
+              Number(val).toLocaleString("en-IN", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })
@@ -108,7 +109,8 @@ export default function CommonHorizontalBarChart({
             return `<span style="font-weight:400">${category}:</span> 
                     <span style="font-weight:600">${
                       isRupees
-                        ? Number(val).toLocaleString("en-IN", {
+                        ? "₹" +
+                          Number(val).toLocaleString("en-IN", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })
