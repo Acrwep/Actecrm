@@ -610,6 +610,22 @@ export default function CustomHeader() {
               </Col>
             </Row>
 
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineDateRange size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Created At</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.created_date
+                    ? moment(leadDetails.created_date).format("DD/MM/YYYY")
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
             {leadDetails && leadDetails.is_customer_reg == 0 ? (
               <Row style={{ marginTop: "12px" }}>
                 <Col span={12}>
@@ -771,13 +787,13 @@ export default function CustomHeader() {
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Created At</p>
+                  <p className="customerdetails_rowheading">Lead Status</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.created_date
-                    ? moment(leadDetails.created_date).format("DD/MM/YYYY")
+                  {leadDetails && leadDetails.lead_status
+                    ? leadDetails.lead_status
                     : "-"}
                 </p>
               </Col>

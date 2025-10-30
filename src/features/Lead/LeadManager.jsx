@@ -7,6 +7,7 @@ import { Button, Tooltip, Skeleton } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import {
   getAllAreas,
+  getAllDownlineUsers,
   getBatchTrack,
   getLeadAndFollowupCount,
   getLeadStatus,
@@ -15,6 +16,7 @@ import {
   getTechnologies,
 } from "../ApiService/action";
 import { useSelector } from "react-redux";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -49,37 +51,56 @@ export default function LeadManager() {
   // const [userTableLoading, setUserTableLoading] = useState(true);
 
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     if (childUsers.length > 0 && !mounted.current && permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
         navigate("/dashboard");
         return;
       }
       mounted.current = true;
-      getLeadTypeData();
+      getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers, permissions]);
 
-  // const getLeadAndFollowupCountData = async () => {
-  //   const payload = {
-  //     user_ids: childUsers,
-  //   };
-  //   try {
-  //     const response = await getLeadAndFollowupCount(payload);
-  //     console.log("lead count response", response);
-  //     const countDetails = response?.data?.data;
-  //     setFollowupCount(countDetails.follow_up_count);
-  //     setLeadCount(countDetails.total_lead_count);
-  //     // dispatch(storeUsersList(response?.data?.data || []));
-  //   } catch (error) {
-  //     console.log("lead count error", error);
-  //     // dispatch(storeUsersList([]));
-  //   } finally {
-  //     setTimeout(() => {
-  //       // setUserTableLoading(false);
-  //       getLeadTypeData();
-  //     }, 300);
-  //   }
-  // };
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      getLeadAndFollowupCountData(downliners_ids);
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
+  const getLeadAndFollowupCountData = async (downliners) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const payload = {
+      user_ids: downliners,
+      start_date: PreviousAndCurrentDate[0],
+      end_date: PreviousAndCurrentDate[1],
+    };
+    try {
+      const response = await getLeadAndFollowupCount(payload);
+      console.log("lead count response", response);
+      const countDetails = response?.data?.data;
+      setFollowupCount(countDetails.follow_up_count);
+      setLeadCount(countDetails.total_lead_count);
+      // dispatch(storeUsersList(response?.data?.data || []));
+    } catch (error) {
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
+    } finally {
+      setTimeout(() => {
+        // setUserTableLoading(false);
+        getLeadTypeData();
+      }, 300);
+    }
+  };
 
   const getLeadTypeData = async () => {
     try {
@@ -181,7 +202,7 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("leads")}
           >
-            {leadCountLoading ? (
+            {/* {leadCountLoading ? (
               <span
                 style={{
                   width: "80px",
@@ -196,9 +217,9 @@ export default function LeadManager() {
                   paragraph={{ rows: 1, width: "100%" }}
                 />
               </span>
-            ) : (
-              <p>{`Leads (${leadCount})`}</p>
-            )}
+            ) : ( */}
+            <p>{`Leads (${leadCount})`}</p>
+            {/* )} */}
           </button>
         </div>
 
@@ -233,22 +254,24 @@ export default function LeadManager() {
         </div>
       )}
 
-      <div style={{ display: activePage === "leads" ? "block" : "none" }}>
-        <Leads
-          triggerApi={triggerApi}
-          setTriggerApi={setTriggerApi}
-          key={tabKeys.leads}
-          refreshLeadFollowUp={refreshLeadFollowUp}
-          setLeadCount={setLeadCount}
-          leadTypeOptions={leadTypeOptions}
-          regionOptions={regionOptions}
-          courseOptions={courseOptions}
-          setCourseOptions={setCourseOptions}
-          areaOptions={areaOptions}
-          setAreaOptions={setAreaOptions}
-          setLeadCountLoading={setLeadCountLoading}
-        />
-      </div>
+      {loadedTabs.leads && (
+        <div style={{ display: activePage === "leads" ? "block" : "none" }}>
+          <Leads
+            triggerApi={triggerApi}
+            setTriggerApi={setTriggerApi}
+            key={tabKeys.leads}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+            setLeadCount={setLeadCount}
+            leadTypeOptions={leadTypeOptions}
+            regionOptions={regionOptions}
+            courseOptions={courseOptions}
+            setCourseOptions={setCourseOptions}
+            areaOptions={areaOptions}
+            setAreaOptions={setAreaOptions}
+            setLeadCountLoading={setLeadCountLoading}
+          />
+        </div>
+      )}
     </div>
   );
 }

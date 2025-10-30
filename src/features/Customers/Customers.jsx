@@ -20,6 +20,7 @@ import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import "./styles.css";
 import {
+  getAllDownlineUsers,
   getCustomerFullHistory,
   getCustomers,
   getTableColumns,
@@ -45,6 +46,7 @@ import CustomerUpdate from "./CustomerUpdate";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSelectField from "../Common/CommonSelectField";
 import { FiFilter } from "react-icons/fi";
+import { MdOutlineSwapVert } from "react-icons/md";
 import CommonDnd from "../Common/CommonDnd";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCopy } from "react-icons/fa6";
@@ -99,6 +101,8 @@ export default function Customers() {
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
   //form usesates
+  //awaiting finance
+  const [isSwap, setIsSwap] = useState(false);
   //student verify usestates
   //assign trainer usestates
   const [trainersData, setTrainersData] = useState([]);
@@ -124,8 +128,9 @@ export default function Customers() {
   const prev = () => setStepIndex(stepIndex - 1);
   const [loading, setLoading] = useState(true);
   //executive filter
-  const [leadExecutives, setLeadExecutives] = useState([]);
-  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [allDownliners, setAllDownliners] = useState([]);
   //branch filter
   const [branchOptions, setBranchOptions] = useState([
     { id: 1, name: "Classroom", checked: true },
@@ -725,7 +730,14 @@ export default function Customers() {
                 </>
               }
             >
-              {record.is_second_due === 1 ? (
+              {record.is_second_due === 1 && status == "Awaiting Finance" ? (
+                <div>
+                  <Button className="customers_status_awaitfinance_button">
+                    Awaiting Finance
+                  </Button>
+                </div>
+              ) : record.is_second_due === 1 &&
+                permissions.includes("Finance Verify") ? (
                 <div>
                   <Button className="customers_status_awaitfinance_button">
                     Awaiting Finance
@@ -737,7 +749,9 @@ export default function Customers() {
                     {text}
                   </Button>
                 </div>
-              ) : record.is_last_pay_rejected === 1 ? (
+              ) : record.is_last_pay_rejected === 1 &&
+                isSwap == true &&
+                status == "Payment Rejected" ? (
                 <div>
                   <Button className="trainers_rejected_button">
                     Payment Rejected
@@ -935,20 +949,18 @@ export default function Customers() {
     }, 300);
 
     setTableColumns(nonChangeColumns);
-  }, [permissions]);
+  }, [permissions, isSwap, status]);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
-      setLeadExecutives(downlineUsers);
+      setSubUsers(downlineUsers);
       getTrainersData();
     }
   }, [childUsers]);
 
   const getTrainersData = async () => {
     setLoading(true);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-
     const payload = {
       status: "Verified",
       page: 1,
@@ -961,6 +973,26 @@ export default function Customers() {
       setTrainersData([]);
       console.log(error);
     } finally {
+      setTimeout(() => {
+        getAllDownlineUsersData(null);
+      }, 300);
+    }
+  };
+
+  const getAllDownlineUsersData = async (user_id) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    try {
+      const response = await getAllDownlineUsers(
+        user_id ? user_id : convertAsJson.user_id
+      );
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       const receivedValueFromDashboard = location.state?.status || null;
       const receivedStartDateFromDashboard = location.state?.startDate || null;
       const receivedEndDateFromDashboard = location.state?.endDate || null;
@@ -989,25 +1021,26 @@ export default function Customers() {
       } else {
         setSelectedDates(PreviousAndCurrentDate);
       }
-      setTimeout(() => {
-        getCustomersData(
-          receivedStartDateFromDashboard
-            ? receivedStartDateFromDashboard
-            : PreviousAndCurrentDate[0],
-          receivedEndDateFromDashboard
-            ? receivedEndDateFromDashboard
-            : PreviousAndCurrentDate[1],
-          null,
-          receivedValueFromDashboard ? receivedValueFromDashboard : null,
-          null,
-          [
-            { id: 1, name: "Classroom", checked: true },
-            { id: 1, name: "Online", checked: true },
-          ],
-          1,
-          10
-        );
-      }, 300);
+
+      getCustomersData(
+        receivedStartDateFromDashboard
+          ? receivedStartDateFromDashboard
+          : PreviousAndCurrentDate[0],
+        receivedEndDateFromDashboard
+          ? receivedEndDateFromDashboard
+          : PreviousAndCurrentDate[1],
+        null,
+        receivedValueFromDashboard ? receivedValueFromDashboard : null,
+        downliners_ids,
+        [
+          { id: 1, name: "Classroom", checked: true },
+          { id: 1, name: "Online", checked: true },
+        ],
+        1,
+        10
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
     }
   };
 
@@ -1016,19 +1049,13 @@ export default function Customers() {
     endDate,
     searchvalue,
     customerStatus,
-    executive_id,
+    downliners,
     branch_options,
     pageNumber,
     limit,
     is_generate_certificate
   ) => {
     setLoading(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const region_data = branch_options
       .filter((f) => f.checked === true)
       .map((f) => f.name);
@@ -1051,7 +1078,7 @@ export default function Customers() {
             ? ["Awaiting Trainer", "Trainer Rejected"]
             : customerStatus,
       }),
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       ...(region_data.includes("Classroom") && region_data.includes("Online")
         ? {}
         : region_data.includes("Classroom")
@@ -1793,7 +1820,15 @@ export default function Customers() {
                           </>
                         }
                       >
-                        {record.is_second_due === 1 ? (
+                        {record.is_second_due === 1 &&
+                        status == "Awaiting Finance" ? (
+                          <div>
+                            <Button className="customers_status_awaitfinance_button">
+                              Awaiting Finance
+                            </Button>
+                          </div>
+                        ) : record.is_second_due === 1 &&
+                          permissions.includes("Finance Verify") ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
                               Awaiting Finance
@@ -1805,7 +1840,9 @@ export default function Customers() {
                               {text}
                             </Button>
                           </div>
-                        ) : record.is_last_pay_rejected === 1 ? (
+                        ) : record.is_last_pay_rejected === 1 &&
+                          isSwap == true &&
+                          status == "Payment Rejected" ? (
                           <div>
                             <Button className="trainers_rejected_button">
                               Payment Rejected
@@ -2022,7 +2059,7 @@ export default function Customers() {
       selectedDates[1],
       searchValue,
       status,
-      leadExecutiveId,
+      allDownliners,
       branchOptions,
       page,
       limit
@@ -2059,12 +2096,41 @@ export default function Customers() {
         selectedDates[1],
         e.target.value,
         status,
-        leadExecutiveId,
+        allDownliners,
         branchOptions,
         1,
         pagination.limit
       );
     }, 300);
+  };
+
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getCustomersData(
+        selectedDates[0],
+        selectedDates[1],
+        searchValue,
+        status,
+        downliners_ids,
+        branchOptions,
+        1,
+        pagination.limit
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
   };
 
   const handleEdit = (item) => {
@@ -2082,22 +2148,13 @@ export default function Customers() {
   const handleRefresh = () => {
     setStatus("");
     setSearchValue("");
-    setLeadExecutiveId(null);
+    setSelectedUserId(null);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
       page: 1,
     });
-    getCustomersData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null,
-      null,
-      null,
-      branchOptions,
-      1,
-      pagination.limit
-    );
+    getAllDownlineUsersData(null);
   };
 
   const handleViewCert = async (customer_id) => {
@@ -2211,7 +2268,7 @@ export default function Customers() {
                             selectedDates[1],
                             null,
                             status,
-                            leadExecutiveId,
+                            allDownliners,
                             branchOptions,
                             1,
                             pagination.limit
@@ -2262,7 +2319,7 @@ export default function Customers() {
                                 selectedDates[1],
                                 null,
                                 status,
-                                leadExecutiveId,
+                                allDownliners,
                                 branchOptions,
                                 1,
                                 pagination.limit
@@ -2300,28 +2357,12 @@ export default function Customers() {
               <Col span={7}>
                 <CommonSelectField
                   height="35px"
-                  label="Select Lead Executive"
+                  label="Select User"
                   labelMarginTop="0px"
                   labelFontSize="13px"
-                  options={leadExecutives}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setLeadExecutiveId(e.target.value);
-                    setPagination({
-                      page: 1,
-                    });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      searchValue,
-                      status,
-                      e.target.value,
-                      branchOptions,
-                      1,
-                      pagination.limit
-                    );
-                  }}
-                  value={leadExecutiveId}
+                  options={subUsers}
+                  onChange={handleSelectUser}
+                  value={selectedUserId}
                   disableClearable={false}
                 />
               </Col>
@@ -2339,7 +2380,7 @@ export default function Customers() {
                     dates[1],
                     searchValue,
                     status,
-                    leadExecutiveId,
+                    allDownliners,
                     branchOptions,
                     1,
                     pagination.limit
@@ -2408,7 +2449,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 null,
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2445,7 +2486,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Form Pending",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2463,43 +2504,98 @@ export default function Customers() {
               } )`}
             </p>
           </div>
+
           <div
             className={
-              status === "Awaiting Finance"
+              status === "Awaiting Finance" || status === "Payment Rejected"
                 ? "customers_active_awaitfinance_container"
                 : "customers_awaitfinance_container"
             }
-            onClick={() => {
-              if (status === "Awaiting Finance") {
-                return;
-              }
-              setStatus("Awaiting Finance");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                "Awaiting Finance",
-                leadExecutiveId,
-                branchOptions,
-                1,
-                pagination.limit
-              );
-            }}
           >
-            <p>
-              Awaiting Finance{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_finance !== undefined &&
-                customerStatusCount.awaiting_finance !== null
-                  ? customerStatusCount.awaiting_finance
-                  : "-"
-              }
+            <div
+              // className={
+              //   status === "Awaiting Finance"
+              //     ? "customers_active_awaitfinance_container"
+              //     : "customers_awaitfinance_container"
+              // }
+              onClick={() => {
+                if (
+                  status === "Awaiting Finance" ||
+                  status === "Payment Rejected"
+                ) {
+                  return;
+                }
+                setStatus(isSwap ? "Payment Rejected" : "Awaiting Finance");
+                setPagination({
+                  page: 1,
+                });
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  isSwap ? "Payment Rejected" : "Awaiting Finance",
+                  allDownliners,
+                  branchOptions,
+                  1,
+                  pagination.limit
+                );
+              }}
+            >
+              {isSwap ? (
+                <p>
+                  Payment Rejected{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.rejected_payment !== undefined &&
+                    customerStatusCount.rejected_payment !== null
+                      ? customerStatusCount.rejected_payment
+                      : "-"
+                  }
  )`}
-            </p>
+                </p>
+              ) : (
+                <p>
+                  Awaiting Finance{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.awaiting_finance !== undefined &&
+                    customerStatusCount.awaiting_finance !== null
+                      ? customerStatusCount.awaiting_finance
+                      : "-"
+                  }
+ )`}
+                </p>
+              )}
+            </div>
+            <MdOutlineSwapVert
+              size={19}
+              style={{
+                cursor: "pointer",
+                transition: "transform 0.3s ease",
+                transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+              onClick={() => {
+                setIsSwap((prev) => {
+                  const newSwap = !prev;
+                  const newStatus = newSwap
+                    ? "Payment Rejected"
+                    : "Awaiting Finance";
+                  console.log("newStatus", newStatus);
+                  setStatus(newStatus);
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    newStatus,
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit
+                  );
+                  return newSwap;
+                });
+              }}
+            />
           </div>
           <div
             className={
@@ -2520,7 +2616,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Verify",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2558,7 +2654,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Trainer",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2596,7 +2692,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Trainer Verify",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2635,7 +2731,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Class",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2674,7 +2770,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Class Scheduled",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2712,7 +2808,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Class Going",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2751,7 +2847,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Passedout Process",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2789,7 +2885,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Completed",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2828,7 +2924,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Escalated",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2867,7 +2963,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Others",
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 1,
                 pagination.limit
@@ -3384,7 +3480,7 @@ export default function Customers() {
               selectedDates[1],
               searchValue,
               status,
-              leadExecutiveId,
+              allDownliners,
               branchOptions,
               pagination.page,
               pagination.limit
@@ -3745,7 +3841,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 status,
-                leadExecutiveId,
+                allDownliners,
                 branchOptions,
                 pagination.page,
                 pagination.limit
@@ -3768,7 +3864,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  leadExecutiveId,
+                  allDownliners,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3796,7 +3892,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  leadExecutiveId,
+                  allDownliners,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3822,7 +3918,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  leadExecutiveId,
+                  allDownliners,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3855,7 +3951,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  leadExecutiveId,
+                  allDownliners,
                   branchOptions,
                   pagination.page,
                   pagination.limit,
@@ -4112,7 +4208,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  leadExecutiveId,
+                  allDownliners,
                   duplicateBranchOptions,
                   pagination.page,
                   pagination.limit
@@ -4189,14 +4285,13 @@ export default function Customers() {
                 <span
                   style={{
                     color: getHistoryStatusColor(
-                      customerHistory?.[customerHistory.length - 1]?.status ||
-                        "N/A"
+                      customerHistory?.[0]?.status || "N/A"
                     ),
                   }}
                 >
                   {" "}
                   {customerHistory && customerHistory.length > 0
-                    ? customerHistory[customerHistory.length - 1].status
+                    ? customerHistory[0].status
                     : "N/A"}
                 </span>
               </span>

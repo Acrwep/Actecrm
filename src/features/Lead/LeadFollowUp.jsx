@@ -25,6 +25,7 @@ import {
   createLead,
   createTechnology,
   getAllAreas,
+  getAllDownlineUsers,
   getBranches,
   getLeadFollowUps,
   getLeadFollowUpsCountByUserIds,
@@ -91,10 +92,6 @@ export default function LeadFollowUp({
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
-  const [leadExecutives, setLeadExecutives] = useState([]);
-  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
-  const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
-  const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
   const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
 
   const [followUpData, setFollowUpData] = useState([]);
@@ -220,7 +217,12 @@ export default function LeadFollowUp({
   //add area usestates
   const [areaName, setAreaName] = useState("");
   const [areaNameError, setAreaNameError] = useState("");
-
+  //lead executive usestates
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
+  const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
+  const [allDownliners, setAllDownliners] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -402,38 +404,48 @@ export default function LeadFollowUp({
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
       if (childUsers.length > 0 && !mounted.current) {
-        setLeadExecutives(downlineUsers);
+        setSubUsers(downlineUsers);
         mounted.current = true;
         setLoginUserId(convertAsJson?.user_id);
-        getLeadFollowUpsData(
-          null,
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          false,
-          null,
-          1,
-          10
-        );
+        getAllDownlineUsersData(convertAsJson?.user_id);
       }
     }
   }, [childUsers, permissions]);
+
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getLeadFollowUpsData(
+        null,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        false,
+        downliners_ids,
+        1,
+        10
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
 
   const getLeadFollowUpsData = async (
     searchvalue,
     startDate,
     endDate,
     updateStatus,
-    executive_id,
+    downliners,
     pageNumber,
     limit
   ) => {
     setLoading(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
@@ -444,7 +456,7 @@ export default function LeadFollowUp({
         : {}),
       from_date: startDate,
       to_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
     };
@@ -653,7 +665,7 @@ export default function LeadFollowUp({
       selectedDates[0],
       selectedDates[1],
       false,
-      leadExecutiveId,
+      allDownliners,
       page,
       limit
     );
@@ -784,7 +796,7 @@ export default function LeadFollowUp({
           selectedDates[0],
           selectedDates[1],
           true,
-          leadExecutiveId,
+          allDownliners,
           pagination.page,
           pagination.limit
         );
@@ -821,7 +833,7 @@ export default function LeadFollowUp({
         selectedDates[0],
         selectedDates[1],
         false,
-        leadExecutiveId,
+        allDownliners,
         1,
         pagination.limit
       );
@@ -1082,7 +1094,7 @@ export default function LeadFollowUp({
           selectedDates[0],
           selectedDates[1],
           false,
-          leadExecutiveId,
+          allDownliners,
           1,
           pagination.limit
         );
@@ -1202,16 +1214,10 @@ export default function LeadFollowUp({
 
   const handleLeadCountByExecutive = async () => {
     setLeadExeCountLoading(true);
-    let lead_executive = [];
-    if (leadExecutiveId) {
-      lead_executive.push(leadExecutiveId);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: selectedDates[0],
       end_date: selectedDates[1],
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: allDownliners,
     };
     try {
       const response = await getLeadFollowUpsCountByUserIds(payload);
@@ -1227,6 +1233,33 @@ export default function LeadFollowUp({
     }
   };
 
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getLeadFollowUpsData(
+        null,
+        selectedDates[0],
+        selectedDates[1],
+        false,
+        downliners_ids,
+        1,
+        10
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
   const formReset = (dontCloseAddDrawer) => {
     setIsOpenFilterDrawer(false);
     setIsOpenCommentModal(false);
@@ -1337,7 +1370,7 @@ export default function LeadFollowUp({
                             selectedDates[0],
                             selectedDates[1],
                             false,
-                            leadExecutiveId,
+                            allDownliners,
                             1,
                             pagination.limit
                           );
@@ -1387,7 +1420,7 @@ export default function LeadFollowUp({
                                 selectedDates[0],
                                 selectedDates[1],
                                 false,
-                                leadExecutiveId,
+                                allDownliners,
                                 1,
                                 pagination.limit
                               );
@@ -1424,27 +1457,12 @@ export default function LeadFollowUp({
                     <CommonSelectField
                       width="100%"
                       height="35px"
-                      label="Select Lead Executive"
+                      label="Select User"
                       labelMarginTop="0px"
                       labelFontSize="12px"
-                      options={leadExecutives}
-                      onChange={(e) => {
-                        console.log(e.target.value);
-                        setLeadExecutiveId(e.target.value);
-                        setPagination({
-                          page: 1,
-                        });
-                        getLeadFollowUpsData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          false,
-                          e.target.value,
-                          1,
-                          pagination.limit
-                        );
-                      }}
-                      value={leadExecutiveId}
+                      options={subUsers}
+                      onChange={handleSelectUser}
+                      value={selectedUserId}
                       disableClearable={false}
                       borderRightNone={true}
                     />
@@ -1523,7 +1541,7 @@ export default function LeadFollowUp({
                     dates[0],
                     dates[1],
                     false,
-                    leadExecutiveId,
+                    allDownliners,
                     1,
                     pagination.limit
                   );

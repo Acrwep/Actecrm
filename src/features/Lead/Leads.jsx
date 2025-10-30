@@ -58,6 +58,7 @@ import {
   createLead,
   createTechnology,
   getAllAreas,
+  getAllDownlineUsers,
   getBranches,
   getLeads,
   getLeadsCountByUserIds,
@@ -267,11 +268,12 @@ export default function Leads({
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
   //lead executive
-  const [leadExecutives, setLeadExecutives] = useState([]);
-  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
   const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
   const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
+  const [allDownliners, setAllDownliners] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -561,18 +563,10 @@ export default function Leads({
       }, 300);
 
       if (childUsers.length > 0 && !mounted.current) {
-        setLeadExecutives(downlineUsers);
+        setSubUsers(downlineUsers);
         mounted.current = true;
         setLoginUserId(convertAsJson?.user_id);
-
-        getAllLeadData(
-          null,
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          null,
-          1,
-          10
-        );
+        getAllDownlineUsersData(convertAsJson?.user_id);
       }
     }
   }, [childUsers, permissions]);
@@ -787,22 +781,38 @@ export default function Leads({
     }
   };
 
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getAllLeadData(
+        null,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners_ids,
+        1,
+        10
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
   const getAllLeadData = async (
     searchvalue,
     startDate,
     endDate,
-    executive_id,
+    downliners,
     pageNumber,
     limit
   ) => {
-    console.log("executive_id", executive_id);
     setLoading(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
@@ -813,7 +823,7 @@ export default function Leads({
         : {}),
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
     };
@@ -1365,7 +1375,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId,
+            allDownliners,
             pagination.page,
             pagination.limit
           );
@@ -1404,7 +1414,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId,
+            allDownliners,
             1,
             pagination.limit
           );
@@ -1527,7 +1537,7 @@ export default function Leads({
           searchValue,
           selectedDates[0],
           selectedDates[1],
-          leadExecutiveId,
+          allDownliners,
           1,
           pagination.limit
         );
@@ -1810,7 +1820,7 @@ export default function Leads({
         e.target.value,
         selectedDates[0],
         selectedDates[1],
-        leadExecutiveId,
+        allDownliners,
         1,
         pagination.limit
       );
@@ -1856,7 +1866,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId,
+            allDownliners,
             1,
             pagination.limit
           );
@@ -1893,7 +1903,7 @@ export default function Leads({
             searchValue,
             selectedDates[0],
             selectedDates[1],
-            leadExecutiveId,
+            allDownliners,
             1,
             pagination.limit
           );
@@ -1916,10 +1926,37 @@ export default function Leads({
       searchValue,
       selectedDates[0],
       selectedDates[1],
-      leadExecutiveId,
+      allDownliners,
       page,
       limit
     );
+  };
+
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getAllLeadData(
+        searchValue,
+        selectedDates[0],
+        selectedDates[1],
+        downliners_ids,
+        1,
+        pagination.limit
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
   };
 
   const handleLeadCountByExecutive = async () => {
@@ -1982,7 +2019,7 @@ export default function Leads({
                             null,
                             selectedDates[0],
                             selectedDates[1],
-                            leadExecutiveId,
+                            allDownliners,
                             1,
                             pagination.limit
                           );
@@ -2031,7 +2068,7 @@ export default function Leads({
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
-                                leadExecutiveId,
+                                allDownliners,
                                 1,
                                 pagination.limit
                               );
@@ -2068,26 +2105,12 @@ export default function Leads({
                     <CommonSelectField
                       width="100%"
                       height="35px"
-                      label="Select Lead Executive"
+                      label="Select User"
                       labelMarginTop="0px"
                       labelFontSize="12px"
-                      options={leadExecutives}
-                      onChange={(e) => {
-                        console.log(e.target.value);
-                        setLeadExecutiveId(e.target.value);
-                        setPagination({
-                          page: 1,
-                        });
-                        getAllLeadData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          e.target.value,
-                          1,
-                          pagination.limit
-                        );
-                      }}
-                      value={leadExecutiveId}
+                      options={subUsers}
+                      onChange={handleSelectUser}
+                      value={selectedUserId}
                       disableClearable={false}
                       borderRightNone={true}
                     />
@@ -2165,7 +2188,7 @@ export default function Leads({
                     searchValue,
                     dates[0],
                     dates[1],
-                    leadExecutiveId,
+                    allDownliners,
                     1,
                     pagination.limit
                   );

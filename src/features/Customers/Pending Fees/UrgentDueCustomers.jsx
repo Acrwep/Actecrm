@@ -18,6 +18,7 @@ import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
 import {
   customerDuePayment,
+  getAllDownlineUsers,
   getPendingFeesCustomers,
   getTableColumns,
   inserCustomerTrack,
@@ -103,8 +104,9 @@ export default function UrgentDueCustomers({
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
-  const [leadExecutives, setLeadExecutives] = useState([]);
-  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [allDownliners, setAllDownliners] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -240,14 +242,22 @@ export default function UrgentDueCustomers({
         }
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {text === "Pending" ||
-            text === "PENDING" ||
-            text === "Verify Pending" ? (
-              <Button className="trainers_pending_button">Pending</Button>
+            {record.is_second_due === 1 ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Awaiting Finance
+                </Button>
+              </div>
             ) : text === "Form Pending" ? (
               <div>
                 <Button className="customers_status_formpending_button">
                   {text}
+                </Button>
+              </div>
+            ) : record.is_last_pay_rejected === 1 ? (
+              <div>
+                <Button className="trainers_rejected_button">
+                  Payment Rejected
                 </Button>
               </div>
             ) : text === "Awaiting Finance" ? (
@@ -430,33 +440,46 @@ export default function UrgentDueCustomers({
     setSelectedDates(PreviousAndCurrentDate);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
-      setLeadExecutives(downlineUsers);
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      setSubUsers(downlineUsers);
+
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }
+  }, [childUsers]);
+
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getPendingFeesCustomersData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         null,
-        null,
+        downliners_ids,
         1,
         10
       );
+    } catch (error) {
+      console.log("all downlines error", error);
     }
-  }, [childUsers]);
+  };
 
   const getPendingFeesCustomersData = async (
     startDate,
     endDate,
     searchvalue,
-    executive_id,
+    downliners,
     pageNumber,
     limit
   ) => {
     setLoading(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const from_date = formatToBackendIST(startDate);
     const to_date = formatToBackendIST(endDate);
 
@@ -473,7 +496,7 @@ export default function UrgentDueCustomers({
         ? { course: searchvalue }
         : {}),
       urgent_due: "Urgent Due",
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
     };
@@ -617,16 +640,22 @@ export default function UrgentDueCustomers({
                           alignItems: "center",
                         }}
                       >
-                        {text === "Pending" ||
-                        text === "PENDING" ||
-                        text === "Verify Pending" ? (
-                          <Button className="trainers_pending_button">
-                            Pending
-                          </Button>
+                        {record.is_second_due === 1 ? (
+                          <div>
+                            <Button className="customers_status_awaitfinance_button">
+                              Awaiting Finance
+                            </Button>
+                          </div>
                         ) : text === "Form Pending" ? (
                           <div>
                             <Button className="customers_status_formpending_button">
                               {text}
+                            </Button>
+                          </div>
+                        ) : record.is_last_pay_rejected === 1 ? (
+                          <div>
+                            <Button className="trainers_rejected_button">
+                              Payment Rejected
                             </Button>
                           </div>
                         ) : text === "Awaiting Finance" ? (
@@ -826,7 +855,7 @@ export default function UrgentDueCustomers({
       selectedDates[0],
       selectedDates[1],
       searchValue,
-      leadExecutiveId,
+      allDownliners,
       page,
       limit
     );
@@ -843,7 +872,7 @@ export default function UrgentDueCustomers({
         selectedDates[0],
         selectedDates[1],
         e.target.value,
-        leadExecutiveId,
+        allDownliners,
         1,
         pagination.limit
       );
@@ -924,6 +953,33 @@ export default function UrgentDueCustomers({
       setConvenienceFees(conve_fees);
     } else {
       setConvenienceFees(0);
+    }
+  };
+
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getPendingFeesCustomersData(
+        selectedDates[0],
+        selectedDates[1],
+        searchValue,
+        downliners_ids,
+        1,
+        pagination.limit
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
     }
   };
 
@@ -1026,7 +1082,7 @@ export default function UrgentDueCustomers({
           selectedDates[0],
           selectedDates[1],
           searchValue,
-          leadExecutiveId,
+          allDownliners,
           pagination.page,
           pagination.limit
         );
@@ -1094,7 +1150,7 @@ export default function UrgentDueCustomers({
                             selectedDates[0],
                             selectedDates[1],
                             null,
-                            leadExecutiveId,
+                            allDownliners,
                             1,
                             pagination.limit
                           );
@@ -1143,7 +1199,7 @@ export default function UrgentDueCustomers({
                                 selectedDates[0],
                                 selectedDates[1],
                                 null,
-                                leadExecutiveId,
+                                allDownliners,
                                 1,
                                 pagination.limit
                               );
@@ -1180,26 +1236,12 @@ export default function UrgentDueCustomers({
               <Col span={7}>
                 <CommonSelectField
                   height="35px"
-                  label="Select Lead Executive"
+                  label="Select User"
                   labelMarginTop="0px"
                   labelFontSize="13px"
-                  options={leadExecutives}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setLeadExecutiveId(e.target.value);
-                    setPagination({
-                      page: 1,
-                    });
-                    getPendingFeesCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      searchValue,
-                      e.target.value,
-                      1,
-                      pagination.limit
-                    );
-                  }}
-                  value={leadExecutiveId}
+                  options={subUsers}
+                  onChange={handleSelectUser}
+                  value={selectedUserId}
                   disableClearable={false}
                 />
               </Col>
@@ -1218,7 +1260,7 @@ export default function UrgentDueCustomers({
                       dates[0],
                       dates[1],
                       searchValue,
-                      leadExecutiveId,
+                      allDownliners,
                       1,
                       pagination.limit
                     );

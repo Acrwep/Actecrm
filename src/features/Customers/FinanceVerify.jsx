@@ -31,7 +31,7 @@ import moment from "moment";
 import CommonTextArea from "../Common/CommonTextArea";
 
 const FinanceVerify = forwardRef(
-  ({ customerDetails, drawerContentStatus, callgetCustomersApi }) => {
+  ({ customerDetails, drawerContentStatus, callgetCustomersApi }, ref) => {
     const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
       useState(false);
     const [paymentHistory, setPaymentHistory] = useState([]);
@@ -637,21 +637,15 @@ const FinanceVerify = forwardRef(
                                   Reject
                                 </Button>
 
-                                {buttonLoading ? (
-                                  <Button className="customer_finance_loadingverifybutton">
-                                    <CommonSpinner />
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    className="customer_finance_verifybutton"
-                                    onClick={() => {
-                                      setIsOpenFinanceVerifyModal(true);
-                                      setTransactionDetails(item);
-                                    }}
-                                  >
-                                    Verify
-                                  </Button>
-                                )}
+                                <Button
+                                  className="customer_finance_verifybutton"
+                                  onClick={() => {
+                                    setIsOpenFinanceVerifyModal(true);
+                                    setTransactionDetails(item);
+                                  }}
+                                >
+                                  Verify
+                                </Button>
                               </div>
                             ) : item.payment_status === "Rejected" ? (
                               <div className="customer_trans_statustext_container">
@@ -766,7 +760,7 @@ const FinanceVerify = forwardRef(
                                       fontWeight: 700,
                                     }}
                                   >
-                                    {"₹" + item.amount}
+                                    {"₹" + item.paid_amount}
                                   </p>
                                 </Col>
                               </Row>

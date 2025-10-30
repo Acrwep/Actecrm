@@ -877,6 +877,15 @@ export const getUserDownline = async (user_id) => {
   }
 };
 
+export const getAllDownlineUsers = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getAllDownlines?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //dashboard api's
 export const getScoreBoard = async (payload) => {
   try {

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../styles.css";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { getPendingFeesCustomersCount } from "../../ApiService/action";
+import {
+  getAllDownlineUsers,
+  getPendingFeesCustomersCount,
+} from "../../ApiService/action";
 import TodayDueCustomers from "./TodayDueCustomers";
 import OverallDueCustomers from "./OverallDueCustomers";
 import { getCurrentandPreviousweekDate } from "../../Common/Validation";
@@ -32,34 +35,43 @@ export default function PendingFeesCustomers() {
     urgentdue: 0,
   });
 
-  // const [userTableLoading, setUserTableLoading] = useState(true);
-
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-
-    // if (dueSelectedDates.length === 0) {
-    //   setDueSelectedDates(PreviousAndCurrentDate);
-    //   getPendingCustomersCountData(
-    //     PreviousAndCurrentDate[0],
-    //     PreviousAndCurrentDate[1]
-    //   );
-    // } else {
-    //   getPendingCustomersCountData(dueSelectedDates[0], dueSelectedDates[1]);
-    // }
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     if (childUsers.length <= 0) return;
     if (callCountApi) {
-      getPendingCustomersCountData(
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1]
-      );
+      getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
 
-  const getPendingCustomersCountData = async (startdate, enddate) => {
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getPendingCustomersCountData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners_ids
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
+  const getPendingCustomersCountData = async (
+    startdate,
+    enddate,
+    downliners
+  ) => {
     const payload = {
       from_date: startdate,
       to_date: enddate,
-      user_ids: childUsers,
+      user_ids: downliners,
     };
     try {
       const response = await getPendingFeesCustomersCount(payload);

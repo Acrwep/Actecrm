@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Upload, Modal, Button, Flex, Tooltip, Radio } from "antd";
+import {
+  Row,
+  Col,
+  Upload,
+  Modal,
+  Button,
+  Flex,
+  Tooltip,
+  Radio,
+  Select,
+  Checkbox,
+} from "antd";
 import { useNavigate } from "react-router-dom";
+import { IoCaretDownSharp } from "react-icons/io5";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import ExcelLogo from "../../assets/excel_logo.png";
@@ -26,7 +38,12 @@ export default function BulkSearch() {
 
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
-  const [statusId, setStatusId] = useState("");
+  const statusOptions = [
+    { id: "Success", name: "Success" },
+    { id: "On Progress", name: "On Progress" },
+    { id: "Not found", name: "Not found" },
+  ];
+  const [status, setStatus] = useState([]);
   const [bulkUploadModal, setBulkUploadModal] = useState(false);
   const [bulkUploadErrorModal, setBulkUploadErrorModal] = useState(false);
   const [uploadFile, setUploadFile] = useState();
@@ -301,17 +318,20 @@ export default function BulkSearch() {
     const value = e.target.value;
     setSearchValue(value);
     const filterData = duplicateData.filter((f) => {
-      const statusMatch = statusId ? f.status === statusId : true; // ✅ only check if statusId exists
+      const statusMatch = status?.length ? status.includes(f.status) : true;
+
       const typeMatch =
         filterType == 1
-          ? f.mobile.includes(value)
+          ? f.mobile?.includes(value)
           : filterType == 2
-          ? f.name.toLowerCase().includes(value.toLowerCase())
+          ? f.name?.toLowerCase().includes(value.toLowerCase())
           : filterType == 3
-          ? f.email.includes(value)
-          : true; // ✅ only check if filterType == 1
+          ? f.email?.includes(value)
+          : true;
+
       return statusMatch && typeMatch;
     });
+
     setData(filterData);
   };
 
@@ -351,11 +371,13 @@ export default function BulkSearch() {
                         onClick={() => {
                           setSearchValue("");
                           const filterData = duplicateData.filter((f) => {
-                            const statusMatch = statusId
-                              ? f.status == statusId
-                              : true; // ✅ only check if statusId exists
+                            const statusMatch = status?.length
+                              ? status.includes(f.status)
+                              : true; // ✅ only check if statusId array has values
+
                             return statusMatch;
                           });
+
                           setData(filterData);
                         }}
                       >
@@ -396,11 +418,13 @@ export default function BulkSearch() {
                             } else {
                               setSearchValue("");
                               const filterData = duplicateData.filter((f) => {
-                                const statusMatch = statusId
-                                  ? f.status == statusId
-                                  : true; // ✅ only check if statusId exists
+                                const statusMatch = status?.length
+                                  ? status.includes(f.status)
+                                  : true; // ✅ only check if statusId array has values
+
                                 return statusMatch;
                               });
+
                               setData(filterData);
                             }
                           }}
@@ -429,7 +453,7 @@ export default function BulkSearch() {
               </div>
             </Col>
             <Col span={12}>
-              <CommonSelectField
+              {/* <CommonSelectField
                 width="90%"
                 height="35px"
                 label="Select Status"
@@ -464,7 +488,87 @@ export default function BulkSearch() {
                 }}
                 value={statusId}
                 disableClearable={false}
-              />
+              /> */}
+              <div style={{ position: "relative", height: "auto" }}>
+                <p className={"trainer_skillslabel"}>Status</p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "3px",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <Select
+                      className={"bulksearch_status_multiselect"}
+                      style={{ width: "100%" }}
+                      suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
+                      mode="multiple"
+                      allowClear
+                      showSearch
+                      value={status} // Only real selected values
+                      onChange={(value) => {
+                        setStatus(value);
+
+                        const filterData = duplicateData.filter((f) => {
+                          // ✅ Handle array of statuses
+                          const statusMatch = value?.length
+                            ? value.includes(f.status)
+                            : true;
+
+                          const typeMatch =
+                            filterType === 1
+                              ? f.mobile?.includes(searchValue)
+                              : filterType === 2
+                              ? f.name
+                                  ?.toLowerCase()
+                                  .includes(searchValue.toLowerCase())
+                              : filterType === 3
+                              ? f.email?.includes(searchValue)
+                              : true;
+
+                          return statusMatch && typeMatch;
+                        });
+
+                        setData(filterData);
+                      }}
+                      status={""}
+                      optionLabelProp="label"
+                      filterOption={(input, option) =>
+                        option.label.toLowerCase().includes(input.toLowerCase())
+                      }
+                    >
+                      {statusOptions.map((item) => {
+                        const itemValue = item.id;
+                        const itemLabel = item.name;
+
+                        return (
+                          <Select.Option
+                            key={itemValue}
+                            value={itemValue}
+                            label={itemLabel}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                textWrap: "wrap",
+                              }}
+                            >
+                              <Checkbox
+                                checked={status.includes(itemValue)}
+                                style={{ marginRight: 8 }}
+                                className="common_antdmultiselect_checkbox"
+                              />
+                              {itemLabel}
+                            </div>
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </Col>
           </Row>
         </Col>

@@ -10,6 +10,7 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import {
+  getAllDownlineUsers,
   getHRDashboard,
   getRADashboard,
   getScoreBoard,
@@ -52,7 +53,7 @@ export default function Dashboard() {
   //User-Wise Sales Analysis
   const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
   const [userWiseStartDate, setUserWiseStartDate] = useState(
-    moment().subtract(1, "month").date(25).format("YYYY-MM-DD") // previous month 25
+    moment().subtract(1, "month").date(26).format("YYYY-MM-DD") // previous month 25
   );
 
   const [userWiseEndDate, setUserWiseEndDate] = useState(
@@ -82,10 +83,14 @@ export default function Dashboard() {
   );
   const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
   //lead executive
-  const [leadExecutives, setLeadExecutives] = useState([]);
-  const [leadExecutiveId, setLeadExecutiveId] = useState(null);
+  const [loginUserId, setLoginUserId] = useState("");
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [allDownliners, setAllDownliners] = useState([]);
 
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     if (childUsers.length > 0 && !mounted.current && permissions.length > 0) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setScoreBoardSelectedDates(PreviousAndCurrentDate);
@@ -94,43 +99,54 @@ export default function Dashboard() {
       setRaSelectedDates(PreviousAndCurrentDate);
       setHrSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
-      setLeadExecutives(downlineUsers);
+      setSubUsers(downlineUsers);
       mounted.current = true;
+      setLoginUserId(convertAsJson?.user_id);
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }
+  }, [childUsers, permissions]);
+
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
-          null,
+          downliners_ids,
           true
         );
       } else {
         getSaleDetailsData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
-          null,
+          downliners_ids,
           true
         );
       }
+    } catch (error) {
+      console.log("all downlines error", error);
     }
-  }, [childUsers, permissions]);
+  };
 
   const getScoreBoardData = async (
     startDate,
     endDate,
-    executive_id,
+    downliners,
     call_api
   ) => {
     setScoreBoardLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
     };
     try {
       const response = await getScoreBoard(payload);
@@ -147,7 +163,7 @@ export default function Dashboard() {
           getSaleDetailsData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            executive_id,
+            downliners,
             true
           );
         }
@@ -158,7 +174,7 @@ export default function Dashboard() {
   const getSaleDetailsData = async (
     startDate,
     endDate,
-    executive_id,
+    downliners,
     call_api
   ) => {
     if (!permissions.includes("Sale Performance")) {
@@ -166,22 +182,16 @@ export default function Dashboard() {
       getUserWiseLeadCountsData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        executive_id,
+        downliners,
         true
       );
       return;
     }
     setSaleDetailsLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
     };
     try {
       const response = await getScoreBoard(payload);
@@ -204,7 +214,7 @@ export default function Dashboard() {
           getUserWiseLeadCountsData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            executive_id,
+            downliners,
             true
           );
         }
@@ -215,36 +225,30 @@ export default function Dashboard() {
   const getUserWiseLeadCountsData = async (
     startDate,
     endDate,
-    executive_id,
+    downliners,
     call_api
   ) => {
     if (!permissions.includes("User-Wise Lead Analysis")) {
       const start_date = moment()
         .subtract(1, "month")
-        .date(25)
+        .date(26)
         .format("YYYY-MM-DD");
 
       const end_date = moment().date(25).format("YYYY-MM-DD");
       getUserWiseScoreBoardData(
         start_date,
         end_date,
-        executive_id,
+        downliners,
         true,
         userWiseType ? userWiseType : 1
       );
       return;
     }
     setUserWiseLeadsLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
     };
 
     try {
@@ -281,7 +285,7 @@ export default function Dashboard() {
         setUserWiseLeadsLoader(false);
         const start_date = moment()
           .subtract(1, "month")
-          .date(25)
+          .date(26)
           .format("YYYY-MM-DD");
 
         const end_date = moment().date(25).format("YYYY-MM-DD");
@@ -289,7 +293,7 @@ export default function Dashboard() {
           getUserWiseScoreBoardData(
             start_date,
             end_date,
-            executive_id,
+            downliners,
             true,
             userWiseType ? userWiseType : 1
           );
@@ -301,7 +305,7 @@ export default function Dashboard() {
   const getUserWiseScoreBoardData = async (
     startDate,
     endDate,
-    executive_id,
+    downliners,
     call_api,
     type
   ) => {
@@ -310,22 +314,16 @@ export default function Dashboard() {
       getTopPerformanceData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        executive_id,
+        downliners,
         true
       );
       return;
     }
     setUserWiseLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
     };
     try {
@@ -375,7 +373,7 @@ export default function Dashboard() {
           getTopPerformanceData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            executive_id,
+            downliners,
             true
           );
         }
@@ -386,7 +384,7 @@ export default function Dashboard() {
   const getTopPerformanceData = async (
     startDate,
     endDate,
-    executive_id,
+    downliners,
     call_api
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
@@ -394,22 +392,16 @@ export default function Dashboard() {
       getRAData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        executive_id,
+        downliners,
         true
       );
       return;
     }
     setPerformanceLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
     };
     try {
       const response = await getTopPerformance(payload);
@@ -423,10 +415,10 @@ export default function Dashboard() {
         setPerformanceLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
-          getRAData(
+          getHRData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            executive_id,
+            downliners,
             true
           );
         }
@@ -434,28 +426,73 @@ export default function Dashboard() {
     }
   };
 
-  const getRAData = async (startDate, endDate, executive_id, call_api) => {
-    if (!permissions.includes("RA Dashboard")) {
+  const getHRData = async (startDate, endDate, downliners, call_api) => {
+    if (!permissions.includes("HR Dashboard")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getHRData(
+      getRAData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        executive_id,
+        downliners,
         true
       );
       return;
     }
-    setRaLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
+    setHrLoader(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
+    };
+
+    try {
+      const response = await getHRDashboard(payload);
+      console.log("hr response", response);
+      const hr_data = response?.data?.data;
+      const hr_series = [
+        Number(hr_data?.awaiting_trainer || 0),
+        Number(hr_data?.awaiting_trainer_verify || 0),
+        Number(hr_data?.verified_trainer || 0),
+        Number(hr_data?.rejected_trainer || 0),
+      ];
+      if (
+        hr_series[0] == 0 &&
+        hr_series[1] == 0 &&
+        hr_series[2] == 0 &&
+        hr_series[3] == 0
+      ) {
+        console.log();
+        setHrDataSeries([]);
+        return;
+      }
+      setHrDataSeries(hr_series);
+    } catch (error) {
+      setHrDataSeries([]);
+      console.log("hr error", error);
+    } finally {
+      setTimeout(() => {
+        setHrLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api === true) {
+          getRAData(
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            downliners,
+            true
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getRAData = async (startDate, endDate, downliners, call_api) => {
+    if (!permissions.includes("RA Dashboard")) {
+      return;
+    }
+    setRaLoader(true);
+    const payload = {
+      start_date: startDate,
+      end_date: endDate,
+      user_ids: downliners,
     };
     try {
       const response = await getRADashboard(payload);
@@ -492,63 +529,6 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setRaLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getHRData(
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            executive_id,
-            true
-          );
-        }
-      }, 300);
-    }
-  };
-
-  const getHRData = async (startDate, endDate, executive_id, call_api) => {
-    if (!permissions.includes("HR Dashboard")) {
-      return;
-    }
-    setHrLoader(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
-    const payload = {
-      start_date: startDate,
-      end_date: endDate,
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
-    };
-
-    try {
-      const response = await getHRDashboard(payload);
-      console.log("hr response", response);
-      const hr_data = response?.data?.data;
-      const hr_series = [
-        Number(hr_data?.awaiting_trainer || 0),
-        Number(hr_data?.awaiting_trainer_verify || 0),
-        Number(hr_data?.verified_trainer || 0),
-        Number(hr_data?.rejected_trainer || 0),
-      ];
-      if (
-        hr_series[0] == 0 &&
-        hr_series[1] == 0 &&
-        hr_series[2] == 0 &&
-        hr_series[3] == 0
-      ) {
-        console.log();
-        setHrDataSeries([]);
-        return;
-      }
-      setHrDataSeries(hr_series);
-    } catch (error) {
-      setHrDataSeries([]);
-      console.log("hr error", error);
-    } finally {
-      setTimeout(() => {
-        setHrLoader(false);
       }, 300);
     }
   };
@@ -583,6 +563,43 @@ export default function Dashboard() {
     });
   };
 
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setScoreBoardLoader(true);
+      setSaleDetailsLoader(true);
+      setPerformanceLoader(true);
+      setRaLoader(true);
+      setHrLoader(true);
+      if (permissions.includes("Score Board")) {
+        getScoreBoardData(
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners_ids,
+          true
+        );
+      } else {
+        getSaleDetailsData(
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners_ids,
+          true
+        );
+      }
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setScoreBoardSelectedDates(PreviousAndCurrentDate);
@@ -590,7 +607,8 @@ export default function Dashboard() {
     setPerformingSelectedDates(PreviousAndCurrentDate);
     setRaSelectedDates(PreviousAndCurrentDate);
     setHrSelectedDates(PreviousAndCurrentDate);
-    setLeadExecutiveId(null);
+    setUserWiseLeadsDates(PreviousAndCurrentDate);
+    setSelectedUserId(null);
     setScoreBoardLoader(true);
     setSaleDetailsLoader(true);
     setPerformanceLoader(true);
@@ -627,37 +645,12 @@ export default function Dashboard() {
                 <CommonSelectField
                   width="40%"
                   height="35px"
-                  label="Select Lead Executive"
+                  label="Select User"
                   labelMarginTop="0px"
                   labelFontSize="12px"
-                  options={leadExecutives}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setLeadExecutiveId(e.target.value);
-                    const PreviousAndCurrentDate =
-                      getCurrentandPreviousweekDate();
-                    setScoreBoardLoader(true);
-                    setSaleDetailsLoader(true);
-                    setPerformanceLoader(true);
-                    setRaLoader(true);
-                    setHrLoader(true);
-                    if (permissions.includes("Score Board")) {
-                      getScoreBoardData(
-                        PreviousAndCurrentDate[0],
-                        PreviousAndCurrentDate[1],
-                        e.target.value,
-                        true
-                      );
-                    } else {
-                      getSaleDetailsData(
-                        PreviousAndCurrentDate[0],
-                        PreviousAndCurrentDate[1],
-                        e.target.value,
-                        true
-                      );
-                    }
-                  }}
-                  value={leadExecutiveId}
+                  options={subUsers}
+                  onChange={handleSelectUser}
+                  value={selectedUserId}
                   disableClearable={false}
                 />
               </div>
@@ -709,7 +702,7 @@ export default function Dashboard() {
                         getScoreBoardData(
                           dates[0],
                           dates[1],
-                          leadExecutiveId,
+                          allDownliners,
                           false
                         );
                       }}
@@ -888,7 +881,7 @@ export default function Dashboard() {
                         getSaleDetailsData(
                           dates[0],
                           dates[1],
-                          leadExecutiveId,
+                          allDownliners,
                           false
                         );
                       }}
@@ -968,7 +961,7 @@ export default function Dashboard() {
                         getUserWiseLeadCountsData(
                           dates[0],
                           dates[1],
-                          leadExecutiveId,
+                          allDownliners,
                           false
                         );
                       }}
@@ -1006,7 +999,11 @@ export default function Dashboard() {
                           leads={userWiseLeadsCount}
                           customers={userWiseLeadjoiningsCount}
                           colors={["#258a25", "#5b6aca", "#b22021"]}
-                          height={userWiseLeadsXaxis.length * 40}
+                          height={
+                            userWiseLeadsXaxis.length <= 5
+                              ? 280
+                              : userWiseLeadsXaxis.length * 45
+                          }
                         />
                       ) : (
                         <div className="dashboard_chart_nodata_conatiner">
@@ -1073,7 +1070,7 @@ export default function Dashboard() {
                           const startDate = selectedMonth
                             .clone()
                             .subtract(1, "month")
-                            .date(25)
+                            .date(26)
                             .format("YYYY-MM-DD");
 
                           // End date: 25th of selected month
@@ -1089,12 +1086,10 @@ export default function Dashboard() {
                           getUserWiseScoreBoardData(
                             startDate,
                             endDate,
-                            leadExecutiveId,
+                            allDownliners,
                             false,
                             userWiseType
                           );
-                          // Example API call
-                          // getRAData(startDate, endDate, leadExecutiveId, false);
                         }
                       }}
                       value={month}
@@ -1135,7 +1130,7 @@ export default function Dashboard() {
                       getUserWiseScoreBoardData(
                         userWiseStartDate,
                         userWiseEndDate,
-                        leadExecutiveId,
+                        allDownliners,
                         false,
                         value
                       );
@@ -1187,7 +1182,11 @@ export default function Dashboard() {
                             ? "Collection"
                             : "Pending"
                         }
-                        height={userWiseXaxis.length * 45}
+                        height={
+                          userWiseXaxis.length <= 5
+                            ? 280
+                            : userWiseXaxis.length * 45
+                        }
                       />
                     ) : (
                       ""
@@ -1231,7 +1230,7 @@ export default function Dashboard() {
                         getTopPerformanceData(
                           dates[0],
                           dates[1],
-                          leadExecutiveId,
+                          allDownliners,
                           false
                         );
                       }}
@@ -1360,7 +1359,7 @@ export default function Dashboard() {
                       value={performingSelectedDates}
                       onDateChange={(dates) => {
                         setHrSelectedDates(dates);
-                        getHRData(dates[0], dates[1], leadExecutiveId, false);
+                        getHRData(dates[0], dates[1], allDownliners, false);
                       }}
                     />
                   </div>
@@ -1470,7 +1469,7 @@ export default function Dashboard() {
                       value={performingSelectedDates}
                       onDateChange={(dates) => {
                         setRaSelectedDates(dates);
-                        getRAData(dates[0], dates[1], leadExecutiveId, false);
+                        getRAData(dates[0], dates[1], allDownliners, false);
                       }}
                     />
                   </div>

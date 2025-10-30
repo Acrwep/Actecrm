@@ -86,7 +86,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border: 1px solid #eb6d4b;
   background-color: #eb6e4b11;
   border-radius: 6px;
@@ -94,18 +94,20 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  gap: 4px;
 }
 .customers_active_awaitfinance_container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border: 1px solid #eb6d4b;
   background-color: #eb6d4b;
   border-radius: 6px;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
+  gap: 4px;
 }
 .customers_studentvefity_container {
   display: flex;

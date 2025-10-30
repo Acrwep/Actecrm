@@ -38,6 +38,7 @@ import {
 import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
+import PrismaZoom from "react-prismazoom";
 
 const AssignAndVerifyTrainer = forwardRef(
   (
@@ -80,6 +81,8 @@ const AssignAndVerifyTrainer = forwardRef(
     const [trainerClassGoingCount, setTrainerClassGoingCount] = useState(0);
     //trainer verify usestates
     const [assignTrainerData, setAssignTrainerData] = useState(null);
+    const [isProofScreenshotModal, setIsProofScreenshotModal] = useState(false);
+    const [proofScreenshot, setProofScreenshot] = useState("");
     const [isShowRejectTrainerCommentBox, setIsShowRejectTrainerCommentBox] =
       useState(false);
     const [rejectTrainerComments, setRejectTrainerComments] = useState("");
@@ -563,6 +566,24 @@ const AssignAndVerifyTrainer = forwardRef(
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
+                                        HR Name
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.trainer_hr_name
+                                        ? item.trainer_hr_name
+                                        : "-"}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
                                         Trainer Name
                                       </p>
                                     </div>
@@ -574,7 +595,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                   </Col>
                                 </Row>
                               </Col>
-                              <Col span={12}>
+                              {/* <Col span={12}>
                                 <Row>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
@@ -589,7 +610,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </p>
                                   </Col>
                                 </Row>
-                              </Col>
+                              </Col> */}
                             </Row>
 
                             <Row gutter={16} style={{ marginTop: "16px" }}>
@@ -621,6 +642,43 @@ const AssignAndVerifyTrainer = forwardRef(
                                   <Col span={12}>
                                     <p className="customerdetails_text">
                                       {item.trainer_type}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            <Row gutter={16} style={{ marginTop: "16px" }}>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Commercial
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {"₹" + item.commercial}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={12}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Commercial%
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.commercial_percentage
+                                        ? item.commercial_percentage + "%"
+                                        : ""}
                                     </p>
                                   </Col>
                                 </Row>
@@ -900,6 +958,20 @@ const AssignAndVerifyTrainer = forwardRef(
                 <Row style={{ marginTop: "12px" }} gutter={16}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">HR Name</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {assignTrainerData && assignTrainerData.hr_head
+                        ? assignTrainerData.hr_head
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }} gutter={16}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Trainer Name</p>
                     </div>
                   </Col>
@@ -1055,6 +1127,33 @@ const AssignAndVerifyTrainer = forwardRef(
                 <Row style={{ marginTop: "12px" }} gutter={16}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Proof Screenshot
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <button
+                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                      style={{ gap: "4px" }}
+                      onClick={() => {
+                        setIsProofScreenshotModal(true);
+                        setProofScreenshot(
+                          customerDetails &&
+                            customerDetails.proof_communication !== null
+                            ? customerDetails.proof_communication
+                            : "-"
+                        );
+                      }}
+                    >
+                      <FaRegEye size={16} /> View screenshot
+                    </button>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }} gutter={16}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Class Taken</p>
                     </div>
                   </Col>
@@ -1177,7 +1276,23 @@ const AssignAndVerifyTrainer = forwardRef(
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <FaRegCircleUser size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Name</p>
+                        <p className="customerdetails_rowheading">HR Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.hr_head ? item.hr_head : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">
+                          Trainer Name
+                        </p>
                       </div>
                     </Col>
                     <Col span={12}>
@@ -1457,6 +1572,33 @@ const AssignAndVerifyTrainer = forwardRef(
                 Yes
               </Button>
             )}
+          </div>
+        </Modal>
+
+        {/* proof screenshot modal */}
+        <Modal
+          title="Proof Screenshot"
+          open={isProofScreenshotModal}
+          onCancel={() => {
+            setIsProofScreenshotModal(false);
+            setProofScreenshot("");
+          }}
+          footer={false}
+          width="32%"
+          className="customer_paymentscreenshot_modal"
+        >
+          <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+            <PrismaZoom>
+              {proofScreenshot ? (
+                <img
+                  src={`data:image/png;base64,${proofScreenshot}`}
+                  alt="payment screenshot"
+                  className="customer_paymentscreenshot_image"
+                />
+              ) : (
+                "-"
+              )}
+            </PrismaZoom>
           </div>
         </Modal>
       </>
