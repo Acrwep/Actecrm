@@ -407,45 +407,60 @@ export default function LeadFollowUp({
         setSubUsers(downlineUsers);
         mounted.current = true;
         setLoginUserId(convertAsJson?.user_id);
-        getAllDownlineUsersData(convertAsJson?.user_id);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        getLeadFollowUpsData(
+          null,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          false,
+          null,
+          1,
+          10
+        );
       }
     }
   }, [childUsers, permissions]);
 
-  const getAllDownlineUsersData = async (user_id) => {
-    try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getLeadFollowUpsData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        false,
-        downliners_ids,
-        1,
-        10
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
-  };
+  // const getAllDownlineUsersData = async (user_id) => {
+  //   try {
+  //     const response = await getAllDownlineUsers(user_id);
+  //     console.log("all downlines response", response);
+  //     const downliners = response?.data?.data || [];
+  //     const downliners_ids = downliners.map((u) => {
+  //       return u.user_id;
+  //     });
+  //     setAllDownliners(downliners_ids);
+  //     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+  //     getLeadFollowUpsData(
+  //       null,
+  //       PreviousAndCurrentDate[0],
+  //       PreviousAndCurrentDate[1],
+  //       false,
+  //       downliners_ids,
+  //       1,
+  //       10
+  //     );
+  //   } catch (error) {
+  //     console.log("all downlines error", error);
+  //   }
+  // };
 
   const getLeadFollowUpsData = async (
     searchvalue,
     startDate,
     endDate,
     updateStatus,
-    downliners,
+    executive_id,
     pageNumber,
     limit
   ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
@@ -456,7 +471,7 @@ export default function LeadFollowUp({
         : {}),
       from_date: startDate,
       to_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       page: pageNumber,
       limit: limit,
     };
@@ -665,7 +680,7 @@ export default function LeadFollowUp({
       selectedDates[0],
       selectedDates[1],
       false,
-      allDownliners,
+      selectedUserId,
       page,
       limit
     );
@@ -796,7 +811,7 @@ export default function LeadFollowUp({
           selectedDates[0],
           selectedDates[1],
           true,
-          allDownliners,
+          selectedUserId,
           pagination.page,
           pagination.limit
         );
@@ -833,7 +848,7 @@ export default function LeadFollowUp({
         selectedDates[0],
         selectedDates[1],
         false,
-        allDownliners,
+        selectedUserId,
         1,
         pagination.limit
       );
@@ -1094,7 +1109,7 @@ export default function LeadFollowUp({
           selectedDates[0],
           selectedDates[1],
           false,
-          allDownliners,
+          selectedUserId,
           1,
           pagination.limit
         );
@@ -1214,10 +1229,16 @@ export default function LeadFollowUp({
 
   const handleLeadCountByExecutive = async () => {
     setLeadExeCountLoading(true);
+    let lead_executive = [];
+    if (selectedUserId) {
+      lead_executive.push(selectedUserId);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: selectedDates[0],
       end_date: selectedDates[1],
-      user_ids: allDownliners,
+      user_ids: lead_executive,
     };
     try {
       const response = await getLeadFollowUpsCountByUserIds(payload);
@@ -1236,29 +1257,30 @@ export default function LeadFollowUp({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      setPagination({
-        page: 1,
-      });
-      getLeadFollowUpsData(
-        null,
-        selectedDates[0],
-        selectedDates[1],
-        false,
-        downliners_ids,
-        1,
-        10
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
+    setPagination({
+      page: 1,
+    });
+    getLeadFollowUpsData(
+      null,
+      selectedDates[0],
+      selectedDates[1],
+      false,
+      value,
+      1,
+      10
+    );
+    // try {
+    //   const response = await getAllDownlineUsers(value ? value : loginUserId);
+    //   console.log("all downlines response", response);
+    //   const downliners = response?.data?.data || [];
+    //   const downliners_ids = downliners.map((u) => {
+    //     return u.user_id;
+    //   });
+    //   setAllDownliners(downliners_ids);
+
+    // } catch (error) {
+    //   console.log("all downlines error", error);
+    // }
   };
   const formReset = (dontCloseAddDrawer) => {
     setIsOpenFilterDrawer(false);
@@ -1370,7 +1392,7 @@ export default function LeadFollowUp({
                             selectedDates[0],
                             selectedDates[1],
                             false,
-                            allDownliners,
+                            selectedUserId,
                             1,
                             pagination.limit
                           );
@@ -1420,7 +1442,7 @@ export default function LeadFollowUp({
                                 selectedDates[0],
                                 selectedDates[1],
                                 false,
-                                allDownliners,
+                                selectedUserId,
                                 1,
                                 pagination.limit
                               );
@@ -1541,7 +1563,7 @@ export default function LeadFollowUp({
                     dates[0],
                     dates[1],
                     false,
-                    allDownliners,
+                    selectedUserId,
                     1,
                     pagination.limit
                   );

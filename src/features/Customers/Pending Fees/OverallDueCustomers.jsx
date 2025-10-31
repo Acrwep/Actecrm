@@ -444,42 +444,56 @@ export default function OverallDueCustomers({
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setSubUsers(downlineUsers);
 
-      getAllDownlineUsersData(convertAsJson?.user_id);
-    }
-  }, [childUsers]);
-
-  const getAllDownlineUsersData = async (user_id) => {
-    try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      // getAllDownlineUsersData(convertAsJson?.user_id);
       getPendingFeesCustomersData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         null,
-        downliners_ids,
+        null,
         1,
         10
       );
-    } catch (error) {
-      console.log("all downlines error", error);
     }
-  };
+  }, [childUsers]);
+
+  // const getAllDownlineUsersData = async (user_id) => {
+  //   try {
+  //     const response = await getAllDownlineUsers(user_id);
+  //     console.log("all downlines response", response);
+  //     const downliners = response?.data?.data || [];
+  //     const downliners_ids = downliners.map((u) => {
+  //       return u.user_id;
+  //     });
+  //     setAllDownliners(downliners_ids);
+  //     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+  //     getPendingFeesCustomersData(
+  //       PreviousAndCurrentDate[0],
+  //       PreviousAndCurrentDate[1],
+  //       null,
+  //       downliners_ids,
+  //       1,
+  //       10
+  //     );
+  //   } catch (error) {
+  //     console.log("all downlines error", error);
+  //   }
+  // };
 
   const getPendingFeesCustomersData = async (
     startDate,
     endDate,
     searchvalue,
-    downliners,
+    executive_id,
     pageNumber,
     limit
   ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const from_date = formatToBackendIST(startDate);
     const to_date = formatToBackendIST(endDate);
 
@@ -495,7 +509,7 @@ export default function OverallDueCustomers({
         : searchvalue && filterType == 4
         ? { course: searchvalue }
         : {}),
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       page: pageNumber,
       limit: limit,
     };
@@ -853,7 +867,7 @@ export default function OverallDueCustomers({
       selectedDates[0],
       selectedDates[1],
       searchValue,
-      allDownliners,
+      selectedUserId,
       page,
       limit
     );
@@ -870,7 +884,7 @@ export default function OverallDueCustomers({
         selectedDates[0],
         selectedDates[1],
         e.target.value,
-        allDownliners,
+        selectedUserId,
         1,
         pagination.limit
       );
@@ -957,28 +971,39 @@ export default function OverallDueCustomers({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      setPagination({
-        page: 1,
-      });
-      getPendingFeesCustomersData(
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        downliners_ids,
-        1,
-        pagination.limit
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
+    setPagination({
+      page: 1,
+    });
+    getPendingFeesCustomersData(
+      selectedDates[0],
+      selectedDates[1],
+      searchValue,
+      value,
+      1,
+      pagination.limit
+    );
+    // try {
+    //   const response = await getAllDownlineUsers(value ? value : loginUserId);
+    //   console.log("all downlines response", response);
+    //   const downliners = response?.data?.data || [];
+    //   const downliners_ids = downliners.map((u) => {
+    //     return u.user_id;
+    //   });
+    //   setAllDownliners(downliners_ids);
+    //   setPagination({
+    //     page: 1,
+    //   });
+    //   getPendingFeesCustomersData(
+    //     selectedDates[0],
+    //     selectedDates[1],
+    //     searchValue,
+    //     downliners_ids,
+    //     1,
+    //     pagination.limit
+    //   );
+    // } catch (error) {
+    //   console.log("all downlines error", error);
+    // }
   };
 
   const handlePaymentSubmit = async () => {
@@ -1080,7 +1105,7 @@ export default function OverallDueCustomers({
           selectedDates[0],
           selectedDates[1],
           searchValue,
-          allDownliners,
+          selectedUserId,
           pagination.page,
           pagination.limit
         );
@@ -1148,7 +1173,7 @@ export default function OverallDueCustomers({
                             selectedDates[0],
                             selectedDates[1],
                             null,
-                            allDownliners,
+                            selectedUserId,
                             1,
                             pagination.limit
                           );
@@ -1197,7 +1222,7 @@ export default function OverallDueCustomers({
                                 selectedDates[0],
                                 selectedDates[1],
                                 null,
-                                allDownliners,
+                                selectedUserId,
                                 1,
                                 pagination.limit
                               );
@@ -1258,7 +1283,7 @@ export default function OverallDueCustomers({
                       dates[0],
                       dates[1],
                       searchValue,
-                      allDownliners,
+                      selectedUserId,
                       1,
                       pagination.limit
                     );

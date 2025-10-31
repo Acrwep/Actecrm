@@ -974,88 +974,95 @@ export default function Customers() {
       console.log(error);
     } finally {
       setTimeout(() => {
-        getAllDownlineUsersData(null);
+        // getAllDownlineUsersData(null);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        const receivedValueFromDashboard = location.state?.status || null;
+        const receivedStartDateFromDashboard =
+          location.state?.startDate || null;
+        const receivedEndDateFromDashboard = location.state?.endDate || null;
+
+        console.log("Received value from dashboard:", location);
+        setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
+        if (
+          receivedValueFromDashboard == "Awaiting Trainer" ||
+          receivedValueFromDashboard == "Awaiting Class" ||
+          receivedValueFromDashboard == "Class Scheduled" ||
+          receivedValueFromDashboard == "Class Going"
+        ) {
+          scroll(600);
+        }
+        if (
+          receivedValueFromDashboard == "Escalated" ||
+          receivedValueFromDashboard == "Completed"
+        ) {
+          scroll(1200);
+        }
+        if (receivedStartDateFromDashboard) {
+          setSelectedDates([
+            receivedStartDateFromDashboard,
+            receivedEndDateFromDashboard,
+          ]);
+        } else {
+          setSelectedDates(PreviousAndCurrentDate);
+        }
+
+        getCustomersData(
+          receivedStartDateFromDashboard
+            ? receivedStartDateFromDashboard
+            : PreviousAndCurrentDate[0],
+          receivedEndDateFromDashboard
+            ? receivedEndDateFromDashboard
+            : PreviousAndCurrentDate[1],
+          null,
+          receivedValueFromDashboard ? receivedValueFromDashboard : null,
+          null,
+          [
+            { id: 1, name: "Classroom", checked: true },
+            { id: 1, name: "Online", checked: true },
+          ],
+          1,
+          10
+        );
       }, 300);
     }
   };
 
-  const getAllDownlineUsersData = async (user_id) => {
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    try {
-      const response = await getAllDownlineUsers(
-        user_id ? user_id : convertAsJson.user_id
-      );
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      const receivedValueFromDashboard = location.state?.status || null;
-      const receivedStartDateFromDashboard = location.state?.startDate || null;
-      const receivedEndDateFromDashboard = location.state?.endDate || null;
-
-      console.log("Received value from dashboard:", location);
-      setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
-      if (
-        receivedValueFromDashboard == "Awaiting Trainer" ||
-        receivedValueFromDashboard == "Awaiting Class" ||
-        receivedValueFromDashboard == "Class Scheduled" ||
-        receivedValueFromDashboard == "Class Going"
-      ) {
-        scroll(600);
-      }
-      if (
-        receivedValueFromDashboard == "Escalated" ||
-        receivedValueFromDashboard == "Completed"
-      ) {
-        scroll(1200);
-      }
-      if (receivedStartDateFromDashboard) {
-        setSelectedDates([
-          receivedStartDateFromDashboard,
-          receivedEndDateFromDashboard,
-        ]);
-      } else {
-        setSelectedDates(PreviousAndCurrentDate);
-      }
-
-      getCustomersData(
-        receivedStartDateFromDashboard
-          ? receivedStartDateFromDashboard
-          : PreviousAndCurrentDate[0],
-        receivedEndDateFromDashboard
-          ? receivedEndDateFromDashboard
-          : PreviousAndCurrentDate[1],
-        null,
-        receivedValueFromDashboard ? receivedValueFromDashboard : null,
-        downliners_ids,
-        [
-          { id: 1, name: "Classroom", checked: true },
-          { id: 1, name: "Online", checked: true },
-        ],
-        1,
-        10
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
-  };
+  // const getAllDownlineUsersData = async (user_id) => {
+  //   const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+  //   const convertAsJson = JSON.parse(getLoginUserDetails);
+  //   try {
+  //     const response = await getAllDownlineUsers(
+  //       user_id ? user_id : convertAsJson.user_id
+  //     );
+  //     console.log("all downlines response", response);
+  //     const downliners = response?.data?.data || [];
+  //     const downliners_ids = downliners.map((u) => {
+  //       return u.user_id;
+  //     });
+  //     setAllDownliners(downliners_ids);
+  //   } catch (error) {
+  //     console.log("all downlines error", error);
+  //   }
+  // };
 
   const getCustomersData = async (
     startDate,
     endDate,
     searchvalue,
     customerStatus,
-    downliners,
+    executive_id,
     branch_options,
     pageNumber,
     limit,
     is_generate_certificate
   ) => {
     setLoading(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const region_data = branch_options
       .filter((f) => f.checked === true)
       .map((f) => f.name);
@@ -1078,7 +1085,7 @@ export default function Customers() {
             ? ["Awaiting Trainer", "Trainer Rejected"]
             : customerStatus,
       }),
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       ...(region_data.includes("Classroom") && region_data.includes("Online")
         ? {}
         : region_data.includes("Classroom")
@@ -2059,7 +2066,7 @@ export default function Customers() {
       selectedDates[1],
       searchValue,
       status,
-      allDownliners,
+      selectedUserId,
       branchOptions,
       page,
       limit
@@ -2096,7 +2103,7 @@ export default function Customers() {
         selectedDates[1],
         e.target.value,
         status,
-        allDownliners,
+        selectedUserId,
         branchOptions,
         1,
         pagination.limit
@@ -2107,30 +2114,43 @@ export default function Customers() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      setPagination({
-        page: 1,
-      });
-      getCustomersData(
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        status,
-        downliners_ids,
-        branchOptions,
-        1,
-        pagination.limit
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
+    setPagination({
+      page: 1,
+    });
+    getCustomersData(
+      selectedDates[0],
+      selectedDates[1],
+      searchValue,
+      status,
+      value,
+      branchOptions,
+      1,
+      pagination.limit
+    );
+    // try {
+    //   const response = await getAllDownlineUsers(value ? value : loginUserId);
+    //   console.log("all downlines response", response);
+    //   const downliners = response?.data?.data || [];
+    //   const downliners_ids = downliners.map((u) => {
+    //     return u.user_id;
+    //   });
+    //   setAllDownliners(downliners_ids);
+    //   setPagination({
+    //     page: 1,
+    //   });
+    //   getCustomersData(
+    //     selectedDates[0],
+    //     selectedDates[1],
+    //     searchValue,
+    //     status,
+    //     downliners_ids,
+    //     branchOptions,
+    //     1,
+    //     pagination.limit
+    //   );
+    // } catch (error) {
+    //   console.log("all downlines error", error);
+    // }
   };
 
   const handleEdit = (item) => {
@@ -2268,7 +2288,7 @@ export default function Customers() {
                             selectedDates[1],
                             null,
                             status,
-                            allDownliners,
+                            selectedUserId,
                             branchOptions,
                             1,
                             pagination.limit
@@ -2319,7 +2339,7 @@ export default function Customers() {
                                 selectedDates[1],
                                 null,
                                 status,
-                                allDownliners,
+                                selectedUserId,
                                 branchOptions,
                                 1,
                                 pagination.limit
@@ -2380,7 +2400,7 @@ export default function Customers() {
                     dates[1],
                     searchValue,
                     status,
-                    allDownliners,
+                    selectedUserId,
                     branchOptions,
                     1,
                     pagination.limit
@@ -2449,7 +2469,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 null,
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2486,7 +2506,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Form Pending",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2534,7 +2554,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   isSwap ? "Payment Rejected" : "Awaiting Finance",
-                  allDownliners,
+                  selectedUserId,
                   branchOptions,
                   1,
                   pagination.limit
@@ -2587,7 +2607,7 @@ export default function Customers() {
                     selectedDates[1],
                     searchValue,
                     newStatus,
-                    allDownliners,
+                    selectedUserId,
                     branchOptions,
                     1,
                     pagination.limit
@@ -2616,7 +2636,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Verify",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2654,7 +2674,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Trainer",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2692,7 +2712,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Trainer Verify",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2731,7 +2751,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Awaiting Class",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2770,7 +2790,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Class Scheduled",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2808,7 +2828,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Class Going",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2847,7 +2867,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Passedout Process",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2885,7 +2905,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Completed",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2924,7 +2944,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Escalated",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -2963,7 +2983,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 "Others",
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 1,
                 pagination.limit
@@ -3480,7 +3500,7 @@ export default function Customers() {
               selectedDates[1],
               searchValue,
               status,
-              allDownliners,
+              selectedUserId,
               branchOptions,
               pagination.page,
               pagination.limit
@@ -3841,7 +3861,7 @@ export default function Customers() {
                 selectedDates[1],
                 searchValue,
                 status,
-                allDownliners,
+                selectedUserId,
                 branchOptions,
                 pagination.page,
                 pagination.limit
@@ -3864,7 +3884,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  allDownliners,
+                  selectedUserId,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3892,7 +3912,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  allDownliners,
+                  selectedUserId,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3918,7 +3938,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  allDownliners,
+                  selectedUserId,
                   branchOptions,
                   pagination.page,
                   pagination.limit
@@ -3951,7 +3971,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  allDownliners,
+                  selectedUserId,
                   branchOptions,
                   pagination.page,
                   pagination.limit,
@@ -4208,7 +4228,7 @@ export default function Customers() {
                   selectedDates[1],
                   searchValue,
                   status,
-                  allDownliners,
+                  selectedUserId,
                   duplicateBranchOptions,
                   pagination.page,
                   pagination.limit

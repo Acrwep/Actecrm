@@ -59,23 +59,24 @@ export default function LeadManager() {
         return;
       }
       mounted.current = true;
-      getAllDownlineUsersData(convertAsJson?.user_id);
+      // getAllDownlineUsersData(convertAsJson?.user_id);
+      getLeadAndFollowupCountData(childUsers);
     }
   }, [childUsers, permissions]);
 
-  const getAllDownlineUsersData = async (user_id) => {
-    try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      getLeadAndFollowupCountData(downliners_ids);
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
-  };
+  // const getAllDownlineUsersData = async (user_id) => {
+  //   try {
+  //     const response = await getAllDownlineUsers(user_id);
+  //     console.log("all downlines response", response);
+  //     const downliners = response?.data?.data || [];
+  //     const downliners_ids = downliners.map((u) => {
+  //       return u.user_id;
+  //     });
+  //     getLeadAndFollowupCountData(downliners_ids);
+  //   } catch (error) {
+  //     console.log("all downlines error", error);
+  //   }
+  // };
 
   const getLeadAndFollowupCountData = async (downliners) => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();

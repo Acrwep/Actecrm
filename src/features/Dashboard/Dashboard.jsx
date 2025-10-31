@@ -108,51 +108,72 @@ export default function Dashboard() {
       setSubUsers(downlineUsers);
       mounted.current = true;
       setLoginUserId(convertAsJson?.user_id);
-      getAllDownlineUsersData(convertAsJson?.user_id);
-    }
-  }, [childUsers, permissions]);
-
-  const getAllDownlineUsersData = async (user_id) => {
-    try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      // getAllDownlineUsersData(convertAsJson?.user_id);
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
-          downliners_ids,
+          null,
           true
         );
       } else {
         getSaleDetailsData(
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
-          downliners_ids,
+          null,
           true
         );
       }
-    } catch (error) {
-      console.log("all downlines error", error);
     }
-  };
+  }, [childUsers, permissions]);
+
+  // const getAllDownlineUsersData = async (user_id) => {
+  //   try {
+  //     const response = await getAllDownlineUsers(user_id);
+  //     console.log("all downlines response", response);
+  //     const downliners = response?.data?.data || [];
+  //     const downliners_ids = downliners.map((u) => {
+  //       return u.user_id;
+  //     });
+  //     setAllDownliners(downliners_ids);
+  //     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+  //     if (permissions.includes("Score Board")) {
+  //       getScoreBoardData(
+  //         PreviousAndCurrentDate[0],
+  //         PreviousAndCurrentDate[1],
+  //         downliners_ids,
+  //         true
+  //       );
+  //     } else {
+  //       getSaleDetailsData(
+  //         PreviousAndCurrentDate[0],
+  //         PreviousAndCurrentDate[1],
+  //         downliners_ids,
+  //         true
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.log("all downlines error", error);
+  //   }
+  // };
 
   const getScoreBoardData = async (
     startDate,
     endDate,
-    downliners,
+    executive_id,
     call_api
   ) => {
     setScoreBoardLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getScoreBoard(payload);
@@ -169,7 +190,7 @@ export default function Dashboard() {
           getSaleDetailsData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            downliners,
+            executive_id,
             true
           );
         }
@@ -180,7 +201,7 @@ export default function Dashboard() {
   const getSaleDetailsData = async (
     startDate,
     endDate,
-    downliners,
+    executive_id,
     call_api
   ) => {
     if (!permissions.includes("Sale Performance")) {
@@ -188,17 +209,23 @@ export default function Dashboard() {
       getUserWiseLeadCountsData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        downliners,
+        executive_id,
         true,
         userWiseLeadsType ? userWiseLeadsType : 1
       );
       return;
     }
     setSaleDetailsLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getScoreBoard(payload);
@@ -221,7 +248,7 @@ export default function Dashboard() {
           getUserWiseLeadCountsData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            downliners,
+            executive_id,
             true,
             userWiseLeadsType ? userWiseLeadsType : 1
           );
@@ -233,7 +260,7 @@ export default function Dashboard() {
   const getUserWiseLeadCountsData = async (
     startDate,
     endDate,
-    downliners,
+    executive_id,
     call_api,
     type
   ) => {
@@ -247,17 +274,23 @@ export default function Dashboard() {
       getUserWiseScoreBoardData(
         start_date,
         end_date,
-        downliners,
+        executive_id,
         true,
         userWiseType ? userWiseType : 1
       );
       return;
     }
     setUserWiseLeadsLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
 
@@ -339,7 +372,7 @@ export default function Dashboard() {
           getUserWiseScoreBoardData(
             start_date,
             end_date,
-            downliners,
+            executive_id,
             true,
             userWiseType ? userWiseType : 1
           );
@@ -351,7 +384,7 @@ export default function Dashboard() {
   const getUserWiseScoreBoardData = async (
     startDate,
     endDate,
-    downliners,
+    executive_id,
     call_api,
     type
   ) => {
@@ -360,16 +393,22 @@ export default function Dashboard() {
       getTopPerformanceData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        downliners,
+        executive_id,
         true
       );
       return;
     }
     setUserWiseLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
     };
     try {
@@ -419,7 +458,7 @@ export default function Dashboard() {
           getTopPerformanceData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            downliners,
+            executive_id,
             true
           );
         }
@@ -430,7 +469,7 @@ export default function Dashboard() {
   const getTopPerformanceData = async (
     startDate,
     endDate,
-    downliners,
+    executive_id,
     call_api
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
@@ -438,16 +477,22 @@ export default function Dashboard() {
       getHRData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        downliners,
+        executive_id,
         true
       );
       return;
     }
     setPerformanceLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getTopPerformance(payload);
@@ -464,7 +509,7 @@ export default function Dashboard() {
           getHRData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            downliners,
+            executive_id,
             true
           );
         }
@@ -472,22 +517,28 @@ export default function Dashboard() {
     }
   };
 
-  const getHRData = async (startDate, endDate, downliners, call_api) => {
+  const getHRData = async (startDate, endDate, executive_id, call_api) => {
     if (!permissions.includes("HR Dashboard")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getRAData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        downliners,
+        executive_id,
         true
       );
       return;
     }
     setHrLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
 
     try {
@@ -522,7 +573,7 @@ export default function Dashboard() {
           getRAData(
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
-            downliners,
+            executive_id,
             true
           );
         }
@@ -530,15 +581,21 @@ export default function Dashboard() {
     }
   };
 
-  const getRAData = async (startDate, endDate, downliners, call_api) => {
+  const getRAData = async (startDate, endDate, executive_id, call_api) => {
     if (!permissions.includes("RA Dashboard")) {
       return;
     }
     setRaLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
       const response = await getRADashboard(payload);
@@ -612,38 +669,59 @@ export default function Dashboard() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setScoreBoardLoader(true);
-      setSaleDetailsLoader(true);
-      setPerformanceLoader(true);
-      setRaLoader(true);
-      setHrLoader(true);
-      if (permissions.includes("Score Board")) {
-        getScoreBoardData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          downliners_ids,
-          true
-        );
-      } else {
-        getSaleDetailsData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          downliners_ids,
-          true
-        );
-      }
-    } catch (error) {
-      console.log("all downlines error", error);
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setScoreBoardLoader(true);
+    setSaleDetailsLoader(true);
+    setPerformanceLoader(true);
+    setRaLoader(true);
+    setHrLoader(true);
+    if (permissions.includes("Score Board")) {
+      getScoreBoardData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        value,
+        true
+      );
+    } else {
+      getSaleDetailsData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        value,
+        true
+      );
     }
+    // try {
+    //   const response = await getAllDownlineUsers(value ? value : loginUserId);
+    //   console.log("all downlines response", response);
+    //   const downliners = response?.data?.data || [];
+    //   const downliners_ids = downliners.map((u) => {
+    //     return u.user_id;
+    //   });
+    //   setAllDownliners(downliners_ids);
+    //   const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    //   setScoreBoardLoader(true);
+    //   setSaleDetailsLoader(true);
+    //   setPerformanceLoader(true);
+    //   setRaLoader(true);
+    //   setHrLoader(true);
+    //   if (permissions.includes("Score Board")) {
+    //     getScoreBoardData(
+    //       PreviousAndCurrentDate[0],
+    //       PreviousAndCurrentDate[1],
+    //       downliners_ids,
+    //       true
+    //     );
+    //   } else {
+    //     getSaleDetailsData(
+    //       PreviousAndCurrentDate[0],
+    //       PreviousAndCurrentDate[1],
+    //       downliners_ids,
+    //       true
+    //     );
+    //   }
+    // } catch (error) {
+    //   console.log("all downlines error", error);
+    // }
   };
 
   const handleRefresh = () => {
@@ -748,7 +826,7 @@ export default function Dashboard() {
                         getScoreBoardData(
                           dates[0],
                           dates[1],
-                          allDownliners,
+                          selectedUserId,
                           false
                         );
                       }}
@@ -927,7 +1005,7 @@ export default function Dashboard() {
                         getSaleDetailsData(
                           dates[0],
                           dates[1],
-                          allDownliners,
+                          selectedUserId,
                           false
                         );
                       }}
@@ -1007,7 +1085,7 @@ export default function Dashboard() {
                         getUserWiseLeadCountsData(
                           dates[0],
                           dates[1],
-                          allDownliners,
+                          selectedUserId,
                           false
                         );
                       }}
@@ -1048,7 +1126,7 @@ export default function Dashboard() {
                       getUserWiseLeadCountsData(
                         userWiseStartDate,
                         userWiseEndDate,
-                        allDownliners,
+                        selectedUserId,
                         false,
                         value
                       );
@@ -1184,7 +1262,7 @@ export default function Dashboard() {
                           getUserWiseScoreBoardData(
                             startDate,
                             endDate,
-                            allDownliners,
+                            selectedUserId,
                             false,
                             userWiseType
                           );
@@ -1228,7 +1306,7 @@ export default function Dashboard() {
                       getUserWiseScoreBoardData(
                         userWiseStartDate,
                         userWiseEndDate,
-                        allDownliners,
+                        selectedUserId,
                         false,
                         value
                       );
@@ -1328,7 +1406,7 @@ export default function Dashboard() {
                         getTopPerformanceData(
                           dates[0],
                           dates[1],
-                          allDownliners,
+                          selectedUserId,
                           false
                         );
                       }}
@@ -1457,7 +1535,7 @@ export default function Dashboard() {
                       value={performingSelectedDates}
                       onDateChange={(dates) => {
                         setHrSelectedDates(dates);
-                        getHRData(dates[0], dates[1], allDownliners, false);
+                        getHRData(dates[0], dates[1], selectedUserId, false);
                       }}
                     />
                   </div>
@@ -1567,7 +1645,7 @@ export default function Dashboard() {
                       value={performingSelectedDates}
                       onDateChange={(dates) => {
                         setRaSelectedDates(dates);
-                        getRAData(dates[0], dates[1], allDownliners, false);
+                        getRAData(dates[0], dates[1], selectedUserId, false);
                       }}
                     />
                   </div>
