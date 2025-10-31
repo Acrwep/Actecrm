@@ -1164,7 +1164,7 @@ export default function Dashboard() {
                     {userWiseSeries.length >= 1 ? (
                       <UserwiseSalesChart
                         xaxis={userWiseXaxis}
-                        // series={[12, 34, 45]}
+                        // series={[12, 34, 60, 99, 130]}
                         series={userWiseSeries}
                         targets={userWiseTargets}
                         collections={userWiseCollection}

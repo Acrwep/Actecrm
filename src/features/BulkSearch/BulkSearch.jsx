@@ -37,7 +37,6 @@ export default function BulkSearch() {
   const navigate = useNavigate();
 
   const [searchValue, setSearchValue] = useState("");
-  const [filterType, setFilterType] = useState(1);
   const statusOptions = [
     { id: "Success", name: "Success" },
     { id: "On Progress", name: "On Progress" },
@@ -315,19 +314,17 @@ export default function BulkSearch() {
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setSearchValue(value);
+
     const filterData = duplicateData.filter((f) => {
       const statusMatch = status?.length ? status.includes(f.status) : true;
 
+      // ✅ Search across all 3 fields
       const typeMatch =
-        filterType == 1
-          ? f.mobile?.includes(value)
-          : filterType == 2
-          ? f.name?.toLowerCase().includes(value.toLowerCase())
-          : filterType == 3
-          ? f.email?.includes(value)
-          : true;
+        f.mobile?.toLowerCase().includes(value) ||
+        f.name?.toLowerCase().includes(value) ||
+        f.email?.toLowerCase().includes(value);
 
       return statusMatch && typeMatch;
     });
@@ -350,17 +347,7 @@ export default function BulkSearch() {
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
-                  }
+                  label="Search"
                   width="100%"
                   height="33px"
                   labelFontSize="12px"
@@ -389,8 +376,6 @@ export default function BulkSearch() {
                   }
                   labelMarginTop="-1px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -398,97 +383,9 @@ export default function BulkSearch() {
                   onChange={handleSearch}
                   value={searchValue}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            setFilterType(e.target.value);
-                            if (searchValue === "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              const filterData = duplicateData.filter((f) => {
-                                const statusMatch = status?.length
-                                  ? status.includes(f.status)
-                                  : true; // ✅ only check if statusId array has values
-
-                                return statusMatch;
-                              });
-
-                              setData(filterData);
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={18} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
             <Col span={12}>
-              {/* <CommonSelectField
-                width="90%"
-                height="35px"
-                label="Select Status"
-                labelMarginTop="0px"
-                labelFontSize="13px"
-                options={[
-                  { id: "Success", name: "Success" },
-                  { id: "On Progress", name: "On Progress" },
-                  { id: "Not found", name: "Not found" },
-                ]}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  console.log(value);
-                  setStatusId(value);
-
-                  const filterData = duplicateData.filter((f) => {
-                    const statusMatch = value ? f.status == value : true; // ✅ only check if statusId exists
-                    const typeMatch =
-                      filterType == 1
-                        ? f.mobile.includes(searchValue)
-                        : filterType == 2
-                        ? f.name
-                            .toLowerCase()
-                            .includes(searchValue.toLowerCase())
-                        : filterType == 3
-                        ? f.email.includes(searchValue)
-                        : true; // ✅ only check if filterType == 1
-                    return statusMatch && typeMatch;
-                  });
-
-                  setData(filterData);
-                }}
-                value={statusId}
-                disableClearable={false}
-              /> */}
               <div style={{ position: "relative", height: "auto" }}>
                 <p className={"trainer_skillslabel"}>Status</p>
                 <div
@@ -517,15 +414,9 @@ export default function BulkSearch() {
                             : true;
 
                           const typeMatch =
-                            filterType === 1
-                              ? f.mobile?.includes(searchValue)
-                              : filterType === 2
-                              ? f.name
-                                  ?.toLowerCase()
-                                  .includes(searchValue.toLowerCase())
-                              : filterType === 3
-                              ? f.email?.includes(searchValue)
-                              : true;
+                            f.mobile?.toLowerCase().includes(searchValue) ||
+                            f.name?.toLowerCase().includes(searchValue) ||
+                            f.email?.toLowerCase().includes(searchValue);
 
                           return statusMatch && typeMatch;
                         });

@@ -940,9 +940,6 @@ export default function Users({
                   setTargetMonthEndDate(endDate);
                   console.log("Start Date:", startDate);
                   console.log("End Date:", endDate);
-
-                  // Example API call
-                  // getRAData(startDate, endDate, leadExecutiveId, false);
                 }
               }}
               value={targetMonth}

@@ -1,5 +1,5 @@
 .bulksearch_status_multiselect .ant-select-selector {
-  min-height: 35px;
+  min-height: 34px;
   max-height: 80px;
   overflow-y: auto;
   border-radius: 4px !important;
