@@ -73,12 +73,18 @@ export default function Dashboard() {
   const [HrSelectedDates, setHrSelectedDates] = useState([]);
   const [hrDataSeries, setHrDataSeries] = useState([]);
   const [hrLoader, setHrLoader] = useState(true);
-  //HR
+  //leadwise
+  const [userWiseLeadsType, setUserWiseLeadsType] = useState(1);
   const [userWiseLeadsDates, setUserWiseLeadsDates] = useState([]);
   const [userWiseLeadsXaxis, setUserWiseLeadsXaxis] = useState([]);
   const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
   const [userWiseLeadsCount, setUserWiseLeadsCount] = useState([]);
   const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
+    []
+  );
+  const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
+  const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
+  const [userWiseFollowUpUnHandled, setUserWiseFollowUpUnHandled] = useState(
     []
   );
   const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
@@ -183,7 +189,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
-        true
+        true,
+        userWiseLeadsType ? userWiseLeadsType : 1
       );
       return;
     }
@@ -215,7 +222,8 @@ export default function Dashboard() {
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             downliners,
-            true
+            true,
+            userWiseLeadsType ? userWiseLeadsType : 1
           );
         }
       }, 300);
@@ -226,7 +234,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
-    call_api
+    call_api,
+    type
   ) => {
     if (!permissions.includes("User-Wise Lead Analysis")) {
       const start_date = moment()
@@ -249,6 +258,7 @@ export default function Dashboard() {
       start_date: startDate,
       end_date: endDate,
       user_ids: downliners,
+      type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
 
     try {
@@ -262,24 +272,60 @@ export default function Dashboard() {
       );
       const series = userwise_leadscount.map((item) => Number(item.percentage));
 
-      const leads_count = userwise_leadscount.map((item) =>
-        Number(item.total_leads)
-      );
+      if (type == 1) {
+        const leads_count = userwise_leadscount.map((item) =>
+          Number(item.total_leads)
+        );
 
-      const customers_count = userwise_leadscount.map((item) =>
-        Number(item.customer_count)
-      );
+        const customers_count = userwise_leadscount.map((item) =>
+          Number(item.customer_count)
+        );
+        setUserWiseLeadsCount(leads_count);
+        setUserWiseLeadsJoingingsCount(customers_count);
+      } else {
+        setUserWiseLeadsCount([]);
+        setUserWiseLeadsJoingingsCount([]);
+      }
+
+      if (type == 2) {
+        const followup_count = userwise_leadscount.map((item) =>
+          Number(item.lead_followup_count)
+        );
+        const followup_handled = userwise_leadscount.map((item) =>
+          Number(item.followup_handled)
+        );
+
+        const followup_unhandled = userwise_leadscount.map((item) =>
+          Number(item.followup_unhandled)
+        );
+        setUserWiseTotalFollowUp(followup_count);
+        setUserWiseFollowUpHandled(followup_handled);
+        setUserWiseFollowUpUnHandled(followup_unhandled);
+      } else {
+        setUserWiseTotalFollowUp([]);
+        setUserWiseFollowUpHandled([]);
+        setUserWiseFollowUpUnHandled([]);
+      }
+
+      setUserWiseLeadsSeries(series);
+
+      if (type == 3) {
+        const customers_count = userwise_leadscount.map((item) =>
+          Number(item.customer_count)
+        );
+        setUserWiseLeadsJoingingsCount(customers_count);
+        setUserWiseLeadsSeries(customers_count);
+      }
 
       setUserWiseLeadsXaxis(xaxis);
-      setUserWiseLeadsSeries(series);
-      setUserWiseLeadsCount(leads_count);
-      setUserWiseLeadsJoingingsCount(customers_count);
     } catch (error) {
       console.log("userwise leadcounts error", error);
       setUserWiseLeadsXaxis([]);
       setUserWiseLeadsSeries([]);
       setUserWiseLeadsCount([]);
       setUserWiseLeadsJoingingsCount([]);
+      setUserWiseFollowUpHandled([]);
+      setUserWiseFollowUpHandled([]);
     } finally {
       setTimeout(() => {
         setUserWiseLeadsLoader(false);
@@ -389,7 +435,7 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getRAData(
+      getHRData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
@@ -970,6 +1016,48 @@ export default function Dashboard() {
                 </Col>
               </Row>
 
+              <Row>
+                <Col span={15}></Col>
+                <Col
+                  span={9}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Leads",
+                      },
+                      {
+                        id: 2,
+                        name: "Follow Up",
+                      },
+                      {
+                        id: 3,
+                        name: "Joinings",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUserWiseLeadsType(value);
+                      getUserWiseLeadCountsData(
+                        userWiseStartDate,
+                        userWiseEndDate,
+                        allDownliners,
+                        false,
+                        value
+                      );
+                    }}
+                    value={userWiseLeadsType}
+                  />
+                </Col>
+              </Row>
+
               <div
                 style={{
                   padding: "0px 12px 12px 12px",
@@ -997,12 +1085,22 @@ export default function Dashboard() {
                           // series={[12, 34, 45]}
                           series={userWiseLeadsSeries}
                           leads={userWiseLeadsCount}
+                          totalFollowUps={userWiseTotalFollowUp}
+                          followUpHandled={userWiseFollowUpHandled}
+                          followUpUnHandled={userWiseFollowUpUnHandled}
                           customers={userWiseLeadjoiningsCount}
-                          colors={["#258a25", "#5b6aca", "#b22021"]}
+                          colors={["#5b6aca"]}
                           height={
                             userWiseLeadsXaxis.length <= 5
                               ? 280
                               : userWiseLeadsXaxis.length * 45
+                          }
+                          type={
+                            userWiseLeadsType == 1
+                              ? "Leads"
+                              : userWiseLeadsType == 2
+                              ? "Follow Up"
+                              : "Customer Join"
                           }
                         />
                       ) : (

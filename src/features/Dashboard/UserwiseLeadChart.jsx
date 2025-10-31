@@ -10,6 +10,10 @@ export default function UserwiseLeadChart({
   customers,
   clickedBar,
   fontSize,
+  totalFollowUps,
+  followUpHandled,
+  followUpUnHandled,
+  type,
   enablePointer = false,
 }) {
   const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
@@ -19,6 +23,21 @@ export default function UserwiseLeadChart({
     if (index === series.length - 1) return "#b22021"; // last bar
     return "#5b6aca"; // middle bars
   });
+
+  const getBarColors = () => {
+    if (type == "Leads" || type == "Follow Up") {
+      return series.map((val) => {
+        if (val <= 25) return "#E53935"; // red
+        else if (val <= 50) return "#FB8C00"; // orange
+        else if (val <= 75) return "#00ACC1"; // teal green
+        else if (val <= 99) return "#A2C148"; // lime-green
+        else if (val <= 125) return "#2E7D32"; // dark green
+        else return "#ffbf00"; // gold
+      });
+    } else {
+      return [colors[0]];
+    }
+  };
 
   const options = {
     series: [
@@ -46,7 +65,8 @@ export default function UserwiseLeadChart({
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) => "",
+        formatter: (val) =>
+          type == "Leads" || type == "Follow Up" ? val + "%" : val,
         style: {
           fontSize: "12px",
           fontWeight: 500,
@@ -70,7 +90,7 @@ export default function UserwiseLeadChart({
           },
         },
       },
-      colors: barColors, // ✅ use the first color only
+      colors: getBarColors(), // ✅ use the first color only
       grid: {
         xaxis: { lines: { show: false } },
       },
@@ -84,8 +104,13 @@ export default function UserwiseLeadChart({
             const value = leads[dataPointIndex];
             const joinings = customers[dataPointIndex];
             const conversion = series[dataPointIndex];
+            const total_followups = totalFollowUps[dataPointIndex];
+            const followup_handledcount = followUpHandled[dataPointIndex];
+            const followup_unhandledcount = followUpUnHandled[dataPointIndex];
             const color = w.config.colors[0]; //
-            return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+
+            if (type == "Leads") {
+              return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <span 
             style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
           </span>
@@ -111,6 +136,54 @@ export default function UserwiseLeadChart({
           </span>
         </div>
       `;
+            } else if (type == "Follow Up") {
+              return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+          <span 
+            style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
+          </span>
+          <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
+        </div>
+         <div style="font-weight:400; font-family:Poppins, sans-serif">
+          Total FollowUp: 
+          <span style="font-weight:600;">
+            ${total_followups}
+          </span>
+        </div>
+           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
+         FollowUp Handled: 
+          <span style="font-weight:600;">
+            ${followup_handledcount}
+          </span>
+        </div>
+         </div>
+           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
+          FollowUp Un-Handled: 
+          <span style="font-weight:600;">
+            ${followup_unhandledcount}
+          </span>
+        </div>
+          <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
+          Efficient: 
+          <span style="font-weight:600;">
+            ${conversion}%
+          </span>
+        </div>
+      `;
+            } else {
+              return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+          <span 
+            style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
+          </span>
+          <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
+        </div>
+         <div style="font-weight:400; font-family:Poppins, sans-serif">
+          Total Joinings: 
+          <span style="font-weight:600;">
+            ${joinings}
+          </span>
+        </div>
+      `;
+            }
           },
           title: { formatter: () => "" },
         },
