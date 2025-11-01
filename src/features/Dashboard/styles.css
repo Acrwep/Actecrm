@@ -133,6 +133,7 @@
 }
 .dashboard_userwise_typefield_container {
   display: flex;
+  gap: 12px;
   justify-content: flex-end;
   width: 100%;
   padding: 16px 12px 0px 12px;

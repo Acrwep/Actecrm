@@ -154,6 +154,8 @@ export default function Settings() {
         "Sale Performance",
         "User-Wise Lead Analysis",
         "User-Wise Sales Analysis",
+        "Branch-Wise Lead Analysis",
+        "Branch-Wise Sales Analysis",
         "Top Performing Channels",
         "HR Dashboard",
         "RA Dashboard",

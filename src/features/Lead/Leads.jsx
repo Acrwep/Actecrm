@@ -1555,6 +1555,7 @@ export default function Leads({
           1,
           pagination.limit
         );
+        refreshLeadFollowUp();
         handleSendCustomerFormLink(createdCustomerDetails);
       }, 300);
     } catch (error) {

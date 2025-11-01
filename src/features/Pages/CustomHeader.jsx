@@ -217,7 +217,9 @@ export default function CustomHeader() {
     setCustomerHistoryLoading(true);
     try {
       const response = await getCustomerFullHistory(customerid);
-      setCustomerHistory(response?.data?.data || []);
+      const customer_history = response?.data?.data || [];
+      const reverse_data = customer_history.reverse();
+      setCustomerHistory(reverse_data);
       console.log("history response", response);
       setTimeout(() => {
         setCustomerHistoryLoading(false);
@@ -873,14 +875,13 @@ export default function CustomHeader() {
                 <span
                   style={{
                     color: getHistoryStatusColor(
-                      customerHistory?.[customerHistory.length - 1]?.status ||
-                        "N/A"
+                      customerHistory?.[0]?.status || "N/A"
                     ),
                   }}
                 >
                   {" "}
                   {customerHistory && customerHistory.length > 0
-                    ? customerHistory[customerHistory.length - 1].status
+                    ? customerHistory[0].status
                     : "N/A"}
                 </span>
               </span>

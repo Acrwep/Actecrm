@@ -393,8 +393,8 @@ const FinanceVerify = forwardRef(
         convenience_fees: convenienceFees,
         paymode_id: paymentMode,
         payment_screenshot: paymentScreenShotBase64,
-        paid_date: formatToBackendIST(paymentDate),
-        next_due_date: formatToBackendIST(dueDate),
+        paid_date: paymentDate ? formatToBackendIST(paymentDate) : null,
+        next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         payment_trans_id: updatePaymentTransId,
       };
       try {

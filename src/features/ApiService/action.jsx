@@ -887,6 +887,25 @@ export const getAllDownlineUsers = async (user_id) => {
 };
 
 //dashboard api's
+export const updateDashboardDates = async (payload) => {
+  try {
+    const response = await api.post(`/api/updateDashboardSettings`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDashboardDates = async (user_id) => {
+  try {
+    const response = await api.get(
+      `/api/getDashboardCompounds?user_id=${user_id}`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 export const getScoreBoard = async (payload) => {
   try {
     const response = await api.post(`/api/getScoreBoard`, payload);
@@ -908,6 +927,24 @@ export const getUserWiseScoreBoard = async (payload) => {
 export const getUserWiseLeadCounts = async (payload) => {
   try {
     const response = await api.post(`/api/getUserWiseLeadCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getBranchWiseLeadCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getBranchWiseLeadCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getBranchWiseScoreBoard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getBranchWiseScoreBoard`, payload);
     return response;
   } catch (error) {
     throw error;

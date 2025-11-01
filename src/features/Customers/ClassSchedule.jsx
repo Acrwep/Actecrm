@@ -430,7 +430,7 @@ const ClassSchedule = forwardRef(
             {scheduleId == 6 ? (
               <div
                 id="customer_scheduledatefield_container"
-                style={{ marginTop: "30px" }}
+                style={{ marginTop: "30px", marginBottom: "40px" }}
               >
                 <CommonMuiDatePicker
                   label="Schedule Date"

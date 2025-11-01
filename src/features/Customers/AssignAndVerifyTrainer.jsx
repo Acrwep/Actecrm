@@ -948,7 +948,10 @@ const AssignAndVerifyTrainer = forwardRef(
             </Row>
           </div>
         ) : (
-          <div className="customer_statusupdate_adddetailsContainer">
+          <div
+            className="customer_statusupdate_adddetailsContainer"
+            style={{ marginBottom: "30px" }}
+          >
             <p className="customer_statusupdate_adddetails_heading">
               Trainer Details
             </p>

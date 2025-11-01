@@ -11,12 +11,16 @@ import {
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
+  getBranchWiseLeadCounts,
+  getBranchWiseScoreBoard,
+  getDashboardDates,
   getHRDashboard,
   getRADashboard,
   getScoreBoard,
   getTopPerformance,
   getUserWiseLeadCounts,
   getUserWiseScoreBoard,
+  updateDashboardDates,
 } from "../ApiService/action";
 import { RedoOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
@@ -27,6 +31,8 @@ import CommonMuiMonthPicker from "../Common/CommonMuiMonthPicker";
 import UserwiseSalesChart from "./UserwiseSalesChart";
 import CommonDonutChart from "../Common/CommonDonutChart";
 import UserwiseLeadChart from "./UserwiseLeadChart";
+import BranchwiseLeadChart from "./BranchwiseLeadChart";
+import BranchwiseSalesChart from "./BranchwisesalesChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -38,6 +44,8 @@ export default function Dashboard() {
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //dates
+  const [allDashboardCardsDates, setAllDashboardCardsDates] = useState([]);
   //score card
   const [scoreBoardSelectedDates, setScoreBoardSelectedDates] = useState([]);
   const [scoreCardDetails, setScoreCardDetails] = useState(null);
@@ -88,6 +96,30 @@ export default function Dashboard() {
     []
   );
   const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
+  //branch-wise lead analysis
+  const [branchWiseLeadsRegion, setBranchWiseLeadsRegion] = useState(1);
+  const [branchWiseLeadsType, setBranchWiseLeadsType] = useState(1);
+  const [branchWiseLeadsDates, setBranchWiseLeadsDates] = useState([]);
+
+  const [branchWiseLeadsXaxis, setBranchWiseLeadsXaxis] = useState([]);
+  const [branchWiseLeadsSeries, setBranchWiseLeadsSeries] = useState([]);
+  const [branchWiseLeadsCount, setBranchWiseLeadsCount] = useState([]);
+  const [branchWiseLeadjoiningsCount, setBranchWiseLeadsJoingingsCount] =
+    useState([]);
+  const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
+  const [branchWiseFollowUpHandled, setBranchWiseFollowUpHandled] = useState(
+    []
+  );
+  const [branchWiseFollowUpUnHandled, setBranchWiseFollowUpUnHandled] =
+    useState([]);
+  const [branchWiseLeadsLoader, setBranchWiseLeadsLoader] = useState(true);
+  //branch-wise sale analysis
+  const [branchWiseSaleRegion, setBranchWiseSaleRegion] = useState(1);
+  const [branchWiseSaleType, setBranchWiseSaleType] = useState(1);
+  const [branchWiseSaleDates, setBranchWiseSaleDates] = useState([]);
+  const [branchWiseSalesXaxis, setBranchWiseSalesXaxis] = useState([]);
+  const [branchWiseSalesSeries, setBranchWiseSalesSeries] = useState([]);
+  const [branchWiseSalesLoader, setBranchWiseSalesLoader] = useState(true);
   //lead executive
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
@@ -105,25 +137,28 @@ export default function Dashboard() {
       setRaSelectedDates(PreviousAndCurrentDate);
       setHrSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
+      setBranchWiseLeadsDates(PreviousAndCurrentDate);
+      setBranchWiseSaleDates(PreviousAndCurrentDate);
       setSubUsers(downlineUsers);
       mounted.current = true;
       setLoginUserId(convertAsJson?.user_id);
+      getDashboardDatesData();
       // getAllDownlineUsersData(convertAsJson?.user_id);
-      if (permissions.includes("Score Board")) {
-        getScoreBoardData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          null,
-          true
-        );
-      } else {
-        getSaleDetailsData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          null,
-          true
-        );
-      }
+      // if (permissions.includes("Score Board")) {
+      //   getScoreBoardData(
+      //     PreviousAndCurrentDate[0],
+      //     PreviousAndCurrentDate[1],
+      //     null,
+      //     true
+      //   );
+      // } else {
+      //   getSaleDetailsData(
+      //     PreviousAndCurrentDate[0],
+      //     PreviousAndCurrentDate[1],
+      //     null,
+      //     true
+      //   );
+      // }
     }
   }, [childUsers, permissions]);
 
@@ -157,7 +192,40 @@ export default function Dashboard() {
   //   }
   // };
 
+  const getDashboardDatesData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    try {
+      const response = await getDashboardDates(convertAsJson?.user_id);
+      console.log("dashboard dates response", response);
+      const alldashboard_cardsdates = response?.data?.data || [];
+      setAllDashboardCardsDates(alldashboard_cardsdates);
+
+      if (permissions.includes("Score Board")) {
+        getScoreBoardData(
+          alldashboard_cardsdates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          null,
+          true
+        );
+      } else {
+        getSaleDetailsData(
+          alldashboard_cardsdates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          null,
+          true
+        );
+      }
+    } catch (error) {
+      console.log("dashboard dates error", error);
+    }
+  };
+
   const getScoreBoardData = async (
+    dashboard_dates,
     startDate,
     endDate,
     executive_id,
@@ -170,9 +238,26 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let scoreboard_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      scoreboard_dates = dashboard_dates.find(
+        (f) => f.card_name == "Score Board"
+      );
+      if (scoreboard_dates) {
+        setScoreBoardSelectedDates([
+          scoreboard_dates.card_settings.start_date,
+          scoreboard_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: scoreboard_dates
+        ? scoreboard_dates.card_settings.start_date
+        : startDate,
+      end_date: scoreboard_dates
+        ? scoreboard_dates.card_settings.end_date
+        : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
@@ -188,6 +273,7 @@ export default function Dashboard() {
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
           getSaleDetailsData(
+            dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             executive_id,
@@ -199,6 +285,7 @@ export default function Dashboard() {
   };
 
   const getSaleDetailsData = async (
+    dashboard_dates,
     startDate,
     endDate,
     executive_id,
@@ -207,11 +294,12 @@ export default function Dashboard() {
     if (!permissions.includes("Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getUserWiseLeadCountsData(
+        dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         executive_id,
         true,
-        userWiseLeadsType ? userWiseLeadsType : 1
+        1
       );
       return;
     }
@@ -222,9 +310,26 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let saleperformance_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      saleperformance_dates = dashboard_dates.find(
+        (f) => f.card_name == "Sale Performance"
+      );
+      if (saleperformance_dates) {
+        setSaleDetailsSelectedDates([
+          saleperformance_dates.card_settings.start_date,
+          saleperformance_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: saleperformance_dates
+        ? saleperformance_dates.card_settings.start_date
+        : startDate,
+      end_date: saleperformance_dates
+        ? saleperformance_dates.card_settings.end_date
+        : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
@@ -246,11 +351,12 @@ export default function Dashboard() {
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
           getUserWiseLeadCountsData(
+            dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             executive_id,
             true,
-            userWiseLeadsType ? userWiseLeadsType : 1
+            1
           );
         }
       }, 300);
@@ -258,6 +364,7 @@ export default function Dashboard() {
   };
 
   const getUserWiseLeadCountsData = async (
+    dashboard_dates,
     startDate,
     endDate,
     executive_id,
@@ -272,11 +379,12 @@ export default function Dashboard() {
 
       const end_date = moment().date(25).format("YYYY-MM-DD");
       getUserWiseScoreBoardData(
+        dashboard_dates,
         start_date,
         end_date,
         executive_id,
         true,
-        userWiseType ? userWiseType : 1
+        1
       );
       return;
     }
@@ -287,9 +395,26 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let userwiseleads_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      userwiseleads_dates = dashboard_dates.find(
+        (f) => f.card_name == "User-Wise Lead Analysis"
+      );
+      if (userwiseleads_dates) {
+        setUserWiseLeadsDates([
+          userwiseleads_dates.card_settings.start_date,
+          userwiseleads_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: userwiseleads_dates
+        ? userwiseleads_dates.card_settings.start_date
+        : startDate,
+      end_date: userwiseleads_dates
+        ? userwiseleads_dates.card_settings.end_date
+        : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
       type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
@@ -358,7 +483,7 @@ export default function Dashboard() {
       setUserWiseLeadsCount([]);
       setUserWiseLeadsJoingingsCount([]);
       setUserWiseFollowUpHandled([]);
-      setUserWiseFollowUpHandled([]);
+      setUserWiseFollowUpUnHandled([]);
     } finally {
       setTimeout(() => {
         setUserWiseLeadsLoader(false);
@@ -370,11 +495,12 @@ export default function Dashboard() {
         const end_date = moment().date(25).format("YYYY-MM-DD");
         if (call_api == true) {
           getUserWiseScoreBoardData(
+            dashboard_dates,
             start_date,
             end_date,
             executive_id,
             true,
-            userWiseType ? userWiseType : 1
+            1
           );
         }
       }, 300);
@@ -382,6 +508,7 @@ export default function Dashboard() {
   };
 
   const getUserWiseScoreBoardData = async (
+    dashboard_dates,
     startDate,
     endDate,
     executive_id,
@@ -390,11 +517,14 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("User-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getTopPerformanceData(
+      getBranchWiseLeadsData(
+        dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         executive_id,
-        true
+        true,
+        1,
+        1
       );
       return;
     }
@@ -455,7 +585,236 @@ export default function Dashboard() {
         setUserWiseLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
+          getBranchWiseLeadsData(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            executive_id,
+            true,
+            1,
+            1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getBranchWiseLeadsData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    executive_id,
+    call_api,
+    type,
+    regionId
+  ) => {
+    if (!permissions.includes("Branch-Wise Lead Analysis")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getBranchWiseSalesData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        executive_id,
+        true,
+        1,
+        1
+      );
+      return;
+    }
+    setBranchWiseLeadsLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
+    //date handling
+    let branchwiseleads_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      branchwiseleads_dates = dashboard_dates.find(
+        (f) => f.card_name == "Branch-Wise Lead Analysis"
+      );
+      if (branchwiseleads_dates) {
+        setBranchWiseLeadsDates([
+          branchwiseleads_dates.card_settings.start_date,
+          branchwiseleads_dates.card_settings.end_date,
+        ]);
+      }
+    }
+    const payload = {
+      start_date: branchwiseleads_dates
+        ? branchwiseleads_dates.card_settings.start_date
+        : startDate,
+      end_date: branchwiseleads_dates
+        ? branchwiseleads_dates.card_settings.end_date
+        : endDate,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
+      region_id: regionId,
+    };
+    try {
+      const response = await getBranchWiseLeadCounts(payload);
+      console.log("branchwise leads response", response);
+      const branchwise_leads = response?.data?.data;
+      console.log(branchwise_leads);
+
+      const xaxis = branchwise_leads.map((item) => item.branch_name);
+      const series = branchwise_leads.map((item) => Number(item.percentage));
+
+      if (type == 1) {
+        const leads_count = branchwise_leads.map((item) =>
+          Number(item.total_leads)
+        );
+
+        const customers_count = branchwise_leads.map((item) =>
+          Number(item.customer_count)
+        );
+        setBranchWiseLeadsCount(leads_count);
+        setBranchWiseLeadsJoingingsCount(customers_count);
+      } else {
+        setBranchWiseLeadsCount([]);
+        setBranchWiseLeadsJoingingsCount([]);
+      }
+
+      if (type == 2) {
+        const followup_count = branchwise_leads.map((item) =>
+          Number(item.lead_followup_count)
+        );
+        const followup_handled = branchwise_leads.map((item) =>
+          Number(item.followup_handled)
+        );
+
+        const followup_unhandled = branchwise_leads.map((item) =>
+          Number(item.followup_unhandled)
+        );
+        setBranchWiseTotalFollowUp(followup_count);
+        setBranchWiseFollowUpHandled(followup_handled);
+        setBranchWiseFollowUpUnHandled(followup_unhandled);
+      } else {
+        setBranchWiseTotalFollowUp([]);
+        setBranchWiseFollowUpHandled([]);
+        setBranchWiseFollowUpUnHandled([]);
+      }
+
+      setBranchWiseLeadsSeries(series);
+
+      if (type == 3) {
+        const customers_count = branchwise_leads.map((item) =>
+          Number(item.customer_count)
+        );
+        setBranchWiseLeadsJoingingsCount(customers_count);
+        setBranchWiseLeadsSeries(customers_count);
+      }
+
+      setBranchWiseLeadsXaxis(xaxis);
+    } catch (error) {
+      console.log("userwise leadcounts error", error);
+      setBranchWiseLeadsXaxis([]);
+      setBranchWiseLeadsSeries([]);
+      setBranchWiseLeadsCount([]);
+      setBranchWiseLeadsJoingingsCount([]);
+      setBranchWiseFollowUpHandled([]);
+      setBranchWiseFollowUpUnHandled([]);
+    } finally {
+      setTimeout(() => {
+        setBranchWiseLeadsLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api == true) {
+          getBranchWiseSalesData(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            executive_id,
+            true,
+            1,
+            1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getBranchWiseSalesData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    executive_id,
+    call_api,
+    type,
+    regionId
+  ) => {
+    if (!permissions.includes("Branch-Wise Sales Analysis")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getTopPerformanceData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        executive_id,
+        true
+      );
+      return;
+    }
+    setBranchWiseSalesLoader(true);
+    let lead_executive = [];
+    if (executive_id) {
+      lead_executive.push(executive_id);
+    } else {
+      lead_executive = [];
+    }
+    //date handling
+    let branchwisesales_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      branchwisesales_dates = dashboard_dates.find(
+        (f) => f.card_name == "Branch-Wise Sale Analysis"
+      );
+      if (branchwisesales_dates) {
+        setBranchWiseSaleDates([
+          branchwisesales_dates.card_settings.start_date,
+          branchwisesales_dates.card_settings.end_date,
+        ]);
+      }
+    }
+    const payload = {
+      start_date: branchwisesales_dates
+        ? branchwisesales_dates.card_settings.start_date
+        : startDate,
+      end_date: branchwisesales_dates
+        ? branchwisesales_dates.card_settings.end_date
+        : endDate,
+      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
+      region_id: regionId,
+    };
+    try {
+      const response = await getBranchWiseScoreBoard(payload);
+      console.log("branchwise sales response", response);
+      const branchwise_sales = response?.data?.data;
+
+      const xaxis = branchwise_sales.map((item) => item.branch_name);
+      console.log("branchwise xasis", xaxis);
+
+      const series = branchwise_sales.map((item) =>
+        type == 1
+          ? Number(item.sale_volume)
+          : type == 2
+          ? Number(item.total_collection)
+          : Number(item.pending)
+      ); // for bar values
+
+      setBranchWiseSalesXaxis(xaxis);
+      setBranchWiseSalesSeries(series);
+    } catch (error) {
+      setBranchWiseSalesLoader(false);
+      setBranchWiseSalesXaxis([]);
+      setBranchWiseSalesSeries([]);
+      console.log("branchwise sales error", error);
+    } finally {
+      setTimeout(() => {
+        setBranchWiseSalesLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api == true) {
           getTopPerformanceData(
+            dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             executive_id,
@@ -467,6 +826,7 @@ export default function Dashboard() {
   };
 
   const getTopPerformanceData = async (
+    dashboard_dates,
     startDate,
     endDate,
     executive_id,
@@ -475,6 +835,7 @@ export default function Dashboard() {
     if (!permissions.includes("Top Performing Channels")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getHRData(
+        dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         executive_id,
@@ -489,9 +850,26 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let topperformance_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      topperformance_dates = dashboard_dates.find(
+        (f) => f.card_name == "Top Performance"
+      );
+      if (topperformance_dates) {
+        setPerformingSelectedDates([
+          topperformance_dates.card_settings.start_date,
+          topperformance_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: topperformance_dates
+        ? topperformance_dates.card_settings.start_date
+        : startDate,
+      end_date: topperformance_dates
+        ? topperformance_dates.card_settings.end_date
+        : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
@@ -507,6 +885,7 @@ export default function Dashboard() {
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
           getHRData(
+            dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             executive_id,
@@ -517,10 +896,17 @@ export default function Dashboard() {
     }
   };
 
-  const getHRData = async (startDate, endDate, executive_id, call_api) => {
+  const getHRData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    executive_id,
+    call_api
+  ) => {
     if (!permissions.includes("HR Dashboard")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getRAData(
+        dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         executive_id,
@@ -535,9 +921,20 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let hr_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      hr_dates = dashboard_dates.find((f) => f.card_name == "HR Dashboard");
+      if (hr_dates) {
+        setHrSelectedDates([
+          hr_dates.card_settings.start_date,
+          hr_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: hr_dates ? hr_dates.card_settings.start_date : startDate,
+      end_date: hr_dates ? hr_dates.card_settings.end_date : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
 
@@ -571,6 +968,7 @@ export default function Dashboard() {
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api === true) {
           getRAData(
+            dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
             executive_id,
@@ -581,7 +979,13 @@ export default function Dashboard() {
     }
   };
 
-  const getRAData = async (startDate, endDate, executive_id, call_api) => {
+  const getRAData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    executive_id,
+    call_api
+  ) => {
     if (!permissions.includes("RA Dashboard")) {
       return;
     }
@@ -592,9 +996,20 @@ export default function Dashboard() {
     } else {
       lead_executive = [];
     }
+    //date handling
+    let ra_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      ra_dates = dashboard_dates.find((f) => f.card_name == "RA Dashboard");
+      if (ra_dates) {
+        setRaSelectedDates([
+          ra_dates.card_settings.start_date,
+          ra_dates.card_settings.end_date,
+        ]);
+      }
+    }
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: ra_dates ? ra_dates.card_settings.start_date : startDate,
+      end_date: ra_dates ? ra_dates.card_settings.end_date : endDate,
       user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
     };
     try {
@@ -677,6 +1092,7 @@ export default function Dashboard() {
     setHrLoader(true);
     if (permissions.includes("Score Board")) {
       getScoreBoardData(
+        allDashboardCardsDates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         value,
@@ -684,6 +1100,7 @@ export default function Dashboard() {
       );
     } else {
       getSaleDetailsData(
+        allDashboardCardsDates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         value,
@@ -732,6 +1149,15 @@ export default function Dashboard() {
     setRaSelectedDates(PreviousAndCurrentDate);
     setHrSelectedDates(PreviousAndCurrentDate);
     setUserWiseLeadsDates(PreviousAndCurrentDate);
+    setUserWiseLeadsType(1);
+    setUserWiseType(1);
+    setBranchWiseLeadsDates(PreviousAndCurrentDate);
+    setBranchWiseLeadsRegion(1);
+    setBranchWiseLeadsType(1);
+    setBranchWiseSaleDates(PreviousAndCurrentDate);
+    setBranchWiseSaleRegion(1);
+    setBranchWiseSaleType(1);
+
     setSelectedUserId(null);
     setScoreBoardLoader(true);
     setSaleDetailsLoader(true);
@@ -740,6 +1166,7 @@ export default function Dashboard() {
     setHrLoader(true);
     if (permissions.includes("Score Board")) {
       getScoreBoardData(
+        allDashboardCardsDates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         null,
@@ -747,11 +1174,35 @@ export default function Dashboard() {
       );
     } else {
       getSaleDetailsData(
+        allDashboardCardsDates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         null,
         true
       );
+    }
+  };
+
+  const updateDashboardCardDate = async (name, startDate, endDate) => {
+    let get_item;
+    if (allDashboardCardsDates.length >= 1) {
+      get_item = allDashboardCardsDates.find(
+        (f) => f.user_id == loginUserId && f.card_name == name
+      );
+    } else {
+      get_item = null;
+    }
+    const payload = {
+      user_id: loginUserId,
+      card_name: name,
+      card_settings: { start_date: startDate, end_date: endDate },
+      ...(get_item && { id: get_item.id }),
+    };
+    console.log("update date payload", payload);
+    try {
+      await updateDashboardDates(payload);
+    } catch (error) {
+      console.log("update card date", error);
     }
   };
 
@@ -823,7 +1274,13 @@ export default function Dashboard() {
                       value={scoreBoardSelectedDates}
                       onDateChange={(dates) => {
                         setScoreBoardSelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Score Board",
+                          dates[0],
+                          dates[1]
+                        );
                         getScoreBoardData(
+                          null,
                           dates[0],
                           dates[1],
                           selectedUserId,
@@ -1002,7 +1459,13 @@ export default function Dashboard() {
                       value={saleDetailsSelectedDates}
                       onDateChange={(dates) => {
                         setSaleDetailsSelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Sale Performance",
+                          dates[0],
+                          dates[1]
+                        );
                         getSaleDetailsData(
+                          null,
                           dates[0],
                           dates[1],
                           selectedUserId,
@@ -1082,11 +1545,18 @@ export default function Dashboard() {
                       value={userWiseLeadsDates}
                       onDateChange={(dates) => {
                         setUserWiseLeadsDates(dates);
+                        updateDashboardCardDate(
+                          "User-Wise Lead Analysis",
+                          dates[0],
+                          dates[1]
+                        );
                         getUserWiseLeadCountsData(
+                          null,
                           dates[0],
                           dates[1],
                           selectedUserId,
-                          false
+                          false,
+                          userWiseLeadsType
                         );
                       }}
                     />
@@ -1124,6 +1594,7 @@ export default function Dashboard() {
                       const value = e.target.value;
                       setUserWiseLeadsType(value);
                       getUserWiseLeadCountsData(
+                        null,
                         userWiseStartDate,
                         userWiseEndDate,
                         selectedUserId,
@@ -1260,6 +1731,7 @@ export default function Dashboard() {
                           console.log("Start Date:", startDate);
                           console.log("End Date:", endDate);
                           getUserWiseScoreBoardData(
+                            null,
                             startDate,
                             endDate,
                             selectedUserId,
@@ -1304,6 +1776,7 @@ export default function Dashboard() {
                       const value = e.target.value;
                       setUserWiseType(value);
                       getUserWiseScoreBoardData(
+                        null,
                         userWiseStartDate,
                         userWiseEndDate,
                         selectedUserId,
@@ -1374,6 +1847,377 @@ export default function Dashboard() {
           </Col>
         )}
 
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={12}
+          style={{
+            marginTop: "30px",
+          }}
+        >
+          <div className="dashboard_leadcount_card">
+            <Row className="dashboard_leadcount_header_container">
+              <Col span={18}>
+                <div style={{ padding: "12px 12px 8px 12px" }}>
+                  <p className="dashboard_scrorecard_heading">
+                    Branch-Wise Lead Analysis
+                  </p>
+                  <p className="dashboard_daterange_text">
+                    <span style={{ fontWeight: "500" }}>Date Range: </span>
+                    {`(${moment(branchWiseLeadsDates[0]).format(
+                      "DD MMM YYYY"
+                    )} to ${moment(branchWiseLeadsDates[1]).format(
+                      "DD MMM YYYY"
+                    )})`}
+                  </p>
+                </div>
+              </Col>
+              <Col
+                span={6}
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <div>
+                  <CommonMuiCustomDatePicker
+                    isDashboard={true}
+                    value={branchWiseLeadsDates}
+                    onDateChange={(dates) => {
+                      setBranchWiseLeadsDates(dates);
+                      updateDashboardCardDate(
+                        "Branch-Wise Lead Analysis",
+                        dates[0],
+                        dates[1]
+                      );
+                      getBranchWiseLeadsData(
+                        null,
+                        dates[0],
+                        dates[1],
+                        selectedUserId,
+                        false,
+                        branchWiseLeadsType,
+                        branchWiseLeadsRegion
+                      );
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col span={6}></Col>
+              <Col span={18} className="dashboard_userwise_typefield_container">
+                <CommonSelectField
+                  label="Region"
+                  height="35px"
+                  labelMarginTop="-1px"
+                  labelFontSize="12px"
+                  width="100%"
+                  options={[
+                    {
+                      id: 1,
+                      name: "Chennai",
+                    },
+                    {
+                      id: 2,
+                      name: "Bangalore",
+                    },
+                    {
+                      id: 3,
+                      name: "Hub",
+                    },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBranchWiseLeadsRegion(value);
+                    getBranchWiseLeadsData(
+                      null,
+                      branchWiseLeadsDates[0],
+                      branchWiseLeadsDates[1],
+                      selectedUserId,
+                      false,
+                      branchWiseLeadsType,
+                      value
+                    );
+                  }}
+                  value={branchWiseLeadsRegion}
+                />
+                <CommonSelectField
+                  label="Type"
+                  height="35px"
+                  labelMarginTop="-1px"
+                  labelFontSize="12px"
+                  width="100%"
+                  options={[
+                    {
+                      id: 1,
+                      name: "Leads",
+                    },
+                    {
+                      id: 2,
+                      name: "Follow Up",
+                    },
+                    {
+                      id: 3,
+                      name: "Joinings",
+                    },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBranchWiseLeadsType(value);
+                    getBranchWiseLeadsData(
+                      null,
+                      branchWiseLeadsDates[0],
+                      branchWiseLeadsDates[1],
+                      selectedUserId,
+                      false,
+                      value,
+                      branchWiseLeadsRegion
+                    );
+                  }}
+                  value={branchWiseLeadsType}
+                />
+              </Col>
+            </Row>
+
+            <div
+              style={{
+                padding: "0px 12px 12px 12px",
+              }}
+            >
+              <div className="dadhboard_chartsContainer">
+                {branchWiseLeadsLoader ? (
+                  <div className="dashboard_skeleton_container">
+                    <Skeleton
+                      active
+                      style={{ height: "40vh" }}
+                      title={{ width: 140 }}
+                      paragraph={{
+                        rows: 0,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    {branchWiseLeadsSeries.length >= 1 ? (
+                      <BranchwiseLeadChart
+                        xaxis={branchWiseLeadsXaxis}
+                        // xaxis={[
+                        //   "OMR",
+                        //   "Anna Nagar",
+                        //   "Maraimalai Nagar",
+                        //   "Velachery",
+                        //   "T.Nagar",
+                        //   "Thiruvanmiyur",
+                        //   "Siruseri",
+                        //   "Tabaram",
+                        // ]}
+                        // series={[12, 34, 45, 33, 44, 56, 65, 100]}
+                        series={branchWiseLeadsSeries}
+                        leads={branchWiseLeadsCount}
+                        totalFollowUps={branchWiseTotalFollowUp}
+                        followUpHandled={branchWiseFollowUpHandled}
+                        followUpUnHandled={branchWiseFollowUpUnHandled}
+                        customers={branchWiseLeadjoiningsCount}
+                        colors={["#5b6aca"]}
+                        height={320}
+                        type={
+                          branchWiseLeadsType == 1
+                            ? "Leads"
+                            : branchWiseLeadsType == 2
+                            ? "Follow Up"
+                            : "Customer Join"
+                        }
+                      />
+                    ) : (
+                      <div className="dashboard_chart_nodata_conatiner">
+                        <p>No data found</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </Col>
+
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={12}
+          style={{
+            marginTop: "30px",
+          }}
+        >
+          <div className="dashboard_leadcount_card">
+            <Row className="dashboard_leadcount_header_container">
+              <Col span={18}>
+                <div style={{ padding: "12px 12px 8px 12px" }}>
+                  <p className="dashboard_scrorecard_heading">
+                    Branch-Wise Sale Analysis
+                  </p>
+                  <p className="dashboard_daterange_text">
+                    <span style={{ fontWeight: "500" }}>Date Range: </span>
+                    {`(${moment(branchWiseSaleDates[0]).format(
+                      "DD MMM YYYY"
+                    )} to ${moment(branchWiseSaleDates[1]).format(
+                      "DD MMM YYYY"
+                    )})`}
+                  </p>
+                </div>
+              </Col>
+              <Col
+                span={6}
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <div>
+                  <CommonMuiCustomDatePicker
+                    isDashboard={true}
+                    value={branchWiseSaleDates}
+                    onDateChange={(dates) => {
+                      setBranchWiseSaleDates(dates);
+                      updateDashboardCardDate(
+                        "Branch-Wise Sale Analysis",
+                        dates[0],
+                        dates[1]
+                      );
+                      getBranchWiseSalesData(
+                        null,
+                        dates[0],
+                        dates[1],
+                        selectedUserId,
+                        false,
+                        branchWiseSaleType,
+                        branchWiseSaleRegion
+                      );
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col span={6}></Col>
+              <Col span={18} className="dashboard_userwise_typefield_container">
+                <CommonSelectField
+                  label="Region"
+                  height="35px"
+                  labelMarginTop="-1px"
+                  labelFontSize="12px"
+                  width="100%"
+                  options={[
+                    {
+                      id: 1,
+                      name: "Chennai",
+                    },
+                    {
+                      id: 2,
+                      name: "Bangalore",
+                    },
+                    {
+                      id: 3,
+                      name: "Hub",
+                    },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBranchWiseSaleRegion(value);
+                    getBranchWiseSalesData(
+                      null,
+                      branchWiseSaleDates[0],
+                      branchWiseSaleDates[1],
+                      selectedUserId,
+                      false,
+                      branchWiseSaleType,
+                      value
+                    );
+                  }}
+                  value={branchWiseSaleRegion}
+                />
+                <CommonSelectField
+                  label="Type"
+                  height="35px"
+                  labelMarginTop="-1px"
+                  labelFontSize="12px"
+                  width="100%"
+                  options={[
+                    {
+                      id: 1,
+                      name: "Sale Volume",
+                    },
+                    {
+                      id: 2,
+                      name: "Collection",
+                    },
+                    {
+                      id: 3,
+                      name: "Pending",
+                    },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBranchWiseSaleType(value);
+                    getBranchWiseSalesData(
+                      null,
+                      branchWiseSaleDates[0],
+                      branchWiseSaleDates[1],
+                      selectedUserId,
+                      false,
+                      value,
+                      branchWiseSaleRegion
+                    );
+                  }}
+                  value={branchWiseSaleType}
+                />
+              </Col>
+            </Row>
+            <div
+              style={{
+                padding: "0px 12px 12px 12px",
+              }}
+            >
+              {branchWiseSalesLoader ? (
+                <div className="dashboard_skeleton_container">
+                  <Skeleton
+                    active
+                    style={{ height: "40vh" }}
+                    title={{ width: 140 }}
+                    paragraph={{
+                      rows: 0,
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  {branchWiseSalesSeries.length >= 1 ? (
+                    <BranchwiseSalesChart
+                      xaxis={branchWiseSalesXaxis}
+                      series={branchWiseSalesSeries} // series={userWiseSeries}
+                      colors={[
+                        branchWiseSaleType == 1
+                          ? "#5b6aca"
+                          : branchWiseSaleType == 2
+                          ? "#258a25"
+                          : "#b22021",
+                      ]}
+                      type={
+                        branchWiseSaleType == 1
+                          ? "Sale"
+                          : branchWiseSaleType == 2
+                          ? "Collection"
+                          : "Pending"
+                      }
+                      height={320}
+                    />
+                  ) : (
+                    ""
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </Col>
+
         {permissions.includes("Top Performing Channels") && (
           <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>
             <div className="dashboard_leadcount_card">
@@ -1403,7 +2247,13 @@ export default function Dashboard() {
                       value={performingSelectedDates}
                       onDateChange={(dates) => {
                         setPerformingSelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Top Performance",
+                          dates[0],
+                          dates[1]
+                        );
                         getTopPerformanceData(
+                          null,
                           dates[0],
                           dates[1],
                           selectedUserId,
@@ -1532,10 +2382,21 @@ export default function Dashboard() {
                   <div>
                     <CommonMuiCustomDatePicker
                       isDashboard={true}
-                      value={performingSelectedDates}
+                      value={HrSelectedDates}
                       onDateChange={(dates) => {
                         setHrSelectedDates(dates);
-                        getHRData(dates[0], dates[1], selectedUserId, false);
+                        updateDashboardCardDate(
+                          "HR Dashboard",
+                          dates[0],
+                          dates[1]
+                        );
+                        getHRData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          selectedUserId,
+                          false
+                        );
                       }}
                     />
                   </div>
@@ -1642,10 +2503,21 @@ export default function Dashboard() {
                   <div>
                     <CommonMuiCustomDatePicker
                       isDashboard={true}
-                      value={performingSelectedDates}
+                      value={raSelectedDates}
                       onDateChange={(dates) => {
                         setRaSelectedDates(dates);
-                        getRAData(dates[0], dates[1], selectedUserId, false);
+                        updateDashboardCardDate(
+                          "RA Dashboard",
+                          dates[0],
+                          dates[1]
+                        );
+                        getRAData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          selectedUserId,
+                          false
+                        );
                       }}
                     />
                   </div>
