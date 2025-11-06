@@ -6,7 +6,7 @@ export default function UserwiseLeadChart({
   xaxis,
   series,
   colors,
-  leads,
+  conversion,
   customers,
   clickedBar,
   fontSize,
@@ -65,8 +65,7 @@ export default function UserwiseLeadChart({
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) =>
-          type == "Leads" || type == "Follow Up" ? val + "%" : val,
+        formatter: (val) => val,
         style: {
           fontSize: "12px",
           fontWeight: 500,
@@ -101,10 +100,9 @@ export default function UserwiseLeadChart({
         y: {
           formatter: (val, { dataPointIndex, w }) => {
             const userName = w.config.xaxis.categories[dataPointIndex];
-            const value = leads[dataPointIndex];
+            const value = series[dataPointIndex];
             const joinings = customers[dataPointIndex];
-            const conversion = series[dataPointIndex];
-            const total_followups = totalFollowUps[dataPointIndex];
+            const conversion_value = conversion[dataPointIndex];
             const followup_handledcount = followUpHandled[dataPointIndex];
             const followup_unhandledcount = followUpUnHandled[dataPointIndex];
             const color = w.config.colors[0]; //
@@ -132,7 +130,7 @@ export default function UserwiseLeadChart({
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           Conversion: 
           <span style="font-weight:600;">
-            ${conversion}%
+            ${conversion_value}%
           </span>
         </div>
       `;
@@ -146,7 +144,7 @@ export default function UserwiseLeadChart({
          <div style="font-weight:400; font-family:Poppins, sans-serif">
           Total FollowUp: 
           <span style="font-weight:600;">
-            ${total_followups}
+            ${value}
           </span>
         </div>
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
@@ -165,7 +163,7 @@ export default function UserwiseLeadChart({
           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           Efficient: 
           <span style="font-weight:600;">
-            ${conversion}%
+            ${conversion_value}%
           </span>
         </div>
       `;

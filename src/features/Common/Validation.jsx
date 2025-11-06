@@ -8,7 +8,7 @@ const domainRegex =
   /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:[a-zA-Z]{2,})$/;
 const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[^\s]*)?$/i;
 const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-
+import dayjs from "dayjs";
 import moment from "moment";
 
 export const nameValidator = (name) => {
@@ -392,4 +392,91 @@ export const getCountryFromDialCode = (dialCode) => {
 
   // Return first ISO code if found, otherwise default "in"
   return countries.length > 0 ? parseCountry(countries[0]).iso2 : "in";
+};
+
+export const getRangeLabel = (startDate, endDate) => {
+  const today = dayjs();
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+
+  // Helper to check if two dates are the same day
+  const isSame = (d1, d2) => d1.isSame(d2, "day");
+
+  // Compare with predefined ranges
+  if (isSame(start, today) && isSame(end, today)) return "Today";
+  if (
+    isSame(start, today.subtract(1, "day")) &&
+    isSame(end, today.subtract(1, "day"))
+  )
+    return "Yesterday";
+
+  if (isSame(start, today.subtract(6, "day")) && isSame(end, today))
+    return "7 Days";
+  if (isSame(start, today.subtract(14, "day")) && isSame(end, today))
+    return "15 Days";
+  if (isSame(start, today.subtract(29, "day")) && isSame(end, today))
+    return "30 Days";
+  if (isSame(start, today.subtract(59, "day")) && isSame(end, today))
+    return "60 Days";
+  if (isSame(start, today.subtract(89, "day")) && isSame(end, today))
+    return "90 Days";
+
+  return null;
+};
+
+export const getDatesFromRangeLabel = (label) => {
+  const today = dayjs();
+  let start_date, end_date;
+
+  switch (label.toLowerCase()) {
+    case "today":
+      start_date = today;
+      end_date = today;
+      break;
+
+    case "yesterday":
+      start_date = today.subtract(1, "day");
+      end_date = today.subtract(1, "day");
+      break;
+
+    case "7 days":
+    case "last7days":
+      start_date = today.subtract(6, "day");
+      end_date = today;
+      break;
+
+    case "15 days":
+    case "last15days":
+      start_date = today.subtract(14, "day");
+      end_date = today;
+      break;
+
+    case "30 days":
+    case "last30days":
+      start_date = today.subtract(29, "day");
+      end_date = today;
+      break;
+
+    case "60 days":
+    case "last60days":
+      start_date = today.subtract(59, "day");
+      end_date = today;
+      break;
+
+    case "90 days":
+    case "last90days":
+      start_date = today.subtract(89, "day");
+      end_date = today;
+      break;
+
+    default:
+      return null; // for "Custom" or unsupported labels
+  }
+
+  return {
+    card_settings: {
+      start_date: start_date.format("YYYY-MM-DD"),
+      end_date: end_date.format("YYYY-MM-DD"),
+    },
+  };
 };

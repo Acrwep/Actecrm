@@ -3,10 +3,14 @@ import { Row, Col, Skeleton, Tooltip, Button, Divider } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import ReactApexChart from "react-apexcharts";
+import { PiHandCoins } from "react-icons/pi";
+import { PiUsersThreeBold } from "react-icons/pi";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   getCurrentandPreviousweekDate,
+  getDatesFromRangeLabel,
+  getRangeLabel,
   selectValidator,
 } from "../Common/Validation";
 import {
@@ -86,11 +90,10 @@ export default function Dashboard() {
   const [userWiseLeadsDates, setUserWiseLeadsDates] = useState([]);
   const [userWiseLeadsXaxis, setUserWiseLeadsXaxis] = useState([]);
   const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
-  const [userWiseLeadsCount, setUserWiseLeadsCount] = useState([]);
+  const [userWiseLeadsConversion, setUserWiseLeadsConversion] = useState([]);
   const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
     []
   );
-  const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
   const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
   const [userWiseFollowUpUnHandled, setUserWiseFollowUpUnHandled] = useState(
     []
@@ -103,10 +106,11 @@ export default function Dashboard() {
 
   const [branchWiseLeadsXaxis, setBranchWiseLeadsXaxis] = useState([]);
   const [branchWiseLeadsSeries, setBranchWiseLeadsSeries] = useState([]);
-  const [branchWiseLeadsCount, setBranchWiseLeadsCount] = useState([]);
+  const [branchWiseLeadsConversion, setBranchWiseLeadsConversion] = useState(
+    []
+  );
   const [branchWiseLeadjoiningsCount, setBranchWiseLeadsJoingingsCount] =
     useState([]);
-  const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
   const [branchWiseFollowUpHandled, setBranchWiseFollowUpHandled] = useState(
     []
   );
@@ -245,10 +249,31 @@ export default function Dashboard() {
         (f) => f.card_name == "Score Board"
       );
       if (scoreboard_dates) {
-        setScoreBoardSelectedDates([
-          scoreboard_dates.card_settings.start_date,
-          scoreboard_dates.card_settings.end_date,
-        ]);
+        console.log("scoreboard_dates", scoreboard_dates);
+        if (
+          scoreboard_dates.card_settings == "Today" ||
+          scoreboard_dates.card_settings == "Yesterday" ||
+          scoreboard_dates.card_settings == "7 Days" ||
+          scoreboard_dates.card_settings == "15 Days" ||
+          scoreboard_dates.card_settings == "30 Days" ||
+          scoreboard_dates.card_settings == "60 Days" ||
+          scoreboard_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            scoreboard_dates.card_settings
+          );
+          scoreboard_dates = getdates_bylabel;
+          console.log("getdates_bylabel", getdates_bylabel);
+          setScoreBoardSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setScoreBoardSelectedDates([
+            scoreboard_dates.card_settings.start_date,
+            scoreboard_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
     const payload = {
@@ -317,10 +342,29 @@ export default function Dashboard() {
         (f) => f.card_name == "Sale Performance"
       );
       if (saleperformance_dates) {
-        setSaleDetailsSelectedDates([
-          saleperformance_dates.card_settings.start_date,
-          saleperformance_dates.card_settings.end_date,
-        ]);
+        if (
+          saleperformance_dates.card_settings == "Today" ||
+          saleperformance_dates.card_settings == "Yesterday" ||
+          saleperformance_dates.card_settings == "7 Days" ||
+          saleperformance_dates.card_settings == "15 Days" ||
+          saleperformance_dates.card_settings == "30 Days" ||
+          saleperformance_dates.card_settings == "60 Days" ||
+          saleperformance_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            saleperformance_dates.card_settings
+          );
+          saleperformance_dates = getdates_bylabel;
+          setSaleDetailsSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setSaleDetailsSelectedDates([
+            saleperformance_dates.card_settings.start_date,
+            saleperformance_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
     const payload = {
@@ -402,10 +446,29 @@ export default function Dashboard() {
         (f) => f.card_name == "User-Wise Lead Analysis"
       );
       if (userwiseleads_dates) {
-        setUserWiseLeadsDates([
-          userwiseleads_dates.card_settings.start_date,
-          userwiseleads_dates.card_settings.end_date,
-        ]);
+        if (
+          userwiseleads_dates.card_settings == "Today" ||
+          userwiseleads_dates.card_settings == "Yesterday" ||
+          userwiseleads_dates.card_settings == "7 Days" ||
+          userwiseleads_dates.card_settings == "15 Days" ||
+          userwiseleads_dates.card_settings == "30 Days" ||
+          userwiseleads_dates.card_settings == "60 Days" ||
+          userwiseleads_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            userwiseleads_dates.card_settings
+          );
+          userwiseleads_dates = getdates_bylabel;
+          setUserWiseLeadsDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setUserWiseLeadsDates([
+            userwiseleads_dates.card_settings.start_date,
+            userwiseleads_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
     const payload = {
@@ -422,45 +485,47 @@ export default function Dashboard() {
     try {
       const response = await getUserWiseLeadCounts(payload);
       console.log("userwise leadcounts response", response);
-      const userwise_leadscount = response?.data?.data;
-      console.log(userwise_leadscount);
+      const userwise_leads = response?.data?.data;
+      console.log(userwise_leads);
 
-      const xaxis = userwise_leadscount.map(
+      const xaxis = userwise_leads.map(
         (item) => `${item.user_id} (${item.user_name})`
       );
-      const series = userwise_leadscount.map((item) => Number(item.percentage));
+
+      const series = userwise_leads.map((item) =>
+        Number(
+          type == 1
+            ? item.total_leads
+            : type == 2
+            ? item.lead_followup_count
+            : ""
+        )
+      );
+
+      const percentage = userwise_leads.map((item) => Number(item.percentage));
+
+      setUserWiseLeadsConversion(percentage);
 
       if (type == 1) {
-        const leads_count = userwise_leadscount.map((item) =>
-          Number(item.total_leads)
-        );
-
-        const customers_count = userwise_leadscount.map((item) =>
+        const customers_count = userwise_leads.map((item) =>
           Number(item.customer_count)
         );
-        setUserWiseLeadsCount(leads_count);
         setUserWiseLeadsJoingingsCount(customers_count);
       } else {
-        setUserWiseLeadsCount([]);
         setUserWiseLeadsJoingingsCount([]);
       }
 
       if (type == 2) {
-        const followup_count = userwise_leadscount.map((item) =>
-          Number(item.lead_followup_count)
-        );
-        const followup_handled = userwise_leadscount.map((item) =>
+        const followup_handled = userwise_leads.map((item) =>
           Number(item.followup_handled)
         );
 
-        const followup_unhandled = userwise_leadscount.map((item) =>
+        const followup_unhandled = userwise_leads.map((item) =>
           Number(item.followup_unhandled)
         );
-        setUserWiseTotalFollowUp(followup_count);
         setUserWiseFollowUpHandled(followup_handled);
         setUserWiseFollowUpUnHandled(followup_unhandled);
       } else {
-        setUserWiseTotalFollowUp([]);
         setUserWiseFollowUpHandled([]);
         setUserWiseFollowUpUnHandled([]);
       }
@@ -468,7 +533,7 @@ export default function Dashboard() {
       setUserWiseLeadsSeries(series);
 
       if (type == 3) {
-        const customers_count = userwise_leadscount.map((item) =>
+        const customers_count = userwise_leads.map((item) =>
           Number(item.customer_count)
         );
         setUserWiseLeadsJoingingsCount(customers_count);
@@ -480,7 +545,7 @@ export default function Dashboard() {
       console.log("userwise leadcounts error", error);
       setUserWiseLeadsXaxis([]);
       setUserWiseLeadsSeries([]);
-      setUserWiseLeadsCount([]);
+      setUserWiseLeadsConversion([]);
       setUserWiseLeadsJoingingsCount([]);
       setUserWiseFollowUpHandled([]);
       setUserWiseFollowUpUnHandled([]);
@@ -635,12 +700,32 @@ export default function Dashboard() {
         (f) => f.card_name == "Branch-Wise Lead Analysis"
       );
       if (branchwiseleads_dates) {
-        setBranchWiseLeadsDates([
-          branchwiseleads_dates.card_settings.start_date,
-          branchwiseleads_dates.card_settings.end_date,
-        ]);
+        if (
+          branchwiseleads_dates.card_settings == "Today" ||
+          branchwiseleads_dates.card_settings == "Yesterday" ||
+          branchwiseleads_dates.card_settings == "7 Days" ||
+          branchwiseleads_dates.card_settings == "15 Days" ||
+          branchwiseleads_dates.card_settings == "30 Days" ||
+          branchwiseleads_dates.card_settings == "60 Days" ||
+          branchwiseleads_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            branchwiseleads_dates.card_settings
+          );
+          branchwiseleads_dates = getdates_bylabel;
+          setBranchWiseLeadsDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setBranchWiseLeadsDates([
+            branchwiseleads_dates.card_settings.start_date,
+            branchwiseleads_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
+
     const payload = {
       start_date: branchwiseleads_dates
         ? branchwiseleads_dates.card_settings.start_date
@@ -659,27 +744,31 @@ export default function Dashboard() {
       console.log(branchwise_leads);
 
       const xaxis = branchwise_leads.map((item) => item.branch_name);
-      const series = branchwise_leads.map((item) => Number(item.percentage));
+      const series = branchwise_leads.map((item) =>
+        Number(
+          type == 1
+            ? item.total_leads
+            : type == 2
+            ? item.lead_followup_count
+            : ""
+        )
+      );
+      const percentage = branchwise_leads.map((item) =>
+        Number(item.percentage)
+      );
+
+      setBranchWiseLeadsConversion(percentage);
 
       if (type == 1) {
-        const leads_count = branchwise_leads.map((item) =>
-          Number(item.total_leads)
-        );
-
         const customers_count = branchwise_leads.map((item) =>
           Number(item.customer_count)
         );
-        setBranchWiseLeadsCount(leads_count);
         setBranchWiseLeadsJoingingsCount(customers_count);
       } else {
-        setBranchWiseLeadsCount([]);
         setBranchWiseLeadsJoingingsCount([]);
       }
 
       if (type == 2) {
-        const followup_count = branchwise_leads.map((item) =>
-          Number(item.lead_followup_count)
-        );
         const followup_handled = branchwise_leads.map((item) =>
           Number(item.followup_handled)
         );
@@ -687,11 +776,9 @@ export default function Dashboard() {
         const followup_unhandled = branchwise_leads.map((item) =>
           Number(item.followup_unhandled)
         );
-        setBranchWiseTotalFollowUp(followup_count);
         setBranchWiseFollowUpHandled(followup_handled);
         setBranchWiseFollowUpUnHandled(followup_unhandled);
       } else {
-        setBranchWiseTotalFollowUp([]);
         setBranchWiseFollowUpHandled([]);
         setBranchWiseFollowUpUnHandled([]);
       }
@@ -711,7 +798,7 @@ export default function Dashboard() {
       console.log("userwise leadcounts error", error);
       setBranchWiseLeadsXaxis([]);
       setBranchWiseLeadsSeries([]);
-      setBranchWiseLeadsCount([]);
+      setBranchWiseLeadsConversion([]);
       setBranchWiseLeadsJoingingsCount([]);
       setBranchWiseFollowUpHandled([]);
       setBranchWiseFollowUpUnHandled([]);
@@ -768,12 +855,32 @@ export default function Dashboard() {
         (f) => f.card_name == "Branch-Wise Sale Analysis"
       );
       if (branchwisesales_dates) {
-        setBranchWiseSaleDates([
-          branchwisesales_dates.card_settings.start_date,
-          branchwisesales_dates.card_settings.end_date,
-        ]);
+        if (
+          branchwisesales_dates.card_settings == "Today" ||
+          branchwisesales_dates.card_settings == "Yesterday" ||
+          branchwisesales_dates.card_settings == "7 Days" ||
+          branchwisesales_dates.card_settings == "15 Days" ||
+          branchwisesales_dates.card_settings == "30 Days" ||
+          branchwisesales_dates.card_settings == "60 Days" ||
+          branchwisesales_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            branchwisesales_dates.card_settings
+          );
+          branchwisesales_dates = getdates_bylabel;
+          setBranchWiseSaleDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setBranchWiseSaleDates([
+            branchwisesales_dates.card_settings.start_date,
+            branchwisesales_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
+
     const payload = {
       start_date: branchwisesales_dates
         ? branchwisesales_dates.card_settings.start_date
@@ -857,12 +964,32 @@ export default function Dashboard() {
         (f) => f.card_name == "Top Performance"
       );
       if (topperformance_dates) {
-        setPerformingSelectedDates([
-          topperformance_dates.card_settings.start_date,
-          topperformance_dates.card_settings.end_date,
-        ]);
+        if (
+          topperformance_dates.card_settings == "Today" ||
+          topperformance_dates.card_settings == "Yesterday" ||
+          topperformance_dates.card_settings == "7 Days" ||
+          topperformance_dates.card_settings == "15 Days" ||
+          topperformance_dates.card_settings == "30 Days" ||
+          topperformance_dates.card_settings == "60 Days" ||
+          topperformance_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            topperformance_dates.card_settings
+          );
+          topperformance_dates = getdates_bylabel;
+          setPerformingSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setPerformingSelectedDates([
+            topperformance_dates.card_settings.start_date,
+            topperformance_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
+
     const payload = {
       start_date: topperformance_dates
         ? topperformance_dates.card_settings.start_date
@@ -926,12 +1053,32 @@ export default function Dashboard() {
     if (dashboard_dates && dashboard_dates.length >= 1) {
       hr_dates = dashboard_dates.find((f) => f.card_name == "HR Dashboard");
       if (hr_dates) {
-        setHrSelectedDates([
-          hr_dates.card_settings.start_date,
-          hr_dates.card_settings.end_date,
-        ]);
+        if (
+          hr_dates.card_settings == "Today" ||
+          hr_dates.card_settings == "Yesterday" ||
+          hr_dates.card_settings == "7 Days" ||
+          hr_dates.card_settings == "15 Days" ||
+          hr_dates.card_settings == "30 Days" ||
+          hr_dates.card_settings == "60 Days" ||
+          hr_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            hr_dates.card_settings
+          );
+          hr_dates = getdates_bylabel;
+          setHrSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setHrSelectedDates([
+            hr_dates.card_settings.start_date,
+            hr_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
+
     const payload = {
       start_date: hr_dates ? hr_dates.card_settings.start_date : startDate,
       end_date: hr_dates ? hr_dates.card_settings.end_date : endDate,
@@ -1001,12 +1148,32 @@ export default function Dashboard() {
     if (dashboard_dates && dashboard_dates.length >= 1) {
       ra_dates = dashboard_dates.find((f) => f.card_name == "RA Dashboard");
       if (ra_dates) {
-        setRaSelectedDates([
-          ra_dates.card_settings.start_date,
-          ra_dates.card_settings.end_date,
-        ]);
+        if (
+          ra_dates.card_settings == "Today" ||
+          ra_dates.card_settings == "Yesterday" ||
+          ra_dates.card_settings == "7 Days" ||
+          ra_dates.card_settings == "15 Days" ||
+          ra_dates.card_settings == "30 Days" ||
+          ra_dates.card_settings == "60 Days" ||
+          ra_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            ra_dates.card_settings
+          );
+          ra_dates = getdates_bylabel;
+          setRaSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setRaSelectedDates([
+            ra_dates.card_settings.start_date,
+            ra_dates.card_settings.end_date,
+          ]);
+        }
       }
     }
+
     const payload = {
       start_date: ra_dates ? ra_dates.card_settings.start_date : startDate,
       end_date: ra_dates ? ra_dates.card_settings.end_date : endDate,
@@ -1192,10 +1359,16 @@ export default function Dashboard() {
     } else {
       get_item = null;
     }
+
+    const get_rangelabel = getRangeLabel(startDate, endDate);
+    console.log("get_rangelabel", get_rangelabel);
+
     const payload = {
       user_id: loginUserId,
       card_name: name,
-      card_settings: { start_date: startDate, end_date: endDate },
+      card_settings: get_rangelabel
+        ? get_rangelabel
+        : { start_date: startDate, end_date: endDate },
       ...(get_item && { id: get_item.id }),
     };
     console.log("update date payload", payload);
@@ -1203,6 +1376,15 @@ export default function Dashboard() {
       await updateDashboardDates(payload);
     } catch (error) {
       console.log("update card date", error);
+    } finally {
+      try {
+        const response = await getDashboardDates(loginUserId);
+        console.log("dashboard dates response", response);
+        const alldashboard_cardsdates = response?.data?.data || [];
+        setAllDashboardCardsDates(alldashboard_cardsdates);
+      } catch (error) {
+        console.log("dashboard dates", error);
+      }
     }
   };
 
@@ -1305,7 +1487,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <Row className="dashboard_leadcountcard_progressbar_mainContainer">
+                  {/* <Row className="dashboard_leadcountcard_progressbar_mainContainer">
                     <Col span={12}>
                       <div>
                         <p className="dashboard_leadcountcard_subheadings">
@@ -1376,6 +1558,84 @@ export default function Dashboard() {
                             : "-"}
                         </p>
                       </div>
+                    </Col>
+                  </Row> */}
+                  <Row
+                    className="dashboard_leadcountcard_progressbar_mainContainer"
+                    style={{ marginTop: "20px" }}
+                  >
+                    <Col span={12}>
+                      <div className="dashboard_leadcount_main_container">
+                        <div className="dashboard_leadcount_icon_container">
+                          <PiHandCoins size={20} />
+                        </div>
+                        <div className="dashboard_leadcount_container">
+                          <p>Total Leads</p>
+                          <p
+                            style={{
+                              marginTop: "4px",
+                              color: "#5b69ca",
+                              fontSize: "24px",
+                            }}
+                          >
+                            {scoreCardDetails &&
+                            (scoreCardDetails.total_leads != undefined ||
+                              scoreCardDetails.total_leads != null)
+                              ? Number(
+                                  scoreCardDetails.total_leads
+                                ).toLocaleString("en-IN")
+                              : "-"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div
+                        className="dashboard_leadcount_main_container"
+                        style={{ marginTop: "40px" }}
+                      >
+                        <div className="dashboard_joiningcount_icon_container">
+                          <PiUsersThreeBold size={20} />
+                        </div>
+                        <div className="dashboard_leadcount_container">
+                          <p>Total Joinings</p>
+                          <p
+                            style={{
+                              marginTop: "4px",
+                              color: "#3c9111",
+                              fontSize: "24px",
+                            }}
+                          >
+                            {scoreCardDetails &&
+                            (scoreCardDetails.total_join != undefined ||
+                              scoreCardDetails.total_join != null)
+                              ? Number(
+                                  scoreCardDetails.total_join
+                                ).toLocaleString("en-IN")
+                              : "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </Col>
+
+                    <Col
+                      span={12}
+                      style={{ display: "flex", justifyContent: "center" }}
+                    >
+                      <CommonDonutChart
+                        labels={["Followup Handled", "Followup Un-Handled"]}
+                        series={[
+                          scoreCardDetails?.follow_up_handled
+                            ? Number(scoreCardDetails.follow_up_handled)
+                            : 0,
+                          scoreCardDetails?.follow_up_unhandled
+                            ? Number(scoreCardDetails.follow_up_unhandled)
+                            : 0,
+                        ]}
+                        // series={[0, 1]}
+                        labelsfontSize="1px"
+                        colors={["#a29bfec7", "#d32f2fcc"]}
+                        height={260}
+                      />
                     </Col>
                   </Row>
                 </>
@@ -1595,8 +1855,8 @@ export default function Dashboard() {
                       setUserWiseLeadsType(value);
                       getUserWiseLeadCountsData(
                         null,
-                        userWiseStartDate,
-                        userWiseEndDate,
+                        userWiseLeadsDates[0],
+                        userWiseLeadsDates[1],
                         selectedUserId,
                         false,
                         value
@@ -1633,8 +1893,7 @@ export default function Dashboard() {
                           xaxis={userWiseLeadsXaxis}
                           // series={[12, 34, 45]}
                           series={userWiseLeadsSeries}
-                          leads={userWiseLeadsCount}
-                          totalFollowUps={userWiseTotalFollowUp}
+                          conversion={userWiseLeadsConversion}
                           followUpHandled={userWiseFollowUpHandled}
                           followUpUnHandled={userWiseFollowUpUnHandled}
                           customers={userWiseLeadjoiningsCount}
@@ -1847,145 +2106,344 @@ export default function Dashboard() {
           </Col>
         )}
 
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            marginTop: "30px",
-          }}
-        >
-          <div className="dashboard_leadcount_card">
-            <Row className="dashboard_leadcount_header_container">
-              <Col span={18}>
-                <div style={{ padding: "12px 12px 8px 12px" }}>
-                  <p className="dashboard_scrorecard_heading">
-                    Branch-Wise Lead Analysis
-                  </p>
-                  <p className="dashboard_daterange_text">
-                    <span style={{ fontWeight: "500" }}>Date Range: </span>
-                    {`(${moment(branchWiseLeadsDates[0]).format(
-                      "DD MMM YYYY"
-                    )} to ${moment(branchWiseLeadsDates[1]).format(
-                      "DD MMM YYYY"
-                    )})`}
-                  </p>
-                </div>
-              </Col>
-              <Col
-                span={6}
-                style={{ display: "flex", justifyContent: "flex-end" }}
-              >
-                <div>
-                  <CommonMuiCustomDatePicker
-                    isDashboard={true}
-                    value={branchWiseLeadsDates}
-                    onDateChange={(dates) => {
-                      setBranchWiseLeadsDates(dates);
-                      updateDashboardCardDate(
-                        "Branch-Wise Lead Analysis",
-                        dates[0],
-                        dates[1]
-                      );
+        {permissions.includes("Branch-Wise Lead Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Branch-Wise Lead Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(branchWiseLeadsDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(branchWiseLeadsDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={branchWiseLeadsDates}
+                      onDateChange={(dates) => {
+                        setBranchWiseLeadsDates(dates);
+                        updateDashboardCardDate(
+                          "Branch-Wise Lead Analysis",
+                          dates[0],
+                          dates[1]
+                        );
+                        getBranchWiseLeadsData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          selectedUserId,
+                          false,
+                          branchWiseLeadsType,
+                          branchWiseLeadsRegion
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col span={6}></Col>
+                <Col
+                  span={18}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Region"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Chennai",
+                      },
+                      {
+                        id: 2,
+                        name: "Bangalore",
+                      },
+                      {
+                        id: 3,
+                        name: "Hub",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setBranchWiseLeadsRegion(value);
                       getBranchWiseLeadsData(
                         null,
-                        dates[0],
-                        dates[1],
+                        branchWiseLeadsDates[0],
+                        branchWiseLeadsDates[1],
                         selectedUserId,
                         false,
                         branchWiseLeadsType,
+                        value
+                      );
+                    }}
+                    value={branchWiseLeadsRegion}
+                  />
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Leads",
+                      },
+                      {
+                        id: 2,
+                        name: "Follow Up",
+                      },
+                      {
+                        id: 3,
+                        name: "Joinings",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setBranchWiseLeadsType(value);
+                      getBranchWiseLeadsData(
+                        null,
+                        branchWiseLeadsDates[0],
+                        branchWiseLeadsDates[1],
+                        selectedUserId,
+                        false,
+                        value,
                         branchWiseLeadsRegion
                       );
                     }}
+                    value={branchWiseLeadsType}
                   />
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {branchWiseLeadsLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {branchWiseLeadsSeries.length >= 1 ? (
+                        <BranchwiseLeadChart
+                          xaxis={branchWiseLeadsXaxis}
+                          // xaxis={[
+                          //   "OMR",
+                          //   "Anna Nagar",
+                          //   "Maraimalai Nagar",
+                          //   "Velachery",
+                          //   "T.Nagar",
+                          //   "Thiruvanmiyur",
+                          //   "Siruseri",
+                          //   "Tabaram",
+                          // ]}
+                          // series={[12, 34, 45, 33, 44, 56, 65, 100]}
+                          series={branchWiseLeadsSeries}
+                          conversion={branchWiseLeadsConversion}
+                          followUpHandled={branchWiseFollowUpHandled}
+                          followUpUnHandled={branchWiseFollowUpUnHandled}
+                          customers={branchWiseLeadjoiningsCount}
+                          colors={["#5b6aca"]}
+                          height={320}
+                          type={
+                            branchWiseLeadsType == 1
+                              ? "Leads"
+                              : branchWiseLeadsType == 2
+                              ? "Follow Up"
+                              : "Customer Join"
+                          }
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </Col>
-            </Row>
+              </div>
+            </div>
+          </Col>
+        )}
 
-            <Row>
-              <Col span={6}></Col>
-              <Col span={18} className="dashboard_userwise_typefield_container">
-                <CommonSelectField
-                  label="Region"
-                  height="35px"
-                  labelMarginTop="-1px"
-                  labelFontSize="12px"
-                  width="100%"
-                  options={[
-                    {
-                      id: 1,
-                      name: "Chennai",
-                    },
-                    {
-                      id: 2,
-                      name: "Bangalore",
-                    },
-                    {
-                      id: 3,
-                      name: "Hub",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setBranchWiseLeadsRegion(value);
-                    getBranchWiseLeadsData(
-                      null,
-                      branchWiseLeadsDates[0],
-                      branchWiseLeadsDates[1],
-                      selectedUserId,
-                      false,
-                      branchWiseLeadsType,
-                      value
-                    );
-                  }}
-                  value={branchWiseLeadsRegion}
-                />
-                <CommonSelectField
-                  label="Type"
-                  height="35px"
-                  labelMarginTop="-1px"
-                  labelFontSize="12px"
-                  width="100%"
-                  options={[
-                    {
-                      id: 1,
-                      name: "Leads",
-                    },
-                    {
-                      id: 2,
-                      name: "Follow Up",
-                    },
-                    {
-                      id: 3,
-                      name: "Joinings",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setBranchWiseLeadsType(value);
-                    getBranchWiseLeadsData(
-                      null,
-                      branchWiseLeadsDates[0],
-                      branchWiseLeadsDates[1],
-                      selectedUserId,
-                      false,
-                      value,
-                      branchWiseLeadsRegion
-                    );
-                  }}
-                  value={branchWiseLeadsType}
-                />
-              </Col>
-            </Row>
+        {permissions.includes("Branch-Wise Sales Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Branch-Wise Sale Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(branchWiseSaleDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(branchWiseSaleDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={branchWiseSaleDates}
+                      onDateChange={(dates) => {
+                        setBranchWiseSaleDates(dates);
+                        updateDashboardCardDate(
+                          "Branch-Wise Sale Analysis",
+                          dates[0],
+                          dates[1]
+                        );
+                        getBranchWiseSalesData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          selectedUserId,
+                          false,
+                          branchWiseSaleType,
+                          branchWiseSaleRegion
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
 
-            <div
-              style={{
-                padding: "0px 12px 12px 12px",
-              }}
-            >
-              <div className="dadhboard_chartsContainer">
-                {branchWiseLeadsLoader ? (
+              <Row>
+                <Col span={6}></Col>
+                <Col
+                  span={18}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Region"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Chennai",
+                      },
+                      {
+                        id: 2,
+                        name: "Bangalore",
+                      },
+                      {
+                        id: 3,
+                        name: "Hub",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setBranchWiseSaleRegion(value);
+                      getBranchWiseSalesData(
+                        null,
+                        branchWiseSaleDates[0],
+                        branchWiseSaleDates[1],
+                        selectedUserId,
+                        false,
+                        branchWiseSaleType,
+                        value
+                      );
+                    }}
+                    value={branchWiseSaleRegion}
+                  />
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Sale Volume",
+                      },
+                      {
+                        id: 2,
+                        name: "Collection",
+                      },
+                      {
+                        id: 3,
+                        name: "Pending",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setBranchWiseSaleType(value);
+                      getBranchWiseSalesData(
+                        null,
+                        branchWiseSaleDates[0],
+                        branchWiseSaleDates[1],
+                        selectedUserId,
+                        false,
+                        value,
+                        branchWiseSaleRegion
+                      );
+                    }}
+                    value={branchWiseSaleType}
+                  />
+                </Col>
+              </Row>
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                }}
+              >
+                {branchWiseSalesLoader ? (
                   <div className="dashboard_skeleton_container">
                     <Skeleton
                       active
@@ -1997,226 +2455,36 @@ export default function Dashboard() {
                     />
                   </div>
                 ) : (
-                  <div>
-                    {branchWiseLeadsSeries.length >= 1 ? (
-                      <BranchwiseLeadChart
-                        xaxis={branchWiseLeadsXaxis}
-                        // xaxis={[
-                        //   "OMR",
-                        //   "Anna Nagar",
-                        //   "Maraimalai Nagar",
-                        //   "Velachery",
-                        //   "T.Nagar",
-                        //   "Thiruvanmiyur",
-                        //   "Siruseri",
-                        //   "Tabaram",
-                        // ]}
-                        // series={[12, 34, 45, 33, 44, 56, 65, 100]}
-                        series={branchWiseLeadsSeries}
-                        leads={branchWiseLeadsCount}
-                        totalFollowUps={branchWiseTotalFollowUp}
-                        followUpHandled={branchWiseFollowUpHandled}
-                        followUpUnHandled={branchWiseFollowUpUnHandled}
-                        customers={branchWiseLeadjoiningsCount}
-                        colors={["#5b6aca"]}
-                        height={320}
+                  <>
+                    {branchWiseSalesSeries.length >= 1 ? (
+                      <BranchwiseSalesChart
+                        xaxis={branchWiseSalesXaxis}
+                        series={branchWiseSalesSeries} // series={userWiseSeries}
+                        colors={[
+                          branchWiseSaleType == 1
+                            ? "#5b6aca"
+                            : branchWiseSaleType == 2
+                            ? "#258a25"
+                            : "#b22021",
+                        ]}
                         type={
-                          branchWiseLeadsType == 1
-                            ? "Leads"
-                            : branchWiseLeadsType == 2
-                            ? "Follow Up"
-                            : "Customer Join"
+                          branchWiseSaleType == 1
+                            ? "Sale"
+                            : branchWiseSaleType == 2
+                            ? "Collection"
+                            : "Pending"
                         }
+                        height={320}
                       />
                     ) : (
-                      <div className="dashboard_chart_nodata_conatiner">
-                        <p>No data found</p>
-                      </div>
+                      ""
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>
-          </div>
-        </Col>
-
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            marginTop: "30px",
-          }}
-        >
-          <div className="dashboard_leadcount_card">
-            <Row className="dashboard_leadcount_header_container">
-              <Col span={18}>
-                <div style={{ padding: "12px 12px 8px 12px" }}>
-                  <p className="dashboard_scrorecard_heading">
-                    Branch-Wise Sale Analysis
-                  </p>
-                  <p className="dashboard_daterange_text">
-                    <span style={{ fontWeight: "500" }}>Date Range: </span>
-                    {`(${moment(branchWiseSaleDates[0]).format(
-                      "DD MMM YYYY"
-                    )} to ${moment(branchWiseSaleDates[1]).format(
-                      "DD MMM YYYY"
-                    )})`}
-                  </p>
-                </div>
-              </Col>
-              <Col
-                span={6}
-                style={{ display: "flex", justifyContent: "flex-end" }}
-              >
-                <div>
-                  <CommonMuiCustomDatePicker
-                    isDashboard={true}
-                    value={branchWiseSaleDates}
-                    onDateChange={(dates) => {
-                      setBranchWiseSaleDates(dates);
-                      updateDashboardCardDate(
-                        "Branch-Wise Sale Analysis",
-                        dates[0],
-                        dates[1]
-                      );
-                      getBranchWiseSalesData(
-                        null,
-                        dates[0],
-                        dates[1],
-                        selectedUserId,
-                        false,
-                        branchWiseSaleType,
-                        branchWiseSaleRegion
-                      );
-                    }}
-                  />
-                </div>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col span={6}></Col>
-              <Col span={18} className="dashboard_userwise_typefield_container">
-                <CommonSelectField
-                  label="Region"
-                  height="35px"
-                  labelMarginTop="-1px"
-                  labelFontSize="12px"
-                  width="100%"
-                  options={[
-                    {
-                      id: 1,
-                      name: "Chennai",
-                    },
-                    {
-                      id: 2,
-                      name: "Bangalore",
-                    },
-                    {
-                      id: 3,
-                      name: "Hub",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setBranchWiseSaleRegion(value);
-                    getBranchWiseSalesData(
-                      null,
-                      branchWiseSaleDates[0],
-                      branchWiseSaleDates[1],
-                      selectedUserId,
-                      false,
-                      branchWiseSaleType,
-                      value
-                    );
-                  }}
-                  value={branchWiseSaleRegion}
-                />
-                <CommonSelectField
-                  label="Type"
-                  height="35px"
-                  labelMarginTop="-1px"
-                  labelFontSize="12px"
-                  width="100%"
-                  options={[
-                    {
-                      id: 1,
-                      name: "Sale Volume",
-                    },
-                    {
-                      id: 2,
-                      name: "Collection",
-                    },
-                    {
-                      id: 3,
-                      name: "Pending",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setBranchWiseSaleType(value);
-                    getBranchWiseSalesData(
-                      null,
-                      branchWiseSaleDates[0],
-                      branchWiseSaleDates[1],
-                      selectedUserId,
-                      false,
-                      value,
-                      branchWiseSaleRegion
-                    );
-                  }}
-                  value={branchWiseSaleType}
-                />
-              </Col>
-            </Row>
-            <div
-              style={{
-                padding: "0px 12px 12px 12px",
-              }}
-            >
-              {branchWiseSalesLoader ? (
-                <div className="dashboard_skeleton_container">
-                  <Skeleton
-                    active
-                    style={{ height: "40vh" }}
-                    title={{ width: 140 }}
-                    paragraph={{
-                      rows: 0,
-                    }}
-                  />
-                </div>
-              ) : (
-                <>
-                  {branchWiseSalesSeries.length >= 1 ? (
-                    <BranchwiseSalesChart
-                      xaxis={branchWiseSalesXaxis}
-                      series={branchWiseSalesSeries} // series={userWiseSeries}
-                      colors={[
-                        branchWiseSaleType == 1
-                          ? "#5b6aca"
-                          : branchWiseSaleType == 2
-                          ? "#258a25"
-                          : "#b22021",
-                      ]}
-                      type={
-                        branchWiseSaleType == 1
-                          ? "Sale"
-                          : branchWiseSaleType == 2
-                          ? "Collection"
-                          : "Pending"
-                      }
-                      height={320}
-                    />
-                  ) : (
-                    ""
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </Col>
+          </Col>
+        )}
 
         {permissions.includes("Top Performing Channels") && (
           <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>

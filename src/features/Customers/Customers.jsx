@@ -2174,7 +2174,17 @@ export default function Customers() {
     setPagination({
       page: 1,
     });
-    getAllDownlineUsersData(null);
+    // getAllDownlineUsersData(null);
+    getCustomersData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+      null,
+      null,
+      null,
+      branchOptions,
+      1,
+      pagination.limit
+    );
   };
 
   const handleViewCert = async (customer_id) => {

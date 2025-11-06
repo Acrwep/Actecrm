@@ -130,11 +130,16 @@ const FinanceVerify = forwardRef(
             ? rejectedItem.payment_screenshot
             : ""
         );
-        setBalanceAmount(
+        const rej_balance_amount =
           rejectedItem && rejectedItem.balance_amount
             ? rejectedItem.balance_amount
-            : 0
-        );
+            : 0;
+        setBalanceAmount(rej_balance_amount);
+        if (rej_balance_amount == 0 || rej_balance_amount == "0.00") {
+          setIsShowDueDate(false);
+        } else {
+          setIsShowDueDate(true);
+        }
         setDueDate(
           rejectedItem && rejectedItem.next_due_date
             ? rejectedItem.next_due_date

@@ -6,11 +6,10 @@ export default function BranchwiseLeadChart({
   xaxis,
   series,
   colors,
-  leads,
+  conversion,
   customers,
   clickedBar,
   fontSize,
-  totalFollowUps,
   followUpHandled,
   followUpUnHandled,
   type,
@@ -26,7 +25,7 @@ export default function BranchwiseLeadChart({
 
   const getBarColors = () => {
     if (type == "Leads" || type == "Follow Up") {
-      return series.map((val) => {
+      return conversion.map((val) => {
         if (val <= 25) return "#E53935"; // red
         else if (val <= 50) return "#FB8C00"; // orange
         else if (val <= 75) return "#00ACC1"; // teal green
@@ -65,8 +64,7 @@ export default function BranchwiseLeadChart({
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) =>
-          type == "Leads" || type == "Follow Up" ? val + "%" : val,
+        formatter: (val) => val,
         style: {
           fontSize: "12px",
           fontWeight: 500,
@@ -101,10 +99,9 @@ export default function BranchwiseLeadChart({
         y: {
           formatter: (val, { dataPointIndex, w }) => {
             const userName = w.config.xaxis.categories[dataPointIndex];
-            const value = leads[dataPointIndex];
+            const value = series[dataPointIndex];
             const joinings = customers[dataPointIndex];
-            const conversion = series[dataPointIndex];
-            const total_followups = totalFollowUps[dataPointIndex];
+            const conversion_value = conversion[dataPointIndex];
             const followup_handledcount = followUpHandled[dataPointIndex];
             const followup_unhandledcount = followUpUnHandled[dataPointIndex];
             const color = w.config.colors[0]; //
@@ -132,7 +129,7 @@ export default function BranchwiseLeadChart({
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           Conversion: 
           <span style="font-weight:600;">
-            ${conversion}%
+            ${conversion_value}%
           </span>
         </div>
       `;
@@ -146,7 +143,7 @@ export default function BranchwiseLeadChart({
          <div style="font-weight:400; font-family:Poppins, sans-serif">
           Total FollowUp: 
           <span style="font-weight:600;">
-            ${total_followups}
+            ${value}
           </span>
         </div>
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
@@ -165,7 +162,7 @@ export default function BranchwiseLeadChart({
           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           Efficient: 
           <span style="font-weight:600;">
-            ${conversion}%
+            ${conversion_value}%
           </span>
         </div>
       `;

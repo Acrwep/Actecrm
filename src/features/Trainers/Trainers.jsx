@@ -1500,7 +1500,7 @@ export default function Trainers() {
                   gap: "3px",
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <Select
                     className={
                       skills.length <= 0 && !skillsError
@@ -1874,7 +1874,7 @@ export default function Trainers() {
         </Col>
       </Row>
 
-      <Row style={{ marginTop: "16px" }}>
+      <Row style={{ marginTop: "8px" }}>
         <Col span={22}>
           <div className="customers_scroll_wrapper">
             <button
@@ -2084,7 +2084,7 @@ export default function Trainers() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "22px" }}>
+      <div style={{ marginTop: "12px" }}>
         <CommonTable
           // scroll={{ x: 2700 }}
           scroll={{

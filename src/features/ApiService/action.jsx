@@ -977,8 +977,7 @@ export const getHRDashboard = async (payload) => {
     throw error;
   }
 };
-//bulk search
-
+//bulk search api's
 export const bulkSearch = async (payload) => {
   try {
     const response = await api.post(`/api/bulkSearch`, payload);
@@ -987,8 +986,7 @@ export const bulkSearch = async (payload) => {
     throw error;
   }
 };
-//table columns
-
+//table columns api's
 export const getTableColumns = async (user_id) => {
   try {
     const response = await api.get(`/api/getPageColumns?user_id=${user_id}`);
@@ -1001,6 +999,16 @@ export const getTableColumns = async (user_id) => {
 export const updateTableColumns = async (payload) => {
   try {
     const response = await api.post(`/api/updatePageColumns`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//server api's
+export const getServerRequest = async (payload) => {
+  try {
+    const response = await api.post(`/api/getServerRequest`, payload);
     return response;
   } catch (error) {
     throw error;
