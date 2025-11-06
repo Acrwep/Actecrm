@@ -12,7 +12,7 @@ export default function UserwiseLeadChart({
   fontSize,
   totalFollowUps,
   followUpHandled,
-  followUpUnHandled,
+  totalFollowUp,
   type,
   enablePointer = false,
 }) {
@@ -89,7 +89,7 @@ export default function UserwiseLeadChart({
           },
         },
       },
-      colors: getBarColors(), // ✅ use the first color only
+      colors: [colors[0]], // ✅ use the first color only
       grid: {
         xaxis: { lines: { show: false } },
       },
@@ -104,7 +104,7 @@ export default function UserwiseLeadChart({
             const joinings = customers[dataPointIndex];
             const conversion_value = conversion[dataPointIndex];
             const followup_handledcount = followUpHandled[dataPointIndex];
-            const followup_unhandledcount = followUpUnHandled[dataPointIndex];
+            const total_followup = totalFollowUp[dataPointIndex];
             const color = w.config.colors[0]; //
 
             if (type == "Leads") {
@@ -144,7 +144,7 @@ export default function UserwiseLeadChart({
          <div style="font-weight:400; font-family:Poppins, sans-serif">
           Total FollowUp: 
           <span style="font-weight:600;">
-            ${value}
+            ${total_followup}
           </span>
         </div>
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
@@ -157,7 +157,7 @@ export default function UserwiseLeadChart({
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
           FollowUp Un-Handled: 
           <span style="font-weight:600;">
-            ${followup_unhandledcount}
+            ${value}
           </span>
         </div>
           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">

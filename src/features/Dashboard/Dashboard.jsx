@@ -95,9 +95,7 @@ export default function Dashboard() {
     []
   );
   const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
-  const [userWiseFollowUpUnHandled, setUserWiseFollowUpUnHandled] = useState(
-    []
-  );
+  const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
   const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
   //branch-wise lead analysis
   const [branchWiseLeadsRegion, setBranchWiseLeadsRegion] = useState(1);
@@ -114,8 +112,7 @@ export default function Dashboard() {
   const [branchWiseFollowUpHandled, setBranchWiseFollowUpHandled] = useState(
     []
   );
-  const [branchWiseFollowUpUnHandled, setBranchWiseFollowUpUnHandled] =
-    useState([]);
+  const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
   const [branchWiseLeadsLoader, setBranchWiseLeadsLoader] = useState(true);
   //branch-wise sale analysis
   const [branchWiseSaleRegion, setBranchWiseSaleRegion] = useState(1);
@@ -497,7 +494,7 @@ export default function Dashboard() {
           type == 1
             ? item.total_leads
             : type == 2
-            ? item.lead_followup_count
+            ? item.followup_unhandled
             : ""
         )
       );
@@ -516,18 +513,19 @@ export default function Dashboard() {
       }
 
       if (type == 2) {
+        const total_followup = userwise_leads.map((item) =>
+          Number(item.lead_followup_count)
+        );
+
         const followup_handled = userwise_leads.map((item) =>
           Number(item.followup_handled)
         );
 
-        const followup_unhandled = userwise_leads.map((item) =>
-          Number(item.followup_unhandled)
-        );
+        setUserWiseTotalFollowUp(total_followup);
         setUserWiseFollowUpHandled(followup_handled);
-        setUserWiseFollowUpUnHandled(followup_unhandled);
       } else {
         setUserWiseFollowUpHandled([]);
-        setUserWiseFollowUpUnHandled([]);
+        setUserWiseTotalFollowUp([]);
       }
 
       setUserWiseLeadsSeries(series);
@@ -548,7 +546,7 @@ export default function Dashboard() {
       setUserWiseLeadsConversion([]);
       setUserWiseLeadsJoingingsCount([]);
       setUserWiseFollowUpHandled([]);
-      setUserWiseFollowUpUnHandled([]);
+      setUserWiseTotalFollowUp([]);
     } finally {
       setTimeout(() => {
         setUserWiseLeadsLoader(false);
@@ -749,7 +747,7 @@ export default function Dashboard() {
           type == 1
             ? item.total_leads
             : type == 2
-            ? item.lead_followup_count
+            ? item.followup_unhandled
             : ""
         )
       );
@@ -769,18 +767,17 @@ export default function Dashboard() {
       }
 
       if (type == 2) {
+        const total_followup = branchwise_leads.map((item) =>
+          Number(item.lead_followup_count)
+        );
         const followup_handled = branchwise_leads.map((item) =>
           Number(item.followup_handled)
         );
-
-        const followup_unhandled = branchwise_leads.map((item) =>
-          Number(item.followup_unhandled)
-        );
+        setBranchWiseTotalFollowUp(total_followup);
         setBranchWiseFollowUpHandled(followup_handled);
-        setBranchWiseFollowUpUnHandled(followup_unhandled);
       } else {
+        setBranchWiseTotalFollowUp([]);
         setBranchWiseFollowUpHandled([]);
-        setBranchWiseFollowUpUnHandled([]);
       }
 
       setBranchWiseLeadsSeries(series);
@@ -801,7 +798,7 @@ export default function Dashboard() {
       setBranchWiseLeadsConversion([]);
       setBranchWiseLeadsJoingingsCount([]);
       setBranchWiseFollowUpHandled([]);
-      setBranchWiseFollowUpUnHandled([]);
+      setBranchWiseTotalFollowUp([]);
     } finally {
       setTimeout(() => {
         setBranchWiseLeadsLoader(false);
@@ -1634,7 +1631,7 @@ export default function Dashboard() {
                         // series={[1116, 2579]}
                         showTotal={true}
                         labelsfontSize="15px"
-                        colors={["#a29bfec7", "#d32f2fcc"]}
+                        colors={["#5b6aca", "#d32f2fcc"]}
                         height={260}
                       />
                     </Col>
@@ -1895,10 +1892,16 @@ export default function Dashboard() {
                           // series={[12, 34, 45]}
                           series={userWiseLeadsSeries}
                           conversion={userWiseLeadsConversion}
+                          totalFollowUp={userWiseTotalFollowUp}
                           followUpHandled={userWiseFollowUpHandled}
-                          followUpUnHandled={userWiseFollowUpUnHandled}
                           customers={userWiseLeadjoiningsCount}
-                          colors={["#5b6aca"]}
+                          colors={[
+                            userWiseLeadsType == 1
+                              ? "#009688"
+                              : userWiseLeadsType == 2
+                              ? "#607D8B"
+                              : "#5b6aca",
+                          ]}
                           height={
                             userWiseLeadsXaxis.length <= 5
                               ? 280
@@ -2278,10 +2281,16 @@ export default function Dashboard() {
                           // series={[12, 34, 45, 33, 44, 56, 65, 100]}
                           series={branchWiseLeadsSeries}
                           conversion={branchWiseLeadsConversion}
+                          totalFollowUp={branchWiseTotalFollowUp}
                           followUpHandled={branchWiseFollowUpHandled}
-                          followUpUnHandled={branchWiseFollowUpUnHandled}
                           customers={branchWiseLeadjoiningsCount}
-                          colors={["#5b6aca"]}
+                          colors={[
+                            branchWiseLeadsType == 1
+                              ? "#009688"
+                              : branchWiseLeadsType == 2
+                              ? "#607D8B"
+                              : "#5b6aca",
+                          ]}
                           height={320}
                           type={
                             branchWiseLeadsType == 1
@@ -2823,7 +2832,7 @@ export default function Dashboard() {
                         series={raDataSeries}
                         labelsfontSize="11px"
                         colors={[
-                          "#ffa602c7",
+                          "#607d8b",
                           "#1e8fffbe",
                           "#a29bfec7",
                           "#00cecbd0",

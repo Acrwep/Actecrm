@@ -216,10 +216,10 @@
   justify-content: center;
   align-items: center;
   padding: 6px 16px;
-  border: 1px solid #ff8c01;
-  background-color: #ff8d0118;
+  border: 1px solid #607d8b;
+  background-color: #607d8b11;
   border-radius: 6px;
-  color: #ff8c01;
+  color: #607d8b;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -229,8 +229,8 @@
   justify-content: center;
   align-items: center;
   padding: 6px 16px;
-  border: 1px solid #ff8c01;
-  background-color: #ff8c01;
+  border: 1px solid #607d8b;
+  background-color: #607d8b;
   border-radius: 6px;
   color: #fff;
   font-size: 13px;
@@ -435,8 +435,8 @@
 }
 
 .customers_status_awaitfinance_button {
-  background: #eb6e4b18;
-  color: #eb6d4b;
+  background: #ffbf0018;
+  color: #ffbf00;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -450,8 +450,8 @@
 }
 
 .customers_status_awaitfinance_button:hover {
-  background-color: #eb6e4b18 !important;
-  color: #eb6d4b !important;
+  background-color: #ffbf0018 !important;
+  color: #ffbf00 !important;
   box-shadow: none !important;
   opacity: 1;
 }
@@ -520,8 +520,8 @@
   opacity: 1;
 }
 .customers_status_awaitingclass_button {
-  background: #ff8d0113;
-  color: #ff8c01;
+  background: #607d8b11;
+  color: #607d8b;
   display: flex;
   justify-content: center;
   align-items: center;
