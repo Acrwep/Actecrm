@@ -11,6 +11,7 @@ export default function CommonDonutChart({
   height,
   clickedBar,
   enablePointer,
+  showTotal,
 }) {
   const [mobileView, setMobileView] = useState(false);
   const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
@@ -106,20 +107,24 @@ export default function CommonDonutChart({
       events: {
         // prefer native event: set pointer on the target element when hovering
         mouseMove: function (event, chartContext, config) {
-          try {
-            if (!enablePointer) return;
-            // event.target is the hovered SVG element usually
-            if (event && event.target) {
-              // set pointer for the hovered node (and bubble up a little)
-              event.target.style && (event.target.style.cursor = "pointer");
-              // also try parent nodes (some browsers/elements need it)
-              if (event.target.parentNode && event.target.parentNode.style)
-                event.target.parentNode.style.cursor = "pointer";
-            }
-          } catch (e) {
-            /* ignore */
+          const label = labels?.[config.dataPointIndex]; // ✅ Get label by index dynamically
+
+          const totalLabel = document.querySelector(
+            `#${chartId.current} .apexcharts-datalabels-group text`
+          );
+
+          if (!totalLabel) return;
+
+          // ✅ Only shrink when hovering FOLLOWUP UN-HANDLED (match by label text, not index)
+          if (label == "Followup Un-Handled") {
+            totalLabel.style.fontSize = "10px";
+          } else if (label == "Followup Handled") {
+            totalLabel.style.fontSize = "12px";
+          } else {
+            totalLabel.style.fontSize = labelsfontSize; // restore
           }
         },
+
         // when leaving, reset to default for safety
         mouseLeave: function (event, chartContext, config) {
           try {
@@ -144,7 +149,22 @@ export default function CommonDonutChart({
         donut: {
           size: "70%",
           labels: {
-            show: false,
+            show: showTotal ? showTotal : false,
+            total: {
+              showAlways: false,
+              show: true,
+              color: "#2d2d2d",
+              fontWeight: 600,
+              fontSize: mobileView ? "12px" : labelsfontSize, // Dynamically adjust font size
+              fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+            },
+            value: {
+              show: true,
+              fontSize: mobileView ? "12px" : "16px",
+              color: "#2d2d2d",
+              fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+              fontWeight: 700, // Increase font weight
+            },
           },
         },
       },
@@ -158,8 +178,15 @@ export default function CommonDonutChart({
         fontFamily: "Poppins, sans-serif",
       },
       formatter: function (val, opts) {
-        const value = series[opts.seriesIndex];
-        if (timebased === "true") return formatTime(value);
+        const value = opts.w.globals.series[opts.seriesIndex];
+
+        // Reduce font size if large number
+        if (value > 999) {
+          opts.w.config.dataLabels.style.fontSize = "10px"; // <= Adjust here
+        } else {
+          opts.w.config.dataLabels.style.fontSize = "13px";
+        }
+
         return value;
       },
     },

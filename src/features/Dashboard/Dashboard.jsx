@@ -1631,8 +1631,9 @@ export default function Dashboard() {
                             ? Number(scoreCardDetails.follow_up_unhandled)
                             : 0,
                         ]}
-                        // series={[0, 1]}
-                        labelsfontSize="1px"
+                        // series={[1116, 2579]}
+                        showTotal={true}
+                        labelsfontSize="15px"
                         colors={["#a29bfec7", "#d32f2fcc"]}
                         height={260}
                       />

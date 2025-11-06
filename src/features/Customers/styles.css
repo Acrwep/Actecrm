@@ -82,7 +82,7 @@
   font-size: 13px;
   font-weight: 600;
 }
-.customers_awaitfinance_container {
+.customers_paymentreject_container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -96,13 +96,40 @@
   cursor: pointer;
   gap: 4px;
 }
-.customers_active_awaitfinance_container {
+.customers_active_paymentreject_container {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 6px 14px;
   border: 1px solid #eb6d4b;
   background-color: #eb6d4b;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 4px;
+}
+.customers_awaitfinance_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid #ffbf00;
+  background-color: #ffbf0018;
+  border-radius: 6px;
+  color: #ffbf00;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  gap: 4px;
+}
+.customers_active_awaitfinance_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid #ffbf00;
+  background-color: #ffbf00;
   border-radius: 6px;
   color: #fff;
   font-size: 13px;

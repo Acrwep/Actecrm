@@ -2537,8 +2537,12 @@ export default function Customers() {
 
           <div
             className={
-              status === "Awaiting Finance" || status === "Payment Rejected"
+              status === "Awaiting Finance"
                 ? "customers_active_awaitfinance_container"
+                : status === "Payment Rejected"
+                ? "customers_active_paymentreject_container"
+                : isSwap
+                ? "customers_paymentreject_container"
                 : "customers_awaitfinance_container"
             }
           >

@@ -19,6 +19,7 @@ import {
 } from "../Common/Validation";
 import {
   createUser,
+  getUserDownline,
   getUsers,
   setUserTarget,
   updateUser,
@@ -28,6 +29,8 @@ import CommonSpinner from "../Common/CommonSpinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
   storeAllUsersList,
+  storeChildUsers,
+  storeDownlineUsers,
   storeUserSearchValue,
   storeUsersList,
 } from "../Redux/Slice";
@@ -530,6 +533,7 @@ export default function Users({
           });
           getUsersData(searchValue, pagination.page, pagination.limit);
           getAllUsersData();
+          getUserDownlineData();
           formReset();
         }, 300);
       } catch (error) {
@@ -551,6 +555,7 @@ export default function Users({
           });
           getUsersData(searchValue, 1, pagination.limit);
           getAllUsersData();
+          getUserDownlineData();
           formReset();
         }, 300);
       } catch (error) {
@@ -561,6 +566,29 @@ export default function Users({
             "Something went wrong. Try again later"
         );
       }
+    }
+  };
+
+  const getUserDownlineData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    let child_users;
+    let downline_users;
+    let user_roles;
+    try {
+      const response = await getUserDownline(convertAsJson?.user_id);
+      console.log("user downline response", response);
+      child_users = response?.data?.data?.child_users || [];
+      downline_users = response?.data?.data?.downline_users || [];
+      user_roles = response?.data?.data?.roles || [];
+      dispatch(storeChildUsers(child_users));
+      dispatch(storeDownlineUsers(downline_users));
+    } catch (error) {
+      user_roles = [];
+      child_users = [];
+      dispatch(storeChildUsers([]));
+      dispatch(storeDownlineUsers([]));
+      console.log("user downline error", error);
     }
   };
 
