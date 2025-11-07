@@ -12,6 +12,8 @@ export default function CommonDonutChart({
   clickedBar,
   enablePointer,
   showTotal,
+  efficientValue,
+  legendFontSize,
 }) {
   const [mobileView, setMobileView] = useState(false);
   const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
@@ -118,7 +120,7 @@ export default function CommonDonutChart({
           // ✅ Only shrink when hovering FOLLOWUP UN-HANDLED (match by label text, not index)
           if (label == "Followup Un-Handled") {
             totalLabel.style.fontSize = "10px";
-          } else if (label == "Followup Handled") {
+          } else if (label == "Total Followup" || label == "Followup Handled") {
             totalLabel.style.fontSize = "12px";
           } else {
             totalLabel.style.fontSize = labelsfontSize; // restore
@@ -152,11 +154,15 @@ export default function CommonDonutChart({
             show: showTotal ? showTotal : false,
             total: {
               showAlways: false,
+              label: "Efficiency",
               show: true,
               color: "#2d2d2d",
               fontWeight: 600,
               fontSize: mobileView ? "12px" : labelsfontSize, // Dynamically adjust font size
               fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+              formatter: function (w) {
+                return efficientValue ? efficientValue + "%" : "0%"; // ✅ show efficient prop value in center
+              },
             },
             value: {
               show: true,
@@ -203,7 +209,7 @@ export default function CommonDonutChart({
       show: true,
       position: "bottom",
       fontFamily: "Poppins, sans-serif",
-      fontSize: "11px",
+      fontSize: legendFontSize ? legendFontSize : "11px",
       formatter: function (seriesName, opts) {
         const value = opts.w.globals.series[opts.seriesIndex];
         if (timebased === "true") return `${seriesName}: ${formatTime(value)}`;

@@ -161,7 +161,7 @@ export default function UserwiseLeadChart({
           </span>
         </div>
           <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
-          Efficient: 
+          Efficiency: 
           <span style="font-weight:600;">
             ${conversion_value}%
           </span>

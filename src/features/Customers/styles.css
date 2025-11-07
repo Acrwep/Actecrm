@@ -520,7 +520,7 @@
   opacity: 1;
 }
 .customers_status_awaitingclass_button {
-  background: #607d8b11;
+  background: #607d8b17;
   color: #607d8b;
   display: flex;
   justify-content: center;
@@ -534,8 +534,8 @@
   height: 0px !important;
 }
 .customers_status_awaitingclass_button:hover {
-  background-color: #ff8d0113 !important;
-  color: #ff8c01 !important;
+  background-color: #607d8b17 !important;
+  color: #607d8b !important;
   box-shadow: none !important;
   opacity: 1;
 }

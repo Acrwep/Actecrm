@@ -1619,8 +1619,15 @@ export default function Dashboard() {
                       style={{ display: "flex", justifyContent: "center" }}
                     >
                       <CommonDonutChart
-                        labels={["Followup Handled", "Followup Un-Handled"]}
+                        labels={[
+                          "Total Followup",
+                          "Followup Handled",
+                          "Followup Un-Handled",
+                        ]}
                         series={[
+                          scoreCardDetails?.total_followups
+                            ? Number(scoreCardDetails.total_followups)
+                            : 0,
                           scoreCardDetails?.follow_up_handled
                             ? Number(scoreCardDetails.follow_up_handled)
                             : 0,
@@ -1628,10 +1635,16 @@ export default function Dashboard() {
                             ? Number(scoreCardDetails.follow_up_unhandled)
                             : 0,
                         ]}
+                        efficientValue={
+                          scoreCardDetails?.follow_up_percentage
+                            ? Number(scoreCardDetails.follow_up_percentage)
+                            : 0
+                        }
                         // series={[1116, 2579]}
                         showTotal={true}
                         labelsfontSize="15px"
-                        colors={["#5b6aca", "#d32f2fcc"]}
+                        legendFontSize="10px"
+                        colors={["#5b6aca", "#009688", "#d32f2fcc"]}
                         height={260}
                       />
                     </Col>
@@ -2268,17 +2281,6 @@ export default function Dashboard() {
                       {branchWiseLeadsSeries.length >= 1 ? (
                         <BranchwiseLeadChart
                           xaxis={branchWiseLeadsXaxis}
-                          // xaxis={[
-                          //   "OMR",
-                          //   "Anna Nagar",
-                          //   "Maraimalai Nagar",
-                          //   "Velachery",
-                          //   "T.Nagar",
-                          //   "Thiruvanmiyur",
-                          //   "Siruseri",
-                          //   "Tabaram",
-                          // ]}
-                          // series={[12, 34, 45, 33, 44, 56, 65, 100]}
                           series={branchWiseLeadsSeries}
                           conversion={branchWiseLeadsConversion}
                           totalFollowUp={branchWiseTotalFollowUp}
