@@ -523,7 +523,9 @@ export default function Server() {
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status:
         drawerStatus == "Verify" ? "Server Rejected" : "Approval Rejected",
-      verify_comments: rejectComment,
+      ...(drawerStatus && drawerStatus == "Verify"
+        ? { verify_comments: rejectComment }
+        : { approval_comments: rejectComment }),
     };
     try {
       await updateServerStatus(payload);
