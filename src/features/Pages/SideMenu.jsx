@@ -41,34 +41,34 @@ export default function SideMenu() {
       path: "lead-manager",
     },
     3: {
-      title: "Bulk Search",
-      icon: <IoSearch size={17} />,
-      path: "bulk-search",
-    },
-    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    5: {
+    4: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    6: {
+    5: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    7: {
+    6: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    8: {
+    7: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
+    },
+    8: {
+      title: "Bulk Search",
+      icon: <IoSearch size={17} />,
+      path: "bulk-search",
     },
     9: {
       title: "Settings",
@@ -89,34 +89,34 @@ export default function SideMenu() {
       path: "lead-manager",
     },
     3: {
-      title: "Bulk Search",
-      icon: <IoSearch size={17} />,
-      path: "bulk-search",
-    },
-    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    5: {
+    4: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    6: {
+    5: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    7: {
+    6: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    8: {
+    7: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
+    },
+    8: {
+      title: "Bulk Search",
+      icon: <IoSearch size={17} />,
+      path: "bulk-search",
     },
     9: {
       title: "Settings",
@@ -133,11 +133,11 @@ export default function SideMenu() {
       delete updatedMenu[2];
     }
 
-    if (!permissions.includes("Bulk Search Page")) {
-      delete updatedMenu[3];
+    if (!permissions.includes("Trainers Page")) {
+      delete updatedMenu[7];
     }
 
-    if (!permissions.includes("Trainers Page")) {
+    if (!permissions.includes("Bulk Search Page")) {
       delete updatedMenu[8];
     }
 
@@ -207,11 +207,11 @@ export default function SideMenu() {
           delete updatedMenu[2];
         }
 
-        if (!permissions.includes("Bulk Search Page")) {
-          delete updatedMenu[3];
+        if (!updateData.includes("Trainers Page")) {
+          delete updatedMenu[7];
         }
 
-        if (!updateData.includes("Trainers Page")) {
+        if (!permissions.includes("Bulk Search Page")) {
           delete updatedMenu[8];
         }
 

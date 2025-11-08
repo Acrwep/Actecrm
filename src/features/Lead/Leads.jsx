@@ -480,24 +480,28 @@ export default function Leads({
                 color="#d32f2f"
                 className="trainers_action_icons"
                 onClick={() => {
-                  setIsOpenPaymentDrawer(true);
-                  setSubTotal(parseFloat(record.primary_fees));
-                  setAmount(parseFloat(record.primary_fees));
-                  setBalanceAmount(parseFloat(record.primary_fees));
-                  setCustomerCourseId(record.primary_course_id);
-                  setCustomerBatchTrackId(record.batch_track_id);
-                  setClickedLeadItem(record);
-                  setTimeout(() => {
-                    const drawerBody = document.querySelector(
-                      "#leadmanager_paymentdetails_drawer .ant-drawer-body"
-                    );
-                    if (drawerBody) {
-                      drawerBody.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }
-                  }, 300);
+                  if (permissions.includes("Edit Lead Button")) {
+                    setIsOpenPaymentDrawer(true);
+                    setSubTotal(parseFloat(record.primary_fees));
+                    setAmount(parseFloat(record.primary_fees));
+                    setBalanceAmount(parseFloat(record.primary_fees));
+                    setCustomerCourseId(record.primary_course_id);
+                    setCustomerBatchTrackId(record.batch_track_id);
+                    setClickedLeadItem(record);
+                    setTimeout(() => {
+                      const drawerBody = document.querySelector(
+                        "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                      );
+                      if (drawerBody) {
+                        drawerBody.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        });
+                      }
+                    }, 300);
+                  } else {
+                    CommonMessage("error", "Access Denied");
+                  }
                 }}
               />
             </Tooltip>
@@ -717,24 +721,28 @@ export default function Leads({
                           color="#d32f2f"
                           className="trainers_action_icons"
                           onClick={() => {
-                            setIsOpenPaymentDrawer(true);
-                            setSubTotal(parseFloat(record.primary_fees));
-                            setAmount(parseFloat(record.primary_fees));
-                            setBalanceAmount(parseFloat(record.primary_fees));
-                            setCustomerCourseId(record.primary_course_id);
-                            setCustomerBatchTrackId(record.batch_track_id);
-                            setClickedLeadItem(record);
-                            setTimeout(() => {
-                              const drawerBody = document.querySelector(
-                                "#leadmanager_paymentdetails_drawer .ant-drawer-body"
-                              );
-                              if (drawerBody) {
-                                drawerBody.scrollTo({
-                                  top: 0,
-                                  behavior: "smooth",
-                                });
-                              }
-                            }, 300);
+                            if (permissions.includes("Edit Lead Button")) {
+                              setIsOpenPaymentDrawer(true);
+                              setSubTotal(parseFloat(record.primary_fees));
+                              setAmount(parseFloat(record.primary_fees));
+                              setBalanceAmount(parseFloat(record.primary_fees));
+                              setCustomerCourseId(record.primary_course_id);
+                              setCustomerBatchTrackId(record.batch_track_id);
+                              setClickedLeadItem(record);
+                              setTimeout(() => {
+                                const drawerBody = document.querySelector(
+                                  "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                                );
+                                if (drawerBody) {
+                                  drawerBody.scrollTo({
+                                    top: 0,
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }, 300);
+                            } else {
+                              CommonMessage("error", "Access Denied");
+                            }
                           }}
                         />
                       </Tooltip>

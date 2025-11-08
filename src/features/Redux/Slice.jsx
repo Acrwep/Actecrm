@@ -159,6 +159,17 @@ const bulkSearchModulePermissionListSlice = createSlice({
   },
 });
 
+const serverModulePermissionListSlice = createSlice({
+  name: "servermodulepermissionlist",
+  initialState,
+  reducers: {
+    storeServerModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const trainersModulePermissionListSlice = createSlice({
   name: "trainersmodulepermissionlist",
   initialState,
@@ -243,6 +254,8 @@ export const { storeFeesPendingModulePermissionList } =
   feesPendingModulePermissionListSlice.actions;
 export const { storeBulkSearchModulePermissionList } =
   bulkSearchModulePermissionListSlice.actions;
+export const { storeServerModulePermissionList } =
+  serverModulePermissionListSlice.actions;
 export const { storeTrainersModulePermissionList } =
   trainersModulePermissionListSlice.actions;
 export const { storeSettingsModulePermissionList } =
@@ -274,6 +287,8 @@ export const feesPendingModulePermissionListReducer =
   feesPendingModulePermissionListSlice.reducer;
 export const bulkSearchModulePermissionListReducer =
   bulkSearchModulePermissionListSlice.reducer;
+export const serverModulePermissionListReducer =
+  serverModulePermissionListSlice.reducer;
 export const trainersModulePermissionListReducer =
   trainersModulePermissionListSlice.reducer;
 export const settingsModulePermissionListReducer =

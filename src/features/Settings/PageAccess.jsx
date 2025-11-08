@@ -48,6 +48,7 @@ import {
   storeLeadsModulePermissionList,
   storeRoleList,
   storeRoleSearchValue,
+  storeServerModulePermissionList,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserPermissions,
@@ -86,6 +87,9 @@ export default function PageAccess({
   );
   const bulkSearchModulePermissionData = useSelector(
     (state) => state.bulksearchmodulepermissionlist
+  );
+  const serverModulePermissionData = useSelector(
+    (state) => state.servermodulepermissionlist
   );
   const trainersModulePermissionData = useSelector(
     (state) => state.trainersmodulepermissionlist
@@ -441,6 +445,17 @@ export default function PageAccess({
         storeBulkSearchModulePermissionList(updatedBulkSearchPermissions)
       );
 
+      //server module
+      const updatedServerPermissions = (serverModulePermissionData || []).map(
+        (lp) => ({
+          ...lp,
+          checked: role_permissions.some(
+            (rp) => rp.permission_id === lp.permission_id
+          ),
+        })
+      );
+      dispatch(storeServerModulePermissionList(updatedServerPermissions));
+
       //trainers module
       const updatedTrainersPermissions = (
         trainersModulePermissionData || []
@@ -462,7 +477,9 @@ export default function PageAccess({
         ),
       }));
       dispatch(storeSettingsModulePermissionList(updatedSettingsPermissions));
-      setIsOpenPermissionDrawer(true);
+      setTimeout(() => {
+        setIsOpenPermissionDrawer(true);
+      }, 300);
     } catch (error) {
       setRolePermissions([]);
       CommonMessage(
@@ -481,6 +498,7 @@ export default function PageAccess({
       ...customersModulePermissionData,
       ...feesPendingModulePermissionData,
       ...bulkSearchModulePermissionData,
+      ...serverModulePermissionData,
       ...trainersModulePermissionData,
       ...settingsModulePermissionData,
     ];
@@ -504,7 +522,6 @@ export default function PageAccess({
       await insertRolePermissions(payload);
       setTimeout(() => {
         CommonMessage("success", "Permissions Updated");
-        formReset();
         getUserDownlineData();
       }, 300);
     } catch (error) {
@@ -556,9 +573,16 @@ export default function PageAccess({
         });
         console.log("permissions", updateData);
         dispatch(storeUserPermissions(updateData));
+        setTimeout(() => {
+          formReset();
+        }, 300);
       }
     } catch (error) {
       console.log("user permissions error", error);
+    } finally {
+      setTimeout(() => {
+        setPermissionButtonLoading(false);
+      }, 300);
     }
   };
 
@@ -1010,7 +1034,7 @@ export default function PageAccess({
                                 </div>
                                 {permissions.includes("Add Permissions") && (
                                   <button
-                                    className="settings_group_footer_buttons"
+                                    className="settings_addpermission_button"
                                     onClick={() => {
                                       setRoleId(item.role_id);
                                       setRoleName(item.role_name);
@@ -1474,6 +1498,44 @@ export default function PageAccess({
                         dispatch(
                           storeFeesPendingModulePermissionList(updateItem)
                         );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Server Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {serverModulePermissionData.map((item, index) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = serverModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(storeServerModulePermissionList(updateItem));
                       }}
                     >
                       {item.permission_name}

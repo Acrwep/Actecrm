@@ -2733,7 +2733,7 @@ export default function Dashboard() {
                           "#00cecbd0",
                           "#d32f2fcc",
                         ]}
-                        height={300}
+                        height={280}
                         clickedBar={handleHrDashboard}
                         enablePointer={true}
                       />
@@ -2843,7 +2843,8 @@ export default function Dashboard() {
                           "#d32f2fcc",
                           "#258a25",
                         ]}
-                        height={320}
+                        height={290}
+                        legendFontSize="10.5px"
                         clickedBar={handleRaDashboard}
                         enablePointer={true}
                       />

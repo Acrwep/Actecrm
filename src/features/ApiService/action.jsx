@@ -1014,3 +1014,30 @@ export const getServerRequest = async (payload) => {
     throw error;
   }
 };
+
+export const updateServerStatus = async (payload) => {
+  try {
+    const response = await api.put(`/api/updateServerStatus`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const serverVerify = async (payload) => {
+  try {
+    const response = await api.put(`/api/serverVerify`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const serverApprove = async (payload) => {
+  try {
+    const response = await api.put(`/api/serverApprove`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -22,6 +22,7 @@ import {
   storePermissionsList,
   storeRoleList,
   storeRoleSearchValue,
+  storeServerModulePermissionList,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserSearchValue,
@@ -58,7 +59,7 @@ export default function Settings() {
       }
       getUsersData();
     }
-  }, [permissions]);
+  }, []);
 
   const getUsersData = async () => {
     setUserTableLoading(true);
@@ -260,6 +261,27 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeBulkSearchModulePermissionList(updateBulkSearchModule));
+
+      //filter server module
+      const serverModule = allPermissions.filter(
+        (f) => f.section === "Server Module"
+      );
+      const serverCustomOrder = [
+        "Server Details Update",
+        "Server Verify",
+        "Server Approve",
+      ];
+
+      const serverSortedArray = serverModule.sort(
+        (a, b) =>
+          serverCustomOrder.indexOf(a.permission_name) -
+          serverCustomOrder.indexOf(b.permission_name)
+      );
+
+      const updateServerModule = serverSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeServerModulePermissionList(updateServerModule));
 
       //filter trainers module
       const trainersModule = allPermissions.filter(

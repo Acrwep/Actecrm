@@ -20,6 +20,7 @@ import {
 import {
   createUser,
   getUserDownline,
+  getUserPermissions,
   getUsers,
   setUserTarget,
   updateUser,
@@ -31,6 +32,7 @@ import {
   storeAllUsersList,
   storeChildUsers,
   storeDownlineUsers,
+  storeUserPermissions,
   storeUserSearchValue,
   storeUsersList,
 } from "../Redux/Slice";
@@ -540,7 +542,7 @@ export default function Users({
         setButtonLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }
@@ -589,6 +591,36 @@ export default function Users({
       dispatch(storeChildUsers([]));
       dispatch(storeDownlineUsers([]));
       console.log("user downline error", error);
+    } finally {
+      setTimeout(() => {
+        getPermissionsData(user_roles);
+      }, 300);
+    }
+  };
+
+  const getPermissionsData = async (user_roles) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      role_ids: user_roles,
+    };
+    try {
+      const response = await getUserPermissions(payload);
+      console.log("user permissions response", response);
+      const permission = response?.data?.data;
+      if (permission.length >= 1) {
+        const updateData = permission.map((item) => {
+          return item.permission_name;
+        });
+        console.log("permissions", updateData);
+        dispatch(storeUserPermissions(updateData));
+        setTimeout(() => {
+          formReset();
+        }, 300);
+      }
+    } catch (error) {
+      console.log("user permissions error", error);
     }
   };
 

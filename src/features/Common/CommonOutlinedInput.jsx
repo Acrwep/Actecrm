@@ -46,6 +46,11 @@ export default function CommonOutlinedInput({
           boxSizing: "border-box",
           fontSize: "14px",
         },
+        "& .Mui-disabled": {
+          backgroundColor: "#f5f5f5", // change background
+          color: "#888", // change text color
+          WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+        },
       }}
     >
       <InputLabel htmlFor="outlined-adornment-password">{label}</InputLabel>

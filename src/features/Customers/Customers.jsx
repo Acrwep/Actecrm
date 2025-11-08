@@ -2238,7 +2238,7 @@ export default function Customers() {
   };
 
   const handleStatusMismatch = () => {
-    CommonMessage("error", "Status Mismatch. Contack Support Team");
+    CommonMessage("error", "Status Mismatch. Contact Support Team");
   };
 
   const updateStatusDrawerReset = () => {
