@@ -1041,3 +1041,23 @@ export const serverApprove = async (payload) => {
     throw error;
   }
 };
+
+export const insertServerTrack = async (payload) => {
+  try {
+    const response = await api.post(`/api/insertServerTrack`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getServerHistory = async (server_id) => {
+  try {
+    const response = await api.get(
+      `/api/getServerHistory?server_id=${server_id}`
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

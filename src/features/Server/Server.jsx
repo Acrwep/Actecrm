@@ -10,6 +10,7 @@ import {
   Drawer,
   Divider,
   Modal,
+  Collapse,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
@@ -26,17 +27,24 @@ import { IoLocationOutline } from "react-icons/io5";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
 import CommonTable from "../Common/CommonTable";
+import { FaRegCircleXmark } from "react-icons/fa6";
+import { FiFilter } from "react-icons/fi";
+import { RedoOutlined } from "@ant-design/icons";
+import { LuFileClock } from "react-icons/lu";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
+  formatToBackendIST,
   getCurrentandPreviousweekDate,
   selectValidator,
 } from "../Common/Validation";
 import {
   getCustomerById,
+  getServerHistory,
   getServerRequest,
+  insertServerTrack,
   serverApprove,
   serverVerify,
   updateServerStatus,
@@ -50,6 +58,7 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import CommonTextArea from "../Common/CommonTextArea";
 import { useSelector } from "react-redux";
 import "./styles.css";
+import ServerHistory from "./ServerHistory";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -88,6 +97,15 @@ export default function Server() {
   const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
   const [rejectButtonLoading, setRejectButtonLoading] = useState(false);
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
+  //drawer history usestates
+  const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [verifyHistory, setVerifyHistory] = useState([]);
+  const [approvalHistory, setApprovalHistory] = useState([]);
+  //full history drawer useStates
+  const [isOpenHistoryDrawer, setIsOpenHistoryDrawer] = useState(false);
+  const [serverHistory, setServerHistory] = useState([]);
+  const [serverHistoryLoading, setServerHistoryLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -177,6 +195,7 @@ export default function Server() {
                           }
                           setIsOpenDetailsDrawer(true);
                           setDrawerStatus("Update Details");
+                          setVerifyHistory(record.server_rejected_history);
                           setServerDetails(record);
                           getCustomerData(record.customer_id);
                         }}
@@ -214,6 +233,9 @@ export default function Server() {
                             }
                             setIsOpenDetailsDrawer(true);
                             setDrawerStatus("Verify");
+                            setApprovalHistory(
+                              record.approval_rejected_history
+                            );
                             setServerCost(
                               record.server_cost ? record.server_cost : ""
                             );
@@ -270,7 +292,10 @@ export default function Server() {
                           ) {
                             CommonMessage("warning", "Details not updated yet");
                             return;
-                          } else if (record.status == "Awaiting Verify") {
+                          } else if (
+                            record.status == "Awaiting Verify" ||
+                            record.status == "Approval Rejected"
+                          ) {
                             CommonMessage("warning", "Not verified yet");
                             return;
                           } else {
@@ -355,6 +380,30 @@ export default function Server() {
                 getCustomerData(record.customer_id);
               }}
             />
+
+            <Tooltip
+              placement="top"
+              title="View Server History"
+              trigger={["hover", "click"]}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setServerDetails(record);
+                  getServerHistoryData(record.id, record.customer_id);
+                  // setTimeout(() => {
+                  //   const container = document.getElementById(
+                  //     "customer_history_profilecontainer"
+                  //   );
+                  //   container.scrollIntoView({
+                  //     behavior: "smooth",
+                  //     block: "start",
+                  //   });
+                  // }, 300);
+                }}
+              />
+            </Tooltip>
           </div>
         );
       },
@@ -386,7 +435,9 @@ export default function Server() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      ...(serverStatus && { status: serverStatus }),
+      ...(serverStatus && serverStatus == "Awaiting Verify"
+        ? { status: ["Awaiting Verify", "Approval Rejected"] }
+        : { status: serverStatus }),
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
         : searchvalue && filterType == 2
@@ -403,7 +454,7 @@ export default function Server() {
       const response = await getServerRequest(payload);
       console.log("server response", response);
       setServerData(response?.data?.data?.data || []);
-      setStatusCount(response?.data?.data?.statusCount[0] || null);
+      setStatusCount(response?.data?.data?.statusCount || null);
 
       const pagination = response?.data?.data?.pagination;
       setPagination({
@@ -519,18 +570,22 @@ export default function Server() {
 
     if (commentValidate) return;
 
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
     const payload = {
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status:
         drawerStatus == "Verify" ? "Server Rejected" : "Approval Rejected",
-      ...(drawerStatus && drawerStatus == "Verify"
-        ? { verify_comments: rejectComment }
-        : { approval_comments: rejectComment }),
+      comments: rejectComment,
+      rejected_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : "",
     };
     try {
       await updateServerStatus(payload);
       setTimeout(() => {
         setRejectButtonLoading(false);
+        handleServerTrack(payload.status);
         drawerReset();
         getServerRequestData(
           selectedDates[0],
@@ -584,6 +639,7 @@ export default function Server() {
       setTimeout(() => {
         setVerifyButtonLoading(false);
         setIsOpenConfirmModal(false);
+        handleServerTrack(updateStatus);
         drawerReset();
         getServerRequestData(
           selectedDates[0],
@@ -602,6 +658,138 @@ export default function Server() {
           "Something went wrong. Try again later"
       );
     }
+  };
+
+  const handleServerTrack = async (updateStatus) => {
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
+    const updateDetailsPayload = {
+      server_name:
+        serverDetails && serverDetails.server_name
+          ? serverDetails.server_name
+          : null,
+      server_cost: serverCost,
+      server_duration: serverDuration,
+    };
+
+    const approveDetails = {
+      server_name:
+        serverDetails && serverDetails.server_name
+          ? serverDetails.server_name
+          : null,
+      server_cost: serverCost,
+      server_duration: serverDuration,
+    };
+
+    const rejectionDetails = {
+      reject_comment: rejectComment,
+    };
+
+    const payload = {
+      server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+      status:
+        updateStatus == "Awaiting Verify"
+          ? "Details Updated"
+          : updateStatus == "Awaiting Approval"
+          ? "Verified"
+          : updateStatus == "Issued"
+          ? "Server Approved"
+          : updateStatus,
+      status_date: formatToBackendIST(today),
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      ...(updateStatus && updateStatus == "Awaiting Verify"
+        ? { details: updateDetailsPayload }
+        : updateStatus == "Issued"
+        ? { details: approveDetails }
+        : updateStatus == "Server Rejected" ||
+          updateStatus == "Approval Rejected"
+        ? { details: rejectionDetails }
+        : {}),
+    };
+    try {
+      await insertServerTrack(payload);
+      if (
+        updateStatus == "Awaiting Verify" ||
+        updateStatus == "Awaiting Approval" ||
+        updateStatus == "Approval Rejected" ||
+        updateStatus == "Issued"
+      ) {
+        handleSecondServerTrack(
+          updateStatus == "Approval Rejected"
+            ? "Awaiting Verify"
+            : updateStatus == "Issued"
+            ? "Server Issued"
+            : updateStatus
+        );
+      }
+    } catch (error) {
+      console.log("server track error", error);
+    }
+  };
+
+  const handleSecondServerTrack = async (updatestatus) => {
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+
+    const payload = {
+      server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+      status: updatestatus,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      status_date: formatToBackendIST(today),
+    };
+    try {
+      await insertServerTrack(payload);
+    } catch (error) {
+      console.log("server track error", error);
+    }
+  };
+
+  const getServerHistoryData = async (serverId, customer_id) => {
+    setServerHistoryLoading(true);
+    try {
+      const response = await getServerHistory(serverId);
+      console.log("server history response", response);
+      const history = response?.data?.data || [];
+      if (history.length >= 1) {
+        const reverseData = history.reverse();
+        setServerHistory(reverseData);
+      } else {
+        setServerHistory([]);
+      }
+      setIsOpenHistoryDrawer(true);
+      //call customer api
+      getCustomerData(customer_id);
+      setTimeout(() => {
+        setServerHistoryLoading(false);
+      }, 300);
+    } catch (error) {
+      setServerHistory([]);
+      setServerHistoryLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const getHistoryStatusColor = (status) => {
+    if (
+      ["Details Updated", "Issued", "Approved"].some((s) => status.includes(s))
+    ) {
+      return "green";
+    }
+    if (status.includes("Awaiting")) return "gray";
+    if (["Rejected"].some((s) => status.includes(s))) {
+      return "#d32f2f";
+    }
+    return "#000"; // default black
   };
 
   const handleStatusMismatch = () => {
@@ -624,6 +812,23 @@ export default function Server() {
     setRejectCommentError("");
   };
 
+  const handleRefresh = () => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+    setSearchValue("");
+    setStatus("");
+    setPagination({
+      page: 1,
+    });
+    getServerRequestData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+      null,
+      null,
+      1,
+      pagination.limit
+    );
+  };
   return (
     <div>
       <Row style={{ marginBottom: "12px" }}>
@@ -770,7 +975,26 @@ export default function Server() {
             justifyContent: "flex-end",
             alignItems: "center",
           }}
-        ></Col>
+        >
+          <FiFilter
+            size={20}
+            color="#5b69ca"
+            style={{ marginRight: "16px", cursor: "pointer" }}
+            onClick={() => {
+              // setIsOpenFilterDrawer(true);
+              // getTableColumnsData(loginUserId);
+            }}
+          />
+
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
+        </Col>
       </Row>
 
       <div className="customers_scroll_wrapper">
@@ -960,19 +1184,19 @@ export default function Server() {
           </div>
           <div
             className={
-              status === "Rejected"
+              status === "Server Rejected"
                 ? "trainers_active_rejectedtrainers_container"
                 : "trainers_rejected_container"
             }
             onClick={() => {
-              if (status === "Rejected") {
+              if (status === "Server Rejected") {
                 return;
               }
-              setStatus("Rejected");
+              setStatus("Server Rejected");
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
-                "Rejected",
+                "Server Rejected",
                 searchValue,
                 1,
                 pagination.limit
@@ -1298,10 +1522,247 @@ export default function Server() {
         <Divider className="customer_statusupdate_divider" />
 
         <div className="customer_statusupdate_adddetailsContainer">
+          {drawerStatus == "Update Details" ? (
+            <>
+              <p className="customer_statusupdate_adddetails_heading">
+                Previous History
+              </p>
+
+              {historyLoading === false ? (
+                <>
+                  {verifyHistory.length >= 1 ? (
+                    <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                      <Collapse
+                        className="assesmntresult_collapse"
+                        activeKey={collapseDefaultKey}
+                        onChange={(keys) => {
+                          setCollapseDefaultKey(keys);
+                        }}
+                      >
+                        {verifyHistory.map((item, index) => (
+                          <Collapse.Panel
+                            key={index + 1}
+                            header={
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  width: "100%",
+                                  fontSize: "13px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <span>
+                                  Rejection Date -{" "}
+                                  <span style={{ fontWeight: "500" }}>
+                                    {item.rejected_date
+                                      ? moment(item.rejected_date).format(
+                                          "DD/MM/YYYY"
+                                        )
+                                      : "-"}
+                                  </span>
+                                </span>
+                                <div className="customer_trans_statustext_container">
+                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <p
+                                    style={{
+                                      color: "#d32f2f",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Rejected
+                                  </p>
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div>
+                              <Row
+                                gutter={16}
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Rejected By
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.rejected_by
+                                          ? item.rejected_by
+                                          : "-"}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Reason for Rejection
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.comments}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            </div>
+                          </Collapse.Panel>
+                        ))}
+                      </Collapse>
+                    </div>
+                  ) : (
+                    <p className="customer_trainerhistory_nodatatext">
+                      No Data found
+                    </p>
+                  )}
+                </>
+              ) : (
+                ""
+              )}
+            </>
+          ) : (
+            ""
+          )}
+
+          {drawerStatus == "Verify" ? (
+            <>
+              <p className="customer_statusupdate_adddetails_heading">
+                Previous History
+              </p>
+
+              {historyLoading === false ? (
+                <>
+                  {approvalHistory.length >= 1 ? (
+                    <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                      <Collapse
+                        className="assesmntresult_collapse"
+                        activeKey={collapseDefaultKey}
+                        onChange={(keys) => {
+                          setCollapseDefaultKey(keys);
+                        }}
+                      >
+                        {approvalHistory.map((item, index) => (
+                          <Collapse.Panel
+                            key={index + 1}
+                            header={
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  width: "100%",
+                                  fontSize: "13px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <span>
+                                  Rejection Date -{" "}
+                                  <span style={{ fontWeight: "500" }}>
+                                    {item.rejected_date
+                                      ? moment(item.rejected_date).format(
+                                          "DD/MM/YYYY"
+                                        )
+                                      : "-"}
+                                  </span>
+                                </span>
+                                <div className="customer_trans_statustext_container">
+                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <p
+                                    style={{
+                                      color: "#d32f2f",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Rejected
+                                  </p>
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div>
+                              <Row
+                                gutter={16}
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Rejected By
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.rejected_by
+                                          ? item.rejected_by
+                                          : "-"}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Reason for Rejection
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {item.comments}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            </div>
+                          </Collapse.Panel>
+                        ))}
+                      </Collapse>
+                    </div>
+                  ) : (
+                    <p className="customer_trainerhistory_nodatatext">
+                      No Data found
+                    </p>
+                  )}
+                </>
+              ) : (
+                ""
+              )}
+            </>
+          ) : (
+            ""
+          )}
           <p className="customer_statusupdate_adddetails_heading">
             Add Details
           </p>
-          <Row gutter={16} style={{ marginTop: "14px" }}>
+          <Row
+            gutter={16}
+            style={{
+              marginTop: "14px",
+              marginBottom: isOpenRejectBox ? "0px" : "40px",
+            }}
+          >
             <Col span={8}>
               <CommonInputField
                 label="Server Name"
@@ -1898,6 +2359,329 @@ export default function Server() {
           )}
         </div>
       </Modal>
+
+      {/* server history drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Server History</span>
+            <div className="customer_history_drawer_totalcount_container">
+              <span style={{ fontWeight: 600 }}>
+                Total Activity: {serverHistory?.length || 0}
+              </span>
+              <span style={{ fontWeight: 600 }}>
+                Current Status:{" "}
+                <span
+                  style={{
+                    color: getHistoryStatusColor(
+                      serverHistory?.[0]?.status || "N/A"
+                    ),
+                  }}
+                >
+                  {" "}
+                  {serverHistory && serverHistory.length > 0
+                    ? serverHistory[0].status
+                    : "N/A"}
+                </span>
+              </span>
+            </div>
+          </div>
+        }
+        open={isOpenHistoryDrawer}
+        onClose={() => {
+          setIsOpenHistoryDrawer(false);
+          setCustomerDetails(null);
+        }}
+        width="50%"
+        style={{ position: "relative" }}
+        className="customer_history_drawer"
+      >
+        <div className="customer_statusupdate_drawer_profileContainer">
+          {customerDetails && customerDetails.profile_image ? (
+            <img
+              src={customerDetails.profile_image}
+              className="cutomer_profileimage"
+            />
+          ) : (
+            <FaRegUser size={50} color="#333" />
+          )}
+
+          <div>
+            <p className="customer_nametext">
+              {" "}
+              {customerDetails && customerDetails.name
+                ? customerDetails.name
+                : "-"}
+            </p>
+            <p className="customer_coursenametext">
+              {" "}
+              {customerDetails && customerDetails.course_name
+                ? customerDetails.course_name
+                : "-"}
+            </p>
+          </div>
+        </div>
+
+        <Row
+          gutter={16}
+          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+        >
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegCircleUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Name</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineEmail size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Email</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.email
+                    ? customerDetails.email
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoCallOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Mobile</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.phone
+                    ? customerDetails.phone
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaWhatsapp size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Whatsapp</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.whatsapp
+                    ? customerDetails.whatsapp
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  {customerDetails && customerDetails.gender === "Male" ? (
+                    <BsGenderMale size={15} color="gray" />
+                  ) : (
+                    <BsGenderFemale size={15} color="gray" />
+                  )}
+                  <p className="customerdetails_rowheading">Gender</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.gender
+                    ? customerDetails.gender
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoLocationOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Location</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.current_location
+                    ? customerDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Executive</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.course_name
+                    ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.primary_fees
+                    ? "₹" + customerDetails.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">
+                    Course Fees
+                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                  </p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {customerDetails && customerDetails.total_course_amount
+                    ? "₹" + customerDetails.total_course_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f", fontWeight: 700 }}
+                >
+                  {customerDetails &&
+                  customerDetails.balance_amount !== undefined &&
+                  customerDetails.balance_amount !== null
+                    ? "₹" + customerDetails.balance_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.branch_name
+                    ? customerDetails.branch_name
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Batch Track</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.batch_tracking
+                    ? customerDetails.batch_tracking
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Batch Type</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {customerDetails && customerDetails.batch_timing
+                    ? customerDetails.batch_timing
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+
+        <Divider className="customer_statusupdate_divider" />
+
+        <div style={{ marginTop: "30px" }}>
+          {serverHistoryLoading ? (
+            <CommonSpinner />
+          ) : (
+            <ServerHistory data={serverHistory} />
+          )}
+        </div>
+      </Drawer>
     </div>
   );
 }
