@@ -380,7 +380,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
                   </Col>
                   <Col span={12}>
                     <p className="customer_history_details_text">
-                      {item.details.trainer_commercial}
+                      {"₹" + item.details.trainer_commercial}
                     </p>
                   </Col>
                 </Row>
@@ -401,7 +401,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <p className="customer_history_details_label">
-                      Rejected Reason
+                      Rejection Reason
                     </p>
                   </Col>
                   <Col span={12}>

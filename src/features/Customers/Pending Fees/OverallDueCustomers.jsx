@@ -2059,26 +2059,6 @@ export default function OverallDueCustomers({
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Total Fees</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.payment.total_amount
-                          ? "₹" + customerDetails.payment.total_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">Gst Amount</p>
                       </div>
                     </Col>
@@ -2097,7 +2077,26 @@ export default function OverallDueCustomers({
                       </p>
                     </Col>
                   </Row>
+                </Col>
 
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Total Fees</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails && customerDetails.payment.total_amount
+                          ? "₹" + customerDetails.payment.total_amount
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
@@ -2135,7 +2134,7 @@ export default function OverallDueCustomers({
               <Collapse
                 activeKey={collapseDefaultKey}
                 onChange={(keys) => setCollapseDefaultKey(keys)}
-                className="assesmntresult_collapse"
+                className="customer_updatepayment_history_collapse"
               >
                 {paymentHistory.map((item, index) => (
                   <Collapse.Panel
@@ -2184,8 +2183,11 @@ export default function OverallDueCustomers({
                       </div>
                     }
                   >
-                    <div>
-                      <Row gutter={16} style={{ marginTop: "6px" }}>
+                    <div style={{ padding: "0px 12px" }}>
+                      <Row
+                        gutter={16}
+                        style={{ marginTop: "6px", marginBottom: "8px" }}
+                      >
                         <Col span={12}>
                           <Row>
                             <Col span={12}>
@@ -2201,9 +2203,8 @@ export default function OverallDueCustomers({
                               </p>
                             </Col>
                           </Row>
-                        </Col>
-                        <Col span={12}>
-                          <Row>
+
+                          <Row style={{ marginTop: "12px" }}>
                             <Col span={12}>
                               <div className="customerdetails_rowheadingContainer">
                                 <p className="customerdetails_rowheading">
@@ -2217,12 +2218,8 @@ export default function OverallDueCustomers({
                               </p>
                             </Col>
                           </Row>
-                        </Col>
-                      </Row>
 
-                      <Row gutter={16} style={{ marginTop: "16px" }}>
-                        <Col span={12}>
-                          <Row>
+                          <Row style={{ marginTop: "12px" }}>
                             <Col span={12}>
                               <div className="customerdetails_rowheadingContainer">
                                 <p className="customerdetails_rowheading">
@@ -2236,53 +2233,8 @@ export default function OverallDueCustomers({
                               </p>
                             </Col>
                           </Row>
-                        </Col>
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Convenience Fees
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.convenience_fees}
-                              </p>
-                            </Col>
-                          </Row>
-                        </Col>
-                      </Row>
 
-                      <Row
-                        gutter={16}
-                        style={{ marginTop: "16px", marginBottom: "8px" }}
-                      >
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Paid Amount
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p
-                                className="customerdetails_text"
-                                style={{
-                                  color: "#3c9111",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {"₹" + item.amount}
-                              </p>
-                            </Col>
-                          </Row>
-                        </Col>
-                        <Col span={12}>
-                          <Row>
+                          <Row style={{ marginTop: "12px" }}>
                             <Col span={12}>
                               <div className="customerdetails_rowheadingContainer">
                                 <p className="customerdetails_rowheading">
@@ -2305,8 +2257,109 @@ export default function OverallDueCustomers({
                             </Col>
                           </Row>
                         </Col>
+
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Base Amount
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {"₹" + item.amount}
+                              </p>
+                            </Col>
+                          </Row>
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Convenience Fees
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {"₹" + item.convenience_fees}
+                              </p>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Paid Amount{" "}
+                                  <span className="customerdetails_coursegst">{` (Total)`}</span>
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p
+                                className="customerdetails_text"
+                                style={{
+                                  color: "#3c9111",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {"₹" + item.paid_amount}
+                              </p>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Nxt Due Date
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.next_due_date
+                                  ? moment(item.next_due_date).format(
+                                      "DD/MM/YYYY"
+                                    )
+                                  : "-"}{" "}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
                       </Row>
                     </div>
+
+                    {item.payment_status == "Rejected" && (
+                      <>
+                        <Divider className="customer_statusupdate_divider" />
+                        <div style={{ padding: "0px 12px 6px 12px" }}>
+                          <Row>
+                            <Col span={24}>
+                              <Row>
+                                <Col span={6}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p
+                                      className="customerdetails_rowheading"
+                                      style={{ color: "#d32f2f" }}
+                                    >
+                                      Rejection Reason:
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={18}>
+                                  <p className="customerdetails_text">
+                                    {item.reason}
+                                  </p>
+                                </Col>
+                              </Row>
+                            </Col>
+                          </Row>
+                        </div>
+                      </>
+                    )}
                   </Collapse.Panel>
                 ))}
               </Collapse>

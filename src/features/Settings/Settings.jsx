@@ -181,6 +181,7 @@ export default function Settings() {
       const leadsCustomOrder = [
         "Lead Manager Page",
         "Add Lead Button",
+        "Add Lead With Existing Mobile Number",
         "Edit Lead Button",
         "Edit Lead Mobile Number",
         "Assign Lead",

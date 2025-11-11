@@ -1176,9 +1176,7 @@ export default function Server() {
             <p>
               Expired Servers{" "}
               {`( ${
-                statusCount && statusCount.server_rejected
-                  ? statusCount.server_rejected
-                  : "-"
+                statusCount && statusCount.expired ? statusCount.expired : "-"
               } )`}
             </p>
           </div>

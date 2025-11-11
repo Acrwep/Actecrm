@@ -995,6 +995,14 @@
 .assesmntresult_collapse .ant-collapse-content-box {
   padding: 6px 12px !important; /* reduce body/content height */
 }
+.customer_updatepayment_history_collapse .ant-collapse-header {
+  padding: 9px 12px !important; /* reduce header height */
+  min-height: unset !important;
+}
+
+.customer_updatepayment_history_collapse .ant-collapse-content-box {
+  padding: 6px 0px !important; /* reduce body/content height */
+}
 .customer_finance_rejectbutton {
   font-size: 12px;
   padding: 0px 12px !important;

@@ -2835,7 +2835,7 @@ export default function Dashboard() {
                         labelsfontSize="11px"
                         colors={[
                           "#607d8b",
-                          "#1e8fffbe",
+                          "#ffa602c7",
                           "#a29bfec7",
                           "#00cecbd0",
                           "#a1c60c",

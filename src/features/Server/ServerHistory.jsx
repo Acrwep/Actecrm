@@ -103,7 +103,7 @@ export default function ServerHistory({ data = [] }) {
                 <Row>
                   <Col span={7}>
                     <p className="customer_history_details_label">
-                      Rejected Reason
+                      Rejection Reason
                     </p>
                   </Col>
                   <Col>
