@@ -212,8 +212,7 @@ export default function CommonDonutChart({
       fontSize: legendFontSize ? legendFontSize : "11px",
       formatter: function (seriesName, opts) {
         const value = opts.w.globals.series[opts.seriesIndex];
-        if (timebased === "true") return `${seriesName}: ${formatTime(value)}`;
-        return `${seriesName}: ${value}`;
+        return `${seriesName}: <b>${value}</b>`;
       },
     },
   };

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Skeleton, Tooltip, Button, Divider } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
-import ReactApexChart from "react-apexcharts";
+import { DownloadOutlined } from "@ant-design/icons";
 import { PiHandCoins } from "react-icons/pi";
 import { PiUsersThreeBold } from "react-icons/pi";
 import moment from "moment";
@@ -37,6 +37,8 @@ import CommonDonutChart from "../Common/CommonDonutChart";
 import UserwiseLeadChart from "./UserwiseLeadChart";
 import BranchwiseLeadChart from "./BranchwiseLeadChart";
 import BranchwiseSalesChart from "./BranchwisesalesChart";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import { DashboardDownloadColumns } from "./DashboardDownloadColumns";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -61,7 +63,21 @@ export default function Dashboard() {
   //sale details
   const [saleDetailsSelectedDates, setSaleDetailsSelectedDates] = useState([]);
   const [saleDetailsSeries, setSaleDetailsSeries] = useState([]);
+  const [saleDetailsDownloadData, setSaleDetailsDownloadData] = useState([]);
   const [saleDetailsLoader, setSaleDetailsLoader] = useState(true);
+  //userwise lead analysis
+  const [userWiseLeadsType, setUserWiseLeadsType] = useState(1);
+  const [userWiseLeadsDates, setUserWiseLeadsDates] = useState([]);
+  const [userWiseLeadsXaxis, setUserWiseLeadsXaxis] = useState([]);
+  const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
+  const [userWiseLeadsConversion, setUserWiseLeadsConversion] = useState([]);
+  const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
+    []
+  );
+  const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
+  const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
+  const [userWiseLeadDownloadData, setUserWiseLeadDownloadData] = useState([]);
+  const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
   //User-Wise Sales Analysis
   const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
   const [userWiseStartDate, setUserWiseStartDate] = useState(
@@ -76,27 +92,10 @@ export default function Dashboard() {
   const [userWiseSeries, setUserWiseSeries] = useState([]);
   const [userWiseTargets, setUserWiseTargets] = useState([]);
   const [userWiseCollection, setUserWiseCollection] = useState([]);
-  const [userWiseLoader, setUserWiseLoader] = useState(true);
-  //RA
-  const [raSelectedDates, setRaSelectedDates] = useState([]);
-  const [raDataSeries, setRaDataSeries] = useState([]);
-  const [raLoader, setRaLoader] = useState(true);
-  //HR
-  const [HrSelectedDates, setHrSelectedDates] = useState([]);
-  const [hrDataSeries, setHrDataSeries] = useState([]);
-  const [hrLoader, setHrLoader] = useState(true);
-  //leadwise
-  const [userWiseLeadsType, setUserWiseLeadsType] = useState(1);
-  const [userWiseLeadsDates, setUserWiseLeadsDates] = useState([]);
-  const [userWiseLeadsXaxis, setUserWiseLeadsXaxis] = useState([]);
-  const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
-  const [userWiseLeadsConversion, setUserWiseLeadsConversion] = useState([]);
-  const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
+  const [userWiseSalesDownloadData, setUserWiseSalesDownloadData] = useState(
     []
   );
-  const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
-  const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
-  const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
+  const [userWiseLoader, setUserWiseLoader] = useState(true);
   //branch-wise lead analysis
   const [branchWiseLeadsRegion, setBranchWiseLeadsRegion] = useState(1);
   const [branchWiseLeadsType, setBranchWiseLeadsType] = useState(1);
@@ -113,6 +112,9 @@ export default function Dashboard() {
     []
   );
   const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
+  const [branchWiseLeadDownloadData, setBranchWiseLeadDownloadData] = useState(
+    []
+  );
   const [branchWiseLeadsLoader, setBranchWiseLeadsLoader] = useState(true);
   //branch-wise sale analysis
   const [branchWiseSaleRegion, setBranchWiseSaleRegion] = useState(1);
@@ -120,7 +122,19 @@ export default function Dashboard() {
   const [branchWiseSaleDates, setBranchWiseSaleDates] = useState([]);
   const [branchWiseSalesXaxis, setBranchWiseSalesXaxis] = useState([]);
   const [branchWiseSalesSeries, setBranchWiseSalesSeries] = useState([]);
+  const [branchWiseSalesDownloadData, setBranchWiseSalesDownloadData] =
+    useState([]);
   const [branchWiseSalesLoader, setBranchWiseSalesLoader] = useState(true);
+  //HR
+  const [HrSelectedDates, setHrSelectedDates] = useState([]);
+  const [hrDataSeries, setHrDataSeries] = useState([]);
+  const [HrDownloadData, setHrDownloadData] = useState([]);
+  const [hrLoader, setHrLoader] = useState(true);
+  //RA
+  const [raSelectedDates, setRaSelectedDates] = useState([]);
+  const [raDataSeries, setRaDataSeries] = useState([]);
+  const [RaDownloadData, setRaDownloadData] = useState([]);
+  const [raLoader, setRaLoader] = useState(true);
   //lead executive
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
@@ -376,11 +390,12 @@ export default function Dashboard() {
     try {
       const response = await getScoreBoard(payload);
       console.log("sale details response", response);
-      const leadDetails_data = response?.data?.data;
+      const saleDetails_data = response?.data?.data;
+      setSaleDetailsDownloadData([saleDetails_data]);
       const leadDetails_series = [
-        Number(leadDetails_data?.sale_volume || 0),
-        Number(leadDetails_data?.total_collection || 0),
-        Number(leadDetails_data?.pending_payment || 0),
+        Number(saleDetails_data?.sale_volume || 0),
+        Number(saleDetails_data?.total_collection || 0),
+        Number(saleDetails_data?.pending_payment || 0),
       ];
       setSaleDetailsSeries(leadDetails_series);
     } catch (error) {
@@ -483,6 +498,17 @@ export default function Dashboard() {
       const response = await getUserWiseLeadCounts(payload);
       console.log("userwise leadcounts response", response);
       const userwise_leads = response?.data?.data;
+      setUserWiseLeadDownloadData(userwise_leads);
+      // const downloadFormat = userwise_leads.map((item) => {
+      //   return {
+      //     "User Id": item.user_id,
+      //     "User Name": item.user_name,
+      //     "Total Leads": item.total_leads,
+      //     Joinings: item.customer_count,
+      //     Conversion: item.percentage + "%",
+      //   };
+      // });
+      // console.log("userwise_leads download format", downloadFormat);
       console.log(userwise_leads);
 
       const xaxis = userwise_leads.map(
@@ -609,6 +635,7 @@ export default function Dashboard() {
       console.log("userwise score response", response);
       const userwise_scorecard = response?.data?.data;
       console.log(userwise_scorecard);
+      setUserWiseSalesDownloadData(userwise_scorecard);
 
       const xaxis = userwise_scorecard.map(
         (item) => `${item.user_id} (${item.user_name})`
@@ -740,7 +767,7 @@ export default function Dashboard() {
       console.log("branchwise leads response", response);
       const branchwise_leads = response?.data?.data;
       console.log(branchwise_leads);
-
+      setBranchWiseLeadDownloadData(branchwise_leads);
       const xaxis = branchwise_leads.map((item) => item.branch_name);
       const series = branchwise_leads.map((item) =>
         Number(
@@ -893,6 +920,7 @@ export default function Dashboard() {
       const response = await getBranchWiseScoreBoard(payload);
       console.log("branchwise sales response", response);
       const branchwise_sales = response?.data?.data;
+      setBranchWiseSalesDownloadData(branchwise_sales);
 
       const xaxis = branchwise_sales.map((item) => item.branch_name);
       console.log("branchwise xasis", xaxis);
@@ -1086,6 +1114,7 @@ export default function Dashboard() {
       const response = await getHRDashboard(payload);
       console.log("hr response", response);
       const hr_data = response?.data?.data;
+      setHrDownloadData([hr_data]);
       const hr_series = [
         Number(hr_data?.awaiting_trainer || 0),
         Number(hr_data?.awaiting_trainer_verify || 0),
@@ -1180,6 +1209,7 @@ export default function Dashboard() {
       const response = await getRADashboard(payload);
       console.log("ra response", response);
       const ra_data = response?.data?.data;
+      setRaDownloadData([ra_data]);
       const ra_series = [
         Number(ra_data?.awaiting_class || 0),
         Number(ra_data?.awaiting_verify || 0),
@@ -1748,32 +1778,56 @@ export default function Dashboard() {
                 </Col>
               </Row>
 
-              <div className="dadhboard_chartsContainer">
-                {saleDetailsLoader ? (
-                  <div className="dashboard_skeleton_container">
-                    <Skeleton
-                      active
-                      style={{ height: "40vh" }}
-                      title={{ width: 140 }}
-                      paragraph={{
-                        rows: 0,
+              <div style={{ position: "relative" }}>
+                <div className="saleperformance_dashboard_download_container">
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="saleperformance_download_button"
+                      onClick={() => {
+                        const columns =
+                          DashboardDownloadColumns("Sale Performance");
+                        DownloadTableAsCSV(
+                          saleDetailsDownloadData,
+                          columns,
+                          `${moment(saleDetailsSelectedDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(saleDetailsSelectedDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} Overall Sale Performance.csv`
+                        );
                       }}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    {saleDetailsSeries.length >= 1 ? (
-                      <CommonHorizontalBarChart
-                        xaxis={["Sale Volume", "Collection", "Pending Fees"]}
-                        series={saleDetailsSeries}
-                        colors={["#5b6aca", "#258a25", "#b22021"]}
-                        isRupees={true}
+                    >
+                      <DownloadOutlined size={10} className="download_icon" />
+                    </Button>
+                  </Tooltip>
+                </div>
+                <div className="dadhboard_chartsContainer">
+                  {saleDetailsLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
                       />
-                    ) : (
-                      ""
-                    )}
-                  </>
-                )}
+                    </div>
+                  ) : (
+                    <>
+                      {saleDetailsSeries.length >= 1 ? (
+                        <CommonHorizontalBarChart
+                          xaxis={["Sale Volume", "Collection", "Pending Fees"]}
+                          series={saleDetailsSeries}
+                          colors={["#5b6aca", "#258a25", "#b22021"]}
+                          isRupees={true}
+                        />
+                      ) : (
+                        ""
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </Col>
@@ -1836,9 +1890,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={15}></Col>
+                <Col span={13}></Col>
                 <Col
-                  span={9}
+                  span={11}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -1854,7 +1908,7 @@ export default function Dashboard() {
                       },
                       {
                         id: 2,
-                        name: "Follow Up",
+                        name: "Followup Un-Handled",
                       },
                       {
                         id: 3,
@@ -1875,6 +1929,37 @@ export default function Dashboard() {
                     }}
                     value={userWiseLeadsType}
                   />
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns = DashboardDownloadColumns(
+                          userWiseLeadsType == 1
+                            ? "Userwise Leads"
+                            : userWiseLeadsType == 2
+                            ? "Userwise Followup"
+                            : "Userwise Joinings"
+                        );
+                        DownloadTableAsCSV(
+                          userWiseLeadDownloadData,
+                          columns,
+                          `${moment(userWiseLeadsDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(userWiseLeadsDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} ${
+                            userWiseLeadsType == 1
+                              ? "Userwise Lead Details.csv"
+                              : userWiseLeadsType == 2
+                              ? "Userwise Followup Details.csv"
+                              : "Userwise Joinings Details.csv"
+                          }`
+                        );
+                      }}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
                 </Col>
               </Row>
 
@@ -2023,9 +2108,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={15}></Col>
+                <Col span={13}></Col>
                 <Col
-                  span={9}
+                  span={11}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -2062,6 +2147,37 @@ export default function Dashboard() {
                     }}
                     value={userWiseType}
                   />
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns = DashboardDownloadColumns(
+                          userWiseType == 1
+                            ? "Userwise Sale Volume"
+                            : userWiseType == 2
+                            ? "Userwise Collection"
+                            : "Userwise Pending"
+                        );
+                        DownloadTableAsCSV(
+                          userWiseSalesDownloadData,
+                          columns,
+                          `${moment(userWiseStartDate).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(userWiseEndDate).format(
+                            "DD-MM-YYYY"
+                          )} ${
+                            userWiseType == 1
+                              ? "Userwise Sale Volume Details.csv"
+                              : userWiseType == 2
+                              ? "Userwise Collection Details.csv"
+                              : "Userwise Pending Details.csv"
+                          }`
+                        );
+                      }}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
                 </Col>
               </Row>
 
@@ -2181,9 +2297,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={6}></Col>
+                <Col span={5}></Col>
                 <Col
-                  span={18}
+                  span={19}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -2234,7 +2350,7 @@ export default function Dashboard() {
                       },
                       {
                         id: 2,
-                        name: "Follow Up",
+                        name: "Followup Un-Handled",
                       },
                       {
                         id: 3,
@@ -2256,6 +2372,37 @@ export default function Dashboard() {
                     }}
                     value={branchWiseLeadsType}
                   />
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns = DashboardDownloadColumns(
+                          branchWiseLeadsType == 1
+                            ? "Branchwise Leads"
+                            : branchWiseLeadsType == 2
+                            ? "Branchwise Followup"
+                            : "Branchwise Joinings"
+                        );
+                        DownloadTableAsCSV(
+                          branchWiseLeadDownloadData,
+                          columns,
+                          `${moment(branchWiseLeadsDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(branchWiseLeadsDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} ${
+                            branchWiseLeadsType == 1
+                              ? "Branchwise Lead Details.csv"
+                              : branchWiseLeadsType == 2
+                              ? "Branchwise Followup Details.csv"
+                              : "Branchwise Joinings Details.csv"
+                          }`
+                        );
+                      }}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
                 </Col>
               </Row>
 
@@ -2373,9 +2520,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={6}></Col>
+                <Col span={4}></Col>
                 <Col
-                  span={18}
+                  span={20}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -2448,6 +2595,37 @@ export default function Dashboard() {
                     }}
                     value={branchWiseSaleType}
                   />
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns = DashboardDownloadColumns(
+                          branchWiseSaleType == 1
+                            ? "Branchwise Sale Volume"
+                            : branchWiseSaleType == 2
+                            ? "Branchwise Collection"
+                            : "Branchwise Pending"
+                        );
+                        DownloadTableAsCSV(
+                          branchWiseSalesDownloadData,
+                          columns,
+                          `${moment(branchWiseSaleDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(branchWiseSaleDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} ${
+                            branchWiseSaleType == 1
+                              ? "Branchwise Sale Volume Details.csv"
+                              : branchWiseSaleType == 2
+                              ? "Branchwise Collection Details.csv"
+                              : "Branchwise Pending Details.csv"
+                          }`
+                        );
+                      }}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
                 </Col>
               </Row>
               <div
@@ -2683,67 +2861,92 @@ export default function Dashboard() {
                 </Col>
               </Row>
 
-              <div className="dadhboard_chartsContainer">
-                {hrLoader ? (
-                  <div className="dashboard_skeleton_container">
-                    <Skeleton
-                      active
-                      style={{ height: "40vh" }}
-                      title={{ width: 140 }}
-                      paragraph={{
-                        rows: 0,
+              <div style={{ position: "relative" }}>
+                <div className="hr_dashboard_download_container">
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns =
+                          DashboardDownloadColumns("HR Dashboard");
+                        DownloadTableAsCSV(
+                          HrDownloadData,
+                          columns,
+                          `${moment(HrSelectedDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(HrSelectedDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} HR Performance.csv`
+                        );
                       }}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    {hrDataSeries.length >= 1 ? (
-                      // <CommonPieChart
-                      //   labels={[
-                      //     "Awaiting Trainer",
-                      //     "Awaiting Trainer Verify",
-                      //     "Trainer Verified",
-                      //     "Trainer Rejected",
-                      //   ]}
-                      //   colors={[
-                      //     "#ffa602c7",
-                      //     "#1e8fffbe",
-                      //     "#00cecbd0",
-                      //     "#d32f2fcc",
-                      //   ]}
-                      //   // series={[12, 34, 56, 4]}
-                      //   series={hrDataSeries}
-                      //   height={290}
-                      //   clickedBar={handleHrDashboard}
-                      //   enablePointer={true}
-                      // />
-                      <CommonDonutChart
-                        labels={[
-                          "Awaiting Trainer",
-                          "Awaiting Trainer Verify",
-                          "Trainer Verified",
-                          "Trainer Rejected",
-                        ]}
-                        // series={[12, 34, 56, 4]}
-                        series={hrDataSeries}
-                        labelsfontSize="11px"
-                        colors={[
-                          "#ffa602c7",
-                          "#1e8fffbe",
-                          "#00cecbd0",
-                          "#d32f2fcc",
-                        ]}
-                        height={280}
-                        clickedBar={handleHrDashboard}
-                        enablePointer={true}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
+                </div>
+
+                <div className="dadhboard_chartsContainer">
+                  {hrLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
                       />
-                    ) : (
-                      <div className="dashboard_chart_nodata_conatiner">
-                        <p>No data found</p>
-                      </div>
-                    )}
-                  </>
-                )}
+                    </div>
+                  ) : (
+                    <>
+                      {hrDataSeries.length >= 1 ? (
+                        // <CommonPieChart
+                        //   labels={[
+                        //     "Awaiting Trainer",
+                        //     "Awaiting Trainer Verify",
+                        //     "Trainer Verified",
+                        //     "Trainer Rejected",
+                        //   ]}
+                        //   colors={[
+                        //     "#ffa602c7",
+                        //     "#1e8fffbe",
+                        //     "#00cecbd0",
+                        //     "#d32f2fcc",
+                        //   ]}
+                        //   // series={[12, 34, 56, 4]}
+                        //   series={hrDataSeries}
+                        //   height={290}
+                        //   clickedBar={handleHrDashboard}
+                        //   enablePointer={true}
+                        // />
+                        <CommonDonutChart
+                          labels={[
+                            "Awaiting Trainer",
+                            "Awaiting Trainer Verify",
+                            "Trainer Verified",
+                            "Trainer Rejected",
+                          ]}
+                          // series={[12, 34, 56, 4]}
+                          series={hrDataSeries}
+                          labelsfontSize="11px"
+                          colors={[
+                            "#ffa602c7",
+                            "#1e8fffbe",
+                            "#00cecbd0",
+                            "#d32f2fcc",
+                          ]}
+                          height={280}
+                          clickedBar={handleHrDashboard}
+                          enablePointer={true}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </Col>
@@ -2804,57 +3007,82 @@ export default function Dashboard() {
                 </Col>
               </Row>
 
-              <div className="dadhboard_chartsContainer">
-                {raLoader ? (
-                  <div className="dashboard_skeleton_container">
-                    <Skeleton
-                      active
-                      style={{ height: "40vh" }}
-                      title={{ width: 140 }}
-                      paragraph={{
-                        rows: 0,
+              <div style={{ position: "relative" }}>
+                <div className="hr_dashboard_download_container">
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className="dashboard_download_button"
+                      onClick={() => {
+                        const columns =
+                          DashboardDownloadColumns("RA Dashboard");
+                        DownloadTableAsCSV(
+                          RaDownloadData,
+                          columns,
+                          `${moment(raSelectedDates[0]).format(
+                            "DD-MM-YYYY"
+                          )} to ${moment(raSelectedDates[1]).format(
+                            "DD-MM-YYYY"
+                          )} RA Performance.csv`
+                        );
                       }}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    {raDataSeries.length >= 1 ? (
-                      <CommonDonutChart
-                        labels={[
-                          "Awaiting Class",
-                          "Awaiting Student Verify",
-                          "Class Scheduled",
-                          "Class Going",
-                          "G-Review",
-                          "L-Review",
-                          "Escalated",
-                          "Completed",
-                        ]}
-                        // series={[12, 34, 56, 4, 9, 18, 20]}
-                        series={raDataSeries}
-                        labelsfontSize="11px"
-                        colors={[
-                          "#607d8b",
-                          "#ffa602c7",
-                          "#a29bfec7",
-                          "#00cecbd0",
-                          "#a1c60c",
-                          "rgba(10 102 194)",
-                          "#d32f2fcc",
-                          "#258a25",
-                        ]}
-                        height={290}
-                        legendFontSize="10.5px"
-                        clickedBar={handleRaDashboard}
-                        enablePointer={true}
+                    >
+                      <DownloadOutlined className="download_icon" />
+                    </Button>
+                  </Tooltip>
+                </div>
+
+                <div className="dadhboard_chartsContainer">
+                  {raLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
                       />
-                    ) : (
-                      <div className="dashboard_chart_nodata_conatiner">
-                        <p>No data found</p>
-                      </div>
-                    )}
-                  </>
-                )}
+                    </div>
+                  ) : (
+                    <>
+                      {raDataSeries.length >= 1 ? (
+                        <CommonDonutChart
+                          labels={[
+                            "Awaiting Class",
+                            "Awaiting Student Verify",
+                            "Class Scheduled",
+                            "Class Going",
+                            "G-Review",
+                            "L-Review",
+                            "Escalated",
+                            "Completed",
+                          ]}
+                          // series={[12, 34, 56, 4, 9, 18, 20]}
+                          series={raDataSeries}
+                          labelsfontSize="11px"
+                          colors={[
+                            "#607d8b",
+                            "#ffa602c7",
+                            "#a29bfec7",
+                            "#00cecbd0",
+                            "#a1c60c",
+                            "rgba(10 102 194)",
+                            "#d32f2fcc",
+                            "#258a25",
+                          ]}
+                          height={290}
+                          legendFontSize="10.5px"
+                          clickedBar={handleRaDashboard}
+                          enablePointer={true}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </Col>

@@ -10,6 +10,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
     columns.map((column) => column.title), // headers
     ...data.map((row) =>
       columns.map((column) => {
+        console.log("ddddddddddd", row);
         // Handle nested in/out times
         const columnData = column.dataIndex;
         if (Array.isArray(columnData)) {
@@ -35,6 +36,23 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           return row[column.dataIndex]
             ? moment(row[column.dataIndex]).format("DD/MM/YYYY")
             : null;
+        }
+        if (column.dataIndex === "percentage") {
+          return row[column.dataIndex] ? row[column.dataIndex] + "%" : 0 + "%";
+        }
+        if (
+          column.dataIndex === "sale_volume" ||
+          column.dataIndex === "target_value" ||
+          column.dataIndex === "total_collection" ||
+          column.dataIndex === "pending" ||
+          column.dataIndex === "pending_payment"
+        ) {
+          return row[column.dataIndex]
+            ? ` ₹${Number(row[column.dataIndex]).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`
+            : "₹" + 0;
         }
         return row[column.dataIndex]; // other fields
       })

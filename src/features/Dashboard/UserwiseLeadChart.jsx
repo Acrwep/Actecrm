@@ -142,20 +142,20 @@ export default function UserwiseLeadChart({
           <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
         </div>
          <div style="font-weight:400; font-family:Poppins, sans-serif">
-          Total FollowUp: 
+          Total Followup: 
           <span style="font-weight:600;">
             ${total_followup}
           </span>
         </div>
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
-         FollowUp Handled: 
+         Followup Handled: 
           <span style="font-weight:600;">
             ${followup_handledcount}
           </span>
         </div>
          </div>
            <div style="font-weight:400; font-family:Poppins, sans-serif;margin-top:4px">
-          FollowUp Un-Handled: 
+          Followup Un-Handled: 
           <span style="font-weight:600;">
             ${value}
           </span>

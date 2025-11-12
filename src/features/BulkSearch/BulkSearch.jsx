@@ -18,7 +18,6 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import ExcelLogo from "../../assets/excel_logo.png";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
-import { IoFilter } from "react-icons/io5";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";

@@ -175,3 +175,51 @@
 .dashboard_userwise_typefield_container > div {
   width: 100%;
 }
+.dashboard_download_button {
+  background-color: #ffffff;
+  border-color: #d9d9d9;
+  height: 32px;
+  padding: 4px 15px;
+  border-radius: 6px;
+  border-width: 1px;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dashboard_download_button:hover {
+  border-color: #5b69ca !important;
+}
+.dashboard_download_button:hover .download_icon {
+  color: #5b69ca !important;
+}
+.saleperformance_dashboard_download_container {
+  position: absolute;
+  right: 12px;
+  top: 6px;
+  z-index: 1;
+}
+.hr_dashboard_download_container {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 1;
+}
+.saleperformance_download_button {
+  background-color: #ffffff;
+  border-color: #d9d9d9;
+  height: 29px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border-width: 1px;
+  width: 29px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.saleperformance_download_button:hover {
+  border-color: #5b69ca !important;
+}
+.saleperformance_download_button:hover .download_icon {
+  color: #5b69ca !important;
+}
