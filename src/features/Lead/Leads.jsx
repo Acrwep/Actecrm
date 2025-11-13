@@ -960,6 +960,14 @@ export default function Leads({
 
     setEmailError(emailValidate);
 
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        email: 1,
+      }));
+      return;
+    }
+
     if (emailValidate) return;
 
     if (value == duplicateEmail) return;
@@ -995,6 +1003,13 @@ export default function Leads({
 
     setMobileError(mobileValidate);
 
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        mobile: 1,
+      }));
+      return;
+    }
     if (mobileValidate) return;
 
     if (cleanedMobile == duplicateMobile) return;
@@ -1002,6 +1017,7 @@ export default function Leads({
     const payload = {
       mobile: cleanedMobile,
     };
+
     try {
       const response = await leadEmailAndMobileValidator(payload);
       console.log("lead mobile validator res", response);
@@ -1029,7 +1045,13 @@ export default function Leads({
     const whatsAppValidate = mobileValidator(cleanedMobile);
 
     setWhatsAppError(whatsAppValidate);
-
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        whatsApp: 1,
+      }));
+      return;
+    }
     if (whatsAppValidate) return;
 
     if (cleanedMobile == duplicateWhatsApp) return;
@@ -1382,6 +1404,9 @@ export default function Leads({
       batch_track_id: batchTrack,
       comments: comments,
       created_date: formatToBackendIST(today),
+      is_manager: permissions.includes("Add Lead With Existing Mobile Number")
+        ? true
+        : false,
     };
 
     if (leadId) {
@@ -1409,7 +1434,7 @@ export default function Leads({
         setSaveOnlyLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }
@@ -1448,7 +1473,7 @@ export default function Leads({
         setSaveOnlyLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later"
         );
       }

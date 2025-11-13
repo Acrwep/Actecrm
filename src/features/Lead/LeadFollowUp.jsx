@@ -862,6 +862,14 @@ export default function LeadFollowUp({
 
     setEmailError(emailValidate);
 
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        email: 1,
+      }));
+      return;
+    }
+
     if (emailValidate) return;
 
     const payload = {
@@ -893,6 +901,14 @@ export default function LeadFollowUp({
     const mobileValidate = mobileValidator(cleanedMobile);
 
     setMobileError(mobileValidate);
+
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        mobile: 1,
+      }));
+      return;
+    }
 
     if (mobileValidate) return;
 
@@ -926,6 +942,14 @@ export default function LeadFollowUp({
     const whatsAppValidate = mobileValidator(cleanedMobile);
 
     setWhatsAppError(whatsAppValidate);
+
+    if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      setEmailAndMobileValidation((prev) => ({
+        ...prev,
+        whatsApp: 1,
+      }));
+      return;
+    }
 
     if (whatsAppValidate) return;
 
@@ -1086,6 +1110,9 @@ export default function LeadFollowUp({
       batch_track_id: batchTrack,
       comments: comments,
       created_date: formatToBackendIST(today),
+      is_manager: permissions.includes("Add Lead With Existing Mobile Number")
+        ? true
+        : false,
     };
 
     try {
@@ -1121,7 +1148,7 @@ export default function LeadFollowUp({
       setSaveOnlyLoading(false);
       CommonMessage(
         "error",
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
     }

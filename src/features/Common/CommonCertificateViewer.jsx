@@ -13,24 +13,56 @@ export default function CommonCertificateViewer({
   const certificateRef = useRef(null);
   const [loading, setLoading] = useState(false);
 
+  // const generatePDF = async () => {
+  //   if (!certificateRef.current) return;
+  //   setLoading(true);
+
+  //   const canvas = await html2canvas(certificateRef.current, {
+  //     scale: 2,
+  //     useCORS: true,
+  //     backgroundColor: null,
+  //   });
+
+  //   const imgData = canvas.toDataURL("image/png");
+
+  //   const pdf = new jsPDF("portrait", "px", "a4");
+  //   const pageWidth = pdf.internal.pageSize.getWidth();
+  //   const pageHeight = pdf.internal.pageSize.getHeight();
+
+  //   // Since container is already A4 ratio, scale directly
+  //   pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+
+  //   pdf.save(`${candidateName}_Acte_Certificate.pdf`);
+  //   setLoading(false);
+  // };
+
   const generatePDF = async () => {
     if (!certificateRef.current) return;
     setLoading(true);
 
     const canvas = await html2canvas(certificateRef.current, {
-      scale: 2,
+      scale: 3, // you can lower to 1.5 if still big
       useCORS: true,
-      backgroundColor: null,
+      backgroundColor: "#ffffff",
     });
 
-    const imgData = canvas.toDataURL("image/png");
+    // Convert canvas to JPEG with compression
+    const imgData = canvas.toDataURL("image/jpeg", 0.9); // ✅ 0.6 compression reduces size massively
 
-    const pdf = new jsPDF("portrait", "px", "a4");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [780, 1220],
+      compress: true, // ✅ Enable PDF compression
+      hotfixes: ["px_scaling"],
+    });
+
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
 
-    // Since container is already A4 ratio, scale directly
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+    // Insert JPEG instead of PNG
+    pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pdfHeight);
 
     pdf.save(`${candidateName}_Acte_Certificate.pdf`);
     setLoading(false);

@@ -38,6 +38,7 @@ export default function Settings() {
   const [userTableLoading, setUserTableLoading] = useState(true);
   const [groupLoading, setGroupLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [callUsersApi, setCallUsersApi] = useState(true);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -59,9 +60,13 @@ export default function Settings() {
       }
       getUsersData();
     }
-  }, []);
+  }, [permissions]);
 
   const getUsersData = async () => {
+    console.log("callllllll", callUsersApi);
+    if (callUsersApi == false) {
+      return;
+    }
     setUserTableLoading(true);
     const payload = {
       page: 1,
@@ -84,6 +89,7 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setUserTableLoading(false);
+        setCallUsersApi(false);
         getAllUsersData();
       }, 300);
     }

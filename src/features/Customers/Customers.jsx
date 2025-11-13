@@ -36,6 +36,7 @@ import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
+import { FiFileText } from "react-icons/fi";
 import { MdOutlineDateRange } from "react-icons/md";
 import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
@@ -63,6 +64,7 @@ import StudentVerify from "./StudentVerify";
 import AssignAndVerifyTrainer from "./AssignAndVerifyTrainer";
 import ClassSchedule from "./ClassSchedule";
 import PassesOutProcess from "./PassedOutProcess";
+import DownloadRegistrationForm from "./DownloadRegistrationForm";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -101,6 +103,7 @@ export default function Customers() {
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
   //form usesates
+  const [isOpenFormModal, setIsOpenFormModal] = useState(false);
   //awaiting finance
   const [isSwap, setIsSwap] = useState(false);
   //student verify usestates
@@ -235,7 +238,20 @@ export default function Customers() {
         return (
           <>
             {record.is_customer_updated === 1 ? (
-              <p>Completed</p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p>Completed</p>
+                <Tooltip placement="top" title="Customer Registration Form">
+                  <FiFileText
+                    size={14}
+                    className="customers_formlink_copybutton"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setIsOpenFormModal(true);
+                      setCustomerDetails(record);
+                    }}
+                  />
+                </Tooltip>
+              </div>
             ) : (
               <p>Pending</p>
             )}
@@ -1232,7 +1248,23 @@ export default function Customers() {
                   return (
                     <>
                       {record.is_customer_updated === 1 ? (
-                        <p>Completed</p>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <p>Completed</p>
+                          <Tooltip
+                            placement="top"
+                            title="Customer Registration Form"
+                          >
+                            <FiFileText
+                              size={14}
+                              className="customers_formlink_copybutton"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                setIsOpenFormModal(true);
+                                setCustomerDetails(record);
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
                       ) : (
                         <p>Pending</p>
                       )}
@@ -4300,6 +4332,7 @@ export default function Customers() {
         />
       </Modal>
 
+      {/* customer history drawer */}
       <Drawer
         title={
           <div
@@ -4581,6 +4614,34 @@ export default function Customers() {
           )}
         </div>
       </Drawer>
+
+      {/* form modal */}
+      {/* view certificate modal */}
+      <Modal
+        open={isOpenFormModal}
+        onCancel={() => {
+          setIsOpenFormModal(false);
+          setCustomerDetails(null);
+        }}
+        footer={false}
+        width="64%"
+        style={{ marginBottom: "20px", top: 10 }}
+        className="customer_downloadform_modal"
+        zIndex={1100}
+        // centered={true}
+        closeIcon={
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+          >
+            <CloseOutlined />
+          </span>
+        }
+      >
+        <DownloadRegistrationForm customerDetails={customerDetails} />
+      </Modal>
     </div>
   );
 }

@@ -253,7 +253,7 @@ export default function CustomerRegistration() {
       };
     } else {
       if (!isValidType) {
-        CommonMessage("error", "Accept only .png");
+        CommonMessage("error", "Accepts only .png, .jpg, or .jpeg files.");
       } else if (!isValidSize) {
         CommonMessage("error", "File size must be 1MB or less");
       }
@@ -375,8 +375,16 @@ export default function CustomerRegistration() {
     const batchTimingValidate = selectValidator(batchTiming);
     const placementSupportValidate = selectValidator(placementSupport);
 
+    let profileValidate;
     let termsandconditionsValidate;
     let signatureValidate;
+
+    if (profilePictureArray.length <= 0) {
+      profileValidate = "Profile picture is required";
+      CommonMessage("error", profileValidate);
+    } else {
+      profileValidate = "";
+    }
 
     if (signatureBase64 === "") {
       signatureValidate = "Signature is required";
@@ -422,6 +430,7 @@ export default function CustomerRegistration() {
       batchTrackValidate ||
       batchTimingValidate ||
       placementSupportValidate ||
+      profileValidate ||
       signatureValidate ||
       termsandconditionsValidate
     )
