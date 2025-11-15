@@ -155,6 +155,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 .header_nametext {
   font-weight: 600;
@@ -176,4 +177,75 @@
   align-items: center;
   height: 45px;
   width: 45px;
+}
+.header_notification_count_container {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #d32f2f;
+  color: #fff;
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+}
+.header_notification_drawer .ant-drawer-body {
+  padding: 0px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.header_notification_drawer_list_container {
+  position: relative;
+  padding: 10px 24px;
+  cursor: pointer;
+}
+.header_notification_drawer_list_container:hover {
+  box-shadow: inset 1px 0 0 rgb(218, 220, 224),
+    inset -1px 0 0 rgb(218, 220, 224), 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15) !important;
+}
+.header_notification_drawer_divider {
+  margin: 0px 0px 0px 0px !important;
+  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+.header_notification_popup_list_icon_container {
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #d32f2f1a;
+}
+.header_notification_drawer_list_title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px !important;
+}
+.header_notification_drawer_list_title_container {
+  display: flex;
+  justify-content: space-between;
+}
+.header_notification_drawer_listunread_title {
+  font-weight: 400;
+  font-size: 13px;
+  margin-bottom: 2px !important;
+}
+.header_notification_drawer_list_message {
+  color: gray;
+  font-size: 12px;
+  line-height: 21px;
+}
+.header_notification_drawer_unreadindicator {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: #5b69ca;
+  border-radius: 50%;
+  top: 50%;
+  left: 18px;
 }

@@ -1250,29 +1250,22 @@ export default function Dashboard() {
     if (label == "G-Review" || label == "L-Review") {
       return;
     }
-    navigate("/customers", {
-      state: {
-        status: label === "Awaiting Student Verify" ? "Awaiting Verify" : label,
-        startDate: raSelectedDates[0],
-        endDate: raSelectedDates[1],
-      },
-    });
+    const filterData = {
+      status: label === "Awaiting Student Verify" ? "Awaiting Verify" : label,
+      startDate: raSelectedDates[0],
+      endDate: raSelectedDates[1],
+    };
+    navigate("/customers", { state: filterData });
   };
 
   const handleHrDashboard = (label) => {
     console.log("hr dashboard clicked bar", label);
-    navigate("/customers", {
-      state: {
-        status:
-          label == "Trainer Rejected"
-            ? "Awaiting Trainer"
-            : label == "Trainer Verified"
-            ? "Awaiting Class"
-            : label,
-        startDate: HrSelectedDates[0],
-        endDate: HrSelectedDates[1],
-      },
-    });
+    const filterData = {
+      status: label == "Trainer Verified" ? "Awaiting Class" : label,
+      startDate: HrSelectedDates[0],
+      endDate: HrSelectedDates[1],
+    };
+    navigate("/customers", { state: filterData });
   };
 
   const handleSelectUser = async (e) => {

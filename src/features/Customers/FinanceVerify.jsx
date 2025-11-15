@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react";
-import { Row, Col, Button, Collapse, Modal, Divider } from "antd";
+import { Row, Col, Button, Collapse, Modal, Divider, message } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
@@ -9,6 +9,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import {
   inserCustomerTrack,
   rejectCustomerPayment,
+  sendNotification,
   sendPaymentInvoiceByEmail,
   updateCustomerPaymentTransaction,
   updateCustomerStatus,
@@ -289,11 +290,22 @@ const FinanceVerify = forwardRef(
         reason: financeRejectComment,
         rejected_date: formatToBackendIST(today),
       };
+      const statusPayload = {
+        customer_id: customerDetails.id,
+        status: "Payment Rejected",
+      };
       try {
         await rejectCustomerPayment(payload);
         CommonMessage("success", "Updated Successfully");
-        setTimeout(() => {
+        setTimeout(async () => {
           setRejectLoading(false);
+          if (customerDetails?.is_second_due == 0) {
+            try {
+              await updateCustomerStatus(statusPayload);
+            } catch (error) {
+              console.log("status update error", error);
+            }
+          }
           handleCustomerTrack(
             customerDetails?.is_second_due === 1
               ? "Part Payment Rejected" ?? "Unknown"
@@ -408,7 +420,10 @@ const FinanceVerify = forwardRef(
         setTimeout(async () => {
           const payload = {
             customer_id: customerDetails.id,
-            status: customerDetails.status,
+            status:
+              customerDetails?.is_second_due == 0
+                ? "Awaiting Finance"
+                : customerDetails.status,
           };
           try {
             await updateCustomerStatus(payload);
@@ -458,6 +473,9 @@ const FinanceVerify = forwardRef(
         await inserCustomerTrack(payload);
         setTimeout(() => {
           callgetCustomersApi();
+          if (updatestatus.includes("Payment Rejected")) {
+            handleSendNotification();
+          }
         }, 300);
       } catch (error) {
         console.log("customer track error", error);
@@ -481,6 +499,53 @@ const FinanceVerify = forwardRef(
         await inserCustomerTrack(payload);
       } catch (error) {
         console.log("customer track error", error);
+      }
+    };
+
+    const handleSendNotification = async () => {
+      const today = new Date();
+      const payload = {
+        user_id:
+          customerDetails && customerDetails.lead_assigned_to_id
+            ? customerDetails.lead_assigned_to_id
+            : "-",
+        title: "Payment Rejected",
+        message: {
+          customer_name:
+            customerDetails && customerDetails.name
+              ? customerDetails.name
+              : "-",
+          customer_phonecode:
+            customerDetails && customerDetails.phonecode
+              ? customerDetails.phonecode
+              : "-",
+          customer_phone:
+            customerDetails && customerDetails.phone
+              ? customerDetails.phone
+              : "-",
+          customer_course:
+            customerDetails && customerDetails.course_name
+              ? customerDetails.course_name
+              : "-",
+          customer_created_date:
+            customerDetails && customerDetails.created_date
+              ? moment(customerDetails.created_date).format("YYYY-MM-DD")
+              : "-",
+          customer_status:
+            customerDetails && customerDetails.status
+              ? customerDetails.status
+              : "-",
+          is_second_due:
+            customerDetails && customerDetails.is_second_due != undefined
+              ? customerDetails.is_second_due
+              : "-",
+        },
+        created_at: formatToBackendIST(today),
+      };
+      try {
+        await sendNotification(payload);
+      } catch (error) {
+        console.log("send notification error", error);
       }
     };
 

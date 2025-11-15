@@ -1061,3 +1061,31 @@ export const getServerHistory = async (server_id) => {
     throw error;
   }
 };
+
+// firebase notification api's
+export const sendNotification = async (payload) => {
+  try {
+    const response = await api.post(`/api/send-notification`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getNotifications = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getNotifications?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const readNotification = async (payload) => {
+  try {
+    const response = await api.put(`/api/readNotification`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

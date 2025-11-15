@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LuMessageCircleMore } from "react-icons/lu";
 import { IoMdNotificationsOutline } from "react-icons/io";
@@ -27,6 +27,7 @@ import { FcManager } from "react-icons/fc";
 import { AiOutlineLogout } from "react-icons/ai";
 import { IoFilter } from "react-icons/io5";
 import { FiEyeOff, FiEye } from "react-icons/fi";
+import { RiErrorWarningFill } from "react-icons/ri";
 import "./styles.css";
 import {
   changePassword,
@@ -34,6 +35,8 @@ import {
   getCustomerFullHistory,
   getCustomers,
   getLeads,
+  getNotifications,
+  readNotification,
 } from "../ApiService/action";
 import { BiCommentDetail } from "react-icons/bi";
 import { FaRegEye } from "react-icons/fa";
@@ -46,13 +49,19 @@ import CommonInputField from "../Common/CommonInputField";
 import {
   confirmPasswordValidator,
   passwordValidator,
+  shortRelativeTime,
 } from "../Common/Validation";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CommonMessage } from "../Common/CommonMessage";
+import { NotificationContext } from "../../Context/NotificationContext";
 
 export default function CustomHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { notifications } = useContext(NotificationContext);
+
+  const unreadCount = notifications.filter((n) => n.is_read === 0).length;
+
   const [userName, setUserName] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -67,6 +76,12 @@ export default function CustomHeader() {
   const [customerHistory, setCustomerHistory] = useState([]);
   const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
 
+  //notification
+  const [isOpenNotificationsDrawer, setIsOpenNotificationsDrawer] =
+    useState(false);
+  const [isOpenNotificationTooltip, setIsOpenNotificationTooltip] =
+    useState(false);
+  const [notificationData, setNotificationData] = useState([]);
   //change password
   const [isOpenChangePasswordDrawer, setIsOpenChangePasswordDrawer] =
     useState(false);
@@ -298,6 +313,64 @@ export default function CustomHeader() {
     }
   };
 
+  const getNotificationData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    try {
+      const response = await getNotifications(convertAsJson?.user_id);
+      console.log("notification response", response);
+      const data = response?.data || [];
+      setNotificationData(data);
+    } catch (error) {
+      console.log("notification error", error);
+    }
+  };
+
+  const handleMarkAsRead = async (item) => {
+    const payload = {
+      id: item.id,
+    };
+    try {
+      await readNotification(payload);
+      setIsOpenNotificationsDrawer(false);
+      setTimeout(() => {
+        handleNotification(item);
+        getNotificationData();
+      }, 300);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleNotification = (item) => {
+    const message = JSON.parse(item.message);
+
+    const filterData = {
+      status:
+        item.title == "Trainer Rejected"
+          ? "Trainer Rejected"
+          : "Payment Rejected",
+      startDate: message.customer_created_date,
+      endDate: message.customer_created_date,
+      payment_swap: true,
+    };
+
+    if (location.pathname === "/customers") {
+      window.dispatchEvent(
+        new CustomEvent("notificationFilter", { detail: filterData })
+      );
+      setIsOpenNotificationsDrawer(false);
+      return;
+    }
+
+    navigate("/customers", { state: filterData });
+    setIsOpenNotificationsDrawer(false);
+  };
+
   const passwordDrawerReset = () => {
     setIsOpenChangePasswordDrawer(false);
     setPasswordLoading(false);
@@ -308,6 +381,9 @@ export default function CustomHeader() {
     setConfirmPassword("");
     setConfirmPasswordError("");
     setPasswordValidationTrigger(false);
+    //notifications
+    setIsOpenNotificationsDrawer(false);
+    setNotificationData([]);
   };
 
   return (
@@ -469,8 +545,25 @@ export default function CustomHeader() {
               <div className="header_notificationicon_container">
                 <LuMessageCircleMore size={16} />
               </div>
-              <div className="header_notificationicon_container">
+
+              <div
+                className="header_notificationicon_container"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  // if (isOpenNotificationTooltip) {
+                  //   return;
+                  // }
+                  setIsOpenNotificationsDrawer(true);
+                  getNotificationData();
+                }}
+              >
                 <IoMdNotificationsOutline size={16} />
+
+                {unreadCount > 0 && (
+                  <div className="header_notification_count_container">
+                    <p>{unreadCount}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1292,6 +1385,86 @@ export default function CustomHeader() {
             )}
           </div>
         </div>
+      </Drawer>
+
+      <Drawer
+        title="Notifications"
+        open={isOpenNotificationsDrawer}
+        onClose={passwordDrawerReset}
+        width="35%"
+        style={{ position: "relative", paddingBottom: "20px" }}
+        className="header_notification_drawer"
+      >
+        {notificationData.map((item, index) => {
+          const message = (() => {
+            try {
+              return JSON.parse(item.message);
+            } catch {
+              return item.message;
+            }
+          })();
+          return (
+            <React.Fragment key={index}>
+              <Row
+                gutter={12}
+                className="header_notification_drawer_list_container"
+                style={{
+                  backgroundColor:
+                    item.is_read == 0 ? "rgb(91 105 202 / 11%)" : "#fff",
+                }}
+                onClick={() => {
+                  handleMarkAsRead(item);
+                }}
+              >
+                <Col span={4}>
+                  <div className="header_notification_popup_list_icon_container">
+                    <RiErrorWarningFill color="#d32f2f" size={24} />
+                  </div>
+                </Col>
+                <Col span={20}>
+                  <div className="header_notification_drawer_list_title_container">
+                    <p
+                      className={
+                        item.is_read == 0
+                          ? "header_notification_drawer_list_title"
+                          : "header_notification_drawer_listunread_title"
+                      }
+                    >
+                      {item.title}
+                    </p>
+                    <p style={{ color: "gray", fontSize: "11px" }}>
+                      {item.created_at
+                        ? shortRelativeTime(item.created_at)
+                        : ""}
+                    </p>
+                  </div>
+                  {item.title === "Payment Rejected" ||
+                  (item.title === "Trainer Rejected" &&
+                    typeof message === "object") ? (
+                    <p className="header_notification_drawer_list_message">
+                      {`Customer Name: ${message.customer_name ?? "-"} | 
+     Mobile: ${message.customer_phonecode ?? ""}${
+                        message.customer_phone ?? ""
+                      } | 
+     Course: ${message.customer_course ?? "-"}`}
+                    </p>
+                  ) : (
+                    <p className="header_notification_drawer_list_message">
+                      {typeof message === "string"
+                        ? message
+                        : JSON.stringify(message)}
+                    </p>
+                  )}
+                </Col>
+                <div
+                  className="header_notification_drawer_unreadindicator"
+                  style={{ opacity: item.is_read == 0 ? 1 : 0 }}
+                />
+              </Row>
+              <Divider className={"header_notification_drawer_divider"} />
+            </React.Fragment>
+          );
+        })}
       </Drawer>
     </div>
   );

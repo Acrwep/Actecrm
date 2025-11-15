@@ -975,6 +975,19 @@ export default function Customers() {
     }
   }, [childUsers]);
 
+  useEffect(() => {
+    const handler = (e) => {
+      const data = e.detail;
+      console.log("Received via event:", data);
+
+      // Re-run your existing logic
+      rerunCustomerFilters(data);
+    };
+
+    window.addEventListener("notificationFilter", handler);
+    return () => window.removeEventListener("notificationFilter", handler);
+  }, []);
+
   const getTrainersData = async () => {
     setLoading(true);
     const payload = {
@@ -991,56 +1004,130 @@ export default function Customers() {
     } finally {
       setTimeout(() => {
         // getAllDownlineUsersData(null);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        const receivedValueFromDashboard = location.state?.status || null;
-        const receivedStartDateFromDashboard =
-          location.state?.startDate || null;
-        const receivedEndDateFromDashboard = location.state?.endDate || null;
+        // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        // const receivedValueFromDashboard = location.state?.status || null;
+        // const receivedStartDateFromDashboard =
+        //   location.state?.startDate || null;
+        // const receivedEndDateFromDashboard = location.state?.endDate || null;
+        // const receivedSwapFromNotification =
+        //   location.state?.payment_swap || null;
 
-        console.log("Received value from dashboard:", location);
-        setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
-        if (
-          receivedValueFromDashboard == "Awaiting Trainer" ||
-          receivedValueFromDashboard == "Awaiting Class" ||
-          receivedValueFromDashboard == "Class Scheduled" ||
-          receivedValueFromDashboard == "Class Going"
-        ) {
-          scroll(600);
-        }
-        if (
-          receivedValueFromDashboard == "Escalated" ||
-          receivedValueFromDashboard == "Completed"
-        ) {
-          scroll(1200);
-        }
-        if (receivedStartDateFromDashboard) {
-          setSelectedDates([
-            receivedStartDateFromDashboard,
-            receivedEndDateFromDashboard,
-          ]);
-        } else {
-          setSelectedDates(PreviousAndCurrentDate);
-        }
+        // console.log("Received value from dashboard:", location);
+        // setStatus(receivedValueFromDashboard ? receivedValueFromDashboard : "");
+        // if (
+        //   receivedValueFromDashboard == "Awaiting Trainer" ||
+        //   receivedValueFromDashboard == "Awaiting Class" ||
+        //   receivedValueFromDashboard == "Class Scheduled" ||
+        //   receivedValueFromDashboard == "Class Going"
+        // ) {
+        //   scroll(600);
+        // }
+        // if (
+        //   receivedValueFromDashboard == "Escalated" ||
+        //   receivedValueFromDashboard == "Completed"
+        // ) {
+        //   scroll(1200);
+        // }
+        // if (receivedStartDateFromDashboard) {
+        //   setSelectedDates([
+        //     receivedStartDateFromDashboard,
+        //     receivedEndDateFromDashboard,
+        //   ]);
+        // } else {
+        //   setSelectedDates(PreviousAndCurrentDate);
+        // }
 
-        getCustomersData(
-          receivedStartDateFromDashboard
-            ? receivedStartDateFromDashboard
-            : PreviousAndCurrentDate[0],
-          receivedEndDateFromDashboard
-            ? receivedEndDateFromDashboard
-            : PreviousAndCurrentDate[1],
-          null,
-          receivedValueFromDashboard ? receivedValueFromDashboard : null,
-          null,
-          [
-            { id: 1, name: "Classroom", checked: true },
-            { id: 1, name: "Online", checked: true },
-          ],
-          1,
-          10
-        );
+        // if (receivedSwapFromNotification) {
+        //   setIsSwap(receivedSwapFromNotification);
+        // }
+        // getCustomersData(
+        //   receivedStartDateFromDashboard
+        //     ? receivedStartDateFromDashboard
+        //     : PreviousAndCurrentDate[0],
+        //   receivedEndDateFromDashboard
+        //     ? receivedEndDateFromDashboard
+        //     : PreviousAndCurrentDate[1],
+        //   null,
+        //   receivedValueFromDashboard ? receivedValueFromDashboard : null,
+        //   null,
+        //   [
+        //     { id: 1, name: "Classroom", checked: true },
+        //     { id: 1, name: "Online", checked: true },
+        //   ],
+        //   1,
+        //   10
+        // );
+        rerunCustomerFilters(location.state);
       }, 300);
     }
+  };
+
+  const rerunCustomerFilters = (stateData) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
+    const receivedValueFromDashboard = stateData?.status || null;
+    const receivedStartDateFromDashboard = stateData?.startDate || null;
+    const receivedEndDateFromDashboard = stateData?.endDate || null;
+    const receivedSwapFromNotification = stateData?.payment_swap || null;
+
+    setStatus(
+      receivedValueFromDashboard
+        ? receivedValueFromDashboard === "Trainer Rejected"
+          ? "Awaiting Trainer"
+          : receivedValueFromDashboard
+        : ""
+    );
+
+    if (
+      receivedValueFromDashboard == "Awaiting Trainer" ||
+      receivedValueFromDashboard == "Trainer Rejected" ||
+      receivedValueFromDashboard == "Awaiting Class" ||
+      receivedValueFromDashboard == "Class Scheduled" ||
+      receivedValueFromDashboard == "Class Going"
+    ) {
+      scroll(600);
+    }
+    if (
+      receivedValueFromDashboard == "Escalated" ||
+      receivedValueFromDashboard == "Completed"
+    ) {
+      scroll(1200);
+    }
+
+    if (receivedStartDateFromDashboard) {
+      setSelectedDates([
+        receivedStartDateFromDashboard,
+        receivedEndDateFromDashboard,
+      ]);
+    } else {
+      setSelectedDates(PreviousAndCurrentDate);
+    }
+
+    if (receivedSwapFromNotification) {
+      setIsSwap(receivedSwapFromNotification);
+    }
+
+    getCustomersData(
+      receivedStartDateFromDashboard
+        ? receivedStartDateFromDashboard
+        : PreviousAndCurrentDate[0],
+      receivedEndDateFromDashboard
+        ? receivedEndDateFromDashboard
+        : PreviousAndCurrentDate[1],
+      null,
+      receivedValueFromDashboard
+        ? receivedValueFromDashboard === "Trainer Rejected"
+          ? ["Trainer Rejected"]
+          : receivedValueFromDashboard
+        : null,
+      null,
+      [
+        { id: 1, name: "Classroom", checked: true },
+        { id: 1, name: "Online", checked: true },
+      ],
+      1,
+      10
+    );
   };
 
   // const getAllDownlineUsersData = async (user_id) => {

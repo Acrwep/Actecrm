@@ -27,6 +27,7 @@ import {
   getTrainerById,
   inserCustomerTrack,
   rejectTrainerForCustomer,
+  sendNotification,
   updateCustomerStatus,
   verifyTrainerForCustomer,
 } from "../ApiService/action";
@@ -480,6 +481,9 @@ const AssignAndVerifyTrainer = forwardRef(
         await inserCustomerTrack(payload);
         setTimeout(() => {
           callgetCustomersApi();
+          if (updatestatus.includes("Trainer Rejected")) {
+            handleSendNotification();
+          }
         }, 300);
       } catch (error) {
         console.log("customer track error", error);
@@ -503,6 +507,49 @@ const AssignAndVerifyTrainer = forwardRef(
         await inserCustomerTrack(payload);
       } catch (error) {
         console.log("customer track error", error);
+      }
+    };
+
+    const handleSendNotification = async () => {
+      const today = new Date();
+      const payload = {
+        user_id:
+          customerDetails && customerDetails.lead_assigned_to_id
+            ? customerDetails.lead_assigned_to_id
+            : "-",
+        title: "Trainer Rejected",
+        message: {
+          customer_name:
+            customerDetails && customerDetails.name
+              ? customerDetails.name
+              : "-",
+          customer_phonecode:
+            customerDetails && customerDetails.phonecode
+              ? customerDetails.phonecode
+              : "-",
+          customer_phone:
+            customerDetails && customerDetails.phone
+              ? customerDetails.phone
+              : "-",
+          customer_course:
+            customerDetails && customerDetails.course_name
+              ? customerDetails.course_name
+              : "-",
+          customer_created_date:
+            customerDetails && customerDetails.created_date
+              ? moment(customerDetails.created_date).format("YYYY-MM-DD")
+              : "-",
+          customer_status:
+            customerDetails && customerDetails.status
+              ? customerDetails.status
+              : "-",
+        },
+        created_at: formatToBackendIST(today),
+      };
+      try {
+        await sendNotification(payload);
+      } catch (error) {
+        console.log("send notification error", error);
       }
     };
 
