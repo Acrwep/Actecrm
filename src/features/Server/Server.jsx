@@ -13,8 +13,6 @@ import {
   Collapse,
   Input,
 } from "antd";
-import ReactQuill from "react-quill";
-import "quill/dist/quill.snow.css";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
