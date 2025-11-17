@@ -1,3 +1,47 @@
 .server_statuscheckbox {
   font-size: 12px !important;
 }
+.server_email_conatiner {
+  margin-top: 20px;
+  margin-bottom: 90px;
+}
+.server_email_heading {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 8px !important;
+}
+.server_email_subjectinput {
+  height: 39px !important;
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+  border-top: 0.2px solid #d9d9d9 !important;
+  border-left: 0.2px solid #d9d9d9 !important;
+  border-right: 0.2px solid #d9d9d9 !important;
+}
+.server_email_subjectinput:focus {
+  border-color: #ccc !important;
+  box-shadow: none !important;
+}
+.reactquillnotebook {
+  height: 240px;
+  margin-bottom: 60px;
+}
+@media (min-width: 260px) and (max-width: 322px) {
+  .reactquillnotebook {
+    margin-bottom: 225px;
+  }
+}
+@media (min-width: 322px) and (max-width: 375px) {
+  .reactquillnotebook {
+    margin-bottom: 152px;
+  }
+}
+@media (min-width: 376px) and (max-width: 767px) {
+  .reactquillnotebook {
+    margin-bottom: 130px;
+  }
+}

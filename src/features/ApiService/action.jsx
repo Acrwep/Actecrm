@@ -1024,9 +1024,9 @@ export const updateServerStatus = async (payload) => {
   }
 };
 
-export const serverVerify = async (payload) => {
+export const updateServerDetails = async (payload) => {
   try {
-    const response = await api.put(`/api/serverVerify`, payload);
+    const response = await api.post(`/api/awatingVerify`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -1036,6 +1036,15 @@ export const serverVerify = async (payload) => {
 export const serverApprove = async (payload) => {
   try {
     const response = await api.put(`/api/serverApprove`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const serverIssue = async (payload) => {
+  try {
+    const response = await api.put(`/api/serverIssued`, payload);
     return response;
   } catch (error) {
     throw error;

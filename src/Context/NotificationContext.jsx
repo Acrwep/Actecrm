@@ -11,12 +11,12 @@ export const NotificationProvider = ({ children }) => {
   const userId = convertAsJson?.user_id; // get logged-in user id
 
   const fetchNotifications = async () => {
-    try {
-      const res = await getNotifications(convertAsJson?.user_id);
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-    }
+    // try {
+    //   const res = await getNotifications(convertAsJson?.user_id);
+    //   setNotifications(res.data);
+    // } catch (err) {
+    //   console.error("Error fetching notifications:", err);
+    // }
   };
 
   useEffect(() => {

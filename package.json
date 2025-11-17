@@ -33,6 +33,7 @@
     "react-icons": "^5.5.0",
     "react-international-phone": "^4.6.0",
     "react-prismazoom": "^3.3.5",
+    "react-quill": "^2.0.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.3",
     "react-signature-canvas": "^1.1.0-alpha.2",

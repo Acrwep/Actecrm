@@ -3,16 +3,20 @@ import { Row, Col, Timeline } from "antd";
 import { LuCircleCheck } from "react-icons/lu";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
+import { IoIosGitPullRequest } from "react-icons/io";
 import moment from "moment";
 
 export default function ServerHistory({ data = [] }) {
   const items = data.map((item) => ({
     key: item.id,
     dot:
-      item.status.includes("Details Updated") ||
-      item.status.includes("Verified") ||
-      item.status.includes("Approved") ||
-      item.status.includes("Issued") ? (
+      item.status == "Requested" ? (
+        <IoIosGitPullRequest size={16} style={{ color: "#fd79a8" }} />
+      ) : item.status.includes("Details Updated") ||
+        item.status.includes("Raised") ||
+        item.status.includes("Verified") ||
+        item.status.includes("Approved") ||
+        item.status.includes("Issued") ? (
         <LuCircleCheck size={16} style={{ color: "green" }} />
       ) : item.status.includes("Rejected") ? (
         <FaRegCircleXmark style={{ color: "#d32f2f" }} />
@@ -23,8 +27,7 @@ export default function ServerHistory({ data = [] }) {
     label: <span style={{ whiteSpace: "nowrap" }}>{item.status}</span>,
     children: (
       <>
-        {item.status === "Details Updated" ||
-        item.status == "Server Approved" ? (
+        {item.status === "Details Updated" || item.status == "Approved" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -49,8 +52,24 @@ export default function ServerHistory({ data = [] }) {
                     </p>
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <p className="customer_history_details_label">
+                      Vendor Name
+                    </p>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customer_history_details_text">
+                      {item.details.vendor_name
+                        ? item.details.vendor_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <p className="customer_history_details_label">
                       Server Cost
@@ -67,9 +86,8 @@ export default function ServerHistory({ data = [] }) {
                     </p>
                   </Col>
                 </Row>
-              </Col>
-              <Col span={12}>
-                <Row gutter={4}>
+
+                <Row gutter={4} style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <p className="customer_history_details_label">
                       Server Duration
@@ -86,7 +104,7 @@ export default function ServerHistory({ data = [] }) {
               </Col>
             </Row>
           </div>
-        ) : item.status === "Server Rejected" ||
+        ) : item.status === "Verification Rejected" ||
           item.status === "Approval Rejected" ? (
           <>
             <div>
