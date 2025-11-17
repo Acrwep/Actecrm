@@ -406,11 +406,26 @@ export default function Leads({
       },
     },
     {
-      title: "Lead Status",
+      title: "Lead Priority",
       key: "lead_status",
       dataIndex: "lead_status",
       fixed: "right",
       width: 140,
+      render: (text) => {
+        return (
+          <div
+            className={
+              text == "High"
+                ? "leadmanager_leadstatus_high_container"
+                : text == "Medium"
+                ? "leadmanager_leadstatus_medium_container"
+                : "leadmanager_leadstatus_low_container"
+            }
+          >
+            <p>{text}</p>
+          </div>
+        );
+      },
     },
     {
       title: "Comments",
@@ -656,6 +671,27 @@ export default function Leads({
               return {
                 ...col,
                 width: 180,
+              };
+            case "lead_status":
+              return {
+                ...col,
+                title: "Lead Priority",
+                width: 140,
+                render: (text) => {
+                  return (
+                    <div
+                      className={
+                        text == "High"
+                          ? "leadmanager_leadstatus_high_container"
+                          : text == "Medium"
+                          ? "leadmanager_leadstatus_medium_container"
+                          : "leadmanager_leadstatus_low_container"
+                      }
+                    >
+                      <p>{text}</p>
+                    </div>
+                  );
+                },
               };
             case "comments":
               return {

@@ -17,6 +17,48 @@
   margin-bottom: 12px !important;
   font-size: 15px;
 }
+.leadmanager_leadstatus_high_container {
+  background: #ffbf0018;
+  color: #ffbf00;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+.leadmanager_leadstatus_medium_container {
+  background: #cd803218;
+  color: #cd7f32;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+.leadmanager_leadstatus_low_container {
+  background: #607d8b17;
+  color: #607d8b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
 .leadmanager_refresh_button {
   align-items: center;
   background-color: #fff;

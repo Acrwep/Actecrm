@@ -43,6 +43,7 @@ import moment from "moment";
 import TargetMonthPicker from "./TargetMonthPicker";
 
 export default function Users({
+  setUsersCount,
   userTableLoading,
   setUserTableLoading,
   pagination,
@@ -304,6 +305,7 @@ export default function Users({
       console.log("users response", response);
       dispatch(storeUsersList(response?.data?.data?.data || []));
       const pagination = response?.data?.data?.pagination;
+      setUsersCount(pagination.total);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,

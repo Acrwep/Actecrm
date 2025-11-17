@@ -35,6 +35,7 @@ export default function Settings() {
   const navigate = useNavigate();
 
   const [activePage, setActivePage] = useState("users");
+  const [usersCount, setUsersCount] = useState(0);
   const [userTableLoading, setUserTableLoading] = useState(true);
   const [groupLoading, setGroupLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
@@ -103,6 +104,8 @@ export default function Settings() {
     try {
       const response = await getUsers(payload);
       console.log("all usersss", response);
+      const pagination = response?.data?.data?.pagination;
+      setUsersCount(pagination.total);
       dispatch(storeAllUsersList(response?.data?.data?.data || []));
     } catch (error) {
       dispatch(storeAllUsersList([]));
@@ -343,7 +346,7 @@ export default function Settings() {
             }
             onClick={() => setActivePage("users")}
           >
-            Users
+            {`Users ( ${usersCount} )`}
           </button>
           {/* <button
           className={
@@ -372,6 +375,7 @@ export default function Settings() {
         <Users
           userTableLoading={userTableLoading}
           setUserTableLoading={setUserTableLoading}
+          setUsersCount={setUsersCount}
           pagination={pagination}
           setPagination={setPagination}
         />
