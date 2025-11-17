@@ -100,6 +100,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
+
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [allDownliners, setAllDownliners] = useState([]);
@@ -437,40 +438,35 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setSubUsers(downlineUsers);
-      getPendingFeesCustomersData(null, null, 1, 10);
-      // getAllDownlineUsersData(convertAsJson?.user_id);
+      // getPendingFeesCustomersData(null, null, 1, 10);
+      getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
 
-  // const getAllDownlineUsersData = async (user_id) => {
-  //   try {
-  //     const response = await getAllDownlineUsers(user_id);
-  //     console.log("all downlines response", response);
-  //     const downliners = response?.data?.data || [];
-  //     const downliners_ids = downliners.map((u) => {
-  //       return u.user_id;
-  //     });
-  //     setAllDownliners(downliners_ids);
-  //     getPendingFeesCustomersData(null, downliners_ids, 1, 10);
-  //   } catch (error) {
-  //     console.log("all downlines error", error);
-  //   }
-  // };
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      getPendingFeesCustomersData(null, downliners_ids, 1, 10);
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
 
   const getPendingFeesCustomersData = async (
     searchvalue,
-    executive_id,
+    downliners,
     pageNumber,
     limit
   ) => {
     const today = new Date();
     setLoading(true);
-    let lead_executive = [];
-    if (executive_id) {
-      lead_executive.push(executive_id);
-    } else {
-      lead_executive = [];
-    }
+
     const from_date = formatToBackendIST(today);
     const to_date = formatToBackendIST(today);
 
@@ -486,7 +482,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         : searchvalue && filterType == 4
         ? { course: searchvalue }
         : {}),
-      user_ids: lead_executive.length >= 1 ? lead_executive : childUsers,
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
     };
@@ -840,7 +836,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getPendingFeesCustomersData(searchValue, selectedUserId, page, limit);
+    getPendingFeesCustomersData(searchValue, allDownliners, page, limit);
   };
 
   const handleSearch = (e) => {
@@ -852,7 +848,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       });
       getPendingFeesCustomersData(
         e.target.value,
-        selectedUserId,
+        allDownliners,
         1,
         pagination.limit
       );
@@ -937,30 +933,26 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    setPagination({
-      page: 1,
-    });
-    getPendingFeesCustomersData(searchValue, value, 1, pagination.limit);
-    // try {
-    //   const response = await getAllDownlineUsers(value ? value : loginUserId);
-    //   console.log("all downlines response", response);
-    //   const downliners = response?.data?.data || [];
-    //   const downliners_ids = downliners.map((u) => {
-    //     return u.user_id;
-    //   });
-    //   setAllDownliners(downliners_ids);
-    //   setPagination({
-    //     page: 1,
-    //   });
-    //   getPendingFeesCustomersData(
-    //     searchValue,
-    //     downliners_ids,
-    //     1,
-    //     pagination.limit
-    //   );
-    // } catch (error) {
-    //   console.log("all downlines error", error);
-    // }
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getPendingFeesCustomersData(
+        searchValue,
+        downliners_ids,
+        1,
+        pagination.limit
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
   };
 
   const handlePaymentSubmit = async () => {
@@ -1060,7 +1052,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         });
         getPendingFeesCustomersData(
           searchValue,
-          selectedUserId,
+          allDownliners,
           pagination.page,
           pagination.limit
         );
@@ -1126,7 +1118,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                           });
                           getPendingFeesCustomersData(
                             null,
-                            selectedUserId,
+                            allDownliners,
                             1,
                             pagination.limit
                           );
@@ -1173,7 +1165,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                               });
                               getPendingFeesCustomersData(
                                 null,
-                                selectedUserId,
+                                allDownliners,
                                 1,
                                 pagination.limit
                               );

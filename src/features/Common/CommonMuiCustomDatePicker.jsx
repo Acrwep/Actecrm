@@ -180,8 +180,6 @@ export default function CommonMuiCustomDatePicker({
           open={open}
           anchorEl={anchorEl}
           onClose={handleClose}
-          disableEnforceFocus
-          disableRestoreFocus
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "left",

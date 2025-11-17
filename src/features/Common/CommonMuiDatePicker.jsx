@@ -64,6 +64,7 @@ export default function CommonMuiDatePicker({
           },
           popper: {
             sx: {
+              zIndex: 999999,
               "& .MuiYearCalendar-button": {
                 fontSize: "13px !important", // desired font size
                 fontFamily: "Poppins, sans-serif", // desired font family
