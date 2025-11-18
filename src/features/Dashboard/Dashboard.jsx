@@ -1232,6 +1232,7 @@ export default function Dashboard() {
       setHrLoader(true);
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
+          allDashboardCardsDates,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,
@@ -1239,6 +1240,7 @@ export default function Dashboard() {
         );
       } else {
         getSaleDetailsData(
+          allDashboardCardsDates,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,

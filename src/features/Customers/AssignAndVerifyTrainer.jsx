@@ -514,8 +514,8 @@ const AssignAndVerifyTrainer = forwardRef(
       const today = new Date();
       const payload = {
         user_id:
-          customerDetails && customerDetails.lead_assigned_to_id
-            ? customerDetails.lead_assigned_to_id
+          customerDetails && customerDetails.trainer_hr_id
+            ? customerDetails.trainer_hr_id
             : "-",
         title: "Trainer Rejected",
         message: {

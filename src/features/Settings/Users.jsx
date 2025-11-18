@@ -403,31 +403,6 @@ export default function Users({
     }, 300);
   };
 
-  const formReset = () => {
-    setIsOpenAddDrawer(false);
-    setUserId("");
-    setUserIdError("");
-    setProfileName("");
-    setProfileNameError("");
-    setPassword("");
-    setPasswordError("");
-    setConfirmPassword("");
-    setConfirmPasswordError("");
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setValidationTrigger(false);
-    setButtonLoading(false);
-    setEditUserId(null);
-    setAssignUsersData(allUsersData);
-    setChildUsers([]);
-    setUserRoles([]);
-    setUserRolesError("");
-    setTargetMonth(null);
-    setTargetMonthStartDate(null);
-    setTargetMonthEndDate(null);
-    setTarget("");
-  };
-
   const handleSubmit = async () => {
     setValidationTrigger(true);
     const userIdValidate = addressValidator(userId);
@@ -571,6 +546,31 @@ export default function Users({
         );
       }
     }
+  };
+
+  const formReset = () => {
+    setIsOpenAddDrawer(false);
+    setUserId("");
+    setUserIdError("");
+    setProfileName("");
+    setProfileNameError("");
+    setPassword("");
+    setPasswordError("");
+    setConfirmPassword("");
+    setConfirmPasswordError("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setValidationTrigger(false);
+    setButtonLoading(false);
+    setEditUserId(null);
+    setAssignUsersData(allUsersData);
+    setChildUsers([]);
+    setUserRoles([]);
+    setUserRolesError("");
+    setTargetMonth(null);
+    setTargetMonthStartDate(null);
+    setTargetMonthEndDate(null);
+    setTarget("");
   };
 
   const getUserDownlineData = async () => {

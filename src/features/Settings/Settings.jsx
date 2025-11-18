@@ -53,6 +53,9 @@ export default function Settings() {
 
   useEffect(() => {
     dispatch(storeUserSearchValue(null));
+  }, []);
+
+  useEffect(() => {
     dispatch(storeRoleSearchValue(null));
     if (permissions.length >= 1) {
       if (!permissions.includes("Settings Page")) {
