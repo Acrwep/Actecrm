@@ -253,6 +253,10 @@ export default function Server() {
                         checked={false}
                         onChange={(e) => {
                           if (record.status == "Awaiting Verify") {
+                            if (!permissions.includes("Server Verify")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
                             setIsOpenDetailsDrawer(true);
                             setDrawerStatus("Verify");
                             setServerDetails(record);
@@ -322,6 +326,10 @@ export default function Server() {
                         checked={false}
                         onChange={(e) => {
                           if (record.status == "Approved") {
+                            if (!permissions.includes("Server Issue")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
                             setIsOpenDetailsDrawer(true);
                             setDrawerStatus("Issue");
                             setServerDetails(record);

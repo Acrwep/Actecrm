@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { saveFirebaseToken } from "./features/ApiService/action";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -33,14 +34,11 @@ export const requestForToken = async () => {
 
       console.log("FCM Token:", currentToken);
       // ✅ Send token to backend
-      await fetch("http://localhost:3000/api/save-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: convertAsJson?.user_id,
-          token: currentToken,
-        }),
-      });
+      const payload = {
+        user_id: convertAsJson?.user_id,
+        token: currentToken,
+      };
+      await saveFirebaseToken(payload);
     } else {
       console.log("No registration token available. Request permission first.");
     }

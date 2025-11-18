@@ -203,16 +203,43 @@ export default function Customers() {
       },
     },
     {
+      title: "HR Name",
+      key: "trainer_hr_name",
+      dataIndex: "trainer_hr_name",
+      width: 170,
+    },
+    {
       title: "Trainer",
       key: "trainer_name",
       dataIndex: "trainer_name",
       width: 170,
-      render: (text, record) => {
-        if (record.is_trainer_verified === 1) {
-          return <p>{text}</p>;
-        } else {
-          return <p>-</p>;
-        }
+    },
+    {
+      title: "Trainer Commercial%",
+      key: "commercial_percentage",
+      dataIndex: "commercial_percentage",
+      width: 170,
+      render: (text) => {
+        return (
+          <p
+            className="customerdetails_text"
+            style={{
+              fontWeight: 700,
+              color:
+                text && text !== null
+                  ? text < 18
+                    ? "#3c9111" // green
+                    : text > 18 && text <= 22
+                    ? "#ffa502" // orange
+                    : text > 22
+                    ? "#d32f2f" // red
+                    : "inherit"
+                  : "inherit", // fallback color if null
+            }}
+          >
+            {text && text ? text + "%" : "-"}
+          </p>
+        );
       },
     },
     {
@@ -220,13 +247,6 @@ export default function Customers() {
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
       width: 150,
-      render: (text, record) => {
-        if (record.is_trainer_verified === 1) {
-          return <p>{text}</p>;
-        } else {
-          return <p>-</p>;
-        }
-      },
     },
     {
       title: "Form Status",
@@ -240,17 +260,19 @@ export default function Customers() {
             {record.is_customer_updated === 1 ? (
               <div style={{ display: "flex", gap: "6px" }}>
                 <p>Completed</p>
-                <Tooltip placement="top" title="Customer Registration Form">
-                  <FiFileText
-                    size={14}
-                    className="customers_formlink_copybutton"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setIsOpenFormModal(true);
-                      setCustomerDetails(record);
-                    }}
-                  />
-                </Tooltip>
+                {permissions.includes("Download Registration Form") && (
+                  <Tooltip placement="top" title="Customer Registration Form">
+                    <FiFileText
+                      size={14}
+                      className="customers_formlink_copybutton"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        setIsOpenFormModal(true);
+                        setCustomerDetails(record);
+                      }}
+                    />
+                  </Tooltip>
+                )}
               </div>
             ) : (
               <p>Pending</p>
@@ -1260,16 +1282,20 @@ export default function Customers() {
                   return <p>{"₹" + text}</p>;
                 },
               };
+            case "trainer_hr_name":
+              return {
+                ...col,
+                width: 170,
+                render: (text, record) => {
+                  return <p>{text ? text : "-"}</p>;
+                },
+              };
             case "trainer_name":
               return {
                 ...col,
                 width: 170,
                 render: (text, record) => {
-                  if (record.is_trainer_verified === 1) {
-                    return <p>{text}</p>;
-                  } else {
-                    return <p>-</p>;
-                  }
+                  return <p>{text ? text : "-"}</p>;
                 },
               };
             case "trainer_mobile":
@@ -1277,11 +1303,34 @@ export default function Customers() {
                 ...col,
                 width: 150,
                 render: (text, record) => {
-                  if (record.is_trainer_verified === 1) {
-                    return <p>{text}</p>;
-                  } else {
-                    return <p>-</p>;
-                  }
+                  return <p>{text ? text : "-"}</p>;
+                },
+              };
+            case "commercial_percentage":
+              return {
+                ...col,
+                width: 170,
+                render: (text) => {
+                  return (
+                    <p
+                      className="customerdetails_text"
+                      style={{
+                        fontWeight: 700,
+                        color:
+                          text && text !== null
+                            ? text < 18
+                              ? "#3c9111" // green
+                              : text > 18 && text <= 22
+                              ? "#ffa502" // orange
+                              : text > 22
+                              ? "#d32f2f" // red
+                              : "inherit"
+                            : "inherit", // fallback color if null
+                      }}
+                    >
+                      {text && text ? text + "%" : "-"}
+                    </p>
+                  );
                 },
               };
             case "form_status":
@@ -1294,20 +1343,24 @@ export default function Customers() {
                       {record.is_customer_updated === 1 ? (
                         <div style={{ display: "flex", gap: "6px" }}>
                           <p>Completed</p>
-                          <Tooltip
-                            placement="top"
-                            title="Customer Registration Form"
-                          >
-                            <FiFileText
-                              size={14}
-                              className="customers_formlink_copybutton"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                setIsOpenFormModal(true);
-                                setCustomerDetails(record);
-                              }}
-                            />
-                          </Tooltip>
+                          {permissions.includes(
+                            "Download Registration Form"
+                          ) && (
+                            <Tooltip
+                              placement="top"
+                              title="Customer Registration Form"
+                            >
+                              <FiFileText
+                                size={14}
+                                className="customers_formlink_copybutton"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => {
+                                  setIsOpenFormModal(true);
+                                  setCustomerDetails(record);
+                                }}
+                              />
+                            </Tooltip>
+                          )}
                         </div>
                       ) : (
                         <p>Pending</p>

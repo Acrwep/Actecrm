@@ -1072,6 +1072,14 @@ export const getServerHistory = async (server_id) => {
 };
 
 // firebase notification api's
+export const saveFirebaseToken = async (payload) => {
+  try {
+    const response = await api.post(`/api/save-token`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 export const sendNotification = async (payload) => {
   try {
     const response = await api.post(`/api/send-notification`, payload);

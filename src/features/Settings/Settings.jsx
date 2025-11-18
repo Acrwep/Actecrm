@@ -223,6 +223,7 @@ export default function Settings() {
         (f) => f.section === "Customers Module"
       );
       const customersCustomOrder = [
+        "Download Registration Form",
         "Update Customer",
         "Update Payment",
         "Update Payment Master",
@@ -280,6 +281,7 @@ export default function Settings() {
         "Server Details Update",
         "Server Verify",
         "Server Approve",
+        "Server Issue",
       ];
 
       const serverSortedArray = serverModule.sort(
