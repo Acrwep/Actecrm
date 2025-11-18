@@ -20,41 +20,59 @@ function App() {
   }
 
   const askPermission = async () => {
-    // Case 1: BLOCKED — cannot re-request
+    // If previously denied, we can't re-request — user must change browser settings
     if (Notification.permission === "denied") {
-      // alert(
-      //   "You have blocked notifications for this site.\n\n" +
-      //     "👉 Please go to your browser settings and allow notifications."
-      // );
+      console.warn("User has blocked notifications for this site.");
       return;
     }
 
-    // Case 2: Ask user
-    const result = await Notification.requestPermission();
-    setPermission(result);
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
 
-    if (result === "granted") {
-      console.log("Notification permission granted.");
-      requestForToken(); // Only now request token
+      if (result === "granted") {
+        console.log("Notification permission granted.");
+        await requestForToken(); // get FCM token now
+      } else {
+        console.log("Notification permission:", result);
+      }
+    } catch (err) {
+      console.error("requestPermission error:", err);
     }
   };
 
   useEffect(() => {
     const init = async () => {
-      // Case 1: Already granted — request token directly
+      // If already granted — request token
       if (Notification.permission === "granted") {
         await requestForToken();
       }
 
-      // Case 2: Default — ask permission
-      if (Notification.permission === "denied") {
-        askPermission(); // Show popup
+      // If default (not yet asked) — ask (or let user click button)
+      if (Notification.permission === "default") {
+        // optionally ask immediately:
+        // await askPermission();
+
+        // or wait for user gesture (recommended)
+        console.log(
+          "Notification permission is default. Call askPermission() on user action."
+        );
       }
 
       // Foreground notifications handler
-      onMessageListener().then((payload) => {
-        alert(`${payload.notification.title}: ${payload.notification.body}`);
-      });
+      onMessageListener()
+        .then((payload) => {
+          if (payload?.notification) {
+            // keep your UI-friendly notification rather than alert if possible
+            alert(
+              `${payload.notification.title}: ${payload.notification.body}`
+            );
+          }
+        })
+        .catch((err) => {
+          // onMessageListener might reject if messaging not initialized
+          console.warn("onMessageListener error:", err);
+        });
     };
 
     init();
@@ -65,6 +83,18 @@ function App() {
       <Provider store={reduxStore}>
         <NotificationProvider>
           <BrowserRouter>
+            {permission === "granted" ? (
+              ""
+            ) : (
+              <div style={{ padding: 12 }}>
+                <button onClick={askPermission}>
+                  {permission === "granted"
+                    ? "Notifications Enabled"
+                    : "Enable Notifications"}
+                </button>
+              </div>
+            )}
+
             <Pages />
           </BrowserRouter>
         </NotificationProvider>
