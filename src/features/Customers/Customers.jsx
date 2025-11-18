@@ -1046,6 +1046,7 @@ export default function Customers() {
   };
 
   const rerunCustomerFilters = (stateData, downliners) => {
+    console.log("location state dataaa", stateData);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
     const receivedValueFromDashboard = stateData?.status || null;

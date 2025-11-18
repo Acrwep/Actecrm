@@ -89,6 +89,51 @@ export default function Pages() {
     }
   }, [location.pathname]);
 
+  // useEffect(() => {
+  //   navigator.serviceWorker.addEventListener("message", (event) => {
+  //     console.log("BACKGROUND_NOTIFICATION", event);
+  //     if (event.data?.type === "BACKGROUND_NOTIFICATION") {
+  //       handleBackgroundNotification(event.data.data);
+  //     }
+  //   });
+  // }, []);
+
+  // const parseNotificationString = (str) => {
+  //   const obj = {};
+  //   str.split("\n").forEach((line) => {
+  //     const [key, value] = line.split(":");
+  //     if (key && value) {
+  //       obj[key.trim().replace(/ /g, "_")] = value.trim();
+  //     }
+  //   });
+  //   return obj;
+  // };
+
+  // const handleBackgroundNotification = (item) => {
+  //   console.log("backkkkkkk", item);
+  //   const message = parseNotificationString(item.message);
+
+  //   console.log("Converted JSON:", message);
+
+  //   const filterData = {
+  //     status:
+  //       item.title === "Trainer Rejected"
+  //         ? "Trainer Rejected"
+  //         : "Payment Rejected",
+  //     startDate: message.customer_created_date,
+  //     endDate: message.customer_created_date,
+  //     payment_swap: true,
+  //   };
+
+  //   if (location.pathname === "/customers") {
+  //     window.dispatchEvent(
+  //       new CustomEvent("notificationFilter", { detail: filterData })
+  //     );
+  //     return;
+  //   }
+  //   navigate("/customers", { state: filterData });
+  // };
+
   return (
     <div>
       {location.pathname === "/login" ? (

@@ -2,10 +2,12 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import Pages from "./features/Pages/Pages";
+import { BiBell } from "react-icons/bi";
 import { Provider } from "react-redux";
 import { reduxStore } from "./features/Redux/Store";
 import { requestForToken, onMessageListener } from "./firebase";
 import { NotificationProvider } from "./Context/NotificationContext";
+import { CommonMessage } from "./features/Common/CommonMessage";
 
 function App() {
   const [permission, setPermission] = useState(Notification.permission);
@@ -22,7 +24,7 @@ function App() {
   const askPermission = async () => {
     // If previously denied, we can't re-request — user must change browser settings
     if (Notification.permission === "denied") {
-      console.warn("User has blocked notifications for this site.");
+      CommonMessage("warning", "Unblock Notification for this site");
       return;
     }
 
@@ -86,8 +88,12 @@ function App() {
             {permission === "granted" ? (
               ""
             ) : (
-              <div style={{ padding: 12 }}>
-                <button onClick={askPermission}>
+              <div className="enable_notification_button_container">
+                <button
+                  className="enable_notification_button"
+                  onClick={askPermission}
+                >
+                  <BiBell size={20} />
                   {permission === "granted"
                     ? "Notifications Enabled"
                     : "Enable Notifications"}

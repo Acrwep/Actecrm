@@ -39,3 +39,22 @@
 .read-the-docs {
   color: #888;
 }
+
+.enable_notification_button_container {
+  padding: 4px 6px;
+  position: fixed;
+  width: 100%;
+  z-index: 99;
+  background-color: #5b69ca;
+  color: #ffffff;
+}
+.enable_notification_button {
+  background-color: #5b69ca;
+  z-index: 999999;
+  position: relative;
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
