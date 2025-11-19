@@ -193,6 +193,20 @@
 .dashboard_download_button:hover .download_icon {
   color: #5b69ca !important;
 }
+.dashboard_loading_download_button {
+  background-color: #ffffff;
+  border-color: #d9d9d9;
+  height: 32px;
+  padding: 4px 15px;
+  border-radius: 6px;
+  border-width: 1px;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.5;
+  cursor: default;
+}
 .saleperformance_dashboard_download_container {
   position: absolute;
   right: 12px;

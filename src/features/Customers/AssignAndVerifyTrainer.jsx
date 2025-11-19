@@ -513,10 +513,11 @@ const AssignAndVerifyTrainer = forwardRef(
     const handleSendNotification = async () => {
       const today = new Date();
       const payload = {
-        user_id:
+        user_ids: [
           customerDetails && customerDetails.trainer_hr_id
             ? customerDetails.trainer_hr_id
             : "-",
+        ],
         title: "Trainer Rejected",
         message: {
           customer_name:

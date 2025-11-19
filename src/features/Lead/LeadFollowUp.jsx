@@ -24,6 +24,7 @@ import {
   createArea,
   createLead,
   createTechnology,
+  downloadLeadFollowUps,
   getAllAreas,
   getAllDownlineUsers,
   getBranches,
@@ -37,6 +38,8 @@ import {
   updateTableColumns,
 } from "../ApiService/action";
 import { IoMdSend } from "react-icons/io";
+import { LoadingOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import CommonDatePicker from "../Common/CommonDatePicker";
 import { MdAdd } from "react-icons/md";
@@ -58,6 +61,7 @@ import {
   shortRelativeTime,
   priceCategory,
   getCurrentandPreviousweekDate,
+  isWithin30Days,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
@@ -69,6 +73,7 @@ import CommonAvatar from "../Common/CommonAvatar";
 import { useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 const { TextArea } = Input;
 
@@ -119,6 +124,7 @@ export default function LeadFollowUp({
   const [buttonLoading, setButtonLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(null);
+  const [downloadButtonLoader, setDownloadButtonLoader] = useState(false);
   //add lead usestates
   const [leadDetails, setLeadDetails] = useState(null);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -1316,6 +1322,52 @@ export default function LeadFollowUp({
       console.log("all downlines error", error);
     }
   };
+
+  const handleDownload = async () => {
+    const isWithIn30days = isWithin30Days(selectedDates[0], selectedDates[1]);
+    console.log("isWithIn30days", isWithIn30days);
+    if (isWithIn30days == false) {
+      CommonMessage("error", "Please choose a date range within 30 days.");
+      return;
+    }
+    setDownloadButtonLoader(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: selectedDates[0],
+      to_date: selectedDates[1],
+      ...(searchValue && filterType == 1
+        ? { phone: searchValue }
+        : searchValue && filterType == 2
+        ? { name: searchValue }
+        : searchValue && filterType == 3
+        ? { email: searchValue }
+        : {}),
+    };
+    try {
+      const response = await downloadLeadFollowUps(payload);
+      console.log("followups download response", response);
+      const data = response?.data?.data || [];
+      const alterColumns = columns.filter((f) => f.title != "Action");
+      DownloadTableAsCSV(
+        data,
+        alterColumns,
+        `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+          selectedDates[1]
+        ).format("DD-MM-YYYY")} Followups.csv`
+      );
+      setTimeout(() => {
+        setDownloadButtonLoader(false);
+      }, 300);
+    } catch (error) {
+      setDownloadButtonLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const formReset = (dontCloseAddDrawer) => {
     setIsOpenFilterDrawer(false);
     setIsOpenCommentModal(false);
@@ -1612,6 +1664,7 @@ export default function LeadFollowUp({
               display: "flex",
               justifyContent: "flex-end",
               alignItems: "center",
+              gap: "12px",
             }}
           >
             {permissions.includes("Add Lead Button") && (
@@ -1636,10 +1689,32 @@ export default function LeadFollowUp({
               </button>
             )}
 
+            <Tooltip placement="top" title="Download">
+              <Button
+                className={
+                  downloadButtonLoader
+                    ? "customer_loading_download_button"
+                    : "customer_download_button"
+                }
+                onClick={handleDownload}
+                disabled={downloadButtonLoader}
+              >
+                {downloadButtonLoader ? (
+                  <Spin
+                    indicator={<LoadingOutlined spin />}
+                    size="small"
+                    style={{ color: "#333" }}
+                  />
+                ) : (
+                  <DownloadOutlined className="download_icon" />
+                )}
+              </Button>
+            </Tooltip>
+
             <FiFilter
               size={20}
               color="#5b69ca"
-              style={{ marginLeft: "12px", cursor: "pointer" }}
+              style={{ cursor: "pointer" }}
               onClick={() => {
                 setIsOpenFilterDrawer(true);
                 getTableColumnsData(loginUserId);

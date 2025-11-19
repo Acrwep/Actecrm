@@ -505,10 +505,11 @@ const FinanceVerify = forwardRef(
     const handleSendNotification = async () => {
       const today = new Date();
       const payload = {
-        user_id:
+        user_ids: [
           customerDetails && customerDetails.lead_assigned_to_id
             ? customerDetails.lead_assigned_to_id
             : "-",
+        ],
         title: "Payment Rejected",
         message: {
           customer_name:

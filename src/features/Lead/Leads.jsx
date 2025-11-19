@@ -25,6 +25,7 @@ import {
   getConvenienceFees,
   getCountryFromDialCode,
   getCurrentandPreviousweekDate,
+  isWithin30Days,
   mobileValidator,
   nameValidator,
   priceCategory,
@@ -33,7 +34,8 @@ import {
 } from "../Common/Validation";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import { SiWhatsapp } from "react-icons/si";
+import { LoadingOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered } from "react-icons/md";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
@@ -57,6 +59,7 @@ import {
   createArea,
   createLead,
   createTechnology,
+  downloadLeads,
   getAllAreas,
   getAllDownlineUsers,
   getBranches,
@@ -83,6 +86,7 @@ import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -204,6 +208,7 @@ export default function Leads({
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
   const [filterType, setFilterType] = useState(1);
+  const [downloadButtonLoader, setDownloadButtonLoader] = useState(false);
 
   //payment usestates
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
@@ -2059,6 +2064,52 @@ export default function Leads({
     }
   };
 
+  const handleDownload = async () => {
+    const isWithIn30days = isWithin30Days(selectedDates[0], selectedDates[1]);
+    console.log("isWithIn30days", isWithIn30days);
+    if (isWithIn30days == false) {
+      CommonMessage("error", "Please choose a date range within 30 days.");
+      return;
+    }
+    setDownloadButtonLoader(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: selectedDates[0],
+      end_date: selectedDates[1],
+      ...(searchValue && filterType == 1
+        ? { phone: searchValue }
+        : searchValue && filterType == 2
+        ? { name: searchValue }
+        : searchValue && filterType == 3
+        ? { email: searchValue }
+        : {}),
+    };
+    try {
+      const response = await downloadLeads(payload);
+      console.log("leads download response", response);
+      const data = response?.data?.data || [];
+      const alterColumns = columns.filter((f) => f.title != "Action");
+      DownloadTableAsCSV(
+        data,
+        alterColumns,
+        `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+          selectedDates[1]
+        ).format("DD-MM-YYYY")} Leads.csv`
+      );
+      setTimeout(() => {
+        setDownloadButtonLoader(false);
+      }, 300);
+    } catch (error) {
+      setDownloadButtonLoader(false);
+      console.log("lead download error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   return (
     <div>
       <Row>
@@ -2276,6 +2327,7 @@ export default function Leads({
               display: "flex",
               justifyContent: "flex-end",
               alignItems: "center",
+              gap: "12px",
             }}
           >
             {permissions.includes("Add Lead Button") && isShowEdit === true ? (
@@ -2302,6 +2354,28 @@ export default function Leads({
               ""
             )}
 
+            <Tooltip placement="top" title="Download">
+              <Button
+                className={
+                  downloadButtonLoader
+                    ? "customer_loading_download_button"
+                    : "customer_download_button"
+                }
+                onClick={handleDownload}
+                disabled={downloadButtonLoader}
+              >
+                {downloadButtonLoader ? (
+                  <Spin
+                    indicator={<LoadingOutlined spin />}
+                    style={{ color: "#333" }}
+                    size="small"
+                  />
+                ) : (
+                  <DownloadOutlined className="download_icon" />
+                )}
+              </Button>
+            </Tooltip>
+
             {permissions.includes("Assign Lead") && isShowEdit === false && (
               <button
                 className="leadmanager_addleadbutton"
@@ -2316,7 +2390,7 @@ export default function Leads({
             <FiFilter
               size={20}
               color="#5b69ca"
-              style={{ marginLeft: "12px", cursor: "pointer" }}
+              style={{ cursor: "pointer" }}
               onClick={() => {
                 setIsOpenFilterDrawer(true);
                 getTableColumnsData(loginUserId);

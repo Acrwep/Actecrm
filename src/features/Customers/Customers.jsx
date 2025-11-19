@@ -28,8 +28,12 @@ import {
   updateTableColumns,
   viewCertForCustomer,
 } from "../ApiService/action";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  isWithin30Days,
+} from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
+import { DownloadOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -65,6 +69,7 @@ import AssignAndVerifyTrainer from "./AssignAndVerifyTrainer";
 import ClassSchedule from "./ClassSchedule";
 import PassesOutProcess from "./PassedOutProcess";
 import DownloadRegistrationForm from "./DownloadRegistrationForm";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -169,6 +174,15 @@ export default function Customers() {
         );
       },
     },
+    {
+      title: "Created At",
+      key: "created_date",
+      dataIndex: "created_date",
+      width: 120,
+      render: (text, record) => {
+        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+      },
+    },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
     { title: "Email", key: "email", dataIndex: "email", width: 220 },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
@@ -250,8 +264,8 @@ export default function Customers() {
     },
     {
       title: "Form Status",
-      key: "form_status",
-      dataIndex: "form_status",
+      key: "is_customer_updated",
+      dataIndex: "is_customer_updated",
       width: 120,
       fixed: "right",
       render: (text, record) => {
@@ -1252,6 +1266,12 @@ export default function Customers() {
                   <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
                 ),
               };
+            case "created_date":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+              };
             case "phone":
               return {
                 ...col,
@@ -1334,7 +1354,7 @@ export default function Customers() {
                   );
                 },
               };
-            case "form_status":
+            case "is_customer_updated":
               return {
                 ...col,
                 width: 140,
@@ -2536,17 +2556,51 @@ export default function Customers() {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "16px",
           }}
         >
           <FiFilter
             size={20}
             color="#5b69ca"
-            style={{ marginRight: "16px", cursor: "pointer" }}
+            style={{ cursor: "pointer" }}
             onClick={() => {
               setIsOpenFilterDrawer(true);
               getTableColumnsData(loginUserId);
             }}
           />
+
+          <Tooltip placement="top" title="Download">
+            <Button
+              className="customer_download_button"
+              onClick={() => {
+                const isWithIn30days = isWithin30Days(
+                  selectedDates[0],
+                  selectedDates[1]
+                );
+                console.log("isWithIn30days", isWithIn30days);
+                if (isWithIn30days == false) {
+                  CommonMessage(
+                    "error",
+                    "Please choose a date range within 30 days."
+                  );
+                  return;
+                }
+                const alterColumns = columns.filter((f) => f.title != "Action");
+
+                DownloadTableAsCSV(
+                  customersData,
+                  alterColumns,
+                  `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+                    selectedDates[1]
+                  ).format("DD-MM-YYYY")} ${
+                    status == "" ? "All" : status
+                  } Customers.csv`
+                );
+              }}
+            >
+              <DownloadOutlined size={10} className="download_icon" />
+            </Button>
+          </Tooltip>
 
           <Tooltip placement="top" title="Refresh">
             <Button

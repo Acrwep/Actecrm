@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Skeleton, Tooltip, Button, Divider } from "antd";
+import { Row, Col, Skeleton, Tooltip, Button, Divider, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import { DownloadOutlined } from "@ant-design/icons";
@@ -14,6 +14,8 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import {
+  downloadUserWiseLeadCounts,
+  downloadUserWiseSalesCounts,
   getAllDownlineUsers,
   getBranchWiseLeadCounts,
   getBranchWiseScoreBoard,
@@ -26,6 +28,7 @@ import {
   getUserWiseScoreBoard,
   updateDashboardDates,
 } from "../ApiService/action";
+import { LoadingOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -39,6 +42,8 @@ import BranchwiseLeadChart from "./BranchwiseLeadChart";
 import BranchwiseSalesChart from "./BranchwisesalesChart";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import { DashboardDownloadColumns } from "./DashboardDownloadColumns";
+import { CommonMessage } from "../Common/CommonMessage";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -63,7 +68,6 @@ export default function Dashboard() {
   //sale details
   const [saleDetailsSelectedDates, setSaleDetailsSelectedDates] = useState([]);
   const [saleDetailsSeries, setSaleDetailsSeries] = useState([]);
-  const [saleDetailsDownloadData, setSaleDetailsDownloadData] = useState([]);
   const [saleDetailsLoader, setSaleDetailsLoader] = useState(true);
   //userwise lead analysis
   const [userWiseLeadsType, setUserWiseLeadsType] = useState(1);
@@ -76,7 +80,8 @@ export default function Dashboard() {
   );
   const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
   const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
-  const [userWiseLeadDownloadData, setUserWiseLeadDownloadData] = useState([]);
+  const [userWiseLeadDownloadLoader, setUserWiseLeadDownloadLoader] =
+    useState(false);
   const [userWiseLeadsLoader, setUserWiseLeadsLoader] = useState(true);
   //User-Wise Sales Analysis
   const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
@@ -92,9 +97,8 @@ export default function Dashboard() {
   const [userWiseSeries, setUserWiseSeries] = useState([]);
   const [userWiseTargets, setUserWiseTargets] = useState([]);
   const [userWiseCollection, setUserWiseCollection] = useState([]);
-  const [userWiseSalesDownloadData, setUserWiseSalesDownloadData] = useState(
-    []
-  );
+  const [userWiseSalesDownloadLoader, setUserWiseSalesDownloadLoader] =
+    useState(false);
   const [userWiseLoader, setUserWiseLoader] = useState(true);
   //branch-wise lead analysis
   const [branchWiseLeadsRegion, setBranchWiseLeadsRegion] = useState(1);
@@ -112,9 +116,6 @@ export default function Dashboard() {
     []
   );
   const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
-  const [branchWiseLeadDownloadData, setBranchWiseLeadDownloadData] = useState(
-    []
-  );
   const [branchWiseLeadsLoader, setBranchWiseLeadsLoader] = useState(true);
   //branch-wise sale analysis
   const [branchWiseSaleRegion, setBranchWiseSaleRegion] = useState(1);
@@ -122,8 +123,6 @@ export default function Dashboard() {
   const [branchWiseSaleDates, setBranchWiseSaleDates] = useState([]);
   const [branchWiseSalesXaxis, setBranchWiseSalesXaxis] = useState([]);
   const [branchWiseSalesSeries, setBranchWiseSalesSeries] = useState([]);
-  const [branchWiseSalesDownloadData, setBranchWiseSalesDownloadData] =
-    useState([]);
   const [branchWiseSalesLoader, setBranchWiseSalesLoader] = useState(true);
   //HR
   const [HrSelectedDates, setHrSelectedDates] = useState([]);
@@ -349,7 +348,6 @@ export default function Dashboard() {
       const response = await getScoreBoard(payload);
       console.log("sale details response", response);
       const saleDetails_data = response?.data?.data;
-      setSaleDetailsDownloadData([saleDetails_data]);
       const leadDetails_series = [
         Number(saleDetails_data?.sale_volume || 0),
         Number(saleDetails_data?.total_collection || 0),
@@ -451,17 +449,6 @@ export default function Dashboard() {
       const response = await getUserWiseLeadCounts(payload);
       console.log("userwise leadcounts response", response);
       const userwise_leads = response?.data?.data;
-      setUserWiseLeadDownloadData(userwise_leads);
-      // const downloadFormat = userwise_leads.map((item) => {
-      //   return {
-      //     "User Id": item.user_id,
-      //     "User Name": item.user_name,
-      //     "Total Leads": item.total_leads,
-      //     Joinings: item.customer_count,
-      //     Conversion: item.percentage + "%",
-      //   };
-      // });
-      // console.log("userwise_leads download format", downloadFormat);
       console.log(userwise_leads);
 
       const xaxis = userwise_leads.map(
@@ -583,7 +570,6 @@ export default function Dashboard() {
       console.log("userwise score response", response);
       const userwise_scorecard = response?.data?.data;
       console.log(userwise_scorecard);
-      setUserWiseSalesDownloadData(userwise_scorecard);
 
       const xaxis = userwise_scorecard.map(
         (item) => `${item.user_id} (${item.user_name})`
@@ -710,7 +696,6 @@ export default function Dashboard() {
       console.log("branchwise leads response", response);
       const branchwise_leads = response?.data?.data;
       console.log(branchwise_leads);
-      setBranchWiseLeadDownloadData(branchwise_leads);
       const xaxis = branchwise_leads.map((item) => item.branch_name);
       const series = branchwise_leads.map((item) =>
         Number(
@@ -858,7 +843,6 @@ export default function Dashboard() {
       const response = await getBranchWiseScoreBoard(payload);
       console.log("branchwise sales response", response);
       const branchwise_sales = response?.data?.data;
-      setBranchWiseSalesDownloadData(branchwise_sales);
 
       const xaxis = branchwise_sales.map((item) => item.branch_name);
       console.log("branchwise xasis", xaxis);
@@ -1252,6 +1236,71 @@ export default function Dashboard() {
     }
   };
 
+  //handle download
+  const handleUserWiseLeadsDownload = async () => {
+    setUserWiseLeadDownloadLoader(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: userWiseLeadsDates[0],
+      end_date: userWiseLeadsDates[1],
+    };
+    try {
+      const response = await downloadUserWiseLeadCounts(payload);
+      console.log("download response", response);
+      const data = response?.data?.data || [];
+      const columns = DashboardDownloadColumns("Userwise Leads");
+      DownloadTableAsCSV(
+        data,
+        columns,
+        `${moment(userWiseLeadsDates[0]).format("DD-MM-YYYY")} to ${moment(
+          userWiseLeadsDates[1]
+        ).format("DD-MM-YYYY")} User-Wise Lead Analysis.csv`
+      );
+      setTimeout(() => {
+        setUserWiseLeadDownloadLoader(false);
+      }, 300);
+    } catch (error) {
+      setUserWiseLeadDownloadLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handleUserWiseSalesDownload = async () => {
+    setUserWiseSalesDownloadLoader(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: userWiseStartDate,
+      end_date: userWiseEndDate,
+    };
+    try {
+      const response = await downloadUserWiseSalesCounts(payload);
+      console.log("sales download response", response);
+      const data = response?.data?.data || [];
+      const columns = DashboardDownloadColumns("Userwise Sales");
+      DownloadTableAsCSV(
+        data,
+        columns,
+        `${moment(userWiseStartDate).format("DD-MM-YYYY")} to ${moment(
+          userWiseEndDate
+        ).format("DD-MM-YYYY")} User-Wise Sales Analysis.csv`
+      );
+      setTimeout(() => {
+        setUserWiseSalesDownloadLoader(false);
+      }, 300);
+    } catch (error) {
+      setUserWiseSalesDownloadLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setScoreBoardSelectedDates(PreviousAndCurrentDate);
@@ -1620,28 +1669,6 @@ export default function Dashboard() {
               </Row>
 
               <div style={{ position: "relative" }}>
-                <div className="saleperformance_dashboard_download_container">
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className="saleperformance_download_button"
-                      onClick={() => {
-                        const columns =
-                          DashboardDownloadColumns("Sale Performance");
-                        DownloadTableAsCSV(
-                          saleDetailsDownloadData,
-                          columns,
-                          `${moment(saleDetailsSelectedDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(saleDetailsSelectedDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} Overall Sale Performance.csv`
-                        );
-                      }}
-                    >
-                      <DownloadOutlined size={10} className="download_icon" />
-                    </Button>
-                  </Tooltip>
-                </div>
                 <div className="dadhboard_chartsContainer">
                   {saleDetailsLoader ? (
                     <div className="dashboard_skeleton_container">
@@ -1772,33 +1799,23 @@ export default function Dashboard() {
                   />
                   <Tooltip placement="top" title="Download">
                     <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns = DashboardDownloadColumns(
-                          userWiseLeadsType == 1
-                            ? "Userwise Leads"
-                            : userWiseLeadsType == 2
-                            ? "Userwise Followup"
-                            : "Userwise Joinings"
-                        );
-                        DownloadTableAsCSV(
-                          userWiseLeadDownloadData,
-                          columns,
-                          `${moment(userWiseLeadsDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(userWiseLeadsDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} ${
-                            userWiseLeadsType == 1
-                              ? "Userwise Lead Details.csv"
-                              : userWiseLeadsType == 2
-                              ? "Userwise Followup Details.csv"
-                              : "Userwise Joinings Details.csv"
-                          }`
-                        );
-                      }}
+                      className={
+                        userWiseLeadDownloadLoader
+                          ? "dashboard_loading_download_button"
+                          : "dashboard_download_button"
+                      }
+                      onClick={handleUserWiseLeadsDownload}
+                      disabled={userWiseLeadDownloadLoader}
                     >
-                      <DownloadOutlined className="download_icon" />
+                      {userWiseLeadDownloadLoader ? (
+                        <Spin
+                          indicator={<LoadingOutlined spin />}
+                          size="small"
+                          style={{ color: "#333" }}
+                        />
+                      ) : (
+                        <DownloadOutlined className="download_icon" />
+                      )}
                     </Button>
                   </Tooltip>
                 </Col>
@@ -1990,33 +2007,23 @@ export default function Dashboard() {
                   />
                   <Tooltip placement="top" title="Download">
                     <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns = DashboardDownloadColumns(
-                          userWiseType == 1
-                            ? "Userwise Sale Volume"
-                            : userWiseType == 2
-                            ? "Userwise Collection"
-                            : "Userwise Pending"
-                        );
-                        DownloadTableAsCSV(
-                          userWiseSalesDownloadData,
-                          columns,
-                          `${moment(userWiseStartDate).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(userWiseEndDate).format(
-                            "DD-MM-YYYY"
-                          )} ${
-                            userWiseType == 1
-                              ? "Userwise Sale Volume Details.csv"
-                              : userWiseType == 2
-                              ? "Userwise Collection Details.csv"
-                              : "Userwise Pending Details.csv"
-                          }`
-                        );
-                      }}
+                      className={
+                        userWiseSalesDownloadLoader
+                          ? "dashboard_loading_download_button"
+                          : "dashboard_download_button"
+                      }
+                      onClick={handleUserWiseSalesDownload}
+                      disabled={userWiseSalesDownloadLoader}
                     >
-                      <DownloadOutlined className="download_icon" />
+                      {userWiseSalesDownloadLoader ? (
+                        <Spin
+                          indicator={<LoadingOutlined spin />}
+                          size="small"
+                          style={{ color: "#333" }}
+                        />
+                      ) : (
+                        <DownloadOutlined className="download_icon" />
+                      )}
                     </Button>
                   </Tooltip>
                 </Col>
@@ -2138,9 +2145,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={5}></Col>
+                <Col span={6}></Col>
                 <Col
-                  span={19}
+                  span={18}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -2213,37 +2220,6 @@ export default function Dashboard() {
                     }}
                     value={branchWiseLeadsType}
                   />
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns = DashboardDownloadColumns(
-                          branchWiseLeadsType == 1
-                            ? "Branchwise Leads"
-                            : branchWiseLeadsType == 2
-                            ? "Branchwise Followup"
-                            : "Branchwise Joinings"
-                        );
-                        DownloadTableAsCSV(
-                          branchWiseLeadDownloadData,
-                          columns,
-                          `${moment(branchWiseLeadsDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(branchWiseLeadsDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} ${
-                            branchWiseLeadsType == 1
-                              ? "Branchwise Lead Details.csv"
-                              : branchWiseLeadsType == 2
-                              ? "Branchwise Followup Details.csv"
-                              : "Branchwise Joinings Details.csv"
-                          }`
-                        );
-                      }}
-                    >
-                      <DownloadOutlined className="download_icon" />
-                    </Button>
-                  </Tooltip>
                 </Col>
               </Row>
 
@@ -2361,9 +2337,9 @@ export default function Dashboard() {
               </Row>
 
               <Row>
-                <Col span={4}></Col>
+                <Col span={6}></Col>
                 <Col
-                  span={20}
+                  span={18}
                   className="dashboard_userwise_typefield_container"
                 >
                   <CommonSelectField
@@ -2436,37 +2412,6 @@ export default function Dashboard() {
                     }}
                     value={branchWiseSaleType}
                   />
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns = DashboardDownloadColumns(
-                          branchWiseSaleType == 1
-                            ? "Branchwise Sale Volume"
-                            : branchWiseSaleType == 2
-                            ? "Branchwise Collection"
-                            : "Branchwise Pending"
-                        );
-                        DownloadTableAsCSV(
-                          branchWiseSalesDownloadData,
-                          columns,
-                          `${moment(branchWiseSaleDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(branchWiseSaleDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} ${
-                            branchWiseSaleType == 1
-                              ? "Branchwise Sale Volume Details.csv"
-                              : branchWiseSaleType == 2
-                              ? "Branchwise Collection Details.csv"
-                              : "Branchwise Pending Details.csv"
-                          }`
-                        );
-                      }}
-                    >
-                      <DownloadOutlined className="download_icon" />
-                    </Button>
-                  </Tooltip>
                 </Col>
               </Row>
               <div

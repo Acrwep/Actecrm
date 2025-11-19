@@ -392,6 +392,15 @@ export const getLeads = async (payload) => {
   }
 };
 
+export const downloadLeads = async (payload) => {
+  try {
+    const response = await api.post("/api/downloadLeads", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const assignLead = async (payload) => {
   try {
     const response = await api.put("/api/assignLead", payload);
@@ -422,6 +431,15 @@ export const getLeadAndFollowupCount = async (payload) => {
 export const getLeadFollowUps = async (payload) => {
   try {
     const response = await api.post("/api/getLeadFollowUps", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const downloadLeadFollowUps = async (payload) => {
+  try {
+    const response = await api.post("/api/downloadLeadFollowUps", payload);
     return response;
   } catch (error) {
     throw error;
@@ -924,9 +942,27 @@ export const getUserWiseScoreBoard = async (payload) => {
   }
 };
 
+export const downloadUserWiseSalesCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/downloadUserWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getUserWiseLeadCounts = async (payload) => {
   try {
     const response = await api.post(`/api/getUserWiseLeadCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const downloadUserWiseLeadCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/downloadUserWiseLeads`, payload);
     return response;
   } catch (error) {
     throw error;

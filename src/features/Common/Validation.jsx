@@ -424,6 +424,19 @@ export const getRangeLabel = (startDate, endDate) => {
   return null;
 };
 
+export const isWithin30Days = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // difference in milliseconds
+  const diffMs = end - start;
+
+  // convert ms → days
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  return diffDays <= 30;
+};
+
 export const getDatesFromRangeLabel = (label) => {
   const today = dayjs();
   let start_date, end_date;

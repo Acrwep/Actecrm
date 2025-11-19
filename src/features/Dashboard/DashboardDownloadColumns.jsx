@@ -38,13 +38,33 @@ export const DashboardDownloadColumns = (type) => {
       },
       {
         title: "Joinings",
-        key: "customer_count",
-        dataIndex: "customer_count",
+        key: "leads_customer_count",
+        dataIndex: "leads_customer_count",
       },
       {
-        title: "Conversion",
-        key: "percentage",
-        dataIndex: "percentage",
+        title: "Conversion Rate",
+        key: "leads_percentage",
+        dataIndex: "leads_percentage",
+      },
+      {
+        title: "Total Followup",
+        key: "lead_followup_count",
+        dataIndex: "lead_followup_count",
+      },
+      {
+        title: "Followup Handled",
+        key: "followup_handled",
+        dataIndex: "followup_handled",
+      },
+      {
+        title: "Followup Un-Handled",
+        key: "followup_unhandled",
+        dataIndex: "followup_unhandled",
+      },
+      {
+        title: "Followup Efficiency",
+        key: "followup_percentage",
+        dataIndex: "followup_percentage",
       },
     ];
   } else if (type == "Userwise Followup") {
@@ -98,7 +118,7 @@ export const DashboardDownloadColumns = (type) => {
         dataIndex: "customer_count",
       },
     ];
-  } else if (type == "Userwise Sale Volume") {
+  } else if (type == "Userwise Sales") {
     columns = [
       {
         title: "User Id",
@@ -114,6 +134,26 @@ export const DashboardDownloadColumns = (type) => {
         title: "Sale Volume",
         key: "sale_volume",
         dataIndex: "sale_volume",
+      },
+      {
+        title: "Target",
+        key: "target_value",
+        dataIndex: "target_value",
+      },
+      {
+        title: "Collection",
+        key: "total_collection",
+        dataIndex: "total_collection",
+      },
+      {
+        title: "Collection Efficiency",
+        key: "target_percentage",
+        dataIndex: "target_percentage",
+      },
+      {
+        title: "Pending",
+        key: "pending",
+        dataIndex: "pending",
       },
     ];
   } else if (type == "Userwise Collection") {
