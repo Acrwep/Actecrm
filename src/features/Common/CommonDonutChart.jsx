@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import ReactApexChart from "react-apexcharts";
+import "./commonstyles.css";
 
 export default function CommonDonutChart({
   labels,

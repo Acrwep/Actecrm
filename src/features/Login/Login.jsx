@@ -23,6 +23,7 @@ import {
   storeUserPermissions,
 } from "../Redux/Slice";
 import { useDispatch } from "react-redux";
+import { requestForToken } from "../../firebase";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -120,7 +121,8 @@ export default function Login() {
         "loginUserDetails",
         JSON.stringify(loginUserDetails)
       );
-      setTimeout(() => {
+      setTimeout(async () => {
+        await requestForToken();
         getUserDownlineData(loginUserDetails?.user_id);
       }, 300);
     } catch (error) {

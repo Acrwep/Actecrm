@@ -1431,84 +1431,11 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  {/* <Row className="dashboard_leadcountcard_progressbar_mainContainer">
-                    <Col span={12}>
-                      <div>
-                        <p className="dashboard_leadcountcard_subheadings">
-                          Total Leads
-                        </p>
-                        <p className="dashboard_leadcountcard_count">
-                          {scoreCardDetails &&
-                          (scoreCardDetails.total_leads != undefined ||
-                            scoreCardDetails.total_leads != null)
-                            ? Number(
-                                scoreCardDetails.total_leads
-                              ).toLocaleString("en-IN")
-                            : "-"}
-                        </p>
-                      </div>
-                    </Col>
-
-                    <Col span={12}>
-                      <div>
-                        <p className="dashboard_leadcountcard_subheadings">
-                          Total Joinings
-                        </p>
-                        <p className="dashboard_leadcountcard_count">
-                          {scoreCardDetails &&
-                          (scoreCardDetails.total_join != undefined ||
-                            scoreCardDetails.total_join != null)
-                            ? Number(
-                                scoreCardDetails.total_join
-                              ).toLocaleString("en-IN")
-                            : "-"}
-                        </p>
-                      </div>
-                    </Col>
-                  </Row>
-
-                  <Divider className="dashboard_leadcount_divider" />
-
-                  <Row className="dashboard_leadcountcard_progressbar_mainContainer">
-                    <Col span={12}>
-                      <p className="dashboard_leadcountcard_subheadings">
-                        Follow-Up Pending
-                      </p>
-                      <p
-                        className="dashboard_leadcountcard_count"
-                        style={{ color: "#b22021" }}
-                      >
-                        {scoreCardDetails &&
-                        (scoreCardDetails.follow_up_unhandled != undefined ||
-                          scoreCardDetails.follow_up_unhandled != null)
-                          ? Number(
-                              scoreCardDetails.follow_up_unhandled
-                            ).toLocaleString("en-IN")
-                          : "-"}
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <div>
-                        <p className="dashboard_leadcountcard_subheadings">
-                          Follow-Up Handled
-                        </p>
-                        <p className="dashboard_leadcountcard_count">
-                          {scoreCardDetails &&
-                          (scoreCardDetails.follow_up_handled != undefined ||
-                            scoreCardDetails.follow_up_handled != null)
-                            ? Number(
-                                scoreCardDetails.follow_up_handled
-                              ).toLocaleString("en-IN")
-                            : "-"}
-                        </p>
-                      </div>
-                    </Col>
-                  </Row> */}
                   <Row
                     className="dashboard_leadcountcard_progressbar_mainContainer"
                     style={{ marginTop: "20px" }}
                   >
-                    <Col span={12}>
+                    <Col span={11}>
                       <div className="dashboard_leadcount_main_container">
                         <div className="dashboard_leadcount_icon_container">
                           <PiHandCoins size={20} />
@@ -1561,10 +1488,7 @@ export default function Dashboard() {
                       </div>
                     </Col>
 
-                    <Col
-                      span={12}
-                      style={{ display: "flex", justifyContent: "center" }}
-                    >
+                    <Col span={13} style={{ display: "flex" }}>
                       <CommonDonutChart
                         labels={[
                           "Total Followup",
