@@ -10,26 +10,46 @@ export const NotificationProvider = ({ children }) => {
   const convertAsJson = JSON.parse(getLoginUserDetails);
   const userId = convertAsJson?.user_id; // get logged-in user id
 
-  const fetchNotifications = async () => {
-    // try {
-    //   const res = await getNotifications(convertAsJson?.user_id);
-    //   setNotifications(res.data);
-    // } catch (err) {
-    //   console.error("Error fetching notifications:", err);
-    // }
+  const fetchNotifications = async (user_id) => {
+    try {
+      const res = await getNotifications(user_id);
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
   };
 
   useEffect(() => {
-    if (!userId) return;
+    const handleStorageChange = () => {
+      const raw = localStorage.getItem("loginUserDetails");
+      const user = raw ? JSON.parse(raw) : null;
 
-    fetchNotifications(); // initial load
+      if (user?.user_id) {
+        fetchNotifications(user?.user_id);
+      }
+    };
 
+    // Run on mount
+    handleStorageChange();
+
+    // Listen for custom event fired after login
+    window.addEventListener("callGetNotificationApi", handleStorageChange);
+
+    // Polling every 5 seconds
     const interval = setInterval(() => {
-      fetchNotifications(); // polling every 5 sec
+      const raw = localStorage.getItem("loginUserDetails");
+      const user = raw ? JSON.parse(raw) : null;
+
+      if (user?.user_id) {
+        fetchNotifications(user?.user_id);
+      }
     }, 5000);
 
-    return () => clearInterval(interval); // cleanup
-  }, [userId]);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("callGetNotificationApi", handleStorageChange);
+    };
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ notifications, fetchNotifications }}>

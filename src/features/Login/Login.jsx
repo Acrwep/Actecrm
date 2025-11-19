@@ -123,6 +123,8 @@ export default function Login() {
       );
       setTimeout(async () => {
         await requestForToken();
+        const event = new Event("callGetNotificationApi");
+        window.dispatchEvent(event);
         getUserDownlineData(loginUserDetails?.user_id);
       }, 300);
     } catch (error) {
