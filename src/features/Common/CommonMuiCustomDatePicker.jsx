@@ -189,6 +189,9 @@ export default function CommonMuiCustomDatePicker({
               sx: { marginTop: "2px" },
             },
           }}
+          sx={{
+            zIndex: 1300,
+          }}
         >
           <Box sx={{ p: 2, width: 320 }}>
             {/* Quick Options */}
