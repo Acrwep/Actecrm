@@ -3278,6 +3278,7 @@ export default function Leads({
                 { id: 3, name: "Bank" },
                 { id: 4, name: "UPI" },
                 { id: 5, name: "Razorpay" },
+                { id: 6, name: "Razorpay - UPI" },
               ]}
               onChange={handlePaymentType}
               value={paymentMode}
