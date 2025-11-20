@@ -11,11 +11,13 @@ export const NotificationProvider = ({ children }) => {
   const userId = convertAsJson?.user_id; // get logged-in user id
 
   const fetchNotifications = async (user_id) => {
-    try {
-      const res = await getNotifications(user_id);
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
+    if (import.meta.env.PROD) {
+      try {
+        const res = await getNotifications(user_id);
+        setNotifications(res.data);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
     }
   };
 

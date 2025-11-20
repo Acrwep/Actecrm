@@ -1214,6 +1214,12 @@ export default function Dashboard() {
       setPerformanceLoader(true);
       setRaLoader(true);
       setHrLoader(true);
+      setUserWiseLeadsType(1);
+      setUserWiseType(1);
+      setBranchWiseLeadsRegion(1);
+      setBranchWiseLeadsType(1);
+      setBranchWiseSaleRegion(1);
+      setBranchWiseSaleType(1);
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           allDashboardCardsDates,
