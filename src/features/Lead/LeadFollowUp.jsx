@@ -1991,7 +1991,9 @@ export default function LeadFollowUp({
       <Drawer
         title="Add Lead"
         open={isOpenAddDrawer}
-        onClose={formReset}
+        onClose={() => {
+          setIsOpenAddDrawer(false);
+        }}
         width="52%"
         style={{ position: "relative" }}
         id="leadfollowup_addlead_drawer"

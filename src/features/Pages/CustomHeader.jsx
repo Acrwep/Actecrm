@@ -28,6 +28,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { IoFilter } from "react-icons/io5";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import { RiErrorWarningFill } from "react-icons/ri";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import "./styles.css";
 import {
   changePassword,
@@ -79,9 +80,14 @@ export default function CustomHeader() {
   //notification
   const [isOpenNotificationsDrawer, setIsOpenNotificationsDrawer] =
     useState(false);
-  const [isOpenNotificationTooltip, setIsOpenNotificationTooltip] =
-    useState(false);
   const [notificationData, setNotificationData] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    label: "",
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
   //change password
   const [isOpenChangePasswordDrawer, setIsOpenChangePasswordDrawer] =
     useState(false);
@@ -313,13 +319,25 @@ export default function CustomHeader() {
     }
   };
 
-  const getNotificationData = async () => {
+  const getNotificationData = async (page_number) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page: page_number,
+    };
     try {
-      const response = await getNotifications(convertAsJson?.user_id);
+      const response = await getNotifications(payload);
       console.log("notification response", response);
-      const data = response?.data || [];
+      const data = response?.data?.data || [];
+      const paginations = response?.data?.pagination;
+      setPagination({
+        page: paginations.page,
+        label: paginations.label,
+        limit: paginations.limit,
+        total: paginations.total,
+        totalPages: paginations.totalPages,
+      });
       setNotificationData(data);
     } catch (error) {
       console.log("notification error", error);
@@ -335,7 +353,7 @@ export default function CustomHeader() {
       setIsOpenNotificationsDrawer(false);
       setTimeout(() => {
         handleNotification(item);
-        getNotificationData();
+        getNotificationData(pagination.page);
       }, 300);
     } catch (error) {
       CommonMessage(
@@ -544,19 +562,16 @@ export default function CustomHeader() {
 
           <div className="header_profile_container">
             <div className="header_notificationicon_maincontainer">
-              <div className="header_notificationicon_container">
+              {/* <div className="header_notificationicon_container">
                 <LuMessageCircleMore size={16} />
-              </div>
+              </div> */}
 
               <div
                 className="header_notificationicon_container"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  // if (isOpenNotificationTooltip) {
-                  //   return;
-                  // }
                   setIsOpenNotificationsDrawer(true);
-                  getNotificationData();
+                  getNotificationData(1);
                 }}
               >
                 <IoMdNotificationsOutline size={16} />
@@ -1390,7 +1405,60 @@ export default function CustomHeader() {
       </Drawer>
 
       <Drawer
-        title="Notifications"
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Notifications</span>
+            <div className="header_notification_pagenumber_container">
+              <p>{pagination.label}</p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  color: "gray",
+                  alignItems: "center",
+                }}
+              >
+                {/* forward */}
+                {pagination.page == 1 ? (
+                  <div className="header_notification_disable_arrowbutton">
+                    <IoIosArrowBack size={15} />
+                  </div>
+                ) : (
+                  <div
+                    className="header_notification_arrowbutton"
+                    onClick={() => {
+                      getNotificationData(pagination.page - 1);
+                    }}
+                  >
+                    <IoIosArrowBack size={15} />
+                  </div>
+                )}
+
+                {/* backward */}
+                {pagination.page == pagination.totalPages ? (
+                  <div className="header_notification_disable_arrowbutton">
+                    <IoIosArrowForward size={15} />
+                  </div>
+                ) : (
+                  <div
+                    className="header_notification_arrowbutton"
+                    onClick={() => {
+                      getNotificationData(pagination.page + 1);
+                    }}
+                  >
+                    <IoIosArrowForward size={15} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        }
         open={isOpenNotificationsDrawer}
         onClose={passwordDrawerReset}
         width="35%"

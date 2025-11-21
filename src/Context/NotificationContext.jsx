@@ -10,11 +10,15 @@ export const NotificationProvider = ({ children }) => {
   const convertAsJson = JSON.parse(getLoginUserDetails);
   const userId = convertAsJson?.user_id; // get logged-in user id
 
-  const fetchNotifications = async (user_id) => {
+  const fetchNotifications = async (userId) => {
     if (import.meta.env.PROD) {
+      const payload = {
+        user_id: userId,
+        page: 1,
+      };
       try {
-        const res = await getNotifications(user_id);
-        setNotifications(res.data);
+        const res = await getNotifications(payload);
+        setNotifications(res.data.data);
       } catch (err) {
         console.error("Error fetching notifications:", err);
       }

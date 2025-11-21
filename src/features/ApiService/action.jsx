@@ -1125,9 +1125,11 @@ export const sendNotification = async (payload) => {
   }
 };
 
-export const getNotifications = async (user_id) => {
+export const getNotifications = async (payload) => {
   try {
-    const response = await api.get(`/api/getNotifications?user_id=${user_id}`);
+    const response = await api.get(`/api/getNotifications`, {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;

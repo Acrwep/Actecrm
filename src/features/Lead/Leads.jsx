@@ -2426,7 +2426,9 @@ export default function Leads({
       <Drawer
         title="Add Lead"
         open={isOpenAddDrawer}
-        onClose={formReset}
+        onClose={() => {
+          setIsOpenAddDrawer(false);
+        }}
         width="52%"
         style={{ position: "relative" }}
         id="leadform_addlead_drawer"
