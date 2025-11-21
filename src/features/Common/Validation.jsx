@@ -493,3 +493,21 @@ export const getDatesFromRangeLabel = (label) => {
     },
   };
 };
+
+export const getLast3Months = () => {
+  const end = dayjs(); // current month
+  const start = end.subtract(2, "month"); // last 3 months range
+
+  return [start.format("YYYY-MM"), end.format("YYYY-MM")];
+};
+
+export const customizeStartDateAndEndDate = (months) => {
+  const start = dayjs(months[0]);
+  const end = dayjs(months[1]);
+
+  const startDate = start.subtract(1, "month").date(26).format("YYYY-MM-DD");
+
+  const endDate = end.date(25).format("YYYY-MM-DD");
+
+  return [startDate, endDate];
+};

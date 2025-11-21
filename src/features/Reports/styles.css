@@ -1,0 +1,54 @@
+.reports_leadcount_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #5b6aca41;
+  color: #5b69ca;
+  border-radius: 50%;
+}
+.reports_joiningcount_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #2ed5742f;
+  color: #2ed573;
+  border-radius: 50%;
+}
+.reports_collection_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #3c91112a;
+  color: #3c9111;
+  border-radius: 50%;
+}
+.reports_salevolume_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #1e8fff36;
+  color: #1e90ff;
+  border-radius: 50%;
+}
+.reports_pending_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #d32f2f2c;
+  color: #d32f2f;
+  border-radius: 50%;
+}
+.reports_leadcount_container {
+  font-weight: 600;
+  font-size: 14px;
+}

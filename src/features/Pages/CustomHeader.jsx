@@ -410,6 +410,8 @@ export default function CustomHeader() {
               ? "Server"
               : location.pathname === "/settings"
               ? "Settings"
+              : location.pathname === "/reports"
+              ? "Reports"
               : ""}
           </p>
         </div>

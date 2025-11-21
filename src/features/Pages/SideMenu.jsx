@@ -10,6 +10,7 @@ import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
+import { TbReport } from "react-icons/tb";
 import {
   getTableColumns,
   getUserDownline,
@@ -75,6 +76,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    10: {
+      title: "Reports",
+      icon: <TbReport size={17} />,
+      path: "reports",
+    },
   });
 
   const nonChangeMenuOptions = {
@@ -122,6 +128,11 @@ export default function SideMenu() {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
+    },
+    10: {
+      title: "Reports",
+      icon: <TbReport size={17} />,
+      path: "reports",
     },
   };
 

@@ -1142,3 +1142,13 @@ export const readNotification = async (payload) => {
     throw error;
   }
 };
+
+//reports
+export const scoreBoardReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

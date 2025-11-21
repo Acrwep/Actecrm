@@ -29,6 +29,8 @@ import Dashboard from "../Dashboard/Dashboard";
 import Server from "../Server/Server";
 import Settings from "../Settings/Settings";
 import PendingFeesCustomers from "../Customers/Pending Fees/PendingFeesCustomers";
+//reports
+import Reports from "../Reports/Reports";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -241,6 +243,7 @@ export default function Pages() {
                 <Route element={<Trainers />} path="/trainers" />
                 <Route element={<Server />} path="/server" />
                 <Route element={<Settings />} path="/settings" />
+                <Route element={<Reports />} path="/reports" />
                 <Route
                   element={<TrainerRegistration />}
                   path="/trainer-registration"
