@@ -224,9 +224,9 @@ const ServerApproval = forwardRef(
                 required={true}
                 label="Duration"
                 options={[
-                  { id: 15, name: "15 Days" },
                   { id: 30, name: "30 Days" },
-                  { id: 45, name: "45 Days" },
+                  { id: 60, name: "60 Days" },
+                  { id: 90, name: "90 Days" },
                 ]}
                 value={
                   serverDetails && serverDetails.duration
