@@ -3,22 +3,23 @@ import { Row, Col, Tooltip, Button } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
-import { PiHandCoins } from "react-icons/pi";
-import { PiUsersThreeBold } from "react-icons/pi";
-import { GoGraph } from "react-icons/go";
-import { MdCurrencyRupee } from "react-icons/md";
-import { MdOutlinePendingActions } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
-import { getAllDownlineUsers, scoreBoardReports } from "../ApiService/action";
+import {
+  getAllDownlineUsers,
+  userwiseLeadsAnalysisReports,
+  userwiseSalesAnalysisReports,
+} from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import moment from "moment";
 
-export default function LeadsScoreboardReports() {
+export default function UserwiseLeadsReport() {
   const mounted = useRef(false);
   //permissions
   const childUsers = useSelector((state) => state.childusers);
@@ -29,6 +30,7 @@ export default function LeadsScoreboardReports() {
   const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [totalCounts, setTotalCounts] = useState(null);
+  const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -43,114 +45,111 @@ export default function LeadsScoreboardReports() {
 
   const columns = [
     {
+      title: "User Name",
+      key: "user_name",
+      dataIndex: "user_name",
+      width: 160,
+      fixed: "left",
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.user_id} - ${text}`}</p>
+          </div>
+        );
+      },
+    },
+    {
       title: "Month",
-      key: "sale_month",
-      dataIndex: "sale_month",
-      width: 170,
+      key: "label",
+      dataIndex: "label",
+      width: 160,
       fixed: "left",
     },
     {
       title: "Total Leads",
-      key: "leads",
-      dataIndex: "leads",
+      key: "total_leads",
+      dataIndex: "total_leads",
       width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Joinings",
-      key: "joins",
-      dataIndex: "joins",
-      width: 120,
+      title: "Converted Customers",
+      key: "customer_count",
+      dataIndex: "customer_count",
+      width: 170,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Sale Volume",
-      key: "sale_volume",
-      dataIndex: "sale_volume",
+      title: "Convertion Rate%",
+      key: "lead_to_customer_percentage",
+      dataIndex: "lead_to_customer_percentage",
       width: 140,
       render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+        return <p style={{ fontWeight: 600 }}>{`${text}%`}</p>;
       },
     },
     {
-      title: "Collection",
-      key: "collection",
-      dataIndex: "collection",
-      width: 140,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Total Collection",
-      key: "total_collection",
-      dataIndex: "total_collection",
-      width: 140,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Pending",
-      key: "pending",
-      dataIndex: "pending",
-      width: 140,
+      title: "Joined Customers",
+      key: "joined_customers",
+      dataIndex: "joined_customers",
+      width: 160,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
       title: "Total Followup",
-      key: "total_followups",
-      dataIndex: "total_followups",
-      width: 140,
+      key: "lead_followup_count",
+      dataIndex: "lead_followup_count",
+      width: 130,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
       title: "Followup Handled",
-      key: "follow_up_handled",
-      dataIndex: "follow_up_handled",
-      width: 180,
+      key: "followup_handled",
+      dataIndex: "followup_handled",
+      width: 150,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
       title: "Followup Un-Handled",
-      key: "follow_up_unhandled",
-      dataIndex: "follow_up_unhandled",
+      key: "followup_unhandled",
+      dataIndex: "followup_unhandled",
       width: 180,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Followup Efficiency",
-      key: "followup_percentage",
-      dataIndex: "followup_percentage",
-      width: 160,
+      title: "Followup Efficiency%",
+      key: "followup_handled_percentage",
+      dataIndex: "followup_handled_percentage",
+      width: 180,
+      fixed: "right",
       render: (text) => {
-        return <p>{`${text}%`}</p>;
+        return <p style={{ fontWeight: 600 }}>{`${text}%`}</p>;
       },
     },
   ];
+
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-
       const getLast3MonthDates = getLast3Months();
       setSelectedDates(getLast3MonthDates);
 
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-
+      setLoginUserId(convertAsJson?.user_id);
       getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
@@ -165,10 +164,12 @@ export default function LeadsScoreboardReports() {
       });
       setAllDownliners(downliners_ids);
       const getLast3MonthDates = getLast3Months();
+      setSelectedDates(getLast3MonthDates);
       const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
       setStartDateAndEndDate(customizeDate);
       console.log("startAndEndDate", customizeDate);
-      getScoreBoardReportsData(
+
+      getUsersWiseLeadsReportData(
         customizeDate[0],
         customizeDate[1],
         downliners_ids
@@ -178,7 +179,11 @@ export default function LeadsScoreboardReports() {
     }
   };
 
-  const getScoreBoardReportsData = async (startDate, endDate, downliners) => {
+  const getUsersWiseLeadsReportData = async (
+    startDate,
+    endDate,
+    downliners
+  ) => {
     setLoading(true);
     const payload = {
       user_ids: downliners,
@@ -186,14 +191,13 @@ export default function LeadsScoreboardReports() {
       end_date: endDate,
     };
     try {
-      const response = await scoreBoardReports(payload);
-      console.log("leads scoreboard report response", response);
-      setReportData(response?.data?.data?.month_wise || []);
-      setTotalCounts(response?.data?.data?.totals || null);
+      const response = await userwiseLeadsAnalysisReports(payload);
+      console.log("userwise leads report response", response);
+      setReportData(response?.data?.data || []);
     } catch (error) {
       setReportData([]);
       setTotalCounts(null);
-      console.log("get scoreboard report error", error);
+      console.log("userwise leads report error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -222,7 +226,7 @@ export default function LeadsScoreboardReports() {
       setPagination({
         page: 1,
       });
-      getScoreBoardReportsData(
+      getUsersWiseLeadsReportData(
         startDateAndEndDate[0],
         startDateAndEndDate[1],
         downliners_ids
@@ -230,6 +234,17 @@ export default function LeadsScoreboardReports() {
     } catch (error) {
       console.log("all downlines error", error);
     }
+  };
+
+  const handleRefresh = () => {
+    const getLast3MonthDates = getLast3Months();
+    setSelectedDates(getLast3MonthDates);
+    const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
+    setStartDateAndEndDate(customizeDate);
+    setPagination({
+      page: 1,
+    });
+    getAllDownlineUsersData(loginUserId);
   };
 
   return (
@@ -261,7 +276,7 @@ export default function LeadsScoreboardReports() {
                   ]);
                   const customizeDate = customizeStartDateAndEndDate(dates);
                   setStartDateAndEndDate(customizeDate);
-                  getScoreBoardReportsData(
+                  getUsersWiseLeadsReportData(
                     customizeDate[0],
                     customizeDate[1],
                     allDownliners
@@ -284,7 +299,20 @@ export default function LeadsScoreboardReports() {
           }}
         >
           <Tooltip placement="top" title="Download">
-            <Button className="customer_download_button">
+            <Button
+              className="customer_download_button"
+              onClick={() => {
+                DownloadTableAsCSV(
+                  reportData,
+                  columns,
+                  `${moment(startDateAndEndDate[0]).format(
+                    "DD MMMM YYYY"
+                  )} to ${moment(startDateAndEndDate[1]).format(
+                    "DD MMMM YYYY"
+                  )} Userwise Lead Report.csv`
+                );
+              }}
+            >
               <DownloadOutlined size={10} className="download_icon" />
             </Button>
           </Tooltip>
@@ -292,7 +320,7 @@ export default function LeadsScoreboardReports() {
           <Tooltip placement="top" title="Refresh">
             <Button
               className="leadmanager_refresh_button"
-              //   onClick={handleRefresh}
+              onClick={handleRefresh}
             >
               <RedoOutlined className="refresh_icon" />
             </Button>
@@ -300,131 +328,9 @@ export default function LeadsScoreboardReports() {
         </Col>
       </Row>
 
-      <Row gutter={16}>
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_leadcount_icon_container">
-              <PiHandCoins size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Total Leads</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#5b69ca",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.total_leads != undefined ||
-                  totalCounts.total_leads != null)
-                  ? Number(totalCounts.total_leads).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_joiningcount_icon_container">
-              <PiUsersThreeBold size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Total Joinings</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#2ed573",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.total_joins != undefined ||
-                  totalCounts.total_joins != null)
-                  ? Number(totalCounts.total_joins).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_salevolume_icon_container">
-              <GoGraph size={17} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Sale Volume</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#1e90ff",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.sale_volume != undefined ||
-                  totalCounts.sale_volume != null)
-                  ? Number(totalCounts.sale_volume).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_collection_icon_container">
-              <MdCurrencyRupee size={20} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Collection</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#3c9111",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.total_collection != undefined ||
-                  totalCounts.total_collection != null)
-                  ? Number(totalCounts.total_collection).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_pending_icon_container">
-              <MdOutlinePendingActions size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Pending</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#d32f2f",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.pending_payment != undefined ||
-                  totalCounts.pending_payment != null)
-                  ? Number(totalCounts.pending_payment).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-      </Row>
-
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 1250 }}
+          scroll={{ x: 1300 }}
           columns={columns}
           dataSource={reportData}
           dataPerPage={10}

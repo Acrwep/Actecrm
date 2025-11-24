@@ -1154,3 +1154,57 @@ export const scoreBoardReports = async (payload) => {
     throw error;
   }
 };
+
+export const userwiseLeadsAnalysisReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportUserWiseLead`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const userwiseSalesAnalysisReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportUserWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const branchwiseLeadsAnalysisReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportBranchWiseLeads`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const branchwiseSalesAnalysisReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportBranchWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const hrPerformanceReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportHRDashBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const raPerformanceReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/reportRADashBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

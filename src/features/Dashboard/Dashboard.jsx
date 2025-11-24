@@ -1330,23 +1330,7 @@ export default function Dashboard() {
     setPerformanceLoader(true);
     setRaLoader(true);
     setHrLoader(true);
-    if (permissions.includes("Score Board")) {
-      getScoreBoardData(
-        allDashboardCardsDates,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        null,
-        true
-      );
-    } else {
-      getSaleDetailsData(
-        allDashboardCardsDates,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        null,
-        true
-      );
-    }
+    getAllDownlineUsersData(loginUserId);
   };
 
   const updateDashboardCardDate = async (name, startDate, endDate) => {

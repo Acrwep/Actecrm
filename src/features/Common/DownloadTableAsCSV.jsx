@@ -44,7 +44,9 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "percentage" ||
           column.dataIndex === "leads_percentage" ||
           column.dataIndex === "followup_percentage" ||
-          column.dataIndex === "target_percentage"
+          column.dataIndex === "target_percentage" ||
+          column.dataIndex === "lead_to_customer_percentage" ||
+          column.dataIndex === "followup_handled_percentage"
         ) {
           return row[column.dataIndex] ? row[column.dataIndex] + "%" : 0 + "%";
         }
@@ -53,6 +55,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "target_value" ||
           column.dataIndex === "total_collection" ||
           column.dataIndex === "pending" ||
+          column.dataIndex === "collection" ||
           column.dataIndex === "pending_payment" ||
           column.dataIndex === "primary_fees" ||
           column.dataIndex === "secondary_fees"
@@ -63,6 +66,20 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
                 maximumFractionDigits: 2,
               })}`
             : "₹" + 0;
+        }
+        if (
+          column.dataIndex === "leads" ||
+          column.dataIndex === "joins" ||
+          column.dataIndex === "total_followups" ||
+          column.dataIndex === "follow_up_handled" ||
+          column.dataIndex === "follow_up_unhandled"
+        ) {
+          return row[column.dataIndex]
+            ? ` ${Number(row[column.dataIndex]).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`
+            : 0;
         }
         //leads table handle
         if (column.dataIndex === "country") {
