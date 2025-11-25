@@ -55,6 +55,7 @@ import {
 } from "../Common/Validation";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CommonMessage } from "../Common/CommonMessage";
+import NotificationImage from "../../assets/bell-colored.svg";
 import { NotificationContext } from "../../Context/NotificationContext";
 
 export default function CustomHeader() {
@@ -329,6 +330,7 @@ export default function CustomHeader() {
       });
       setNotificationData(data);
     } catch (error) {
+      setNotificationData([]);
       console.log("notification error", error);
     }
   };
@@ -1390,76 +1392,87 @@ export default function CustomHeader() {
         style={{ position: "relative", paddingBottom: "20px" }}
         className="header_notification_drawer"
       >
-        {notificationData.map((item, index) => {
-          const message = (() => {
-            try {
-              return JSON.parse(item.message);
-            } catch {
-              return item.message;
-            }
-          })();
-          return (
-            <React.Fragment key={index}>
-              <Row
-                gutter={12}
-                className="header_notification_drawer_list_container"
-                style={{
-                  backgroundColor:
-                    item.is_read == 0 ? "rgb(91 105 202 / 11%)" : "#fff",
-                }}
-                onClick={() => {
-                  handleMarkAsRead(item);
-                }}
-              >
-                <Col span={4}>
-                  <div className="header_notification_popup_list_icon_container">
-                    <RiErrorWarningFill color="#d32f2f" size={24} />
-                  </div>
-                </Col>
-                <Col span={20}>
-                  <div className="header_notification_drawer_list_title_container">
-                    <p
-                      className={
-                        item.is_read == 0
-                          ? "header_notification_drawer_list_title"
-                          : "header_notification_drawer_listunread_title"
-                      }
-                    >
-                      {item.title}
-                    </p>
-                    <p style={{ color: "gray", fontSize: "11px" }}>
-                      {item.created_at
-                        ? shortRelativeTime(item.created_at)
-                        : ""}
-                    </p>
-                  </div>
-                  {item.title === "Payment Rejected" ||
-                  (item.title === "Trainer Rejected" &&
-                    typeof message === "object") ? (
-                    <p className="header_notification_drawer_list_message">
-                      {`Customer Name: ${message.customer_name ?? "-"} | 
+        {notificationData.length >= 1 ? (
+          <>
+            {notificationData.map((item, index) => {
+              const message = (() => {
+                try {
+                  return JSON.parse(item.message);
+                } catch {
+                  return item.message;
+                }
+              })();
+              return (
+                <React.Fragment key={index}>
+                  <Row
+                    gutter={12}
+                    className="header_notification_drawer_list_container"
+                    style={{
+                      backgroundColor:
+                        item.is_read == 0 ? "rgb(91 105 202 / 11%)" : "#fff",
+                    }}
+                    onClick={() => {
+                      handleMarkAsRead(item);
+                    }}
+                  >
+                    <Col span={4}>
+                      <div className="header_notification_popup_list_icon_container">
+                        <RiErrorWarningFill color="#d32f2f" size={24} />
+                      </div>
+                    </Col>
+                    <Col span={20}>
+                      <div className="header_notification_drawer_list_title_container">
+                        <p
+                          className={
+                            item.is_read == 0
+                              ? "header_notification_drawer_list_title"
+                              : "header_notification_drawer_listunread_title"
+                          }
+                        >
+                          {item.title}
+                        </p>
+                        <p style={{ color: "gray", fontSize: "11px" }}>
+                          {item.created_at
+                            ? shortRelativeTime(item.created_at)
+                            : ""}
+                        </p>
+                      </div>
+                      {item.title === "Payment Rejected" ||
+                      (item.title === "Trainer Rejected" &&
+                        typeof message === "object") ? (
+                        <p className="header_notification_drawer_list_message">
+                          {`Customer Name: ${message.customer_name ?? "-"} | 
      Mobile: ${message.customer_phonecode ?? ""}${
-                        message.customer_phone ?? ""
-                      } | 
+                            message.customer_phone ?? ""
+                          } | 
      Course: ${message.customer_course ?? "-"}`}
-                    </p>
-                  ) : (
-                    <p className="header_notification_drawer_list_message">
-                      {typeof message === "string"
-                        ? message
-                        : JSON.stringify(message)}
-                    </p>
-                  )}
-                </Col>
-                <div
-                  className="header_notification_drawer_unreadindicator"
-                  style={{ opacity: item.is_read == 0 ? 1 : 0 }}
-                />
-              </Row>
-              <Divider className={"header_notification_drawer_divider"} />
-            </React.Fragment>
-          );
-        })}
+                        </p>
+                      ) : (
+                        <p className="header_notification_drawer_list_message">
+                          {typeof message === "string"
+                            ? message
+                            : JSON.stringify(message)}
+                        </p>
+                      )}
+                    </Col>
+                    <div
+                      className="header_notification_drawer_unreadindicator"
+                      style={{ opacity: item.is_read == 0 ? 1 : 0 }}
+                    />
+                  </Row>
+                  <Divider className={"header_notification_drawer_divider"} />
+                </React.Fragment>
+              );
+            })}
+          </>
+        ) : (
+          <div className="header_notification_drawer_nonotification_container">
+            <img src={NotificationImage} />
+            <p className="header_notification_drawer_nonotification_text">
+              Haven't got any notifications
+            </p>
+          </div>
+        )}
       </Drawer>
     </div>
   );
