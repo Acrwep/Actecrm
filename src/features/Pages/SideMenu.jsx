@@ -72,14 +72,14 @@ export default function SideMenu() {
       path: "bulk-search",
     },
     9: {
-      title: "Settings",
-      icon: <IoSettingsOutline size={17} />,
-      path: "settings",
-    },
-    10: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
+    },
+    10: {
+      title: "Settings",
+      icon: <IoSettingsOutline size={17} />,
+      path: "settings",
     },
   });
 
@@ -125,14 +125,14 @@ export default function SideMenu() {
       path: "bulk-search",
     },
     9: {
-      title: "Settings",
-      icon: <IoSettingsOutline size={17} />,
-      path: "settings",
-    },
-    10: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
+    },
+    10: {
+      title: "Settings",
+      icon: <IoSettingsOutline size={17} />,
+      path: "settings",
     },
   };
 
@@ -152,8 +152,12 @@ export default function SideMenu() {
       delete updatedMenu[8];
     }
 
-    if (!permissions.includes("Settings Page")) {
+    if (!permissions.includes("Reports Page")) {
       delete updatedMenu[9];
+    }
+
+    if (!permissions.includes("Settings Page")) {
+      delete updatedMenu[10];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -226,8 +230,12 @@ export default function SideMenu() {
           delete updatedMenu[8];
         }
 
-        if (!updateData.includes("Settings Page")) {
+        if (!permissions.includes("Reports Page")) {
           delete updatedMenu[9];
+        }
+
+        if (!updateData.includes("Settings Page")) {
+          delete updatedMenu[10];
         }
 
         setSideMenuOptions(updatedMenu);

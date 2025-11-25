@@ -20,6 +20,7 @@ import {
   storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
   storePermissionsList,
+  storeReportsModulePermissionList,
   storeRoleList,
   storeRoleSearchValue,
   storeServerModulePermissionList,
@@ -306,6 +307,15 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeTrainersModulePermissionList(updateTrainersModule));
+
+      //filter reports module
+      const reportsModule = allPermissions.filter(
+        (f) => f.section === "Reports Module"
+      );
+      const updateReportsModule = reportsModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeReportsModulePermissionList(updateReportsModule));
 
       //filter settings module
       const settingsModule = allPermissions.filter(

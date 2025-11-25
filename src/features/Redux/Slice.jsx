@@ -181,6 +181,17 @@ const trainersModulePermissionListSlice = createSlice({
   },
 });
 
+const reportsModulePermissionListSlice = createSlice({
+  name: "reportsmodulepermissionlist",
+  initialState,
+  reducers: {
+    storeReportsModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const settingsModulePermissionListSlice = createSlice({
   name: "settingsmodulepermissionlist",
   initialState,
@@ -258,6 +269,8 @@ export const { storeServerModulePermissionList } =
   serverModulePermissionListSlice.actions;
 export const { storeTrainersModulePermissionList } =
   trainersModulePermissionListSlice.actions;
+export const { storeReportsModulePermissionList } =
+  reportsModulePermissionListSlice.actions;
 export const { storeSettingsModulePermissionList } =
   settingsModulePermissionListSlice.actions;
 export const { storeChildUsers } = childUsersSlice.actions;
@@ -291,6 +304,8 @@ export const serverModulePermissionListReducer =
   serverModulePermissionListSlice.reducer;
 export const trainersModulePermissionListReducer =
   trainersModulePermissionListSlice.reducer;
+export const reportsModulePermissionListReducer =
+  reportsModulePermissionListSlice.reducer;
 export const settingsModulePermissionListReducer =
   settingsModulePermissionListSlice.reducer;
 export const nxtFollowupActionIdReducer = nxtFollowupActionIdSlice.reducer;

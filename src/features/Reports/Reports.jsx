@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Tabs } from "antd";
 import LeadsScoreboardReport from "./LeadsScoreboardReport";
 import UserwiseSalesReport from "./UserwiseSalesReport";
@@ -7,9 +8,23 @@ import BranchwiseLeadsReport from "./BranchwiseLeadsReport";
 import BranchwiseSalesReport from "./BranchwiseSalesReport";
 import HrPerformanceReport from "./HrPeroformanceReport";
 import RaPerformanceReport from "./RaPerformanceReport";
+import { useSelector } from "react-redux";
 import "./styles.css";
 
 export default function Reports() {
+  const navigate = useNavigate();
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+
+  React.useEffect(() => {
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Reports Page")) {
+        navigate("/dashboard");
+        return;
+      }
+    }
+  }, [permissions]);
+
   return (
     <div>
       <Tabs

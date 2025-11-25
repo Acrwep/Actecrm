@@ -46,6 +46,7 @@ import {
   storeGroupList,
   storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
+  storeReportsModulePermissionList,
   storeRoleList,
   storeRoleSearchValue,
   storeServerModulePermissionList,
@@ -93,6 +94,9 @@ export default function PageAccess({
   );
   const trainersModulePermissionData = useSelector(
     (state) => state.trainersmodulepermissionlist
+  );
+  const reportsModulePermissionData = useSelector(
+    (state) => state.reportsmodulepermissionlist
   );
   const settingsModulePermissionData = useSelector(
     (state) => state.settingsmodulepermissionlist
@@ -467,6 +471,17 @@ export default function PageAccess({
       }));
       dispatch(storeTrainersModulePermissionList(updatedTrainersPermissions));
 
+      //trainers module
+      const updatedReportsPermissions = (reportsModulePermissionData || []).map(
+        (lp) => ({
+          ...lp,
+          checked: role_permissions.some(
+            (rp) => rp.permission_id === lp.permission_id
+          ),
+        })
+      );
+      dispatch(storeReportsModulePermissionList(updatedReportsPermissions));
+
       //settings module
       const updatedSettingsPermissions = (
         settingsModulePermissionData || []
@@ -500,6 +515,7 @@ export default function PageAccess({
       ...bulkSearchModulePermissionData,
       ...serverModulePermissionData,
       ...trainersModulePermissionData,
+      ...reportsModulePermissionData,
       ...settingsModulePermissionData,
     ];
     console.log("merged", merged);
@@ -1569,6 +1585,39 @@ export default function PageAccess({
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeTrainersModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Reports Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {reportsModulePermissionData.map((item) => {
+                return (
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = reportsModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          }
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(storeReportsModulePermissionList(updateItem));
                       }}
                     >
                       {item.permission_name}
