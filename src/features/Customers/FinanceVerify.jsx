@@ -51,13 +51,14 @@ const FinanceVerify = forwardRef(
     //update payment usestates
     const [updatePaymentTransId, setUpdatePaymentTransId] = useState(null);
     const [subTotal, setSubTotal] = useState();
+    const [pendingAmount, setPendingAmount] = useState();
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
     const [paymentMode, setPaymentMode] = useState(null);
     const [paymentModeError, setPaymentModeError] = useState(null);
     const [convenienceFees, setConvenienceFees] = useState("");
     const [taxType, setTaxType] = useState(null);
-    const [amount, setAmount] = useState();
+    const [totalAmount, setTotalAmount] = useState();
     const [paidNow, setPaidNow] = useState("");
     const [paidNowError, setPaidNowError] = useState("");
     const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
@@ -78,6 +79,7 @@ const FinanceVerify = forwardRef(
       );
       if (drawerContentStatus == "Update Payment") {
         setSubTotal(parseFloat(customerDetails.primary_fees).toFixed(2));
+        setPendingAmount(parseFloat(customerDetails.balance_amount));
         setTaxType(
           customerDetails.payments && customerDetails.payments.tax_type
             ? customerDetails.payments.tax_type == "GST (18%)"
@@ -93,7 +95,7 @@ const FinanceVerify = forwardRef(
               : 0
             : 0
         );
-        setAmount(
+        setTotalAmount(
           parseFloat(
             customerDetails.payments && customerDetails.payments.total_amount
               ? customerDetails.payments.total_amount
@@ -159,7 +161,7 @@ const FinanceVerify = forwardRef(
       setPaidNow(input); // store as string for user input
 
       const value = parseFloat(input); // parse for calculations
-      const amt = parseFloat(amount);
+      const amt = parseFloat(pendingAmount);
 
       if (value < amt || isNaN(value) || input == "" || input == null) {
         setIsShowDueDate(true);
@@ -190,8 +192,6 @@ const FinanceVerify = forwardRef(
     const handlePaymentType = (e) => {
       const value = e.target.value;
       setPaymentMode(value);
-      const amnt = calculateAmount(parseInt(subTotal), taxType == 5 ? 0 : 18);
-      setAmount(amnt);
 
       if (paymentValidationTrigger) {
         setPaymentModeError(selectValidator(value));
@@ -199,7 +199,7 @@ const FinanceVerify = forwardRef(
 
       //handle balance amount
       if (
-        paidNow < amnt ||
+        paidNow < pendingAmount ||
         isNaN(paidNow) ||
         paidNow == "" ||
         paidNow == null
@@ -211,7 +211,10 @@ const FinanceVerify = forwardRef(
         setDueDateError("");
       }
       setBalanceAmount(
-        getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+        getBalanceAmount(
+          isNaN(pendingAmount) ? 0 : pendingAmount,
+          isNaN(paidNow) ? 0 : paidNow
+        )
       );
 
       //handle convenience fees
@@ -1232,7 +1235,7 @@ const FinanceVerify = forwardRef(
                     label="Total Amount"
                     required={true}
                     disabled
-                    value={amount}
+                    value={totalAmount}
                   />
                 </Col>
               </Row>

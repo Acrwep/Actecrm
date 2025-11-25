@@ -22,6 +22,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
+import CommonSelectField from "../Common/CommonSelectField";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { LuIndianRupee } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
@@ -42,6 +43,7 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import {
+  getAllDownlineUsers,
   getCustomerById,
   getServerHistory,
   getServerRequest,
@@ -63,6 +65,7 @@ import ServerIssue from "./ServerIssue";
 
 export default function Server() {
   const scrollRef = useRef();
+  const mounted = useRef(false);
   const serverUpdateDetailsRef = useRef();
   const serverVerifyRef = useRef();
   const serverApproveRef = useRef();
@@ -74,7 +77,10 @@ export default function Server() {
       behavior: "smooth",
     });
   };
+  //permissions
+  const childUsers = useSelector((state) => state.childusers);
   const permissions = useSelector((state) => state.userpermissions);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [status, setStatus] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -82,6 +88,7 @@ export default function Server() {
   const [filterType, setFilterType] = useState(1);
   const [serverData, setServerData] = useState([]);
   const [statusCount, setStatusCount] = useState(null);
+  const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
   //view drawer
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
@@ -101,6 +108,11 @@ export default function Server() {
   const [isOpenHistoryDrawer, setIsOpenHistoryDrawer] = useState(false);
   const [serverHistory, setServerHistory] = useState([]);
   const [serverHistoryLoading, setServerHistoryLoading] = useState(false);
+  //lead executive filter
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [allDownliners, setAllDownliners] = useState([]);
+
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -455,21 +467,46 @@ export default function Server() {
   ];
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
-    getServerRequestData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null,
-      null,
-      1,
-      10
-    );
-  }, []);
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      setSubUsers(downlineUsers);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      setLoginUserId(convertAsJson?.user_id);
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }
+  }, [childUsers]);
+
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getServerRequestData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners_ids,
+        null,
+        null,
+        1,
+        10
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
 
   const getServerRequestData = async (
     startDate,
     endDate,
+    downliners,
     serverStatus,
     searchvalue,
     pageNumber,
@@ -479,6 +516,7 @@ export default function Server() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
+      user_ids: downliners,
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
             status: [
@@ -533,6 +571,7 @@ export default function Server() {
       getServerRequestData(
         selectedDates[0],
         selectedDates[1],
+        allDownliners,
         status,
         e.target.value,
         1,
@@ -541,10 +580,39 @@ export default function Server() {
     }, 300);
   };
 
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getServerRequestData(
+        selectedDates[0],
+        selectedDates[1],
+        downliners_ids,
+        status,
+        searchValue,
+        1,
+        pagination.limit
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
   const handlePaginationChange = ({ page, limit }) => {
     getServerRequestData(
       selectedDates[0],
       selectedDates[1],
+      allDownliners,
       status,
       searchValue,
       page,
@@ -578,6 +646,7 @@ export default function Server() {
         getServerRequestData(
           selectedDates[0],
           selectedDates[1],
+          allDownliners,
           status,
           searchValue,
           1,
@@ -674,25 +743,20 @@ export default function Server() {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setSearchValue("");
+    setSelectedUserId(null);
     setStatus("");
     setPagination({
       page: 1,
     });
-    getServerRequestData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null,
-      null,
-      1,
-      pagination.limit
-    );
+    getAllDownlineUsersData(loginUserId);
   };
+
   return (
     <div>
       <Row style={{ marginBottom: "12px" }}>
-        <Col xs={24} sm={24} md={24} lg={12}>
+        <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={10}>
+            <Col span={7}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
@@ -719,6 +783,7 @@ export default function Server() {
                           getServerRequestData(
                             selectedDates[0],
                             selectedDates[1],
+                            allDownliners,
                             status,
                             null,
                             1,
@@ -793,7 +858,26 @@ export default function Server() {
               </div>
             </Col>
 
-            <Col span={14}>
+            {permissions.includes("Lead Executive Filter") && (
+              <Col span={7}>
+                <div className="overallduecustomers_filterContainer">
+                  <div style={{ flex: 1 }}>
+                    <CommonSelectField
+                      width="100%"
+                      height="35px"
+                      label="Select User"
+                      labelMarginTop="0px"
+                      labelFontSize="12px"
+                      options={subUsers}
+                      onChange={handleSelectUser}
+                      value={selectedUserId}
+                      disableClearable={false}
+                    />
+                  </div>
+                </div>
+              </Col>
+            )}
+            <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -804,6 +888,7 @@ export default function Server() {
                   getServerRequestData(
                     dates[0],
                     dates[1],
+                    allDownliners,
                     status,
                     searchValue,
                     1,
@@ -819,7 +904,7 @@ export default function Server() {
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={7}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -870,6 +955,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 null,
                 searchValue,
                 1,
@@ -880,7 +966,9 @@ export default function Server() {
             <p>
               All{" "}
               {`( ${
-                statusCount && statusCount.total ? statusCount.total : "-"
+                statusCount && statusCount.total != null
+                  ? statusCount.total
+                  : "-"
               } )`}
             </p>
           </div>
@@ -898,6 +986,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Requested",
                 searchValue,
                 1,
@@ -931,6 +1020,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Server Raised",
                 searchValue,
                 1,
@@ -964,6 +1054,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Awaiting Verify",
                 searchValue,
                 1,
@@ -994,6 +1085,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Awaiting Approval",
                 searchValue,
                 1,
@@ -1027,6 +1119,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Approved",
                 searchValue,
                 1,
@@ -1060,6 +1153,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Issued",
                 searchValue,
                 1,
@@ -1088,6 +1182,7 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                allDownliners,
                 "Expired",
                 searchValue,
                 1,
@@ -1423,6 +1518,7 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  allDownliners,
                   status,
                   searchValue,
                   1,
@@ -1440,6 +1536,7 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  allDownliners,
                   status,
                   searchValue,
                   1,
@@ -1457,6 +1554,7 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  allDownliners,
                   status,
                   searchValue,
                   1,
@@ -1474,6 +1572,7 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  allDownliners,
                   status,
                   searchValue,
                   1,

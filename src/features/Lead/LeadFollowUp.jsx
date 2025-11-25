@@ -316,6 +316,28 @@ export default function LeadFollowUp({
       },
     },
     {
+      title: "Lead Priority",
+      key: "lead_status",
+      dataIndex: "lead_status",
+      fixed: "right",
+      width: 140,
+      render: (text) => {
+        return (
+          <div
+            className={
+              text == "High"
+                ? "leadmanager_leadstatus_high_container"
+                : text == "Medium"
+                ? "leadmanager_leadstatus_medium_container"
+                : "leadmanager_leadstatus_low_container"
+            }
+          >
+            <p>{text}</p>
+          </div>
+        );
+      },
+    },
+    {
       title: "Recent Comments",
       key: "comments",
       dataIndex: "comments",
@@ -599,6 +621,27 @@ export default function LeadFollowUp({
                 ...col,
                 render: (text, record) => {
                   return <p>{"₹" + text}</p>;
+                },
+              };
+            case "lead_status":
+              return {
+                ...col,
+                title: "Lead Priority",
+                width: 140,
+                render: (text) => {
+                  return (
+                    <div
+                      className={
+                        text == "High"
+                          ? "leadmanager_leadstatus_high_container"
+                          : text == "Medium"
+                          ? "leadmanager_leadstatus_medium_container"
+                          : "leadmanager_leadstatus_low_container"
+                      }
+                    >
+                      <p>{text}</p>
+                    </div>
+                  );
                 },
               };
             case "comments":

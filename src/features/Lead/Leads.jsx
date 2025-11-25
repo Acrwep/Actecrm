@@ -877,6 +877,8 @@ export default function Leads({
         ? { name: searchvalue }
         : searchvalue && filterType == 3
         ? { email: searchvalue }
+        : searchvalue && filterType == 4
+        ? { course: searchvalue }
         : {}),
       start_date: startDate,
       end_date: endDate,
@@ -2082,6 +2084,8 @@ export default function Leads({
         ? { name: searchValue }
         : searchValue && filterType == 3
         ? { email: searchValue }
+        : searchValue && filterType == 4
+        ? { course: searchValue }
         : {}),
     };
     try {
@@ -2125,6 +2129,8 @@ export default function Leads({
                       ? "Search By Name"
                       : filterType == 3
                       ? "Search by Email"
+                      : filterType == 4
+                      ? "Search by Course"
                       : ""
                   }
                   width="100%"
@@ -2208,8 +2214,11 @@ export default function Leads({
                           <Radio value={2} style={{ marginBottom: "12px" }}>
                             Search by Name
                           </Radio>
-                          <Radio value={3} style={{ marginBottom: "6px" }}>
+                          <Radio value={3} style={{ marginBottom: "12px" }}>
                             Search by Email
+                          </Radio>
+                          <Radio value={4} style={{ marginBottom: "6px" }}>
+                            Search by Course
                           </Radio>
                         </Radio.Group>
                       }

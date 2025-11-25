@@ -37,6 +37,7 @@ import {
   getCustomers,
   getLeads,
   getNotifications,
+  globalFilter,
   readNotification,
 } from "../ApiService/action";
 import { BiCommentDetail } from "react-icons/bi";
@@ -167,22 +168,10 @@ export default function CustomHeader() {
 
   const getAllLeadData = async (searchvalue) => {
     setSearchLoading(true);
-    const payload = {
-      ...(searchvalue && filterType == 1
-        ? { phone: searchvalue }
-        : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : {}),
-      user_ids: [],
-      page: 1,
-      limit: 1000,
-    };
     try {
-      const response = await getLeads(payload);
+      const response = await globalFilter(searchvalue);
       console.log("global lead response", response);
-      setLeadData(response?.data?.data?.data || []);
+      setLeadData(response?.data?.result || []);
     } catch (error) {
       setLeadData([]);
       console.log("get leads error");
@@ -439,17 +428,7 @@ export default function CustomHeader() {
           <div className="header_searchbar_container">
             <input
               className="header_searchbar"
-              placeholder={
-                filterType == 1
-                  ? "Search By Mobile"
-                  : filterType == 2
-                  ? "Search By Name"
-                  : filterType == 3
-                  ? "Search by Email"
-                  : filterType == 4
-                  ? "Search by Course"
-                  : ""
-              }
+              placeholder="Search"
               onChange={handleSearch}
               value={searchValue}
               onBlur={() => {
@@ -462,62 +441,6 @@ export default function CustomHeader() {
               }}
             />
             <CiSearch className="header_searchbar_icon" />
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
-                          setSearchValue("");
-                          getAllLeadData(null);
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{
-                          marginTop: "6px",
-                          marginBottom: "12px",
-                          fontSize: "13px",
-                        }}
-                      >
-                        Search by Mobile
-                      </Radio>
-                      <Radio
-                        value={2}
-                        style={{
-                          marginBottom: "12px",
-                          fontSize: "13px",
-                        }}
-                      >
-                        Search by Name
-                      </Radio>
-                      <Radio
-                        value={3}
-                        style={{ marginBottom: "6px", fontSize: "13px" }}
-                      >
-                        Search by Email
-                      </Radio>
-                    </Radio.Group>
-                  }
-                >
-                  <Button className="header_searchbar_filtericon_button">
-                    <IoFilter size={16} color="#333" />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
             <div
               className={
                 searchValue && isOpenSearchOptions
@@ -533,20 +456,22 @@ export default function CustomHeader() {
                 <>
                   {leadData.length >= 1 ? (
                     <>
-                      {leadData.map((item) => {
+                      {leadData.map((item, index) => {
                         return (
-                          <div
-                            onClick={() => {
-                              setIsOpenLeadDetailsDrawer(true);
-                              console.log("global search lead details", item);
-                              setLeadDetails(item);
-                            }}
-                          >
-                            <p className="header_search_options_name">
-                              {item.name}
-                            </p>
-                            <Divider style={{ margin: 0 }} />
-                          </div>
+                          <React.Fragment key={index}>
+                            <div
+                              onClick={() => {
+                                setIsOpenLeadDetailsDrawer(true);
+                                console.log("global search lead details", item);
+                                setLeadDetails(item);
+                              }}
+                            >
+                              <p className="header_search_options_name">
+                                {item.name}
+                              </p>
+                              <Divider style={{ margin: 0 }} />
+                            </div>
+                          </React.Fragment>
                         );
                       })}
                     </>

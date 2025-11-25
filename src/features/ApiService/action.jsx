@@ -401,6 +401,15 @@ export const downloadLeads = async (payload) => {
   }
 };
 
+export const globalFilter = async (value) => {
+  try {
+    const response = await api.get(`/api/globalFilter?filter=${value}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const assignLead = async (payload) => {
   try {
     const response = await api.put("/api/assignLead", payload);
