@@ -1354,6 +1354,12 @@
   font-size: 15px;
   font-weight: 600;
 }
+.customer_downloadform_signature_name {
+  margin-top: 12px;
+  width: 140px;
+  text-align: center;
+  overflow-wrap: break-word;
+}
 /* overall due styles */
 .overallduecustomers_filterContainer {
   display: flex;

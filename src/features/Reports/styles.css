@@ -1,3 +1,6 @@
+.report_tabs .ant-tabs-tab {
+  font-size: 13px !important;
+}
 .reports_leadcount_icon_container {
   display: flex;
   justify-content: center;
@@ -51,4 +54,17 @@
 .reports_leadcount_container {
   font-weight: 600;
   font-size: 14px;
+}
+.reports_collection_tooltip_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  width: 55px;
+}
+.reports_collection_tooltip_text {
+  color: #333;
+  padding: 0px 12px 0px 0px;
+  font-size: 12px;
+  font-weight: 500;
 }

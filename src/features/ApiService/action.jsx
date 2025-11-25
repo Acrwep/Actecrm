@@ -1155,6 +1155,15 @@ export const scoreBoardReports = async (payload) => {
   }
 };
 
+export const getMonthwiseTotalCollectionReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/monthWiseCollection`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const userwiseLeadsAnalysisReports = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseLead`, payload);

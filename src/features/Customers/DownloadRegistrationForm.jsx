@@ -252,6 +252,9 @@ export default function DownloadRegistrationForm({ customerDetails }) {
               alt="Customer Signature"
               class="customer_signature_image"
             />
+            <p class="customer_downloadform_signature_name">
+           ${customerDetails.name}
+            </p>
          </div>
 
     </div>

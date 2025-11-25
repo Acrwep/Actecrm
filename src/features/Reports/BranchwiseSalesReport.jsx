@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Spin } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
+import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
@@ -10,11 +11,8 @@ import {
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
-  branchwiseLeadsAnalysisReports,
   branchwiseSalesAnalysisReports,
-  getAllDownlineUsers,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
+  getMonthwiseTotalCollectionReport,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -29,7 +27,9 @@ export default function BranchwiseSalesReport() {
   const [selectedDates, setSelectedDates] = useState([]);
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const [collectionHistory, setCollectionHistory] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
+  const [collectionLoading, setCollectionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   //executive filter
   const [selectedBranchId, setSelectedBranchId] = useState(null);
@@ -86,8 +86,84 @@ export default function BranchwiseSalesReport() {
       key: "total_collection",
       dataIndex: "total_collection",
       width: 140,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <p>{Number(text).toLocaleString("en-IN")}</p>
+            {text == 0 ? (
+              ""
+            ) : (
+              <Tooltip
+                placement="bottomLeft"
+                color="#fff"
+                trigger={["click"]}
+                title={
+                  <>
+                    {collectionLoading ? (
+                      <div className="reports_collection_tooltip_container">
+                        <Spin size="small" />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          maxHeight: "140px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-line",
+                          lineHeight: "26px",
+                        }}
+                      >
+                        {collectionHistory.map((item, index) => {
+                          return (
+                            <p className="reports_collection_tooltip_text">
+                              {index + 1}. {item.month_name} -{" "}
+                              <span style={{ fontWeight: 600 }}>
+                                ₹
+                                {Number(item.collection).toLocaleString(
+                                  "en-IN"
+                                )}
+                              </span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                }
+              >
+                <MdHistory
+                  size={18}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const [monthName, year] = record.label.split(" ");
+                    const selectedMonth = moment(
+                      `${monthName} ${year}`,
+                      "MMMM YYYY"
+                    );
+                    // Start date: 25th of previous month
+                    const startDate = selectedMonth
+                      .clone()
+                      .subtract(1, "month")
+                      .date(26)
+                      .format("YYYY-MM-DD");
+
+                    // End date: 25th of selected month
+                    const endDate = selectedMonth
+                      .clone()
+                      .date(25)
+                      .format("YYYY-MM-DD");
+
+                    console.log("s", startDate, "e", endDate);
+                    getMonthwiseTotalCollectionData(
+                      record.branch_id,
+                      startDate,
+                      endDate
+                    );
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -137,6 +213,31 @@ export default function BranchwiseSalesReport() {
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getMonthwiseTotalCollectionData = async (
+    branchId,
+    startDate,
+    endDate
+  ) => {
+    setCollectionLoading(true);
+    const payload = {
+      branch_id: branchId,
+      start_date: startDate,
+      end_date: endDate,
+    };
+    try {
+      const response = await getMonthwiseTotalCollectionReport(payload);
+      console.log("collection report response", response);
+      setCollectionHistory(response?.data?.data || []);
+      setTimeout(() => {
+        setCollectionLoading(false);
+      }, 300);
+    } catch (error) {
+      setCollectionLoading(false);
+      setCollectionHistory([]);
+      console.log("collection report error", error);
     }
   };
 

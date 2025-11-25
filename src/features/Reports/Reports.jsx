@@ -7,11 +7,13 @@ import BranchwiseLeadsReport from "./BranchwiseLeadsReport";
 import BranchwiseSalesReport from "./BranchwiseSalesReport";
 import HrPerformanceReport from "./HrPeroformanceReport";
 import RaPerformanceReport from "./RaPerformanceReport";
+import "./styles.css";
 
 export default function Reports() {
   return (
     <div>
       <Tabs
+        className="report_tabs"
         defaultActiveKey="1"
         items={[
           {

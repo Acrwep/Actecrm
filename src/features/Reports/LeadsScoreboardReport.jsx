@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Spin } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
@@ -8,13 +8,18 @@ import { PiUsersThreeBold } from "react-icons/pi";
 import { GoGraph } from "react-icons/go";
 import { MdCurrencyRupee } from "react-icons/md";
 import { MdOutlinePendingActions } from "react-icons/md";
+import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
-import { getAllDownlineUsers, scoreBoardReports } from "../ApiService/action";
+import {
+  getAllDownlineUsers,
+  getMonthwiseTotalCollectionReport,
+  scoreBoardReports,
+} from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
@@ -32,7 +37,9 @@ export default function LeadsScoreboardReport() {
   const [reportData, setReportData] = useState([]);
   const [totalCounts, setTotalCounts] = useState(null);
   const [loginUserId, setLoginUserId] = useState("");
+  const [collectionHistory, setCollectionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [collectionLoading, setCollectionLoading] = useState(false);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -93,8 +100,80 @@ export default function LeadsScoreboardReport() {
       key: "total_collection",
       dataIndex: "total_collection",
       width: 140,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <p>{Number(text).toLocaleString("en-IN")}</p>
+            {text == 0 ? (
+              ""
+            ) : (
+              <Tooltip
+                placement="bottomLeft"
+                color="#fff"
+                trigger={["click"]}
+                title={
+                  <>
+                    {collectionLoading ? (
+                      <div className="reports_collection_tooltip_container">
+                        <Spin size="small" />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          maxHeight: "140px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-line",
+                          lineHeight: "26px",
+                        }}
+                      >
+                        {collectionHistory.map((item, index) => {
+                          return (
+                            <p className="reports_collection_tooltip_text">
+                              {index + 1}. {item.month_name} -{" "}
+                              <span style={{ fontWeight: 600 }}>
+                                ₹
+                                {Number(item.collection).toLocaleString(
+                                  "en-IN"
+                                )}
+                              </span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                }
+              >
+                <MdHistory
+                  size={18}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const [monthName, year] = record.sale_month.split(" ");
+                    const selectedMonth = moment(
+                      `${monthName} ${year}`,
+                      "MMMM YYYY"
+                    );
+                    // Start date: 25th of previous month
+                    const startDate = selectedMonth
+                      .clone()
+                      .subtract(1, "month")
+                      .date(26)
+                      .format("YYYY-MM-DD");
+
+                    // End date: 25th of selected month
+                    const endDate = selectedMonth
+                      .clone()
+                      .date(25)
+                      .format("YYYY-MM-DD");
+
+                    console.log("s", startDate, "e", endDate);
+                    getMonthwiseTotalCollectionData(startDate, endDate);
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -143,6 +222,7 @@ export default function LeadsScoreboardReport() {
       },
     },
   ];
+
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -202,6 +282,27 @@ export default function LeadsScoreboardReport() {
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getMonthwiseTotalCollectionData = async (startDate, endDate) => {
+    setCollectionLoading(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: startDate,
+      end_date: endDate,
+    };
+    try {
+      const response = await getMonthwiseTotalCollectionReport(payload);
+      console.log("collection report response", response);
+      setCollectionHistory(response?.data?.data || []);
+      setTimeout(() => {
+        setCollectionLoading(false);
+      }, 300);
+    } catch (error) {
+      setCollectionLoading(false);
+      setCollectionHistory([]);
+      console.log("collection report error", error);
     }
   };
 
