@@ -15,6 +15,7 @@ import {
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
+import { LuSend } from "react-icons/lu";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
@@ -32,6 +33,7 @@ import {
   getCurrentandPreviousweekDate,
   isWithin30Days,
 } from "../Common/Validation";
+import { HiDotsVertical, HiOutlineMail } from "react-icons/hi";
 import CommonSpinner from "../Common/CommonSpinner";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
@@ -70,6 +72,7 @@ import ClassSchedule from "./ClassSchedule";
 import PassesOutProcess from "./PassedOutProcess";
 import DownloadRegistrationForm from "./DownloadRegistrationForm";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import CustomerEmailTemplate from "./CustomerEmailTemplate";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -79,6 +82,7 @@ export default function Customers() {
   const assignAndVerifyTrainerRef = useRef();
   const classScheduleRef = useRef();
   const passedOutProcessRef = useRef();
+  const emailTemplateRef = useRef();
   const mounted = useRef(false);
   const location = useLocation();
 
@@ -135,6 +139,9 @@ export default function Customers() {
 
   const prev = () => setStepIndex(stepIndex - 1);
   const [loading, setLoading] = useState(true);
+  //email template usestates
+  const [isOpenEmailTemplateDrawer, setIsOpenEmailTemplateDrawer] =
+    useState(false);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -944,6 +951,22 @@ export default function Customers() {
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
+                  setCustomerDetails(record);
+                }}
+              />
+            </Tooltip>
+
+            <Tooltip
+              placement="top"
+              title="Send Email"
+              trigger={["hover", "click"]}
+            >
+              <LuSend
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setIsOpenEmailTemplateDrawer(true);
+                  setDrawerContentStatus("Send Email");
                   setCustomerDetails(record);
                 }}
               />
@@ -2146,6 +2169,22 @@ export default function Customers() {
 
                       <Tooltip
                         placement="top"
+                        title="Send Email"
+                        trigger={["hover", "click"]}
+                      >
+                        <LuSend
+                          size={15}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenEmailTemplateDrawer(true);
+                            setDrawerContentStatus("Send Email");
+                            setCustomerDetails(record);
+                          }}
+                        />
+                      </Tooltip>
+
+                      <Tooltip
+                        placement="top"
                         title="View Customer History"
                         trigger={["hover", "click"]}
                       >
@@ -2569,36 +2608,73 @@ export default function Customers() {
             }}
           />
 
-          <Tooltip placement="top" title="Download">
-            <Button
-              className="customer_download_button"
-              onClick={() => {
-                const isWithIn30days = isWithin30Days(
-                  selectedDates[0],
-                  selectedDates[1]
-                );
-                console.log("isWithIn30days", isWithIn30days);
-                if (isWithIn30days == false) {
-                  CommonMessage(
-                    "error",
-                    "Please choose a date range within 30 days."
-                  );
-                  return;
-                }
-                const alterColumns = columns.filter((f) => f.title != "Action");
+          <Tooltip
+            placement="bottomRight"
+            color="#fff"
+            // open={true}
+            classNames={{
+              body: "customers_download_tooltip_body",
+              root: "customers_download_tooltip_root",
+            }}
+            style={{ body: { padding: "6px 0" } }}
+            title={
+              <>
+                <div
+                  className="customer_download_container"
+                  style={{
+                    borderTopLeftRadius: "6px",
+                    borderTopRightRadius: "6px",
+                  }}
+                  onClick={() => {
+                    const isWithIn30days = isWithin30Days(
+                      selectedDates[0],
+                      selectedDates[1]
+                    );
+                    console.log("isWithIn30days", isWithIn30days);
+                    if (isWithIn30days == false) {
+                      CommonMessage(
+                        "error",
+                        "Please choose a date range within 30 days."
+                      );
+                      return;
+                    }
+                    const alterColumns = columns.filter(
+                      (f) => f.title != "Action"
+                    );
 
-                DownloadTableAsCSV(
-                  customersData,
-                  alterColumns,
-                  `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-                    selectedDates[1]
-                  ).format("DD-MM-YYYY")} ${
-                    status == "" ? "All" : status
-                  } Customers.csv`
-                );
-              }}
-            >
-              <DownloadOutlined size={10} className="download_icon" />
+                    DownloadTableAsCSV(
+                      customersData,
+                      alterColumns,
+                      `${moment(selectedDates[0]).format(
+                        "DD-MM-YYYY"
+                      )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
+                        status == "" ? "All" : status
+                      } Customers.csv`
+                    );
+                  }}
+                >
+                  <DownloadOutlined />
+                  <p className="customer_download_text">Download</p>
+                </div>
+
+                <div
+                  className="customer_download_container"
+                  style={{ marginBottom: "1px" }}
+                  onClick={() => {
+                    setIsOpenEmailTemplateDrawer(true);
+                    setDrawerContentStatus("Create Email Template");
+                  }}
+                >
+                  <HiOutlineMail />
+                  <p className="customer_download_text">
+                    Create Email Template
+                  </p>
+                </div>
+              </>
+            }
+          >
+            <Button className="customer_download_button">
+              <HiDotsVertical size={16} color="#585858ff" />
             </Button>
           </Tooltip>
 
@@ -3736,12 +3812,7 @@ export default function Customers() {
           )}
 
           <div>
-            <p
-              className="customer_nametext"
-              onClick={() => {
-                console.log("drawerContentStatus", drawerContentStatus);
-              }}
-            >
+            <p className="customer_nametext">
               {" "}
               {customerDetails && customerDetails.name
                 ? customerDetails.name
@@ -4745,7 +4816,6 @@ export default function Customers() {
       </Drawer>
 
       {/* form modal */}
-      {/* view certificate modal */}
       <Modal
         open={isOpenFormModal}
         onCancel={() => {
@@ -4771,6 +4841,58 @@ export default function Customers() {
       >
         <DownloadRegistrationForm customerDetails={customerDetails} />
       </Modal>
+
+      {/* email template drawer */}
+      <Drawer
+        title={
+          drawerContentStatus == "Send Email"
+            ? "Send Email"
+            : "Create Email Template"
+        }
+        open={isOpenEmailTemplateDrawer}
+        onClose={() => {
+          setIsOpenEmailTemplateDrawer(false);
+          setCustomerDetails(null);
+          setDrawerContentStatus("");
+        }}
+        width={drawerContentStatus == "Send Email" ? "50%" : "40%"}
+        style={{ position: "relative", paddingBottom: "60px" }}
+        className="customer_statusupdate_drawer"
+      >
+        {drawerContentStatus == "Create Email Template" ||
+        drawerContentStatus == "Send Email" ? (
+          <CustomerEmailTemplate
+            ref={emailTemplateRef}
+            setUpdateButtonLoading={setUpdateButtonLoading}
+            drawerContentStatus={drawerContentStatus}
+            setDrawerContentStatus={setDrawerContentStatus}
+            setIsOpenEmailTemplateDrawer={setIsOpenEmailTemplateDrawer}
+            customerDetails={customerDetails}
+          />
+        ) : (
+          ""
+        )}
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            {updateButtonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={
+                  drawerContentStatus == "Send Email"
+                    ? () => emailTemplateRef.current?.handleSendEmail()
+                    : () => emailTemplateRef.current?.handleTemplateCreate()
+                }
+              >
+                {drawerContentStatus == "Send Email" ? "Send" : "Create"}
+              </button>
+            )}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

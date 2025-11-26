@@ -378,7 +378,7 @@ const FinanceVerify = forwardRef(
 
       const paidNowValidate = priceValidator(
         parseInt(paidNow),
-        parseInt(amount)
+        parseInt(pendingAmount)
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);

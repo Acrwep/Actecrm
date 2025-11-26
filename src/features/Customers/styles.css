@@ -28,13 +28,14 @@
   background-color: #ffffff;
   border-color: #d9d9d9;
   height: 30px;
-  padding: 4px 12px;
+  padding: 4px 6px;
   border-radius: 6px;
   border-width: 1px;
-  width: 32px;
+  /* width: 32px; */
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #333;
 }
 .customer_download_button:hover {
   border-color: #5b69ca !important;
@@ -55,6 +56,27 @@
   align-items: center;
   opacity: 0.7;
   cursor: default;
+}
+.customers_download_tooltip_body {
+  padding: 0px 0px !important;
+  min-height: auto !important;
+}
+.customer_download_container {
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.customer_download_container:hover {
+  background-color: #a29bfe25;
+  color: #5b69ca;
+}
+.customer_download_text {
+  padding: 0px 4px;
 }
 .customers_scroll_wrapper {
   position: relative;
@@ -1473,7 +1495,7 @@
 }
 .customer_statusupdate_adddetails_heading {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   color: #333;
 }
 .customer_paymentscreenshot_heading {

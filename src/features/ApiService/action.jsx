@@ -761,6 +761,51 @@ export const customerDuePayment = async (payload) => {
   }
 };
 
+//email template
+export const createEmailTemplate = async (payload) => {
+  try {
+    const response = await api.post("/api/addTemplate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getEmailTemplates = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getTemplates?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateEmailTemplate = async (payload) => {
+  try {
+    const response = await api.put("/api/updateTemplate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteEmailTemplates = async (payload) => {
+  try {
+    const response = await api.delete("/api/deleteTemplate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendEmailToCustomer = async (payload) => {
+  try {
+    const response = await api.post("/api/emailSend", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //settings
 //group api's
 export const insertGroup = async (payload) => {
