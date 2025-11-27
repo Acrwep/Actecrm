@@ -25,10 +25,12 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import {
   createEmailTemplate,
+  deleteEmailTemplates,
   getEmailTemplates,
   sendEmailToCustomer,
   updateEmailTemplate,
 } from "../ApiService/action";
+import CommonDeleteModal from "../Common/CommonDeleteModal";
 
 const CustomerEmailTemplate = forwardRef(
   (
@@ -239,6 +241,34 @@ const CustomerEmailTemplate = forwardRef(
       } catch (error) {
         setButtonLoading(false);
         console.log("update email template error", error);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
+      }
+    };
+
+    const handleDeleteTemplate = async () => {
+      setButtonLoading(true);
+      const payload = {
+        template_id: updateTemplateId,
+      };
+      try {
+        await deleteEmailTemplates(payload);
+        setTimeout(() => {
+          setButtonLoading(false);
+          setIsOpenDeleteModal(false);
+          setUpdateTemplateId("");
+          getTemplateData();
+          if (updateTemplateId == selectedTemplateId) {
+            setSelectedTemplateId(null);
+            formReset();
+          }
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        console.log("delete email template error", error);
         CommonMessage(
           "error",
           error?.response?.data?.details ||
@@ -687,6 +717,11 @@ const CustomerEmailTemplate = forwardRef(
                               size={16}
                               color="#d32f2f"
                               className="trainers_action_icons"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsOpenDeleteModal(true);
+                                setUpdateTemplateId(option.id);
+                              }}
                             />
                           </div>
                         </div>
@@ -873,6 +908,18 @@ const CustomerEmailTemplate = forwardRef(
             )}
           </div>
         </Modal>
+
+        {/* delete modal */}
+        <CommonDeleteModal
+          open={isOpenDeleteModal}
+          onCancel={() => {
+            setIsOpenDeleteModal(false);
+            setUpdateTemplateId("");
+          }}
+          content="Are you sure want to delete the Email Template?"
+          loading={buttonLoading}
+          onClick={handleDeleteTemplate}
+        />
       </div>
     );
   }

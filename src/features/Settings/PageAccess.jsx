@@ -42,6 +42,7 @@ import {
   storeChildUsers,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
+  storeEmailTemplateModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
   storeLeadFollowupModulePermissionList,
@@ -94,6 +95,9 @@ export default function PageAccess({
   );
   const trainersModulePermissionData = useSelector(
     (state) => state.trainersmodulepermissionlist
+  );
+  const emailTemplateModulePermissionData = useSelector(
+    (state) => state.emailtemplatemodulepermissionlist
   );
   const reportsModulePermissionData = useSelector(
     (state) => state.reportsmodulepermissionlist
@@ -471,7 +475,20 @@ export default function PageAccess({
       }));
       dispatch(storeTrainersModulePermissionList(updatedTrainersPermissions));
 
-      //trainers module
+      //email template module
+      const updatedEmailTemplatePermissions = (
+        emailTemplateModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id
+        ),
+      }));
+      dispatch(
+        storeEmailTemplateModulePermissionList(updatedEmailTemplatePermissions)
+      );
+
+      //reports module
       const updatedReportsPermissions = (reportsModulePermissionData || []).map(
         (lp) => ({
           ...lp,
@@ -515,6 +532,7 @@ export default function PageAccess({
       ...bulkSearchModulePermissionData,
       ...serverModulePermissionData,
       ...trainersModulePermissionData,
+      ...emailTemplateModulePermissionData,
       ...reportsModulePermissionData,
       ...settingsModulePermissionData,
     ];
@@ -1585,6 +1603,40 @@ export default function PageAccess({
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeTrainersModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Email Template</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {emailTemplateModulePermissionData.map((item) => {
+                return (
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem =
+                          emailTemplateModulePermissionData.map((i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          });
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeEmailTemplateModulePermissionList(updateItem)
+                        );
                       }}
                     >
                       {item.permission_name}

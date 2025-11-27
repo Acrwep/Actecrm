@@ -15,6 +15,7 @@ import {
   storeBulkSearchModulePermissionList,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
+  storeEmailTemplateModulePermissionList,
   storeFeesPendingModulePermissionList,
   storeGroupList,
   storeLeadFollowupModulePermissionList,
@@ -307,6 +308,17 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeTrainersModulePermissionList(updateTrainersModule));
+
+      //filter reports module
+      const emailTemplateModule = allPermissions.filter(
+        (f) => f.section === "Email Template Module"
+      );
+      const updateEmailTemplateModule = emailTemplateModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(
+        storeEmailTemplateModulePermissionList(updateEmailTemplateModule)
+      );
 
       //filter reports module
       const reportsModule = allPermissions.filter(

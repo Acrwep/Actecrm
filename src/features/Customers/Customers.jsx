@@ -956,21 +956,23 @@ export default function Customers() {
               />
             </Tooltip>
 
-            <Tooltip
-              placement="top"
-              title="Send Email"
-              trigger={["hover", "click"]}
-            >
-              <LuSend
-                size={15}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsOpenEmailTemplateDrawer(true);
-                  setDrawerContentStatus("Send Email");
-                  setCustomerDetails(record);
-                }}
-              />
-            </Tooltip>
+            {permissions.includes("Send Email") && (
+              <Tooltip
+                placement="top"
+                title="Send Email"
+                trigger={["hover", "click"]}
+              >
+                <LuSend
+                  size={15}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenEmailTemplateDrawer(true);
+                    setDrawerContentStatus("Send Email");
+                    setCustomerDetails(record);
+                  }}
+                />
+              </Tooltip>
+            )}
 
             <Tooltip
               placement="top"
@@ -2167,21 +2169,23 @@ export default function Customers() {
                         />
                       </Tooltip>
 
-                      <Tooltip
-                        placement="top"
-                        title="Send Email"
-                        trigger={["hover", "click"]}
-                      >
-                        <LuSend
-                          size={15}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setIsOpenEmailTemplateDrawer(true);
-                            setDrawerContentStatus("Send Email");
-                            setCustomerDetails(record);
-                          }}
-                        />
-                      </Tooltip>
+                      {permissions.includes("Send Email") && (
+                        <Tooltip
+                          placement="top"
+                          title="Send Email"
+                          trigger={["hover", "click"]}
+                        >
+                          <LuSend
+                            size={15}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsOpenEmailTemplateDrawer(true);
+                              setDrawerContentStatus("Send Email");
+                              setCustomerDetails(record);
+                            }}
+                          />
+                        </Tooltip>
+                      )}
 
                       <Tooltip
                         placement="top"
@@ -2661,8 +2665,12 @@ export default function Customers() {
                   className="customer_download_container"
                   style={{ marginBottom: "1px" }}
                   onClick={() => {
-                    setIsOpenEmailTemplateDrawer(true);
-                    setDrawerContentStatus("Create Email Template");
+                    if (permissions.includes("Create Email Template")) {
+                      setIsOpenEmailTemplateDrawer(true);
+                      setDrawerContentStatus("Create Email Template");
+                    } else {
+                      CommonMessage("error", "Access Denied");
+                    }
                   }}
                 >
                   <HiOutlineMail />

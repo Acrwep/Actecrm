@@ -791,7 +791,9 @@ export const updateEmailTemplate = async (payload) => {
 
 export const deleteEmailTemplates = async (payload) => {
   try {
-    const response = await api.delete("/api/deleteTemplate", payload);
+    const response = await api.delete("/api/deleteTemplate", {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;
