@@ -309,7 +309,7 @@ export default function Settings() {
       });
       dispatch(storeTrainersModulePermissionList(updateTrainersModule));
 
-      //filter reports module
+      //filter email template module
       const emailTemplateModule = allPermissions.filter(
         (f) => f.section === "Email Template Module"
       );
