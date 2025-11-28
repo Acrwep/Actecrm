@@ -44,8 +44,8 @@ const InsertPendingFees = forwardRef(
   ) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [pendingAmount, setPendingAmount] = useState();
-    const [duplicatePayAmount, setDuplicatePayAmount] = useState("");
     const [payAmount, setPayAmount] = useState("");
+    const [duplicatePayAmount, setDuplicatePayAmount] = useState("");
     const [payAmountError, setPayAmountError] = useState("");
     const [paymentMode, setPaymentMode] = useState("");
     const [paymentModeError, setPaymentModeError] = useState("");
@@ -64,7 +64,6 @@ const InsertPendingFees = forwardRef(
     const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
     const [paymentValidationTrigger, setPaymentValidationTrigger] =
       useState(false);
-    const [duplicateBalanceAmount, setDuplicateBalanceAmount] = useState();
     const [balanceAmount, setBalanceAmount] = useState();
     const [isShowDueDate, setIsShowDueDate] = useState(true);
     const [dueDate, setDueDate] = useState(null);
@@ -90,7 +89,6 @@ const InsertPendingFees = forwardRef(
 
       // Keep the input as string
       setPayAmount(input);
-      setDuplicatePayAmount(input);
 
       const value = parseFloat(input); // parse for calculations
       const amt = parseFloat(pendingAmount);
@@ -107,15 +105,9 @@ const InsertPendingFees = forwardRef(
         getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
       );
 
-      setDuplicateBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
-      );
-
       if (paymentMode == 2 || paymentMode == 5) {
-        if (convenienceFeesStatus == 2) {
-          const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-          setConvenienceFees(conve_fees);
-        }
+        const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
+        setConvenienceFees(conve_fees);
       } else {
         setConvenienceFees(0);
       }
@@ -157,13 +149,6 @@ const InsertPendingFees = forwardRef(
         )
       );
 
-      setDuplicateBalanceAmount(
-        getBalanceAmount(
-          isNaN(pendingAmount) ? 0 : pendingAmount,
-          isNaN(payAmount) ? 0 : payAmount
-        )
-      );
-
       //handle convenience fees
       if (value == 2 || value == 5) {
         const conve_fees = getConvenienceFees(
@@ -175,77 +160,77 @@ const InsertPendingFees = forwardRef(
       }
     };
 
-    const handleConvenienceFeesStatus = (e) => {
-      const value = e.target.value;
-      setConvenienceFeesStatus(value);
-      setConvenienceFees(0);
-      setConvenienceFeesStatusError(selectValidator(value));
-      // -------------inclusive--------------
-      if (value == 1) {
-        setPayAmount(duplicatePayAmount);
-        const threePercentAmount =
-          calculateThreePercentAmount(duplicatePayAmount);
-        console.log("threePercentAmount", threePercentAmount);
+    // const handleConvenienceFeesStatus = (e) => {
+    //   const value = e.target.value;
+    //   setConvenienceFeesStatus(value);
+    //   setConvenienceFees(0);
+    //   setConvenienceFeesStatusError(selectValidator(value));
+    //   // -------------inclusive--------------
+    //   if (value == 1) {
+    //     setPayAmount(duplicatePayAmount);
+    //     const threePercentAmount =
+    //       calculateThreePercentAmount(duplicatePayAmount);
+    //     console.log("threePercentAmount", threePercentAmount);
 
-        //handle balance amount
-        const pay = parseFloat(duplicatePayAmount); // parse for calculations
-        const amt = parseFloat(pendingAmount);
+    //     //handle balance amount
+    //     const pay = parseFloat(duplicatePayAmount); // parse for calculations
+    //     const amt = parseFloat(pendingAmount);
 
-        if (
-          pay < amt ||
-          isNaN(pay) ||
-          duplicatePayAmount === "" ||
-          duplicatePayAmount === null
-        ) {
-          setIsShowDueDate(true);
-        } else {
-          setIsShowDueDate(false);
-          setDueDate(null);
-          setDueDateError("");
-        }
+    //     if (
+    //       pay < amt ||
+    //       isNaN(pay) ||
+    //       duplicatePayAmount === "" ||
+    //       duplicatePayAmount === null
+    //     ) {
+    //       setIsShowDueDate(true);
+    //     } else {
+    //       setIsShowDueDate(false);
+    //       setDueDate(null);
+    //       setDueDateError("");
+    //     }
 
-        setBalanceAmount(
-          getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
-        );
-      }
-      // -------------exclusive--------------
-      if (value == 2 && (paymentMode == 2 || paymentMode == 5)) {
-        setConvenienceFeesError("");
-        const threePercentAmount =
-          calculateThreePercentAmount(duplicatePayAmount);
-        setConvenienceFees(threePercentAmount);
-        //handle payamount
-        const updatePayAmount = duplicatePayAmount - threePercentAmount;
-        setPayAmount(updatePayAmount);
+    //     setBalanceAmount(
+    //       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
+    //     );
+    //   }
+    //   // -------------exclusive--------------
+    //   if (value == 2 && (paymentMode == 2 || paymentMode == 5)) {
+    //     setConvenienceFeesError("");
+    //     const threePercentAmount =
+    //       calculateThreePercentAmount(duplicatePayAmount);
+    //     setConvenienceFees(threePercentAmount);
+    //     //handle payamount
+    //     const updatePayAmount = duplicatePayAmount - threePercentAmount;
+    //     setPayAmount(updatePayAmount);
 
-        //handle balance amount
-        const pay = parseFloat(updatePayAmount); // parse for calculations
-        const amt = parseFloat(pendingAmount);
+    //     //handle balance amount
+    //     const pay = parseFloat(updatePayAmount); // parse for calculations
+    //     const amt = parseFloat(pendingAmount);
 
-        if (pay < amt || isNaN(pay) || input === "" || input === null) {
-          setIsShowDueDate(true);
-        } else {
-          setIsShowDueDate(false);
-          setDueDate(null);
-          setDueDateError("");
-        }
+    //     if (pay < amt || isNaN(pay) || input === "" || input === null) {
+    //       setIsShowDueDate(true);
+    //     } else {
+    //       setIsShowDueDate(false);
+    //       setDueDate(null);
+    //       setDueDateError("");
+    //     }
 
-        setBalanceAmount(
-          getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
-        );
-      }
-    };
+    //     setBalanceAmount(
+    //       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
+    //     );
+    //   }
+    // };
 
-    const handleConvenienceFees = (e) => {
-      const input = e.target.value;
+    // const handleConvenienceFees = (e) => {
+    //   const input = e.target.value;
 
-      // Allow numbers, decimal point, or empty string
-      if (!/^\d*\.?\d*$/.test(input)) return;
+    //   // Allow numbers, decimal point, or empty string
+    //   if (!/^\d*\.?\d*$/.test(input)) return;
 
-      // Keep the input as string
-      setConvenienceFees(input);
-      setConvenienceFeesError(validateConvenienceFee(payAmount, input));
-    };
+    //   // Keep the input as string
+    //   setConvenienceFees(input);
+    //   setConvenienceFeesError(validateConvenienceFee(payAmount, input));
+    // };
 
     const handlePaymentSubmit = async () => {
       setPaymentValidationTrigger(true);
@@ -265,35 +250,18 @@ const InsertPendingFees = forwardRef(
         dueDateValidate = "";
       }
 
-      let convenienceFeesStatusValidate;
-      let convenienceFeesValidate;
-
-      if (paymentMode == 2 || paymentMode == 5) {
-        convenienceFeesStatusValidate = selectValidator(convenienceFeesStatus);
-      }
-
-      if (convenienceFeesStatus == 1) {
-        convenienceFeesValidate = validateConvenienceFee(
-          payAmount,
-          convenienceFees
-        );
-      }
       setPaymentModeError(paymentTypeValidate);
       setPayAmountError(payAmountValidate);
       setPaymentDateError(paymentDateValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
-      setConvenienceFeesStatusError(convenienceFeesStatusValidate);
-      setConvenienceFeesError(convenienceFeesValidate);
 
       if (
         paymentTypeValidate ||
         payAmountValidate ||
         paymentDateValidate ||
         screenshotValidate ||
-        dueDateValidate ||
-        convenienceFeesStatusValidate ||
-        convenienceFeesValidate
+        dueDateValidate
       )
         return;
 
@@ -729,10 +697,6 @@ const InsertPendingFees = forwardRef(
               value={payAmount}
               error={payAmountError}
               errorFontSize="10px"
-              onFocus={() => {
-                setConvenienceFeesStatus(null);
-                setConvenienceFees(0);
-              }}
             />
           </Col>
           <Col span={8} style={{ marginTop: "16px" }}>
@@ -753,42 +717,16 @@ const InsertPendingFees = forwardRef(
             />
           </Col>
 
-          {paymentMode == 2 || paymentMode == 5 ? (
-            <Col span={8} style={{ marginTop: "34px" }}>
-              <CommonSelectField
-                label="Conv. Fee Status"
-                options={convenienceFeesStatusOptions}
-                onChange={handleConvenienceFeesStatus}
-                value={convenienceFeesStatus}
-                error={convenienceFeesStatusError}
-              />
-            </Col>
-          ) : (
-            ""
-          )}
-          {convenienceFeesStatus ? (
-            <Col span={8} style={{ marginTop: "34px" }}>
-              <CommonInputField
-                label="Conv. Fee"
-                required={true}
-                onChange={handleConvenienceFees}
-                value={convenienceFees}
-                type="number"
-                error={convenienceFeesError}
-                disabled={convenienceFeesStatus == 1 ? false : true}
-              />
-            </Col>
-          ) : (
-            <Col span={8} style={{ marginTop: "34px" }}>
-              <CommonInputField
-                label="Conv. Fee"
-                required={true}
-                value={0}
-                type="number"
-                disabled={true}
-              />
-            </Col>
-          )}
+          <Col span={8} style={{ marginTop: "34px" }}>
+            <CommonInputField
+              label="Conv. Fee"
+              required={true}
+              value={convenienceFees}
+              type="number"
+              disabled={true}
+            />
+          </Col>
+
           <Col span={8} style={{ marginTop: "34px" }}>
             <CommonMuiDatePicker
               label="Payment Date"
