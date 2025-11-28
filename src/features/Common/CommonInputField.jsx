@@ -15,6 +15,7 @@ export default function CommonInputField({
   ref,
   maxLength,
   type,
+  onFocus,
   disabled,
   onInput,
   borderLeftNone,
@@ -62,6 +63,7 @@ export default function CommonInputField({
         required={required}
         disabled={disabled}
         type={type}
+        onFocus={onFocus}
         sx={{
           width: "100%",
           "& .MuiInputLabel-root": {

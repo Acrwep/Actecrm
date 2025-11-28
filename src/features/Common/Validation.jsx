@@ -511,3 +511,23 @@ export const customizeStartDateAndEndDate = (months) => {
 
   return [startDate, endDate];
 };
+
+export const validateConvenienceFee = (payAmount, convenienceFees) => {
+  let error = "";
+
+  const threePercent = (payAmount * 3) / 100;
+
+  if (convenienceFees == threePercent) {
+    error = "";
+  } else {
+    error = " is mismatch";
+  }
+  return error;
+};
+
+export const calculateThreePercentAmount = (payAmount) => {
+  let error = "";
+
+  const threePercent = (payAmount * 3) / 100;
+  return threePercent;
+};

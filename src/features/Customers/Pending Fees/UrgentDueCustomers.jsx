@@ -8,8 +8,6 @@ import {
   Button,
   Drawer,
   Divider,
-  Collapse,
-  Modal,
   Checkbox,
 } from "antd";
 import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
@@ -17,20 +15,14 @@ import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
 import {
-  customerDuePayment,
   getAllDownlineUsers,
   getPendingFeesCustomers,
   getTableColumns,
-  inserCustomerTrack,
   updateTableColumns,
 } from "../../ApiService/action";
 import {
   formatToBackendIST,
-  getBalanceAmount,
-  getConvenienceFees,
   getCurrentandPreviousweekDate,
-  priceValidator,
-  selectValidator,
 } from "../../Common/Validation";
 import CommonTable from "../../Common/CommonTable";
 import CommonDnd from "../../Common/CommonDnd";
@@ -45,26 +37,21 @@ import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
-import CommonInputField from "../../Common/CommonInputField";
 import CommonSelectField from "../../Common/CommonSelectField";
-import CommonMuiDatePicker from "../../Common/CommonMuiDatePicker";
 import CommonSpinner from "../../Common/CommonSpinner";
 import { CommonMessage } from "../../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
-import { FaRegCircleXmark } from "react-icons/fa6";
-import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
-import { PiClockCounterClockwiseBold } from "react-icons/pi";
-import PrismaZoom from "react-prismazoom";
-import ImageUploadCrop from "../../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
+import InsertPendingFees from "./InsertPendingFees";
 
 export default function UrgentDueCustomers({
   setUrgentDueCount,
   setDueSelectedDates,
 }) {
   const mounted = useRef(false);
+  const insertPendingFeesRef = useRef();
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -73,35 +60,16 @@ export default function UrgentDueCustomers({
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [customersData, setCustomersData] = useState([]);
-  const [customerId, setCustomerId] = useState(null);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
 
   //payment usestates
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [pendingAmount, setPendingAmount] = useState();
-  const [payAmount, setPayAmount] = useState("");
-  const [payAmountError, setPayAmountError] = useState("");
-  const [paymentMode, setPaymentMode] = useState("");
-  const [paymentModeError, setPaymentModeError] = useState("");
-  const [convenienceFees, setConvenienceFees] = useState("");
-  const [paymentDate, setPaymentDate] = useState(null);
-  const [paymentDateError, setPaymentDateError] = useState(null);
-  const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
-  const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
-  const [paymentValidationTrigger, setPaymentValidationTrigger] =
-    useState(false);
   const [balanceAmount, setBalanceAmount] = useState();
-  const [isShowDueDate, setIsShowDueDate] = useState(true);
-  const [dueDate, setDueDate] = useState(null);
-  const [dueDateError, setDueDateError] = useState("");
-  const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
-    useState(false);
-  const [transactionScreenshot, setTransactionScreenshot] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -394,7 +362,6 @@ export default function UrgentDueCustomers({
                   onClick={() => {
                     setIsOpenPaymentDrawer(true);
                     setCustomerDetails(record);
-                    setCollapseDefaultKey(["1"]);
                     setPendingAmount(parseFloat(record.balance_amount));
                     setBalanceAmount(parseFloat(record.balance_amount));
                     setPaymentHistory(
@@ -792,7 +759,6 @@ export default function UrgentDueCustomers({
                               onClick={() => {
                                 setIsOpenPaymentDrawer(true);
                                 setCustomerDetails(record);
-                                setCollapseDefaultKey(["1"]);
                                 setPendingAmount(
                                   parseFloat(record.balance_amount)
                                 );
@@ -880,83 +846,6 @@ export default function UrgentDueCustomers({
     }, 300);
   };
 
-  const handlePaidNow = (e) => {
-    const input = e.target.value;
-
-    // Allow numbers, decimal point, or empty string
-    if (!/^\d*\.?\d*$/.test(input)) return;
-
-    // Keep the input as string
-    setPayAmount(input);
-
-    const value = parseFloat(input); // parse for calculations
-    const amt = parseFloat(pendingAmount);
-
-    if (value < amt || isNaN(value) || input === "" || input === null) {
-      setIsShowDueDate(true);
-    } else {
-      setIsShowDueDate(false);
-      setDueDate(null);
-      setDueDateError("");
-    }
-
-    setBalanceAmount(
-      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
-    );
-
-    if (paymentMode == 2 || paymentMode == 5) {
-      const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-      setConvenienceFees(conve_fees);
-    } else {
-      setConvenienceFees(0);
-    }
-
-    if (paymentValidationTrigger) {
-      setPayAmountError(
-        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
-      );
-    }
-  };
-
-  const handlePaymentType = (e) => {
-    const value = e.target.value;
-    setPaymentMode(value);
-
-    if (paymentValidationTrigger) {
-      setPaymentModeError(selectValidator(value));
-    }
-
-    //handle balance amount
-    if (
-      payAmount < pendingAmount ||
-      isNaN(payAmount) ||
-      payAmount == "" ||
-      payAmount == null
-    ) {
-      setIsShowDueDate(true);
-    } else {
-      setIsShowDueDate(false);
-      setDueDate(null);
-      setDueDateError("");
-    }
-    setBalanceAmount(
-      getBalanceAmount(
-        isNaN(pendingAmount) ? 0 : pendingAmount,
-        isNaN(payAmount) ? 0 : payAmount
-      )
-    );
-
-    //handle convenience fees
-    if (value == 2 || value == 5) {
-      const conve_fees = getConvenienceFees(
-        payAmount ? parseInt(payAmount) : 0
-      );
-      setConvenienceFees(conve_fees);
-    } else {
-      setConvenienceFees(0);
-    }
-  };
-
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
@@ -984,135 +873,12 @@ export default function UrgentDueCustomers({
     }
   };
 
-  const handlePaymentSubmit = async () => {
-    setPaymentValidationTrigger(true);
-    const paymentTypeValidate = selectValidator(paymentMode);
-    const paymentDateValidate = selectValidator(paymentDate);
-    const payAmountValidate = priceValidator(
-      parseInt(payAmount),
-      parseInt(pendingAmount)
-    );
-
-    const screenshotValidate = selectValidator(paymentScreenShotBase64);
-    let dueDateValidate;
-
-    if (isShowDueDate) {
-      dueDateValidate = selectValidator(dueDate);
-    } else {
-      dueDateValidate = "";
-    }
-
-    setPaymentModeError(paymentTypeValidate);
-    setPayAmountError(payAmountValidate);
-    setPaymentDateError(paymentDateValidate);
-    setPaymentScreenShotError(screenshotValidate);
-    setDueDateError(dueDateValidate);
-
-    if (
-      paymentTypeValidate ||
-      payAmountValidate ||
-      paymentDateValidate ||
-      screenshotValidate ||
-      dueDateValidate
-    )
-      return;
-
-    setButtonLoading(true);
-
-    const today = new Date();
-
-    // setTimeout(() => {
-    //   setInvoiceButtonLoading(false);
-    //   setButtonLoading(false);
-    // }, 300);
-
-    const payload = {
-      payment_master_id: customerDetails.payment_master_id,
-      invoice_date: formatToBackendIST(paymentDate),
-      paid_amount: payAmount,
-      convenience_fees: convenienceFees,
-      balance_amount: balanceAmount,
-      paymode_id: paymentMode,
-      payment_screenshot: paymentScreenShotBase64,
-      payment_status: "Verify Pending",
-      next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
-      created_date: formatToBackendIST(today),
-      paid_date: formatToBackendIST(paymentDate),
-    };
-
-    try {
-      const response = await customerDuePayment(payload);
-      console.log("lead payment response", response);
-      const createdCustomerDetails = response?.data?.data;
-      setTimeout(() => {
-        handleCustomerTrack("Part Payment Added");
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      console.log("part payment error", error);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
-  };
-
-  const handleCustomerTrack = async (updatestatus) => {
-    const today = new Date();
-    const getloginUserDetails = localStorage.getItem("loginUserDetails");
-    const converAsJson = JSON.parse(getloginUserDetails);
-    console.log("getloginUserDetails", converAsJson);
-
-    const payload = {
-      customer_id: customerDetails.id,
-      status: updatestatus,
-      updated_by:
-        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-      status_date: formatToBackendIST(today),
-    };
-
-    try {
-      await inserCustomerTrack(payload);
-      setTimeout(() => {
-        setButtonLoading(false);
-        setPagination({
-          page: 1,
-        });
-        getPendingFeesCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          allDownliners,
-          pagination.page,
-          pagination.limit
-        );
-        formReset();
-      }, 300);
-    } catch (error) {
-      console.log("customer track error", error);
-    }
-  };
-
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
     setIsOpenPaymentDrawer(false);
     setPendingAmount();
-    setPayAmount("");
-    setPayAmountError("");
-    setPaymentMode(null);
-    setPaymentModeError("");
-    setConvenienceFees(0);
-    setPaymentDate(null);
-    setPaymentDateError("");
-    setPaymentScreenShotBase64("");
-    setPaymentScreenShotError("");
     setBalanceAmount();
-    setDueDate(null);
-    setDueDateError("");
-    setPaymentValidationTrigger(false);
-    setTransactionScreenshot("");
   };
 
   return (
@@ -2005,487 +1771,32 @@ export default function UrgentDueCustomers({
 
         <Divider className="customer_statusupdate_divider" />
 
-        <div style={{ padding: "0px 24px" }}>
-          <div className="customerdetails_coursecard">
-            <div className="customerdetails_coursecard_headercontainer">
-              <p>Tax Details</p>
-            </div>
-
-            <div className="customerdetails_coursecard_contentcontainer">
-              <Row>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Course Fees
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.course_fees
-                          ? "₹" + customerDetails.course_fees
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Gst Amount</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails?.payment?.gst_amount ? (
-                          <>
-                            ₹{customerDetails.payment.gst_amount}{" "}
-                            <span style={{ fontSize: "11px" }}>
-                              ({customerDetails.payment.tax_type || "-"})
-                            </span>
-                          </>
-                        ) : (
-                          "-"
-                        )}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Total Fees</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.payment.total_amount
-                          ? "₹" + customerDetails.payment.total_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Balance Amount
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
-                      >
-                        {customerDetails && customerDetails.balance_amount
-                          ? "₹" + customerDetails.balance_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </div>
-          </div>
-        </div>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Transaction History
-        </p>
-
-        <div style={{ padding: "0px 24px" }}>
-          {paymentHistory.length >= 1 ? (
-            <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-              <Collapse
-                activeKey={collapseDefaultKey}
-                onChange={(keys) => setCollapseDefaultKey(keys)}
-                className="assesmntresult_collapse"
-              >
-                {paymentHistory.map((item, index) => (
-                  <Collapse.Panel
-                    key={index + 1} // unique key
-                    header={
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          width: "100%",
-                          fontSize: "13px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span>
-                          Transaction Date -{" "}
-                          <span style={{ fontWeight: "500" }}>
-                            {moment(item.invoice_date).format("DD/MM/YYYY")}
-                          </span>
-                        </span>
-                        {item.payment_status === "Verify Pending" ? (
-                          <div className="customer_trans_statustext_container">
-                            <PiClockCounterClockwiseBold
-                              size={16}
-                              color="gray"
-                            />
-                            <p style={{ color: "gray", fontWeight: 500 }}>
-                              Waiting for Verify
-                            </p>
-                          </div>
-                        ) : item.payment_status === "Rejected" ? (
-                          <div className="customer_trans_statustext_container">
-                            <FaRegCircleXmark color="#d32f2f" />
-                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
-                              Rejected
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="customer_trans_statustext_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p style={{ color: "#3c9111", fontWeight: 500 }}>
-                              Verified
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    }
-                  >
-                    <div style={{ padding: "0px 12px" }}>
-                      <Row
-                        gutter={16}
-                        style={{ marginTop: "6px", marginBottom: "8px" }}
-                      >
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Invoice Date
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {moment(item.invoice_date).format("DD/MM/YYYY")}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Invoice Number
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.invoice_number}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Payment Mode
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.payment_mode}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Payment Screenshot
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <button
-                                className="pendingcustomer_paymentscreenshot_viewbutton"
-                                onClick={() => {
-                                  setIsOpenPaymentScreenshotModal(true);
-                                  setTransactionScreenshot(
-                                    item.payment_screenshot
-                                  );
-                                }}
-                              >
-                                <FaRegEye size={16} /> View screenshot
-                              </button>
-                            </Col>
-                          </Row>
-                        </Col>
-
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Base Amount
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.amount}
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Convenience Fees
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.convenience_fees}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Paid Amount{" "}
-                                  <span className="customerdetails_coursegst">{` (Total)`}</span>
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p
-                                className="customerdetails_text"
-                                style={{
-                                  color: "#3c9111",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {"₹" + item.paid_amount}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Nxt Due Date
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.next_due_date
-                                  ? moment(item.next_due_date).format(
-                                      "DD/MM/YYYY"
-                                    )
-                                  : "-"}{" "}
-                              </p>
-                            </Col>
-                          </Row>
-                        </Col>
-                      </Row>
-                    </div>
-
-                    {item.payment_status == "Rejected" && (
-                      <>
-                        <Divider className="customer_statusupdate_divider" />
-                        <div style={{ padding: "0px 12px 6px 12px" }}>
-                          <Row>
-                            <Col span={24}>
-                              <Row>
-                                <Col span={6}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p
-                                      className="customerdetails_rowheading"
-                                      style={{ color: "#d32f2f" }}
-                                    >
-                                      Rejection Reason:
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={18}>
-                                  <p className="customerdetails_text">
-                                    {item.reason}
-                                  </p>
-                                </Col>
-                              </Row>
-                            </Col>
-                          </Row>
-                        </div>
-                      </>
-                    )}
-                  </Collapse.Panel>
-                ))}
-              </Collapse>
-            </div>
-          ) : (
-            <p className="customer_trainerhistory_nodatatext">No Data found</p>
-          )}
-        </div>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Payment Info
-        </p>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "16px" }}
-        >
-          <Col span={8}>
-            <CommonInputField
-              label="Pending Amount"
-              required={true}
-              value={pendingAmount}
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Pay Amount"
-              required={true}
-              onChange={handlePaidNow}
-              value={payAmount}
-              error={payAmountError}
-              errorFontSize="10px"
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Payment Mode"
-              required={true}
-              options={[
-                { id: 1, name: "Cash" },
-                { id: 2, name: "Card" },
-                { id: 3, name: "Bank" },
-                { id: 4, name: "UPI" },
-                { id: 5, name: "Razorpay" },
-                { id: 6, name: "Razorpay - UPI" },
-              ]}
-              onChange={handlePaymentType}
-              value={paymentMode}
-              error={paymentModeError}
-            />
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-          style={{ marginTop: "34px" }}
-        >
-          <Col span={8}>
-            <CommonInputField
-              label="Convenience fees"
-              required={true}
-              value={convenienceFees}
-              disabled={true}
-              type="number"
-            />
-          </Col>
-          <Col span={8}>
-            <CommonMuiDatePicker
-              label="Payment Date"
-              required={true}
-              onChange={(value) => {
-                setPaymentDate(value);
-                if (paymentValidationTrigger) {
-                  setPaymentDateError(selectValidator(value));
-                }
-              }}
-              value={paymentDate}
-              error={paymentDateError}
-            />
-          </Col>
-
-          <Col span={8}>
-            <ImageUploadCrop
-              label="Payment Screenshot"
-              aspect={1}
-              maxSizeMB={1}
-              required={true}
-              value={paymentScreenShotBase64}
-              onChange={(base64) => setPaymentScreenShotBase64(base64)}
-              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-            />
-            {paymentScreenShotError && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d32f2f",
-                  marginTop: 4,
-                }}
-              >
-                {`Payment Screenshot ${paymentScreenShotError}`}
-              </p>
-            )}
-          </Col>
-        </Row>
-
-        <Divider className="leadmanger_paymentdrawer_divider" />
-
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Balance Amount Details
-        </p>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", marginBottom: "30px" }}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-        >
-          <Col span={8}>
-            <CommonInputField
-              label="Balance Amount"
-              required={true}
-              value={balanceAmount}
-              disabled={true}
-              type="number"
-            />
-          </Col>
-          {isShowDueDate ? (
-            <Col span={8}>
-              <CommonMuiDatePicker
-                label="Next Due Date"
-                required={true}
-                onChange={(value) => {
-                  setDueDate(value);
-                  setDueDateError(selectValidator(value));
-                }}
-                value={dueDate}
-                error={dueDateError}
-                disablePreviousDates={true}
-              />
-            </Col>
-          ) : (
-            ""
-          )}
-        </Row>
+        {isOpenPaymentDrawer ? (
+          <InsertPendingFees
+            ref={insertPendingFeesRef}
+            pending={pendingAmount}
+            bal={balanceAmount}
+            customerDetails={customerDetails}
+            paymentHistory={paymentHistory}
+            setButtonLoading={setButtonLoading}
+            callgetCustomersApi={() => {
+              formReset();
+              setPagination({
+                page: 1,
+              });
+              getPendingFeesCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                allDownliners,
+                pagination.page,
+                pagination.limit
+              );
+            }}
+          />
+        ) : (
+          ""
+        )}
 
         <div className="leadmanager_tablefiler_footer">
           <div
@@ -2499,9 +1810,9 @@ export default function UrgentDueCustomers({
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={() => {
-                  handlePaymentSubmit();
-                }}
+                onClick={() =>
+                  insertPendingFeesRef.current?.handlePaymentSubmit()
+                }
               >
                 Submit
               </button>
@@ -2509,29 +1820,6 @@ export default function UrgentDueCustomers({
           </div>
         </div>
       </Drawer>
-
-      <Modal
-        title="Payment Screenshot"
-        open={isOpenPaymentScreenshotModal}
-        onCancel={() => setIsOpenPaymentScreenshotModal(false)}
-        footer={false}
-        width="32%"
-        className="customer_paymentscreenshot_modal"
-      >
-        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
-          <PrismaZoom>
-            {transactionScreenshot ? (
-              <img
-                src={`data:image/png;base64,${transactionScreenshot}`}
-                alt="payment screenshot"
-                className="customer_paymentscreenshot_image"
-              />
-            ) : (
-              "-"
-            )}
-          </PrismaZoom>
-        </div>
-      </Modal>
 
       {/* table filter drawer */}
       <Drawer
