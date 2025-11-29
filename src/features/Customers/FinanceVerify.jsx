@@ -245,6 +245,7 @@ const FinanceVerify = forwardRef(
                 ? customerDetails?.status ?? "Unknown"
                 : "Awaiting Verify",
           };
+          console.log("payloaddd", payload);
           try {
             await updateCustomerStatus(payload);
             handleCustomerTrack(
@@ -423,10 +424,11 @@ const FinanceVerify = forwardRef(
         setTimeout(async () => {
           const payload = {
             customer_id: customerDetails.id,
-            status:
-              customerDetails?.is_second_due == 0
-                ? "Awaiting Finance"
-                : customerDetails.status,
+            // status:
+            //   customerDetails?.is_second_due == 0
+            //     ? "Awaiting Finance"
+            //     : customerDetails.status,
+            status: customerDetails.status,
           };
           try {
             await updateCustomerStatus(payload);

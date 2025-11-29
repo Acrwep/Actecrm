@@ -403,6 +403,15 @@
 .leads_serverrequired_switch.ant-switch.ant-switch-checked {
   background-color: #5b69ca !important;
 }
+.leadmanager_qualityicon {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.leadmanager_qualityicon:hover {
+  transform: scale(1.1);
+}
 /* lead followup styles */
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {
   padding: 0px !important;
@@ -610,6 +619,11 @@
   color: #333;
   font-size: 13px;
   padding: 0px 0px 4px 54px;
+}
+.leadfollowup_qualitystatus_text {
+  color: #333;
+  font-size: 13px;
+  padding: 4px 0px 4px 54px;
 }
 .leadfollowup_comment_nodatafound {
   font-size: 12px;

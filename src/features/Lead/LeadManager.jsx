@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
-import { Button, Tooltip, Skeleton } from "antd";
+import { Button, Tooltip, Tabs } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import {
   getAllAreas,
@@ -17,6 +17,7 @@ import {
 } from "../ApiService/action";
 import { useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import CNAFollowup from "./CNAFollowup";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -33,6 +34,8 @@ export default function LeadManager() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
+  //quality tab section
+  const [refreshToggle, setRefreshToggle] = useState(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -240,7 +243,11 @@ export default function LeadManager() {
 
       {/* Mount only when first opened, keep mounted afterward */}
       {loadedTabs.followup && (
-        <div style={{ display: activePage === "followup" ? "block" : "none" }}>
+        <div
+          style={{
+            display: activePage === "followup" ? "block" : "none",
+          }}
+        >
           <LeadFollowUp
             key={tabKeys.followup}
             setFollowupCount={setFollowupCount}
@@ -256,8 +263,13 @@ export default function LeadManager() {
       )}
 
       {loadedTabs.leads && (
-        <div style={{ display: activePage === "leads" ? "block" : "none" }}>
-          <Leads
+        <div
+          style={{
+            display: activePage === "leads" ? "block" : "none",
+            marginTop: "-20px",
+          }}
+        >
+          {/* <Leads
             triggerApi={triggerApi}
             setTriggerApi={setTriggerApi}
             key={tabKeys.leads}
@@ -270,7 +282,46 @@ export default function LeadManager() {
             areaOptions={areaOptions}
             setAreaOptions={setAreaOptions}
             setLeadCountLoading={setLeadCountLoading}
-          />
+          /> */}
+          <Tabs
+            className="report_tabs"
+            defaultActiveKey="1"
+            items={[
+              {
+                label: "Leads",
+                key: "1",
+                children: (
+                  <Leads
+                    triggerApi={triggerApi}
+                    setTriggerApi={setTriggerApi}
+                    key={tabKeys.leads}
+                    refreshLeadFollowUp={refreshLeadFollowUp}
+                    setLeadCount={setLeadCount}
+                    leadTypeOptions={leadTypeOptions}
+                    regionOptions={regionOptions}
+                    courseOptions={courseOptions}
+                    setCourseOptions={setCourseOptions}
+                    areaOptions={areaOptions}
+                    setAreaOptions={setAreaOptions}
+                    setLeadCountLoading={setLeadCountLoading}
+                    refreshToggle={refreshToggle}
+                    setRefreshToggle={setRefreshToggle}
+                  />
+                ),
+              },
+              {
+                label: "CNA Followup",
+                key: "2",
+                children: (
+                  <CNAFollowup
+                    key={refreshToggle}
+                    refreshLeadFollowUp={refreshLeadFollowUp}
+                    refreshLeads={refreshLeads}
+                  />
+                ),
+              },
+            ]}
+          ></Tabs>
         </div>
       )}
     </div>

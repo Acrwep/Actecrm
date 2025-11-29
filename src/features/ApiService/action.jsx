@@ -1273,3 +1273,22 @@ export const raPerformanceReport = async (payload) => {
     throw error;
   }
 };
+
+//quality api's
+export const updateQualityComments = async (payload) => {
+  try {
+    const response = await api.post(`/api/updateQuality`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCNAFolloups = async (payload) => {
+  try {
+    const response = await api.post(`/api/qualityLeadFollowUps`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

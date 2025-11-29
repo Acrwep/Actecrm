@@ -424,6 +424,14 @@ export default function LeadFollowUp({
         return { ...c, id: c.isoCode };
       });
       setCountryOptions(updateCountries);
+      setCountryId("IN");
+      const stateList = State.getStatesOfCountry("IN");
+      const updateSates = stateList.map((s) => {
+        return { ...s, id: s.isoCode };
+      });
+      setStateOptions(updateSates);
+      setStateId("TN");
+      // ---------------------
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setSelectedDates(PreviousAndCurrentDate);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -1459,9 +1467,14 @@ export default function LeadFollowUp({
       mobile: 0,
       whatsApp: 0,
     });
-    setCountryId(null);
+    setCountryId("IN");
+    const stateList = State.getStatesOfCountry("IN");
+    const updateSates = stateList.map((s) => {
+      return { ...s, id: s.isoCode };
+    });
     setCountryError("");
-    setStateId(null);
+    setStateOptions(updateSates);
+    setStateId("TN");
     setStateError("");
     setAreaId(null);
     setAreaError("");

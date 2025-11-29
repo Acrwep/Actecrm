@@ -20,7 +20,7 @@ export default function PendingFeesCustomers() {
   const [overAllDueCount, setOverAllDueCount] = useState(0);
   const [urgentDueCount, setUrgentDueCount] = useState(0);
   const [callCountApi, setCallCountApi] = useState(true);
-
+  const [loginUserId, setLoginUserId] = useState("");
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
     todaydue: true, // first tab shown initially
@@ -38,6 +38,8 @@ export default function PendingFeesCustomers() {
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
+    setLoginUserId(convertAsJson?.user_id);
+
     if (childUsers.length <= 0) return;
     if (callCountApi) {
       getAllDownlineUsersData(convertAsJson?.user_id);
@@ -101,11 +103,7 @@ export default function PendingFeesCustomers() {
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount
     }));
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    getPendingCustomersCountData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1]
-    );
+    getAllDownlineUsersData(loginUserId);
   };
 
   return (
