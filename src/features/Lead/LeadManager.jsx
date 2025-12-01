@@ -15,13 +15,15 @@ import {
   getRegions,
   getTechnologies,
 } from "../ApiService/action";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import CNAFollowup from "./CNAFollowup";
+import { storeAreaList, storeCourseList } from "../Redux/Slice";
 
 export default function LeadManager() {
   const mounted = useRef(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const childUsers = useSelector((state) => state.childusers);
 
   const [activePage, setActivePage] = useState("followup");
@@ -137,9 +139,10 @@ export default function LeadManager() {
   const getCourseData = async () => {
     try {
       const response = await getTechnologies();
-      setCourseOptions(response?.data?.data || []);
+      // setCourseOptions(response?.data?.data || []);
+      dispatch(storeCourseList(response?.data?.data || []));
     } catch (error) {
-      setCourseOptions([]);
+      dispatch(storeCourseList([]));
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
@@ -151,9 +154,10 @@ export default function LeadManager() {
   const getAreasData = async () => {
     try {
       const response = await getAllAreas();
-      setAreaOptions(response?.data?.data || []);
+      // setAreaOptions(response?.data?.data || []);
+      dispatch(storeAreaList(response?.data?.data || []));
     } catch (error) {
-      setAreaOptions([]);
+      dispatch(storeAreaList([]));
       console.log("response status error", error);
     }
   };
@@ -266,62 +270,63 @@ export default function LeadManager() {
         <div
           style={{
             display: activePage === "leads" ? "block" : "none",
-            marginTop: "-20px",
+            marginTop: permissions.includes("Add Quality Comment")
+              ? "-20px"
+              : "0px",
           }}
         >
-          {/* <Leads
-            triggerApi={triggerApi}
-            setTriggerApi={setTriggerApi}
-            key={tabKeys.leads}
-            refreshLeadFollowUp={refreshLeadFollowUp}
-            setLeadCount={setLeadCount}
-            leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
-            courseOptions={courseOptions}
-            setCourseOptions={setCourseOptions}
-            areaOptions={areaOptions}
-            setAreaOptions={setAreaOptions}
-            setLeadCountLoading={setLeadCountLoading}
-          /> */}
-          <Tabs
-            className="report_tabs"
-            defaultActiveKey="1"
-            items={[
-              {
-                label: "Leads",
-                key: "1",
-                children: (
-                  <Leads
-                    triggerApi={triggerApi}
-                    setTriggerApi={setTriggerApi}
-                    key={tabKeys.leads}
-                    refreshLeadFollowUp={refreshLeadFollowUp}
-                    setLeadCount={setLeadCount}
-                    leadTypeOptions={leadTypeOptions}
-                    regionOptions={regionOptions}
-                    courseOptions={courseOptions}
-                    setCourseOptions={setCourseOptions}
-                    areaOptions={areaOptions}
-                    setAreaOptions={setAreaOptions}
-                    setLeadCountLoading={setLeadCountLoading}
-                    refreshToggle={refreshToggle}
-                    setRefreshToggle={setRefreshToggle}
-                  />
-                ),
-              },
-              {
-                label: "CNA Followup",
-                key: "2",
-                children: (
-                  <CNAFollowup
-                    key={refreshToggle}
-                    refreshLeadFollowUp={refreshLeadFollowUp}
-                    refreshLeads={refreshLeads}
-                  />
-                ),
-              },
-            ]}
-          ></Tabs>
+          {permissions.includes("Add Quality Comment") ? (
+            <Tabs
+              className="report_tabs"
+              defaultActiveKey="1"
+              items={[
+                {
+                  label: "Leads",
+                  key: "1",
+                  children: (
+                    <Leads
+                      triggerApi={triggerApi}
+                      setTriggerApi={setTriggerApi}
+                      key={tabKeys.leads}
+                      refreshLeadFollowUp={refreshLeadFollowUp}
+                      setLeadCount={setLeadCount}
+                      leadTypeOptions={leadTypeOptions}
+                      regionOptions={regionOptions}
+                      setLeadCountLoading={setLeadCountLoading}
+                      refreshToggle={refreshToggle}
+                      setRefreshToggle={setRefreshToggle}
+                    />
+                  ),
+                },
+                {
+                  label: "Followup",
+                  key: "2",
+                  children: (
+                    <CNAFollowup
+                      key={refreshToggle}
+                      refreshLeadFollowUp={refreshLeadFollowUp}
+                      refreshLeads={refreshLeads}
+                    />
+                  ),
+                },
+              ]}
+            ></Tabs>
+          ) : (
+            <Leads
+              triggerApi={triggerApi}
+              setTriggerApi={setTriggerApi}
+              key={tabKeys.leads}
+              refreshLeadFollowUp={refreshLeadFollowUp}
+              setLeadCount={setLeadCount}
+              leadTypeOptions={leadTypeOptions}
+              regionOptions={regionOptions}
+              courseOptions={courseOptions}
+              setCourseOptions={setCourseOptions}
+              areaOptions={areaOptions}
+              setAreaOptions={setAreaOptions}
+              setLeadCountLoading={setLeadCountLoading}
+            />
+          )}
         </div>
       )}
     </div>

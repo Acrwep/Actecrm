@@ -1275,6 +1275,15 @@ export const raPerformanceReport = async (payload) => {
 };
 
 //quality api's
+export const updateLeadQualityComments = async (payload) => {
+  try {
+    const response = await api.put(`/api/updateQualityFollowup`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateQualityComments = async (payload) => {
   try {
     const response = await api.post(`/api/updateQuality`, payload);

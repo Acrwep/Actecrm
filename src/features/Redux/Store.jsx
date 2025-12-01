@@ -1,5 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import {
+  areaListReducer,
+  courseListReducer,
   groupListReducer,
   nxtFollowupActionIdReducer,
   roleListReducer,
@@ -28,6 +30,8 @@ import {
 export const reduxStore = configureStore({
   devTools: true,
   reducer: {
+    courselist: courseListReducer,
+    arealist: areaListReducer,
     userslist: usersListReducer,
     usersearchvalue: userSearchValueReducer,
     alluserslist: allUsersListReducer,

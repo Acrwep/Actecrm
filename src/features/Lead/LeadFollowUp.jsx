@@ -21,19 +21,11 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CommonDnd from "../Common/CommonDnd";
 import { IoIosClose } from "react-icons/io";
 import {
-  createArea,
-  createLead,
-  createTechnology,
   downloadLeadFollowUps,
-  getAllAreas,
   getAllDownlineUsers,
-  getBranches,
   getLeadFollowUps,
   getLeadFollowUpsCountByUserIds,
-  getLeadsCountByUserIds,
   getTableColumns,
-  getTechnologies,
-  leadEmailAndMobileValidator,
   updateFollowUp,
   updateTableColumns,
 } from "../ApiService/action";
@@ -42,7 +34,6 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import CommonDatePicker from "../Common/CommonDatePicker";
-import { MdAdd } from "react-icons/md";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
@@ -52,28 +43,23 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { MdFormatListNumbered } from "react-icons/md";
 import {
-  nameValidator,
-  emailValidator,
-  mobileValidator,
   addressValidator,
   formatToBackendIST,
   selectValidator,
   shortRelativeTime,
-  priceCategory,
   getCurrentandPreviousweekDate,
   isWithin30Days,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import CommonInputField from "../Common/CommonInputField";
 import CommonTextArea from "../Common/CommonTextArea";
-import { Country, State, City } from "country-state-city";
+import { Country, State } from "country-state-city";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonAvatar from "../Common/CommonAvatar";
 import { useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import PhoneWithCountry from "../Common/PhoneWithCountry";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import AddLead from "./AddLead";
 
 const { TextArea } = Input;
 
@@ -82,13 +68,10 @@ export default function LeadFollowUp({
   refreshLeads,
   leadTypeOptions,
   regionOptions,
-  courseOptions,
-  setCourseOptions,
-  areaOptions,
-  setAreaOptions,
 }) {
   const chatBoxRef = useRef();
   const mounted = useRef(false);
+  const addLeaduseRef = useRef();
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -128,101 +111,7 @@ export default function LeadFollowUp({
   //add lead usestates
   const [leadDetails, setLeadDetails] = useState(null);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [mobileCountryCode, setMobileCountryCode] = useState("");
-  const [mobileCountry, setMobileCountry] = useState("in");
-  const [mobile, setMobile] = useState("");
-  const [mobileError, setMobileError] = useState("");
-  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
-  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
-  const [whatsApp, setWhatsApp] = useState("");
-  const [whatsAppError, setWhatsAppError] = useState("");
-  const [emailAndMobileValidation, setEmailAndMobileValidation] = useState({
-    email: 0,
-    mobile: 0,
-    whatsApp: 0,
-  });
-  const [countryOptions, setCountryOptions] = useState([]);
-  const [countryId, setCountryId] = useState(null);
-  const [countryError, setCountryError] = useState("");
-  const [stateOptions, setStateOptions] = useState([]);
-  const [stateId, setStateId] = useState("");
-  const [stateError, setStateError] = useState("");
-  const [areaId, setAreaId] = useState("");
-  const [areaError, setAreaError] = useState("");
-  const [isAreaFocused, setIsAreaFocused] = useState(false);
-  const [isOpenAddAreaModal, setIsOpenAddAreaModal] = useState(false);
-  const [primaryCourse, setPrimaryCourse] = useState(null);
-  const [primaryCourseError, setPrimaryCourseError] = useState("");
-  const [isPrimaryCourseFocused, setIsPrimaryCourseFocused] = useState(false);
-  const [primaryFees, setPrimaryFees] = useState("");
-  const [primaryFeesError, setPrimaryFeesError] = useState("");
-  const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
-  const [secondaryCourse, setSecondaryCourse] = useState(null);
-  const [secondaryFees, setSecondaryFees] = useState("");
-  const [leadType, setLeadType] = useState(null);
-  const [leadTypeError, setLeadTypeError] = useState("");
-  const leadStatusOptions = [
-    {
-      id: 1,
-      name: "High",
-    },
-    {
-      id: 2,
-      name: "Medium",
-    },
-    {
-      id: 3,
-      name: "Low",
-    },
-    {
-      id: 4,
-      name: "Junk",
-    },
-  ];
-  const [leadStatus, setLeadStatus] = useState(null);
-  const [leadStatusError, setLeadStatusError] = useState("");
-  const [leadNxtFollowupDate, setLeadNxtFollowupDate] = useState(null);
-  const [leadNxtFollowupDateError, setLeadNxtFollowupDateError] =
-    useState(null);
-  const [expectDateJoin, setExpectDateJoin] = useState(null);
-
-  const [regionId, setRegionId] = useState(null);
-  const [regionError, setRegionError] = useState("");
-  const [branchOptions, setBranchOptions] = useState([]);
-  const [branch, setBranch] = useState("");
-  const [branchError, setBranchError] = useState("");
-  const batchTrackOptions = [
-    {
-      id: 1,
-      name: "Normal",
-    },
-    {
-      id: 2,
-      name: "Fastrack",
-    },
-    {
-      id: 3,
-      name: "Custom",
-    },
-  ];
-  const [batchTrack, setBatchTrack] = useState(1);
-  const [batchTrackError, setBatchTrackError] = useState("");
-  const [comments, setComments] = useState("");
-  const [commentsError, setCommentsError] = useState("");
-  const [validationTrigger, setValidationTrigger] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
-  //add course usestates
-  const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
-  const [courseName, setCourseName] = useState("");
-  const [courseNameError, setCourseNameError] = useState("");
-  const [addCourseLoading, setAddCourseLoading] = useState(false);
-  //add area usestates
-  const [areaName, setAreaName] = useState("");
-  const [areaNameError, setAreaNameError] = useState("");
   //lead executive usestates
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -272,11 +161,25 @@ export default function LeadFollowUp({
               }
               console.log("recordddd", record);
               setIsOpenFollowUpDrawer(true);
-              setCommentsHistory(record.histories);
               setLeadId(record.id);
               setLeadHistoryId(record.lead_history_id);
               setLeadDetails(record);
               setCurrentIndex(index);
+              const merged = [
+                ...record.histories.map((item) => ({
+                  ...item,
+                  date: item.updated_date,
+                })),
+                ...record.quality_history.map((item) => ({
+                  ...item,
+                  date: item.created_date,
+                })),
+              ];
+
+              // Sort latest first
+              merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+              setCommentsHistory(merged);
             }}
           >
             <p>{moment(text).format("DD/MM/YYYY")}</p>
@@ -419,18 +322,6 @@ export default function LeadFollowUp({
       if (!permissions.includes("Lead Manager Page")) {
         return;
       }
-      const countries = Country.getAllCountries();
-      const updateCountries = countries.map((c) => {
-        return { ...c, id: c.isoCode };
-      });
-      setCountryOptions(updateCountries);
-      setCountryId("IN");
-      const stateList = State.getStatesOfCountry("IN");
-      const updateSates = stateList.map((s) => {
-        return { ...s, id: s.isoCode };
-      });
-      setStateOptions(updateSates);
-      setStateId("TN");
       // ---------------------
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setSelectedDates(PreviousAndCurrentDate);
@@ -532,7 +423,22 @@ export default function LeadFollowUp({
 
         setCurrentIndex(currentIndex);
         setLeadDetails(record);
-        setCommentsHistory(record.histories);
+        const merged = [
+          ...record.histories.map((item) => ({
+            ...item,
+            date: item.updated_date,
+          })),
+          ...record.quality_history.map((item) => ({
+            ...item,
+            date: item.created_date,
+          })),
+        ];
+
+        // Sort latest first
+        merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        console.log(merged);
+        setCommentsHistory(merged);
         setLeadId(record.id);
         setLeadHistoryId(record.lead_history_id);
       }
@@ -611,11 +517,28 @@ export default function LeadFollowUp({
                         }
                         console.log("recordddd", record);
                         setIsOpenFollowUpDrawer(true);
-                        setCommentsHistory(record.histories);
                         setLeadId(record.id);
                         setLeadHistoryId(record.lead_history_id);
                         setLeadDetails(record);
                         setCurrentIndex(index);
+                        const merged = [
+                          ...record.histories.map((item) => ({
+                            ...item,
+                            date: item.updated_date,
+                          })),
+                          ...record.quality_history.map((item) => ({
+                            ...item,
+                            date: item.created_date,
+                          })),
+                        ];
+
+                        // Sort latest first
+                        merged.sort(
+                          (a, b) => new Date(b.date) - new Date(a.date)
+                        );
+
+                        console.log(merged);
+                        setCommentsHistory(merged);
                       }}
                     >
                       <p>{moment(text).format("DD/MM/YYYY")}</p>
@@ -741,83 +664,7 @@ export default function LeadFollowUp({
     );
   };
 
-  const getCourseData = async () => {
-    try {
-      const response = await getTechnologies();
-      setCourseOptions(response?.data?.data || []);
-    } catch (error) {
-      setCourseOptions([]);
-      console.log("response status error", error);
-    }
-  };
-
-  const getAreasData = async () => {
-    try {
-      const response = await getAllAreas();
-      setAreaOptions(response?.data?.data || []);
-    } catch (error) {
-      setAreaOptions([]);
-      console.log("response status error", error);
-    }
-  };
-
   //onchange functions
-  const handleCountry = (e) => {
-    const value = e.target.value;
-    console.log(value, countryOptions);
-    setCountryId(value);
-    setStateId("");
-    const selectedCountry = countryOptions.find((f) => f.id === value);
-    console.log("selected country", value, selectedCountry);
-
-    const stateList = State.getStatesOfCountry(selectedCountry.id);
-    const updateSates = stateList.map((s) => {
-      return { ...s, id: s.isoCode };
-    });
-    console.log(updateSates, "updateSates");
-    setStateOptions(updateSates);
-    if (validationTrigger) {
-      setCountryError(selectValidator(value));
-    }
-  };
-
-  const handleState = (e) => {
-    const value = e.target.value;
-    setStateId(value);
-    setAreaId("");
-    if (validationTrigger) {
-      setStateError(selectValidator(value));
-    }
-  };
-
-  const getBranchesData = async (regionid) => {
-    const payload = {
-      region_id: regionid,
-    };
-    try {
-      const response = await getBranches(payload);
-      const branch_data = response?.data?.result || [];
-
-      if (branch_data.length >= 1) {
-        if (regionid == 1 || regionid == 2) {
-          const reordered = [
-            ...branch_data.filter((item) => item.name !== "Online"),
-            ...branch_data.filter((item) => item.name === "Online"),
-          ];
-          setBranchOptions(reordered);
-        } else {
-          setBranchOptions([]);
-          setBranch(branch_data[0]?.id);
-        }
-      } else {
-        setBranchOptions([]);
-      }
-    } catch (error) {
-      setBranchOptions([]);
-      console.log("response status error", error);
-    }
-  };
-
   const handleUpdateFollowUp = async () => {
     const actionValidate = selectValidator(actionId);
     const commentValidate = addressValidator(newComment);
@@ -910,377 +757,28 @@ export default function LeadFollowUp({
     }, 300);
   };
 
-  const handleEmail = async (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    const emailValidate = emailValidator(value);
-
-    setEmailError(emailValidate);
-
-    if (permissions.includes("Add Lead With Existing Mobile Number")) {
-      setEmailAndMobileValidation((prev) => ({
-        ...prev,
-        email: 1,
-      }));
-      return;
-    }
-
-    if (emailValidate) return;
-
-    const payload = {
-      email: value,
-    };
-    try {
-      const response = await leadEmailAndMobileValidator(payload);
-      console.log("lead email validator res", response);
-      if (response?.data?.data === true) {
-        setEmailError(" is already exist");
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          email: 0,
-        }));
-      } else {
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          email: 1,
-        }));
-      }
-    } catch (error) {
-      console.log("validation error", error);
-    }
-  };
-
-  const handleMobileNumber = async (value) => {
-    const cleanedMobile = value;
-    setMobile(cleanedMobile);
-    const mobileValidate = mobileValidator(cleanedMobile);
-
-    setMobileError(mobileValidate);
-
-    if (permissions.includes("Add Lead With Existing Mobile Number")) {
-      setEmailAndMobileValidation((prev) => ({
-        ...prev,
-        mobile: 1,
-      }));
-      return;
-    }
-
-    if (mobileValidate) return;
-
-    const payload = {
-      mobile: cleanedMobile,
-    };
-    try {
-      const response = await leadEmailAndMobileValidator(payload);
-      console.log("lead mobile validator res", response);
-      if (response?.data?.data === true) {
-        setMobileError(" is already exist");
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          mobile: 0,
-        }));
-      } else {
-        setMobileError("");
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          mobile: 1,
-        }));
-      }
-    } catch (error) {
-      console.log("validation error", error);
-    }
-  };
-
-  const handleWhatsAppNumber = async (value) => {
-    const cleanedMobile = value;
-    setWhatsApp(cleanedMobile);
-    const whatsAppValidate = mobileValidator(cleanedMobile);
-
-    setWhatsAppError(whatsAppValidate);
-
-    if (permissions.includes("Add Lead With Existing Mobile Number")) {
-      setEmailAndMobileValidation((prev) => ({
-        ...prev,
-        whatsApp: 1,
-      }));
-      return;
-    }
-
-    if (whatsAppValidate) return;
-
-    const payload = {
-      mobile: cleanedMobile,
-    };
-    try {
-      const response = await leadEmailAndMobileValidator(payload);
-      console.log("lead mobile validator res", response);
-      if (response?.data?.data === true) {
-        setWhatsAppError(" is already exist");
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          whatsApp: 0,
-        }));
-      } else {
-        setWhatsAppError("");
-        setEmailAndMobileValidation((prev) => ({
-          ...prev,
-          whatsApp: 1,
-        }));
-      }
-    } catch (error) {
-      console.log("validation error", error);
-    }
-  };
-
-  const handleSubmit = async (saveType) => {
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    console.log("convertAsJson", convertAsJson);
-
-    setValidationTrigger(true);
-
-    let nxtFollowupDateValidate;
-
-    if (leadStatus == 4) {
-      nxtFollowupDateValidate = "";
-    } else {
-      nxtFollowupDateValidate = selectValidator(leadNxtFollowupDate);
-    }
-
-    const nameValidate = nameValidator(name);
-    let emailValidate = emailValidator(email);
-    let mobileValidate = mobileValidator(mobile);
-    let whatsAppValidate = mobileValidator(whatsApp);
-    const countryValidate = selectValidator(countryId);
-    const stateValidate = selectValidator(stateId);
-    const cityValidate = selectValidator(areaId);
-    const primaryCourseValidate = selectValidator(primaryCourse);
-    const primaryFeesValidate = selectValidator(primaryFees);
-    const leadTypeValidate = selectValidator(leadType);
-    const leadStatusValidate = selectValidator(leadStatus);
-    const regionIdValidate = selectValidator(regionId);
-    const branchValidate = selectValidator(branch);
-    const batchTrackValidate = selectValidator(batchTrack);
-    const commentsValidate = addressValidator(comments);
-
-    if (emailAndMobileValidation.email == 0) {
-      emailValidate = " is already exist";
-    }
-    if (emailAndMobileValidation.mobile == 0) {
-      mobileValidate = " is already exist";
-    }
-    if (emailAndMobileValidation.whatsApp == 0) {
-      whatsAppValidate = " is already exist";
-    }
-
-    if (
-      nameValidate ||
-      emailValidate ||
-      mobileValidate ||
-      whatsAppValidate ||
-      countryValidate ||
-      stateValidate ||
-      cityValidate
-    ) {
-      const container = document.getElementById("leadform_basicinfo_heading");
-      container.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
-
-    setNameError(nameValidate);
-    setEmailError(emailValidate);
-    setMobileError(mobileValidate);
-    setWhatsAppError(whatsAppValidate);
-    setCountryError(countryValidate);
-    setStateError(stateValidate);
-    setAreaError(cityValidate);
-    setPrimaryCourseError(primaryCourseValidate);
-    setPrimaryFeesError(primaryFeesValidate);
-    setLeadTypeError(leadTypeValidate);
-    setLeadStatusError(leadStatusValidate);
-    setLeadNxtFollowupDateError(nxtFollowupDateValidate);
-    setRegionError(regionIdValidate);
-    setBranchError(branchValidate);
-    setBatchTrackError(batchTrackValidate);
-    setCommentsError(commentsValidate);
-
-    if (
-      nameValidate ||
-      emailValidate ||
-      mobileValidate ||
-      whatsAppValidate ||
-      countryValidate ||
-      stateValidate ||
-      cityValidate ||
-      primaryCourseValidate ||
-      primaryFeesValidate ||
-      leadTypeValidate ||
-      leadStatusValidate ||
-      nxtFollowupDateValidate ||
-      regionIdValidate ||
-      branchValidate ||
-      batchTrackValidate ||
-      commentsValidate
-    )
-      return;
-
-    if (saveType === "Save Only") {
-      setSaveOnlyLoading(true);
-    } else {
-      setButtonLoading(true);
-    }
-
-    const today = new Date();
-
-    const getArea = areaOptions.find((f) => f.id == areaId);
-
-    const payload = {
-      ...(leadId && { lead_id: leadId }),
-      user_id: convertAsJson?.user_id,
-      name: name,
-      phone_code: mobileCountryCode,
-      phone: mobile,
-      whatsapp_phone_code: whatsAppCountryCode,
-      whatsapp: whatsApp,
-      email: email,
-      country: countryId,
-      state: stateId,
-      district: getArea.name,
-      primary_course_id: primaryCourse,
-      primary_fees: primaryFees,
-      price_category: priceCategory(primaryFees),
-      secondary_course_id: secondaryCourse,
-      secondary_fees: secondaryFees ? secondaryFees : 0,
-      lead_type_id: leadType,
-      lead_status_id: leadStatus,
-      next_follow_up_date: leadNxtFollowupDate
-        ? formatToBackendIST(leadNxtFollowupDate)
-        : null,
-      expected_join_date: expectDateJoin
-        ? formatToBackendIST(expectDateJoin)
-        : null,
-      region_id: regionId,
-      branch_id: branch,
-      batch_track_id: batchTrack,
-      comments: comments,
-      created_date: formatToBackendIST(today),
-      is_manager: permissions.includes("Add Lead With Existing Mobile Number")
-        ? true
-        : false,
-    };
-
-    try {
-      await createLead(payload);
-      CommonMessage("success", "Lead created");
-      setTimeout(() => {
-        if (saveType === "Save Only") {
-          formReset();
-        } else {
-          formReset(true);
-        }
-        const container = document.getElementById("leadform_basicinfo_heading");
-        container.scrollIntoView({
-          behavior: "smooth",
-        });
-        setPagination({
-          page: 1,
-        });
-        getLeadFollowUpsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          false,
-          allDownliners,
-          1,
-          pagination.limit
-        );
-        refreshLeads();
-      }, 300);
-    } catch (error) {
-      console.log("lead create error", error);
-      setButtonLoading(false);
-      setSaveOnlyLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
-  };
-
-  const handleCreateCourse = async () => {
-    const courseValidate = addressValidator(courseName);
-
-    setCourseNameError(courseValidate);
-
-    if (courseValidate) return;
-
-    const payload = {
-      course_name: courseName,
-    };
-    setAddCourseLoading(true);
-
-    try {
-      await createTechnology(payload);
-      CommonMessage("success", "Course Created");
-      setTimeout(() => {
-        setAddCourseLoading(false);
-        setIsOpenAddCourseModal(false);
-        setCourseName("");
-        setCourseNameError("");
-        getCourseData();
-      }, 300);
-    } catch (error) {
-      console.log(error);
-      setAddCourseLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
-  };
-
-  const handleCreateArea = async () => {
-    const areaValidate = addressValidator(areaName);
-
-    setAreaNameError(areaValidate);
-
-    if (areaValidate) return;
-
-    const payload = {
-      area_name: areaName,
-    };
-    setAddCourseLoading(true);
-
-    try {
-      await createArea(payload);
-      CommonMessage("success", "Area Created");
-      setTimeout(() => {
-        setAddCourseLoading(false);
-        setIsOpenAddAreaModal(false);
-        setAreaName("");
-        setAreaNameError("");
-        getAreasData();
-      }, 300);
-    } catch (error) {
-      setAddCourseLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
-  };
-
   const updateDetailsByIndex = (index) => {
     const record = followUpData[index];
     if (!record) return;
 
     setCurrentIndex(index);
     setLeadDetails(record);
-    setCommentsHistory(record.histories);
+    const merged = [
+      ...record.histories.map((item) => ({
+        ...item,
+        date: item.updated_date,
+      })),
+      ...record.quality_history.map((item) => ({
+        ...item,
+        date: item.created_date,
+      })),
+    ];
+
+    // Sort latest first
+    merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    console.log(merged);
+    setCommentsHistory(merged);
     setLeadId(record.id);
     setLeadHistoryId(record.lead_history_id);
   };
@@ -1339,18 +837,6 @@ export default function LeadFollowUp({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    // setPagination({
-    //   page: 1,
-    // });
-    // getLeadFollowUpsData(
-    //   null,
-    //   selectedDates[0],
-    //   selectedDates[1],
-    //   false,
-    //   value,
-    //   1,
-    //   10
-    // );
     try {
       const response = await getAllDownlineUsers(value ? value : loginUserId);
       console.log("all downlines response", response);
@@ -1446,62 +932,6 @@ export default function LeadFollowUp({
       setIsOpenAddDrawer(false);
     }
     setIsOpenFilterDrawer(false);
-    setValidationTrigger(false);
-    setTimeout(() => {
-      setLeadId(null);
-    }, 300);
-    setName("");
-    setNameError("");
-    setEmail("");
-    setEmailError("");
-    setMobileCountry("in");
-    setMobileCountryCode("");
-    setWhatsAppCountry("in");
-    setWhatsAppCountryCode("");
-    setMobile("");
-    setMobileError("");
-    setWhatsApp("");
-    setWhatsAppError("");
-    setEmailAndMobileValidation({
-      email: 0,
-      mobile: 0,
-      whatsApp: 0,
-    });
-    setCountryId("IN");
-    const stateList = State.getStatesOfCountry("IN");
-    const updateSates = stateList.map((s) => {
-      return { ...s, id: s.isoCode };
-    });
-    setCountryError("");
-    setStateOptions(updateSates);
-    setStateId("TN");
-    setStateError("");
-    setAreaId(null);
-    setAreaError("");
-    setPrimaryCourse(null);
-    setPrimaryCourseError("");
-    setPrimaryFees("");
-    setPrimaryFeesError("");
-    setIsShowSecondaryCourse(false);
-    setSecondaryCourse(null);
-    setSecondaryFees("");
-    setLeadType(null);
-    setLeadTypeError("");
-    setLeadStatus(null);
-    setLeadStatusError("");
-    setLeadNxtFollowupDate(null);
-    setLeadNxtFollowupDateError("");
-    setExpectDateJoin(null);
-    setRegionId(null);
-    setRegionError("");
-    setBranch("");
-    setBranchError("");
-    setBatchTrack(1);
-    setBatchTrackError("");
-    setComments("");
-    setCommentsError("");
-    setButtonLoading(false);
-    setSaveOnlyLoading(false);
   };
 
   return (
@@ -2063,396 +1493,31 @@ export default function LeadFollowUp({
         style={{ position: "relative" }}
         id="leadfollowup_addlead_drawer"
       >
-        <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
-          Basic Information
-        </p>
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonInputField
-              label="Candidate Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (validationTrigger) {
-                  setNameError(nameValidator(e.target.value));
-                }
-              }}
-              error={nameError}
-              required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <PhoneWithCountry
-              label="Mobile Number"
-              onChange={handleMobileNumber}
-              selectedCountry={mobileCountry}
-              countryCode={(code) => {
-                setMobileCountryCode(code);
-              }}
-              onCountryChange={(iso2) => {
-                setMobileCountry(iso2);
-                setWhatsAppCountry(iso2);
-              }}
-              value={mobile}
-              error={mobileError}
-              errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
-            />
-          </Col>
-          <Col span={8}>
-            <PhoneWithCountry
-              label="WhatsApp Number"
-              onChange={handleWhatsAppNumber}
-              countryCode={(code) => {
-                setWhatsAppCountryCode(code);
-              }}
-              selectedCountry={whatsAppCountry}
-              value={whatsApp}
-              error={whatsAppError}
-              onCountryChange={(iso2) => {
-                setWhatsAppCountry(iso2);
-              }}
-              errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonInputField
-              label="Email"
-              required={true}
-              value={email}
-              onChange={handleEmail}
-              error={emailError}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Source"
-              required={true}
-              options={leadTypeOptions}
-              onChange={(e) => {
-                setLeadType(e.target.value);
-                if (validationTrigger) {
-                  setLeadTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={leadType}
-              error={leadTypeError}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Country"
-              value={countryId}
-              onChange={handleCountry}
-              options={countryOptions}
-              error={countryError}
-              required={true}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "26px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="State"
-              value={stateId}
-              onChange={handleState}
-              options={stateOptions}
-              error={stateError}
-              required={true}
-            />
-          </Col>
-          <Col span={8}>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  label="Area"
-                  value={areaId}
-                  onChange={(e) => {
-                    setAreaId(e.target.value);
-                    if (validationTrigger) {
-                      setAreaError(selectValidator(e.target.value));
-                    }
-                  }}
-                  options={areaOptions}
-                  error={areaError}
-                  required={true}
-                  borderRightNone={true}
-                  onFocus={() => setIsAreaFocused(true)}
-                  onBlur={() => setIsAreaFocused(false)}
-                />
-              </div>
-
-              <div
-                className={
-                  areaError
-                    ? "leads_errorcourse_addcontainer"
-                    : isAreaFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
-                }
-              >
-                <Tooltip
-                  placement="bottom"
-                  title="Add Area"
-                  className="leadtable_customertooltip"
-                >
-                  <MdAdd
-                    size={19}
-                    style={{ color: "#333333af", cursor: "pointer" }}
-                    onClick={() => setIsOpenAddAreaModal(true)}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        <p className="addleaddrawer_headings">Course Details</p>
-        <Row gutter={16}>
-          <Col span={8}>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  label="Primary Course"
-                  value={primaryCourse}
-                  onChange={(e) => {
-                    setPrimaryCourse(e.target.value);
-                    if (validationTrigger) {
-                      setPrimaryCourseError(selectValidator(e.target.value));
-                    }
-                  }}
-                  options={courseOptions}
-                  error={primaryCourseError}
-                  required={true}
-                  borderRightNone={true}
-                  errorFontSize="9px"
-                  onFocus={() => setIsPrimaryCourseFocused(true)}
-                  onBlur={() => setIsPrimaryCourseFocused(false)}
-                />
-              </div>
-
-              <div
-                className={
-                  primaryCourseError
-                    ? "leads_errorcourse_addcontainer"
-                    : isPrimaryCourseFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
-                }
-              >
-                <Tooltip
-                  placement="bottom"
-                  title="Add Course"
-                  className="leadtable_customertooltip"
-                >
-                  <MdAdd
-                    size={19}
-                    style={{ color: "#333333af", cursor: "pointer" }}
-                    onClick={() => setIsOpenAddCourseModal(true)}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Fees"
-              required={true}
-              value={primaryFees}
-              onChange={(e) => {
-                setPrimaryFees(e.target.value);
-                if (validationTrigger) {
-                  setPrimaryFeesError(selectValidator(e.target.value));
-                }
-              }}
-              error={primaryFeesError}
-            />
-          </Col>
-          <Col span={8}>
-            <Checkbox
-              checked={isShowSecondaryCourse}
-              onChange={(e) => {
-                setIsShowSecondaryCourse(e.target.checked);
-                if (e.target.checked === false) {
-                  setSecondaryCourse(null);
-                  setSecondaryFees("");
-                }
-              }}
-              style={{ fontSize: "12px", marginTop: "8px" }}
-            >
-              Add Course
-            </Checkbox>
-          </Col>
-        </Row>
-
-        {isShowSecondaryCourse && (
-          <Row gutter={16} style={{ marginTop: "30px" }}>
-            <Col span={8}>
-              <CommonSelectField
-                label="Secondary Course"
-                value={secondaryCourse}
-                onChange={(e) => {
-                  setSecondaryCourse(e.target.value);
-                }}
-                options={courseOptions}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Fees"
-                value={secondaryFees}
-                onChange={(e) => {
-                  setSecondaryFees(e.target.value);
-                }}
-              />
-            </Col>
-          </Row>
-        )}
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Region"
-              required={true}
-              options={regionOptions}
-              onChange={(e) => {
-                setRegionId(e.target.value);
-                setBranch("");
-                getBranchesData(e.target.value);
-                if (validationTrigger) {
-                  setRegionError(selectValidator(e.target.value));
-                }
-              }}
-              value={regionId}
-              error={regionError}
-            />
-          </Col>
-          {regionId == 3 ? (
-            ""
-          ) : (
-            <Col span={8}>
-              <CommonSelectField
-                label="Branch Name"
-                required={true}
-                options={branchOptions}
-                onChange={(e) => {
-                  setBranch(e.target.value);
-                  if (validationTrigger) {
-                    setBranchError(selectValidator(e.target.value));
-                  }
-                }}
-                value={branch}
-                error={branchError}
-              />
-            </Col>
-          )}
-          <Col span={8}>
-            <CommonSelectField
-              label="Batch Track"
-              required={true}
-              options={batchTrackOptions}
-              onChange={(e) => {
-                setBatchTrack(e.target.value);
-                if (validationTrigger) {
-                  setBatchTrackError(selectValidator(e.target.value));
-                }
-              }}
-              value={batchTrack}
-              error={batchTrackError}
-            />
-          </Col>
-        </Row>
-
-        {/* <Row gutter={16} style={{ marginTop: "30px",  }}>
-                <Col span={8}>
-                
-                </Col>
-              </Row> */}
-
-        <p className="addleaddrawer_headings">Response Status</p>
-
-        <Row gutter={16} style={{ marginBottom: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Status"
-              required={true}
-              options={leadStatusOptions}
-              onChange={(e) => {
-                const value = e.target.value;
-                setLeadStatus(value);
-                if (value == 4) {
-                  setNxtFollowupDate(null);
-                  setNxtFollowupDateError("");
-                  setExpectDateJoin(null);
-                }
-                if (validationTrigger) {
-                  setLeadStatusError(selectValidator(value));
-                }
-              }}
-              value={leadStatus}
-              error={leadStatusError}
-            />
-          </Col>
-
-          {leadStatus == 4 ? (
-            ""
-          ) : (
-            <>
-              <Col span={8}>
-                <CommonMuiDatePicker
-                  label="Next Follow-Up Date"
-                  required={true}
-                  onChange={(value) => {
-                    console.log("vallll", value);
-                    setLeadNxtFollowupDate(value);
-                    if (validationTrigger) {
-                      setLeadNxtFollowupDateError(selectValidator(value));
-                    }
-                  }}
-                  value={leadNxtFollowupDate}
-                  disablePreviousDates={true}
-                  error={leadNxtFollowupDateError}
-                  disabled={false}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonMuiDatePicker
-                  label="Expected Date Join"
-                  required={false}
-                  onChange={(value) => {
-                    console.log("vallll", value);
-                    setExpectDateJoin(value);
-                  }}
-                  value={expectDateJoin}
-                  disablePreviousDates={true}
-                />
-              </Col>
-            </>
-          )}
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "40px", marginBottom: "30px" }}>
-          <Col span={24}>
-            <div style={{ marginTop: "-20px" }}>
-              <CommonTextArea
-                label="Comments"
-                required={true}
-                value={comments}
-                onChange={(e) => {
-                  setComments(e.target.value);
-                  if (validationTrigger) {
-                    setCommentsError(addressValidator(e.target.value));
-                  }
-                }}
-                error={commentsError}
-              />
-            </div>
-          </Col>
-        </Row>
-
+        <AddLead
+          ref={addLeaduseRef}
+          leadTypeOptions={leadTypeOptions}
+          regionOptions={regionOptions}
+          leadId={leadId}
+          updateLeadItem={null}
+          setButtonLoading={setButtonLoading}
+          setSaveOnlyLoading={setSaveOnlyLoading}
+          setIsOpenAddDrawer={setIsOpenAddDrawer}
+          callgetLeadsApi={() => {
+            setPagination({
+              page: 1,
+            });
+            getLeadFollowUpsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              false,
+              allDownliners,
+              1,
+              pagination.limit
+            );
+            refreshLeads();
+          }}
+        />
         <div className="leadmanager_submitlead_buttoncontainer">
           <div style={{ display: "flex", gap: "12px" }}>
             <>
@@ -2463,9 +1528,9 @@ export default function LeadFollowUp({
               ) : (
                 <button
                   className={"leadmanager_updateleadbutton"}
-                  onClick={() => {
-                    handleSubmit("Save Only");
-                  }}
+                  onClick={() =>
+                    addLeaduseRef.current.handleSubmit("Save Only")
+                  }
                 >
                   Save
                 </button>
@@ -2479,9 +1544,9 @@ export default function LeadFollowUp({
             ) : (
               <button
                 className="leadmanager_saveleadbutton"
-                onClick={() => {
-                  handleSubmit("Save And Add New");
-                }}
+                onClick={() =>
+                  addLeaduseRef.current.handleSubmit("Save And Add New")
+                }
               >
                 Save And Add New
               </button>
@@ -2489,148 +1554,6 @@ export default function LeadFollowUp({
           </div>
         </div>
       </Drawer>
-
-      <Modal
-        title="Add Course"
-        open={isOpenAddCourseModal}
-        onCancel={() => {
-          setIsOpenAddCourseModal(false);
-          setCourseName("");
-          setCourseNameError("");
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsOpenAddCourseModal(false);
-              setCourseName("");
-              setCourseNameError("");
-            }}
-            className="leads_coursemodal_cancelbutton"
-          >
-            Cancel
-          </Button>,
-
-          addCourseLoading ? (
-            <Button
-              key="create"
-              type="primary"
-              className="leads_coursemodal_loading_createbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              key="create"
-              type="primary"
-              onClick={handleCreateCourse}
-              className="leads_coursemodal_createbutton"
-            >
-              Create
-            </Button>
-          ),
-        ]}
-        width="35%"
-      >
-        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-          <CommonInputField
-            label="Course Name"
-            required={true}
-            onChange={(e) => {
-              setCourseName(e.target.value);
-              setCourseNameError(addressValidator(e.target.value));
-            }}
-            value={courseName}
-            error={courseNameError}
-          />
-        </div>
-        <div className="lead_course_instruction_container">
-          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
-          <p style={{ fontSize: "13px", marginTop: "2px" }}>
-            Make sure the course name remains exactly as{" "}
-            <span style={{ fontWeight: 600 }}>‘Google’</span>
-          </p>
-          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
-            Example:
-          </p>
-          <ul>
-            <li>Full Stack Development</li>
-            <li>Core Java</li>
-          </ul>
-        </div>
-      </Modal>
-
-      {/* add area modal */}
-      <Modal
-        title="Add Area"
-        open={isOpenAddAreaModal}
-        onCancel={() => {
-          setIsOpenAddAreaModal(false);
-          setAreaName("");
-          setAreaNameError("");
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsOpenAddAreaModal(false);
-              setAreaName("");
-              setAreaNameError("");
-            }}
-            className="leads_coursemodal_cancelbutton"
-          >
-            Cancel
-          </Button>,
-
-          addCourseLoading ? (
-            <Button
-              key="create"
-              type="primary"
-              className="leads_coursemodal_loading_createbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              key="create"
-              type="primary"
-              onClick={handleCreateArea}
-              className="leads_coursemodal_createbutton"
-            >
-              Create
-            </Button>
-          ),
-        ]}
-        width="35%"
-      >
-        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-          <CommonInputField
-            label="Area Name"
-            required={true}
-            onChange={(e) => {
-              setAreaName(e.target.value);
-              setAreaNameError(addressValidator(e.target.value));
-            }}
-            value={areaName}
-            error={areaNameError}
-          />
-        </div>
-
-        <div className="lead_course_instruction_container">
-          <p style={{ fontSize: "12px", fontWeight: 500 }}>Note:</p>
-          <p style={{ fontSize: "13px", marginTop: "2px" }}>
-            Make sure the area name remains exactly as{" "}
-            <span style={{ fontWeight: 600 }}>‘Google’</span>
-          </p>
-          <p style={{ fontSize: "12px", fontWeight: 500, marginTop: "6px" }}>
-            Example:
-          </p>
-          <ul>
-            <li>Velachery</li>
-            <li>Perungudi</li>
-          </ul>
-        </div>
-      </Modal>
 
       <Drawer
         title="Lead Follow-Up"
@@ -2858,15 +1781,38 @@ export default function LeadFollowUp({
                     <div className="leadmanager_comments_namecontainer">
                       <CommonAvatar itemName={item.user_name} avatarSize={32} />
                       <p className="leadfollowup_comment_username">
-                        {item.user_name ? item.user_name : "-"}
+                        {item.user_name
+                          ? `${item.updated_by} - ${item.user_name}`
+                          : "-"}
                         <span className="leadfollowup_comment_time">
-                          {shortRelativeTime(item.updated_date)}
+                          {item.updated_date
+                            ? moment(item.updated_date).format(
+                                "YYYY-MM-DD hh:mm:ss A"
+                              )
+                            : item.created_date
+                            ? moment(item.created_date).format(
+                                "YYYY-MM-DD hh:mm:ss A"
+                              )
+                            : "-"}
                         </span>
                       </p>
                     </div>
                     <p className="leadfollowup_comments_text">
                       {item.comments}
                     </p>
+
+                    {item.status && (
+                      <p className="leadfollowup_qualitystatus_text">
+                        <span style={{ fontWeight: 600, color: "gray" }}>
+                          Status:
+                        </span>{" "}
+                        {item.status == 1
+                          ? "Details Shared"
+                          : item.status == 2
+                          ? "Details Not Shared"
+                          : "CNA"}
+                      </p>
+                    )}
                   </>
                 );
               })}

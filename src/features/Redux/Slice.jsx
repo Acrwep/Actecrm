@@ -2,6 +2,28 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = [];
 
+const courseListSlice = createSlice({
+  name: "courselist",
+  initialState,
+  reducers: {
+    storeCourseList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
+const areaListSlice = createSlice({
+  name: "arealist",
+  initialState,
+  reducers: {
+    storeAreaList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const usersListSlice = createSlice({
   name: "userslist",
   initialState,
@@ -256,6 +278,8 @@ const tableColumnsSlice = createSlice({
 });
 
 //define slice
+export const { storeCourseList } = courseListSlice.actions;
+export const { storeAreaList } = areaListSlice.actions;
 export const { storeUserSearchValue } = userSearchValueSlice.actions;
 export const { storeUsersList } = usersListSlice.actions;
 export const { storeAllUsersList } = allUsersListSlice.actions;
@@ -291,6 +315,8 @@ export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 export const { storeTableColumns } = tableColumnsSlice.actions;
 //create reducer
+export const courseListReducer = courseListSlice.reducer;
+export const areaListReducer = areaListSlice.reducer;
 export const usersListReducer = usersListSlice.reducer;
 export const userSearchValueReducer = userSearchValueSlice.reducer;
 export const allUsersListReducer = allUsersListSlice.reducer;

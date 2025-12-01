@@ -200,6 +200,7 @@ export default function Settings() {
         "Edit Lead Mobile Number",
         "Assign Lead",
         "Lead Executive Filter",
+        "Add Quality Comment",
       ];
 
       const leadsSortedArray = leadsModule.sort(
