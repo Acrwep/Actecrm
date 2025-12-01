@@ -725,7 +725,8 @@
 }
 .cutomer_profileimage {
   border-radius: 50%;
-  width: 70px;
+  width: 80px;
+  height: 80px;
 }
 .customer_nametext {
   font-weight: 600;
