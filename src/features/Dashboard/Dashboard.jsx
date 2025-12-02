@@ -21,6 +21,7 @@ import {
   getBranchWiseScoreBoard,
   getDashboardDates,
   getHRDashboard,
+  getQualityDashboard,
   getRADashboard,
   getScoreBoard,
   getTopPerformance,
@@ -44,6 +45,7 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import { DashboardDownloadColumns } from "./DashboardDownloadColumns";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
+import QualityChart from "./QualityChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -134,6 +136,20 @@ export default function Dashboard() {
   const [raDataSeries, setRaDataSeries] = useState([]);
   const [RaDownloadData, setRaDownloadData] = useState([]);
   const [raLoader, setRaLoader] = useState(true);
+  //quality
+  const [qualitySelectedDates, setQualitySelectedDates] = useState([]);
+  const [qualityXaxis, setQualityXaxis] = useState([]);
+  const [qualityDataSeries, setQualityDataSeries] = useState([]);
+  const [qualityMovedToCna, setQualityMovedToCna] = useState([]);
+  const [qualityCnaReached, setQualityCnaReached] = useState([]);
+  const [qualityDirectReached, setQualityDirectReached] = useState([]);
+  const [qualityFollowUpHandled, setQualityFollowUpHandled] = useState([]);
+  const [qualityFollowUpUnHandled, setQualityFollowUpUnHandled] = useState([]);
+  const [qualityType, setQualityType] = useState(1);
+  const [qualityDownloadData, setQualityDownloadData] = useState([]);
+  const [qualityDownloadLoader, setQualityDownloadLoader] = useState(false);
+  const [qualityLoader, setQualityLoader] = useState(true);
+
   //lead executive
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
@@ -149,6 +165,7 @@ export default function Dashboard() {
       setSaleDetailsSelectedDates(PreviousAndCurrentDate);
       setPerformingSelectedDates(PreviousAndCurrentDate);
       setRaSelectedDates(PreviousAndCurrentDate);
+      setQualitySelectedDates(PreviousAndCurrentDate);
       setHrSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseLeadsDates(PreviousAndCurrentDate);
@@ -1148,6 +1165,128 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setRaLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api === true) {
+          getQualityData(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            downliners,
+            1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getQualityData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    type
+  ) => {
+    if (!permissions.includes("Quality Dashboard")) {
+      return;
+    }
+    setQualityLoader(true);
+
+    //date handling
+    let quality_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      quality_dates = dashboard_dates.find(
+        (f) => f.card_name == "Quality Dashboard"
+      );
+      if (quality_dates) {
+        if (
+          quality_dates.card_settings == "Today" ||
+          quality_dates.card_settings == "Yesterday" ||
+          quality_dates.card_settings == "7 Days" ||
+          quality_dates.card_settings == "15 Days" ||
+          quality_dates.card_settings == "30 Days" ||
+          quality_dates.card_settings == "60 Days" ||
+          quality_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            quality_dates.card_settings
+          );
+          quality_dates = getdates_bylabel;
+          setQualitySelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setQualitySelectedDates([
+            quality_dates.card_settings.start_date,
+            quality_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: quality_dates
+        ? quality_dates.card_settings.start_date
+        : startDate,
+      end_date: quality_dates ? quality_dates.card_settings.end_date : endDate,
+      user_ids: downliners,
+      type: type == 1 ? "Productivity" : "Followup",
+    };
+    try {
+      const response = await getQualityDashboard(payload);
+      console.log("quality response", response);
+      const quality_data = response?.data?.result;
+
+      const xaxis = quality_data.map(
+        (item) => `${item.user_id} (${item.user_name})`
+      );
+
+      const series = quality_data.map((item) =>
+        type == 1
+          ? Number(item.productivity_count)
+          : Number(item.total_followups)
+      );
+
+      if (type == 1) {
+        const cna_moved = quality_data.map((item) => Number(item.cna_moved));
+        const cna_reached = quality_data.map((item) =>
+          Number(item.cna_reached)
+        );
+
+        const direct_reached = quality_data.map((item) =>
+          Number(item.direct_reached)
+        );
+        setQualityMovedToCna(cna_moved);
+        setQualityCnaReached(cna_reached);
+        setQualityDirectReached(direct_reached);
+      } else {
+        setQualityMovedToCna([]);
+        setQualityCnaReached([]);
+        setQualityDirectReached([]);
+
+        const followup_handled = quality_data.map((item) =>
+          Number(item.follow_up_handled)
+        );
+        const followup_unhandled = quality_data.map((item) =>
+          Number(item.follow_up_unhandled)
+        );
+        setQualityFollowUpHandled(followup_handled);
+        setQualityFollowUpUnHandled(followup_unhandled);
+      }
+
+      setQualityXaxis(xaxis);
+      setQualityDataSeries(series);
+    } catch (error) {
+      setQualityDataSeries([]);
+      setQualityMovedToCna([]);
+      setQualityCnaReached([]);
+      setQualityDirectReached([]);
+      setQualityFollowUpHandled([]);
+      setQualityFollowUpUnHandled([]);
+      console.log("quality error", error);
+    } finally {
+      setTimeout(() => {
+        setQualityLoader(false);
       }, 300);
     }
   };
@@ -1220,6 +1359,7 @@ export default function Dashboard() {
       setBranchWiseLeadsType(1);
       setBranchWiseSaleRegion(1);
       setBranchWiseSaleType(1);
+      setQualityType(1);
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           allDashboardCardsDates,
@@ -1307,6 +1447,38 @@ export default function Dashboard() {
     }
   };
 
+  const handleQualityDownload = async () => {
+    setQualityDownloadLoader(true);
+    const payload = {
+      user_ids: allDownliners,
+      start_date: qualitySelectedDates[0],
+      end_date: qualitySelectedDates[1],
+    };
+    try {
+      const response = await getQualityDashboard(payload);
+      console.log("download response", response);
+      const data = response?.data?.result || [];
+      const columns = DashboardDownloadColumns("Quality");
+      DownloadTableAsCSV(
+        data,
+        columns,
+        `${moment(qualitySelectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+          qualitySelectedDates[1]
+        ).format("DD-MM-YYYY")} Quality Performance.csv`
+      );
+      setTimeout(() => {
+        setQualityDownloadLoader(false);
+      }, 300);
+    } catch (error) {
+      setQualityDownloadLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setScoreBoardSelectedDates(PreviousAndCurrentDate);
@@ -1315,6 +1487,8 @@ export default function Dashboard() {
     setRaSelectedDates(PreviousAndCurrentDate);
     setHrSelectedDates(PreviousAndCurrentDate);
     setUserWiseLeadsDates(PreviousAndCurrentDate);
+    setQualitySelectedDates(PreviousAndCurrentDate);
+
     setUserWiseLeadsType(1);
     setUserWiseType(1);
     setBranchWiseLeadsDates(PreviousAndCurrentDate);
@@ -1323,6 +1497,7 @@ export default function Dashboard() {
     setBranchWiseSaleDates(PreviousAndCurrentDate);
     setBranchWiseSaleRegion(1);
     setBranchWiseSaleType(1);
+    setQualityType(1);
 
     setSelectedUserId(null);
     setScoreBoardLoader(true);
@@ -1330,6 +1505,7 @@ export default function Dashboard() {
     setPerformanceLoader(true);
     setRaLoader(true);
     setHrLoader(true);
+    setQualityLoader(true);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -2857,6 +3033,172 @@ export default function Dashboard() {
                         </div>
                       )}
                     </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Col>
+        )}
+
+        {permissions.includes("Quality Dashboard") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Quality Performance
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(qualitySelectedDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(qualitySelectedDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={qualitySelectedDates}
+                      onDateChange={(dates) => {
+                        setQualitySelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Quality Dashboard",
+                          dates[0],
+                          dates[1]
+                        );
+                        getQualityData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          allDownliners,
+                          false,
+                          qualityType
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col span={13}></Col>
+                <Col
+                  span={11}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Productivity",
+                      },
+                      {
+                        id: 2,
+                        name: "Followup",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setQualityType(value);
+                      getQualityData(
+                        null,
+                        qualitySelectedDates[0],
+                        qualitySelectedDates[1],
+                        allDownliners,
+                        value
+                      );
+                    }}
+                    value={qualityType}
+                  />
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className={
+                        qualityDownloadLoader
+                          ? "dashboard_loading_download_button"
+                          : "dashboard_download_button"
+                      }
+                      onClick={handleQualityDownload}
+                      disabled={qualityDownloadLoader}
+                    >
+                      {qualityDownloadLoader ? (
+                        <Spin
+                          indicator={<LoadingOutlined spin />}
+                          size="small"
+                          style={{ color: "#333" }}
+                        />
+                      ) : (
+                        <DownloadOutlined className="download_icon" />
+                      )}
+                    </Button>
+                  </Tooltip>
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                  height: 350,
+                  overflowY: "auto",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {qualityLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {qualityDataSeries.length >= 1 ? (
+                        <QualityChart
+                          xaxis={qualityXaxis}
+                          series={qualityDataSeries}
+                          movedToCna={qualityMovedToCna}
+                          cnaReached={qualityCnaReached}
+                          directReached={qualityDirectReached}
+                          followupHanlded={qualityFollowUpHandled}
+                          followupUnhandled={qualityFollowUpUnHandled}
+                          colors={[qualityType == 1 ? "#1976D2" : "#607D8B"]}
+                          type={qualityType == 1 ? "Productivity" : "Followup"}
+                          height={
+                            qualityXaxis.length <= 5
+                              ? 280
+                              : qualityXaxis.length * 45
+                          }
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

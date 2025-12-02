@@ -10,6 +10,7 @@ import HrPerformanceReport from "./HrPeroformanceReport";
 import RaPerformanceReport from "./RaPerformanceReport";
 import { useSelector } from "react-redux";
 import "./styles.css";
+import QualityReport from "./QualityReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -65,6 +66,11 @@ export default function Reports() {
             label: "RA Performance",
             key: "7",
             children: <RaPerformanceReport />,
+          },
+          {
+            label: "Quality Performance",
+            key: "8",
+            children: <QualityReport />,
           },
         ]}
       />

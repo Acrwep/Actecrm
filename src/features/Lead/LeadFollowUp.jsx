@@ -184,7 +184,7 @@ export default function LeadFollowUp({
           >
             <p>{moment(text).format("DD/MM/YYYY")}</p>
             <div className="leadfollowup_tablecommentContainer">
-              <p>{record.histories.length}</p>
+              <p>{record.histories.length + record.quality_history.length}</p>
             </div>
           </div>
         );
@@ -543,7 +543,10 @@ export default function LeadFollowUp({
                     >
                       <p>{moment(text).format("DD/MM/YYYY")}</p>
                       <div className="leadfollowup_tablecommentContainer">
-                        <p>{record.histories.length}</p>
+                        <p>
+                          {record.histories.length +
+                            record.quality_history.length}
+                        </p>
                       </div>
                     </div>
                   );

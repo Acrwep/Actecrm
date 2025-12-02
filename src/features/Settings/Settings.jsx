@@ -174,6 +174,7 @@ export default function Settings() {
         "Top Performing Channels",
         "HR Dashboard",
         "RA Dashboard",
+        "Quality Dashboard",
       ];
 
       const dashboardSortedArray = dashboardModule.sort(

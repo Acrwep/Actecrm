@@ -1069,6 +1069,15 @@ export const getHRDashboard = async (payload) => {
     throw error;
   }
 };
+
+export const getQualityDashboard = async (payload) => {
+  try {
+    const response = await api.post(`/api/qualityProductivity`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //bulk search api's
 export const bulkSearch = async (payload) => {
   try {
@@ -1274,10 +1283,18 @@ export const raPerformanceReport = async (payload) => {
   }
 };
 
-//quality api's
-export const updateLeadQualityComments = async (payload) => {
+export const qualityReport = async (payload) => {
   try {
-    const response = await api.put(`/api/updateQualityFollowup`, payload);
+    const response = await api.post(`/api/reportUserWiseQuality`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//quality api's
+export const addQualityComments = async (payload) => {
+  try {
+    const response = await api.post(`/api/updateQuality`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -1286,7 +1303,7 @@ export const updateLeadQualityComments = async (payload) => {
 
 export const updateQualityComments = async (payload) => {
   try {
-    const response = await api.post(`/api/updateQuality`, payload);
+    const response = await api.put(`/api/updateQualityFollowup`, payload);
     return response;
   } catch (error) {
     throw error;

@@ -68,3 +68,22 @@
   font-size: 12px;
   font-weight: 500;
 }
+.reports_download_button {
+  background-color: #ffffff;
+  border-color: #d9d9d9;
+  height: 32px;
+  margin-top: 2px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-width: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+}
+.reports_download_button:hover {
+  border-color: #5b69ca !important;
+}
+.reports_download_button:hover .download_icon {
+  color: #5b69ca !important;
+}

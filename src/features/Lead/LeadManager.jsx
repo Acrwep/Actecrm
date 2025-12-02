@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
-import { Button, Tooltip, Tabs } from "antd";
+import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
+import { HiDotsVertical } from "react-icons/hi";
+import { IoChevronForwardCircleOutline } from "react-icons/io5";
 import {
   getAllAreas,
   getAllDownlineUsers,
-  getBatchTrack,
   getLeadAndFollowupCount,
-  getLeadStatus,
   getLeadType,
   getRegions,
   getTechnologies,
@@ -51,6 +51,7 @@ export default function LeadManager() {
   const [tabKeys, setTabKeys] = useState({
     followup: 0,
     leads: 0,
+    quality_followup: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -172,6 +173,7 @@ export default function LeadManager() {
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount
     }));
+    setRefreshToggle(!refreshToggle);
   };
 
   const refreshLeadFollowUp = () => {
@@ -185,6 +187,13 @@ export default function LeadManager() {
     setTabKeys((prev) => ({
       ...prev,
       leads: prev.leads + 1,
+    }));
+  };
+
+  const refreshQualityFollowup = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      leads: prev.quality_followup + 1,
     }));
   };
 
@@ -210,39 +219,53 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("leads")}
           >
-            {/* {leadCountLoading ? (
-              <span
-                style={{
-                  width: "80px",
-                  display: "inline-block",
-                  height: "17px",
-                }}
-              >
-                <Skeleton
-                  active
-                  size="small"
-                  title={false}
-                  paragraph={{ rows: 1, width: "100%" }}
-                />
-              </span>
-            ) : ( */}
             <p>{`Leads (${leadCount})`}</p>
-            {/* )} */}
           </button>
         </div>
 
-        {/* <Button className="leadmanager_refresh_button">
-          <VscRefresh />
-        </Button> */}
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          {permissions.includes("Add Quality Comment") && (
+            <Tooltip
+              placement="bottomRight"
+              color="#fff"
+              // open={true}
+              classNames={{
+                body: "customers_download_tooltip_body",
+                root: "customers_download_tooltip_root",
+              }}
+              style={{ body: { padding: "6px 0" } }}
+              title={
+                <>
+                  <div
+                    className={
+                      activePage == "quality_followup"
+                        ? "leadmanager_cnafollowup_activebutton"
+                        : "customer_download_container"
+                    }
+                    style={{ marginBottom: "1px" }}
+                    onClick={() => handleTabClick("quality_followup")}
+                  >
+                    <IoChevronForwardCircleOutline size={18} />
+                    <p className="customer_download_text">Quality Followup</p>
+                  </div>
+                </>
+              }
+            >
+              <Button className="customer_download_button">
+                <HiDotsVertical size={16} color="#585858ff" />
+              </Button>
+            </Tooltip>
+          )}
 
-        <Tooltip placement="top" title="Refresh">
-          <Button
-            className="leadmanager_refresh_button"
-            onClick={handleRefresh}
-          >
-            <RedoOutlined className="refresh_icon" />
-          </Button>
-        </Tooltip>
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       {/* Mount only when first opened, keep mounted afterward */}
@@ -270,63 +293,34 @@ export default function LeadManager() {
         <div
           style={{
             display: activePage === "leads" ? "block" : "none",
-            marginTop: permissions.includes("Add Quality Comment")
-              ? "-20px"
-              : "0px",
           }}
         >
-          {permissions.includes("Add Quality Comment") ? (
-            <Tabs
-              className="report_tabs"
-              defaultActiveKey="1"
-              items={[
-                {
-                  label: "Leads",
-                  key: "1",
-                  children: (
-                    <Leads
-                      triggerApi={triggerApi}
-                      setTriggerApi={setTriggerApi}
-                      key={tabKeys.leads}
-                      refreshLeadFollowUp={refreshLeadFollowUp}
-                      setLeadCount={setLeadCount}
-                      leadTypeOptions={leadTypeOptions}
-                      regionOptions={regionOptions}
-                      setLeadCountLoading={setLeadCountLoading}
-                      refreshToggle={refreshToggle}
-                      setRefreshToggle={setRefreshToggle}
-                    />
-                  ),
-                },
-                {
-                  label: "Followup",
-                  key: "2",
-                  children: (
-                    <CNAFollowup
-                      key={refreshToggle}
-                      refreshLeadFollowUp={refreshLeadFollowUp}
-                      refreshLeads={refreshLeads}
-                    />
-                  ),
-                },
-              ]}
-            ></Tabs>
-          ) : (
-            <Leads
-              triggerApi={triggerApi}
-              setTriggerApi={setTriggerApi}
-              key={tabKeys.leads}
-              refreshLeadFollowUp={refreshLeadFollowUp}
-              setLeadCount={setLeadCount}
-              leadTypeOptions={leadTypeOptions}
-              regionOptions={regionOptions}
-              courseOptions={courseOptions}
-              setCourseOptions={setCourseOptions}
-              areaOptions={areaOptions}
-              setAreaOptions={setAreaOptions}
-              setLeadCountLoading={setLeadCountLoading}
-            />
-          )}
+          <Leads
+            triggerApi={triggerApi}
+            setTriggerApi={setTriggerApi}
+            key={tabKeys.leads}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+            setLeadCount={setLeadCount}
+            leadTypeOptions={leadTypeOptions}
+            regionOptions={regionOptions}
+            setLeadCountLoading={setLeadCountLoading}
+            setRefreshToggle={setRefreshToggle}
+          />
+          {/* )} */}
+        </div>
+      )}
+
+      {loadedTabs.quality_followup && (
+        <div
+          style={{
+            display: activePage === "quality_followup" ? "block" : "none",
+          }}
+        >
+          <CNAFollowup
+            key={refreshToggle}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+            refreshLeads={refreshLeads}
+          />
         </div>
       )}
     </div>

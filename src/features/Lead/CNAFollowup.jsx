@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import {
   getAllDownlineUsers,
   getCNAFolloups,
+  addQualityComments,
   updateQualityComments,
 } from "../ApiService/action";
 import {
@@ -446,6 +447,7 @@ export default function CNAFollowup({ refreshLeadFollowUp, refreshLeads }) {
 
     setButtonLoading(true);
 
+    const today = new Date();
     const payload = {
       id: qualityHistoryId,
       lead_id: leadId,
@@ -453,10 +455,11 @@ export default function CNAFollowup({ refreshLeadFollowUp, refreshLeads }) {
       status: qualityStatus,
       cna_date: cnaDate ? formatToBackendIST(cnaDate) : null,
       updated_by: loginUserId,
+      updated_date: formatToBackendIST(today),
     };
 
     try {
-      await updateQualityComments(payload);
+      await addQualityComments(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
         setPagination({

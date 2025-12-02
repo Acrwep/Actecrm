@@ -57,8 +57,9 @@ import {
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
   sendCustomerWelcomeEmail,
-  updateLeadQualityComments,
+  addQualityComments,
   updateTableColumns,
+  updateQualityComments,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -189,6 +190,7 @@ export default function Leads({
   const [qualityStatusError, setQualityStatusError] = useState(null);
   const [cnaDate, setCnaDate] = useState(null);
   const [cnaDateError, setCnaDateError] = useState("");
+  const [isQualityCommentUpdate, setIsQualityCommentUpdate] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -734,6 +736,22 @@ export default function Leads({
                             setIsQualityCommentSection(true);
                             setIsOpenPaymentDrawer(true);
                             setClickedLeadItem(record);
+                            if (record.quality_history.length >= 1) {
+                              const item =
+                                record.quality_history[
+                                  record.quality_history.length - 1
+                                ];
+                              if (item.comments) {
+                                setIsQualityCommentUpdate(true);
+                              } else {
+                                setIsQualityCommentUpdate(false);
+                              }
+                              setQualityComments(item.comments);
+                              setQualityStatus(item.status);
+                              setCnaDate(item.cna_date);
+                            } else {
+                              setIsQualityCommentUpdate(false);
+                            }
                           }}
                         />
                       </Tooltip>
@@ -1229,43 +1247,80 @@ export default function Leads({
 
     setButtonLoading(true);
 
+    const today = new Date();
     const payload = {
       lead_id: clickedLeadItem.id,
       comments: qualityComments,
       status: qualityStatus,
-      cna_date: cnaDate ? formatToBackendIST(cnaDate) : null,
+      ...(cnaDate && {
+        cna_date: cnaDate ? formatToBackendIST(cnaDate) : null,
+      }),
       updated_by: loginUserId,
+      updated_date: formatToBackendIST(today),
     };
 
-    try {
-      await updateLeadQualityComments(payload);
-      CommonMessage("success", "Updated");
-      setTimeout(() => {
+    if (isQualityCommentUpdate) {
+      try {
+        await updateQualityComments(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          setButtonLoading(false);
+          qualityFormReset();
+          setPagination({
+            page: 1,
+          });
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            allDownliners,
+            1,
+            pagination.limit
+          );
+          refreshLeadFollowUp();
+          if (permissions.includes("Add Quality Comment")) {
+            setRefreshToggle(!refreshToggle);
+          }
+        }, 300);
+      } catch (error) {
         setButtonLoading(false);
-        qualityFormReset();
-        setPagination({
-          page: 1,
-        });
-        getAllLeadData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          allDownliners,
-          1,
-          pagination.limit
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
         );
-        refreshLeadFollowUp();
-        if (permissions.includes("Add Quality Comment")) {
-          setRefreshToggle(!refreshToggle);
-        }
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
+      }
+    } else {
+      try {
+        await addQualityComments(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          setButtonLoading(false);
+          qualityFormReset();
+          setPagination({
+            page: 1,
+          });
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            allDownliners,
+            1,
+            pagination.limit
+          );
+          refreshLeadFollowUp();
+          if (permissions.includes("Add Quality Comment")) {
+            setRefreshToggle(!refreshToggle);
+          }
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
+      }
     }
   };
 
@@ -1278,6 +1333,7 @@ export default function Leads({
     setQualityStatusError("");
     setCnaDate(null);
     setCnaDateError("");
+    setIsQualityCommentUpdate(false);
   };
 
   const formReset = () => {
@@ -2268,6 +2324,8 @@ export default function Leads({
                   ]}
                   onChange={(e) => {
                     setQualityStatus(e.target.value);
+                    setCnaDate(null);
+                    setCnaDateError("");
                     setQualityStatusError(selectValidator(e.target.value));
                   }}
                   value={qualityStatus}

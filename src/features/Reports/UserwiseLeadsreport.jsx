@@ -295,12 +295,12 @@ export default function UserwiseLeadsReport() {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            gap: "16px",
+            gap: "14px",
           }}
         >
           <Tooltip placement="top" title="Download">
             <Button
-              className="customer_download_button"
+              className="reports_download_button"
               onClick={() => {
                 DownloadTableAsCSV(
                   reportData,

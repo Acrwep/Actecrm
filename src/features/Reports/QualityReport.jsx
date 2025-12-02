@@ -10,28 +10,30 @@ import {
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
-  branchwiseLeadsAnalysisReports,
   getAllDownlineUsers,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
+  qualityReport,
+  raPerformanceReport,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 
-export default function BranchwiseLeadsReport() {
+export default function QualityReport() {
   const mounted = useRef(false);
   //permissions
   const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [selectedDates, setSelectedDates] = useState([]);
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
+  const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
   //executive filter
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -42,15 +44,15 @@ export default function BranchwiseLeadsReport() {
 
   const columns = [
     {
-      title: "Branch Name",
-      key: "branch_name",
-      dataIndex: "branch_name",
+      title: "User Name",
+      key: "user_name",
+      dataIndex: "user_name",
       width: 160,
       fixed: "left",
       render: (text, record) => {
         return (
           <div>
-            <p> {`${text}`}</p>
+            <p> {`${record.user_id} - ${text}`}</p>
           </div>
         );
       },
@@ -59,49 +61,49 @@ export default function BranchwiseLeadsReport() {
       title: "Month",
       key: "label",
       dataIndex: "label",
-      width: 160,
+      width: 170,
       fixed: "left",
     },
     {
-      title: "Total Leads",
-      key: "total_leads",
-      dataIndex: "total_leads",
+      title: "Total Reached",
+      key: "productivity_count",
+      dataIndex: "productivity_count",
       width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Converted Customers",
-      key: "customer_count",
-      dataIndex: "customer_count",
-      width: 170,
+      title: "CNA Reached",
+      key: "cna_reached",
+      dataIndex: "cna_reached",
+      width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Convertion Rate%",
-      key: "lead_to_customer_percentage",
-      dataIndex: "lead_to_customer_percentage",
+      title: "Direct Reached",
+      key: "direct_reached",
+      dataIndex: "direct_reached",
       width: 140,
       render: (text) => {
-        return <p style={{ fontWeight: 600 }}>{`${text}%`}</p>;
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Joined Customers",
-      key: "joined_customers",
-      dataIndex: "joined_customers",
-      width: 160,
+      title: "Moved to CNA",
+      key: "cna_moved",
+      dataIndex: "cna_moved",
+      width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
       title: "Total Followup",
-      key: "lead_followup_count",
-      dataIndex: "lead_followup_count",
+      key: "total_followups",
+      dataIndex: "total_followups",
       width: 130,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
@@ -125,50 +127,57 @@ export default function BranchwiseLeadsReport() {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
-    {
-      title: "Followup Efficiency%",
-      key: "followup_handled_percentage",
-      dataIndex: "followup_handled_percentage",
-      width: 180,
-      fixed: "right",
-      render: (text) => {
-        return <p style={{ fontWeight: 600 }}>{`${text}%`}</p>;
-      },
-    },
   ];
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
+      setSubUsers(downlineUsers);
       const getLast3MonthDates = getLast3Months();
       setSelectedDates(getLast3MonthDates);
 
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }
+  }, [childUsers]);
 
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      const getLast3MonthDates = getLast3Months();
+      setSelectedDates(getLast3MonthDates);
       const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
       setStartDateAndEndDate(customizeDate);
       console.log("startAndEndDate", customizeDate);
 
-      getBranchWiseLeadsReportData(customizeDate[0], customizeDate[1], null);
+      getQualityData(customizeDate[0], customizeDate[1], downliners_ids);
+    } catch (error) {
+      console.log("all downlines error", error);
     }
-  }, [childUsers]);
+  };
 
-  const getBranchWiseLeadsReportData = async (startDate, endDate, regionId) => {
+  const getQualityData = async (startDate, endDate, downliners) => {
     setLoading(true);
     const payload = {
-      region_id: regionId,
+      user_ids: downliners,
       start_date: startDate,
       end_date: endDate,
     };
     try {
-      const response = await branchwiseLeadsAnalysisReports(payload);
-      console.log("branchwise leads report response", response);
+      const response = await qualityReport(payload);
+      console.log("quality report response", response);
       setReportData(response?.data?.data || []);
     } catch (error) {
       setReportData([]);
-      console.log("branchwise leads report error", error);
+      console.log("quality report error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -183,6 +192,30 @@ export default function BranchwiseLeadsReport() {
     });
   };
 
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    try {
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      getQualityData(
+        startDateAndEndDate[0],
+        startDateAndEndDate[1],
+        downliners_ids
+      );
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
+
   const handleRefresh = () => {
     const getLast3MonthDates = getLast3Months();
     setSelectedDates(getLast3MonthDates);
@@ -191,8 +224,7 @@ export default function BranchwiseLeadsReport() {
     setPagination({
       page: 1,
     });
-
-    getBranchWiseLeadsReportData(customizeDate[0], customizeDate[1], null);
+    getAllDownlineUsersData(loginUserId);
   };
 
   return (
@@ -203,36 +235,12 @@ export default function BranchwiseLeadsReport() {
             <Col span={7}>
               <CommonSelectField
                 height="35px"
-                label="Select Branch"
+                label="Select User"
                 labelMarginTop="0px"
                 labelFontSize="13px"
-                options={[
-                  {
-                    id: 1,
-                    name: "Chennai",
-                  },
-                  {
-                    id: 2,
-                    name: "Bangalore",
-                  },
-                  {
-                    id: 3,
-                    name: "Hub",
-                  },
-                ]}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedBranchId(value);
-                  setPagination({
-                    page: 1,
-                  });
-                  getBranchWiseLeadsReportData(
-                    startDateAndEndDate[0],
-                    startDateAndEndDate[1],
-                    value
-                  );
-                }}
-                value={selectedBranchId}
+                options={subUsers}
+                onChange={handleSelectUser}
+                value={selectedUserId}
                 disableClearable={false}
               />
             </Col>
@@ -248,10 +256,10 @@ export default function BranchwiseLeadsReport() {
                   ]);
                   const customizeDate = customizeStartDateAndEndDate(dates);
                   setStartDateAndEndDate(customizeDate);
-                  getBranchWiseLeadsReportData(
+                  getQualityData(
                     customizeDate[0],
                     customizeDate[1],
-                    selectedBranchId
+                    allDownliners
                   );
                 }}
               />
@@ -281,7 +289,7 @@ export default function BranchwiseLeadsReport() {
                     "DD MMMM YYYY"
                   )} to ${moment(startDateAndEndDate[1]).format(
                     "DD MMMM YYYY"
-                  )} Branchwise Lead Report.csv`
+                  )} Quality Performance Report.csv`
                 );
               }}
             >
@@ -302,7 +310,7 @@ export default function BranchwiseLeadsReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 1300 }}
+          scroll={{ x: 1200 }}
           columns={columns}
           dataSource={reportData}
           dataPerPage={10}

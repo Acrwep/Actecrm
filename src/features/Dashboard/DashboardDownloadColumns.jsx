@@ -366,6 +366,54 @@ export const DashboardDownloadColumns = (type) => {
         dataIndex: "class_completed",
       },
     ];
+  } else if (type == "Quality") {
+    columns = [
+      {
+        title: "User Id",
+        key: "user_id",
+        dataIndex: "user_id",
+      },
+      {
+        title: "User Name",
+        key: "user_name",
+        dataIndex: "user_name",
+      },
+      {
+        title: "Total Reached",
+        key: "productivity_count",
+        dataIndex: "productivity_count",
+      },
+      {
+        title: "CNA Reached",
+        key: "cna_reached",
+        dataIndex: "cna_reached",
+      },
+      {
+        title: "Direct Reached",
+        key: "direct_reached",
+        dataIndex: "direct_reached",
+      },
+      {
+        title: "Moved to CNA",
+        key: "cna_moved",
+        dataIndex: "cna_moved",
+      },
+      {
+        title: "Total Followup",
+        key: "total_followups",
+        dataIndex: "total_followups",
+      },
+      {
+        title: "Followup Handled",
+        key: "follow_up_handled",
+        dataIndex: "follow_up_handled",
+      },
+      {
+        title: "Followup Un-Handled",
+        key: "follow_up_unhandled",
+        dataIndex: "follow_up_unhandled",
+      },
+    ];
   } else {
     columns = [];
   }

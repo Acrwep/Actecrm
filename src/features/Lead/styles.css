@@ -59,6 +59,16 @@
   border: none;
   height: 0px !important;
 }
+.leadmanager_cnafollowup_activebutton {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: #a29bfe25;
+  color: #5b69ca;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .leadmanager_refresh_button {
   align-items: center;
   background-color: #fff;

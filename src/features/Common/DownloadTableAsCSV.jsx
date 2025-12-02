@@ -72,7 +72,9 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "joins" ||
           column.dataIndex === "total_followups" ||
           column.dataIndex === "follow_up_handled" ||
-          column.dataIndex === "follow_up_unhandled"
+          column.dataIndex === "follow_up_unhandled" ||
+          column.dataIndex === "followup_handled" ||
+          column.dataIndex === "followup_unhandled"
         ) {
           return row[column.dataIndex]
             ? ` ${Number(row[column.dataIndex]).toLocaleString("en-IN", {
