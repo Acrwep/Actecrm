@@ -378,39 +378,6 @@ export default function Leads({
       },
     },
     {
-      title: "Quality Comments",
-      key: "quality_recent_comment",
-      dataIndex: "quality_recent_comment",
-      fixed: "right",
-      width: 150,
-      render: (text) => {
-        return (
-          <>
-            {text && text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
-      },
-    },
-    {
       title: "Action",
       key: "action",
       dataIndex: "action",
@@ -418,7 +385,7 @@ export default function Leads({
       width: 120,
       render: (text, record) => (
         <div className="trainers_actionbuttonContainer">
-          {permissions.includes("Add Quality Comment") && (
+          {/* {permissions.includes("Add Quality Comment") && (
             <Tooltip placement="bottom" title="Add Comments">
               <img
                 src={QualityIcon}
@@ -430,7 +397,7 @@ export default function Leads({
                 }}
               />
             </Tooltip>
-          )}
+          )} */}
           {permissions.includes("Edit Lead Button") &&
           isShowEdit &&
           record.is_customer_reg === 0 ? (
@@ -689,45 +656,12 @@ export default function Leads({
                   );
                 },
               };
-            case "quality_recent_comment":
-              return {
-                ...col,
-                width: 150,
-                render: (text) => {
-                  return (
-                    <>
-                      {text && text.length > 25 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 24) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text ? text : "-"}</p>
-                      )}
-                    </>
-                  );
-                },
-              };
             case "action":
               return {
                 ...col,
                 render: (text, record) => (
                   <div className="trainers_actionbuttonContainer">
-                    {permissions.includes("Add Quality Comment") && (
+                    {/* {permissions.includes("Add Quality Comment") && (
                       <Tooltip placement="bottom" title="Add Comments">
                         <img
                           src={QualityIcon}
@@ -755,7 +689,7 @@ export default function Leads({
                           }}
                         />
                       </Tooltip>
-                    )}
+                    )} */}
 
                     {permissions.includes("Edit Lead Button") &&
                     isShowEdit &&

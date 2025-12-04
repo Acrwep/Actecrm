@@ -1166,130 +1166,130 @@ export default function Dashboard() {
       setTimeout(() => {
         setRaLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api === true) {
-          getQualityData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            1
-          );
-        }
+        // if (call_api === true) {
+        //   getQualityData(
+        //     dashboard_dates,
+        //     PreviousAndCurrentDate[0],
+        //     PreviousAndCurrentDate[1],
+        //     downliners,
+        //     1
+        //   );
+        // }
       }, 300);
     }
   };
 
-  const getQualityData = async (
-    dashboard_dates,
-    startDate,
-    endDate,
-    downliners,
-    type
-  ) => {
-    if (!permissions.includes("Quality Dashboard")) {
-      return;
-    }
-    setQualityLoader(true);
+  // const getQualityData = async (
+  //   dashboard_dates,
+  //   startDate,
+  //   endDate,
+  //   downliners,
+  //   type
+  // ) => {
+  //   if (!permissions.includes("Quality Dashboard")) {
+  //     return;
+  //   }
+  //   setQualityLoader(true);
 
-    //date handling
-    let quality_dates;
-    if (dashboard_dates && dashboard_dates.length >= 1) {
-      quality_dates = dashboard_dates.find(
-        (f) => f.card_name == "Quality Dashboard"
-      );
-      if (quality_dates) {
-        if (
-          quality_dates.card_settings == "Today" ||
-          quality_dates.card_settings == "Yesterday" ||
-          quality_dates.card_settings == "7 Days" ||
-          quality_dates.card_settings == "15 Days" ||
-          quality_dates.card_settings == "30 Days" ||
-          quality_dates.card_settings == "60 Days" ||
-          quality_dates.card_settings == "90 Days"
-        ) {
-          const getdates_bylabel = getDatesFromRangeLabel(
-            quality_dates.card_settings
-          );
-          quality_dates = getdates_bylabel;
-          setQualitySelectedDates([
-            getdates_bylabel.card_settings.start_date,
-            getdates_bylabel.card_settings.end_date,
-          ]);
-        } else {
-          setQualitySelectedDates([
-            quality_dates.card_settings.start_date,
-            quality_dates.card_settings.end_date,
-          ]);
-        }
-      }
-    }
+  //   //date handling
+  //   let quality_dates;
+  //   if (dashboard_dates && dashboard_dates.length >= 1) {
+  //     quality_dates = dashboard_dates.find(
+  //       (f) => f.card_name == "Quality Dashboard"
+  //     );
+  //     if (quality_dates) {
+  //       if (
+  //         quality_dates.card_settings == "Today" ||
+  //         quality_dates.card_settings == "Yesterday" ||
+  //         quality_dates.card_settings == "7 Days" ||
+  //         quality_dates.card_settings == "15 Days" ||
+  //         quality_dates.card_settings == "30 Days" ||
+  //         quality_dates.card_settings == "60 Days" ||
+  //         quality_dates.card_settings == "90 Days"
+  //       ) {
+  //         const getdates_bylabel = getDatesFromRangeLabel(
+  //           quality_dates.card_settings
+  //         );
+  //         quality_dates = getdates_bylabel;
+  //         setQualitySelectedDates([
+  //           getdates_bylabel.card_settings.start_date,
+  //           getdates_bylabel.card_settings.end_date,
+  //         ]);
+  //       } else {
+  //         setQualitySelectedDates([
+  //           quality_dates.card_settings.start_date,
+  //           quality_dates.card_settings.end_date,
+  //         ]);
+  //       }
+  //     }
+  //   }
 
-    const payload = {
-      start_date: quality_dates
-        ? quality_dates.card_settings.start_date
-        : startDate,
-      end_date: quality_dates ? quality_dates.card_settings.end_date : endDate,
-      user_ids: downliners,
-      type: type == 1 ? "Productivity" : "Followup",
-    };
-    try {
-      const response = await getQualityDashboard(payload);
-      console.log("quality response", response);
-      const quality_data = response?.data?.result;
+  //   const payload = {
+  //     start_date: quality_dates
+  //       ? quality_dates.card_settings.start_date
+  //       : startDate,
+  //     end_date: quality_dates ? quality_dates.card_settings.end_date : endDate,
+  //     user_ids: downliners,
+  //     type: type == 1 ? "Productivity" : "Followup",
+  //   };
+  //   try {
+  //     const response = await getQualityDashboard(payload);
+  //     console.log("quality response", response);
+  //     const quality_data = response?.data?.result;
 
-      const xaxis = quality_data.map(
-        (item) => `${item.user_id} (${item.user_name})`
-      );
+  //     const xaxis = quality_data.map(
+  //       (item) => `${item.user_id} (${item.user_name})`
+  //     );
 
-      const series = quality_data.map((item) =>
-        type == 1
-          ? Number(item.productivity_count)
-          : Number(item.total_followups)
-      );
+  //     const series = quality_data.map((item) =>
+  //       type == 1
+  //         ? Number(item.productivity_count)
+  //         : Number(item.total_followups)
+  //     );
 
-      if (type == 1) {
-        const cna_moved = quality_data.map((item) => Number(item.cna_moved));
-        const cna_reached = quality_data.map((item) =>
-          Number(item.cna_reached)
-        );
+  //     if (type == 1) {
+  //       const cna_moved = quality_data.map((item) => Number(item.cna_moved));
+  //       const cna_reached = quality_data.map((item) =>
+  //         Number(item.cna_reached)
+  //       );
 
-        const direct_reached = quality_data.map((item) =>
-          Number(item.direct_reached)
-        );
-        setQualityMovedToCna(cna_moved);
-        setQualityCnaReached(cna_reached);
-        setQualityDirectReached(direct_reached);
-      } else {
-        setQualityMovedToCna([]);
-        setQualityCnaReached([]);
-        setQualityDirectReached([]);
+  //       const direct_reached = quality_data.map((item) =>
+  //         Number(item.direct_reached)
+  //       );
+  //       setQualityMovedToCna(cna_moved);
+  //       setQualityCnaReached(cna_reached);
+  //       setQualityDirectReached(direct_reached);
+  //     } else {
+  //       setQualityMovedToCna([]);
+  //       setQualityCnaReached([]);
+  //       setQualityDirectReached([]);
 
-        const followup_handled = quality_data.map((item) =>
-          Number(item.follow_up_handled)
-        );
-        const followup_unhandled = quality_data.map((item) =>
-          Number(item.follow_up_unhandled)
-        );
-        setQualityFollowUpHandled(followup_handled);
-        setQualityFollowUpUnHandled(followup_unhandled);
-      }
+  //       const followup_handled = quality_data.map((item) =>
+  //         Number(item.follow_up_handled)
+  //       );
+  //       const followup_unhandled = quality_data.map((item) =>
+  //         Number(item.follow_up_unhandled)
+  //       );
+  //       setQualityFollowUpHandled(followup_handled);
+  //       setQualityFollowUpUnHandled(followup_unhandled);
+  //     }
 
-      setQualityXaxis(xaxis);
-      setQualityDataSeries(series);
-    } catch (error) {
-      setQualityDataSeries([]);
-      setQualityMovedToCna([]);
-      setQualityCnaReached([]);
-      setQualityDirectReached([]);
-      setQualityFollowUpHandled([]);
-      setQualityFollowUpUnHandled([]);
-      console.log("quality error", error);
-    } finally {
-      setTimeout(() => {
-        setQualityLoader(false);
-      }, 300);
-    }
-  };
+  //     setQualityXaxis(xaxis);
+  //     setQualityDataSeries(series);
+  //   } catch (error) {
+  //     setQualityDataSeries([]);
+  //     setQualityMovedToCna([]);
+  //     setQualityCnaReached([]);
+  //     setQualityDirectReached([]);
+  //     setQualityFollowUpHandled([]);
+  //     setQualityFollowUpUnHandled([]);
+  //     console.log("quality error", error);
+  //   } finally {
+  //     setTimeout(() => {
+  //       setQualityLoader(false);
+  //     }, 300);
+  //   }
+  // };
 
   const handleRaDashboard = (label) => {
     console.log("ra dashboard clicked bar", label);
@@ -3040,7 +3040,7 @@ export default function Dashboard() {
           </Col>
         )}
 
-        {permissions.includes("Quality Dashboard") && (
+        {/* {permissions.includes("Quality Dashboard") && (
           <Col
             xs={24}
             sm={24}
@@ -3204,7 +3204,7 @@ export default function Dashboard() {
               </div>
             </div>
           </Col>
-        )}
+        )} */}
       </Row>
 
       {/* <Row gutter={16}>

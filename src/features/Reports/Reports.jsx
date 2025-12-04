@@ -67,11 +67,11 @@ export default function Reports() {
             key: "7",
             children: <RaPerformanceReport />,
           },
-          {
-            label: "Quality Performance",
-            key: "8",
-            children: <QualityReport />,
-          },
+          // {
+          //   label: "Quality Performance",
+          //   key: "8",
+          //   children: <QualityReport />,
+          // },
         ]}
       />
     </div>

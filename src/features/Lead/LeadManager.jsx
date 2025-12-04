@@ -224,7 +224,7 @@ export default function LeadManager() {
         </div>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          {permissions.includes("Add Quality Comment") && (
+          {/* {permissions.includes("Add Quality Comment") && (
             <Tooltip
               placement="bottomRight"
               color="#fff"
@@ -255,7 +255,7 @@ export default function LeadManager() {
                 <HiDotsVertical size={16} color="#585858ff" />
               </Button>
             </Tooltip>
-          )}
+          )} */}
 
           <Tooltip placement="top" title="Refresh">
             <Button
