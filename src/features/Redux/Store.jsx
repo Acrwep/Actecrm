@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import {
+  leadManagerActivePageReducer,
   areaListReducer,
   courseListReducer,
   groupListReducer,
@@ -30,6 +31,7 @@ import {
 export const reduxStore = configureStore({
   devTools: true,
   reducer: {
+    leadmanageractivepage: leadManagerActivePageReducer,
     courselist: courseListReducer,
     arealist: areaListReducer,
     userslist: usersListReducer,

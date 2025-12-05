@@ -1,26 +1,50 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Flex, Tooltip, Radio, Button } from "antd";
+import { Row, Col, Flex, Tooltip, Radio, Button, Drawer } from "antd";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
-import { getLiveLeads } from "../ApiService/action";
+import {
+  getAllDownlineUsers,
+  getLeadAndFollowupCount,
+  getLiveLeads,
+} from "../ApiService/action";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
-import { width } from "@mui/system";
+import { GiCardPickup } from "react-icons/gi";
+import CommonSpinner from "../Common/CommonSpinner";
+import AddLead from "./AddLead";
+import { useSelector } from "react-redux";
 
-export default function LiveLead({ activePage, setLiveLeadCount }) {
+export default function LiveLead({
+  setLiveLeadCount,
+  leadTypeOptions,
+  regionOptions,
+  refreshLeadFollowUp,
+  refreshLeads,
+  setLeadCount,
+  isLeadPageVisited,
+}) {
   //useref
   const searchRef = useRef("");
   const datesRef = useRef([]);
   const paginationRef = useRef({ page: 1, limit: 10 });
+  const addLeaduseRef = useRef();
+  //useselector
+  const tabName = useSelector((state) => state.leadmanageractivepage);
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
   const [loading, setLoading] = useState(true);
+  //pick lead drawer
+  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+  const [pickLeadItem, setPickLeadItem] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [callCountApi, setCallCountApi] = useState(true);
+  const [allDownliners, setAllDownliners] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -262,14 +286,39 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
         );
       },
     },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="trainers_actionbuttonContainer">
+            <Tooltip placement="bottom" title="Pick">
+              <GiCardPickup
+                size={19}
+                color="#5b69ca"
+                className="trainers_action_icons"
+                onClick={() => handlePick(record)}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
+    },
   ];
+
+  useEffect(() => {
+    setCallCountApi(isLeadPageVisited == true ? false : true);
+  }, [isLeadPageVisited]);
 
   useEffect(() => {
     paginationRef.current = pagination;
   }, [pagination]);
 
   useEffect(() => {
-    console.log("acccccc", activePage);
+    console.log("acccccc", tabName);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     searchRef.current = null;
@@ -277,7 +326,7 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
     const initialPagination = { page: 1, limit: 10, total: 0, totalPages: 0 };
     paginationRef.current = initialPagination;
 
-    if (activePage !== "live_leads") return; // Stop polling
+    if (tabName !== "live_leads") return; // Stop polling
 
     // Initial Call
     getLiveLeadsData(
@@ -288,6 +337,11 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
       10
     );
 
+    setTimeout(() => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }, 300);
     // Call every 5 seconds
     const interval = setInterval(() => {
       getLiveLeadsData(
@@ -301,7 +355,21 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
 
     // Cleanup interval when component unmounts
     return () => clearInterval(interval);
-  }, []);
+  }, [tabName]);
+
+  const getAllDownlineUsersData = async (user_id) => {
+    try {
+      const response = await getAllDownlineUsers(user_id);
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
+  };
 
   const getLiveLeadsData = async (
     searchvalue,
@@ -376,6 +444,36 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
       page,
       limit
     );
+  };
+
+  const handlePick = (item) => {
+    console.log("itemmmm", item);
+    setPickLeadItem({
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+    });
+    setIsOpenAddDrawer(true);
+  };
+
+  const getLeadAndFollowupCountData = async () => {
+    if (callCountApi == false) return;
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const payload = {
+      user_ids: allDownliners,
+      start_date: PreviousAndCurrentDate[0],
+      end_date: PreviousAndCurrentDate[1],
+    };
+    try {
+      const response = await getLeadAndFollowupCount(payload);
+      console.log("lead count response", response);
+      const countDetails = response?.data?.data;
+      setLeadCount(countDetails.total_lead_count);
+    } catch (error) {
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
+    }
   };
 
   return (
@@ -537,6 +635,67 @@ export default function LiveLead({ activePage, setLiveLeadCount }) {
           totalPageNumber={pagination.total} // total rows
         />
       </div>
+
+      <Drawer
+        title="Add Lead"
+        open={isOpenAddDrawer}
+        onClose={() => {
+          setIsOpenAddDrawer(false);
+          setPickLeadItem(null);
+        }}
+        width="52%"
+        style={{ position: "relative" }}
+        id="leadform_addlead_drawer"
+      >
+        <AddLead
+          ref={addLeaduseRef}
+          key={pickLeadItem}
+          leadTypeOptions={leadTypeOptions}
+          regionOptions={regionOptions}
+          updateLeadItem={null}
+          setSaveOnlyLoading={setButtonLoading}
+          setButtonLoading={setButtonLoading}
+          setIsOpenAddDrawer={setIsOpenAddDrawer}
+          liveLeadItem={pickLeadItem}
+          callgetLeadsApi={() => {
+            setPickLeadItem(null);
+            setPagination({
+              page: 1,
+            });
+            getLiveLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              1,
+              pagination.limit
+            );
+            refreshLeadFollowUp();
+            refreshLeads();
+            getLeadAndFollowupCountData();
+          }}
+        />
+
+        <div className="leadmanager_submitlead_buttoncontainer">
+          <div style={{ display: "flex", gap: "12px" }}>
+            <>
+              {buttonLoading ? (
+                <button className={"leadmanager_loadingupdateleadbutton"}>
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className={"leadmanager_updateleadbutton"}
+                  onClick={() =>
+                    addLeaduseRef.current.handleSubmit("Save Only")
+                  }
+                >
+                  Submit
+                </button>
+              )}
+            </>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

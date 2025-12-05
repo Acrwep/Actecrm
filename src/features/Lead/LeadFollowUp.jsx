@@ -23,6 +23,7 @@ import { IoIosClose } from "react-icons/io";
 import {
   downloadLeadFollowUps,
   getAllDownlineUsers,
+  getLeadAndFollowupCount,
   getLeadFollowUps,
   getLeadFollowUpsCountByUserIds,
   getTableColumns,
@@ -68,6 +69,8 @@ export default function LeadFollowUp({
   refreshLeads,
   leadTypeOptions,
   regionOptions,
+  setLeadCount,
+  isLeadPageVisited,
 }) {
   const chatBoxRef = useRef();
   const mounted = useRef(false);
@@ -112,6 +115,7 @@ export default function LeadFollowUp({
   const [leadDetails, setLeadDetails] = useState(null);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
+  const [callCountApi, setCallCountApi] = useState(true);
   //lead executive usestates
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -342,6 +346,10 @@ export default function LeadFollowUp({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    setCallCountApi(isLeadPageVisited == true ? false : true);
+  }, [isLeadPageVisited]);
 
   useEffect(() => {
     if (permissions.length >= 1) {
@@ -916,6 +924,25 @@ export default function LeadFollowUp({
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getLeadAndFollowupCountData = async () => {
+    if (callCountApi == false) return;
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const payload = {
+      user_ids: allDownliners,
+      start_date: PreviousAndCurrentDate[0],
+      end_date: PreviousAndCurrentDate[1],
+    };
+    try {
+      const response = await getLeadAndFollowupCount(payload);
+      console.log("lead count response", response);
+      const countDetails = response?.data?.data;
+      setLeadCount(countDetails.total_lead_count);
+    } catch (error) {
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
     }
   };
 
@@ -1573,6 +1600,7 @@ export default function LeadFollowUp({
               pagination.limit
             );
             refreshLeads();
+            getLeadAndFollowupCountData();
           }}
         />
         <div className="leadmanager_submitlead_buttoncontainer">

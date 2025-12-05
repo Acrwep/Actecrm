@@ -23,6 +23,7 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import {
+  assignLiveLead,
   createArea,
   createLead,
   createTechnology,
@@ -43,6 +44,7 @@ const AddLead = forwardRef(
       leadTypeOptions,
       regionOptions,
       updateLeadItem,
+      liveLeadItem,
       setIsOpenAddDrawer,
       setButtonLoading,
       setSaveOnlyLoading,
@@ -268,6 +270,72 @@ const AddLead = forwardRef(
         setBranch(updateLeadItem.branch_id);
         setBatchTrack(updateLeadItem.batch_track_id);
         setComments(updateLeadItem.comments);
+      } else if (liveLeadItem) {
+        console.log("liveLeadItem", liveLeadItem);
+        setName(liveLeadItem.name);
+        setEmail(liveLeadItem.email);
+        setMobile(liveLeadItem.phone);
+        setWhatsApp(liveLeadItem.phone);
+        setLeadType(4);
+        liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
+      }
+    };
+
+    const liveLeadEmailValidator = async (liveLeadEmail, liveLeadPhone) => {
+      const payload = {
+        email: liveLeadEmail,
+      };
+      try {
+        const response = await leadEmailAndMobileValidator(payload);
+        console.log("lead email validator res", response);
+        if (response?.data?.data === true) {
+          setEmailError(" is already exist");
+          setEmailAndMobileValidation((prev) => ({
+            ...prev,
+            email: 0,
+          }));
+        } else {
+          setEmailAndMobileValidation((prev) => ({
+            ...prev,
+            email: 1,
+          }));
+        }
+      } catch (error) {
+        console.log("validation error", error);
+      } finally {
+        setTimeout(() => {
+          liveLeadMobileValidator(liveLeadPhone);
+        }, 300);
+      }
+    };
+
+    const liveLeadMobileValidator = async (liveLeadPhone) => {
+      const payload = {
+        mobile: liveLeadPhone,
+      };
+
+      try {
+        const response = await leadEmailAndMobileValidator(payload);
+        console.log("lead mobile validator res", response);
+        if (response?.data?.data === true) {
+          setMobileError(" is already exist");
+          setWhatsAppError(" is already exist");
+          setEmailAndMobileValidation((prev) => ({
+            ...prev,
+            mobile: 0,
+            whatsApp: 0,
+          }));
+        } else {
+          setMobileError("");
+          setWhatsAppError("");
+          setEmailAndMobileValidation((prev) => ({
+            ...prev,
+            mobile: 1,
+            whatsApp: 1,
+          }));
+        }
+      } catch (error) {
+        console.log("validation error", error);
       }
     };
 
@@ -359,7 +427,10 @@ const AddLead = forwardRef(
 
       setEmailError(emailValidate);
 
-      if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      if (
+        permissions.includes("Add Lead With Existing Mobile Number") &&
+        liveLeadItem == null
+      ) {
         setEmailAndMobileValidation((prev) => ({
           ...prev,
           email: 1,
@@ -402,7 +473,10 @@ const AddLead = forwardRef(
 
       setMobileError(mobileValidate);
 
-      if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      if (
+        permissions.includes("Add Lead With Existing Mobile Number") &&
+        liveLeadItem == null
+      ) {
         setEmailAndMobileValidation((prev) => ({
           ...prev,
           mobile: 1,
@@ -444,7 +518,10 @@ const AddLead = forwardRef(
       const whatsAppValidate = mobileValidator(cleanedMobile);
 
       setWhatsAppError(whatsAppValidate);
-      if (permissions.includes("Add Lead With Existing Mobile Number")) {
+      if (
+        permissions.includes("Add Lead With Existing Mobile Number") &&
+        liveLeadItem == null
+      ) {
         setEmailAndMobileValidation((prev) => ({
           ...prev,
           whatsApp: 1,
@@ -721,6 +798,9 @@ const AddLead = forwardRef(
               behavior: "smooth",
             });
             callgetLeadsApi();
+            if (liveLeadItem) {
+              handleAssignLiveLead();
+            }
           }, 300);
         } catch (error) {
           console.log("lead create error", error);
@@ -732,6 +812,22 @@ const AddLead = forwardRef(
               "Something went wrong. Try again later"
           );
         }
+      }
+    };
+
+    const handleAssignLiveLead = async () => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      const payload = {
+        user_id: convertAsJson?.user_id,
+        lead_id: liveLeadItem?.id,
+      };
+
+      try {
+        await assignLiveLead(payload);
+      } catch (error) {
+        console.log("assign live lead error", error);
       }
     };
 
@@ -1184,6 +1280,7 @@ const AddLead = forwardRef(
                     setExpectDateJoin(value);
                   }}
                   value={expectDateJoin}
+                  error=""
                   disablePreviousDates={true}
                 />
               </Col>

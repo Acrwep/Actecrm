@@ -16,7 +16,11 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import CNAFollowup from "./CNAFollowup";
-import { storeAreaList, storeCourseList } from "../Redux/Slice";
+import {
+  storeAreaList,
+  storeCourseList,
+  storeLeadManagerActivePage,
+} from "../Redux/Slice";
 import LiveLead from "./LiveLeads";
 
 export default function LeadManager() {
@@ -30,6 +34,7 @@ export default function LeadManager() {
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
   const [liveLeadCount, setLiveLeadCount] = useState(0);
+  const [isLeadPageVisited, setIsLeadPageVisited] = useState(false);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
@@ -45,6 +50,7 @@ export default function LeadManager() {
   const [loadedTabs, setLoadedTabs] = useState({
     followup: true, // first tab shown initially
     leads: false,
+    live_leads: false,
   });
 
   // For forcing remount
@@ -167,6 +173,7 @@ export default function LeadManager() {
 
   const handleTabClick = (tab) => {
     setActivePage(tab);
+    dispatch(storeLeadManagerActivePage(tab));
     setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
   };
 
@@ -189,13 +196,6 @@ export default function LeadManager() {
     setTabKeys((prev) => ({
       ...prev,
       leads: prev.leads + 1,
-    }));
-  };
-
-  const refreshQualityFollowup = () => {
-    setTabKeys((prev) => ({
-      ...prev,
-      leads: prev.quality_followup + 1,
     }));
   };
 
@@ -236,39 +236,6 @@ export default function LeadManager() {
         </div>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          {/* {permissions.includes("Add Quality Comment") && (
-            <Tooltip
-              placement="bottomRight"
-              color="#fff"
-              // open={true}
-              classNames={{
-                body: "customers_download_tooltip_body",
-                root: "customers_download_tooltip_root",
-              }}
-              style={{ body: { padding: "6px 0" } }}
-              title={
-                <>
-                  <div
-                    className={
-                      activePage == "quality_followup"
-                        ? "leadmanager_cnafollowup_activebutton"
-                        : "customer_download_container"
-                    }
-                    style={{ marginBottom: "1px" }}
-                    onClick={() => handleTabClick("quality_followup")}
-                  >
-                    <IoChevronForwardCircleOutline size={18} />
-                    <p className="customer_download_text">Quality Followup</p>
-                  </div>
-                </>
-              }
-            >
-              <Button className="customer_download_button">
-                <HiDotsVertical size={16} color="#585858ff" />
-              </Button>
-            </Tooltip>
-          )} */}
-
           <Tooltip placement="top" title="Refresh">
             <Button
               className="leadmanager_refresh_button"
@@ -290,6 +257,7 @@ export default function LeadManager() {
           <LeadFollowUp
             key={tabKeys.followup}
             setFollowupCount={setFollowupCount}
+            setLeadCount={setLeadCount}
             refreshLeads={refreshLeads}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
@@ -297,6 +265,7 @@ export default function LeadManager() {
             setCourseOptions={setCourseOptions}
             areaOptions={areaOptions}
             setAreaOptions={setAreaOptions}
+            isLeadPageVisited={isLeadPageVisited}
           />
         </div>
       )}
@@ -316,9 +285,9 @@ export default function LeadManager() {
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}
+            setIsLeadPageVisited={setIsLeadPageVisited}
             setRefreshToggle={setRefreshToggle}
           />
-          {/* )} */}
         </div>
       )}
 
@@ -329,11 +298,16 @@ export default function LeadManager() {
           }}
         >
           <LiveLead
-            key={activePage + "_" + tabKeys.live_leads}
+            key={tabKeys.live_leads}
             activePage={activePage}
             setLiveLeadCount={setLiveLeadCount}
+            refreshLeads={refreshLeads}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+            leadTypeOptions={leadTypeOptions}
+            regionOptions={regionOptions}
+            setLeadCount={setLeadCount}
+            isLeadPageVisited={isLeadPageVisited}
           />
-          {/* )} */}
         </div>
       )}
 

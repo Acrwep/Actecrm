@@ -80,6 +80,7 @@ export default function Leads({
   leadTypeOptions,
   regionOptions,
   setLeadCountLoading,
+  setIsLeadPageVisited,
   refreshToggle,
   setRefreshToggle,
 }) {
@@ -545,6 +546,7 @@ export default function Leads({
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
         mounted.current = true;
+        setIsLeadPageVisited(true);
         setLoginUserId(convertAsJson?.user_id);
         getAllDownlineUsersData(convertAsJson?.user_id);
         // getAllLeadData(

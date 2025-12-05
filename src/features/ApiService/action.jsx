@@ -500,6 +500,15 @@ export const getLiveLeads = async (payload) => {
   }
 };
 
+export const assignLiveLead = async (payload) => {
+  try {
+    const response = await api.put("/api/assignLiveLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // customers api's
 export const getCustomers = async (payload) => {
   try {

@@ -2,6 +2,18 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = [];
 
+let activepage = "";
+const leadManagerActivePageSlice = createSlice({
+  name: "leadmanageractivepage",
+  initialState: activepage,
+  reducers: {
+    storeLeadManagerActivePage(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const courseListSlice = createSlice({
   name: "courselist",
   initialState,
@@ -278,6 +290,8 @@ const tableColumnsSlice = createSlice({
 });
 
 //define slice
+export const { storeLeadManagerActivePage } =
+  leadManagerActivePageSlice.actions;
 export const { storeCourseList } = courseListSlice.actions;
 export const { storeAreaList } = areaListSlice.actions;
 export const { storeUserSearchValue } = userSearchValueSlice.actions;
@@ -315,6 +329,7 @@ export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 export const { storeTableColumns } = tableColumnsSlice.actions;
 //create reducer
+export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
 export const areaListReducer = areaListSlice.reducer;
 export const usersListReducer = usersListSlice.reducer;
