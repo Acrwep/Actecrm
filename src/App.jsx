@@ -85,7 +85,7 @@ function App() {
       <Provider store={reduxStore}>
         <NotificationProvider>
           <BrowserRouter>
-            {permission === "granted" ? (
+            {/* {permission === "granted" ? (
               ""
             ) : (
               <div className="enable_notification_button_container">
@@ -99,7 +99,7 @@ function App() {
                     : "Enable Notifications"}
                 </button>
               </div>
-            )}
+            )} */}
 
             <Pages />
           </BrowserRouter>

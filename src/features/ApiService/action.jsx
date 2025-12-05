@@ -490,6 +490,15 @@ export const sendPaymentInvoiceByEmail = async (payload) => {
     throw error;
   }
 };
+//live leads
+export const getLiveLeads = async (payload) => {
+  try {
+    const response = await api.post("/api/getWebsiteLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // customers api's
 export const getCustomers = async (payload) => {

@@ -201,6 +201,32 @@ export default function LeadFollowUp({
       key: "email",
       dataIndex: "email",
       width: 200,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 22 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 130 },
     {
@@ -490,6 +516,34 @@ export default function LeadFollowUp({
               return {
                 ...col,
                 width: 200,
+                render: (text) => {
+                  return (
+                    <>
+                      {text.length > 22 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 21) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </>
+                  );
+                },
               };
             case "phone":
               return {

@@ -227,7 +227,38 @@ export default function Leads({
       },
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
-    { title: "Email", key: "email", dataIndex: "email", width: 240 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 240,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 26 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     {
       title: "Country",
@@ -349,11 +380,11 @@ export default function Leads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 140,
+      width: 220,
       render: (text) => {
         return (
           <>
-            {text.length > 14 ? (
+            {text.length > 25 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -368,7 +399,7 @@ export default function Leads({
                   },
                 }}
               >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 14) + "..."}</p>
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
@@ -555,6 +586,38 @@ export default function Leads({
                   <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
                 ),
               };
+            case "email":
+              return {
+                ...col,
+                render: (text) => {
+                  return (
+                    <>
+                      {text.length > 26 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 25) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
             case "created_date":
               return {
                 ...col,
@@ -626,11 +689,11 @@ export default function Leads({
             case "comments":
               return {
                 ...col,
-                width: 140,
+                width: 220,
                 render: (text) => {
                   return (
                     <>
-                      {text.length > 16 ? (
+                      {text.length > 25 ? (
                         <Tooltip
                           color="#fff"
                           placement="bottom"
@@ -646,7 +709,7 @@ export default function Leads({
                           }}
                         >
                           <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 16) + "..."}
+                            {text.slice(0, 24) + "..."}
                           </p>
                         </Tooltip>
                       ) : (

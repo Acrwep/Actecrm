@@ -88,7 +88,38 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       },
     },
     { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 220,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 24 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
     {
       title: "Course ",
@@ -493,6 +524,38 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                       <div>
                         <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
                       </div>
+                    );
+                  },
+                };
+              case "email":
+                return {
+                  ...col,
+                  render: (text) => {
+                    return (
+                      <>
+                        {text.length > 24 ? (
+                          <Tooltip
+                            color="#fff"
+                            placement="bottom"
+                            title={text}
+                            className="leadtable_comments_tooltip"
+                            styles={{
+                              body: {
+                                backgroundColor: "#fff", // Tooltip background
+                                color: "#333", // Tooltip text color
+                                fontWeight: 500,
+                                fontSize: "13px",
+                              },
+                            }}
+                          >
+                            <p style={{ cursor: "pointer" }}>
+                              {text.slice(0, 23) + "..."}
+                            </p>
+                          </Tooltip>
+                        ) : (
+                          <p>{text}</p>
+                        )}
+                      </>
                     );
                   },
                 };

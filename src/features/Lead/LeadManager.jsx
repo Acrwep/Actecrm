@@ -5,8 +5,6 @@ import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { HiDotsVertical } from "react-icons/hi";
-import { IoChevronForwardCircleOutline } from "react-icons/io5";
 import {
   getAllAreas,
   getAllDownlineUsers,
@@ -19,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import CNAFollowup from "./CNAFollowup";
 import { storeAreaList, storeCourseList } from "../Redux/Slice";
+import LiveLead from "./LiveLeads";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -30,6 +29,7 @@ export default function LeadManager() {
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
+  const [liveLeadCount, setLiveLeadCount] = useState(0);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
@@ -52,6 +52,7 @@ export default function LeadManager() {
     followup: 0,
     leads: 0,
     quality_followup: 0,
+    live_leads: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -97,6 +98,7 @@ export default function LeadManager() {
       const countDetails = response?.data?.data;
       setFollowupCount(countDetails.follow_up_count);
       setLeadCount(countDetails.total_lead_count);
+      setLiveLeadCount(countDetails.web_lead_count);
       // dispatch(storeUsersList(response?.data?.data || []));
     } catch (error) {
       console.log("lead count error", error);
@@ -221,6 +223,16 @@ export default function LeadManager() {
           >
             <p>{`Leads (${leadCount})`}</p>
           </button>
+          <button
+            className={
+              activePage === "live_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("live_leads")}
+          >
+            <p>{`Live Leads (${liveLeadCount})`}</p>
+          </button>
         </div>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -305,6 +317,21 @@ export default function LeadManager() {
             regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}
             setRefreshToggle={setRefreshToggle}
+          />
+          {/* )} */}
+        </div>
+      )}
+
+      {loadedTabs.live_leads && (
+        <div
+          style={{
+            display: activePage === "live_leads" ? "block" : "none",
+          }}
+        >
+          <LiveLead
+            key={activePage + "_" + tabKeys.live_leads}
+            activePage={activePage}
+            setLiveLeadCount={setLiveLeadCount}
           />
           {/* )} */}
         </div>

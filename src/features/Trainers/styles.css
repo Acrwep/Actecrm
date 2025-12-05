@@ -279,7 +279,7 @@
   border-color: #d32f2f !important;
   box-shadow: none !important;
 }
-/* trainer registration styles */
+/* trainer registration form styles */
 .logincard_innerContainer {
   padding: 0px 35px 0px 35px !important;
 }
@@ -292,6 +292,11 @@
 .trainer_registration_dividers {
   margin: 30px 0px 18px 0px !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+}
+@media (min-width: 260px) and (max-width: 1023px) {
+  .trainer_registration_primarydetails_col_container {
+    margin-top: 16px;
+  }
 }
 .trainer_registration_signaturelabel {
   color: #333;

@@ -857,11 +857,11 @@ export default function CustomerRegistration() {
   };
 
   return (
-    <div className="login_mainContainer">
+    <div className="customerregistration_mainContainer">
       <div className="customerregistration_card">
-        <div className="logincard_innerContainer" style={{ marginTop: "40px" }}>
-          <div className="trainer_registration_logoContainer">
-            <div style={{ height: "100%" }}>
+        <div className="customerregistration_innerContainer">
+          <Row style={{ display: "flex" }}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <img src={Logo} className="login_logo" />
               <p
                 className="trainer_registration_logotext"
@@ -869,32 +869,50 @@ export default function CustomerRegistration() {
               >
                 Technologies
               </p>
-            </div>
-            <div>
+            </Col>
+            <Col
+              xs={24}
+              sm={24}
+              md={8}
+              lg={8}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                fontSize: "16px",
+              }}
+            >
               <p className="trainer_registration_heading">
                 Customer Registration Form
               </p>
-            </div>
-            <Upload
-              listType="picture-circle"
-              fileList={profilePictureArray}
-              onPreview={handlePreview}
-              onChange={handleProfileAttachment}
-              onRemove={(file) => handleRemoveProfile(file)}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              accept=".png,.jpg,.jpeg"
+            </Col>
+            <Col
+              xs={24}
+              sm={24}
+              md={8}
+              lg={8}
+              className="customerregistration_profileimage_container"
             >
-              {profilePictureArray.length >= 1 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8, fontSize: "12px" }}>
-                    Upload <br /> Profile
+              <Upload
+                listType="picture-circle"
+                fileList={profilePictureArray}
+                onPreview={handlePreview}
+                onChange={handleProfileAttachment}
+                onRemove={(file) => handleRemoveProfile(file)}
+                beforeUpload={() => false} // prevent auto upload
+                style={{ width: 90, height: 90 }} // reduce size
+                accept=".png,.jpg,.jpeg"
+              >
+                {profilePictureArray.length >= 1 ? null : (
+                  <div>
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8, fontSize: "12px" }}>
+                      Upload <br /> Profile
+                    </div>
                   </div>
-                </div>
-              )}
-            </Upload>
-          </div>
+                )}
+              </Upload>
+            </Col>
+          </Row>
         </div>
 
         {loading ? (
@@ -909,10 +927,16 @@ export default function CustomerRegistration() {
           //   className="trainer_registration_tabs"
           // />
           <>
-            <div style={{ height: "390px", position: "relative" }}>
+            <div className="customerregistration_formcontainer">
               <div className="logincard_innerContainer">
-                <Row gutter={12} style={{ marginTop: "20px" }}>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                <Row gutter={12}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "20px" }}
+                  >
                     <CommonInputField
                       label="Name"
                       value={name}
@@ -927,7 +951,13 @@ export default function CustomerRegistration() {
                       disabled={true}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "20px" }}
+                  >
                     <CommonInputField
                       label="Email"
                       required={true}
@@ -942,7 +972,13 @@ export default function CustomerRegistration() {
                       disabled={true}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "20px" }}
+                  >
                     <PhoneWithCountry
                       label="Mobile Number"
                       onChange={(value) => {
@@ -961,7 +997,13 @@ export default function CustomerRegistration() {
                       disableCountrySelect={true}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "20px" }}
+                  >
                     <PhoneWithCountry
                       label="WhatsApp Number"
                       onChange={(value) => {
@@ -981,8 +1023,14 @@ export default function CustomerRegistration() {
                   </Col>
                 </Row>
 
-                <Row gutter={12} style={{ marginTop: "30px" }}>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                <Row gutter={12}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "30px" }}
+                  >
                     <CommonMuiDatePicker
                       label="Date Of Birth"
                       required={true}
@@ -997,7 +1045,13 @@ export default function CustomerRegistration() {
                       error={dateOfBirthError}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "30px" }}
+                  >
                     <CommonSelectField
                       label="Gender"
                       required={true}
@@ -1015,7 +1069,13 @@ export default function CustomerRegistration() {
                       error={genderError}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "30px" }}
+                  >
                     <CommonMuiDatePicker
                       label="Date Of Joining"
                       required={true}
@@ -1031,7 +1091,13 @@ export default function CustomerRegistration() {
                       error={dateOfJoiningError}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "30px" }}
+                  >
                     <CommonSelectField
                       label="Area"
                       required={true}
@@ -1045,8 +1111,14 @@ export default function CustomerRegistration() {
                 <p className="customer_registration_courseheading">
                   Course Details
                 </p>
-                <Row gutter={12} style={{ marginTop: "16px" }}>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                <Row gutter={12}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "16px" }}
+                  >
                     <CommonSelectField
                       label="Enrolled Course"
                       required={true}
@@ -1062,7 +1134,13 @@ export default function CustomerRegistration() {
                       disabled={true}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "16px" }}
+                  >
                     <CommonSelectField
                       label="Batch Track"
                       required={true}
@@ -1078,7 +1156,13 @@ export default function CustomerRegistration() {
                       disabled={true}
                     />
                   </Col>
-                  <Col xs={24} sm={24} md={24} lg={6}>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={6}
+                    style={{ marginTop: "16px" }}
+                  >
                     <CommonSelectField
                       label="Batch Type"
                       required={true}
@@ -1170,7 +1254,7 @@ export default function CustomerRegistration() {
               </div>
             </div>
 
-            <div className="trainer_registration_submitbuttonContainer">
+            <div className="customer_registration_submitbuttonContainer">
               {buttonLoading ? (
                 <button className="trainer_registration_loadingsubmitbutton">
                   <CommonSpinner />
@@ -1193,6 +1277,7 @@ export default function CustomerRegistration() {
         open={isOpenSignatureModal}
         onCancel={() => setIsOpenSignatureModal(false)}
         footer={false}
+        className="customerregistration_signaturemodal"
         width="40%"
       >
         <CommonSignaturePad

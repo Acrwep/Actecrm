@@ -469,7 +469,13 @@ export default function TrainerRegistration() {
         <div className="logincard_innerContainer">
           <p className="trainer_registration_headings">Primary Details</p>
           <Row gutter={12}>
-            <Col xs={24} sm={24} md={24} lg={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Trainer Name"
                 value={name}
@@ -484,7 +490,13 @@ export default function TrainerRegistration() {
                 disabled={true}
               />
             </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Email"
                 required={true}
@@ -499,7 +511,13 @@ export default function TrainerRegistration() {
                 disabled={true}
               />
             </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <PhoneWithCountry
                 label="Mobile Number"
                 onChange={(value) => {
@@ -518,7 +536,13 @@ export default function TrainerRegistration() {
                 disableCountrySelect={true}
               />
             </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <PhoneWithCountry
                 label="WhatsApp Number"
                 onChange={(value) => {
@@ -544,7 +568,13 @@ export default function TrainerRegistration() {
         <div className="logincard_innerContainer">
           <p className="trainer_registration_headings">Secondary Details</p>
           <Row gutter={12}>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonSelectField
                 label="Technology"
                 required={true}
@@ -562,7 +592,13 @@ export default function TrainerRegistration() {
               />
             </Col>
 
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonSelectField
                 label="Experience"
                 required={true}
@@ -580,7 +616,13 @@ export default function TrainerRegistration() {
               />
             </Col>
 
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonSelectField
                 label="Relevant Experience"
                 required={true}
@@ -599,7 +641,13 @@ export default function TrainerRegistration() {
               />
             </Col>
 
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonSelectField
                 label="Batch"
                 required={true}
@@ -619,7 +667,13 @@ export default function TrainerRegistration() {
           </Row>
 
           <Row gutter={12} style={{ marginTop: "30px", marginBottom: "25px" }}>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonMuiTimePicker
                 label="Avaibility Time"
                 required={true}
@@ -635,7 +689,13 @@ export default function TrainerRegistration() {
                 disabled={true}
               />
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonMuiTimePicker
                 label="Secondary Time"
                 required={true}
@@ -646,7 +706,13 @@ export default function TrainerRegistration() {
                 disabled={true}
               />
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <div style={{ position: "relative", height: "auto" }}>
                 <p className={"trainer_skillslabel"}>Skills</p>
                 <div
@@ -722,7 +788,13 @@ export default function TrainerRegistration() {
                 )}
               </div>
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Location"
                 required={true}
@@ -753,11 +825,17 @@ export default function TrainerRegistration() {
 
   const renderBankDetails = () => {
     return (
-      <div style={{ height: "365px", position: "relative" }}>
+      <div className="customerregistration_formcontainer">
         <div className="logincard_innerContainer">
           <p className="trainer_registration_headings">Bank Details</p>
           <Row gutter={12}>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Account Holder Name"
                 required={true}
@@ -772,7 +850,13 @@ export default function TrainerRegistration() {
                 errorFontSize="9px"
               />
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Account Number"
                 required={true}
@@ -788,7 +872,13 @@ export default function TrainerRegistration() {
                 error={accountNumberError}
               />
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Bank Name"
                 required={true}
@@ -802,7 +892,13 @@ export default function TrainerRegistration() {
                 error={bankNameError}
               />
             </Col>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="Branch Name"
                 required={true}
@@ -819,7 +915,13 @@ export default function TrainerRegistration() {
           </Row>
 
           <Row gutter={12} style={{ marginTop: "40px" }}>
-            <Col span={6}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+            >
               <CommonInputField
                 label="IFSC Code"
                 required={true}
@@ -833,7 +935,14 @@ export default function TrainerRegistration() {
                 error={ifscCodeError}
               />
             </Col>
-            <Col span={6} style={{ position: "relative", display: "flex" }}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={6}
+              className="trainer_registration_primarydetails_col_container"
+              style={{ position: "relative", display: "flex" }}
+            >
               {signatureBase64 ? (
                 <div style={{ display: "flex", gap: "6px" }}>
                   <div>
@@ -871,7 +980,7 @@ export default function TrainerRegistration() {
             </Col>
           </Row>
         </div>
-        <div className="trainer_registration_submitbuttonContainer">
+        <div className="customer_registration_submitbuttonContainer">
           {buttonLoading ? (
             <button className="trainer_registration_loadingsubmitbutton">
               <CommonSpinner />
@@ -971,11 +1080,11 @@ export default function TrainerRegistration() {
   };
 
   return (
-    <div className="login_mainContainer">
+    <div className="customerregistration_mainContainer">
       <div className="customerregistration_card">
-        <div className="logincard_innerContainer" style={{ marginTop: "40px" }}>
-          <div className="trainer_registration_logoContainer">
-            <div style={{ height: "100%" }}>
+        <div className="customerregistration_innerContainer">
+          <Row style={{ display: "flex" }}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <img src={Logo} className="login_logo" />
               <p
                 className="trainer_registration_logotext"
@@ -983,37 +1092,51 @@ export default function TrainerRegistration() {
               >
                 Technologies
               </p>
-
-              {/* <p className="trainer_registration_heading">
-                Trainer Registration Form
-              </p> */}
-            </div>
-            <div>
+            </Col>
+            <Col
+              xs={24}
+              sm={24}
+              md={8}
+              lg={8}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                fontSize: "16px",
+              }}
+            >
               <p className="trainer_registration_heading">
                 Trainer Registration Form
               </p>
-            </div>
-            <Upload
-              listType="picture-circle"
-              accept=".png,.jpg,.jpeg"
-              fileList={profilePictureArray}
-              onPreview={handlePreview}
-              onChange={handleProfileAttachment}
-              onRemove={(file) => handleRemoveProfile(file)}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              className="trainer_picture_circle"
+            </Col>
+            <Col
+              xs={24}
+              sm={24}
+              md={8}
+              lg={8}
+              className="customerregistration_profileimage_container"
             >
-              {profilePictureArray.length >= 1 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8, fontSize: "12px" }}>
-                    Upload <br /> Profile
+              <Upload
+                listType="picture-circle"
+                accept=".png,.jpg,.jpeg"
+                fileList={profilePictureArray}
+                onPreview={handlePreview}
+                onChange={handleProfileAttachment}
+                onRemove={(file) => handleRemoveProfile(file)}
+                beforeUpload={() => false} // prevent auto upload
+                style={{ width: 90, height: 90 }} // reduce size
+                className="trainer_picture_circle"
+              >
+                {profilePictureArray.length >= 1 ? null : (
+                  <div>
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8, fontSize: "12px" }}>
+                      Upload <br /> Profile
+                    </div>
                   </div>
-                </div>
-              )}
-            </Upload>
-          </div>
+                )}
+              </Upload>
+            </Col>
+          </Row>
         </div>
 
         {loading ? (
