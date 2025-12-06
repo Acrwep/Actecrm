@@ -951,6 +951,8 @@ export default function Trainers() {
 
     const payload = {
       course_name: courseName,
+      price: 0,
+      offer_price: 0,
     };
     setAddCourseLoading(true);
 

@@ -169,6 +169,24 @@ export const getTechnologies = async (payload) => {
   }
 };
 
+export const updateTechnology = async (payload) => {
+  try {
+    const response = await api.put("/api/updateTechnologies", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteTechnology = async (course_id) => {
+  try {
+    const response = await api.delete(`/api/deleteTechnologies/${course_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBatches = async (payload) => {
   try {
     const response = await api.get("/api/getBatches", { params: payload });

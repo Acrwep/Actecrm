@@ -8,6 +8,7 @@ import {
   getAllPermissions,
   getGroups,
   getRoles,
+  getTechnologies,
   getUsers,
 } from "../ApiService/action";
 import {
@@ -25,16 +26,19 @@ import {
   storeRoleList,
   storeRoleSearchValue,
   storeServerModulePermissionList,
+  storeSettingsCourseList,
   storeSettingsModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserSearchValue,
   storeUsersList,
 } from "../Redux/Slice";
 import { useSelector } from "react-redux";
+import Courses from "./Courses";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const courseData = useSelector((state) => state.settingscourselist);
 
   const [activePage, setActivePage] = useState("users");
   const [usersCount, setUsersCount] = useState(0);
@@ -149,6 +153,20 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setRoleLoading(false);
+        getCourseData();
+      }, 300);
+    }
+  };
+
+  const getCourseData = async () => {
+    try {
+      const response = await getTechnologies();
+      dispatch(storeSettingsCourseList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeSettingsCourseList([]));
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
         getPermissionsData();
       }, 300);
     }
@@ -398,6 +416,16 @@ export default function Settings() {
           >
             Page Access
           </button>
+          <button
+            className={
+              activePage === "courses"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => setActivePage("courses")}
+          >
+            {`Courses ( ${courseData.length} )`}
+          </button>
         </div>
       </div>
 
@@ -416,6 +444,8 @@ export default function Settings() {
           roleLoading={roleLoading}
           setRoleLoading={setRoleLoading}
         />
+      ) : activePage === "courses" ? (
+        <Courses />
       ) : (
         ""
       )}

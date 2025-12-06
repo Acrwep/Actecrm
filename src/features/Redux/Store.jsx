@@ -22,6 +22,7 @@ import {
   emailTemplateModulePermissionListReducer,
   reportsModulePermissionListReducer,
   settingsModulePermissionListReducer,
+  settingsCourseListReducer,
   childUsersReducer,
   downlineUsersReducer,
   userPermissionsReducer,
@@ -56,6 +57,7 @@ export const reduxStore = configureStore({
     emailtemplatemodulepermissionlist: emailTemplateModulePermissionListReducer,
     reportsmodulepermissionlist: reportsModulePermissionListReducer,
     settingsmodulepermissionlist: settingsModulePermissionListReducer,
+    settingscourselist: settingsCourseListReducer,
     tablecolumns: tableColumnsReducer,
   },
 });
