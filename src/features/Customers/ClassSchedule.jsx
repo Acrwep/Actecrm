@@ -203,17 +203,17 @@ const ClassSchedule = forwardRef(
         if (classGoingPercentage < 100) {
           setTimeout(() => {
             handleCustomerStatus(
-              scheduleId === 1
+              scheduleId == 1
                 ? "Class Going"
-                : scheduleId === 3
+                : scheduleId == 3
                 ? "Hold"
-                : scheduleId === 5
+                : scheduleId == 5
                 ? "Escalated"
-                : scheduleId === 7
+                : scheduleId == 7
                 ? "Partially Closed"
-                : scheduleId === 8
+                : scheduleId == 8
                 ? "Discontinued"
-                : scheduleId === 9
+                : scheduleId == 9
                 ? "Refund"
                 : ""
             );
@@ -338,12 +338,12 @@ const ClassSchedule = forwardRef(
           ? { details: classGoingDetails }
           : updatestatus === "Hold" || updatestatus === "Demo Completed"
           ? { details: holdDetails }
-          : updatestatus === "Escalated" ||
-            updatestatus === "Partially Closed" ||
-            updatestatus === "Discontinued" ||
-            updatestatus === "Refund"
+          : updatestatus == "Escalated" ||
+            updatestatus == "Partially Closed" ||
+            updatestatus == "Discontinued" ||
+            updatestatus == "Refund"
           ? { details: escalatedDetails }
-          : updatestatus === "Class Completed"
+          : updatestatus == "Class Completed"
           ? { details: classCompletedDetails }
           : {}),
       };
@@ -521,6 +521,7 @@ const ClassSchedule = forwardRef(
                       setClassGoingPercentage(0);
                       return;
                     }
+                    console.log("going perrrr", value);
                     setClassGoingPercentage(value);
                     setClassGoingPercentageError(percentageValidator(value));
                   }}

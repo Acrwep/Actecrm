@@ -537,6 +537,41 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               <FaRegEye size={16} /> View Linkedin Review
             </button>
           </div>
+        ) : item.status === "Escalated" ||
+          item.status === "Partially Closed" ||
+          item.status === "Discontinued" ||
+          item.status === "Refund" ? (
+          <div>
+            <p className="customer_history_updateddate">
+              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+            </p>
+            <p className="customer_history_updateddate">
+              Updated By:{" "}
+              <span style={{ color: "gray" }}>{item.updated_by}</span>
+            </p>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={5}>
+                <p className="customer_history_comments">Comments: </p>
+              </Col>
+              <Col span={18}>
+                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+                  {item.details.comments}
+                </p>
+              </Col>
+            </Row>
+            <button
+              className="customer_history_viewproofbutton"
+              style={{ marginTop: "12px" }}
+              onClick={() => {
+                getImageTypeFromBase64(item.details.attachment);
+                setProofScreenshotBase64(item.details.attachment);
+                setIsOpenProofViewModal(true);
+              }}
+            >
+              <FaRegEye size={16} /> View Attachment
+            </button>
+          </div>
         ) : (
           <div>
             <p className="customer_history_updateddate">

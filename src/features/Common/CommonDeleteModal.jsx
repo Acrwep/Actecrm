@@ -5,6 +5,7 @@ import "./commonstyles.css";
 import CommonSpinner from "./CommonSpinner";
 
 export default function CommonDeleteModal({
+  title,
   open,
   content,
   onCancel,
@@ -25,7 +26,9 @@ export default function CommonDeleteModal({
             <MdDelete size={21} color="#db2728" />
           </div>
 
-          <p className="common_deletemodal_confirmdeletetext">Confirm Delete</p>
+          <p className="common_deletemodal_confirmdeletetext">
+            {title ? title : "Confirm Delete"}
+          </p>
 
           <p className="common_deletemodal_text">{content}</p>
 

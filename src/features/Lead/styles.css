@@ -696,3 +696,82 @@
   border: none;
   height: 0px !important;
 }
+.livelead_junkbutton_container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+.livelead_junkbutton {
+  background-color: #d32f2f;
+  border-color: #d32f2f !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f0c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  height: 34px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.livelead_junkbutton:hover {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f0c !important;
+  color: #fff !important;
+  opacity: 0.7;
+}
+.livelaead_leadtype_badge {
+  border-radius: 9px;
+  background-color: #1e90ff;
+  padding: 0px 6px;
+  height: 17px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 8px;
+  margin-left: 4px;
+}
+/* junk leads styles */
+.junklead_movetolivebutton {
+  background-color: #5b69ca;
+  border-color: #5b69ca !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f0c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  height: 34px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.junklead_movetolivebutton:hover {
+  background-color: #5b69ca !important;
+  border-color: #5b69ca !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f0c !important;
+  color: #fff !important;
+  opacity: 0.7;
+}
+.junklead_movemodalContainer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.junklead_movemodal_iconContainer {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #5b6aca1c;
+}

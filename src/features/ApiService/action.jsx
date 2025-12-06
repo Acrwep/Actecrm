@@ -509,6 +509,32 @@ export const assignLiveLead = async (payload) => {
   }
 };
 
+export const moveLiveLeadToJunk = async (payload) => {
+  try {
+    const response = await api.put("/api/updateJunkValue", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getJunkLeads = async (payload) => {
+  try {
+    const response = await api.post("/api/getJunkLeads", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteJunkLeads = async (payload) => {
+  try {
+    const response = await api.put("/api/moveToTrash", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // customers api's
 export const getCustomers = async (payload) => {
   try {

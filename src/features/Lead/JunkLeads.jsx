@@ -1,10 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Flex, Tooltip, Radio, Button, Drawer, Badge } from "antd";
+import {
+  Row,
+  Col,
+  Flex,
+  Tooltip,
+  Radio,
+  Button,
+  Drawer,
+  Badge,
+  Modal,
+} from "antd";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import {
+  deleteJunkLeads,
   getAllDownlineUsers,
+  getJunkLeads,
   getLeadAndFollowupCount,
   getLiveLeads,
   moveLiveLeadToJunk,
@@ -13,33 +25,21 @@ import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
-import { GiCardPickup } from "react-icons/gi";
+import { MdOutlineRefresh } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { MdOutlinePlaylistRemove } from "react-icons/md";
 import CommonSpinner from "../Common/CommonSpinner";
-import AddLead from "./AddLead";
 import { useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { CommonMessage } from "../Common/CommonMessage";
+import moment from "moment";
+import CourseCard from "./CourseCard";
 
-export default function LiveLead({
+export default function JunkLeads({
   setLiveLeadCount,
-  leadTypeOptions,
-  regionOptions,
-  refreshLeadFollowUp,
-  refreshLeads,
-  setLeadCount,
-  isLeadPageVisited,
   setJunkLeadCount,
-  isJunkPageVisited,
-  refreshJunkLeads,
+  setIsJunkPageVisited,
 }) {
   //useref
-  const filterTypeRef = useRef("");
-  const searchRef = useRef("");
-  const datesRef = useRef([]);
-  const paginationRef = useRef({ page: 1, limit: 10 });
-  const addLeaduseRef = useRef();
   //useselector
   const tabName = useSelector((state) => state.leadmanageractivepage);
   //usestates
@@ -48,17 +48,16 @@ export default function LiveLead({
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
   const [loading, setLoading] = useState(true);
-  //pick lead drawer
-  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
-  //junk usestates
-  const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
-  const [liveLeadId, setLiveLeadId] = useState(null);
+  //modal usestates
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+  const [leadId, setLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  //move modal
+  const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -67,84 +66,14 @@ export default function LiveLead({
     totalPages: 0,
   });
 
-  const formatDuration = (dateString) => {
-    const created = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - created;
-
-    if (diffMs < 0) return { text: "00:00", hours: 0 };
-
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const totalHours = totalSeconds / 3600;
-
-    const days = Math.floor(totalSeconds / (24 * 3600));
-    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-    const pad = (n) => String(n).padStart(2, "0");
-
-    let text = "";
-
-    if (days === 0) {
-      // HHh:MMm
-      const hh = pad(Math.floor(totalSeconds / 3600));
-      text = `${hh}h:${pad(minutes)}m`;
-    } else {
-      // DDd:HHh:MMm
-      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
-    }
-
-    return { text, hours: totalHours };
-  };
-
   const columns = [
     {
-      title: "Created Before",
+      title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
       width: 130,
       render: (text) => {
-        const { text: durationText, hours } = formatDuration(text);
-
-        let bg = "";
-        let color = "";
-
-        if (hours <= 1) {
-          bg = "rgba(0, 128, 0, 0.12)"; // light green
-          color = "#0f8a0f"; // dark green
-        } else if (hours > 1 && hours <= 24) {
-          bg = "rgba(255, 165, 0, 0.15)"; // light orange
-          color = "#d27a00"; // dark orange
-        } else {
-          bg = "rgba(255, 0, 0, 0.13)"; // light red
-          color = "#c80000"; // dark red
-        }
-
-        return (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            <span
-              style={{
-                background: bg,
-                color: color,
-                padding: "3px 8px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: 600,
-                display: "inline-block",
-                minWidth: "75px",
-                textAlign: "center",
-              }}
-            >
-              {durationText}
-            </span>
-          </div>
-        );
+        return <p>{moment(text).format("MM/DD/YYYY")}</p>;
       },
     },
     {
@@ -154,26 +83,8 @@ export default function LiveLead({
       width: 200,
       render: (text, record) => {
         return (
-          <Badge
-            size="small"
-            count={
-              record.lead_type == "New" || record.lead_type == null
-                ? "New"
-                : "Existing"
-            }
-            offset={
-              record.lead_type == "New" || record.lead_type == null
-                ? [22, 0]
-                : [30, 0]
-            }
-            color={
-              record.lead_type == "New" || record.lead_type == null
-                ? "#1e90ff"
-                : "#d32f2f"
-            }
-            style={{ fontSize: "10px" }}
-          >
-            {text.length > 16 ? (
+          <>
+            {text.length > 22 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -189,13 +100,13 @@ export default function LiveLead({
                 }}
               >
                 <p style={{ cursor: "pointer", fontSize: "13px" }}>
-                  {text.slice(0, 15) + "..."}
+                  {text.slice(0, 21) + "..."}
                 </p>
               </Tooltip>
             ) : (
               <p style={{ fontSize: "13px" }}>{text}</p>
             )}
-          </Badge>
+          </>
         );
       },
     },
@@ -360,22 +271,25 @@ export default function LiveLead({
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip placement="bottom" title="Pick">
-              <GiCardPickup
-                size={19}
+            <Tooltip placement="bottom" title="Move to Live Leads">
+              <MdOutlineRefresh
+                size={20}
                 color="#5b69ca"
                 className="trainers_action_icons"
-                onClick={() => handlePick(record)}
+                onClick={() => {
+                  setLeadId(record.id);
+                  setIsOpenMoveModal(true);
+                }}
               />
             </Tooltip>
-            <Tooltip placement="bottom" title="Move to Junk">
-              <MdOutlinePlaylistRemove
+            <Tooltip placement="bottom" title="Delete">
+              <RiDeleteBinLine
                 color="#d32f2f"
-                size={20}
+                size={18}
                 className="trainers_action_icons"
                 onClick={() => {
-                  setLiveLeadId(record.id);
-                  setIsOpenJunkModal(true);
+                  setLeadId(record.id);
+                  setIsOpenDeleteModal(true);
                 }}
               />
             </Tooltip>
@@ -386,29 +300,12 @@ export default function LiveLead({
   ];
 
   useEffect(() => {
-    setCallCountApi(
-      isLeadPageVisited == true && isJunkPageVisited == true ? false : true
-    );
-  }, [isLeadPageVisited, isJunkPageVisited]);
-
-  useEffect(() => {
-    paginationRef.current = pagination;
-  }, [pagination]);
-
-  useEffect(() => {
-    console.log("acccccc", tabName);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    searchRef.current = null;
-    filterTypeRef.current = 1;
-    datesRef.current = PreviousAndCurrentDate;
-    const initialPagination = { page: 1, limit: 10, total: 0, totalPages: 0 };
-    paginationRef.current = initialPagination;
-
-    if (tabName !== "live_leads") return; // Stop polling
+    setIsJunkPageVisited(true);
 
     // Initial Call
-    getLiveLeadsData(
+    getJunkLeadsData(
       null,
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
@@ -421,20 +318,7 @@ export default function LiveLead({
       const convertAsJson = JSON.parse(getLoginUserDetails);
       getAllDownlineUsersData(convertAsJson?.user_id);
     }, 300);
-    // Call every 5 seconds
-    const interval = setInterval(() => {
-      getLiveLeadsData(
-        searchRef.current,
-        datesRef.current[0],
-        datesRef.current[1],
-        paginationRef.current.page,
-        paginationRef.current.limit
-      );
-    }, 5000);
-
-    // Cleanup interval when component unmounts
-    return () => clearInterval(interval);
-  }, [tabName]);
+  }, []);
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -450,7 +334,7 @@ export default function LiveLead({
     }
   };
 
-  const getLiveLeadsData = async (
+  const getJunkLeadsData = async (
     searchvalue,
     startDate,
     endDate,
@@ -458,13 +342,13 @@ export default function LiveLead({
     limit
   ) => {
     const payload = {
-      ...(searchvalue && filterTypeRef.current == 1
+      ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
-        : searchvalue && filterTypeRef.current == 2
+        : searchvalue && filterType == 2
         ? { name: searchvalue }
-        : searchvalue && filterTypeRef.current == 3
+        : searchvalue && filterType == 3
         ? { email: searchvalue }
-        : searchvalue && filterTypeRef.current == 4
+        : searchvalue && filterType == 4
         ? { course: searchvalue }
         : {}),
       start_date: startDate,
@@ -473,14 +357,13 @@ export default function LiveLead({
       limit: limit,
     };
     try {
-      const response = await getLiveLeads(payload);
-      console.log("live lead response", response);
+      const response = await getJunkLeads(payload);
+      console.log("junk lead response", response);
       const paginations = response?.data?.data?.pagination;
 
       setLeadData(response?.data?.data?.data || []);
-      paginationRef.current = paginations;
 
-      setLiveLeadCount(paginations.total);
+      setJunkLeadCount(paginations.total);
       setPagination({
         page: paginations.page,
         limit: paginations.limit,
@@ -500,12 +383,11 @@ export default function LiveLead({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
-    searchRef.current = e.target.value;
     setTimeout(() => {
       setPagination({
         page: 1,
       });
-      getLiveLeadsData(
+      getJunkLeadsData(
         e.target.value,
         selectedDates[0],
         selectedDates[1],
@@ -516,24 +398,13 @@ export default function LiveLead({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getLiveLeadsData(
+    getJunkLeadsData(
       searchValue,
       selectedDates[0],
       selectedDates[1],
       page,
       limit
     );
-  };
-
-  const handlePick = (item) => {
-    console.log("itemmmm", item);
-    setPickLeadItem({
-      id: item.id,
-      name: item.name,
-      email: item.email,
-      phone: item.phone,
-    });
-    setIsOpenAddDrawer(true);
   };
 
   const getLeadAndFollowupCountData = async () => {
@@ -548,8 +419,7 @@ export default function LiveLead({
       const response = await getLeadAndFollowupCount(payload);
       console.log("lead count response", response);
       const countDetails = response?.data?.data;
-      setLeadCount(countDetails.total_lead_count);
-      setJunkLeadCount(countDetails.junk_lead_count);
+      setLiveLeadCount(countDetails.web_lead_count);
     } catch (error) {
       console.log("lead count error", error);
       // dispatch(storeUsersList([]));
@@ -563,34 +433,72 @@ export default function LiveLead({
     setSelectedRowKeys(keys);
   };
 
-  const handleMoveToJunk = async () => {
+  const handleMoveToLiveLead = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
     setButtonLoading(true);
     const payload = {
-      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
-      is_junk: true,
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
+      is_junk: false,
     };
     try {
       await moveLiveLeadToJunk(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
         setButtonLoading(false);
-        setIsOpenJunkModal(false);
-        setLiveLeadId(null);
+        setIsOpenMoveModal(false);
+        setLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
         setPagination({
           page: 1,
         });
-        getLiveLeadsData(
+        getJunkLeadsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
           1,
           pagination.limit
         );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    } finally {
+      setTimeout(() => {
         getLeadAndFollowupCountData();
-        refreshJunkLeads();
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    console.log("selectedRowKeys", selectedRowKeys);
+    setButtonLoading(true);
+    const payload = {
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
+    };
+    try {
+      await deleteJunkLeads(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenDeleteModal(false);
+        setLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        setPagination({
+          page: 1,
+        });
+        getJunkLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          1,
+          pagination.limit
+        );
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -601,7 +509,6 @@ export default function LiveLead({
       );
     }
   };
-
   return (
     <div>
       <Row>
@@ -631,11 +538,10 @@ export default function LiveLead({
                         onClick={() => {
                           setSearchValue("");
                           setLoading(true);
-                          searchRef.current = null;
                           setPagination({
                             page: 1,
                           });
-                          getLiveLeadsData(
+                          getJunkLeadsData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
@@ -676,16 +582,14 @@ export default function LiveLead({
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
-                            filterTypeRef.current = e.target.value;
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
-                              searchRef.current = null;
                               setPagination({
                                 page: 1,
                               });
-                              getLiveLeadsData(
+                              getJunkLeadsData(
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
@@ -726,12 +630,11 @@ export default function LiveLead({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  datesRef.current = dates;
                   setLoading(true);
                   setPagination({
                     page: 1,
                   });
-                  getLiveLeadsData(
+                  getJunkLeadsData(
                     searchValue,
                     dates[0],
                     dates[1],
@@ -747,12 +650,20 @@ export default function LiveLead({
           {selectedRows.length >= 1 && (
             <div className="livelead_junkbutton_container">
               <Button
-                className="livelead_junkbutton"
+                className="junklead_movetolivebutton"
                 onClick={() => {
-                  setIsOpenJunkModal(true);
+                  setIsOpenMoveModal(true);
                 }}
               >
-                Move to Junk
+                Move to Live Lead
+              </Button>
+              <Button
+                className="livelead_junkbutton"
+                onClick={() => {
+                  setIsOpenDeleteModal(true);
+                }}
+              >
+                Delete
               </Button>
             </div>
           )}
@@ -777,78 +688,67 @@ export default function LiveLead({
         />
       </div>
 
-      <Drawer
-        title="Add Lead"
-        open={isOpenAddDrawer}
-        onClose={() => {
-          setIsOpenAddDrawer(false);
-          setPickLeadItem(null);
+      {/* move to live lead modal */}
+      <Modal
+        open={isOpenMoveModal}
+        onCancel={() => {
+          setIsOpenMoveModal(false);
         }}
-        width="52%"
-        style={{ position: "relative" }}
-        id="leadform_addlead_drawer"
+        footer={false}
+        closable={false}
+        width={420}
       >
-        <AddLead
-          ref={addLeaduseRef}
-          key={pickLeadItem}
-          leadTypeOptions={leadTypeOptions}
-          regionOptions={regionOptions}
-          updateLeadItem={null}
-          setSaveOnlyLoading={setButtonLoading}
-          setButtonLoading={setButtonLoading}
-          setIsOpenAddDrawer={setIsOpenAddDrawer}
-          liveLeadItem={pickLeadItem}
-          callgetLeadsApi={() => {
-            setPickLeadItem(null);
-            setPagination({
-              page: 1,
-            });
-            getLiveLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              1,
-              pagination.limit
-            );
-            refreshLeadFollowUp();
-            refreshLeads();
-            getLeadAndFollowupCountData();
-          }}
-        />
+        <div className="junklead_movemodalContainer">
+          <div className="junklead_movemodal_iconContainer">
+            <MdOutlineRefresh size={21} color="#5b69ca" />
+          </div>
 
-        <div className="leadmanager_submitlead_buttoncontainer">
-          <div style={{ display: "flex", gap: "12px" }}>
-            <>
-              {buttonLoading ? (
-                <button className={"leadmanager_loadingupdateleadbutton"}>
-                  <CommonSpinner />
-                </button>
-              ) : (
-                <button
-                  className={"leadmanager_updateleadbutton"}
-                  onClick={() =>
-                    addLeaduseRef.current.handleSubmit("Save Only")
-                  }
-                >
-                  Submit
-                </button>
-              )}
-            </>
+          <p className="common_deletemodal_confirmdeletetext">
+            Move to Live Lead
+          </p>
+
+          <p className="common_deletemodal_text">
+            Are you sure want to move the Leads to Live Leads?
+          </p>
+
+          <div className="common_deletemodal_footerContainer">
+            <Button
+              className="common_deletemodal_cancelbutton"
+              onClick={() => {
+                setIsOpenMoveModal(false);
+              }}
+            >
+              No
+            </Button>
+            {buttonLoading ? (
+              <Button
+                className="common_deletemodal_loading_deletebutton"
+                type="primary"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                className="common_deletemodal_deletebutton"
+                onClick={handleMoveToLiveLead}
+                type="primary"
+              >
+                Yes
+              </Button>
+            )}
           </div>
         </div>
-      </Drawer>
-
+      </Modal>
       {/* delete modal */}
       <CommonDeleteModal
-        title="Move to Junk"
-        open={isOpenJunkModal}
+        open={isOpenDeleteModal}
         onCancel={() => {
-          setIsOpenJunkModal(false);
-          setLiveLeadId(null);
+          setIsOpenDeleteModal(false);
+          setLeadId(null);
         }}
-        content="Are you sure want to move the Lead to Junk?"
+        content="Are you sure want to delete the Lead?"
         loading={buttonLoading}
-        onClick={handleMoveToJunk}
+        onClick={handleDelete}
       />
     </div>
   );

@@ -202,6 +202,7 @@ export default function Settings() {
         "Assign Lead",
         "Lead Executive Filter",
         "Add Quality Comment",
+        "Junk Leads Tab",
       ];
 
       const leadsSortedArray = leadsModule.sort(

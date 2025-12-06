@@ -15,13 +15,13 @@ import {
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
-import CNAFollowup from "./CNAFollowup";
 import {
   storeAreaList,
   storeCourseList,
   storeLeadManagerActivePage,
 } from "../Redux/Slice";
 import LiveLead from "./LiveLeads";
+import JunkLeads from "./JunkLeads";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -34,7 +34,9 @@ export default function LeadManager() {
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
   const [liveLeadCount, setLiveLeadCount] = useState(0);
+  const [junkLeadCount, setJunkLeadCount] = useState(0);
   const [isLeadPageVisited, setIsLeadPageVisited] = useState(false);
+  const [isJunkPageVisited, setIsJunkPageVisited] = useState(false);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
@@ -51,14 +53,15 @@ export default function LeadManager() {
     followup: true, // first tab shown initially
     leads: false,
     live_leads: false,
+    junk: false,
   });
 
   // For forcing remount
   const [tabKeys, setTabKeys] = useState({
     followup: 0,
     leads: 0,
-    quality_followup: 0,
     live_leads: 0,
+    junk: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -105,6 +108,7 @@ export default function LeadManager() {
       setFollowupCount(countDetails.follow_up_count);
       setLeadCount(countDetails.total_lead_count);
       setLiveLeadCount(countDetails.web_lead_count);
+      setJunkLeadCount(countDetails.junk_lead_count);
       // dispatch(storeUsersList(response?.data?.data || []));
     } catch (error) {
       console.log("lead count error", error);
@@ -199,6 +203,13 @@ export default function LeadManager() {
     }));
   };
 
+  const refreshJunkLeads = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      junk: prev.junk + 1,
+    }));
+  };
+
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
@@ -233,6 +244,18 @@ export default function LeadManager() {
           >
             <p>{`Live Leads (${liveLeadCount})`}</p>
           </button>
+          {permissions.includes("Junk Leads Tab") && (
+            <button
+              className={
+                activePage === "junk"
+                  ? "settings_tab_activebutton"
+                  : "settings_tab_inactivebutton"
+              }
+              onClick={() => handleTabClick("junk")}
+            >
+              <p>{`Junk (${junkLeadCount})`}</p>
+            </button>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -307,20 +330,24 @@ export default function LeadManager() {
             regionOptions={regionOptions}
             setLeadCount={setLeadCount}
             isLeadPageVisited={isLeadPageVisited}
+            setJunkLeadCount={setJunkLeadCount}
+            isJunkPageVisited={isJunkPageVisited}
+            refreshJunkLeads={refreshJunkLeads}
           />
         </div>
       )}
 
-      {loadedTabs.quality_followup && (
+      {loadedTabs.junk && (
         <div
           style={{
-            display: activePage === "quality_followup" ? "block" : "none",
+            display: activePage === "junk" ? "block" : "none",
           }}
         >
-          <CNAFollowup
-            key={refreshToggle}
-            refreshLeadFollowUp={refreshLeadFollowUp}
-            refreshLeads={refreshLeads}
+          <JunkLeads
+            key={tabKeys.junk}
+            setLiveLeadCount={setLiveLeadCount}
+            setJunkLeadCount={setJunkLeadCount}
+            setIsJunkPageVisited={setIsJunkPageVisited}
           />
         </div>
       )}
