@@ -1532,6 +1532,11 @@
 .customerregistration_signaturemodal.ant-modal {
   width: 40% !important;
 }
+@media (min-width: 260px) and (max-width: 767px) {
+  .customerregistration_signaturemodal.ant-modal {
+    width: 90% !important;
+  }
+}
 /* customer update styles */
 .customerupdate_drawer .ant-drawer-body {
   padding: 0px !important;

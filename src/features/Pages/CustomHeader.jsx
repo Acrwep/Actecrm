@@ -37,6 +37,7 @@ import {
   getCustomers,
   getLeads,
   getNotifications,
+  getTechnologies,
   globalFilter,
   readNotification,
 } from "../ApiService/action";
@@ -78,6 +79,11 @@ export default function CustomHeader() {
   const [customerDetails, setCustomerDetails] = useState(null);
   const [customerHistory, setCustomerHistory] = useState([]);
   const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+  //course search
+  const [courseSearchValue, setCourseSearchValue] = useState("");
+  const [courseData, setCourseData] = useState([]);
+  const [isOpenCourseSearchOptions, setIsOpenCourseSearchOptions] =
+    useState(true);
 
   //notification
   const [isOpenNotificationsDrawer, setIsOpenNotificationsDrawer] =
@@ -207,6 +213,23 @@ export default function CustomHeader() {
     }
   };
 
+  const getCourseData = async (searchvalue) => {
+    const payload = {
+      ...(searchvalue && { name: searchvalue }),
+    };
+    try {
+      const response = await getTechnologies(payload);
+      setCourseData(response?.data?.data || []);
+    } catch (error) {
+      setCourseData([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        setSearchLoading(false);
+      }, 300);
+    }
+  };
+
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setIsOpenSearchOptions(true);
@@ -218,6 +241,20 @@ export default function CustomHeader() {
     }
     setTimeout(() => {
       getAllLeadData(e.target.value);
+    }, 300);
+  };
+
+  const handleCourseSearch = (e) => {
+    setCourseSearchValue(e.target.value);
+    setIsOpenCourseSearchOptions(true);
+    setSearchLoading(true);
+    if (e.target.value === "") {
+      setCourseData([]);
+      setSearchLoading(false);
+      return;
+    }
+    setTimeout(() => {
+      getCourseData(e.target.value);
     }, 300);
   };
 
@@ -430,7 +467,87 @@ export default function CustomHeader() {
           <div className="header_searchbar_container">
             <input
               className="header_searchbar"
-              placeholder="Search"
+              placeholder="Fees Search"
+              onChange={handleCourseSearch}
+              value={courseSearchValue}
+              onBlur={() => {
+                setTimeout(() => {
+                  setIsOpenCourseSearchOptions(false);
+                }, 300);
+              }}
+              onFocus={() => {
+                setIsOpenCourseSearchOptions(true);
+              }}
+            />
+            <CiSearch className="header_searchbar_icon" />
+            <div
+              className={
+                courseSearchValue && isOpenCourseSearchOptions
+                  ? "header_search_options_container"
+                  : "header_search_options_hidecontainer"
+              }
+            >
+              {searchLoading ? (
+                <div className="header_search_loader_container">
+                  <Spin size="small" style={{ paddingTop: "0px" }} />
+                </div>
+              ) : (
+                <>
+                  {courseData.length >= 1 ? (
+                    <>
+                      {courseData.map((item, index) => {
+                        return (
+                          <React.Fragment key={index}>
+                            <div>
+                              <p className="header_search_options_course_name">
+                                {item.name}
+                              </p>
+                              <div className="header_search_options_courseprice_container">
+                                <p className="header_search_options_courseprice">
+                                  Actual Price:{" "}
+                                  <span style={{ fontWeight: 700 }}>
+                                    {`${Number(item.price).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }
+                                    )}`}
+                                  </span>
+                                </p>
+                                <p className="header_search_options_courseprice">
+                                  Offer Price:{" "}
+                                  <span style={{ fontWeight: 700 }}>
+                                    {`${Number(item.offer_price).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }
+                                    )}`}
+                                  </span>
+                                </p>
+                              </div>
+                              <Divider style={{ margin: 0 }} />
+                            </div>
+                          </React.Fragment>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <p className="header_search_options_nodata">
+                      No data found
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="header_searchbar_container">
+            <input
+              className="header_searchbar"
+              placeholder="Candidate Search"
               onChange={handleSearch}
               value={searchValue}
               onBlur={() => {

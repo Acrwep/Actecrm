@@ -341,6 +341,7 @@
 }
 .leads_coursemodal_loading_createbutton {
   width: 83px;
+  opacity: 0.7;
 }
 .leads_coursemodal_createbutton {
   width: 83px;

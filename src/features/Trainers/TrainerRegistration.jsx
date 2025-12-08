@@ -1160,7 +1160,7 @@ export default function TrainerRegistration() {
         open={isOpenSignatureModal}
         onCancel={() => setIsOpenSignatureModal(false)}
         footer={false}
-        width="40%"
+        className="customerregistration_signaturemodal"
       >
         <CommonSignaturePad
           instruction={true}

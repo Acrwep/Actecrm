@@ -310,10 +310,16 @@
 }
 
 /* signature pad styles */
+.signature-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
 .sigCanvas {
   border: 1px solid rgba(128, 128, 128, 0.568);
   border-radius: 6px;
   margin-top: 12px;
+  width: 100% !important;
+  /* height: auto !important; */
 }
 .signaturepad_clearbutton {
   font-size: 13px !important;

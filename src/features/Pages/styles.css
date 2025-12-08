@@ -125,6 +125,18 @@
 .header_search_options_name:hover {
   color: #5b69ca;
 }
+.header_search_options_course_name {
+  font-weight: 500;
+  padding: 12px 12px 0px 12px;
+}
+.header_search_options_courseprice_container {
+  display: flex;
+  padding: 2px 12px 6px 12px;
+  justify-content: space-between;
+}
+.header_search_options_courseprice {
+  font-size: 11px;
+}
 .header_search_loader_container {
   display: flex;
   justify-content: center;

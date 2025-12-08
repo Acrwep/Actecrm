@@ -260,6 +260,7 @@ export default function Settings() {
         "Class Schedule",
         "Update Class Going",
         "Passedout Process",
+        "Others Checkbox",
       ];
 
       const customersSortedArray = customersModule.sort(

@@ -540,7 +540,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
         ) : item.status === "Escalated" ||
           item.status === "Partially Closed" ||
           item.status === "Discontinued" ||
-          item.status === "Refund" ? (
+          item.status === "Refund" ||
+          item.status === "Videos Given" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}

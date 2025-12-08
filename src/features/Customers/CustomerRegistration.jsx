@@ -1278,7 +1278,7 @@ export default function CustomerRegistration() {
         onCancel={() => setIsOpenSignatureModal(false)}
         footer={false}
         className="customerregistration_signaturemodal"
-        width="40%"
+        // width="40%"
       >
         <CommonSignaturePad
           instruction={true}

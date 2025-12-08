@@ -73,6 +73,7 @@ import DownloadRegistrationForm from "./DownloadRegistrationForm";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CustomerEmailTemplate from "./CustomerEmailTemplate";
 import ParticularCustomerDetails from "./ParticularCustomerDetails";
+import OthersHandling from "./OthersHandling";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -82,6 +83,7 @@ export default function Customers() {
   const assignAndVerifyTrainerRef = useRef();
   const classScheduleRef = useRef();
   const passedOutProcessRef = useRef();
+  const othersHandlingRef = useRef();
   const emailTemplateRef = useRef();
   const mounted = useRef(false);
   const location = useLocation();
@@ -350,7 +352,13 @@ export default function Customers() {
           classPercent = isNaN(parsed) ? 0 : parsed;
         }
         return (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              alignItems: "center",
+            }}
+          >
             <Tooltip
               placement="bottomLeft"
               className="customers_statustooltip"
@@ -474,9 +482,7 @@ export default function Customers() {
                         </div>
                       )}
                     </Col>
-                  </Row>
 
-                  <Row>
                     <Col span={12}>
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
@@ -606,9 +612,7 @@ export default function Customers() {
                         </div>
                       )}
                     </Col>
-                  </Row>
 
-                  <Row>
                     <Col span={12}>
                       {record.status === "Form Pending" ||
                       record.status === "Awaiting Finance" ||
@@ -755,68 +759,98 @@ export default function Customers() {
                     ) : (
                       ""
                     )}
+
+                    {record.status === "Passedout process" ||
+                    record.status === "Completed" ? (
+                      <>
+                        <Col span={12}>
+                          {record.status === "Passedout process" ? (
+                            <button
+                              className="customers_addfeedbackbutton"
+                              onClick={() => {
+                                if (
+                                  !permissions.includes("Passedout Process")
+                                ) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                setCustomerId(record.id);
+                                setCustomerDetails(record);
+                                setDrawerContentStatus("Add G-Review");
+                                setIsStatusUpdateDrawer(true);
+                                if (record.google_review === null) {
+                                  setStepIndex(0);
+                                } else if (
+                                  record.is_certificate_generated === 0
+                                ) {
+                                  setStepIndex(1);
+                                } else {
+                                  setStepIndex(2);
+                                }
+                                setIsCertGenerated(
+                                  record.is_certificate_generated === 1
+                                    ? true
+                                    : false
+                                );
+                              }}
+                            >
+                              Passedout process
+                            </button>
+                          ) : (
+                            <div className="customers_classcompleted_container">
+                              <BsPatchCheckFill color="#3c9111" />
+                              <p className="customers_classgoing_completedtext">
+                                PO Process Completed
+                              </p>
+                            </div>
+                          )}
+                        </Col>
+
+                        <Col span={12}>
+                          {record.status === "Completed" ? (
+                            <div className="customers_classcompleted_container">
+                              <BsPatchCheckFill color="#3c9111" />
+                              <p className="customers_classgoing_completedtext">
+                                Certificate Issued
+                              </p>
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                        </Col>
+                      </>
+                    ) : (
+                      ""
+                    )}
+
+                    <Col span={12}>
+                      <Checkbox
+                        className="customers_statuscheckbox"
+                        checked={false}
+                        onChange={(e) => {
+                          if (record.status === "Form Pending") {
+                            CommonMessage("warning", "Form Not Submitted Yet");
+                          } else if (record.status === "Awaiting Finance") {
+                            CommonMessage(
+                              "warning",
+                              "Finance not Verified Yet"
+                            );
+                          } else {
+                            if (!permissions.includes("Others Checkbox")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
+                            setCustomerId(record.id);
+                            setCustomerDetails(record);
+                            setDrawerContentStatus("Others");
+                            setIsStatusUpdateDrawer(true);
+                          }
+                        }}
+                      >
+                        Others
+                      </Checkbox>
+                    </Col>
                   </Row>
-
-                  {record.status === "Passedout process" ||
-                  record.status === "Completed" ? (
-                    <Row style={{ marginTop: "0px", marginBottom: "6px" }}>
-                      <Col span={12}>
-                        {record.status === "Passedout process" ? (
-                          <button
-                            className="customers_addfeedbackbutton"
-                            onClick={() => {
-                              if (!permissions.includes("Passedout Process")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
-                              setDrawerContentStatus("Add G-Review");
-                              setIsStatusUpdateDrawer(true);
-                              if (record.google_review === null) {
-                                setStepIndex(0);
-                              } else if (
-                                record.is_certificate_generated === 0
-                              ) {
-                                setStepIndex(1);
-                              } else {
-                                setStepIndex(2);
-                              }
-                              setIsCertGenerated(
-                                record.is_certificate_generated === 1
-                                  ? true
-                                  : false
-                              );
-                            }}
-                          >
-                            Passedout process
-                          </button>
-                        ) : (
-                          <div className="customers_classcompleted_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p className="customers_classgoing_completedtext">
-                              PO Process Completed
-                            </p>
-                          </div>
-                        )}
-                      </Col>
-
-                      <Col span={12}>
-                        {record.status === "Completed" ? (
-                          <div className="customers_classcompleted_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p className="customers_classgoing_completedtext">
-                              Certificate Issued
-                            </p>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                      </Col>
-                    </Row>
-                  ) : (
-                    ""
-                  )}
                 </>
               }
             >
@@ -904,6 +938,7 @@ export default function Customers() {
                 text === "Partially Closed" ||
                 text === "Discontinued" ||
                 text === "Demo Completed" ||
+                text === "Videos Given" ||
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
@@ -1659,9 +1694,7 @@ export default function Customers() {
                                   </div>
                                 )}
                               </Col>
-                            </Row>
 
-                            <Row>
                               <Col span={12}>
                                 {record.status === "Form Pending" ||
                                 record.status === "Awaiting Finance" ||
@@ -1818,9 +1851,7 @@ export default function Customers() {
                                   </div>
                                 )}
                               </Col>
-                            </Row>
 
-                            <Row>
                               <Col span={12}>
                                 {record.status === "Form Pending" ||
                                 record.status === "Awaiting Finance" ||
@@ -1988,80 +2019,114 @@ export default function Customers() {
                               ) : (
                                 ""
                               )}
-                            </Row>
 
-                            {record.status === "Passedout process" ||
-                            record.status === "Completed" ? (
-                              <Row
-                                style={{
-                                  marginTop: "0px",
-                                  marginBottom: "6px",
-                                }}
-                              >
-                                <Col span={12}>
-                                  {record.status === "Passedout process" ? (
-                                    <button
-                                      className="customers_addfeedbackbutton"
-                                      onClick={() => {
-                                        if (
-                                          !permissions.includes(
-                                            "Passedout Process"
-                                          )
-                                        ) {
-                                          CommonMessage(
-                                            "error",
-                                            "Access Denied"
+                              {record.status === "Passedout process" ||
+                              record.status === "Completed" ? (
+                                <>
+                                  <Col span={12}>
+                                    {record.status === "Passedout process" ? (
+                                      <button
+                                        className="customers_addfeedbackbutton"
+                                        onClick={() => {
+                                          if (
+                                            !permissions.includes(
+                                              "Passedout Process"
+                                            )
+                                          ) {
+                                            CommonMessage(
+                                              "error",
+                                              "Access Denied"
+                                            );
+                                            return;
+                                          }
+                                          setCustomerId(record.id);
+                                          setCustomerDetails(record);
+                                          setDrawerContentStatus(
+                                            "Add G-Review"
                                           );
-                                          return;
-                                        }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
-                                        setDrawerContentStatus("Add G-Review");
-                                        setIsStatusUpdateDrawer(true);
-                                        if (record.google_review === null) {
-                                          setStepIndex(0);
-                                        } else if (
-                                          record.is_certificate_generated === 0
-                                        ) {
-                                          setStepIndex(1);
-                                        } else {
-                                          setStepIndex(2);
-                                        }
-                                        setIsCertGenerated(
-                                          record.is_certificate_generated === 1
-                                            ? true
-                                            : false
-                                        );
-                                      }}
-                                    >
-                                      Passedout process
-                                    </button>
-                                  ) : (
-                                    <div className="customers_classcompleted_container">
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        PO Process Completed
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
+                                          setIsStatusUpdateDrawer(true);
+                                          if (record.google_review === null) {
+                                            setStepIndex(0);
+                                          } else if (
+                                            record.is_certificate_generated ===
+                                            0
+                                          ) {
+                                            setStepIndex(1);
+                                          } else {
+                                            setStepIndex(2);
+                                          }
+                                          setIsCertGenerated(
+                                            record.is_certificate_generated ===
+                                              1
+                                              ? true
+                                              : false
+                                          );
+                                        }}
+                                      >
+                                        Passedout process
+                                      </button>
+                                    ) : (
+                                      <div className="customers_classcompleted_container">
+                                        <BsPatchCheckFill color="#3c9111" />
+                                        <p className="customers_classgoing_completedtext">
+                                          PO Process Completed
+                                        </p>
+                                      </div>
+                                    )}
+                                  </Col>
 
-                                <Col span={12}>
-                                  {record.status === "Completed" ? (
-                                    <div className="customers_classcompleted_container">
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Certificate Issued
-                                      </p>
-                                    </div>
-                                  ) : (
-                                    ""
-                                  )}
-                                </Col>
-                              </Row>
-                            ) : (
-                              ""
-                            )}
+                                  <Col span={12}>
+                                    {record.status === "Completed" ? (
+                                      <div className="customers_classcompleted_container">
+                                        <BsPatchCheckFill color="#3c9111" />
+                                        <p className="customers_classgoing_completedtext">
+                                          Certificate Issued
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </Col>
+                                </>
+                              ) : (
+                                ""
+                              )}
+
+                              <Col span={12}>
+                                <Checkbox
+                                  className="customers_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status === "Form Pending") {
+                                      CommonMessage(
+                                        "warning",
+                                        "Form Not Submitted Yet"
+                                      );
+                                    } else if (
+                                      record.status === "Awaiting Finance"
+                                    ) {
+                                      CommonMessage(
+                                        "warning",
+                                        "Finance not Verified Yet"
+                                      );
+                                    } else {
+                                      if (
+                                        !permissions.includes("Others Checkbox")
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setCustomerId(record.id);
+                                      setCustomerDetails(record);
+                                      setDrawerContentStatus("Others");
+                                      setIsStatusUpdateDrawer(true);
+                                    }
+                                  }}
+                                >
+                                  Others
+                                </Checkbox>
+                              </Col>
+                            </Row>
                           </>
                         }
                       >
@@ -2150,6 +2215,7 @@ export default function Customers() {
                           text === "Partially Closed" ||
                           text === "Discontinued" ||
                           text === "Demo Completed" ||
+                          text === "Videos Given" ||
                           text === "Refund" ? (
                           <Button className="trainers_rejected_button">
                             {text}
@@ -3881,6 +3947,30 @@ export default function Customers() {
               }}
             />
           </>
+        ) : drawerContentStatus === "Others" ? (
+          <>
+            <OthersHandling
+              ref={othersHandlingRef}
+              customerDetails={customerDetails}
+              setUpdateButtonLoading={setUpdateButtonLoading}
+              callgetCustomersApi={() => {
+                updateStatusDrawerReset();
+                setPagination({
+                  page: 1,
+                });
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  status,
+                  allDownliners,
+                  branchOptions,
+                  pagination.page,
+                  pagination.limit
+                );
+              }}
+            />
+          </>
         ) : (
           ""
         )}
@@ -4007,6 +4097,8 @@ export default function Customers() {
                           : drawerContentStatus === "Add G-Review"
                           ? () =>
                               passedOutProcessRef.current?.handleGoogleReview()
+                          : drawerContentStatus === "Others"
+                          ? () => othersHandlingRef.current?.handleSubmit()
                           : handleStatusMismatch
                       }
                     >
@@ -4014,7 +4106,8 @@ export default function Customers() {
                         ? "Assign"
                         : drawerContentStatus === "Class Going" ||
                           drawerContentStatus === "Class Schedule" ||
-                          drawerContentStatus === "Add G-Review"
+                          drawerContentStatus === "Add G-Review" ||
+                          drawerContentStatus === "Others"
                         ? "Update"
                         : "Verify"}
                     </button>

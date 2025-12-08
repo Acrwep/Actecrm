@@ -1,15 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Flex, Tooltip, Radio, Button, Drawer, Badge } from "antd";
+import {
+  Row,
+  Col,
+  Flex,
+  Tooltip,
+  Radio,
+  Button,
+  Drawer,
+  Badge,
+  Modal,
+} from "antd";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import {
+  assignLiveLead,
   getAllDownlineUsers,
   getLeadAndFollowupCount,
   getLiveLeads,
   moveLiveLeadToJunk,
 } from "../ApiService/action";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  addressValidator,
+  getCurrentandPreviousweekDate,
+} from "../Common/Validation";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
@@ -21,6 +35,7 @@ import AddLead from "./AddLead";
 import { useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { CommonMessage } from "../Common/CommonMessage";
+import CommonTextArea from "../Common/CommonTextArea";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -47,6 +62,7 @@ export default function LiveLead({
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
+  const [loginUserId, setLoginUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   //pick lead drawer
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -56,6 +72,8 @@ export default function LiveLead({
   const [allDownliners, setAllDownliners] = useState([]);
   //junk usestates
   const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
+  const [junkComments, setJunkComments] = useState("");
+  const [junkCommentsError, setJunkCommentsError] = useState("");
   const [liveLeadId, setLiveLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -68,33 +86,65 @@ export default function LiveLead({
   });
 
   const formatDuration = (dateString) => {
-    const created = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - created;
+    if (import.meta.env.PROD) {
+      // Convert incoming UTC time to IST
+      const createdUTC = new Date(dateString);
+      const createdIST = new Date(createdUTC.getTime() + 5.5 * 60 * 60 * 1000);
 
-    if (diffMs < 0) return { text: "00:00", hours: 0 };
+      const now = new Date();
+      const diffMs = now - createdIST;
 
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const totalHours = totalSeconds / 3600;
+      if (diffMs < 0) return { text: "00:00", hours: 0 };
 
-    const days = Math.floor(totalSeconds / (24 * 3600));
-    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalHours = totalSeconds / 3600;
 
-    const pad = (n) => String(n).padStart(2, "0");
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-    let text = "";
+      const pad = (n) => String(n).padStart(2, "0");
 
-    if (days === 0) {
-      // HHh:MMm
-      const hh = pad(Math.floor(totalSeconds / 3600));
-      text = `${hh}h:${pad(minutes)}m`;
+      let text = "";
+
+      if (days === 0) {
+        const hh = pad(Math.floor(totalSeconds / 3600));
+        text = `${hh}h:${pad(minutes)}m`;
+      } else {
+        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+      }
+
+      return { text, hours: totalHours };
     } else {
-      // DDd:HHh:MMm
-      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
-    }
+      //dev
+      const created = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - created;
 
-    return { text, hours: totalHours };
+      if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalHours = totalSeconds / 3600;
+
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+      const pad = (n) => String(n).padStart(2, "0");
+
+      let text = "";
+
+      if (days === 0) {
+        // HHh:MMm
+        const hh = pad(Math.floor(totalSeconds / 3600));
+        text = `${hh}h:${pad(minutes)}m`;
+      } else {
+        // DDd:HHh:MMm
+        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+      }
+
+      return { text, hours: totalHours };
+    }
   };
 
   const columns = [
@@ -420,6 +470,7 @@ export default function LiveLead({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       getAllDownlineUsersData(convertAsJson?.user_id);
+      setLoginUserId(convertAsJson?.user_id);
     }, 300);
     // Call every 5 seconds
     const interval = setInterval(() => {
@@ -525,8 +576,19 @@ export default function LiveLead({
     );
   };
 
-  const handlePick = (item) => {
+  const handlePick = async (item) => {
     console.log("itemmmm", item);
+    const payload = {
+      user_id: loginUserId,
+      lead_id: item.id,
+      is_assigned: true,
+    };
+
+    try {
+      await assignLiveLead(payload);
+    } catch (error) {
+      console.log("assign live lead error", error);
+    }
     setPickLeadItem({
       id: item.id,
       name: item.name,
@@ -565,6 +627,12 @@ export default function LiveLead({
 
   const handleMoveToJunk = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
+    const commentsValidate = addressValidator(junkComments);
+
+    setJunkCommentsError(commentsValidate);
+
+    if (commentsValidate) return;
+
     setButtonLoading(true);
     const payload = {
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
@@ -780,9 +848,20 @@ export default function LiveLead({
       <Drawer
         title="Add Lead"
         open={isOpenAddDrawer}
-        onClose={() => {
+        onClose={async () => {
           setIsOpenAddDrawer(false);
           setPickLeadItem(null);
+          const payload = {
+            user_id: loginUserId,
+            lead_id: pickLeadItem.id,
+            is_assigned: false,
+          };
+
+          try {
+            await assignLiveLead(payload);
+          } catch (error) {
+            console.log("assign live lead error", error);
+          }
         }}
         width="52%"
         style={{ position: "relative" }}
@@ -839,7 +918,7 @@ export default function LiveLead({
       </Drawer>
 
       {/* delete modal */}
-      <CommonDeleteModal
+      {/* <CommonDeleteModal
         title="Move to Junk"
         open={isOpenJunkModal}
         onCancel={() => {
@@ -849,7 +928,62 @@ export default function LiveLead({
         content="Are you sure want to move the Lead to Junk?"
         loading={buttonLoading}
         onClick={handleMoveToJunk}
-      />
+      /> */}
+      <Modal
+        title="Move to Junk"
+        open={isOpenJunkModal}
+        onCancel={() => {
+          setIsOpenJunkModal(false);
+          setLiveLeadId(null);
+          setJunkComments("");
+          setJunkCommentsError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddCourseModal(false);
+              setCourseName("");
+              setCourseNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              style={{ width: "120px", opacity: 0.7 }}
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleMoveToJunk}
+              style={{ width: "120px" }}
+            >
+              Move to Junk
+            </Button>
+          ),
+        ]}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <CommonTextArea
+            label="Comments"
+            required={false}
+            onChange={(e) => {
+              setJunkComments(e.target.value);
+              setJunkCommentsError(addressValidator(e.target.value));
+            }}
+            value={junkComments}
+            error={junkCommentsError}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
