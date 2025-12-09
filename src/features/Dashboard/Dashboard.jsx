@@ -21,6 +21,7 @@ import {
   getBranchWiseScoreBoard,
   getDashboardDates,
   getHRDashboard,
+  getPostSaleDashboard,
   getQualityDashboard,
   getRADashboard,
   getScoreBoard,
@@ -46,6 +47,7 @@ import { DashboardDownloadColumns } from "./DashboardDownloadColumns";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import QualityChart from "./QualityChart";
+import PostSalePerformanceChart from "./PostSalePerformanceChart";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -126,30 +128,11 @@ export default function Dashboard() {
   const [branchWiseSalesXaxis, setBranchWiseSalesXaxis] = useState([]);
   const [branchWiseSalesSeries, setBranchWiseSalesSeries] = useState([]);
   const [branchWiseSalesLoader, setBranchWiseSalesLoader] = useState(true);
-  //HR
-  const [HrSelectedDates, setHrSelectedDates] = useState([]);
-  const [hrDataSeries, setHrDataSeries] = useState([]);
-  const [HrDownloadData, setHrDownloadData] = useState([]);
-  const [hrLoader, setHrLoader] = useState(true);
-  //RA
-  const [raSelectedDates, setRaSelectedDates] = useState([]);
-  const [raDataSeries, setRaDataSeries] = useState([]);
-  const [RaDownloadData, setRaDownloadData] = useState([]);
-  const [raLoader, setRaLoader] = useState(true);
-  //quality
-  const [qualitySelectedDates, setQualitySelectedDates] = useState([]);
-  const [qualityXaxis, setQualityXaxis] = useState([]);
-  const [qualityDataSeries, setQualityDataSeries] = useState([]);
-  const [qualityMovedToCna, setQualityMovedToCna] = useState([]);
-  const [qualityCnaReached, setQualityCnaReached] = useState([]);
-  const [qualityDirectReached, setQualityDirectReached] = useState([]);
-  const [qualityFollowUpHandled, setQualityFollowUpHandled] = useState([]);
-  const [qualityFollowUpUnHandled, setQualityFollowUpUnHandled] = useState([]);
-  const [qualityType, setQualityType] = useState(1);
-  const [qualityDownloadData, setQualityDownloadData] = useState([]);
-  const [qualityDownloadLoader, setQualityDownloadLoader] = useState(false);
-  const [qualityLoader, setQualityLoader] = useState(true);
-
+  //post sale performance
+  const [postSaleDataSeries, setPostSaleDataSeries] = useState([]);
+  const [postSaleSelectedDates, setPostSaleSelectedDates] = useState([]);
+  const [postSaleDownloadData, setPostSaleDownloadData] = useState([]);
+  const [postSaleLoader, setPostSaleLoader] = useState(true);
   //lead executive
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
@@ -164,9 +147,7 @@ export default function Dashboard() {
       setScoreBoardSelectedDates(PreviousAndCurrentDate);
       setSaleDetailsSelectedDates(PreviousAndCurrentDate);
       setPerformingSelectedDates(PreviousAndCurrentDate);
-      setRaSelectedDates(PreviousAndCurrentDate);
-      setQualitySelectedDates(PreviousAndCurrentDate);
-      setHrSelectedDates(PreviousAndCurrentDate);
+      setPostSaleSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseSaleDates(PreviousAndCurrentDate);
@@ -905,7 +886,7 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getHRData(
+      getPostSalePerformance(
         dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
@@ -970,7 +951,7 @@ export default function Dashboard() {
         setPerformanceLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
-          getHRData(
+          getPostSalePerformance(
             dashboard_dates,
             PreviousAndCurrentDate[0],
             PreviousAndCurrentDate[1],
@@ -982,189 +963,108 @@ export default function Dashboard() {
     }
   };
 
-  const getHRData = async (
+  const getPostSalePerformance = async (
     dashboard_dates,
     startDate,
     endDate,
     downliners,
     call_api
   ) => {
-    if (!permissions.includes("HR Dashboard")) {
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getRAData(
-        dashboard_dates,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        downliners,
-        true
+    if (!permissions.includes("Post Sale Performance")) {
+      return;
+    }
+    setPostSaleLoader(true);
+
+    //date handling
+    let postsale_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      postsale_dates = dashboard_dates.find(
+        (f) => f.card_name == "Post Sale Performance"
       );
-      return;
-    }
-    setHrLoader(true);
-
-    //date handling
-    let hr_dates;
-    if (dashboard_dates && dashboard_dates.length >= 1) {
-      hr_dates = dashboard_dates.find((f) => f.card_name == "HR Dashboard");
-      if (hr_dates) {
+      if (postsale_dates) {
         if (
-          hr_dates.card_settings == "Today" ||
-          hr_dates.card_settings == "Yesterday" ||
-          hr_dates.card_settings == "7 Days" ||
-          hr_dates.card_settings == "15 Days" ||
-          hr_dates.card_settings == "30 Days" ||
-          hr_dates.card_settings == "60 Days" ||
-          hr_dates.card_settings == "90 Days"
+          postsale_dates.card_settings == "Today" ||
+          postsale_dates.card_settings == "Yesterday" ||
+          postsale_dates.card_settings == "7 Days" ||
+          postsale_dates.card_settings == "15 Days" ||
+          postsale_dates.card_settings == "30 Days" ||
+          postsale_dates.card_settings == "60 Days" ||
+          postsale_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            hr_dates.card_settings
+            postsale_dates.card_settings
           );
-          hr_dates = getdates_bylabel;
-          setHrSelectedDates([
+          postsale_dates = getdates_bylabel;
+          setPostSaleSelectedDates([
             getdates_bylabel.card_settings.start_date,
             getdates_bylabel.card_settings.end_date,
           ]);
         } else {
-          setHrSelectedDates([
-            hr_dates.card_settings.start_date,
-            hr_dates.card_settings.end_date,
+          setPostSaleSelectedDates([
+            postsale_dates.card_settings.start_date,
+            postsale_dates.card_settings.end_date,
           ]);
         }
       }
     }
 
     const payload = {
-      start_date: hr_dates ? hr_dates.card_settings.start_date : startDate,
-      end_date: hr_dates ? hr_dates.card_settings.end_date : endDate,
-      user_ids: downliners,
-    };
-
-    try {
-      const response = await getHRDashboard(payload);
-      console.log("hr response", response);
-      const hr_data = response?.data?.data;
-      setHrDownloadData([hr_data]);
-      const hr_series = [
-        Number(hr_data?.awaiting_trainer || 0),
-        Number(hr_data?.awaiting_trainer_verify || 0),
-        Number(hr_data?.verified_trainer || 0),
-        Number(hr_data?.rejected_trainer || 0),
-      ];
-      if (
-        hr_series[0] == 0 &&
-        hr_series[1] == 0 &&
-        hr_series[2] == 0 &&
-        hr_series[3] == 0
-      ) {
-        console.log();
-        setHrDataSeries([]);
-        return;
-      }
-      setHrDataSeries(hr_series);
-    } catch (error) {
-      setHrDataSeries([]);
-      console.log("hr error", error);
-    } finally {
-      setTimeout(() => {
-        setHrLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api === true) {
-          getRAData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true
-          );
-        }
-      }, 300);
-    }
-  };
-
-  const getRAData = async (
-    dashboard_dates,
-    startDate,
-    endDate,
-    downliners,
-    call_api
-  ) => {
-    if (!permissions.includes("RA Dashboard")) {
-      return;
-    }
-    setRaLoader(true);
-
-    //date handling
-    let ra_dates;
-    if (dashboard_dates && dashboard_dates.length >= 1) {
-      ra_dates = dashboard_dates.find((f) => f.card_name == "RA Dashboard");
-      if (ra_dates) {
-        if (
-          ra_dates.card_settings == "Today" ||
-          ra_dates.card_settings == "Yesterday" ||
-          ra_dates.card_settings == "7 Days" ||
-          ra_dates.card_settings == "15 Days" ||
-          ra_dates.card_settings == "30 Days" ||
-          ra_dates.card_settings == "60 Days" ||
-          ra_dates.card_settings == "90 Days"
-        ) {
-          const getdates_bylabel = getDatesFromRangeLabel(
-            ra_dates.card_settings
-          );
-          ra_dates = getdates_bylabel;
-          setRaSelectedDates([
-            getdates_bylabel.card_settings.start_date,
-            getdates_bylabel.card_settings.end_date,
-          ]);
-        } else {
-          setRaSelectedDates([
-            ra_dates.card_settings.start_date,
-            ra_dates.card_settings.end_date,
-          ]);
-        }
-      }
-    }
-
-    const payload = {
-      start_date: ra_dates ? ra_dates.card_settings.start_date : startDate,
-      end_date: ra_dates ? ra_dates.card_settings.end_date : endDate,
+      start_date: postsale_dates
+        ? postsale_dates.card_settings.start_date
+        : startDate,
+      end_date: postsale_dates
+        ? postsale_dates.card_settings.end_date
+        : endDate,
       user_ids: downliners,
     };
     try {
-      const response = await getRADashboard(payload);
-      console.log("ra response", response);
-      const ra_data = response?.data?.data;
-      setRaDownloadData([ra_data]);
-      const ra_series = [
-        Number(ra_data?.awaiting_class || 0),
-        Number(ra_data?.awaiting_verify || 0),
-        Number(ra_data?.class_scheduled || 0),
-        Number(ra_data?.class_going || 0),
-        Number(ra_data?.google_review_count || 0),
-        Number(ra_data?.linkedin_review_count || 0),
-        Number(ra_data?.escalated || 0),
-        Number(ra_data?.class_completed || 0),
+      const response = await getPostSaleDashboard(payload);
+      console.log("post sale response", response);
+      const postsale_data = response?.data?.data;
+      // setPostSaleData(postsale_data);
+      setPostSaleDownloadData([postsale_data]);
+      const postsale_series = [
+        Number(postsale_data?.awaiting_verify || 0),
+        Number(postsale_data?.awaiting_trainer || 0),
+        Number(postsale_data?.awaiting_trainer_verify || 0),
+        Number(postsale_data?.verified_trainer || 0),
+        Number(postsale_data?.rejected_trainer || 0),
+        Number(postsale_data?.awaiting_class || 0),
+        Number(postsale_data?.class_scheduled || 0),
+        Number(postsale_data?.class_going || 0),
+        Number(postsale_data?.google_review_count || 0),
+        Number(postsale_data?.linkedin_review_count || 0),
+        Number(postsale_data?.escalated || 0),
+        Number(postsale_data?.class_completed || 0),
+        Number(postsale_data?.videos_given || 0),
       ];
+
       if (
-        ra_series[0] == 0 &&
-        ra_series[1] == 0 &&
-        ra_series[2] == 0 &&
-        ra_series[3] == 0 &&
-        ra_series[4] == 0 &&
-        ra_series[5] == 0 &&
-        ra_series[6] == 0 &&
-        ra_series[7] == 0
+        postsale_series[0] == 0 &&
+        postsale_series[1] == 0 &&
+        postsale_series[2] == 0 &&
+        postsale_series[3] == 0 &&
+        postsale_series[4] == 0 &&
+        postsale_series[5] == 0 &&
+        postsale_series[6] == 0 &&
+        postsale_series[7] == 0 &&
+        postsale_series[8] == 0 &&
+        postsale_series[9] == 0 &&
+        postsale_series[10] == 0 &&
+        postsale_series[11] == 0 &&
+        postsale_series[12] == 0
       ) {
-        setRaDataSeries([]);
+        setPostSaleDataSeries([]);
         return;
       }
 
-      setRaDataSeries(ra_series);
+      setPostSaleDataSeries(postsale_series);
     } catch (error) {
-      setRaDataSeries([]);
+      setPostSaleDataSeries([]);
       console.log("ra error", error);
     } finally {
       setTimeout(() => {
-        setRaLoader(false);
+        setPostSaleLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         // if (call_api === true) {
         //   getQualityData(
@@ -1179,118 +1079,6 @@ export default function Dashboard() {
     }
   };
 
-  // const getQualityData = async (
-  //   dashboard_dates,
-  //   startDate,
-  //   endDate,
-  //   downliners,
-  //   type
-  // ) => {
-  //   if (!permissions.includes("Quality Dashboard")) {
-  //     return;
-  //   }
-  //   setQualityLoader(true);
-
-  //   //date handling
-  //   let quality_dates;
-  //   if (dashboard_dates && dashboard_dates.length >= 1) {
-  //     quality_dates = dashboard_dates.find(
-  //       (f) => f.card_name == "Quality Dashboard"
-  //     );
-  //     if (quality_dates) {
-  //       if (
-  //         quality_dates.card_settings == "Today" ||
-  //         quality_dates.card_settings == "Yesterday" ||
-  //         quality_dates.card_settings == "7 Days" ||
-  //         quality_dates.card_settings == "15 Days" ||
-  //         quality_dates.card_settings == "30 Days" ||
-  //         quality_dates.card_settings == "60 Days" ||
-  //         quality_dates.card_settings == "90 Days"
-  //       ) {
-  //         const getdates_bylabel = getDatesFromRangeLabel(
-  //           quality_dates.card_settings
-  //         );
-  //         quality_dates = getdates_bylabel;
-  //         setQualitySelectedDates([
-  //           getdates_bylabel.card_settings.start_date,
-  //           getdates_bylabel.card_settings.end_date,
-  //         ]);
-  //       } else {
-  //         setQualitySelectedDates([
-  //           quality_dates.card_settings.start_date,
-  //           quality_dates.card_settings.end_date,
-  //         ]);
-  //       }
-  //     }
-  //   }
-
-  //   const payload = {
-  //     start_date: quality_dates
-  //       ? quality_dates.card_settings.start_date
-  //       : startDate,
-  //     end_date: quality_dates ? quality_dates.card_settings.end_date : endDate,
-  //     user_ids: downliners,
-  //     type: type == 1 ? "Productivity" : "Followup",
-  //   };
-  //   try {
-  //     const response = await getQualityDashboard(payload);
-  //     console.log("quality response", response);
-  //     const quality_data = response?.data?.result;
-
-  //     const xaxis = quality_data.map(
-  //       (item) => `${item.user_id} (${item.user_name})`
-  //     );
-
-  //     const series = quality_data.map((item) =>
-  //       type == 1
-  //         ? Number(item.productivity_count)
-  //         : Number(item.total_followups)
-  //     );
-
-  //     if (type == 1) {
-  //       const cna_moved = quality_data.map((item) => Number(item.cna_moved));
-  //       const cna_reached = quality_data.map((item) =>
-  //         Number(item.cna_reached)
-  //       );
-
-  //       const direct_reached = quality_data.map((item) =>
-  //         Number(item.direct_reached)
-  //       );
-  //       setQualityMovedToCna(cna_moved);
-  //       setQualityCnaReached(cna_reached);
-  //       setQualityDirectReached(direct_reached);
-  //     } else {
-  //       setQualityMovedToCna([]);
-  //       setQualityCnaReached([]);
-  //       setQualityDirectReached([]);
-
-  //       const followup_handled = quality_data.map((item) =>
-  //         Number(item.follow_up_handled)
-  //       );
-  //       const followup_unhandled = quality_data.map((item) =>
-  //         Number(item.follow_up_unhandled)
-  //       );
-  //       setQualityFollowUpHandled(followup_handled);
-  //       setQualityFollowUpUnHandled(followup_unhandled);
-  //     }
-
-  //     setQualityXaxis(xaxis);
-  //     setQualityDataSeries(series);
-  //   } catch (error) {
-  //     setQualityDataSeries([]);
-  //     setQualityMovedToCna([]);
-  //     setQualityCnaReached([]);
-  //     setQualityDirectReached([]);
-  //     setQualityFollowUpHandled([]);
-  //     setQualityFollowUpUnHandled([]);
-  //     console.log("quality error", error);
-  //   } finally {
-  //     setTimeout(() => {
-  //       setQualityLoader(false);
-  //     }, 300);
-  //   }
-  // };
-
   const handleRaDashboard = (label) => {
     console.log("ra dashboard clicked bar", label);
     if (label == "G-Review" || label == "L-Review") {
@@ -1298,18 +1086,8 @@ export default function Dashboard() {
     }
     const filterData = {
       status: label === "Awaiting Student Verify" ? "Awaiting Verify" : label,
-      startDate: raSelectedDates[0],
-      endDate: raSelectedDates[1],
-    };
-    navigate("/customers", { state: filterData });
-  };
-
-  const handleHrDashboard = (label) => {
-    console.log("hr dashboard clicked bar", label);
-    const filterData = {
-      status: label == "Trainer Verified" ? "Awaiting Class" : label,
-      startDate: HrSelectedDates[0],
-      endDate: HrSelectedDates[1],
+      startDate: postSaleSelectedDates[0],
+      endDate: postSaleSelectedDates[1],
     };
     navigate("/customers", { state: filterData });
   };
@@ -1351,15 +1129,13 @@ export default function Dashboard() {
       setBranchWiseLeadsLoader(true);
       setBranchWiseSalesLoader(true);
       setPerformanceLoader(true);
-      setRaLoader(true);
-      setHrLoader(true);
+      setPostSaleLoader(true);
       setUserWiseLeadsType(1);
       setUserWiseType(1);
       setBranchWiseLeadsRegion(1);
       setBranchWiseLeadsType(1);
       setBranchWiseSaleRegion(1);
       setBranchWiseSaleType(1);
-      setQualityType(1);
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           allDashboardCardsDates,
@@ -1447,47 +1223,13 @@ export default function Dashboard() {
     }
   };
 
-  const handleQualityDownload = async () => {
-    setQualityDownloadLoader(true);
-    const payload = {
-      user_ids: allDownliners,
-      start_date: qualitySelectedDates[0],
-      end_date: qualitySelectedDates[1],
-    };
-    try {
-      const response = await getQualityDashboard(payload);
-      console.log("download response", response);
-      const data = response?.data?.result || [];
-      const columns = DashboardDownloadColumns("Quality");
-      DownloadTableAsCSV(
-        data,
-        columns,
-        `${moment(qualitySelectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-          qualitySelectedDates[1]
-        ).format("DD-MM-YYYY")} Quality Performance.csv`
-      );
-      setTimeout(() => {
-        setQualityDownloadLoader(false);
-      }, 300);
-    } catch (error) {
-      setQualityDownloadLoader(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
-  };
-
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setScoreBoardSelectedDates(PreviousAndCurrentDate);
     setSaleDetailsSelectedDates(PreviousAndCurrentDate);
     setPerformingSelectedDates(PreviousAndCurrentDate);
-    setRaSelectedDates(PreviousAndCurrentDate);
-    setHrSelectedDates(PreviousAndCurrentDate);
+    setPostSaleSelectedDates(PreviousAndCurrentDate);
     setUserWiseLeadsDates(PreviousAndCurrentDate);
-    setQualitySelectedDates(PreviousAndCurrentDate);
 
     setUserWiseLeadsType(1);
     setUserWiseType(1);
@@ -1497,15 +1239,12 @@ export default function Dashboard() {
     setBranchWiseSaleDates(PreviousAndCurrentDate);
     setBranchWiseSaleRegion(1);
     setBranchWiseSaleType(1);
-    setQualityType(1);
 
     setSelectedUserId(null);
     setScoreBoardLoader(true);
     setSaleDetailsLoader(true);
     setPerformanceLoader(true);
-    setRaLoader(true);
-    setHrLoader(true);
-    setQualityLoader(true);
+    setPostSaleLoader(true);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -2758,7 +2497,7 @@ export default function Dashboard() {
           </Col>
         )}
 
-        {permissions.includes("HR Dashboard") && (
+        {permissions.includes("Post Sale Performance") && (
           <Col
             xs={24}
             sm={24}
@@ -2773,13 +2512,13 @@ export default function Dashboard() {
                 <Col span={18}>
                   <div style={{ padding: "12px 12px 8px 12px" }}>
                     <p className="dashboard_scrorecard_heading">
-                      HR Performance
+                      Post Sale Performance
                     </p>
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
-                      {`(${moment(HrSelectedDates[0]).format(
+                      {`(${moment(postSaleSelectedDates[0]).format(
                         "DD MMM YYYY"
-                      )} to ${moment(HrSelectedDates[1]).format(
+                      )} to ${moment(postSaleSelectedDates[1]).format(
                         "DD MMM YYYY"
                       )})`}
                     </p>
@@ -2792,15 +2531,15 @@ export default function Dashboard() {
                   <div>
                     <CommonMuiCustomDatePicker
                       isDashboard={true}
-                      value={HrSelectedDates}
+                      value={postSaleSelectedDates}
                       onDateChange={(dates) => {
-                        setHrSelectedDates(dates);
+                        setPostSaleSelectedDates(dates);
                         updateDashboardCardDate(
-                          "HR Dashboard",
+                          "Post Sale Performance",
                           dates[0],
                           dates[1]
                         );
-                        getHRData(
+                        getPostSalePerformance(
                           null,
                           dates[0],
                           dates[1],
@@ -2819,160 +2558,15 @@ export default function Dashboard() {
                     <Button
                       className="dashboard_download_button"
                       onClick={() => {
-                        const columns =
-                          DashboardDownloadColumns("HR Dashboard");
+                        const columns = DashboardDownloadColumns(
+                          "Post Sale Performance"
+                        );
                         DownloadTableAsCSV(
-                          HrDownloadData,
+                          postSaleDownloadData,
                           columns,
-                          `${moment(HrSelectedDates[0]).format(
+                          `${moment(postSaleSelectedDates[0]).format(
                             "DD-MM-YYYY"
-                          )} to ${moment(HrSelectedDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} HR Performance.csv`
-                        );
-                      }}
-                    >
-                      <DownloadOutlined className="download_icon" />
-                    </Button>
-                  </Tooltip>
-                </div>
-
-                <div className="dadhboard_chartsContainer">
-                  {hrLoader ? (
-                    <div className="dashboard_skeleton_container">
-                      <Skeleton
-                        active
-                        style={{ height: "40vh" }}
-                        title={{ width: 140 }}
-                        paragraph={{
-                          rows: 0,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      {hrDataSeries.length >= 1 ? (
-                        // <CommonPieChart
-                        //   labels={[
-                        //     "Awaiting Trainer",
-                        //     "Awaiting Trainer Verify",
-                        //     "Trainer Verified",
-                        //     "Trainer Rejected",
-                        //   ]}
-                        //   colors={[
-                        //     "#ffa602c7",
-                        //     "#1e8fffbe",
-                        //     "#00cecbd0",
-                        //     "#d32f2fcc",
-                        //   ]}
-                        //   // series={[12, 34, 56, 4]}
-                        //   series={hrDataSeries}
-                        //   height={290}
-                        //   clickedBar={handleHrDashboard}
-                        //   enablePointer={true}
-                        // />
-                        <CommonDonutChart
-                          labels={[
-                            "Awaiting Trainer",
-                            "Awaiting Trainer Verify",
-                            "Trainer Verified",
-                            "Trainer Rejected",
-                          ]}
-                          // series={[12, 34, 56, 4]}
-                          series={hrDataSeries}
-                          labelsfontSize="11px"
-                          colors={[
-                            "#ffa602c7",
-                            "#1e8fffbe",
-                            "#00cecbd0",
-                            "#d32f2fcc",
-                          ]}
-                          height={280}
-                          clickedBar={handleHrDashboard}
-                          enablePointer={true}
-                        />
-                      ) : (
-                        <div className="dashboard_chart_nodata_conatiner">
-                          <p>No data found</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Col>
-        )}
-
-        {permissions.includes("RA Dashboard") && (
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            style={{
-              marginTop: "30px",
-            }}
-          >
-            <div className="dashboard_leadcount_card">
-              <Row className="dashboard_leadcount_header_container">
-                <Col span={18}>
-                  <div style={{ padding: "12px 12px 8px 12px" }}>
-                    <p className="dashboard_scrorecard_heading">
-                      RA Performance
-                    </p>
-                    <p className="dashboard_daterange_text">
-                      <span style={{ fontWeight: "500" }}>Date Range: </span>
-                      {`(${moment(raSelectedDates[0]).format(
-                        "DD MMM YYYY"
-                      )} to ${moment(raSelectedDates[1]).format(
-                        "DD MMM YYYY"
-                      )})`}
-                    </p>
-                  </div>
-                </Col>
-                <Col
-                  span={6}
-                  style={{ display: "flex", justifyContent: "flex-end" }}
-                >
-                  <div>
-                    <CommonMuiCustomDatePicker
-                      isDashboard={true}
-                      value={raSelectedDates}
-                      onDateChange={(dates) => {
-                        setRaSelectedDates(dates);
-                        updateDashboardCardDate(
-                          "RA Dashboard",
-                          dates[0],
-                          dates[1]
-                        );
-                        getRAData(
-                          null,
-                          dates[0],
-                          dates[1],
-                          allDownliners,
-                          false
-                        );
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-
-              <div style={{ position: "relative" }}>
-                <div className="hr_dashboard_download_container">
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns =
-                          DashboardDownloadColumns("RA Dashboard");
-                        DownloadTableAsCSV(
-                          RaDownloadData,
-                          columns,
-                          `${moment(raSelectedDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(raSelectedDates[1]).format(
+                          )} to ${moment(postSaleSelectedDates[1]).format(
                             "DD-MM-YYYY"
                           )} RA Performance.csv`
                         );
@@ -2984,7 +2578,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dadhboard_chartsContainer">
-                  {raLoader ? (
+                  {postSaleLoader ? (
                     <div className="dashboard_skeleton_container">
                       <Skeleton
                         active
@@ -2997,35 +2591,9 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <>
-                      {raDataSeries.length >= 1 ? (
-                        <CommonDonutChart
-                          labels={[
-                            "Awaiting Class",
-                            "Awaiting Student Verify",
-                            "Class Scheduled",
-                            "Class Going",
-                            "G-Review",
-                            "L-Review",
-                            "Escalated",
-                            "Completed",
-                          ]}
-                          // series={[12, 34, 56, 4, 9, 18, 20]}
-                          series={raDataSeries}
-                          labelsfontSize="11px"
-                          colors={[
-                            "#607d8b",
-                            "#ffa602c7",
-                            "#a29bfec7",
-                            "#00cecbd0",
-                            "#a1c60c",
-                            "rgba(10 102 194)",
-                            "#d32f2fcc",
-                            "#258a25",
-                          ]}
-                          height={290}
-                          legendFontSize="10.5px"
-                          clickedBar={handleRaDashboard}
-                          enablePointer={true}
+                      {postSaleDataSeries.length >= 1 ? (
+                        <PostSalePerformanceChart
+                          chartData={postSaleDataSeries}
                         />
                       ) : (
                         <div className="dashboard_chart_nodata_conatiner">
@@ -3039,181 +2607,7 @@ export default function Dashboard() {
             </div>
           </Col>
         )}
-
-        {/* {permissions.includes("Quality Dashboard") && (
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            style={{
-              marginTop: "30px",
-            }}
-          >
-            <div className="dashboard_leadcount_card">
-              <Row className="dashboard_leadcount_header_container">
-                <Col span={18}>
-                  <div style={{ padding: "12px 12px 8px 12px" }}>
-                    <p className="dashboard_scrorecard_heading">
-                      Quality Performance
-                    </p>
-                    <p className="dashboard_daterange_text">
-                      <span style={{ fontWeight: "500" }}>Date Range: </span>
-                      {`(${moment(qualitySelectedDates[0]).format(
-                        "DD MMM YYYY"
-                      )} to ${moment(qualitySelectedDates[1]).format(
-                        "DD MMM YYYY"
-                      )})`}
-                    </p>
-                  </div>
-                </Col>
-                <Col
-                  span={6}
-                  style={{ display: "flex", justifyContent: "flex-end" }}
-                >
-                  <div>
-                    <CommonMuiCustomDatePicker
-                      isDashboard={true}
-                      value={qualitySelectedDates}
-                      onDateChange={(dates) => {
-                        setQualitySelectedDates(dates);
-                        updateDashboardCardDate(
-                          "Quality Dashboard",
-                          dates[0],
-                          dates[1]
-                        );
-                        getQualityData(
-                          null,
-                          dates[0],
-                          dates[1],
-                          allDownliners,
-                          false,
-                          qualityType
-                        );
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-
-              <Row>
-                <Col span={13}></Col>
-                <Col
-                  span={11}
-                  className="dashboard_userwise_typefield_container"
-                >
-                  <CommonSelectField
-                    label="Type"
-                    height="35px"
-                    labelMarginTop="-1px"
-                    labelFontSize="12px"
-                    width="100%"
-                    options={[
-                      {
-                        id: 1,
-                        name: "Productivity",
-                      },
-                      {
-                        id: 2,
-                        name: "Followup",
-                      },
-                    ]}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setQualityType(value);
-                      getQualityData(
-                        null,
-                        qualitySelectedDates[0],
-                        qualitySelectedDates[1],
-                        allDownliners,
-                        value
-                      );
-                    }}
-                    value={qualityType}
-                  />
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className={
-                        qualityDownloadLoader
-                          ? "dashboard_loading_download_button"
-                          : "dashboard_download_button"
-                      }
-                      onClick={handleQualityDownload}
-                      disabled={qualityDownloadLoader}
-                    >
-                      {qualityDownloadLoader ? (
-                        <Spin
-                          indicator={<LoadingOutlined spin />}
-                          size="small"
-                          style={{ color: "#333" }}
-                        />
-                      ) : (
-                        <DownloadOutlined className="download_icon" />
-                      )}
-                    </Button>
-                  </Tooltip>
-                </Col>
-              </Row>
-
-              <div
-                style={{
-                  padding: "0px 12px 12px 12px",
-                  height: 350,
-                  overflowY: "auto",
-                }}
-              >
-                <div className="dadhboard_chartsContainer">
-                  {qualityLoader ? (
-                    <div className="dashboard_skeleton_container">
-                      <Skeleton
-                        active
-                        style={{ height: "40vh" }}
-                        title={{ width: 140 }}
-                        paragraph={{
-                          rows: 0,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      {qualityDataSeries.length >= 1 ? (
-                        <QualityChart
-                          xaxis={qualityXaxis}
-                          series={qualityDataSeries}
-                          movedToCna={qualityMovedToCna}
-                          cnaReached={qualityCnaReached}
-                          directReached={qualityDirectReached}
-                          followupHanlded={qualityFollowUpHandled}
-                          followupUnhandled={qualityFollowUpUnHandled}
-                          colors={[qualityType == 1 ? "#1976D2" : "#607D8B"]}
-                          type={qualityType == 1 ? "Productivity" : "Followup"}
-                          height={
-                            qualityXaxis.length <= 5
-                              ? 280
-                              : qualityXaxis.length * 45
-                          }
-                        />
-                      ) : (
-                        <div className="dashboard_chart_nodata_conatiner">
-                          <p>No data found</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Col>
-        )} */}
       </Row>
-
-      {/* <Row gutter={16}>
-       
-        </Row> */}
-
-      {/* <Row gutter={16}>
-      
-      </Row> */}
     </div>
   );
 }

@@ -1644,7 +1644,8 @@ export default function Customers() {
                                           "Form Not Submitted Yet"
                                         );
                                       } else if (
-                                        record.status === "Awaiting Finance"
+                                        record.status === "Awaiting Finance" ||
+                                        record.status === "Payment Rejected"
                                       ) {
                                         CommonMessage(
                                           "warning",
@@ -1712,7 +1713,8 @@ export default function Customers() {
                                           "Form Not Submitted Yet"
                                         );
                                       } else if (
-                                        record.status === "Awaiting Finance"
+                                        record.status === "Awaiting Finance" ||
+                                        record.status === "Payment Rejected"
                                       ) {
                                         CommonMessage(
                                           "warning",
@@ -1787,7 +1789,8 @@ export default function Customers() {
                                           "Form Not Submitted Yet"
                                         );
                                       } else if (
-                                        record.status === "Awaiting Finance"
+                                        record.status === "Awaiting Finance" ||
+                                        record.status === "Payment Rejected"
                                       ) {
                                         CommonMessage(
                                           "warning",
@@ -1877,7 +1880,8 @@ export default function Customers() {
                                           "Form Not Submitted Yet"
                                         );
                                       } else if (
-                                        record.status === "Awaiting Finance"
+                                        record.status === "Awaiting Finance" ||
+                                        record.status === "Payment Rejected"
                                       ) {
                                         CommonMessage(
                                           "warning",

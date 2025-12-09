@@ -1132,6 +1132,15 @@ export const getHRDashboard = async (payload) => {
   }
 };
 
+export const getPostSaleDashboard = async (payload) => {
+  try {
+    const response = await api.post(`/api/postSalePerformance`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getQualityDashboard = async (payload) => {
   try {
     const response = await api.post(`/api/qualityProductivity`, payload);

@@ -428,7 +428,10 @@ const FinanceVerify = forwardRef(
             //   customerDetails?.is_second_due == 0
             //     ? "Awaiting Finance"
             //     : customerDetails.status,
-            status: customerDetails.status,
+            status:
+              customerDetails.status == "Payment Rejected"
+                ? "Awaiting Finance"
+                : customerDetails.status,
           };
           try {
             await updateCustomerStatus(payload);

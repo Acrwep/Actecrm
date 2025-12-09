@@ -190,9 +190,7 @@ export default function Settings() {
         "Branch-Wise Lead Analysis",
         "Branch-Wise Sales Analysis",
         "Top Performing Channels",
-        "HR Dashboard",
-        "RA Dashboard",
-        "Quality Dashboard",
+        "Post Sale Performance",
       ];
 
       const dashboardSortedArray = dashboardModule.sort(
