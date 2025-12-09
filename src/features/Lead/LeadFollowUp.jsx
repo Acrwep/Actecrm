@@ -135,6 +135,7 @@ export default function LeadFollowUp({
   const [checkAll, setCheckAll] = useState(false);
 
   const nonChangeColumns = [
+    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Lead Executive",
       key: "lead_assigned_to_name",

@@ -529,6 +529,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     <ol class="terms-list">
       <li>Acte Technologies has the right to postpone/cancel classes due to instructor illness or natural calamities. No refund in such cases.</li>
       <li>Refund requisition will not be accepted.</li>
+      <li>The registration fee is ₹2,000 and it is non-refundable.</li>
     </ol>
 
     <!-- SIGNATURE -->

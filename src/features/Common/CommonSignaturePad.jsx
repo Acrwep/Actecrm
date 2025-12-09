@@ -50,11 +50,12 @@ export default function CommonSignaturePad({ instruction, onUpload }) {
   };
 
   return (
-    <div className="signature-wrapper">
+    <div>
       <SignatureCanvas
         ref={signatureRef}
         penColor="black"
         canvasProps={{
+          width: window.innerWidth > 767 ? 500 : 260,
           height: "auto",
           className: "sigCanvas",
         }}

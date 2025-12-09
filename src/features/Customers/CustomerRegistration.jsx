@@ -394,6 +394,7 @@ export default function CustomerRegistration() {
 
     if (isCheckedTerms === false) {
       termsandconditionsValidate = " is required";
+      CommonMessage("error", "Please accept the terms and conditions");
     } else {
       termsandconditionsValidate = "";
     }
@@ -789,7 +790,12 @@ export default function CustomerRegistration() {
             </Col>
           </Row>
 
-          <div className="customer_registration_terms_container">
+          <div
+            className="customer_registration_terms_container"
+            style={{
+              marginBottom: signatureBase64 ? "20px" : "0px",
+            }}
+          >
             <Checkbox
               onChange={(e) => {
                 setIsCheckedTerms(e.target.checked);
@@ -1223,7 +1229,12 @@ export default function CustomerRegistration() {
                     )}
                   </Col>
                 </Row>
-                <div className="customer_registration_terms_container">
+                <div
+                  className="customer_registration_terms_container"
+                  style={{
+                    marginBottom: signatureBase64 ? "20px" : "0px",
+                  }}
+                >
                   <Checkbox
                     onChange={(e) => {
                       setIsCheckedTerms(e.target.checked);
@@ -1246,11 +1257,11 @@ export default function CustomerRegistration() {
                     Terms and Conditions
                   </p>
                 </div>
-                {isCheckedTermsError && (
+                {/* {isCheckedTermsError && (
                   <p className="customer_registration_terms_error">
                     Please accept the terms and conditions
                   </p>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -1302,6 +1313,7 @@ export default function CustomerRegistration() {
               instructor illness or natural calamities. No refund in this case.
             </li>
             <li>The refund requisition will not be accepted</li>
+            <li>The registration fee is ₹2,000 and it is non-refundable.</li>
           </ul>
         </div>
       </Modal>

@@ -67,6 +67,7 @@ export default function JunkLeads({
   });
 
   const columns = [
+    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Created At",
       key: "created_date",

@@ -148,6 +148,7 @@ export default function LiveLead({
   };
 
   const columns = [
+    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Created Before",
       key: "created_date",
