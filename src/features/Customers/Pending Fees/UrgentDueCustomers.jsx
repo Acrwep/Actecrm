@@ -308,6 +308,7 @@ export default function UrgentDueCustomers({
               text === "Hold" ||
               text === "Partially Closed" ||
               text === "Discontinued" ||
+              text === "Videos Given" ||
               text === "Refund" ? (
               <Button className="trainers_rejected_button">{text}</Button>
             ) : text === "Class Going" ? (
@@ -738,6 +739,7 @@ export default function UrgentDueCustomers({
                           text === "Hold" ||
                           text === "Partially Closed" ||
                           text === "Discontinued" ||
+                          text === "Videos Given" ||
                           text === "Refund" ? (
                           <Button className="trainers_rejected_button">
                             {text}

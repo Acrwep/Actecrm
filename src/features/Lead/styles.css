@@ -59,6 +59,20 @@
   border: none;
   height: 0px !important;
 }
+.leadmanager_leadstatus_junk_container {
+  background: #d32f2f15;
+  color: #d32f2f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
 .leadmanager_cnafollowup_activebutton {
   padding: 6px 8px;
   font-size: 13px;

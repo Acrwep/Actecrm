@@ -116,6 +116,10 @@ const AddLead = forwardRef(
         id: 4,
         name: "Junk",
       },
+      {
+        id: 5,
+        name: "Not Interested",
+      },
     ];
     const [leadStatus, setLeadStatus] = useState(null);
     const [leadStatusError, setLeadStatusError] = useState("");
@@ -636,7 +640,7 @@ const AddLead = forwardRef(
 
       let nxtFollowupDateValidate;
 
-      if (leadStatus == 4) {
+      if (leadStatus == 4 || leadStatus == 5) {
         nxtFollowupDateValidate = "";
       } else {
         nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
@@ -1252,7 +1256,7 @@ const AddLead = forwardRef(
             />
           </Col>
 
-          {leadStatus == 4 ? (
+          {leadStatus == 4 || leadStatus == 5 ? (
             ""
           ) : (
             <>

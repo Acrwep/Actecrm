@@ -305,8 +305,13 @@ export const DashboardDownloadColumns = (type) => {
         dataIndex: "pending",
       },
     ];
-  } else if (type == "HR Dashboard") {
+  } else if (type == "Post Sale Performance") {
     columns = [
+      {
+        title: "Awaiting Student Verify",
+        key: "awaiting_verify",
+        dataIndex: "awaiting_verify",
+      },
       {
         title: "Awaiting Trainer",
         key: "awaiting_trainer",
@@ -327,18 +332,10 @@ export const DashboardDownloadColumns = (type) => {
         key: "rejected_trainer",
         dataIndex: "rejected_trainer",
       },
-    ];
-  } else if (type == "RA Dashboard") {
-    columns = [
       {
         title: "Awaiting Class",
         key: "awaiting_class",
         dataIndex: "awaiting_class",
-      },
-      {
-        title: "Awaiting Student Verify",
-        key: "awaiting_verify",
-        dataIndex: "awaiting_verify",
       },
       {
         title: "Class Scheduled",
@@ -365,53 +362,15 @@ export const DashboardDownloadColumns = (type) => {
         key: "class_completed",
         dataIndex: "class_completed",
       },
-    ];
-  } else if (type == "Quality") {
-    columns = [
       {
-        title: "User Id",
-        key: "user_id",
-        dataIndex: "user_id",
+        title: "Escalated",
+        key: "escalated",
+        dataIndex: "escalated",
       },
       {
-        title: "User Name",
-        key: "user_name",
-        dataIndex: "user_name",
-      },
-      {
-        title: "Total Reached",
-        key: "productivity_count",
-        dataIndex: "productivity_count",
-      },
-      {
-        title: "CNA Reached",
-        key: "cna_reached",
-        dataIndex: "cna_reached",
-      },
-      {
-        title: "Direct Reached",
-        key: "direct_reached",
-        dataIndex: "direct_reached",
-      },
-      {
-        title: "Moved to CNA",
-        key: "cna_moved",
-        dataIndex: "cna_moved",
-      },
-      {
-        title: "Total Followup",
-        key: "total_followups",
-        dataIndex: "total_followups",
-      },
-      {
-        title: "Followup Handled",
-        key: "follow_up_handled",
-        dataIndex: "follow_up_handled",
-      },
-      {
-        title: "Followup Un-Handled",
-        key: "follow_up_unhandled",
-        dataIndex: "follow_up_unhandled",
+        title: "Videos Given",
+        key: "videos_given",
+        dataIndex: "videos_given",
       },
     ];
   } else {

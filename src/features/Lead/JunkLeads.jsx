@@ -235,11 +235,11 @@ export default function JunkLeads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 220,
+      width: 200,
       render: (text) => {
         return (
           <>
-            {text.length > 26 ? (
+            {text.length > 24 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -254,13 +254,52 @@ export default function JunkLeads({
                   },
                 }}
               >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
             )}
           </>
         );
+      },
+    },
+    {
+      title: "Junk Reason",
+      key: "junk_reason",
+      dataIndex: "junk_reason",
+      fixed: "right",
+      width: 160,
+      render: (text) => {
+        if (text) {
+          return (
+            <>
+              {text.length > 20 ? (
+                <Tooltip
+                  color="#fff"
+                  placement="bottom"
+                  title={text}
+                  className="leadtable_comments_tooltip"
+                  styles={{
+                    body: {
+                      backgroundColor: "#fff", // Tooltip background
+                      color: "#333", // Tooltip text color
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    },
+                  }}
+                >
+                  <p style={{ cursor: "pointer" }}>
+                    {text.slice(0, 19) + "..."}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p>{text}</p>
+              )}
+            </>
+          );
+        } else {
+          <p>-</p>;
+        }
       },
     },
     {

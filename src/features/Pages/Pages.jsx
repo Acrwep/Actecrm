@@ -62,17 +62,33 @@ export default function Pages() {
   useEffect(() => {
     const AccessToken = localStorage.getItem("AccessToken");
     const pathName = location.pathname.split("/")[1];
+    const fullPath = location.pathname;
 
     console.log("pathNameee", pathName);
 
-    // ✅ Skip navigation if on trainer-registration page
-    if (pathName.includes("trainer-registration")) {
-      console.log("Trainer Registration page detected — no redirect");
+    if (fullPath.startsWith("/trainer-registration")) {
+      console.log("Trainer Registration page detected");
+      // Extract ID (if exists)
+      const parts = fullPath.split("/");
+      const id = parts[2]; // /trainer-registration/:id
+      console.log("url iddd", id);
+      if (id) {
+        navigate(`/trainer-registration/${id}`, { replace: true });
+      }
       return;
     }
 
-    if (pathName.includes("customer-registration")) {
-      console.log("Customer Registration page detected — no redirect");
+    if (fullPath.startsWith("/customer-registration")) {
+      console.log("Customer Registration page detected");
+      // Extract ID (if exists)
+      const parts = fullPath.split("/");
+      const id = parts[2]; // /customer-registration/:id
+      console.log("url iddd", id);
+
+      if (id) {
+        navigate(`/customer-registration/${id}`, { replace: true });
+      }
+
       return;
     }
 

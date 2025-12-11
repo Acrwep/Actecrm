@@ -508,6 +508,11 @@ export default function LeadFollowUp({
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
           switch (col.key) {
+            case "row_num":
+              return {
+                ...col,
+                width: 60,
+              };
             case "lead_assigned_to_name":
               return {
                 ...col,

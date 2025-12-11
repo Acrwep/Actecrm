@@ -11,6 +11,7 @@ import RaPerformanceReport from "./RaPerformanceReport";
 import { useSelector } from "react-redux";
 import "./styles.css";
 import QualityReport from "./QualityReport";
+import PostSalePerformanceReport from "./PostSalePerformanceReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -58,15 +59,15 @@ export default function Reports() {
             children: <BranchwiseSalesReport />,
           },
           {
-            label: "HR Performance",
+            label: "Post Sale Performance",
             key: "6",
-            children: <HrPerformanceReport />,
+            children: <PostSalePerformanceReport />,
           },
-          {
-            label: "RA Performance",
-            key: "7",
-            children: <RaPerformanceReport />,
-          },
+          // {
+          //   label: "RA Performance",
+          //   key: "7",
+          //   children: <RaPerformanceReport />,
+          // },
           // {
           //   label: "Quality Performance",
           //   key: "8",

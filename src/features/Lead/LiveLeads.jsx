@@ -70,6 +70,7 @@ export default function LiveLead({
   const [buttonLoading, setButtonLoading] = useState(false);
   const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
+  const [pickLoadingRow, setPickLoadingRow] = useState(null);
   //junk usestates
   const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
   const [junkComments, setJunkComments] = useState("");
@@ -251,39 +252,6 @@ export default function LiveLead({
       },
     },
     {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 240,
-      render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
-      },
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
-    {
       title: "Course",
       key: "course",
       dataIndex: "course",
@@ -307,6 +275,39 @@ export default function LiveLead({
                 }}
               >
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 240,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 26 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
@@ -346,6 +347,12 @@ export default function LiveLead({
           </>
         );
       },
+    },
+    {
+      title: "Origin",
+      key: "domain_origin",
+      dataIndex: "domain_origin",
+      width: 90,
     },
     {
       title: "Training",
@@ -412,12 +419,24 @@ export default function LiveLead({
         return (
           <div className="trainers_actionbuttonContainer">
             <Tooltip placement="bottom" title="Pick">
-              <GiCardPickup
-                size={19}
-                color="#5b69ca"
-                className="trainers_action_icons"
-                onClick={() => handlePick(record)}
-              />
+              {pickLoadingRow == record.id ? (
+                <GiCardPickup
+                  size={19}
+                  color="#5b69ca"
+                  className="trainers_action_icons"
+                  style={{ opacity: "0.7" }}
+                />
+              ) : (
+                <GiCardPickup
+                  size={19}
+                  color="#5b69ca"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setPickLoadingRow(record.id);
+                    handlePick(record);
+                  }}
+                />
+              )}
             </Tooltip>
             <Tooltip placement="bottom" title="Move to Junk">
               <MdOutlinePlaylistRemove
@@ -448,45 +467,105 @@ export default function LiveLead({
 
   useEffect(() => {
     console.log("acccccc", tabName);
+
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+
+    // Store values in refs to avoid re-render
     searchRef.current = null;
     filterTypeRef.current = 1;
     datesRef.current = PreviousAndCurrentDate;
-    const initialPagination = { page: 1, limit: 10, total: 0, totalPages: 0 };
-    paginationRef.current = initialPagination;
+    paginationRef.current = { page: 1, limit: 10, total: 0, totalPages: 0 };
 
-    if (tabName !== "live_leads") return; // Stop polling
+    // STOP polling if tab not equal
+    if (tabName !== "live_leads") return;
 
-    // Initial Call
-    getLiveLeadsData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      1,
-      10
-    );
+    // Store previous response to prevent unnecessary re-render
+    const prevDataRef = { current: null };
 
-    setTimeout(() => {
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      getAllDownlineUsersData(convertAsJson?.user_id);
-      setLoginUserId(convertAsJson?.user_id);
-    }, 300);
-    // Call every 5 seconds
-    const interval = setInterval(() => {
-      getLiveLeadsData(
+    // Initial API call
+    const fetchAndUpdate = async () => {
+      const res = await getLiveLeadsData(
         searchRef.current,
         datesRef.current[0],
         datesRef.current[1],
         paginationRef.current.page,
         paginationRef.current.limit
       );
-    }, 5000);
 
-    // Cleanup interval when component unmounts
+      if (!res) return;
+
+      // Only update UI when data actually changes
+      if (JSON.stringify(prevDataRef.current) !== JSON.stringify(res)) {
+        setLeadData(res);
+        prevDataRef.current = res;
+      }
+    };
+
+    // Initial call
+    fetchAndUpdate();
+
+    // Delay for login data
+    setTimeout(() => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      getAllDownlineUsersData(convertAsJson?.user_id);
+      setLoginUserId(convertAsJson?.user_id);
+    }, 300);
+
+    // Poll only when tab is visible
+    const isTabActive = () => document.visibilityState === "visible";
+
+    // Polling Interval (optimized)
+    const interval = setInterval(() => {
+      if (isTabActive()) {
+        fetchAndUpdate();
+      }
+    }, 600); // your interval
+
+    // Cleanup
     return () => clearInterval(interval);
   }, [tabName]);
+
+  // useEffect(() => {
+  //   console.log("acccccc", tabName);
+  //   const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+  //   setSelectedDates(PreviousAndCurrentDate);
+  //   searchRef.current = null;
+  //   filterTypeRef.current = 1;
+  //   datesRef.current = PreviousAndCurrentDate;
+  //   const initialPagination = { page: 1, limit: 10, total: 0, totalPages: 0 };
+  //   paginationRef.current = initialPagination;
+  //   if (tabName !== "live_leads") return; // Stop polling
+
+  //   // Initial Call
+  //   getLiveLeadsData(
+  //     null,
+  //     PreviousAndCurrentDate[0],
+  //     PreviousAndCurrentDate[1],
+  //     1,
+  //     10
+  //   );
+  //   setTimeout(() => {
+  //     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+  //     const convertAsJson = JSON.parse(getLoginUserDetails);
+  //     getAllDownlineUsersData(convertAsJson?.user_id);
+  //     setLoginUserId(convertAsJson?.user_id);
+  //   }, 300);
+  //   // Call every 5 seconds
+  //   const interval = setInterval(() => {
+  //     getLiveLeadsData(
+  //       searchRef.current,
+  //       datesRef.current[0],
+  //       datesRef.current[1],
+  //       paginationRef.current.page,
+  //       paginationRef.current.limit
+  //     );
+  //   }, 1000);
+
+  //   // Cleanup interval when component unmounts
+  //   return () => clearInterval(interval);
+  // }, [tabName]);
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -509,7 +588,10 @@ export default function LiveLead({
     pageNumber,
     limit
   ) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     const payload = {
+      region_type: convertAsJson?.user_id,
       ...(searchvalue && filterTypeRef.current == 1
         ? { phone: searchvalue }
         : searchvalue && filterTypeRef.current == 2
@@ -568,6 +650,7 @@ export default function LiveLead({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    paginationRef.current = { page: page, limit: limit };
     getLiveLeadsData(
       searchValue,
       selectedDates[0],
@@ -579,6 +662,7 @@ export default function LiveLead({
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);
+    setPickLoadingRow(item.id); // show loading only for this row
     const payload = {
       user_id: loginUserId,
       lead_id: item.id,
@@ -587,16 +671,23 @@ export default function LiveLead({
 
     try {
       await assignLiveLead(payload);
+      setPickLeadItem({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        phone: item.phone,
+      });
+      setIsOpenAddDrawer(true);
     } catch (error) {
       console.log("assign live lead error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    } finally {
+      setPickLoadingRow(null); // remove loading
     }
-    setPickLeadItem({
-      id: item.id,
-      name: item.name,
-      email: item.email,
-      phone: item.phone,
-    });
-    setIsOpenAddDrawer(true);
   };
 
   const getLeadAndFollowupCountData = async () => {
@@ -638,6 +729,7 @@ export default function LiveLead({
     const payload = {
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
       is_junk: true,
+      reason: junkComments,
     };
     try {
       await moveLiveLeadToJunk(payload);
@@ -648,6 +740,7 @@ export default function LiveLead({
         setLiveLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
+        setJunkComments("");
         setPagination({
           page: 1,
         });
@@ -830,7 +923,7 @@ export default function LiveLead({
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1300 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}

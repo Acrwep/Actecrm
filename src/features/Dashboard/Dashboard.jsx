@@ -1061,7 +1061,8 @@ export default function Dashboard() {
       setPostSaleDataSeries(postsale_series);
     } catch (error) {
       setPostSaleDataSeries([]);
-      console.log("ra error", error);
+      setPostSaleDownloadData([]);
+      console.log("post sale error", error);
     } finally {
       setTimeout(() => {
         setPostSaleLoader(false);

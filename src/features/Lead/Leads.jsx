@@ -369,7 +369,9 @@ export default function Leads({
                 ? "leadmanager_leadstatus_high_container"
                 : text == "Medium"
                 ? "leadmanager_leadstatus_medium_container"
-                : "leadmanager_leadstatus_low_container"
+                : text == "Low"
+                ? "leadmanager_leadstatus_low_container"
+                : "leadmanager_leadstatus_junk_container"
             }
           >
             <p>{text}</p>
@@ -582,6 +584,11 @@ export default function Leads({
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
           switch (col.key) {
+            case "row_num":
+              return {
+                ...col,
+                width: 60,
+              };
             case "lead_assigned_to_name":
               return {
                 ...col,
@@ -681,7 +688,9 @@ export default function Leads({
                           ? "leadmanager_leadstatus_high_container"
                           : text == "Medium"
                           ? "leadmanager_leadstatus_medium_container"
-                          : "leadmanager_leadstatus_low_container"
+                          : text == "Low"
+                          ? "leadmanager_leadstatus_low_container"
+                          : "leadmanager_leadstatus_junk_container"
                       }
                     >
                       <p>{text}</p>
