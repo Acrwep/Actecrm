@@ -31,6 +31,7 @@ import {
   getBranches,
   getTechnologies,
   leadEmailAndMobileValidator,
+  moveLiveLeadToJunk,
   updateLead,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
@@ -788,6 +789,10 @@ const AddLead = forwardRef(
           );
         }
       } else {
+        if (leadStatus == 4 || leadStatus == 5) {
+          handleMoveLiveLeadToJunk(saveType);
+          return;
+        }
         try {
           await createLead(payload);
           CommonMessage("success", "Lead created");
@@ -834,6 +839,39 @@ const AddLead = forwardRef(
         await assignLiveLead(payload);
       } catch (error) {
         console.log("assign live lead error", error);
+      }
+    };
+
+    const handleMoveLiveLeadToJunk = async (saveType) => {
+      const payload = {
+        lead_ids: [liveLeadItem && liveLeadItem.id ? liveLeadItem.id : ""],
+        is_junk: true,
+        reason: comments,
+      };
+
+      try {
+        await moveLiveLeadToJunk(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          if (saveType === "Save Only") {
+            formReset();
+          } else {
+            formReset(true);
+          }
+          const container = document.getElementById(
+            "leadform_basicinfo_heading"
+          );
+          container.scrollIntoView({
+            behavior: "smooth",
+          });
+          callgetLeadsApi(true);
+        }, 300);
+      } catch (error) {
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later"
+        );
       }
     };
 

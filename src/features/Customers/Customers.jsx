@@ -806,18 +806,18 @@ export default function Customers() {
                           )}
                         </Col>
 
-                        <Col span={12}>
-                          {record.status === "Completed" ? (
+                        {record.status === "Completed" ? (
+                          <Col span={12}>
                             <div className="customers_classcompleted_container">
                               <BsPatchCheckFill color="#3c9111" />
                               <p className="customers_classgoing_completedtext">
                                 Certificate Issued
                               </p>
                             </div>
-                          ) : (
-                            ""
-                          )}
-                        </Col>
+                          </Col>
+                        ) : (
+                          ""
+                        )}
                       </>
                     ) : (
                       ""
@@ -2079,18 +2079,18 @@ export default function Customers() {
                                     )}
                                   </Col>
 
-                                  <Col span={12}>
-                                    {record.status === "Completed" ? (
+                                  {record.status === "Completed" ? (
+                                    <Col span={12}>
                                       <div className="customers_classcompleted_container">
                                         <BsPatchCheckFill color="#3c9111" />
                                         <p className="customers_classgoing_completedtext">
                                           Certificate Issued
                                         </p>
                                       </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </Col>
+                                    </Col>
+                                  ) : (
+                                    ""
+                                  )}
                                 </>
                               ) : (
                                 ""
@@ -4040,7 +4040,7 @@ export default function Customers() {
                       {updateButtonLoading ? (
                         <Button
                           className={
-                            stepIndex === 2
+                            stepIndex == 2
                               ? "customer_complete_loadingpassedoutbutton"
                               : "customer_stepperbuttons"
                           }
@@ -4050,24 +4050,24 @@ export default function Customers() {
                       ) : (
                         <Button
                           onClick={
-                            stepIndex === 0
+                            stepIndex == 0
                               ? () =>
                                   passedOutProcessRef.current?.handleGoogleReview()
-                              : stepIndex === 1
+                              : stepIndex == 1
                               ? () =>
                                   passedOutProcessRef.current?.handleCertificateDetails()
-                              : stepIndex === 2
+                              : stepIndex == 2
                               ? () =>
                                   passedOutProcessRef.current?.handleCompleteProcess()
                               : ""
                           }
                           className={
-                            stepIndex === 2
+                            stepIndex == 2
                               ? "customer_complete_passedoutbutton"
                               : "customer_stepperbuttons"
                           }
                         >
-                          {stepIndex === 2 ? "Submit" : "Next"}
+                          {stepIndex == 2 ? "Submit" : "Next"}
                         </Button>
                       )}
                     </>

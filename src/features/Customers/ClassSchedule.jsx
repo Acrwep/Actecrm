@@ -97,13 +97,13 @@ const ClassSchedule = forwardRef(
       let classStartDateValidate;
       let classHoldCommentValidate;
 
-      if (scheduleId === 6) {
+      if (scheduleId == 6) {
         classStartDateValidate = selectValidator(classStartDate);
       } else {
         classStartDateValidate = "";
       }
 
-      if (scheduleId === 3 || scheduleId === 10) {
+      if (scheduleId == 3 || scheduleId == 10) {
         classHoldCommentValidate = addressValidator(classHoldComments);
       } else {
         classStartDateValidate = "";
@@ -537,7 +537,9 @@ const ClassSchedule = forwardRef(
               </Col>
             </Row>
 
-            {scheduleId != 1 ? (
+            {scheduleId == 1 || scheduleId == "" || scheduleId == null ? (
+              ""
+            ) : (
               <Row
                 id="customer_scheduledatefield_container"
                 gutter={16}
@@ -585,8 +587,6 @@ const ClassSchedule = forwardRef(
                   </div>
                 </Col>
               </Row>
-            ) : (
-              ""
             )}
           </div>
         )}

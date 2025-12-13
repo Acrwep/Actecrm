@@ -382,7 +382,7 @@ const PassesOutProcess = forwardRef(
           ""
         )}
 
-        {stepIndex === 1 ? (
+        {stepIndex == 1 ? (
           <>
             <Row gutter={16} style={{ marginTop: "16px" }}>
               <Col span={12}>
@@ -514,7 +514,7 @@ const PassesOutProcess = forwardRef(
           ""
         )}
 
-        {stepIndex === 2 ? (
+        {stepIndex == 2 ? (
           <div style={{ marginTop: "30px", marginBottom: "20px" }}>
             <ImageUploadCrop
               label="Linkedin Review Screenshot"

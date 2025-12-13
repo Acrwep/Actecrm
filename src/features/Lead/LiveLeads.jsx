@@ -88,36 +88,6 @@ export default function LiveLead({
 
   const formatDuration = (dateString) => {
     if (import.meta.env.PROD) {
-      // Convert incoming UTC time to IST
-      const createdUTC = new Date(dateString);
-      const createdIST = new Date(createdUTC.getTime() + 5.5 * 60 * 60 * 1000);
-
-      const now = new Date();
-      const diffMs = now - createdIST;
-
-      if (diffMs < 0) return { text: "00:00", hours: 0 };
-
-      const totalSeconds = Math.floor(diffMs / 1000);
-      const totalHours = totalSeconds / 3600;
-
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-      const pad = (n) => String(n).padStart(2, "0");
-
-      let text = "";
-
-      if (days === 0) {
-        const hh = pad(Math.floor(totalSeconds / 3600));
-        text = `${hh}h:${pad(minutes)}m`;
-      } else {
-        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
-      }
-
-      return { text, hours: totalHours };
-    } else {
-      //dev
       const created = new Date(dateString);
       const now = new Date();
       const diffMs = now - created;
@@ -141,6 +111,36 @@ export default function LiveLead({
         text = `${hh}h:${pad(minutes)}m`;
       } else {
         // DDd:HHh:MMm
+        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+      }
+
+      return { text, hours: totalHours };
+    } else {
+      //dev
+      // Time is coming with a +5h 30m IST offset, so subtract 5h 30m
+      const createdUTC = new Date(dateString);
+      const createdIST = new Date(createdUTC.getTime() - 5.5 * 60 * 60 * 1000);
+
+      const now = new Date();
+      const diffMs = now - createdIST;
+
+      if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalHours = totalSeconds / 3600;
+
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+      const pad = (n) => String(n).padStart(2, "0");
+
+      let text = "";
+
+      if (days === 0) {
+        const hh = pad(Math.floor(totalSeconds / 3600));
+        text = `${hh}h:${pad(minutes)}m`;
+      } else {
         text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
       }
 
@@ -421,14 +421,14 @@ export default function LiveLead({
             <Tooltip placement="bottom" title="Pick">
               {pickLoadingRow == record.id ? (
                 <GiCardPickup
-                  size={19}
+                  size={22}
                   color="#5b69ca"
                   className="trainers_action_icons"
                   style={{ opacity: "0.7" }}
                 />
               ) : (
                 <GiCardPickup
-                  size={19}
+                  size={22}
                   color="#5b69ca"
                   className="trainers_action_icons"
                   onClick={() => {
@@ -971,7 +971,14 @@ export default function LiveLead({
           setButtonLoading={setButtonLoading}
           setIsOpenAddDrawer={setIsOpenAddDrawer}
           liveLeadItem={pickLeadItem}
-          callgetLeadsApi={() => {
+          callgetLeadsApi={(is_refreshjunk) => {
+            console.log("is_refreshjunk", is_refreshjunk);
+            if (is_refreshjunk == true) {
+              setPickLeadItem(null);
+              getLeadAndFollowupCountData();
+              refreshJunkLeads();
+              return;
+            }
             setPickLeadItem(null);
             setPagination({
               page: 1,
