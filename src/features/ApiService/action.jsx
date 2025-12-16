@@ -1105,6 +1105,24 @@ export const getBranchWiseScoreBoard = async (payload) => {
   }
 };
 
+export const getRegionWiseLeadCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getRegionWiseLeadCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRegionWiseScoreBoard = async (payload) => {
+  try {
+    const response = await api.post(`/api/getRegionWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTopPerformance = async (payload) => {
   try {
     const response = await api.post(`/api/getTopPerformance`, payload);

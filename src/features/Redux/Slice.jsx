@@ -300,6 +300,42 @@ const tableColumnsSlice = createSlice({
   },
 });
 
+//live leads
+let liveLeadSearchValue = "";
+const liveLeadSearchValueSlice = createSlice({
+  name: "liveleadsearchvalue",
+  initialState: liveLeadSearchValue,
+  reducers: {
+    storeLiveLeadSearchValue(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
+let liveLeadFilterType = "";
+const liveLeadFilterTypeSlice = createSlice({
+  name: "liveleadfiltertype",
+  initialState: liveLeadFilterType,
+  reducers: {
+    storeLiveLeadFilterType(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
+const liveLeadSelectedDatesSlice = createSlice({
+  name: "liveleadselecteddates",
+  initialState,
+  reducers: {
+    storeLiveLeadSelectedDates(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 //define slice
 export const { storeLeadManagerActivePage } =
   leadManagerActivePageSlice.actions;
@@ -340,6 +376,10 @@ export const { storeChildUsers } = childUsersSlice.actions;
 export const { storeDownlineUsers } = downlineUsersSlice.actions;
 export const { storeUserPermissions } = userPermissionsSlice.actions;
 export const { storeTableColumns } = tableColumnsSlice.actions;
+export const { storeLiveLeadSearchValue } = liveLeadSearchValueSlice.actions;
+export const { storeLiveLeadFilterType } = liveLeadFilterTypeSlice.actions;
+export const { storeLiveLeadSelectedDates } =
+  liveLeadSelectedDatesSlice.actions;
 //create reducer
 export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
@@ -379,3 +419,6 @@ export const settingsModulePermissionListReducer =
 export const settingsCourseListReducer = settingsCourseListSlice.reducer;
 export const nxtFollowupActionIdReducer = nxtFollowupActionIdSlice.reducer;
 export const tableColumnsReducer = tableColumnsSlice.reducer;
+export const liveLeadSearchValueReducer = liveLeadSearchValueSlice.reducer;
+export const liveLeadFilterTypeReducer = liveLeadFilterTypeSlice.reducer;
+export const liveLeadSelectedDatesReducer = liveLeadSelectedDatesSlice.reducer;

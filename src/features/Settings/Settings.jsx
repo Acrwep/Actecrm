@@ -189,6 +189,8 @@ export default function Settings() {
         "User-Wise Sales Analysis",
         "Branch-Wise Lead Analysis",
         "Branch-Wise Sales Analysis",
+        "Region-Wise Lead Analysis",
+        "Region-Wise Sales Analysis",
         "Top Performing Channels",
         "Post Sale Performance",
       ];

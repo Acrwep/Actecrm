@@ -24,6 +24,8 @@ import {
   getPostSaleDashboard,
   getQualityDashboard,
   getRADashboard,
+  getRegionWiseLeadCounts,
+  getRegionWiseScoreBoard,
   getScoreBoard,
   getTopPerformance,
   getUserWiseLeadCounts,
@@ -48,6 +50,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import QualityChart from "./QualityChart";
 import PostSalePerformanceChart from "./PostSalePerformanceChart";
+import ReactApexChart from "react-apexcharts";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -128,6 +131,18 @@ export default function Dashboard() {
   const [branchWiseSalesXaxis, setBranchWiseSalesXaxis] = useState([]);
   const [branchWiseSalesSeries, setBranchWiseSalesSeries] = useState([]);
   const [branchWiseSalesLoader, setBranchWiseSalesLoader] = useState(true);
+  // region-wise lead analysis
+  const [regionWiseLeadsDates, setRegionWiseLeadsDates] = useState([]);
+  const [regionWiseLeadsType, setRegionWiseLeadsType] = useState(1);
+  const [regionWiseLeadsXaxis, setRegionWiseLeadsXaxis] = useState([]);
+  const [regionWiseLeadsSeries, setRegionWiseLeadsSeries] = useState([]);
+  const [regionWiseLeadsLoader, setRegionWiseLeadsLoader] = useState(true);
+  // region-wise lead analysis
+  const [regionWiseSalesDates, setRegionWiseSalesDates] = useState([]);
+  const [regionWiseSalesType, setRegionWiseSalesType] = useState(1);
+  const [regionWiseSalesXaxis, setRegionWiseSalesXaxis] = useState([]);
+  const [regionWiseSalesSeries, setRegionWiseSalesSeries] = useState([]);
+  const [regionWiseSalesLoader, setRegionWiseSalesLoader] = useState(true);
   //post sale performance
   const [postSaleDataSeries, setPostSaleDataSeries] = useState([]);
   const [postSaleSelectedDates, setPostSaleSelectedDates] = useState([]);
@@ -151,6 +166,8 @@ export default function Dashboard() {
       setUserWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseSaleDates(PreviousAndCurrentDate);
+      setRegionWiseLeadsDates(PreviousAndCurrentDate);
+      setRegionWiseSalesDates(PreviousAndCurrentDate);
       setSubUsers(downlineUsers);
       mounted.current = true;
       setLoginUserId(convertAsJson?.user_id);
@@ -782,12 +799,13 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("Branch-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getTopPerformanceData(
+      getRegionWiseLeadsData(
         dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
-        true
+        true,
+        1
       );
       return;
     }
@@ -863,6 +881,291 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setBranchWiseSalesLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api == true) {
+          getRegionWiseLeadsData(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            downliners,
+            true,
+            1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getRegionWiseLeadsData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    call_api,
+    type
+  ) => {
+    if (!permissions.includes("Region-Wise Lead Analysis")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getRegionWiseSalesData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners,
+        true,
+        1
+      );
+      return;
+    }
+    setRegionWiseLeadsLoader(true);
+
+    //date handling
+    let regionwiseleads_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      regionwiseleads_dates = dashboard_dates.find(
+        (f) => f.card_name == "Region-Wise Lead Analysis"
+      );
+      if (regionwiseleads_dates) {
+        if (
+          regionwiseleads_dates.card_settings == "Today" ||
+          regionwiseleads_dates.card_settings == "Yesterday" ||
+          regionwiseleads_dates.card_settings == "7 Days" ||
+          regionwiseleads_dates.card_settings == "15 Days" ||
+          regionwiseleads_dates.card_settings == "30 Days" ||
+          regionwiseleads_dates.card_settings == "60 Days" ||
+          regionwiseleads_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            regionwiseleads_dates.card_settings
+          );
+          regionwiseleads_dates = getdates_bylabel;
+          setRegionWiseLeadsDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setRegionWiseLeadsDates([
+            regionwiseleads_dates.card_settings.start_date,
+            regionwiseleads_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: regionwiseleads_dates
+        ? regionwiseleads_dates.card_settings.start_date
+        : startDate,
+      end_date: regionwiseleads_dates
+        ? regionwiseleads_dates.card_settings.end_date
+        : endDate,
+      user_ids: downliners,
+      type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
+    };
+    try {
+      const response = await getRegionWiseLeadCounts(payload);
+      console.log("regionwise leads response", response);
+      const regionwise_leads = response?.data?.data;
+      console.log("regionwise_leads", regionwise_leads);
+
+      const xaxis = regionwise_leads.map((item) => item.region_name);
+
+      setRegionWiseLeadsXaxis(xaxis);
+
+      if (type == 1) {
+        const region_wiseLeadsSeries = [
+          {
+            name: "Total Leads",
+            data: regionwise_leads.map((item) => {
+              return item.total_leads;
+            }),
+          },
+          {
+            name: "Total Joinings",
+            data: regionwise_leads.map((item) => {
+              return item.customer_count;
+            }),
+          },
+          {
+            name: "Conversion%",
+            data: regionwise_leads.map((item) => {
+              return item.percentage;
+            }),
+          },
+        ];
+        setRegionWiseLeadsSeries(region_wiseLeadsSeries);
+      } else if (type == 2) {
+        const region_wiseLeadsSeries = [
+          {
+            name: "Total Followup",
+            data: regionwise_leads.map((item) => {
+              return item.lead_followup_count;
+            }),
+          },
+          {
+            name: "Followup Handled",
+            data: regionwise_leads.map((item) => {
+              return item.followup_handled;
+            }),
+          },
+          {
+            name: "Followup Un-Handled",
+            data: regionwise_leads.map((item) => {
+              return item.followup_unhandled;
+            }),
+          },
+          {
+            name: "Efficiency%",
+            data: regionwise_leads.map((item) => {
+              return item.percentage;
+            }),
+          },
+        ];
+        setRegionWiseLeadsSeries(region_wiseLeadsSeries);
+      } else {
+        const region_wiseLeadsSeries = [
+          {
+            name: "Joinings",
+            data: regionwise_leads.map((item) => {
+              return item.customer_count;
+            }),
+          },
+        ];
+        setRegionWiseLeadsSeries(region_wiseLeadsSeries);
+      }
+    } catch (error) {
+      console.log("regionwise leadcounts error", error);
+      setRegionWiseLeadsXaxis([]);
+      setRegionWiseLeadsSeries([]);
+    } finally {
+      setTimeout(() => {
+        setRegionWiseLeadsLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api == true) {
+          getRegionWiseSalesData(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            downliners,
+            true,
+            1
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getRegionWiseSalesData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    call_api,
+    type
+  ) => {
+    if (!permissions.includes("Region-Wise Sales Analysis")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getTopPerformanceData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners,
+        true
+      );
+      return;
+    }
+    setRegionWiseSalesLoader(true);
+
+    //date handling
+    let branchwisesales_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      branchwisesales_dates = dashboard_dates.find(
+        (f) => f.card_name == "Region-Wise Sales Analysis"
+      );
+      if (branchwisesales_dates) {
+        if (
+          branchwisesales_dates.card_settings == "Today" ||
+          branchwisesales_dates.card_settings == "Yesterday" ||
+          branchwisesales_dates.card_settings == "7 Days" ||
+          branchwisesales_dates.card_settings == "15 Days" ||
+          branchwisesales_dates.card_settings == "30 Days" ||
+          branchwisesales_dates.card_settings == "60 Days" ||
+          branchwisesales_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            branchwisesales_dates.card_settings
+          );
+          branchwisesales_dates = getdates_bylabel;
+          setRegionWiseSalesDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setRegionWiseSalesDates([
+            branchwisesales_dates.card_settings.start_date,
+            branchwisesales_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: branchwisesales_dates
+        ? branchwisesales_dates.card_settings.start_date
+        : startDate,
+      end_date: branchwisesales_dates
+        ? branchwisesales_dates.card_settings.end_date
+        : endDate,
+      user_ids: downliners,
+      type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
+    };
+    try {
+      const response = await getRegionWiseScoreBoard(payload);
+      console.log("regionwise sales response", response);
+      const regionwise_sales = response?.data?.data;
+
+      const xaxis = regionwise_sales.map((item) => item.region_name);
+
+      setRegionWiseSalesXaxis(xaxis);
+
+      if (type == 1) {
+        const region_wiseSalesSeries = [
+          {
+            name: "Sale Volume",
+            data: regionwise_sales.map((item) => {
+              return item.sale_volume;
+            }),
+          },
+        ];
+        setRegionWiseSalesSeries(region_wiseSalesSeries);
+      } else if (type == 2) {
+        const region_wiseSalesSeries = [
+          {
+            name: "Collection",
+            data: regionwise_sales.map((item) => {
+              return item.total_collection;
+            }),
+          },
+        ];
+        setRegionWiseSalesSeries(region_wiseSalesSeries);
+      } else {
+        const region_wiseSalesSeries = [
+          {
+            name: "Pending",
+            data: regionwise_sales.map((item) => {
+              return item.pending;
+            }),
+          },
+        ];
+        setRegionWiseSalesSeries(region_wiseSalesSeries);
+      }
+    } catch (error) {
+      setRegionWiseSalesLoader(false);
+      setRegionWiseSalesXaxis([]);
+      setRegionWiseSalesSeries([]);
+      console.log("regionwise sales error", error);
+    } finally {
+      setTimeout(() => {
+        setRegionWiseSalesLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
           getTopPerformanceData(
@@ -1240,6 +1543,10 @@ export default function Dashboard() {
     setBranchWiseSaleDates(PreviousAndCurrentDate);
     setBranchWiseSaleRegion(1);
     setBranchWiseSaleType(1);
+    setRegionWiseLeadsDates(PreviousAndCurrentDate);
+    setRegionWiseLeadsType(1);
+    setRegionWiseSalesDates(PreviousAndCurrentDate);
+    setRegionWiseSalesType(1);
 
     setSelectedUserId(null);
     setScoreBoardLoader(true);
@@ -1285,6 +1592,122 @@ export default function Dashboard() {
         console.log("dashboard dates", error);
       }
     }
+  };
+
+  const regionWiseLeadsLineChartOptions = {
+    chart: {
+      type: "line",
+      height: 350,
+      toolbar: {
+        show: false, // Show toolbar (can be set to false to hide all)
+      },
+    },
+    stroke: {
+      curve: "smooth", // Keeps the line straight for the line chart
+    },
+    xaxis: {
+      categories: regionWiseLeadsXaxis,
+      labels: {
+        show: true,
+        rotateAlways: regionWiseLeadsSeries.length >= 6 ? true : false, // Ensure rotation is applied
+        rotate: -45, // Rotate labels by -40 degrees
+        color: ["#ffffff"],
+        style: {
+          fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+        },
+      },
+      trim: true,
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return value.toLocaleString("en-IN");
+        },
+        style: {
+          fontFamily: "Poppins, sans-serif",
+        },
+      },
+      title: {
+        text: "Value",
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: function (val, { seriesIndex, dataPointIndex }) {
+          // Show corresponding x-axis name and y value
+          return `<span style="margin-left: -6px; font-family:Poppins, sans-serif;">${val.toLocaleString(
+            "en-IN"
+          )}</span>`;
+        },
+      },
+      style: {
+        fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+      },
+    },
+    colors:
+      regionWiseLeadsType == 1
+        ? ["#5b69ca", "#258a25", "#607d8b"]
+        : regionWiseLeadsType == 2
+        ? ["#5b69ca", "#258a25", "#d32f2fcc", "#607d8b"]
+        : ["#258a25"], // Different colors for the three series
+  };
+
+  const regionWiseSalesLineChartOptions = {
+    chart: {
+      type: "line",
+      height: 350,
+      toolbar: {
+        show: false, // Show toolbar (can be set to false to hide all)
+      },
+    },
+    stroke: {
+      curve: "smooth", // Keeps the line straight for the line chart
+    },
+    xaxis: {
+      categories: regionWiseSalesXaxis,
+      labels: {
+        show: true,
+        rotateAlways: regionWiseSalesSeries.length >= 6 ? true : false, // Ensure rotation is applied
+        rotate: -45, // Rotate labels by -40 degrees
+        color: ["#ffffff"],
+        style: {
+          fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+        },
+      },
+      trim: true,
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return value.toLocaleString("en-IN");
+        },
+        style: {
+          fontFamily: "Poppins, sans-serif",
+        },
+      },
+      title: {
+        text: "Value",
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: function (val, { seriesIndex, dataPointIndex }) {
+          // Show corresponding x-axis name and y value
+          return `<span style="margin-left: -6px; font-family:Poppins, sans-serif;">${val.toLocaleString(
+            "en-IN"
+          )}</span>`;
+        },
+      },
+      style: {
+        fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
+      },
+    },
+    colors:
+      regionWiseSalesType == 1
+        ? ["#5b69ca"]
+        : regionWiseSalesType == 2
+        ? ["#258a25"]
+        : ["#d32f2fcc"], // Different colors for the three series
   };
 
   return (
@@ -2363,6 +2786,282 @@ export default function Dashboard() {
                     )}
                   </>
                 )}
+              </div>
+            </div>
+          </Col>
+        )}
+
+        {permissions.includes("Region-Wise Lead Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Region-Wise Lead Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(regionWiseLeadsDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(regionWiseLeadsDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={regionWiseLeadsDates}
+                      onDateChange={(dates) => {
+                        setRegionWiseLeadsDates(dates);
+                        updateDashboardCardDate(
+                          "Region-Wise Lead Analysis",
+                          dates[0],
+                          dates[1]
+                        );
+                        getRegionWiseLeadsData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          allDownliners,
+                          false,
+                          regionWiseLeadsType
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col span={15}></Col>
+                <Col
+                  span={9}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Leads",
+                      },
+                      {
+                        id: 2,
+                        name: "Followup Un-Handled",
+                      },
+                      {
+                        id: 3,
+                        name: "Joinings",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setRegionWiseLeadsType(value);
+                      getRegionWiseLeadsData(
+                        null,
+                        regionWiseLeadsDates[0],
+                        regionWiseLeadsDates[1],
+                        allDownliners,
+                        false,
+                        value
+                      );
+                    }}
+                    value={regionWiseLeadsType}
+                  />
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {regionWiseLeadsLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {regionWiseLeadsSeries.length >= 1 ? (
+                        <ReactApexChart
+                          options={regionWiseLeadsLineChartOptions}
+                          series={regionWiseLeadsSeries}
+                          type="line"
+                          height={350}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Col>
+        )}
+
+        {permissions.includes("Region-Wise Sales Analysis") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Region-Wise Sales Analysis
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(regionWiseSalesDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(regionWiseSalesDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={regionWiseSalesDates}
+                      onDateChange={(dates) => {
+                        setRegionWiseSalesDates(dates);
+                        updateDashboardCardDate(
+                          "Region-Wise Sales Analysis",
+                          dates[0],
+                          dates[1]
+                        );
+                        getRegionWiseSalesData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          allDownliners,
+                          false,
+                          regionWiseSalesType
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col span={15}></Col>
+                <Col
+                  span={9}
+                  className="dashboard_userwise_typefield_container"
+                >
+                  <CommonSelectField
+                    label="Type"
+                    height="35px"
+                    labelMarginTop="-1px"
+                    labelFontSize="12px"
+                    width="100%"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Sale Volume",
+                      },
+                      {
+                        id: 2,
+                        name: "Collection",
+                      },
+                      {
+                        id: 3,
+                        name: "Pending",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setRegionWiseSalesType(value);
+                      getRegionWiseSalesData(
+                        null,
+                        regionWiseSalesDates[0],
+                        regionWiseSalesDates[1],
+                        allDownliners,
+                        false,
+                        value
+                      );
+                    }}
+                    value={regionWiseSalesType}
+                  />
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {regionWiseSalesLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {regionWiseSalesSeries.length >= 1 ? (
+                        <ReactApexChart
+                          options={regionWiseSalesLineChartOptions}
+                          series={regionWiseSalesSeries}
+                          type="line"
+                          height={350}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Col>

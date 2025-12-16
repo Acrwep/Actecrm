@@ -27,6 +27,9 @@ import {
   downlineUsersReducer,
   userPermissionsReducer,
   tableColumnsReducer,
+  liveLeadSearchValueReducer,
+  liveLeadFilterTypeReducer,
+  liveLeadSelectedDatesReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -59,5 +62,8 @@ export const reduxStore = configureStore({
     settingsmodulepermissionlist: settingsModulePermissionListReducer,
     settingscourselist: settingsCourseListReducer,
     tablecolumns: tableColumnsReducer,
+    liveleadsearchvalue: liveLeadSearchValueReducer,
+    liveleadfiltertype: liveLeadFilterTypeReducer,
+    liveleadselecteddates: liveLeadSelectedDatesReducer,
   },
 });

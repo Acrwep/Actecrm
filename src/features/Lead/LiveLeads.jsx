@@ -32,10 +32,15 @@ import { RiDeleteBinLine } from "react-icons/ri";
 import { MdOutlinePlaylistRemove } from "react-icons/md";
 import CommonSpinner from "../Common/CommonSpinner";
 import AddLead from "./AddLead";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonTextArea from "../Common/CommonTextArea";
+import {
+  storeLiveLeadFilterType,
+  storeLiveLeadSearchValue,
+  storeLiveLeadSelectedDates,
+} from "../Redux/Slice";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -55,7 +60,13 @@ export default function LiveLead({
   const datesRef = useRef([]);
   const paginationRef = useRef({ page: 1, limit: 10 });
   const addLeaduseRef = useRef();
+  const dispatch = useDispatch();
   //useselector
+  const liveLeadSearchValue = useSelector((state) => state.liveleadsearchvalue);
+  const liveLeadFilterType = useSelector((state) => state.liveleadfiltertype);
+  const liveLeadSelecteDates = useSelector(
+    (state) => state.liveleadselecteddates
+  );
   const tabName = useSelector((state) => state.leadmanageractivepage);
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
@@ -421,14 +432,14 @@ export default function LiveLead({
             <Tooltip placement="bottom" title="Pick">
               {pickLoadingRow == record.id ? (
                 <GiCardPickup
-                  size={22}
+                  size={26}
                   color="#5b69ca"
                   className="trainers_action_icons"
                   style={{ opacity: "0.7" }}
                 />
               ) : (
                 <GiCardPickup
-                  size={22}
+                  size={26}
                   color="#5b69ca"
                   className="trainers_action_icons"
                   onClick={() => {
@@ -466,15 +477,32 @@ export default function LiveLead({
   }, [pagination]);
 
   useEffect(() => {
-    console.log("acccccc", tabName);
+    console.log("acccccc", tabName, liveLeadSelecteDates);
 
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    //redux values handling
+    if (liveLeadSelecteDates.length >= 1) {
+      setSelectedDates(liveLeadSelecteDates);
+      datesRef.current = liveLeadSelecteDates;
+    } else {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
+      dispatch(storeLiveLeadSelectedDates(PreviousAndCurrentDate));
+      datesRef.current = PreviousAndCurrentDate;
+    }
+
+    if (liveLeadFilterType) {
+      filterTypeRef.current = liveLeadFilterType;
+    } else {
+      filterTypeRef.current = 1;
+    }
+
+    if (liveLeadSearchValue) {
+      searchRef.current = liveLeadSearchValue;
+    } else {
+      searchRef.current = null;
+    }
 
     // Store values in refs to avoid re-render
-    searchRef.current = null;
-    filterTypeRef.current = 1;
-    datesRef.current = PreviousAndCurrentDate;
     paginationRef.current = { page: 1, limit: 10, total: 0, totalPages: 0 };
 
     // STOP polling if tab not equal
@@ -521,7 +549,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 600); // your interval
+    }, 800); // your interval
 
     // Cleanup
     return () => clearInterval(interval);
@@ -634,6 +662,7 @@ export default function LiveLead({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    dispatch(storeLiveLeadSearchValue(e.target.value));
     searchRef.current = e.target.value;
     setTimeout(() => {
       setPagination({
@@ -792,6 +821,7 @@ export default function LiveLead({
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
+                          dispatch(storeLiveLeadSearchValue(null));
                           setLoading(true);
                           searchRef.current = null;
                           setPagination({
@@ -838,11 +868,13 @@ export default function LiveLead({
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
+                            dispatch(storeLiveLeadFilterType(e.target.value));
                             filterTypeRef.current = e.target.value;
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              dispatch(storeLiveLeadSearchValue(null));
                               searchRef.current = null;
                               setPagination({
                                 page: 1,
@@ -889,6 +921,7 @@ export default function LiveLead({
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
                   datesRef.current = dates;
+                  dispatch(storeLiveLeadSelectedDates(dates));
                   setLoading(true);
                   setPagination({
                     page: 1,

@@ -19,6 +19,9 @@ import {
   storeAreaList,
   storeCourseList,
   storeLeadManagerActivePage,
+  storeLiveLeadFilterType,
+  storeLiveLeadSearchValue,
+  storeLiveLeadSelectedDates,
 } from "../Redux/Slice";
 import LiveLead from "./LiveLeads";
 import JunkLeads from "./JunkLeads";
@@ -75,6 +78,9 @@ export default function LeadManager() {
         return;
       }
       mounted.current = true;
+      dispatch(storeLiveLeadFilterType(null));
+      dispatch(storeLiveLeadSelectedDates([]));
+      dispatch(storeLiveLeadSearchValue(null));
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
     }

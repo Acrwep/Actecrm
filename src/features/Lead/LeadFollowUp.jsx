@@ -13,6 +13,7 @@ import {
   Radio,
   Flex,
   Spin,
+  Tour,
 } from "antd";
 import { FiFilter } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
@@ -133,6 +134,21 @@ export default function LeadFollowUp({
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
+  //tour
+  const [addLeadTour, setAddLeadTour] = useState(false);
+  const addLeadButtonRef = useRef(null);
+
+  const steps = [
+    {
+      title: "Submit Button",
+      description: "Click this button to submit the form",
+      target: () => addLeadButtonRef.current,
+      placement: "bottom",
+      nextButtonProps: {
+        children: "Ok, got it", // Change "Next" to "Finish Tour" on the last step
+      },
+    },
+  ];
 
   const nonChangeColumns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
@@ -1253,25 +1269,53 @@ export default function LeadFollowUp({
             }}
           >
             {permissions.includes("Add Lead Button") && (
-              <button
-                className="leadmanager_addleadbutton"
-                onClick={() => {
-                  setIsOpenAddDrawer(true);
-                  setTimeout(() => {
-                    const drawerBody = document.querySelector(
-                      "#leadfollowup_addlead_drawer .ant-drawer-body"
-                    );
-                    if (drawerBody) {
-                      drawerBody.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }
-                  }, 300);
-                }}
-              >
-                Add Lead
-              </button>
+              <>
+                <button
+                  className="leadmanager_addleadbutton"
+                  ref={addLeadButtonRef}
+                  onClick={() => {
+                    // setAddLeadTour(true);
+                    setIsOpenAddDrawer(true);
+                    setTimeout(() => {
+                      const drawerBody = document.querySelector(
+                        "#leadfollowup_addlead_drawer .ant-drawer-body"
+                      );
+                      if (drawerBody) {
+                        drawerBody.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        });
+                      }
+                    }, 300);
+                  }}
+                >
+                  Add Lead
+                </button>
+
+                {/* <Tour
+                  open={addLeadTour}
+                  onClose={() => setAddLeadTour(false)}
+                  steps={steps}
+                  onFinish={() => {
+                    setAddLeadTour(false);
+                    setIsOpenAddDrawer(true);
+                    setTimeout(() => {
+                      const drawerBody = document.querySelector(
+                        "#leadfollowup_addlead_drawer .ant-drawer-body"
+                      );
+                      if (drawerBody) {
+                        drawerBody.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        });
+                      }
+                    }, 300);
+                  }}
+                  mask={{
+                    style: { backgroundColor: "rgba(0,0,0,0.6)" }, // dull background
+                  }}
+                /> */}
+              </>
             )}
 
             <Tooltip placement="top" title="Download">
