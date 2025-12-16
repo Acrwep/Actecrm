@@ -1644,6 +1644,12 @@ export default function Dashboard() {
         fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
       },
     },
+    legend: {
+      show: true,
+      position: "bottom", // optional
+      fontFamily: "Poppins, sans-serif",
+      fontSize: "11px",
+    },
     colors:
       regionWiseLeadsType == 1
         ? ["#5b69ca", "#258a25", "#607d8b"]
