@@ -56,7 +56,6 @@ import {
   storeUserPermissions,
 } from "../Redux/Slice";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
-import CommonMultiSelect from "../Common/CommonMultiSelect";
 import CommonSelectField from "../Common/CommonSelectField";
 
 export default function PageAccess({
@@ -1220,21 +1219,6 @@ export default function PageAccess({
                       error={item.user_id_error}
                     />
                   </Col>
-
-                  <Col span={8}>
-                    <CommonMultiSelect
-                      label="Roles"
-                      required={true}
-                      options={rolesData}
-                      onChange={(e, selectedValues) => {
-                        handleFormFields(index, "roles", selectedValues);
-                      }}
-                      value={item.roles}
-                      dontallowFreeSolo={true}
-                      error={item.roles_error}
-                    />
-                  </Col>
-
                   <Col span={8}>
                     <Button
                       className="settings_formfields_deletebutton"

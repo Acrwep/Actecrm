@@ -24,7 +24,6 @@ import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
-import CommonMultiSelect from "../Common/CommonMultiSelect";
 import { IoCaretDownSharp } from "react-icons/io5";
 import {
   addressValidator,

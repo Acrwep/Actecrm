@@ -306,13 +306,12 @@ export default function Dashboard() {
   ) => {
     if (!permissions.includes("Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getUserWiseLeadCountsData(
+      getPostSalePerformance(
         dashboard_dates,
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
-        true,
-        1
+        true
       );
       return;
     }
@@ -377,6 +376,132 @@ export default function Dashboard() {
         setSaleDetailsLoader(false);
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         if (call_api == true) {
+          getPostSalePerformance(
+            dashboard_dates,
+            PreviousAndCurrentDate[0],
+            PreviousAndCurrentDate[1],
+            downliners,
+            true
+          );
+        }
+      }, 300);
+    }
+  };
+
+  const getPostSalePerformance = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    call_api
+  ) => {
+    if (!permissions.includes("Post Sale Performance")) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getUserWiseLeadCountsData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners,
+        true,
+        1
+      );
+      return;
+    }
+    setPostSaleLoader(true);
+
+    //date handling
+    let postsale_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      postsale_dates = dashboard_dates.find(
+        (f) => f.card_name == "Post Sale Performance"
+      );
+      if (postsale_dates) {
+        if (
+          postsale_dates.card_settings == "Today" ||
+          postsale_dates.card_settings == "Yesterday" ||
+          postsale_dates.card_settings == "7 Days" ||
+          postsale_dates.card_settings == "15 Days" ||
+          postsale_dates.card_settings == "30 Days" ||
+          postsale_dates.card_settings == "60 Days" ||
+          postsale_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            postsale_dates.card_settings
+          );
+          postsale_dates = getdates_bylabel;
+          setPostSaleSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setPostSaleSelectedDates([
+            postsale_dates.card_settings.start_date,
+            postsale_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: postsale_dates
+        ? postsale_dates.card_settings.start_date
+        : startDate,
+      end_date: postsale_dates
+        ? postsale_dates.card_settings.end_date
+        : endDate,
+      user_ids: downliners,
+    };
+    try {
+      const response = await getPostSaleDashboard(payload);
+      console.log("post sale response", response);
+      const postsale_data = response?.data?.data;
+      // setPostSaleData(postsale_data);
+      setPostSaleDownloadData([postsale_data]);
+      const postsale_series = [
+        Number(postsale_data?.awaiting_verify || 0),
+        Number(postsale_data?.awaiting_trainer || 0),
+        Number(postsale_data?.awaiting_trainer_verify || 0),
+        Number(postsale_data?.verified_trainer || 0),
+        Number(postsale_data?.rejected_trainer || 0),
+        Number(postsale_data?.awaiting_class || 0),
+        Number(postsale_data?.class_scheduled || 0),
+        Number(postsale_data?.class_going || 0),
+        Number(postsale_data?.google_review_count || 0),
+        Number(postsale_data?.linkedin_review_count || 0),
+        Number(postsale_data?.escalated || 0),
+        Number(postsale_data?.class_completed || 0),
+        Number(postsale_data?.videos_given || 0),
+      ];
+
+      if (
+        postsale_series[0] == 0 &&
+        postsale_series[1] == 0 &&
+        postsale_series[2] == 0 &&
+        postsale_series[3] == 0 &&
+        postsale_series[4] == 0 &&
+        postsale_series[5] == 0 &&
+        postsale_series[6] == 0 &&
+        postsale_series[7] == 0 &&
+        postsale_series[8] == 0 &&
+        postsale_series[9] == 0 &&
+        postsale_series[10] == 0 &&
+        postsale_series[11] == 0 &&
+        postsale_series[12] == 0
+      ) {
+        setPostSaleDataSeries([]);
+        return;
+      }
+
+      setPostSaleDataSeries(postsale_series);
+    } catch (error) {
+      setPostSaleDataSeries([]);
+      setPostSaleDownloadData([]);
+      console.log("post sale error", error);
+    } finally {
+      setTimeout(() => {
+        setPostSaleLoader(false);
+        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        if (call_api === true) {
           getUserWiseLeadCountsData(
             dashboard_dates,
             PreviousAndCurrentDate[0],
@@ -1188,14 +1313,6 @@ export default function Dashboard() {
     call_api
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getPostSalePerformance(
-        dashboard_dates,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        downliners,
-        true
-      );
       return;
     }
     setPerformanceLoader(true);
@@ -1252,133 +1369,6 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setPerformanceLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getPostSalePerformance(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true
-          );
-        }
-      }, 300);
-    }
-  };
-
-  const getPostSalePerformance = async (
-    dashboard_dates,
-    startDate,
-    endDate,
-    downliners,
-    call_api
-  ) => {
-    if (!permissions.includes("Post Sale Performance")) {
-      return;
-    }
-    setPostSaleLoader(true);
-
-    //date handling
-    let postsale_dates;
-    if (dashboard_dates && dashboard_dates.length >= 1) {
-      postsale_dates = dashboard_dates.find(
-        (f) => f.card_name == "Post Sale Performance"
-      );
-      if (postsale_dates) {
-        if (
-          postsale_dates.card_settings == "Today" ||
-          postsale_dates.card_settings == "Yesterday" ||
-          postsale_dates.card_settings == "7 Days" ||
-          postsale_dates.card_settings == "15 Days" ||
-          postsale_dates.card_settings == "30 Days" ||
-          postsale_dates.card_settings == "60 Days" ||
-          postsale_dates.card_settings == "90 Days"
-        ) {
-          const getdates_bylabel = getDatesFromRangeLabel(
-            postsale_dates.card_settings
-          );
-          postsale_dates = getdates_bylabel;
-          setPostSaleSelectedDates([
-            getdates_bylabel.card_settings.start_date,
-            getdates_bylabel.card_settings.end_date,
-          ]);
-        } else {
-          setPostSaleSelectedDates([
-            postsale_dates.card_settings.start_date,
-            postsale_dates.card_settings.end_date,
-          ]);
-        }
-      }
-    }
-
-    const payload = {
-      start_date: postsale_dates
-        ? postsale_dates.card_settings.start_date
-        : startDate,
-      end_date: postsale_dates
-        ? postsale_dates.card_settings.end_date
-        : endDate,
-      user_ids: downliners,
-    };
-    try {
-      const response = await getPostSaleDashboard(payload);
-      console.log("post sale response", response);
-      const postsale_data = response?.data?.data;
-      // setPostSaleData(postsale_data);
-      setPostSaleDownloadData([postsale_data]);
-      const postsale_series = [
-        Number(postsale_data?.awaiting_verify || 0),
-        Number(postsale_data?.awaiting_trainer || 0),
-        Number(postsale_data?.awaiting_trainer_verify || 0),
-        Number(postsale_data?.verified_trainer || 0),
-        Number(postsale_data?.rejected_trainer || 0),
-        Number(postsale_data?.awaiting_class || 0),
-        Number(postsale_data?.class_scheduled || 0),
-        Number(postsale_data?.class_going || 0),
-        Number(postsale_data?.google_review_count || 0),
-        Number(postsale_data?.linkedin_review_count || 0),
-        Number(postsale_data?.escalated || 0),
-        Number(postsale_data?.class_completed || 0),
-        Number(postsale_data?.videos_given || 0),
-      ];
-
-      if (
-        postsale_series[0] == 0 &&
-        postsale_series[1] == 0 &&
-        postsale_series[2] == 0 &&
-        postsale_series[3] == 0 &&
-        postsale_series[4] == 0 &&
-        postsale_series[5] == 0 &&
-        postsale_series[6] == 0 &&
-        postsale_series[7] == 0 &&
-        postsale_series[8] == 0 &&
-        postsale_series[9] == 0 &&
-        postsale_series[10] == 0 &&
-        postsale_series[11] == 0 &&
-        postsale_series[12] == 0
-      ) {
-        setPostSaleDataSeries([]);
-        return;
-      }
-
-      setPostSaleDataSeries(postsale_series);
-    } catch (error) {
-      setPostSaleDataSeries([]);
-      setPostSaleDownloadData([]);
-      console.log("post sale error", error);
-    } finally {
-      setTimeout(() => {
-        setPostSaleLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        // if (call_api === true) {
-        //   getQualityData(
-        //     dashboard_dates,
-        //     PreviousAndCurrentDate[0],
-        //     PreviousAndCurrentDate[1],
-        //     downliners,
-        //     1
-        //   );
-        // }
       }, 300);
     }
   };
@@ -2036,6 +2026,119 @@ export default function Dashboard() {
           </Col>
         )}
 
+        {permissions.includes("Post Sale Performance") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Post Sale Performance
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(postSaleSelectedDates[0]).format(
+                        "DD MMM YYYY"
+                      )} to ${moment(postSaleSelectedDates[1]).format(
+                        "DD MMM YYYY"
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={postSaleSelectedDates}
+                      onDateChange={(dates) => {
+                        setPostSaleSelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Post Sale Performance",
+                          dates[0],
+                          dates[1]
+                        );
+                        getPostSalePerformance(
+                          null,
+                          dates[0],
+                          dates[1],
+                          allDownliners,
+                          false
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <div style={{ position: "relative" }}>
+                {permissions.includes("Download Dashboard Data") && (
+                  <div className="hr_dashboard_download_container">
+                    <Tooltip placement="top" title="Download">
+                      <Button
+                        className="dashboard_download_button"
+                        onClick={() => {
+                          const columns = DashboardDownloadColumns(
+                            "Post Sale Performance"
+                          );
+                          DownloadTableAsCSV(
+                            postSaleDownloadData,
+                            columns,
+                            `${moment(postSaleSelectedDates[0]).format(
+                              "DD-MM-YYYY"
+                            )} to ${moment(postSaleSelectedDates[1]).format(
+                              "DD-MM-YYYY"
+                            )} RA Performance.csv`
+                          );
+                        }}
+                      >
+                        <DownloadOutlined className="download_icon" />
+                      </Button>
+                    </Tooltip>
+                  </div>
+                )}
+
+                <div className="dadhboard_chartsContainer">
+                  {postSaleLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {postSaleDataSeries.length >= 1 ? (
+                        <PostSalePerformanceChart
+                          chartData={postSaleDataSeries}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Col>
+        )}
+
         {permissions.includes("User-Wise Lead Analysis") && (
           <Col
             xs={24}
@@ -2132,27 +2235,30 @@ export default function Dashboard() {
                     }}
                     value={userWiseLeadsType}
                   />
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className={
-                        userWiseLeadDownloadLoader
-                          ? "dashboard_loading_download_button"
-                          : "dashboard_download_button"
-                      }
-                      onClick={handleUserWiseLeadsDownload}
-                      disabled={userWiseLeadDownloadLoader}
-                    >
-                      {userWiseLeadDownloadLoader ? (
-                        <Spin
-                          indicator={<LoadingOutlined spin />}
-                          size="small"
-                          style={{ color: "#333" }}
-                        />
-                      ) : (
-                        <DownloadOutlined className="download_icon" />
-                      )}
-                    </Button>
-                  </Tooltip>
+
+                  {permissions.includes("Download Dashboard Data") && (
+                    <Tooltip placement="top" title="Download">
+                      <Button
+                        className={
+                          userWiseLeadDownloadLoader
+                            ? "dashboard_loading_download_button"
+                            : "dashboard_download_button"
+                        }
+                        onClick={handleUserWiseLeadsDownload}
+                        disabled={userWiseLeadDownloadLoader}
+                      >
+                        {userWiseLeadDownloadLoader ? (
+                          <Spin
+                            indicator={<LoadingOutlined spin />}
+                            size="small"
+                            style={{ color: "#333" }}
+                          />
+                        ) : (
+                          <DownloadOutlined className="download_icon" />
+                        )}
+                      </Button>
+                    </Tooltip>
+                  )}
                 </Col>
               </Row>
 
@@ -2340,27 +2446,29 @@ export default function Dashboard() {
                     }}
                     value={userWiseType}
                   />
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className={
-                        userWiseSalesDownloadLoader
-                          ? "dashboard_loading_download_button"
-                          : "dashboard_download_button"
-                      }
-                      onClick={handleUserWiseSalesDownload}
-                      disabled={userWiseSalesDownloadLoader}
-                    >
-                      {userWiseSalesDownloadLoader ? (
-                        <Spin
-                          indicator={<LoadingOutlined spin />}
-                          size="small"
-                          style={{ color: "#333" }}
-                        />
-                      ) : (
-                        <DownloadOutlined className="download_icon" />
-                      )}
-                    </Button>
-                  </Tooltip>
+                  {permissions.includes("Download Dashboard Data") && (
+                    <Tooltip placement="top" title="Download">
+                      <Button
+                        className={
+                          userWiseSalesDownloadLoader
+                            ? "dashboard_loading_download_button"
+                            : "dashboard_download_button"
+                        }
+                        onClick={handleUserWiseSalesDownload}
+                        disabled={userWiseSalesDownloadLoader}
+                      >
+                        {userWiseSalesDownloadLoader ? (
+                          <Spin
+                            indicator={<LoadingOutlined spin />}
+                            size="small"
+                            style={{ color: "#333" }}
+                          />
+                        ) : (
+                          <DownloadOutlined className="download_icon" />
+                        )}
+                      </Button>
+                    </Tooltip>
+                  )}
                 </Col>
               </Row>
 
@@ -3199,117 +3307,6 @@ export default function Dashboard() {
                   })}
                 </>
               )}
-            </div>
-          </Col>
-        )}
-
-        {permissions.includes("Post Sale Performance") && (
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            style={{
-              marginTop: "30px",
-            }}
-          >
-            <div className="dashboard_leadcount_card">
-              <Row className="dashboard_leadcount_header_container">
-                <Col span={18}>
-                  <div style={{ padding: "12px 12px 8px 12px" }}>
-                    <p className="dashboard_scrorecard_heading">
-                      Post Sale Performance
-                    </p>
-                    <p className="dashboard_daterange_text">
-                      <span style={{ fontWeight: "500" }}>Date Range: </span>
-                      {`(${moment(postSaleSelectedDates[0]).format(
-                        "DD MMM YYYY"
-                      )} to ${moment(postSaleSelectedDates[1]).format(
-                        "DD MMM YYYY"
-                      )})`}
-                    </p>
-                  </div>
-                </Col>
-                <Col
-                  span={6}
-                  style={{ display: "flex", justifyContent: "flex-end" }}
-                >
-                  <div>
-                    <CommonMuiCustomDatePicker
-                      isDashboard={true}
-                      value={postSaleSelectedDates}
-                      onDateChange={(dates) => {
-                        setPostSaleSelectedDates(dates);
-                        updateDashboardCardDate(
-                          "Post Sale Performance",
-                          dates[0],
-                          dates[1]
-                        );
-                        getPostSalePerformance(
-                          null,
-                          dates[0],
-                          dates[1],
-                          allDownliners,
-                          false
-                        );
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-
-              <div style={{ position: "relative" }}>
-                <div className="hr_dashboard_download_container">
-                  <Tooltip placement="top" title="Download">
-                    <Button
-                      className="dashboard_download_button"
-                      onClick={() => {
-                        const columns = DashboardDownloadColumns(
-                          "Post Sale Performance"
-                        );
-                        DownloadTableAsCSV(
-                          postSaleDownloadData,
-                          columns,
-                          `${moment(postSaleSelectedDates[0]).format(
-                            "DD-MM-YYYY"
-                          )} to ${moment(postSaleSelectedDates[1]).format(
-                            "DD-MM-YYYY"
-                          )} RA Performance.csv`
-                        );
-                      }}
-                    >
-                      <DownloadOutlined className="download_icon" />
-                    </Button>
-                  </Tooltip>
-                </div>
-
-                <div className="dadhboard_chartsContainer">
-                  {postSaleLoader ? (
-                    <div className="dashboard_skeleton_container">
-                      <Skeleton
-                        active
-                        style={{ height: "40vh" }}
-                        title={{ width: 140 }}
-                        paragraph={{
-                          rows: 0,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      {postSaleDataSeries.length >= 1 ? (
-                        <PostSalePerformanceChart
-                          chartData={postSaleDataSeries}
-                        />
-                      ) : (
-                        <div className="dashboard_chart_nodata_conatiner">
-                          <p>No data found</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
           </Col>
         )}

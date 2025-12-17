@@ -2756,43 +2756,45 @@ export default function Customers() {
             style={{ body: { padding: "6px 0" } }}
             title={
               <>
-                <div
-                  className="customer_download_container"
-                  style={{
-                    borderTopLeftRadius: "6px",
-                    borderTopRightRadius: "6px",
-                  }}
-                  onClick={() => {
-                    const isWithIn30days = isWithin30Days(
-                      selectedDates[0],
-                      selectedDates[1]
-                    );
-                    console.log("isWithIn30days", isWithIn30days);
-                    if (isWithIn30days == false) {
-                      CommonMessage(
-                        "error",
-                        "Please choose a date range within 30 days."
+                {permissions.includes("Download Customers Data") && (
+                  <div
+                    className="customer_download_container"
+                    style={{
+                      borderTopLeftRadius: "6px",
+                      borderTopRightRadius: "6px",
+                    }}
+                    onClick={() => {
+                      const isWithIn30days = isWithin30Days(
+                        selectedDates[0],
+                        selectedDates[1]
                       );
-                      return;
-                    }
-                    const alterColumns = columns.filter(
-                      (f) => f.title != "Action"
-                    );
+                      console.log("isWithIn30days", isWithIn30days);
+                      if (isWithIn30days == false) {
+                        CommonMessage(
+                          "error",
+                          "Please choose a date range within 30 days."
+                        );
+                        return;
+                      }
+                      const alterColumns = columns.filter(
+                        (f) => f.title != "Action"
+                      );
 
-                    DownloadTableAsCSV(
-                      customersData,
-                      alterColumns,
-                      `${moment(selectedDates[0]).format(
-                        "DD-MM-YYYY"
-                      )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
-                        status == "" ? "All" : status
-                      } Customers.csv`
-                    );
-                  }}
-                >
-                  <DownloadOutlined />
-                  <p className="customer_download_text">Download</p>
-                </div>
+                      DownloadTableAsCSV(
+                        customersData,
+                        alterColumns,
+                        `${moment(selectedDates[0]).format(
+                          "DD-MM-YYYY"
+                        )} to ${moment(selectedDates[1]).format(
+                          "DD-MM-YYYY"
+                        )} ${status == "" ? "All" : status} Customers.csv`
+                      );
+                    }}
+                  >
+                    <DownloadOutlined />
+                    <p className="customer_download_text">Download</p>
+                  </div>
+                )}
 
                 <div
                   className="customer_download_container"

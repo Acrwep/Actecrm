@@ -335,7 +335,7 @@ export default function LiveLead({
       render: (text) => {
         return (
           <>
-            {text.length > 20 ? (
+            {text && text.length > 20 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -366,7 +366,7 @@ export default function LiveLead({
       width: 90,
     },
     {
-      title: "Training",
+      title: "Training Mode",
       key: "training",
       dataIndex: "training",
       fixed: "right",
@@ -378,10 +378,16 @@ export default function LiveLead({
               <p>Online</p>
             </div>
           );
-        } else {
+        } else if (text.includes("Classroom")) {
           return (
             <div className="livelead_classroomtraining_container">
               <p>Classroom</p>
+            </div>
+          );
+        } else {
+          return (
+            <div className="livelead_corporatetraining_container">
+              <p>Corporate</p>
             </div>
           );
         }

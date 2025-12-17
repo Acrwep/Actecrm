@@ -1,164 +1,159 @@
 import React from "react";
-import {
-  Autocomplete,
-  FormControl,
-  FormHelperText,
-  TextField,
-} from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 import "./commonstyles.css";
-import Checkbox from "@mui/material/Checkbox";
-import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
-import { IoMdCheckbox } from "react-icons/io";
+import { Chip } from "@mui/material";
+import { Checkbox } from "antd";
 
 export default function CommonMultiSelect({
-  options = [],
-  onChange,
-  value,
   label,
-  defaultValue,
-  height,
-  fontSize,
-  valueMarginTop,
-  optionsFontSize,
-  required,
+  value = [],
+  onChange,
   error,
-  dontallowFreeSolo,
-  checkBox,
-  disabled = false,
+  required,
+  options = [],
+  fontSize,
+  labelFontSize,
+  optionsFontSize,
+  width,
+  style,
+  labelMarginTop,
+  disableClearable,
+  disabled,
+  errorFontSize,
+  groupBy,
+  showLabelStatus,
+  borderRightNone,
+  borderLeftNone,
   onFocus,
   onBlur,
-  borderRightNone,
 }) {
-  const icon = <MdOutlineCheckBoxOutlineBlank size={18} />;
-  const checkedIcon = <IoMdCheckbox size={18} color="#535bf2" />;
+  // Map stored ids -> option objects
+  const selectedOptions = options.filter((opt) =>
+    value.includes(String(opt.user_id ?? opt.id))
+  );
+
+  // Label resolver
+  const getLabel = (option) => {
+    if (!option) return "";
+    if (showLabelStatus === "Name") return option.name;
+    if (showLabelStatus === "Email") return option.email;
+    if (showLabelStatus === "Mobile") return option.mobile;
+    if (showLabelStatus === "Trainer Id") return option.trainer_code;
+    if (option.user_name) return `${option.user_id} - ${option.user_name}`;
+    return option.name || "";
+  };
 
   return (
-    <div>
+    <div style={style}>
       <FormControl
         fullWidth
+        size="small"
         className="common_selectfield"
-        required={required}
         sx={{
-          "& .Mui-disabled": {
-            color: "#888", // change text color
-            WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+          width: width || "100%",
+
+          /* Label */
+          "& .MuiInputLabel-root": {
+            fontSize: labelFontSize || "14px",
+            marginTop: labelMarginTop || "1px",
+            fontFamily: "Poppins, sans-serif",
+          },
+
+          /* Outer border */
+          "& .MuiOutlinedInput-root": {
+            minHeight: "32px",
+            alignItems: "flex-start",
           },
         }}
       >
         <Autocomplete
           multiple
-          freeSolo={dontallowFreeSolo ? false : true}
-          limitTags={2}
-          size="small"
-          id="multiple-limit-tags"
           options={options}
-          disabled={disabled}
+          value={selectedOptions}
           disableCloseOnSelect
-          onFocus={onFocus}
-          onBlur={onBlur}
-          getOptionLabel={(option) =>
-            typeof option === "string"
-              ? option
-              : option.role_name
-              ? option.role_name
-              : option.user_name
-              ? option.user_name
-              : option.name
+          disableClearable={disableClearable ?? true}
+          disabled={disabled}
+          groupBy={groupBy}
+          getOptionLabel={getLabel}
+          onChange={(event, newValue) => {
+            onChange?.({
+              target: {
+                value: newValue.map((v) => String(v.user_id ?? v.id)),
+              },
+            });
+          }}
+          noOptionsText={
+            <span style={{ fontSize: "13px", color: "#888" }}>
+              No data found
+            </span>
           }
-          defaultValue={defaultValue}
-          {...(dontallowFreeSolo && {
-            isOptionEqualToValue: (option, value) => {
-              if (option?.role_id && value?.role_id) {
-                return option.role_id === value.role_id;
-              }
-              if (option?.user_id && value?.user_id) {
-                return option.user_id === value.user_id;
-              }
-              return option?.id === value?.id;
-            },
-          })}
-          {...(dontallowFreeSolo && checkBox === true
-            ? {
-                renderOption: (props, option, { selected }) => {
-                  const { key, ...optionProps } = props;
-                  return (
-                    <li key={key} {...optionProps}>
-                      <Checkbox
-                        icon={icon}
-                        checkedIcon={checkedIcon}
-                        style={{ marginRight: 8 }}
-                        checked={selected}
-                      />
-                      {typeof option === "string"
-                        ? option
-                        : option.role_name
-                        ? option.role_name
-                        : option.user_name
-                        ? option.user_name
-                        : option.name}
-                    </li>
-                  );
-                },
-              }
-            : {})}
+          /* ✅ THIS FIXES THE CHIP OVERFLOW ISSUE */
+          renderTags={(value, getTagProps) => (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "4px",
+                maxHeight: "64px",
+                overflowY: "auto",
+                width: "100%",
+              }}
+            >
+              {value.map((option, index) => {
+                const tagProps = getTagProps({ index });
+
+                return (
+                  <Chip
+                    {...tagProps}
+                    key={index}
+                    label={getLabel(option)}
+                    size="small"
+                    sx={{
+                      height: "22px",
+                      fontSize: "12px",
+                      "& .MuiChip-label": {
+                        padding: "0 6px",
+                      },
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
           renderInput={(params) => (
             <TextField
               {...params}
               label={label}
-              className="common_inputfield"
+              required={required}
+              size="small"
+              error={error}
+              onFocus={onFocus}
+              onBlur={onBlur}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: "12px", // 👈 input text font size
+                  fontSize: fontSize || "14px",
                 },
-                "& .MuiInputLabel-root": {
-                  fontSize: "14px", // 👈 label font size
-                },
-                "& .MuiAutocomplete-endAdornment": {
-                  top: "43%",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderRight: borderRightNone ? "none" : "",
+                  borderLeft: borderLeftNone ? "none" : "",
+                  borderTopRightRadius: borderRightNone ? 0 : 4,
+                  borderBottomRightRadius: borderRightNone ? 0 : 4,
+                  borderTopLeftRadius: borderLeftNone ? 0 : 4,
+                  borderBottomLeftRadius: borderLeftNone ? 0 : 4,
                 },
               }}
-              required={required}
-              error={error ? true : false}
             />
           )}
-          sx={{
-            width: "100%",
-            "& .MuiInputBase-root": {
-              minHeight: height || "46px",
-              alignItems: "flex-start",
-              // flexWrap: "wrap",
-              // overflowX: "hidden",
-            },
-            "& .MuiSelect-select": {
-              display: "flex",
-              alignItems: "center",
-              fontSize: fontSize ? fontSize : "14px",
-            },
-            "& .MuiOutlinedInput-notchedOutline": {
-              height: "100%", // Ensure the outline stretches
-              borderRight: borderRightNone ? "none" : "",
-              borderTopRightRadius: borderRightNone ? "0px" : "4px",
-              borderBottomRightRadius: borderRightNone ? "0px" : "4px",
-            },
-            "& .MuiInputLabel-root": {
-              fontSize: "14px", // Change this value as needed
-              // marginTop: "-6px",
-            },
-            "& .MuiChip-root": {
-              height: "26px",
-              fontSize: "11px",
-              padding: "2px 4px",
-              display: "flex",
-              alignItems: "center",
-            },
-            "& .MuiAutocomplete-tag": {
-              margin: "2px 2px 8px 2px",
-            },
-          }}
           slotProps={{
-            paper: {
+            listbox: {
               sx: {
-                fontSize: optionsFontSize || "13px", // 👈 Option font size
+                "& .MuiAutocomplete-option": {
+                  fontSize: optionsFontSize || "13px",
+                },
                 "& .MuiAutocomplete-option[aria-selected='true']": {
                   backgroundColor: "#5b69ca26",
                 },
@@ -168,22 +163,30 @@ export default function CommonMultiSelect({
               },
             },
           }}
-          onChange={onChange}
-          value={value || []}
+          /* Checkbox before label */
+          renderOption={(props, option, { selected }) => (
+            <li {...props}>
+              <Checkbox
+                checked={selected}
+                size="small"
+                style={{ marginRight: 8 }}
+              />
+              <span style={{ fontSize: optionsFontSize || "13px" }}>
+                {getLabel(option)}
+              </span>
+            </li>
+          )}
         />
+
         {error && (
-          <div>
-            <FormHelperText
-              className="common_selectfield_errortext"
-              sx={{
-                marginTop: "0px",
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "11px",
-              }}
-            >
-              {label + " " + error}
-            </FormHelperText>
-          </div>
+          <FormHelperText
+            sx={{
+              fontSize: errorFontSize || "11px",
+              marginLeft: 0,
+            }}
+          >
+            {label} {error}
+          </FormHelperText>
         )}
       </FormControl>
     </div>

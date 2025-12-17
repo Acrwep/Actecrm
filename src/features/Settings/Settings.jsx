@@ -193,6 +193,7 @@ export default function Settings() {
         "Region-Wise Sales Analysis",
         "Top Performing Channels",
         "Post Sale Performance",
+        "Download Dashboard Data",
       ];
 
       const dashboardSortedArray = dashboardModule.sort(
@@ -221,6 +222,7 @@ export default function Settings() {
         "Lead Executive Filter",
         "Add Quality Comment",
         "Junk Leads Tab",
+        "Download Leads",
       ];
 
       const leadsSortedArray = leadsModule.sort(
@@ -261,6 +263,7 @@ export default function Settings() {
         "Update Class Going",
         "Passedout Process",
         "Others Checkbox",
+        "Download Customers Data",
       ];
 
       const customersSortedArray = customersModule.sort(

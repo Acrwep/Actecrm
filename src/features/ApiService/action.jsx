@@ -1381,6 +1381,15 @@ export const postSalePerformanceReport = async (payload) => {
   }
 };
 
+export const topPerformingChannelReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTopPerformingReport`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const qualityReport = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseQuality`, payload);

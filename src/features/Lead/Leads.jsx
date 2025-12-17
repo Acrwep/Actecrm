@@ -1851,27 +1851,29 @@ export default function Leads({
               ""
             )}
 
-            <Tooltip placement="top" title="Download">
-              <Button
-                className={
-                  downloadButtonLoader
-                    ? "customer_loading_download_button"
-                    : "customer_download_button"
-                }
-                onClick={handleDownload}
-                disabled={downloadButtonLoader}
-              >
-                {downloadButtonLoader ? (
-                  <Spin
-                    indicator={<LoadingOutlined spin />}
-                    style={{ color: "#333" }}
-                    size="small"
-                  />
-                ) : (
-                  <DownloadOutlined className="download_icon" />
-                )}
-              </Button>
-            </Tooltip>
+            {permissions.includes("Download Leads") && (
+              <Tooltip placement="top" title="Download">
+                <Button
+                  className={
+                    downloadButtonLoader
+                      ? "customer_loading_download_button"
+                      : "customer_download_button"
+                  }
+                  onClick={handleDownload}
+                  disabled={downloadButtonLoader}
+                >
+                  {downloadButtonLoader ? (
+                    <Spin
+                      indicator={<LoadingOutlined spin />}
+                      style={{ color: "#333" }}
+                      size="small"
+                    />
+                  ) : (
+                    <DownloadOutlined className="download_icon" />
+                  )}
+                </Button>
+              </Tooltip>
+            )}
 
             {permissions.includes("Assign Lead") && isShowEdit === false && (
               <button

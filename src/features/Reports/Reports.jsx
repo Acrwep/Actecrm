@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import "./styles.css";
 import QualityReport from "./QualityReport";
 import PostSalePerformanceReport from "./PostSalePerformanceReport";
+import TopPerformanceReport from "./TopPerformanceReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -59,8 +60,13 @@ export default function Reports() {
             children: <BranchwiseSalesReport />,
           },
           {
-            label: "Post Sale Performance",
+            label: "Top Performance Channel",
             key: "6",
+            children: <TopPerformanceReport />,
+          },
+          {
+            label: "Post Sale Performance",
+            key: "7",
             children: <PostSalePerformanceReport />,
           },
           // {

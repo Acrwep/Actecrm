@@ -1318,27 +1318,29 @@ export default function LeadFollowUp({
               </>
             )}
 
-            <Tooltip placement="top" title="Download">
-              <Button
-                className={
-                  downloadButtonLoader
-                    ? "customer_loading_download_button"
-                    : "customer_download_button"
-                }
-                onClick={handleDownload}
-                disabled={downloadButtonLoader}
-              >
-                {downloadButtonLoader ? (
-                  <Spin
-                    indicator={<LoadingOutlined spin />}
-                    size="small"
-                    style={{ color: "#333" }}
-                  />
-                ) : (
-                  <DownloadOutlined className="download_icon" />
-                )}
-              </Button>
-            </Tooltip>
+            {permissions.includes("Download Lead Followups") && (
+              <Tooltip placement="top" title="Download">
+                <Button
+                  className={
+                    downloadButtonLoader
+                      ? "customer_loading_download_button"
+                      : "customer_download_button"
+                  }
+                  onClick={handleDownload}
+                  disabled={downloadButtonLoader}
+                >
+                  {downloadButtonLoader ? (
+                    <Spin
+                      indicator={<LoadingOutlined spin />}
+                      size="small"
+                      style={{ color: "#333" }}
+                    />
+                  ) : (
+                    <DownloadOutlined className="download_icon" />
+                  )}
+                </Button>
+              </Tooltip>
+            )}
 
             <FiFilter
               size={20}
@@ -1492,6 +1494,7 @@ export default function LeadFollowUp({
                   placeholder="Next Followup Date"
                   height="35px"
                   onChange={(value) => {
+                    console.log("nxtttttt", value);
                     setNxtFollowupDate(value);
                     setNxtFollowupDateError(selectValidator(value));
                   }}
@@ -1990,6 +1993,14 @@ export default function LeadFollowUp({
                   if (value != 1) {
                     setNxtFollowupDate(null);
                     setNxtFollowupDateError("");
+                  } else {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // optional: reset time
+
+                    const nextDay = new Date(today);
+                    nextDay.setDate(today.getDate() + 2);
+                    setNxtFollowupDate(nextDay);
+                    setNxtFollowupDateError("");
                   }
                   setActionIdError(selectValidator(value));
                 }}
@@ -2008,6 +2019,7 @@ export default function LeadFollowUp({
                   value={nxtFollowupDate}
                   error={nxtFollowupDateError}
                   disablePreviousDates={true}
+                  disabled={true}
                 />
               </Col>
             ) : (

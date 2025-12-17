@@ -29,6 +29,7 @@ import { bulkSearch } from "../ApiService/action";
 import moment from "moment";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import { useSelector } from "react-redux";
+import CommonMultiSelect from "../Common/CommonMultiSelect";
 
 const { Dragger } = Upload;
 
@@ -386,7 +387,6 @@ export default function BulkSearch() {
             </Col>
             <Col span={12}>
               <div style={{ position: "relative", height: "auto" }}>
-                <p className={"trainer_skillslabel"}>Status</p>
                 <div
                   style={{
                     display: "flex",
@@ -395,7 +395,7 @@ export default function BulkSearch() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <Select
+                    {/* <Select
                       className={"bulksearch_status_multiselect"}
                       style={{ width: "100%" }}
                       suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
@@ -405,7 +405,7 @@ export default function BulkSearch() {
                       value={status} // Only real selected values
                       onChange={(value) => {
                         setStatus(value);
-
+                        console.log("old valll", value);
                         const filterData = duplicateData.filter((f) => {
                           // ✅ Handle array of statuses
                           const statusMatch = value?.length
@@ -455,7 +455,37 @@ export default function BulkSearch() {
                           </Select.Option>
                         );
                       })}
-                    </Select>
+                    </Select> */}
+
+                    <CommonMultiSelect
+                      label="Status"
+                      labelMarginTop="0px"
+                      labelFontSize="13px"
+                      options={statusOptions}
+                      value={status} // Only real selected values
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        console.log("valllll", value);
+                        setStatus(value);
+
+                        const filterData = duplicateData.filter((f) => {
+                          // ✅ Handle array of statuses
+                          const statusMatch = value?.length
+                            ? value.includes(f.status)
+                            : true;
+
+                          const typeMatch =
+                            f.mobile?.toLowerCase().includes(searchValue) ||
+                            f.name?.toLowerCase().includes(searchValue) ||
+                            f.email?.toLowerCase().includes(searchValue);
+
+                          return statusMatch && typeMatch;
+                        });
+
+                        setData(filterData);
+                      }}
+                      disableClearable={false}
+                    />
                   </div>
                 </div>
               </div>
