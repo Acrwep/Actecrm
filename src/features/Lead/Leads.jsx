@@ -184,6 +184,8 @@ export default function Leads({
   const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
   const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
   const [allDownliners, setAllDownliners] = useState([]);
+  //lead source filter
+  const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
   //quality comment usestates
   const [qualityComments, setQualityComments] = useState("");
   const [qualityCommentsError, setQualityCommentsError] = useState("");
@@ -889,6 +891,7 @@ export default function Leads({
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners_ids,
+        null,
         1,
         10
       );
@@ -902,6 +905,7 @@ export default function Leads({
     startDate,
     endDate,
     downliners,
+    leadsource,
     pageNumber,
     limit
   ) => {
@@ -919,6 +923,7 @@ export default function Leads({
       start_date: startDate,
       end_date: endDate,
       user_ids: downliners,
+      ...(leadsource && { lead_type: leadsource }),
       page: pageNumber,
       limit: limit,
     };
@@ -1160,6 +1165,7 @@ export default function Leads({
           selectedDates[0],
           selectedDates[1],
           allDownliners,
+          leadSourceFilterId,
           1,
           pagination.limit
         );
@@ -1283,6 +1289,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            leadSourceFilterId,
             1,
             pagination.limit
           );
@@ -1314,6 +1321,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            leadSourceFilterId,
             1,
             pagination.limit
           );
@@ -1428,6 +1436,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         allDownliners,
+        leadSourceFilterId,
         1,
         pagination.limit
       );
@@ -1474,6 +1483,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            leadSourceFilterId,
             1,
             pagination.limit
           );
@@ -1500,6 +1510,7 @@ export default function Leads({
       selectedDates[0],
       selectedDates[1],
       allDownliners,
+      leadSourceFilterId,
       page,
       limit
     );
@@ -1525,6 +1536,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         downliners_ids,
+        leadSourceFilterId,
         1,
         pagination.limit
       );
@@ -1605,9 +1617,9 @@ export default function Leads({
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
-          <Row gutter={16}>
-            <Col span={7}>
+        <Col xs={24} sm={24} md={24} lg={20}>
+          <Row gutter={10}>
+            <Col flex="22%">
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
@@ -1638,6 +1650,7 @@ export default function Leads({
                             selectedDates[0],
                             selectedDates[1],
                             allDownliners,
+                            leadSourceFilterId,
                             1,
                             pagination.limit
                           );
@@ -1687,6 +1700,7 @@ export default function Leads({
                                 selectedDates[0],
                                 selectedDates[1],
                                 allDownliners,
+                                leadSourceFilterId,
                                 1,
                                 pagination.limit
                               );
@@ -1720,7 +1734,7 @@ export default function Leads({
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={7}>
+              <Col flex="22%">
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
                     <CommonSelectField
@@ -1797,7 +1811,31 @@ export default function Leads({
                 </div>
               </Col>
             )}
-            <Col span={10}>
+            <Col flex="20%">
+              <CommonSelectField
+                width="100%"
+                height="35px"
+                label="Select Lead Source"
+                labelMarginTop="0px"
+                labelFontSize="12px"
+                options={leadTypeOptions}
+                onChange={(e) => {
+                  setLeadSourceFilterId(e.target.value);
+                  getAllLeadData(
+                    null,
+                    selectedDates[0],
+                    selectedDates[1],
+                    allDownliners,
+                    e.target.value,
+                    1,
+                    pagination.limit
+                  );
+                }}
+                value={leadSourceFilterId}
+                disableClearable={false}
+              />{" "}
+            </Col>
+            <Col flex="30%">
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -1810,6 +1848,7 @@ export default function Leads({
                     dates[0],
                     dates[1],
                     allDownliners,
+                    leadSourceFilterId,
                     1,
                     pagination.limit
                   );
@@ -1818,7 +1857,7 @@ export default function Leads({
             </Col>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7}>
+        <Col xs={24} sm={24} md={24} lg={4}>
           <div
             style={{
               display: "flex",
@@ -1953,6 +1992,7 @@ export default function Leads({
               selectedDates[0],
               selectedDates[1],
               allDownliners,
+              leadSourceFilterId,
               1,
               pagination.limit
             );

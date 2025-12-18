@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Flex } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { RedoOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import { PiHandCoins } from "react-icons/pi";
-import { LuPhoneCall } from "react-icons/lu";
-import { MdDirectionsRun } from "react-icons/md";
-import { BiSpreadsheet } from "react-icons/bi";
-import { PiMicrophoneDuotone } from "react-icons/pi";
-import { RiChat3Line } from "react-icons/ri";
-import { GoCrossReference } from "react-icons/go";
-import { AiOutlineGlobal } from "react-icons/ai";
-import { MdOutlinePendingActions } from "react-icons/md";
+import { HiOutlineInformationCircle } from "react-icons/hi";
 import {
   getAllDownlineUsers,
   getBranches,
@@ -246,8 +239,6 @@ export default function TopPerformanceReport() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    console.log("valllll", value);
-    return;
     setRegionId(null);
     setBranchId(null);
     try {
@@ -450,169 +441,109 @@ export default function TopPerformanceReport() {
                   : "-"}
               </p>
             </div>
-          </div>
-        </Col>
 
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_joiningcount_icon_container">
-              <LuPhoneCall size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Call</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#2ed573",
-                  fontSize: "20px",
-                }}
+            <div>
+              <Flex
+                justify="center"
+                align="center"
+                style={{ whiteSpace: "nowrap" }}
               >
-                {totalCounts &&
-                (totalCounts.call != undefined || totalCounts.call != null)
-                  ? Number(totalCounts.call).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_salevolume_icon_container">
-              <MdDirectionsRun size={19} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Direct</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#1e90ff",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.direct != undefined || totalCounts.direct != null)
-                  ? Number(totalCounts.direct).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_collection_icon_container">
-              <BiSpreadsheet size={20} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Enquiry</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#3c9111",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.enquiry_form != undefined ||
-                  totalCounts.enquiry_form != null)
-                  ? Number(totalCounts.enquiry_form).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_ivr_icon_container">
-              <PiMicrophoneDuotone size={19} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>IVR</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#ff6f00",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.ivr != undefined || totalCounts.ivr != null)
-                  ? Number(totalCounts.ivr).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_livechat_icon_container">
-              <RiChat3Line size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Live Chat</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#01579b",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.live_chat != undefined ||
-                  totalCounts.live_chat != null)
-                  ? Number(totalCounts.live_chat).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_reference_icon_container">
-              <GoCrossReference size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>Reference</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#263238",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.reference != undefined ||
-                  totalCounts.reference != null)
-                  ? Number(totalCounts.reference).toLocaleString("en-IN")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-        </Col>
-
-        <Col flex="20%" style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_main_container">
-            <div className="reports_smo_icon_container">
-              <AiOutlineGlobal size={18} />
-            </div>
-            <div className="reports_leadcount_container">
-              <p>SMO</p>
-              <p
-                style={{
-                  marginTop: "4px",
-                  color: "#4a148c",
-                  fontSize: "20px",
-                }}
-              >
-                {totalCounts &&
-                (totalCounts.smo != undefined || totalCounts.smo != null)
-                  ? Number(totalCounts.smo).toLocaleString("en-IN")
-                  : "-"}
-              </p>
+                <Tooltip
+                  placement="bottomLeft"
+                  color="#fff"
+                  title={
+                    <>
+                      <div
+                        style={{
+                          maxHeight: "140px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-line",
+                          lineHeight: "24px",
+                        }}
+                      >
+                        <p className="leadsmanager_executivecount_text">
+                          {`${1}. Call - ${
+                            totalCounts &&
+                            (totalCounts.call != undefined ||
+                              totalCounts.call != null)
+                              ? Number(totalCounts.call).toLocaleString("en-IN")
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${2}. Direct - ${
+                            totalCounts &&
+                            (totalCounts.direct != undefined ||
+                              totalCounts.direct != null)
+                              ? Number(totalCounts.direct).toLocaleString(
+                                  "en-IN"
+                                )
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${3}. Enquiry - ${
+                            totalCounts &&
+                            (totalCounts.enquiry_form != undefined ||
+                              totalCounts.enquiry_form != null)
+                              ? Number(totalCounts.enquiry_form).toLocaleString(
+                                  "en-IN"
+                                )
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${4}. IVR - ${
+                            totalCounts &&
+                            (totalCounts.ivr != undefined ||
+                              totalCounts.ivr != null)
+                              ? Number(totalCounts.ivr).toLocaleString("en-IN")
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${5}. Live Chat - ${
+                            totalCounts &&
+                            (totalCounts.live_chat != undefined ||
+                              totalCounts.live_chat != null)
+                              ? Number(totalCounts.live_chat).toLocaleString(
+                                  "en-IN"
+                                )
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${6}. Reference - ${
+                            totalCounts &&
+                            (totalCounts.reference != undefined ||
+                              totalCounts.reference != null)
+                              ? Number(totalCounts.reference).toLocaleString(
+                                  "en-IN"
+                                )
+                              : "-"
+                          }`}
+                        </p>
+                        <p className="leadsmanager_executivecount_text">
+                          {`${7}. SMO - ${
+                            totalCounts &&
+                            (totalCounts.smo != undefined ||
+                              totalCounts.smo != null)
+                              ? Number(totalCounts.smo).toLocaleString("en-IN")
+                              : "-"
+                          }`}
+                        </p>
+                      </div>
+                    </>
+                  }
+                  trigger={["click"]}
+                >
+                  <HiOutlineInformationCircle
+                    size={18}
+                    color="#333"
+                    style={{ cursor: "pointer" }}
+                  />
+                </Tooltip>
+              </Flex>
             </div>
           </div>
         </Col>
