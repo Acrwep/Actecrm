@@ -34,7 +34,9 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "end_date" ||
           column.dataIndex === "next_follow_up_date" ||
           column.dataIndex === "expected_join_date" ||
-          column.dataIndex === "created_date"
+          column.dataIndex === "created_date" ||
+          column.dataIndex === "date" ||
+          column.dataIndex === "DATE"
         ) {
           return row[column.dataIndex]
             ? moment(row[column.dataIndex]).format("DD/MM/YYYY")

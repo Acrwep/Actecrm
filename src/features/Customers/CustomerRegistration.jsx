@@ -868,12 +868,22 @@ export default function CustomerRegistration() {
         <div className="customerregistration_innerContainer">
           <Row style={{ display: "flex" }}>
             <Col xs={24} sm={24} md={8} lg={8}>
-              <img src={Logo} className="login_logo" />
+              <img src={Logo} className="trainer_registration_logo" />
               <p
                 className="trainer_registration_logotext"
                 style={{ color: "#1b538c" }}
               >
                 Technologies
+              </p>
+              <p
+                style={{
+                  color: "#1b538c",
+                  fontWeight: "bold",
+                  marginTop: "1px",
+                  letterSpacing: "0.3px",
+                }}
+              >
+                Private Limited
               </p>
             </Col>
             <Col

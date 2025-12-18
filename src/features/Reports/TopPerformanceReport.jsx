@@ -5,6 +5,10 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { RedoOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import { PiHandCoins } from "react-icons/pi";
+import { PiUsersThreeBold } from "react-icons/pi";
+import { GoGraph } from "react-icons/go";
+import { MdCurrencyRupee } from "react-icons/md";
+import { MdOutlinePendingActions } from "react-icons/md";
 import { HiOutlineInformationCircle } from "react-icons/hi";
 import {
   getAllDownlineUsers,
@@ -36,8 +40,8 @@ export default function TopPerformanceReport() {
   const [branchOptions, setBranchOptions] = useState([]);
   const [branchId, setBranchId] = useState(null);
   const [reportData, setReportData] = useState([]);
+  const [totalSourceCounts, setTotalSourceCounts] = useState(null);
   const [totalCounts, setTotalCounts] = useState(null);
-  const [totalLeadCount, setTotalLeadCount] = useState(null);
   const [loading, setLoading] = useState(true);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -53,8 +57,8 @@ export default function TopPerformanceReport() {
   const columns = [
     {
       title: "Date",
-      key: "date",
-      dataIndex: "date",
+      key: "DATE",
+      dataIndex: "DATE",
       width: 140,
       fixed: "left",
       render: (text) => {
@@ -177,11 +181,8 @@ export default function TopPerformanceReport() {
       setReportData(response?.data?.data?.data || []);
       const total_lead_count = response?.data?.data?.total_lead_count || [];
 
-      if (total_lead_count.length >= 1) {
-        setTotalLeadCount(total_lead_count[0].lead_count);
-      } else {
-        setTotalLeadCount("-");
-      }
+      setTotalCounts(total_lead_count);
+
       const countArray = response?.data?.data?.total_result || [];
       let total_result = null;
       if (countArray.length >= 1) {
@@ -194,15 +195,15 @@ export default function TopPerformanceReport() {
       } else {
         total_result = null;
       }
-      setTotalCounts(total_result);
+      setTotalSourceCounts(total_result);
       setTimeout(() => {
         setLoading(false);
       }, 300);
     } catch (error) {
       setLoading(false);
       setReportData([]);
+      setTotalSourceCounts(null);
       setTotalCounts(null);
-      setTotalLeadCount("-");
       console.log("top performance report error", error);
     }
   };
@@ -436,8 +437,10 @@ export default function TopPerformanceReport() {
                   fontSize: "20px",
                 }}
               >
-                {totalLeadCount != undefined || totalLeadCount != null
-                  ? Number(totalLeadCount).toLocaleString("en-IN")
+                {totalCounts &&
+                (totalCounts.lead_count != undefined ||
+                  totalCounts.lead_count != null)
+                  ? Number(totalCounts.lead_count).toLocaleString("en-IN")
                   : "-"}
               </p>
             </div>
@@ -463,19 +466,21 @@ export default function TopPerformanceReport() {
                       >
                         <p className="leadsmanager_executivecount_text">
                           {`${1}. Call - ${
-                            totalCounts &&
-                            (totalCounts.call != undefined ||
-                              totalCounts.call != null)
-                              ? Number(totalCounts.call).toLocaleString("en-IN")
+                            totalSourceCounts &&
+                            (totalSourceCounts.call != undefined ||
+                              totalSourceCounts.call != null)
+                              ? Number(totalSourceCounts.call).toLocaleString(
+                                  "en-IN"
+                                )
                               : "-"
                           }`}
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${2}. Direct - ${
-                            totalCounts &&
-                            (totalCounts.direct != undefined ||
-                              totalCounts.direct != null)
-                              ? Number(totalCounts.direct).toLocaleString(
+                            totalSourceCounts &&
+                            (totalSourceCounts.direct != undefined ||
+                              totalSourceCounts.direct != null)
+                              ? Number(totalSourceCounts.direct).toLocaleString(
                                   "en-IN"
                                 )
                               : "-"
@@ -483,52 +488,56 @@ export default function TopPerformanceReport() {
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${3}. Enquiry - ${
-                            totalCounts &&
-                            (totalCounts.enquiry_form != undefined ||
-                              totalCounts.enquiry_form != null)
-                              ? Number(totalCounts.enquiry_form).toLocaleString(
-                                  "en-IN"
-                                )
+                            totalSourceCounts &&
+                            (totalSourceCounts.enquiry_form != undefined ||
+                              totalSourceCounts.enquiry_form != null)
+                              ? Number(
+                                  totalSourceCounts.enquiry_form
+                                ).toLocaleString("en-IN")
                               : "-"
                           }`}
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${4}. IVR - ${
-                            totalCounts &&
-                            (totalCounts.ivr != undefined ||
-                              totalCounts.ivr != null)
-                              ? Number(totalCounts.ivr).toLocaleString("en-IN")
+                            totalSourceCounts &&
+                            (totalSourceCounts.ivr != undefined ||
+                              totalSourceCounts.ivr != null)
+                              ? Number(totalSourceCounts.ivr).toLocaleString(
+                                  "en-IN"
+                                )
                               : "-"
                           }`}
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${5}. Live Chat - ${
-                            totalCounts &&
-                            (totalCounts.live_chat != undefined ||
-                              totalCounts.live_chat != null)
-                              ? Number(totalCounts.live_chat).toLocaleString(
-                                  "en-IN"
-                                )
+                            totalSourceCounts &&
+                            (totalSourceCounts.live_chat != undefined ||
+                              totalSourceCounts.live_chat != null)
+                              ? Number(
+                                  totalSourceCounts.live_chat
+                                ).toLocaleString("en-IN")
                               : "-"
                           }`}
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${6}. Reference - ${
-                            totalCounts &&
-                            (totalCounts.reference != undefined ||
-                              totalCounts.reference != null)
-                              ? Number(totalCounts.reference).toLocaleString(
-                                  "en-IN"
-                                )
+                            totalSourceCounts &&
+                            (totalSourceCounts.reference != undefined ||
+                              totalSourceCounts.reference != null)
+                              ? Number(
+                                  totalSourceCounts.reference
+                                ).toLocaleString("en-IN")
                               : "-"
                           }`}
                         </p>
                         <p className="leadsmanager_executivecount_text">
                           {`${7}. SMO - ${
-                            totalCounts &&
-                            (totalCounts.smo != undefined ||
-                              totalCounts.smo != null)
-                              ? Number(totalCounts.smo).toLocaleString("en-IN")
+                            totalSourceCounts &&
+                            (totalSourceCounts.smo != undefined ||
+                              totalSourceCounts.smo != null)
+                              ? Number(totalSourceCounts.smo).toLocaleString(
+                                  "en-IN"
+                                )
                               : "-"
                           }`}
                         </p>
@@ -544,6 +553,106 @@ export default function TopPerformanceReport() {
                   />
                 </Tooltip>
               </Flex>
+            </div>
+          </div>
+        </Col>
+
+        <Col flex="20%" style={{ marginTop: "30px" }}>
+          <div className="dashboard_leadcount_main_container">
+            <div className="reports_joiningcount_icon_container">
+              <PiUsersThreeBold size={18} />
+            </div>
+            <div className="reports_leadcount_container">
+              <p>Total Joinings</p>
+              <p
+                style={{
+                  marginTop: "4px",
+                  color: "#2ed573",
+                  fontSize: "20px",
+                }}
+              >
+                {totalCounts &&
+                (totalCounts.converted_to_customer != undefined ||
+                  totalCounts.converted_to_customer != null)
+                  ? Number(totalCounts.converted_to_customer).toLocaleString(
+                      "en-IN"
+                    )
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </Col>
+
+        <Col flex="20%" style={{ marginTop: "30px" }}>
+          <div className="dashboard_leadcount_main_container">
+            <div className="reports_salevolume_icon_container">
+              <GoGraph size={17} />
+            </div>
+            <div className="reports_leadcount_container">
+              <p>Sale Volume</p>
+              <p
+                style={{
+                  marginTop: "4px",
+                  color: "#1e90ff",
+                  fontSize: "20px",
+                }}
+              >
+                {totalCounts &&
+                (totalCounts.sale_volume != undefined ||
+                  totalCounts.sale_volume != null)
+                  ? "₹" +
+                    Number(totalCounts.sale_volume).toLocaleString("en-IN")
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </Col>
+
+        <Col flex="20%" style={{ marginTop: "30px" }}>
+          <div className="dashboard_leadcount_main_container">
+            <div className="reports_collection_icon_container">
+              <MdCurrencyRupee size={20} />
+            </div>
+            <div className="reports_leadcount_container">
+              <p>Collection</p>
+              <p
+                style={{
+                  marginTop: "4px",
+                  color: "#3c9111",
+                  fontSize: "20px",
+                }}
+              >
+                {totalCounts &&
+                (totalCounts.total_collection != undefined ||
+                  totalCounts.total_collection != null)
+                  ? "₹" +
+                    Number(totalCounts.total_collection).toLocaleString("en-IN")
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </Col>
+
+        <Col flex="20%" style={{ marginTop: "30px" }}>
+          <div className="dashboard_leadcount_main_container">
+            <div className="reports_pending_icon_container">
+              <MdOutlinePendingActions size={18} />
+            </div>
+            <div className="reports_leadcount_container">
+              <p>Pending</p>
+              <p
+                style={{
+                  marginTop: "4px",
+                  color: "#d32f2f",
+                  fontSize: "20px",
+                }}
+              >
+                {totalCounts &&
+                (totalCounts.pending != undefined ||
+                  totalCounts.pending != null)
+                  ? "₹" + Number(totalCounts.pending).toLocaleString("en-IN")
+                  : "-"}
+              </p>
             </div>
           </div>
         </Col>

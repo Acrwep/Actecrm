@@ -286,7 +286,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     }
 
     .header-logo {
-      width: 80px;
+      width: 110px;
     }
 
     .form-title {
@@ -381,7 +381,8 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     <div class="form-header">
       <div class="header-left">
         <img src="${Logo}" class="header-logo" />
-        <p style="color:#1b538c; font-weight:bold; margin-top:5px;">Technologies</p>
+        <p style="color:#1b538c; font-weight:bold; margin-top:5px;letter-spacing:1px;">Technologies</p>
+        <p style="color:#1b538c; font-weight:bold; margin-top:0px;">Private Limited</p>
       </div>
 
       <p class="form-title">Customer Registration Form</p>
