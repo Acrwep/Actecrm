@@ -274,7 +274,7 @@ export default function TopPerformanceReport() {
     setLoading(true);
     setRegionId(null);
     setBranchId(null);
-    setSelectedUserId(null);
+    setSelectedUserId([]);
     const today = new Date();
     setSelectedDates([
       moment(today).format("YYYY-MM-DD"),
@@ -305,7 +305,7 @@ export default function TopPerformanceReport() {
                   const value = e.target.value;
                   setRegionId(value);
                   setBranchId(null);
-                  setSelectedUserId(null);
+                  setSelectedUserId([]);
                   if (value) {
                     getBranchesData(value);
                   }
@@ -334,7 +334,7 @@ export default function TopPerformanceReport() {
                 onChange={(e) => {
                   const value = e.target.value;
                   setBranchId(value);
-                  setSelectedUserId(null);
+                  setSelectedUserId([]);
                   setPagination({
                     page: 1,
                   });

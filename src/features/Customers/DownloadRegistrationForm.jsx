@@ -29,7 +29,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "px",
-      format: [780, 780],
+      format: [780, 1500],
       compress: true, // ✅ Enable PDF compression
       hotfixes: ["px_scaling"],
     });
@@ -528,8 +528,43 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     <p class="section-title">Terms & Conditions</p>
     <ol class="terms-list">
       <li>Acte Technologies has the right to postpone/cancel classes due to instructor illness or natural calamities. No refund in such cases.</li>
-      <li>Refund requisition will not be accepted.</li>
+
       <li>The registration fee is ₹2,000 and it is non-refundable.</li>
+
+      <li><span style="font-weight: bold;">Attendance & Discipline:</span> Candidates must attend classes regularly, be punctual, follow dress guidelines, and maintain discipline inside the ACTE campus.</li>
+
+    <li><span style="font-weight: bold;">Classroom Rules:</span> Only training-related activities are allowed during class hours. No unrelated visitors are permitted on campus.</li>
+
+    <li><span style="font-weight: bold;">Quality Concerns:</span> Any subject or trainer quality issues must be reported immediately. Management will take corrective action, including trainer change if required.</li>
+
+    <li><span style="font-weight: bold;">Assessments & Certification:</span> Good attendance and successful completion of internal assessments are mandatory. Certificates will be issued within 15 days after registering for certification.</li>
+
+     <li><span style="font-weight: bold;">Communication:</span> All support queries must be raised to <a href="mailto:support@acte.in">support@acte.in</a> or the concerned team. Any non-training discussions in official WhatsApp groups may result in removal.</li>
+
+    <li><span style="font-weight: bold;">Training Resources:</span> Trainers will be allocated and classes scheduled after enrolment. Candidates must bring laptops for practical sessions; systems will be provided based on availability.</li>
+
+    <li><span style="font-weight: bold;">Placement Support:</span> ACTE will provide maximum placement assistance. However, student performance, attendance, and active participation are mandatory for eligibility.</li>
+
+     <li><span style="font-weight: bold;">Payments & Initiation:</span> Once payment is made, the training process begins within 24–48 hours. Part-payment candidates must clear pending fees within 15 days of course start.</li>
+
+     <li><span style="font-weight: bold;">Strict Refund Policy:</span>
+     <ul style="list-style-type: disc;">
+  <li style="margin-top: 6px;">Refund requests must be raised within 7 days of purchase/start of batch.</li>
+  <li>Refund is not applicable once trainer allocation or classes have started.</li>
+  <li>
+    Accessing more than 30% of content/material or attending more than one class
+    voids refund eligibility.
+  </li>
+  <li>Cancellations by the candidate are non-refundable.</li>
+  <li>
+    Quality concerns must first be given for management correction; refunds will
+    not be issued before rectification attempts.
+  </li>
+  <li>Approved refunds will be processed within 7–10 working days.</li>
+</ul>
+     </li>
+
+       <li><span style="font-weight: bold;">Acceptance:</span> By enrolling with ACTE, the candidate confirms that they have fully read, understood, and agreed to these Terms & Conditions without dispute.</li>
     </ol>
 
     <!-- SIGNATURE -->
