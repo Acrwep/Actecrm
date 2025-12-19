@@ -184,7 +184,7 @@ export default function JunkLeads({
       render: (text) => {
         return (
           <>
-            {text.length > 20 ? (
+            {text && text.length > 20 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -202,14 +202,14 @@ export default function JunkLeads({
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
               </Tooltip>
             ) : (
-              <p>{text}</p>
+              <p>{text ? text : "-"}</p>
             )}
           </>
         );
       },
     },
     {
-      title: "Training",
+      title: "Training Mode",
       key: "training",
       dataIndex: "training",
       fixed: "right",
@@ -221,10 +221,16 @@ export default function JunkLeads({
               <p>Online</p>
             </div>
           );
-        } else {
+        } else if (text.includes("Classroom")) {
           return (
             <div className="livelead_classroomtraining_container">
               <p>Classroom</p>
+            </div>
+          );
+        } else {
+          return (
+            <div className="livelead_corporatetraining_container">
+              <p>Corporate</p>
             </div>
           );
         }
@@ -239,7 +245,7 @@ export default function JunkLeads({
       render: (text) => {
         return (
           <>
-            {text.length > 24 ? (
+            {text && text.length > 24 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -257,7 +263,7 @@ export default function JunkLeads({
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
               </Tooltip>
             ) : (
-              <p>{text}</p>
+              <p>{text ? text : "-"}</p>
             )}
           </>
         );

@@ -1390,6 +1390,15 @@ export const topPerformingChannelReport = async (payload) => {
   }
 };
 
+export const paymentReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getRegionWiseFinance`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const qualityReport = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseQuality`, payload);

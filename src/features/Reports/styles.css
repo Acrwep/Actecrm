@@ -51,6 +51,46 @@
   color: #d32f2f;
   border-radius: 50%;
 }
+.reports_bangalore_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #a29bfe57;
+  color: #928afd;
+  border-radius: 50%;
+}
+.reports_card_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #607d8b38;
+  color: #607d8b;
+  border-radius: 50%;
+}
+.reports_razorpay_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #00cecb28;
+  color: #00cec9;
+  border-radius: 50%;
+}
+.reports_razorpayupi_icon_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: #fd79a72c;
+  color: #fd79a8;
+  border-radius: 50%;
+}
 .reports_leadcount_container {
   font-weight: 600;
   font-size: 14px;

@@ -13,6 +13,7 @@ import "./styles.css";
 import QualityReport from "./QualityReport";
 import PostSalePerformanceReport from "./PostSalePerformanceReport";
 import TopPerformanceReport from "./TopPerformanceReport";
+import PaymentReport from "./PaymentReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -68,6 +69,11 @@ export default function Reports() {
             label: "Post Sale Performance",
             key: "7",
             children: <PostSalePerformanceReport />,
+          },
+          {
+            label: "Payment Report",
+            key: "8",
+            children: <PaymentReport />,
           },
           // {
           //   label: "RA Performance",

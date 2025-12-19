@@ -60,7 +60,25 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "collection" ||
           column.dataIndex === "pending_payment" ||
           column.dataIndex === "primary_fees" ||
-          column.dataIndex === "secondary_fees"
+          column.dataIndex === "secondary_fees" ||
+          column.dataIndex === "chennai" ||
+          column.dataIndex === "bangalore" ||
+          column.dataIndex === "hub" ||
+          column.dataIndex === "velachery" ||
+          column.dataIndex === "anna_nagar" ||
+          column.dataIndex === "porur" ||
+          column.dataIndex === "omr" ||
+          column.dataIndex === "e_city" ||
+          column.dataIndex === "btm_layout" ||
+          column.dataIndex === "rajaji_nagar" ||
+          column.dataIndex === "marathahalli" ||
+          column.dataIndex === "cash" ||
+          column.dataIndex === "card" ||
+          column.dataIndex === "bank" ||
+          column.dataIndex === "upi" ||
+          column.dataIndex === "razorpay" ||
+          column.dataIndex === "razorpay_upi" ||
+          column.dataIndex === "total"
         ) {
           return row[column.dataIndex]
             ? ` ₹${Number(row[column.dataIndex]).toLocaleString("en-IN", {

@@ -353,7 +353,7 @@ export default function LiveLead({
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
               </Tooltip>
             ) : (
-              <p>{text}</p>
+              <p>{text ? text : "-"}</p>
             )}
           </>
         );
@@ -402,7 +402,7 @@ export default function LiveLead({
       render: (text) => {
         return (
           <>
-            {text.length > 26 ? (
+            {text && text.length > 26 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -420,7 +420,7 @@ export default function LiveLead({
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
               </Tooltip>
             ) : (
-              <p>{text}</p>
+              <p>{text ? text : "-"}</p>
             )}
           </>
         );
@@ -711,6 +711,10 @@ export default function LiveLead({
         name: item.name,
         email: item.email,
         phone: item.phone,
+        location: item.location ? item.location : "",
+        course: item.course ? item.course : "",
+        training: item.training ? item.training : "",
+        comments: item.comments ? item.comments : "",
       });
       setIsOpenAddDrawer(true);
     } catch (error) {

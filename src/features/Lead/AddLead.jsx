@@ -276,6 +276,17 @@ const AddLead = forwardRef(
         setBatchTrack(updateLeadItem.batch_track_id);
         setComments(updateLeadItem.comments);
       } else if (liveLeadItem) {
+        setTimeout(() => {
+          const drawerBody = document.querySelector(
+            "#leadform_addlead_drawer .ant-drawer-body"
+          );
+          if (drawerBody) {
+            drawerBody.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
+          }
+        }, 300);
         console.log("liveLeadItem", liveLeadItem);
         setName(liveLeadItem.name);
         setEmail(liveLeadItem.email);
@@ -941,6 +952,232 @@ const AddLead = forwardRef(
 
     return (
       <div>
+        {liveLeadItem && (
+          <div
+            className="customerdetails_coursecard"
+            style={{ marginTop: "0px", marginBottom: "20px" }}
+          >
+            <div className="customerdetails_coursecard_headercontainer">
+              <p>Lead Details</p>
+            </div>
+
+            <div className="customerdetails_coursecard_contentcontainer">
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {liveLeadItem && liveLeadItem.name
+                          ? liveLeadItem.name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Email</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <>
+                        {liveLeadItem && liveLeadItem.email ? (
+                          liveLeadItem.email.length > 20 ? (
+                            <Tooltip
+                              color="#fff"
+                              placement="bottom"
+                              title={liveLeadItem.email}
+                              className="leadtable_comments_tooltip"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff", // Tooltip background
+                                  color: "#333", // Tooltip text color
+                                  fontWeight: 500,
+                                  fontSize: "13px",
+                                },
+                              }}
+                            >
+                              <p className="customerdetails_text">
+                                {liveLeadItem.email.slice(0, 19) + "..."}
+                              </p>
+                            </Tooltip>
+                          ) : (
+                            <p className="customerdetails_text">
+                              {liveLeadItem.email}
+                            </p>
+                          )
+                        ) : (
+                          <p className="customerdetails_text">-</p>
+                        )}
+                      </>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Mobile</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {liveLeadItem && liveLeadItem.phone
+                          ? liveLeadItem.phone
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Location</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <>
+                        {liveLeadItem && liveLeadItem.location ? (
+                          liveLeadItem.location.length > 20 ? (
+                            <Tooltip
+                              color="#fff"
+                              placement="bottom"
+                              title={liveLeadItem.location}
+                              className="leadtable_comments_tooltip"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff", // Tooltip background
+                                  color: "#333", // Tooltip text color
+                                  fontWeight: 500,
+                                  fontSize: "13px",
+                                },
+                              }}
+                            >
+                              <p className="customerdetails_text">
+                                {liveLeadItem.location.slice(0, 19) + "..."}
+                              </p>
+                            </Tooltip>
+                          ) : (
+                            <p className="customerdetails_text">
+                              {liveLeadItem.location}
+                            </p>
+                          )
+                        ) : (
+                          <p className="customerdetails_text">-</p>
+                        )}
+                      </>
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Course</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <>
+                        {liveLeadItem && liveLeadItem.course ? (
+                          liveLeadItem.course.length > 20 ? (
+                            <Tooltip
+                              color="#fff"
+                              placement="bottom"
+                              title={liveLeadItem.course}
+                              className="leadtable_comments_tooltip"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff", // Tooltip background
+                                  color: "#333", // Tooltip text color
+                                  fontWeight: 500,
+                                  fontSize: "13px",
+                                },
+                              }}
+                            >
+                              <p className="customerdetails_text">
+                                {liveLeadItem.course.slice(0, 19) + "..."}
+                              </p>
+                            </Tooltip>
+                          ) : (
+                            <p className="customerdetails_text">
+                              {liveLeadItem.course}
+                            </p>
+                          )
+                        ) : (
+                          <p className="customerdetails_text">-</p>
+                        )}
+                      </>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Training Mode
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {liveLeadItem && liveLeadItem.training
+                          ? liveLeadItem.training
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Comments</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <>
+                        {liveLeadItem && liveLeadItem.comments ? (
+                          liveLeadItem.comments.length > 20 ? (
+                            <Tooltip
+                              color="#fff"
+                              placement="bottom"
+                              title={liveLeadItem.comments}
+                              className="leadtable_comments_tooltip"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff", // Tooltip background
+                                  color: "#333", // Tooltip text color
+                                  fontWeight: 500,
+                                  fontSize: "13px",
+                                },
+                              }}
+                            >
+                              <p className="customerdetails_text">
+                                {liveLeadItem.comments.slice(0, 19) + "..."}
+                              </p>
+                            </Tooltip>
+                          ) : (
+                            <p className="customerdetails_text">
+                              {liveLeadItem.comments}
+                            </p>
+                          )
+                        ) : (
+                          <p className="customerdetails_text">-</p>
+                        )}
+                      </>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </div>
+          </div>
+        )}
+
         <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
           Basic Information
         </p>
