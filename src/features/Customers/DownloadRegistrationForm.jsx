@@ -391,7 +391,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
         ${
           customerDetails?.profile_image
             ? `<img src="${customerDetails.profile_image}" class="profile-image" />`
-            : `<img src="${DefaultProfileImage}" class="profile-image" />`
+            : ""
         }
       </div>
     </div>

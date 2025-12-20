@@ -15,9 +15,8 @@ export default function PostSalePerformanceChart({ chartData }) {
     "Class Going",
     "Google Reviews",
     "LinkedIn Reviews",
-    "Escalated",
     "Class Completed",
-    "Videos Given",
+    "Others",
   ];
 
   // Convert chartData into Apex series
@@ -37,7 +36,6 @@ export default function PostSalePerformanceChart({ chartData }) {
     "#00cecbd0",
     "#a1c60c",
     "rgba(10 102 194)",
-    "#d32f2fcc",
     "#258a25",
     "#d32f2fcc",
   ];

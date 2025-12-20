@@ -903,6 +903,18 @@
   align-items: center;
   font-weight: 500;
 }
+.customers_reassigntrainer_button {
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
 .customers_classgoing_loadingupdatebutton {
   background-color: #00cec9 !important;
   color: #fff !important;

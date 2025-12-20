@@ -360,6 +360,9 @@ button:focus-visible {
   .ant-pagination-item-link-icon {
   color: #535bf2 !important;
 }
+.ant-table-title {
+  display: none;
+}
 /* progress bar styles */
 .ant-progress .ant-progress-bg {
   background: #5b69ca !important;

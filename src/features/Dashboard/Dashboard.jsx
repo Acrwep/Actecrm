@@ -468,9 +468,8 @@ export default function Dashboard() {
         Number(postsale_data?.class_going || 0),
         Number(postsale_data?.google_review_count || 0),
         Number(postsale_data?.linkedin_review_count || 0),
-        Number(postsale_data?.escalated || 0),
         Number(postsale_data?.class_completed || 0),
-        Number(postsale_data?.videos_given || 0),
+        Number(postsale_data?.others || 0),
       ];
 
       if (
@@ -485,8 +484,7 @@ export default function Dashboard() {
         postsale_series[8] == 0 &&
         postsale_series[9] == 0 &&
         postsale_series[10] == 0 &&
-        postsale_series[11] == 0 &&
-        postsale_series[12] == 0
+        postsale_series[11] == 0
       ) {
         setPostSaleDataSeries([]);
         return;

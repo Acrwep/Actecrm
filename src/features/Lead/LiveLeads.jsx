@@ -9,16 +9,20 @@ import {
   Drawer,
   Badge,
   Modal,
+  Checkbox,
 } from "antd";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
+import { FiFilter } from "react-icons/fi";
 import {
   assignLiveLead,
   getAllDownlineUsers,
   getLeadAndFollowupCount,
   getLiveLeads,
+  getTableColumns,
   moveLiveLeadToJunk,
+  updateTableColumns,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -41,6 +45,7 @@ import {
   storeLiveLeadSearchValue,
   storeLiveLeadSelectedDates,
 } from "../Redux/Slice";
+import CommonDnd from "../Common/CommonDnd";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -89,6 +94,8 @@ export default function LiveLead({
   const [liveLeadId, setLiveLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  //table filter usestates
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -96,7 +103,9 @@ export default function LiveLead({
     total: 0,
     totalPages: 0,
   });
-
+  //table dnd
+  const [checkAll, setCheckAll] = useState(false);
+  const [updateTableId, setUpdateTableId] = useState(null);
   const formatDuration = (dateString) => {
     if (import.meta.env.PROD) {
       const created = new Date(dateString);
@@ -159,7 +168,7 @@ export default function LiveLead({
     }
   };
 
-  const columns = [
+  const nonChangeColumns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Created Before",
@@ -472,6 +481,11 @@ export default function LiveLead({
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+
   useEffect(() => {
     setCallCountApi(
       isLeadPageVisited == true && isJunkPageVisited == true ? false : true
@@ -543,6 +557,7 @@ export default function LiveLead({
     setTimeout(() => {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
+      getTableColumnsData(convertAsJson?.user_id);
       getAllDownlineUsersData(convertAsJson?.user_id);
       setLoginUserId(convertAsJson?.user_id);
     }, 300);
@@ -662,6 +677,370 @@ export default function LiveLead({
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumns();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Live Leads");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "created_date":
+              return {
+                ...col,
+                width: 130,
+                render: (text) => {
+                  const { text: durationText, hours } = formatDuration(text);
+
+                  let bg = "";
+                  let color = "";
+
+                  if (hours <= 1) {
+                    bg = "rgba(0, 128, 0, 0.12)"; // light green
+                    color = "#0f8a0f"; // dark green
+                  } else if (hours > 1 && hours <= 24) {
+                    bg = "rgba(255, 165, 0, 0.15)"; // light orange
+                    color = "#d27a00"; // dark orange
+                  } else {
+                    bg = "rgba(255, 0, 0, 0.13)"; // light red
+                    color = "#c80000"; // dark red
+                  }
+
+                  return (
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          background: bg,
+                          color: color,
+                          padding: "3px 8px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          display: "inline-block",
+                          minWidth: "75px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {durationText}
+                      </span>
+                    </div>
+                  );
+                },
+              };
+            case "name":
+              return {
+                ...col,
+                width: 180,
+                render: (text, record) => {
+                  return (
+                    <Badge
+                      size="small"
+                      count={
+                        record.lead_type == "New" || record.lead_type == null
+                          ? "New"
+                          : "Existing"
+                      }
+                      offset={
+                        record.lead_type == "New" || record.lead_type == null
+                          ? [22, 0]
+                          : [30, 0]
+                      }
+                      color={
+                        record.lead_type == "New" || record.lead_type == null
+                          ? "#1e90ff"
+                          : "#d32f2f"
+                      }
+                      style={{ fontSize: "10px" }}
+                    >
+                      {text.length > 16 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer", fontSize: "13px" }}>
+                            {text.slice(0, 15) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p style={{ fontSize: "13px" }}>{text}</p>
+                      )}
+                    </Badge>
+                  );
+                },
+              };
+            case "course":
+              return {
+                ...col,
+                width: 200,
+                render: (text) => {
+                  return (
+                    <>
+                      {text.length > 22 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 21) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "phone":
+              return {
+                ...col,
+                width: 130,
+              };
+            case "email":
+              return {
+                ...col,
+                width: 240,
+                render: (text) => {
+                  return (
+                    <>
+                      {text.length > 26 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 25) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "location":
+              return {
+                ...col,
+                width: 160,
+                render: (text) => {
+                  return (
+                    <>
+                      {text && text.length > 20 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 19) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text ? text : "-"}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "training":
+              return {
+                ...col,
+                width: 140,
+                render: (text) => {
+                  if (text.includes("Online")) {
+                    return (
+                      <div className="livelead_onlinetraining_container">
+                        <p>Online</p>
+                      </div>
+                    );
+                  } else if (text.includes("Classroom")) {
+                    return (
+                      <div className="livelead_classroomtraining_container">
+                        <p>Classroom</p>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="livelead_corporatetraining_container">
+                        <p>Corporate</p>
+                      </div>
+                    );
+                  }
+                },
+              };
+            case "comments":
+              return {
+                ...col,
+                width: 220,
+                render: (text) => {
+                  return (
+                    <>
+                      {text && text.length > 26 ? (
+                        <Tooltip
+                          color="#fff"
+                          placement="bottom"
+                          title={text}
+                          className="leadtable_comments_tooltip"
+                          styles={{
+                            body: {
+                              backgroundColor: "#fff", // Tooltip background
+                              color: "#333", // Tooltip text color
+                              fontWeight: 500,
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          <p style={{ cursor: "pointer" }}>
+                            {text.slice(0, 25) + "..."}
+                          </p>
+                        </Tooltip>
+                      ) : (
+                        <p>{text ? text : "-"}</p>
+                      )}
+                    </>
+                  );
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                fixed: "right",
+                width: 120,
+                render: (text, record) => {
+                  return (
+                    <div className="trainers_actionbuttonContainer">
+                      <Tooltip placement="bottom" title="Pick">
+                        {pickLoadingRow == record.id ? (
+                          <GiCardPickup
+                            size={26}
+                            color="#5b69ca"
+                            className="trainers_action_icons"
+                            style={{ opacity: "0.7" }}
+                          />
+                        ) : (
+                          <GiCardPickup
+                            size={26}
+                            color="#5b69ca"
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setPickLoadingRow(record.id);
+                              handlePick(record);
+                            }}
+                          />
+                        )}
+                      </Tooltip>
+                      <Tooltip placement="bottom" title="Move to Junk">
+                        <MdOutlinePlaylistRemove
+                          color="#d32f2f"
+                          size={20}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setLiveLeadId(record.id);
+                            setIsOpenJunkModal(true);
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
+                  );
+                },
+              };
+            default:
+              return col;
+          }
+        });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Live Leads",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
     }
   };
 
@@ -949,8 +1328,8 @@ export default function LiveLead({
           </Row>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>
-          {selectedRows.length >= 1 && (
-            <div className="livelead_junkbutton_container">
+          <div className="livelead_junkbutton_container">
+            {selectedRows.length >= 1 && (
               <Button
                 className="livelead_junkbutton"
                 onClick={() => {
@@ -959,15 +1338,30 @@ export default function LiveLead({
               >
                 Move to Junk
               </Button>
-            </div>
-          )}
+            )}
+            <FiFilter
+              size={20}
+              color="#5b69ca"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setIsOpenFilterDrawer(true);
+                getTableColumnsData(loginUserId);
+              }}
+            />
+          </div>
         </Col>
       </Row>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1300 }}
-          columns={columns}
+          // scroll={{ x: 1300 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
+          columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
@@ -981,6 +1375,89 @@ export default function LiveLead({
           totalPageNumber={pagination.total} // total rows
         />
       </div>
+
+      {/* table filter drawer */}
+
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
+        open={isOpenFilterDrawer}
+        onClose={() => {
+          setIsOpenFilterDrawer(false);
+        }}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: 50 }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd data={columns} setColumns={setColumns} />
+            </div>
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={async () => {
+                const visibleColumns = columns
+                  .filter((col) => col.isChecked)
+                  .map((col) => ({
+                    ...col,
+                    width: col.width || 150, // fallback width for consistent layout
+                  }));
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
+                setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Live Leads",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Drawer>
 
       <Drawer
         title="Add Lead"

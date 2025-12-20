@@ -208,7 +208,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               <FaRegEye size={16} /> View Proof Screenshot
             </button>
           </div>
-        ) : item.status === "Trainer Assigned" ? (
+        ) : item.status === "Trainer Assigned" ||
+          item.status === "Trainer Re-Assigned" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -442,7 +443,9 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               <p className="customer_history_comments">Class Going:</p>
               <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
                 {item.details
-                  ? item.details.class_going_percentage + "%"
+                  ? item.details.class_going_percentage
+                    ? item.details.class_going_percentage + "%"
+                    : "0%"
                   : "0%"}
               </p>
             </div>

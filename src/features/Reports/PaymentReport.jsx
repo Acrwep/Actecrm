@@ -30,6 +30,7 @@ import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import PaymentDownloadTableAsCSV from "./DownloadPaymentReport";
 
 export default function PaymentReport() {
   const mounted = useRef(false);
@@ -55,7 +56,7 @@ export default function PaymentReport() {
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 100,
     total: 0,
     totalPages: 0,
   });
@@ -98,6 +99,15 @@ export default function PaymentReport() {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
+    {
+      title: "Total",
+      key: "total",
+      dataIndex: "total",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
   ];
 
   const branchColumns = [
@@ -105,7 +115,7 @@ export default function PaymentReport() {
       title: "Date",
       key: "date",
       dataIndex: "date",
-      width: 160,
+      width: 90,
       fixed: "left",
       render: (text) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
@@ -115,7 +125,7 @@ export default function PaymentReport() {
       title: "Velachery",
       key: "velachery",
       dataIndex: "velachery",
-      width: 120,
+      width: 85,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -124,7 +134,7 @@ export default function PaymentReport() {
       title: "Anna Nagar",
       key: "anna_nagar",
       dataIndex: "anna_nagar",
-      width: 120,
+      width: 100,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -133,7 +143,7 @@ export default function PaymentReport() {
       title: "Porur",
       key: "porur",
       dataIndex: "porur",
-      width: 140,
+      width: 75,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -142,16 +152,16 @@ export default function PaymentReport() {
       title: "OMR",
       key: "omr",
       dataIndex: "omr",
-      width: 140,
+      width: 74,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Electronic City",
+      title: "E-City",
       key: "e_city",
       dataIndex: "e_city",
-      width: 140,
+      width: 75,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -160,7 +170,7 @@ export default function PaymentReport() {
       title: "BTM Layout",
       key: "btm_layout",
       dataIndex: "btm_layout",
-      width: 140,
+      width: 80,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -169,7 +179,7 @@ export default function PaymentReport() {
       title: "Rajaji Nagar",
       key: "rajaji_nagar",
       dataIndex: "rajaji_nagar",
-      width: 140,
+      width: 85,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -178,7 +188,17 @@ export default function PaymentReport() {
       title: "Marathahalli",
       key: "marathahalli",
       dataIndex: "marathahalli",
-      width: 140,
+      width: 82,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Total",
+      key: "total",
+      dataIndex: "total",
+      width: 80,
+      fixed: "right",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -315,12 +335,135 @@ export default function PaymentReport() {
     setTypeId("Region");
     setPagination({
       page: 1,
+      limit: 100,
     });
     getPaymentReportData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
-      typeId
+      "Region"
     );
+  };
+
+  const regionTotals = {
+    hub:
+      totalCounts &&
+      (totalCounts.hub_total != undefined || totalCounts.hub_total != null)
+        ? "₹" + Number(totalCounts.hub_total).toLocaleString("en-IN")
+        : "-",
+    chennai:
+      totalCounts &&
+      (totalCounts.chennai_total != undefined ||
+        totalCounts.chennai_total != null)
+        ? "₹" + Number(totalCounts.chennai_total).toLocaleString("en-IN")
+        : "-",
+    bangalore:
+      totalCounts &&
+      (totalCounts.bangalore_total != undefined ||
+        totalCounts.bangalore_total != null)
+        ? "₹" + Number(totalCounts.bangalore_total).toLocaleString("en-IN")
+        : "-",
+    total:
+      totalCounts &&
+      (totalCounts.over_all_total != undefined ||
+        totalCounts.over_all_total != null)
+        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
+        : "-",
+  };
+
+  const branchTotals = {
+    velachery:
+      totalCounts &&
+      (totalCounts.velachery_total != undefined ||
+        totalCounts.velachery_total != null)
+        ? Number(totalCounts.velachery_total).toLocaleString("en-IN")
+        : "-",
+    anna_nagar:
+      totalCounts &&
+      (totalCounts.anna_nagar_total != undefined ||
+        totalCounts.anna_nagar_total != null)
+        ? Number(totalCounts.anna_nagar_total).toLocaleString("en-IN")
+        : "-",
+    porur:
+      totalCounts &&
+      (totalCounts.porur_total != undefined || totalCounts.porur_total != null)
+        ? Number(totalCounts.porur_total).toLocaleString("en-IN")
+        : "-",
+    omr:
+      totalCounts &&
+      (totalCounts.omr_total != undefined || totalCounts.omr_total != null)
+        ? Number(totalCounts.omr_total).toLocaleString("en-IN")
+        : "-",
+    e_city:
+      totalCounts &&
+      (totalCounts.e_city_total != undefined ||
+        totalCounts.e_city_total != null)
+        ? Number(totalCounts.e_city_total).toLocaleString("en-IN")
+        : "-",
+    btm_layout:
+      totalCounts &&
+      (totalCounts.btm_layout_total != undefined ||
+        totalCounts.btm_layout_total != null)
+        ? Number(totalCounts.btm_layout_total).toLocaleString("en-IN")
+        : "-",
+    rajaji_nagar:
+      totalCounts &&
+      (totalCounts.rajaji_nagar != undefined ||
+        totalCounts.rajaji_nagar != null)
+        ? Number(totalCounts.rajaji_nagar).toLocaleString("en-IN")
+        : "-",
+    marathahalli:
+      totalCounts &&
+      (totalCounts.marathahalli_total != undefined ||
+        totalCounts.marathahalli_total != null)
+        ? Number(totalCounts.marathahalli_total).toLocaleString("en-IN")
+        : "-",
+    total:
+      totalCounts &&
+      (totalCounts.over_all_total != undefined ||
+        totalCounts.over_all_total != null)
+        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
+        : "-",
+  };
+
+  const paymodeTotals = {
+    cash:
+      totalCounts &&
+      (totalCounts.cash_total != undefined || totalCounts.cash_total != null)
+        ? Number(totalCounts.cash_total).toLocaleString("en-IN")
+        : "-",
+    bank:
+      totalCounts &&
+      (totalCounts.bank_total != undefined || totalCounts.bank_total != null)
+        ? Number(totalCounts.bank_total).toLocaleString("en-IN")
+        : "-",
+    upi:
+      totalCounts &&
+      (totalCounts.upi_total != undefined || totalCounts.upi_total != null)
+        ? Number(totalCounts.upi_total).toLocaleString("en-IN")
+        : "-",
+    card:
+      totalCounts &&
+      (totalCounts.card_total != undefined || totalCounts.card_total != null)
+        ? Number(totalCounts.card_total).toLocaleString("en-IN")
+        : "-",
+    razorpay:
+      totalCounts &&
+      (totalCounts.razorpay_total != undefined ||
+        totalCounts.razorpay_total != null)
+        ? Number(totalCounts.razorpay_total).toLocaleString("en-IN")
+        : "-",
+    razorpay_upi:
+      totalCounts &&
+      (totalCounts.razorpay_upi_total != undefined ||
+        totalCounts.razorpay_upi_total != null)
+        ? Number(totalCounts.razorpay_upi_total).toLocaleString("en-IN")
+        : "-",
+    total:
+      totalCounts &&
+      (totalCounts.over_all_total != undefined ||
+        totalCounts.over_all_total != null)
+        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
+        : "-",
   };
 
   return (
@@ -354,6 +497,7 @@ export default function PaymentReport() {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
+                    limit: 100,
                   });
                   getPaymentReportData(dates[0], dates[1], typeId);
                 }}
@@ -377,7 +521,7 @@ export default function PaymentReport() {
             <Button
               className="reports_download_button"
               onClick={() => {
-                DownloadTableAsCSV(
+                PaymentDownloadTableAsCSV(
                   reportData,
                   typeId == "Region"
                     ? columns
@@ -392,7 +536,12 @@ export default function PaymentReport() {
                       : typeId == "Branch"
                       ? "Branchwise"
                       : "Modewise"
-                  } Payment Report.csv`
+                  } Payment Report.csv`,
+                  typeId == "Region"
+                    ? regionTotals
+                    : typeId == "Branch"
+                    ? branchTotals
+                    : paymodeTotals
                 );
               }}
             >
@@ -411,456 +560,9 @@ export default function PaymentReport() {
         </Col>
       </Row>
 
-      {typeId == "Region" || typeId == "Branch" ? (
-        <Row gutter={16}>
-          {typeId == "Region" ? (
-            <Col flex="20%" style={{ marginTop: "30px" }}>
-              <div className="dashboard_leadcount_main_container">
-                <div className="reports_leadcount_icon_container">
-                  <HiStatusOnline size={18} />
-                </div>
-                <div className="reports_leadcount_container">
-                  <p>Hub</p>
-                  <p
-                    style={{
-                      marginTop: "4px",
-                      color: "#5b69ca",
-                      fontSize: "20px",
-                    }}
-                  >
-                    {totalCounts &&
-                    (totalCounts.hub_total != undefined ||
-                      totalCounts.hub_total != null)
-                      ? "₹" +
-                        Number(totalCounts.hub_total).toLocaleString("en-IN")
-                      : "-"}
-                  </p>
-                </div>
-              </div>
-            </Col>
-          ) : (
-            ""
-          )}
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_salevolume_icon_container">
-                <PiCityDuotone size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Chennai</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#1e90ff",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.chennai_total != undefined ||
-                    totalCounts.chennai_total != null)
-                    ? "₹" +
-                      Number(totalCounts.chennai_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-
-              {typeId == "Branch" && (
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <>
-                          <div
-                            style={{
-                              maxHeight: "140px",
-                              overflowY: "auto",
-                              whiteSpace: "pre-line",
-                              lineHeight: "24px",
-                            }}
-                          >
-                            <p className="leadsmanager_executivecount_text">
-                              {`${1}. Velachery - ${
-                                totalCounts &&
-                                (totalCounts.velachery_total != undefined ||
-                                  totalCounts.velachery_total != null)
-                                  ? Number(
-                                      totalCounts.velachery_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${2}. Anna Nagar - ${
-                                totalCounts &&
-                                (totalCounts.anna_nagar_total != undefined ||
-                                  totalCounts.anna_nagar_total != null)
-                                  ? Number(
-                                      totalCounts.anna_nagar_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${3}. Porur - ${
-                                totalCounts &&
-                                (totalCounts.porur_total != undefined ||
-                                  totalCounts.porur_total != null)
-                                  ? Number(
-                                      totalCounts.porur_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${4}. OMR - ${
-                                totalCounts &&
-                                (totalCounts.omr_total != undefined ||
-                                  totalCounts.omr_total != null)
-                                  ? Number(
-                                      totalCounts.omr_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                          </div>
-                        </>
-                      }
-                      trigger={["click"]}
-                    >
-                      <HiOutlineInformationCircle
-                        size={18}
-                        color="#333"
-                        style={{ cursor: "pointer" }}
-                      />
-                    </Tooltip>
-                  </Flex>
-                </div>
-              )}
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_bangalore_icon_container">
-                <PiCityDuotone size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Bangalore</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#928afd",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.bangalore_total != undefined ||
-                    totalCounts.bangalore_total != null)
-                    ? "₹" +
-                      Number(totalCounts.bangalore_total).toLocaleString(
-                        "en-IN"
-                      )
-                    : "-"}
-                </p>
-              </div>
-
-              {typeId == "Branch" && (
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <>
-                          <div
-                            style={{
-                              maxHeight: "140px",
-                              overflowY: "auto",
-                              whiteSpace: "pre-line",
-                              lineHeight: "24px",
-                            }}
-                          >
-                            <p className="leadsmanager_executivecount_text">
-                              {`${1}. Electronuc City - ${
-                                totalCounts &&
-                                (totalCounts.e_city_total != undefined ||
-                                  totalCounts.e_city_total != null)
-                                  ? Number(
-                                      totalCounts.e_city_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${2}. BTM Layout - ${
-                                totalCounts &&
-                                (totalCounts.btm_layout_total != undefined ||
-                                  totalCounts.btm_layout_total != null)
-                                  ? Number(
-                                      totalCounts.btm_layout_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${3}. Rajaji Nagar - ${
-                                totalCounts &&
-                                (totalCounts.rajaji_nagar != undefined ||
-                                  totalCounts.rajaji_nagar != null)
-                                  ? Number(
-                                      totalCounts.rajaji_nagar
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                            <p className="leadsmanager_executivecount_text">
-                              {`${4}. Marathahalli - ${
-                                totalCounts &&
-                                (totalCounts.marathahalli_total != undefined ||
-                                  totalCounts.marathahalli_total != null)
-                                  ? Number(
-                                      totalCounts.marathahalli_total
-                                    ).toLocaleString("en-IN")
-                                  : "-"
-                              }`}
-                            </p>
-                          </div>
-                        </>
-                      }
-                      trigger={["click"]}
-                    >
-                      <HiOutlineInformationCircle
-                        size={18}
-                        color="#333"
-                        style={{ cursor: "pointer" }}
-                      />
-                    </Tooltip>
-                  </Flex>
-                </div>
-              )}
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_collection_icon_container">
-                <MdCurrencyRupee size={19} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Total</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#3c9111",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.over_all_total != undefined ||
-                    totalCounts.over_all_total != null)
-                    ? "₹" +
-                      Number(totalCounts.over_all_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      ) : (
-        <Row gutter={16}>
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_leadcount_icon_container">
-                <GiMoneyStack size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Cash</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#5b69ca",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.card_total != undefined ||
-                    totalCounts.card_total != null)
-                    ? "₹" +
-                      Number(totalCounts.card_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_salevolume_icon_container">
-                <AiOutlineBank size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Bank</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#1e90ff",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.bank_total != undefined ||
-                    totalCounts.bank_total != null)
-                    ? "₹" +
-                      Number(totalCounts.bank_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_bangalore_icon_container">
-                <RiArrowRightDoubleFill size={20} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>UPI</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#928afd",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.upi_total != undefined ||
-                    totalCounts.upi_total != null)
-                    ? "₹" +
-                      Number(totalCounts.upi_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_card_icon_container">
-                <FaRegCreditCard size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Card</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#607d8b",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.card_total != undefined ||
-                    totalCounts.card_total != null)
-                    ? "₹" +
-                      Number(totalCounts.card_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_razorpay_icon_container">
-                <SiRazorpay size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Razorpay</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#00cec9",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.razorpay_total != undefined ||
-                    totalCounts.razorpay_total != null)
-                    ? "₹" +
-                      Number(totalCounts.razorpay_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_razorpayupi_icon_container">
-                <HiStatusOnline size={18} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Razorpay-UPI</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#fd79a8",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.razorpay_upi_total != undefined ||
-                    totalCounts.razorpay_upi_total != null)
-                    ? "₹" +
-                      Number(totalCounts.razorpay_upi_total).toLocaleString(
-                        "en-IN"
-                      )
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-
-          <Col flex="20%" style={{ marginTop: "30px" }}>
-            <div className="dashboard_leadcount_main_container">
-              <div className="reports_collection_icon_container">
-                <MdCurrencyRupee size={19} />
-              </div>
-              <div className="reports_leadcount_container">
-                <p>Total</p>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    color: "#3c9111",
-                    fontSize: "20px",
-                  }}
-                >
-                  {totalCounts &&
-                  (totalCounts.over_all_total != undefined ||
-                    totalCounts.over_all_total != null)
-                    ? "₹" +
-                      Number(totalCounts.over_all_total).toLocaleString("en-IN")
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      )}
-
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 800 }}
+          scroll={{ x: 600 }}
           columns={
             typeId == "Region"
               ? columns
@@ -873,11 +575,18 @@ export default function PaymentReport() {
           loading={loading}
           checkBox="false"
           size="small"
-          className="questionupload_table"
+          className="paymentreport_table"
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
+          totals={
+            typeId == "Region"
+              ? regionTotals
+              : typeId == "Branch"
+              ? branchTotals
+              : paymodeTotals
+          }
         />
       </div>
     </div>

@@ -104,7 +104,7 @@ export default function OverallDueCustomers({
       render: (text) => {
         return (
           <>
-            {text.length > 24 ? (
+            {text.length > 22 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -119,7 +119,7 @@ export default function OverallDueCustomers({
                   },
                 }}
               >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
@@ -552,7 +552,7 @@ export default function OverallDueCustomers({
                   render: (text) => {
                     return (
                       <>
-                        {text.length > 24 ? (
+                        {text.length > 22 ? (
                           <Tooltip
                             color="#fff"
                             placement="bottom"
@@ -568,7 +568,7 @@ export default function OverallDueCustomers({
                             }}
                           >
                             <p style={{ cursor: "pointer" }}>
-                              {text.slice(0, 23) + "..."}
+                              {text.slice(0, 21) + "..."}
                             </p>
                           </Tooltip>
                         ) : (

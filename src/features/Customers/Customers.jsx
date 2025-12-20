@@ -74,6 +74,7 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CustomerEmailTemplate from "./CustomerEmailTemplate";
 import ParticularCustomerDetails from "./ParticularCustomerDetails";
 import OthersHandling from "./OthersHandling";
+import ReAssignTrainer from "./ReAssignTrainer";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -81,6 +82,7 @@ export default function Customers() {
   const financeVerifyRef = useRef();
   const studentVerifyRef = useRef();
   const assignAndVerifyTrainerRef = useRef();
+  const reAssignTrainerRef = useRef();
   const classScheduleRef = useRef();
   const passedOutProcessRef = useRef();
   const othersHandlingRef = useRef();
@@ -201,7 +203,7 @@ export default function Customers() {
       render: (text) => {
         return (
           <>
-            {text.length > 26 ? (
+            {text.length > 22 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -216,7 +218,7 @@ export default function Customers() {
                   },
                 }}
               >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
@@ -823,33 +825,59 @@ export default function Customers() {
                       ""
                     )}
 
-                    <Col span={12}>
-                      <Checkbox
-                        className="customers_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status === "Form Pending") {
-                            CommonMessage("warning", "Form Not Submitted Yet");
-                          } else if (record.status === "Awaiting Finance") {
-                            CommonMessage(
-                              "warning",
-                              "Finance not Verified Yet"
-                            );
-                          } else {
-                            if (!permissions.includes("Others Checkbox")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
+                    {record.status == "Escalated" ? (
+                      <Col span={12}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <button
+                            className="customers_reassigntrainer_button"
+                            onClick={() => {
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setDrawerContentStatus("Re-Assign Trainer");
+                              setIsStatusUpdateDrawer(true);
+                            }}
+                          >
+                            Re-Assign Trainer
+                          </button>
+                        </div>
+                      </Col>
+                    ) : (
+                      <Col span={12}>
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status === "Form Pending") {
+                              CommonMessage(
+                                "warning",
+                                "Form Not Submitted Yet"
+                              );
+                            } else if (record.status === "Awaiting Finance") {
+                              CommonMessage(
+                                "warning",
+                                "Finance not Verified Yet"
+                              );
+                            } else {
+                              if (!permissions.includes("Others Checkbox")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              setCustomerId(record.id);
+                              setCustomerDetails(record);
+                              setDrawerContentStatus("Others");
+                              setIsStatusUpdateDrawer(true);
                             }
-                            setCustomerId(record.id);
-                            setCustomerDetails(record);
-                            setDrawerContentStatus("Others");
-                            setIsStatusUpdateDrawer(true);
-                          }
-                        }}
-                      >
-                        Others
-                      </Checkbox>
-                    </Col>
+                          }}
+                        >
+                          Others
+                        </Checkbox>
+                      </Col>
+                    )}
                   </Row>
                 </>
               }
@@ -1369,7 +1397,7 @@ export default function Customers() {
                 render: (text) => {
                   return (
                     <>
-                      {text.length > 24 ? (
+                      {text.length > 22 ? (
                         <Tooltip
                           color="#fff"
                           placement="bottom"
@@ -1385,7 +1413,7 @@ export default function Customers() {
                           }}
                         >
                           <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 23) + "..."}
+                            {text.slice(0, 21) + "..."}
                           </p>
                         </Tooltip>
                       ) : (
@@ -2096,40 +2124,70 @@ export default function Customers() {
                                 ""
                               )}
 
-                              <Col span={12}>
-                                <Checkbox
-                                  className="customers_statuscheckbox"
-                                  checked={false}
-                                  onChange={(e) => {
-                                    if (record.status === "Form Pending") {
-                                      CommonMessage(
-                                        "warning",
-                                        "Form Not Submitted Yet"
-                                      );
-                                    } else if (
-                                      record.status === "Awaiting Finance"
-                                    ) {
-                                      CommonMessage(
-                                        "warning",
-                                        "Finance not Verified Yet"
-                                      );
-                                    } else {
-                                      if (
-                                        !permissions.includes("Others Checkbox")
+                              {record.status == "Escalated" ? (
+                                <Col span={12}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <button
+                                      className="customers_reassigntrainer_button"
+                                      onClick={() => {
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus(
+                                          "Re-Assign Trainer"
+                                        );
+                                        setIsStatusUpdateDrawer(true);
+                                      }}
+                                    >
+                                      Re-Assign Trainer
+                                    </button>
+                                  </div>
+                                </Col>
+                              ) : (
+                                <Col span={12}>
+                                  <Checkbox
+                                    className="customers_statuscheckbox"
+                                    checked={false}
+                                    onChange={(e) => {
+                                      if (record.status === "Form Pending") {
+                                        CommonMessage(
+                                          "warning",
+                                          "Form Not Submitted Yet"
+                                        );
+                                      } else if (
+                                        record.status === "Awaiting Finance"
                                       ) {
-                                        CommonMessage("error", "Access Denied");
-                                        return;
+                                        CommonMessage(
+                                          "warning",
+                                          "Finance not Verified Yet"
+                                        );
+                                      } else {
+                                        if (
+                                          !permissions.includes(
+                                            "Others Checkbox"
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied"
+                                          );
+                                          return;
+                                        }
+                                        setCustomerId(record.id);
+                                        setCustomerDetails(record);
+                                        setDrawerContentStatus("Others");
+                                        setIsStatusUpdateDrawer(true);
                                       }
-                                      setCustomerId(record.id);
-                                      setCustomerDetails(record);
-                                      setDrawerContentStatus("Others");
-                                      setIsStatusUpdateDrawer(true);
-                                    }
-                                  }}
-                                >
-                                  Others
-                                </Checkbox>
-                              </Col>
+                                    }}
+                                  >
+                                    Others
+                                  </Checkbox>
+                                </Col>
+                              )}
                             </Row>
                           </>
                         }
@@ -3514,7 +3572,11 @@ export default function Customers() {
       </Drawer>
 
       <Drawer
-        title="Update Status"
+        title={
+          drawerContentStatus == "Re-Assign Trainer"
+            ? "Re-Assign Trainer"
+            : "Update Status"
+        }
         open={isStatusUpdateDrawer}
         onClose={updateStatusDrawerReset}
         width="50%"
@@ -3893,6 +3955,32 @@ export default function Customers() {
               }}
             />
           </>
+        ) : drawerContentStatus == "Re-Assign Trainer" ? (
+          <>
+            <ReAssignTrainer
+              ref={reAssignTrainerRef}
+              customerDetails={customerDetails}
+              drawerContentStatus={drawerContentStatus}
+              setUpdateButtonLoading={setUpdateButtonLoading}
+              trainersData={trainersData}
+              callgetCustomersApi={() => {
+                updateStatusDrawerReset();
+                setPagination({
+                  page: 1,
+                });
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  status,
+                  allDownliners,
+                  branchOptions,
+                  pagination.page,
+                  pagination.limit
+                );
+              }}
+            />
+          </>
         ) : drawerContentStatus === "Class Schedule" ||
           drawerContentStatus === "Class Going" ? (
           <>
@@ -4091,6 +4179,9 @@ export default function Customers() {
                           : drawerContentStatus === "Assign Trainer"
                           ? () =>
                               assignAndVerifyTrainerRef.current?.handleAssignTrainer()
+                          : drawerContentStatus === "Re-Assign Trainer"
+                          ? () =>
+                              reAssignTrainerRef.current?.handleReAssignTrainer()
                           : drawerContentStatus === "Trainer Verify"
                           ? () =>
                               assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
@@ -4110,6 +4201,8 @@ export default function Customers() {
                     >
                       {drawerContentStatus === "Assign Trainer"
                         ? "Assign"
+                        : drawerContentStatus === "Re-Assign Trainer"
+                        ? "Re-Assign"
                         : drawerContentStatus === "Class Going" ||
                           drawerContentStatus === "Class Schedule" ||
                           drawerContentStatus === "Add G-Review" ||
