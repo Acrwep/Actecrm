@@ -156,6 +156,15 @@ export default function TransactionReport() {
       },
     },
     {
+      title: "Joined Date",
+      key: "cus_reg_date",
+      dataIndex: "cus_reg_date",
+      width: 100,
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
+    },
+    {
       title: "Name",
       key: "cus_name",
       dataIndex: "cus_name",

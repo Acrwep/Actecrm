@@ -41,7 +41,7 @@ export default function UserwiseSalesReport() {
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 500,
     total: 0,
     totalPages: 0,
   });
@@ -62,13 +62,12 @@ export default function UserwiseSalesReport() {
       dataIndex: "user_name",
       width: 160,
       fixed: "left",
-      render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.user_id} - ${text}`}</p>
-          </div>
-        );
-      },
+      render: (text, row) => ({
+        children: <p> {`${row.user_id} - ${text}`}</p>,
+        props: {
+          rowSpan: row.branchRowSpan,
+        },
+      }),
     },
     {
       title: "Month",
@@ -205,6 +204,38 @@ export default function UserwiseSalesReport() {
     },
   ];
 
+  const prepareTableData = (data) => {
+    const branchCount = {};
+    const branchIndexMap = {};
+    let currentGroupIndex = 0;
+
+    // Count rows per branch
+    data.forEach((item) => {
+      branchCount[item.user_name] = (branchCount[item.user_name] || 0) + 1;
+    });
+
+    const branchRendered = {};
+
+    return data.map((item) => {
+      // Assign fixed group index per branch
+      if (branchIndexMap[item.user_name] === undefined) {
+        branchIndexMap[item.user_name] = currentGroupIndex++;
+      }
+
+      const isFirstRow = !branchRendered[item.user_name];
+
+      if (isFirstRow) {
+        branchRendered[item.user_name] = true;
+      }
+
+      return {
+        ...item,
+        groupIndex: branchIndexMap[item.user_name],
+        branchRowSpan: isFirstRow ? branchCount[item.user_name] : 0,
+      };
+    });
+  };
+
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -258,7 +289,13 @@ export default function UserwiseSalesReport() {
     try {
       const response = await userwiseSalesAnalysisReports(payload);
       console.log("userwise sales report response", response);
-      setReportData(response?.data?.data || []);
+      const data = response?.data?.data || [];
+      if (data.length >= 1) {
+        const tableData = prepareTableData(data);
+        setReportData(tableData);
+      } else {
+        setReportData([]);
+      }
     } catch (error) {
       setReportData([]);
       setTotalCounts(null);
@@ -315,6 +352,7 @@ export default function UserwiseSalesReport() {
       setAllDownliners(downliners_ids);
       setPagination({
         page: 1,
+        limit: 500,
       });
       getUsersWiseSalesReportData(
         startDateAndEndDate[0],
@@ -333,6 +371,7 @@ export default function UserwiseSalesReport() {
     setStartDateAndEndDate(customizeDate);
     setPagination({
       page: 1,
+      limit: 500,
     });
     getAllDownlineUsersData(loginUserId);
   };
@@ -366,6 +405,10 @@ export default function UserwiseSalesReport() {
                   ]);
                   const customizeDate = customizeStartDateAndEndDate(dates);
                   setStartDateAndEndDate(customizeDate);
+                  setPagination({
+                    page: 1,
+                    limit: 500,
+                  });
                   getUsersWiseSalesReportData(
                     customizeDate[0],
                     customizeDate[1],

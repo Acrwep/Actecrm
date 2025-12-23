@@ -49,27 +49,34 @@ export default function TopPerformanceReport() {
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 500,
     total: 0,
     totalPages: 0,
   });
 
   const columns = [
     {
+      title: "Source",
+      key: "name",
+      dataIndex: "name",
+      fixed: "left",
+      width: 140,
+      render: (text, record) => ({
+        children: text,
+        props: {
+          rowSpan: record.nameRowSpan,
+        },
+      }),
+    },
+    {
       title: "Date",
-      key: "DATE",
-      dataIndex: "DATE",
+      key: "date",
+      dataIndex: "date",
       width: 140,
       fixed: "left",
       render: (text) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
-    },
-    {
-      title: "Source",
-      key: "name",
-      dataIndex: "name",
-      width: 140,
     },
     {
       title: "Total Leads",
@@ -117,6 +124,38 @@ export default function TopPerformanceReport() {
       },
     },
   ];
+
+  const prepareTableData = (data) => {
+    const groupCount = {};
+    const groupIndexMap = {};
+    const groupRendered = {};
+    let currentGroupIndex = 0;
+
+    // 1. Count rows per NAME (Call / Direct)
+    data.forEach((item) => {
+      groupCount[item.name] = (groupCount[item.name] || 0) + 1;
+    });
+
+    // 2. Build table data
+    return data.map((item) => {
+      // Assign fixed group index per name
+      if (groupIndexMap[item.name] === undefined) {
+        groupIndexMap[item.name] = currentGroupIndex++;
+      }
+
+      const isFirstRow = !groupRendered[item.name];
+
+      if (isFirstRow) {
+        groupRendered[item.name] = true;
+      }
+
+      return {
+        ...item,
+        groupIndex: groupIndexMap[item.name],
+        nameRowSpan: isFirstRow ? groupCount[item.name] : 0,
+      };
+    });
+  };
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -178,7 +217,13 @@ export default function TopPerformanceReport() {
     try {
       const response = await topPerformingChannelReport(payload);
       console.log("top performance report response", response);
-      setReportData(response?.data?.data?.data || []);
+      const data = response?.data?.data?.data || [];
+      if (data.length >= 1) {
+        const tableData = prepareTableData(data);
+        setReportData(tableData);
+      } else {
+        setReportData([]);
+      }
       const total_lead_count = response?.data?.data?.total_lead_count || [];
 
       setTotalCounts(total_lead_count);
@@ -251,6 +296,7 @@ export default function TopPerformanceReport() {
       });
       setPagination({
         page: 1,
+        limit: 500,
       });
       getTopPerformanceReportData(
         selectedDates[0],
@@ -312,6 +358,7 @@ export default function TopPerformanceReport() {
                   }
                   setPagination({
                     page: 1,
+                    limit: 500,
                   });
                   getTopPerformanceReportData(
                     selectedDates[0],
@@ -338,6 +385,7 @@ export default function TopPerformanceReport() {
                   setSelectedUserId([]);
                   setPagination({
                     page: 1,
+                    limit: 500,
                   });
                   getTopPerformanceReportData(
                     selectedDates[0],
@@ -369,6 +417,7 @@ export default function TopPerformanceReport() {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
+                    limit: 500,
                   });
                   getTopPerformanceReportData(
                     dates[0],

@@ -35,7 +35,7 @@ export default function BranchwiseLeadsReport() {
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 500,
     total: 0,
     totalPages: 0,
   });
@@ -47,13 +47,12 @@ export default function BranchwiseLeadsReport() {
       dataIndex: "branch_name",
       width: 160,
       fixed: "left",
-      render: (text, record) => {
-        return (
-          <div>
-            <p> {`${text}`}</p>
-          </div>
-        );
-      },
+      render: (text, row) => ({
+        children: text,
+        props: {
+          rowSpan: row.branchRowSpan,
+        },
+      }),
     },
     {
       title: "Month",
@@ -137,6 +136,38 @@ export default function BranchwiseLeadsReport() {
     },
   ];
 
+  const prepareTableData = (data) => {
+    const branchCount = {};
+    const branchIndexMap = {};
+    let currentGroupIndex = 0;
+
+    // Count rows per branch
+    data.forEach((item) => {
+      branchCount[item.branch_name] = (branchCount[item.branch_name] || 0) + 1;
+    });
+
+    const branchRendered = {};
+
+    return data.map((item) => {
+      // Assign fixed group index per branch
+      if (branchIndexMap[item.branch_name] === undefined) {
+        branchIndexMap[item.branch_name] = currentGroupIndex++;
+      }
+
+      const isFirstRow = !branchRendered[item.branch_name];
+
+      if (isFirstRow) {
+        branchRendered[item.branch_name] = true;
+      }
+
+      return {
+        ...item,
+        groupIndex: branchIndexMap[item.branch_name],
+        branchRowSpan: isFirstRow ? branchCount[item.branch_name] : 0,
+      };
+    });
+  };
+
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -165,7 +196,13 @@ export default function BranchwiseLeadsReport() {
     try {
       const response = await branchwiseLeadsAnalysisReports(payload);
       console.log("branchwise leads report response", response);
-      setReportData(response?.data?.data || []);
+      const data = response?.data?.data || [];
+      if (data.length >= 1) {
+        const tableData = prepareTableData(data);
+        setReportData(tableData);
+      } else {
+        setReportData([]);
+      }
     } catch (error) {
       setReportData([]);
       console.log("branchwise leads report error", error);
@@ -190,6 +227,7 @@ export default function BranchwiseLeadsReport() {
     setStartDateAndEndDate(customizeDate);
     setPagination({
       page: 1,
+      limit: 500,
     });
 
     getBranchWiseLeadsReportData(customizeDate[0], customizeDate[1], null);
@@ -225,6 +263,7 @@ export default function BranchwiseLeadsReport() {
                   setSelectedBranchId(value);
                   setPagination({
                     page: 1,
+                    limit: 500,
                   });
                   getBranchWiseLeadsReportData(
                     startDateAndEndDate[0],

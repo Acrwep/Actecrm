@@ -127,6 +127,26 @@
 .reports_download_button:hover .download_icon {
   color: #5b69ca !important;
 }
+/* branchwise table style */
+/* apply background only to real cells */
+.branch-even > td:not([rowspan="0"]) {
+  background-color: #5b6aca25 !important;
+}
+
+.branch-odd > td:not([rowspan="0"]) {
+  background-color: #fff !important;
+}
+
+/* Fix overlapping text */
+.ant-table-cell {
+  white-space: nowrap;
+}
+
+/* Header untouched */
+.ant-table-thead > tr > th {
+  background-color: #fafafa;
+}
+
 /* payment table styles */
 /* ===== Ultra-compact Google Sheet style ===== */
 /* ===== Ultra ultra compact (smaller than G-Sheets) ===== */
@@ -218,7 +238,7 @@
   height: 22px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   white-space: nowrap;
 }
 

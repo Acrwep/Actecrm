@@ -16,6 +16,7 @@ const CommonTable = ({
   size,
   className,
   selectedRowKeys,
+  rowClassName,
   limit,
   page_number,
   totalPageNumber,
@@ -193,6 +194,7 @@ const CommonTable = ({
       loading={loading}
       size={size}
       className={className}
+      rowClassName={rowClassName}
       rowKey={(record) => record.id || record.question_id}
       title={renderTotalsRow} // 👈 ADD THIS
     />

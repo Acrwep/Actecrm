@@ -46,7 +46,6 @@ export default function PaymentReport() {
       title: "Date",
       key: "date",
       dataIndex: "date",
-      width: 160,
       fixed: "left",
       render: (text) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
@@ -56,7 +55,6 @@ export default function PaymentReport() {
       title: "Hub",
       key: "hub",
       dataIndex: "hub",
-      width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -65,7 +63,6 @@ export default function PaymentReport() {
       title: "Chennai",
       key: "chennai",
       dataIndex: "chennai",
-      width: 170,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -74,7 +71,6 @@ export default function PaymentReport() {
       title: "Bangalore",
       key: "bangalore",
       dataIndex: "bangalore",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -83,7 +79,6 @@ export default function PaymentReport() {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
