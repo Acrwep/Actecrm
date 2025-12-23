@@ -107,38 +107,93 @@ export default function CommonDonutChart({
   const options = {
     chart: {
       type: "donut",
-      events: {
-        // prefer native event: set pointer on the target element when hovering
-        mouseMove: function (event, chartContext, config) {
-          const label = labels?.[config.dataPointIndex]; // ✅ Get label by index dynamically
+      // events: {
+      //   // prefer native event: set pointer on the target element when hovering
+      //   mouseMove: function (event, chartContext, config) {
+      //     const label = labels?.[config.dataPointIndex]; // ✅ Get label by index dynamically
 
+      //     const totalLabel = document.querySelector(
+      //       `#${chartId.current} .apexcharts-datalabels-group text`
+      //     );
+
+      //     if (!totalLabel) return;
+
+      //     // ✅ Only shrink when hovering FOLLOWUP UN-HANDLED (match by label text, not index)
+      //     if (label == "Followup Un-Handled") {
+      //       totalLabel.style.fontSize = "10px";
+      //     } else if (label == "Total Followup" || label == "Followup Handled") {
+      //       totalLabel.style.fontSize = "12px";
+      //     } else {
+      //       totalLabel.style.fontSize = labelsfontSize; // restore
+      //     }
+      //   },
+
+      //   // when leaving, reset to default for safety
+      //   mouseLeave: function (event, chartContext, config) {
+      //     try {
+      //       if (event && event.target) {
+      //         event.target.style && (event.target.style.cursor = "default");
+      //         if (event.target.parentNode && event.target.parentNode.style)
+      //           event.target.parentNode.style.cursor = "default";
+      //       }
+      //     } catch (e) {}
+      //   },
+      //   // selection click handler (as you already use)
+      //   dataPointSelection: function (event, chartContext, config) {
+      //     const label = labels && labels[config.dataPointIndex];
+      //     if (clickedBar) clickedBar(label);
+      //   },
+      // },
+      events: {
+        dataPointMouseEnter: function (event, chartContext, config) {
+          const index = config.dataPointIndex;
+
+          // 🔹 Legend highlight sync
+          const legends = document.querySelectorAll(
+            `#${chartId.current} .apexcharts-legend-series`
+          );
+
+          legends.forEach((el, i) => {
+            if (i === index) {
+              el.classList.add("legend-active");
+              el.classList.remove("legend-inactive");
+            } else {
+              el.classList.add("legend-inactive");
+              el.classList.remove("legend-active");
+            }
+          });
+
+          // 🔹 Your existing center-label resize logic
+          const label = labels?.[index];
           const totalLabel = document.querySelector(
             `#${chartId.current} .apexcharts-datalabels-group text`
           );
 
           if (!totalLabel) return;
 
-          // ✅ Only shrink when hovering FOLLOWUP UN-HANDLED (match by label text, not index)
-          if (label == "Followup Un-Handled") {
+          if (label === "Followup Un-Handled") {
             totalLabel.style.fontSize = "10px";
-          } else if (label == "Total Followup" || label == "Followup Handled") {
+          } else if (
+            label === "Total Followup" ||
+            label === "Followup Handled"
+          ) {
             totalLabel.style.fontSize = "12px";
           } else {
-            totalLabel.style.fontSize = labelsfontSize; // restore
+            totalLabel.style.fontSize = labelsfontSize;
           }
         },
 
-        // when leaving, reset to default for safety
-        mouseLeave: function (event, chartContext, config) {
-          try {
-            if (event && event.target) {
-              event.target.style && (event.target.style.cursor = "default");
-              if (event.target.parentNode && event.target.parentNode.style)
-                event.target.parentNode.style.cursor = "default";
-            }
-          } catch (e) {}
+        dataPointMouseLeave: function () {
+          // 🔹 Reset legend styles
+          const legends = document.querySelectorAll(
+            `#${chartId.current} .apexcharts-legend-series`
+          );
+
+          legends.forEach((el) => {
+            el.classList.remove("legend-active", "legend-inactive");
+          });
         },
-        // selection click handler (as you already use)
+
         dataPointSelection: function (event, chartContext, config) {
           const label = labels && labels[config.dataPointIndex];
           if (clickedBar) clickedBar(label);

@@ -1079,21 +1079,6 @@ const AddLead = forwardRef(
                   <Row>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Landed By</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {liveLeadItem && liveLeadItem.domain_origin
-                          ? liveLeadItem.domain_origin
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">Course</p>
                       </div>
                     </Col>

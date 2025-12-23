@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
   branchwiseSalesAnalysisReports,
+  getBranches,
   getMonthwiseTotalCollectionReport,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
@@ -31,7 +32,9 @@ export default function BranchwiseSalesReport() {
   const [loginUserId, setLoginUserId] = useState("");
   const [collectionLoading, setCollectionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-  //executive filter
+  //filter usestates
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
@@ -225,14 +228,25 @@ export default function BranchwiseSalesReport() {
       setStartDateAndEndDate(customizeDate);
       console.log("startAndEndDate", customizeDate);
 
-      getBranchWiseSalesReportData(customizeDate[0], customizeDate[1], null);
+      getBranchWiseSalesReportData(
+        customizeDate[0],
+        customizeDate[1],
+        null,
+        null
+      );
     }
   }, [childUsers]);
 
-  const getBranchWiseSalesReportData = async (startDate, endDate, regionId) => {
+  const getBranchWiseSalesReportData = async (
+    startDate,
+    endDate,
+    regionId,
+    branchId
+  ) => {
     setLoading(true);
     const payload = {
       region_id: regionId,
+      ...(branchId && { branch_id: branchId }),
       start_date: startDate,
       end_date: endDate,
     };
@@ -281,6 +295,34 @@ export default function BranchwiseSalesReport() {
     }
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions([]);
+          setBranch(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const handlePaginationChange = ({ page, limit }) => {
     setPagination({
       page: page,
@@ -298,7 +340,12 @@ export default function BranchwiseSalesReport() {
       limit: 500,
     });
 
-    getBranchWiseSalesReportData(customizeDate[0], customizeDate[1], null);
+    getBranchWiseSalesReportData(
+      customizeDate[0],
+      customizeDate[1],
+      null,
+      null
+    );
   };
 
   return (
@@ -309,7 +356,7 @@ export default function BranchwiseSalesReport() {
             <Col span={7}>
               <CommonSelectField
                 height="35px"
-                label="Select Branch"
+                label="Select Region"
                 labelMarginTop="0px"
                 labelFontSize="13px"
                 options={[
@@ -328,6 +375,33 @@ export default function BranchwiseSalesReport() {
                 ]}
                 onChange={(e) => {
                   const value = e.target.value;
+                  setSelectedRegionId(value);
+                  setSelectedBranchId(null);
+                  setPagination({
+                    page: 1,
+                    limit: 500,
+                  });
+                  getBranchWiseSalesReportData(
+                    startDateAndEndDate[0],
+                    startDateAndEndDate[1],
+                    value,
+                    null
+                  );
+                  getBranchesData(value);
+                }}
+                value={selectedRegionId}
+                disableClearable={false}
+              />
+            </Col>
+            <Col span={7}>
+              <CommonSelectField
+                height="35px"
+                label="Select Branch"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={branchOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
                   setSelectedBranchId(value);
                   setPagination({
                     page: 1,
@@ -336,14 +410,16 @@ export default function BranchwiseSalesReport() {
                   getBranchWiseSalesReportData(
                     startDateAndEndDate[0],
                     startDateAndEndDate[1],
+                    selectedRegionId,
                     value
                   );
                 }}
                 value={selectedBranchId}
                 disableClearable={false}
+                disabled={selectedRegionId == 3 ? true : false}
               />
             </Col>
-            <Col span={16}>
+            <Col span={10}>
               <CommonDoubleMonthPicker
                 label="Select Months"
                 value={selectedDates}

@@ -239,6 +239,9 @@ export default function Customers() {
       key: "date_of_joining",
       dataIndex: "date_of_joining",
       width: 140,
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
     },
     {
       title: "Fees",
@@ -1437,6 +1440,11 @@ export default function Customers() {
               return {
                 ...col,
                 width: 140,
+                render: (text) => {
+                  return (
+                    <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                  );
+                },
               };
             case "primary_fees":
               return {

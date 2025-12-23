@@ -896,16 +896,10 @@ export default function LeadFollowUp({
 
   const handleLeadCountByExecutive = async () => {
     setLeadExeCountLoading(true);
-    let lead_executive = [];
-    if (selectedUserId) {
-      lead_executive.push(selectedUserId);
-    } else {
-      lead_executive = [];
-    }
     const payload = {
       start_date: selectedDates[0],
       end_date: selectedDates[1],
-      user_ids: lead_executive,
+      user_ids: allDownliners,
     };
     try {
       const response = await getLeadFollowUpsCountByUserIds(payload);

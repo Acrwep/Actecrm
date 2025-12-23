@@ -547,3 +547,13 @@
   background-color: #5b69ca !important;
   border-color: #5b69ca !important;
 }
+
+/* domut chart styles */
+.apexcharts-legend-series.legend-inactive {
+  opacity: 0.3;
+}
+
+.apexcharts-legend-series.legend-active {
+  opacity: 1;
+  font-weight: 600;
+}

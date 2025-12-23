@@ -77,19 +77,19 @@ export default function UserwiseSalesReport() {
       fixed: "left",
     },
     {
-      title: "Sale Volume",
-      key: "sale_volume",
-      dataIndex: "sale_volume",
-      width: 140,
+      title: "Target",
+      key: "target_value",
+      dataIndex: "target_value",
+      width: 130,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
-      title: "Target",
-      key: "target_value",
-      dataIndex: "target_value",
-      width: 130,
+      title: "Sale Volume",
+      key: "sale_volume",
+      dataIndex: "sale_volume",
+      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
