@@ -387,7 +387,7 @@ export default function TransactionReport() {
       dataIndex: "verified_date",
       width: 110,
       render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
   ];
