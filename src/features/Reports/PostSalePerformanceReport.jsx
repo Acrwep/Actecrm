@@ -57,7 +57,7 @@ export default function PostSalePerformanceReport() {
       title: "Awaiting Student Verify",
       key: "awaiting_verify",
       dataIndex: "awaiting_verify",
-      width: 120,
+      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -66,7 +66,7 @@ export default function PostSalePerformanceReport() {
       title: "Awaiting Trainer",
       key: "awaiting_trainer",
       dataIndex: "awaiting_trainer",
-      width: 120,
+      width: 105,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -75,7 +75,7 @@ export default function PostSalePerformanceReport() {
       title: "Awaiting Trainer Verify",
       key: "awaiting_trainer_verify",
       dataIndex: "awaiting_trainer_verify",
-      width: 160,
+      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -84,7 +84,7 @@ export default function PostSalePerformanceReport() {
       title: "Verified Trainers",
       key: "verified_trainer",
       dataIndex: "verified_trainer",
-      width: 120,
+      width: 105,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -93,7 +93,7 @@ export default function PostSalePerformanceReport() {
       title: "Rejected Trainers",
       key: "rejected_trainer",
       dataIndex: "rejected_trainer",
-      width: 130,
+      width: 110,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -102,7 +102,7 @@ export default function PostSalePerformanceReport() {
       title: "Awaiting Class",
       key: "awaiting_class",
       dataIndex: "awaiting_class",
-      width: 110,
+      width: 100,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -111,7 +111,7 @@ export default function PostSalePerformanceReport() {
       title: "Class Scheduled",
       key: "class_scheduled",
       dataIndex: "class_scheduled",
-      width: 120,
+      width: 110,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -120,7 +120,7 @@ export default function PostSalePerformanceReport() {
       title: "Class Going",
       key: "class_going",
       dataIndex: "class_going",
-      width: 100,
+      width: 80,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -129,7 +129,7 @@ export default function PostSalePerformanceReport() {
       title: "Google Review",
       key: "google_review_count",
       dataIndex: "google_review_count",
-      width: 120,
+      width: 100,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -138,7 +138,7 @@ export default function PostSalePerformanceReport() {
       title: "Linkedin Review",
       key: "linkedin_review_count",
       dataIndex: "linkedin_review_count",
-      width: 120,
+      width: 100,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -147,7 +147,7 @@ export default function PostSalePerformanceReport() {
       title: "Escalated",
       key: "escalated",
       dataIndex: "escalated",
-      width: 90,
+      width: 70,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -156,7 +156,7 @@ export default function PostSalePerformanceReport() {
       title: "Videos Given",
       key: "videos_given",
       dataIndex: "videos_given",
-      width: 100,
+      width: 90,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -165,7 +165,7 @@ export default function PostSalePerformanceReport() {
       title: "Completed",
       key: "class_completed",
       dataIndex: "class_completed",
-      width: 120,
+      width: 100,
       fixed: "right",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
@@ -360,7 +360,7 @@ export default function PostSalePerformanceReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 1900 }}
+          scroll={{ x: 2000 }}
           columns={columns}
           dataSource={reportData}
           dataPerPage={10}

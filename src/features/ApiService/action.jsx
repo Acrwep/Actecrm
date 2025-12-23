@@ -1399,6 +1399,15 @@ export const paymentReport = async (payload) => {
   }
 };
 
+export const transactionReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTransactionWiseReport`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const qualityReport = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseQuality`, payload);

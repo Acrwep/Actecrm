@@ -14,6 +14,7 @@ import QualityReport from "./QualityReport";
 import PostSalePerformanceReport from "./PostSalePerformanceReport";
 import TopPerformanceReport from "./TopPerformanceReport";
 import PaymentReport from "./PaymentReport";
+import TransactionReport from "./TransactionReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -74,6 +75,11 @@ export default function Reports() {
             label: "Payment Report",
             key: "8",
             children: <PaymentReport />,
+          },
+          {
+            label: "Transaction Report",
+            key: "9",
+            children: <TransactionReport />,
           },
           // {
           //   label: "RA Performance",

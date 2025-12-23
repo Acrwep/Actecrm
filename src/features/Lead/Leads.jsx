@@ -127,6 +127,8 @@ export default function Leads({
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
   const [paymentDateError, setPaymentDateError] = useState("");
+  const [placeOfPayment, setPlaceOfPayment] = useState(null);
+  const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
   const [paymentMode, setPaymentMode] = useState(null);
   const [paymentModeError, setPaymentModeError] = useState(null);
   const [subTotal, setSubTotal] = useState();
@@ -1065,6 +1067,7 @@ export default function Leads({
     const taxTypeValidate = selectValidator(taxType);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
+    const placeOfPaymentValidate = selectValidator(placeOfPayment);
     const batchTimingValidate = selectValidator(customerBatchTimingId);
     const placementSupportValidate = selectValidator(placementSupport);
 
@@ -1084,6 +1087,7 @@ export default function Leads({
     setPaymentModeError(paymentTypeValidate);
     setPaidNowError(paidNowValidate);
     setPaymentDateError(paymentDateValidate);
+    setPlaceOfPaymentError(placeOfPaymentValidate);
     setPaymentScreenShotError(screenshotValidate);
     setDueDateError(dueDateValidate);
     setCustomerBatchTimingIdError(batchTimingValidate);
@@ -1094,6 +1098,7 @@ export default function Leads({
       paidNowValidate ||
       taxTypeValidate ||
       paymentDateValidate ||
+      placeOfPaymentValidate ||
       screenshotValidate ||
       dueDateValidate ||
       batchTimingValidate ||
@@ -1137,6 +1142,7 @@ export default function Leads({
       next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
       created_date: formatToBackendIST(today),
       paid_date: formatToBackendIST(paymentDate),
+      place_of_payment: placeOfPayment,
       enrolled_course: customerCourseId,
       batch_track_id: customerBatchTrackId,
       batch_timing_id: customerBatchTimingId,
@@ -1376,6 +1382,8 @@ export default function Leads({
     setPaidNowError("");
     setPaymentDate(null);
     setPaymentDateError("");
+    setPlaceOfPayment(null);
+    setPlaceOfPaymentError("");
     setPaymentScreenShotBase64("");
     setPaymentScreenShotError("");
     setIsShowDueDate(true);
@@ -2517,7 +2525,26 @@ export default function Leads({
                   error={paymentDateError}
                 />
               </Col>
-              <Col span={16}>
+              <Col span={8}>
+                <CommonSelectField
+                  label="Place of Payment"
+                  required={true}
+                  options={[
+                    { id: "Tamil Nadu", name: "Tamil Nadu" },
+                    { id: "Out of TN", name: "Out of TN" },
+                    { id: "Out of IND", name: "Out of IND" },
+                  ]}
+                  onChange={(e) => {
+                    setPlaceOfPayment(e.target.value);
+                    if (paymentValidationTrigger) {
+                      setPlaceOfPaymentError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={placeOfPayment}
+                  error={placeOfPaymentError}
+                />
+              </Col>
+              <Col span={8}>
                 <ImageUploadCrop
                   label="Payment Screenshot"
                   aspect={1}

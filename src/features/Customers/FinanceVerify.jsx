@@ -54,6 +54,8 @@ const FinanceVerify = forwardRef(
     const [pendingAmount, setPendingAmount] = useState();
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
+    const [placeOfPayment, setPlaceOfPayment] = useState(null);
+    const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
     const [paymentMode, setPaymentMode] = useState(null);
     const [paymentModeError, setPaymentModeError] = useState(null);
     const [convenienceFees, setConvenienceFees] = useState("");
@@ -127,6 +129,11 @@ const FinanceVerify = forwardRef(
         );
         setPaymentDate(
           rejectedItem && rejectedItem.paid_date ? rejectedItem.paid_date : null
+        );
+        setPlaceOfPayment(
+          rejectedItem && rejectedItem.place_of_payment
+            ? rejectedItem.place_of_payment
+            : null
         );
         setPaymentScreenShotBase64(
           rejectedItem && rejectedItem.payment_screenshot
@@ -376,6 +383,7 @@ const FinanceVerify = forwardRef(
       setPaymentValidationTrigger(true);
       const paymentTypeValidate = selectValidator(paymentMode);
       const paymentDateValidate = selectValidator(paymentDate);
+      const placeOfPaymentValidate = selectValidator(placeOfPayment);
 
       const paidNowValidate = priceValidator(
         parseInt(paidNow),
@@ -394,6 +402,7 @@ const FinanceVerify = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPaidNowError(paidNowValidate);
       setPaymentDateError(paymentDateValidate);
+      setPlaceOfPaymentError(placeOfPaymentValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
 
@@ -401,6 +410,7 @@ const FinanceVerify = forwardRef(
         paymentTypeValidate ||
         paidNowValidate ||
         paymentDateValidate ||
+        placeOfPaymentValidate ||
         screenshotValidate ||
         dueDateValidate
       )
@@ -417,6 +427,7 @@ const FinanceVerify = forwardRef(
         paid_date: paymentDate ? formatToBackendIST(paymentDate) : null,
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         payment_trans_id: updatePaymentTransId,
+        place_of_payment: placeOfPayment,
       };
       try {
         await updateCustomerPaymentTransaction(payload);
@@ -1307,7 +1318,26 @@ const FinanceVerify = forwardRef(
                     error={paymentDateError}
                   />
                 </Col>
-                <Col span={16}>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Place of Payment"
+                    required={true}
+                    options={[
+                      { id: "Tamil Nadu", name: "Tamil Nadu" },
+                      { id: "Out of TN", name: "Out of TN" },
+                      { id: "Out of IND", name: "Out of IND" },
+                    ]}
+                    onChange={(e) => {
+                      setPlaceOfPayment(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setPlaceOfPaymentError(selectValidator(e.target.value));
+                      }
+                    }}
+                    value={placeOfPayment}
+                    error={placeOfPaymentError}
+                  />
+                </Col>
+                <Col span={8}>
                   <ImageUploadCrop
                     label="Payment Screenshot"
                     aspect={1}

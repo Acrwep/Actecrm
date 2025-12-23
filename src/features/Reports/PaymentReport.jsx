@@ -3,31 +3,11 @@ import { Row, Col, Tooltip, Button, Flex } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
-import { HiStatusOnline } from "react-icons/hi";
-import { PiCityDuotone } from "react-icons/pi";
-import { MdCurrencyRupee } from "react-icons/md";
-import { GiMoneyStack } from "react-icons/gi";
-import { AiOutlineBank } from "react-icons/ai";
-import { RiArrowRightDoubleFill } from "react-icons/ri";
-import { FaRegCreditCard } from "react-icons/fa6";
-import { SiRazorpay } from "react-icons/si";
-import { HiOutlineInformationCircle } from "react-icons/hi";
-import {
-  customizeStartDateAndEndDate,
-  getCurrentandPreviousweekDate,
-  getLast3Months,
-} from "../Common/Validation";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { useSelector } from "react-redux";
-import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
-import {
-  getAllDownlineUsers,
-  paymentReport,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
-} from "../ApiService/action";
+import { paymentReport } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
-import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PaymentDownloadTableAsCSV from "./DownloadPaymentReport";

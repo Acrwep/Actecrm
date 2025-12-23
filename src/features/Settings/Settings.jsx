@@ -222,6 +222,7 @@ export default function Settings() {
         "Lead Executive Filter",
         "Add Quality Comment",
         "Junk Leads Tab",
+        "Show Origin in Live Leads",
         "Download Leads",
       ];
 

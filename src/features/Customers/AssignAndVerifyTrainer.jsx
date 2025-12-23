@@ -12,6 +12,7 @@ import CommonTextArea from "../Common/CommonTextArea";
 import { LuIndianRupee } from "react-icons/lu";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
+import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
@@ -103,20 +104,109 @@ const AssignAndVerifyTrainer = forwardRef(
         title: "Customer Name",
         key: "cus_name",
         dataIndex: "cus_name",
-        width: 180,
+        width: 140,
+        render: (text) => {
+          return (
+            <>
+              {text.length > 14 ? (
+                <Tooltip
+                  color="#fff"
+                  placement="bottom"
+                  title={text}
+                  className="leadtable_comments_tooltip"
+                  styles={{
+                    body: {
+                      backgroundColor: "#fff", // Tooltip background
+                      color: "#333", // Tooltip text color
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    },
+                  }}
+                >
+                  <p style={{ cursor: "pointer" }}>
+                    {text.slice(0, 13) + "..."}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p>{text}</p>
+              )}
+            </>
+          );
+        },
       },
       {
         title: "Customer Email",
         key: "cus_email",
         dataIndex: "cus_email",
-        width: 220,
+        width: 140,
+        render: (text) => {
+          return (
+            <>
+              {text.length > 12 ? (
+                <Tooltip
+                  color="#fff"
+                  placement="bottom"
+                  title={text}
+                  className="leadtable_comments_tooltip"
+                  styles={{
+                    body: {
+                      backgroundColor: "#fff", // Tooltip background
+                      color: "#333", // Tooltip text color
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    },
+                  }}
+                >
+                  <p style={{ cursor: "pointer" }}>
+                    {text.slice(0, 11) + "..."}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p>{text}</p>
+              )}
+            </>
+          );
+        },
       },
-      { title: "Customer Mobile", key: "cus_phone", dataIndex: "cus_phone" },
+      {
+        title: "Customer Mobile",
+        key: "cus_phone",
+        dataIndex: "cus_phone",
+        width: 140,
+      },
       {
         title: "Course Name",
         key: "course_name",
         dataIndex: "course_name",
-        width: 200,
+        width: 160,
+        render: (text) => {
+          return (
+            <>
+              {text.length > 22 ? (
+                <Tooltip
+                  color="#fff"
+                  placement="bottom"
+                  title={text}
+                  className="leadtable_comments_tooltip"
+                  styles={{
+                    body: {
+                      backgroundColor: "#fff", // Tooltip background
+                      color: "#333", // Tooltip text color
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    },
+                  }}
+                >
+                  <p style={{ cursor: "pointer" }}>
+                    {text.slice(0, 21) + "..."}
+                  </p>
+                </Tooltip>
+              ) : (
+                <p>{text}</p>
+              )}
+            </>
+          );
+        },
       },
       {
         title: "Region",
@@ -124,7 +214,12 @@ const AssignAndVerifyTrainer = forwardRef(
         dataIndex: "region_name",
         width: 120,
       },
-      { title: "Branch Name", key: "branch_name", dataIndex: "branch_name" },
+      {
+        title: "Branch Name",
+        key: "branch_name",
+        dataIndex: "branch_name",
+        width: 140,
+      },
       {
         title: "Course Fees",
         key: "primary_fees",
@@ -138,7 +233,7 @@ const AssignAndVerifyTrainer = forwardRef(
         title: "Class Going %",
         key: "class_percentage",
         dataIndex: "class_percentage",
-        width: 120,
+        width: 115,
         fixed: "right",
       },
       {
@@ -146,6 +241,7 @@ const AssignAndVerifyTrainer = forwardRef(
         key: "commercial",
         dataIndex: "commercial",
         fixed: "right",
+        width: 160,
         render: (text) => {
           return <p>{"₹" + text}</p>;
         },
@@ -593,17 +689,31 @@ const AssignAndVerifyTrainer = forwardRef(
                                   {item.trainer_code ? item.trainer_code : "-"}
                                 </span>
                               </span>
-                              <div className="customer_trans_statustext_container">
-                                <FaRegCircleXmark color="#d32f2f" />
-                                <p
-                                  style={{
-                                    color: "#d32f2f",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  Rejected
-                                </p>
-                              </div>
+                              {item.rejected_date ? (
+                                <div className="customer_trans_statustext_container">
+                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <p
+                                    style={{
+                                      color: "#d32f2f",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Rejected
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="customer_trans_statustext_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p
+                                    style={{
+                                      color: "#3c9111",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Verified
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           }
                         >
@@ -1536,7 +1646,7 @@ const AssignAndVerifyTrainer = forwardRef(
               Class Going Customers List{" "}
             </p>
             <CommonTable
-              scroll={{ x: 1600 }}
+              scroll={{ x: 1200 }}
               columns={customerByTrainerColumn}
               dataSource={customerByTrainerData}
               dataPerPage={10}
@@ -1556,7 +1666,7 @@ const AssignAndVerifyTrainer = forwardRef(
           width="60%"
         >
           <CommonTable
-            scroll={{ x: 1600 }}
+            scroll={{ x: 1200 }}
             columns={customerByTrainerColumn}
             dataSource={customerByTrainerData}
             dataPerPage={10}

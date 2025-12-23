@@ -73,11 +73,14 @@ export default function LiveLead({
     (state) => state.liveleadselecteddates
   );
   const tabName = useSelector((state) => state.leadmanageractivepage);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
+  const [liveLeadAllCounts, setLiveLeadAllCounts] = useState(null);
   const [loginUserId, setLoginUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   //pick lead drawer
@@ -373,6 +376,7 @@ export default function LiveLead({
       key: "domain_origin",
       dataIndex: "domain_origin",
       width: 90,
+      hidden: permissions.includes("Show Origin in Live Leads") ? false : true,
     },
     {
       title: "Training Mode",
@@ -497,6 +501,10 @@ export default function LiveLead({
   }, [pagination]);
 
   useEffect(() => {
+    setTableColumns(nonChangeColumns);
+  }, [permissions]);
+
+  useEffect(() => {
     console.log("acccccc", tabName, liveLeadSelecteDates);
 
     //redux values handling
@@ -570,7 +578,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 800); // your interval
+    }, 600); // your interval
 
     // Cleanup
     return () => clearInterval(interval);
@@ -661,8 +669,10 @@ export default function LiveLead({
       const paginations = response?.data?.data?.pagination;
 
       setLeadData(response?.data?.data?.data || []);
+      const count = response?.data?.data?.lead_count || null;
       paginationRef.current = paginations;
 
+      setLiveLeadAllCounts(count);
       setLiveLeadCount(paginations.total);
       setPagination({
         page: paginations.page,
@@ -672,6 +682,7 @@ export default function LiveLead({
       });
     } catch (error) {
       setLeadData([]);
+      setLiveLeadAllCounts(null);
       console.log("get live lead error", error);
     } finally {
       setTimeout(() => {
@@ -929,6 +940,15 @@ export default function LiveLead({
                   }
                 },
               };
+            case "domain_origin": {
+              return {
+                ...col,
+                width: 90,
+                hidden: permissions.includes("Show Origin in Live Leads")
+                  ? false
+                  : true,
+              };
+            }
             case "comments":
               return {
                 ...col,
@@ -1076,9 +1096,11 @@ export default function LiveLead({
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     setPickLoadingRow(item.id); // show loading only for this row
     const payload = {
-      user_id: loginUserId,
+      user_id: convertAsJson?.user_id,
       lead_id: item.id,
       is_assigned: true,
     };
@@ -1342,7 +1364,10 @@ export default function LiveLead({
             <FiFilter
               size={20}
               color="#5b69ca"
-              style={{ cursor: "pointer" }}
+              style={{
+                cursor: "pointer",
+                marginTop: selectedRows.length >= 1 ? "0px" : "5px",
+              }}
               onClick={() => {
                 setIsOpenFilterDrawer(true);
                 getTableColumnsData(loginUserId);
@@ -1351,6 +1376,52 @@ export default function LiveLead({
           </div>
         </Col>
       </Row>
+
+      <div className="customer_trainer_badge_mainconatiner">
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div className="customer_trainer_onboardcount_badge" />
+          <p className="customer_trainer_onboardcount_badgecount">
+            Online{" "}
+            <span style={{ fontWeight: 600, fontSize: "12px" }}>
+              {liveLeadAllCounts && liveLeadAllCounts.online_count
+                ? liveLeadAllCounts.online_count
+                : "-"}
+            </span>
+          </p>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div
+            className="customer_trainer_goingcount_badge"
+            style={{ backgroundColor: "#1e90ff" }}
+          />
+          <p className="customer_trainer_onboardcount_badgecount">
+            Classroom{" "}
+            <span style={{ fontWeight: 600, fontSize: "12px" }}>
+              {" "}
+              {liveLeadAllCounts && liveLeadAllCounts.classroom_count
+                ? liveLeadAllCounts.classroom_count
+                : "-"}
+            </span>
+          </p>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div
+            className="customer_trainer_goingcount_badge"
+            style={{ backgroundColor: "#607d8b" }}
+          />
+          <p className="customer_trainer_onboardcount_badgecount">
+            Corporate{" "}
+            <span style={{ fontWeight: 600, fontSize: "12px" }}>
+              {" "}
+              {liveLeadAllCounts && liveLeadAllCounts.corporate_count
+                ? liveLeadAllCounts.corporate_count
+                : "-"}
+            </span>
+          </p>
+        </div>
+      </div>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
@@ -1465,8 +1536,10 @@ export default function LiveLead({
         onClose={async () => {
           setIsOpenAddDrawer(false);
           setPickLeadItem(null);
+          const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+          const convertAsJson = JSON.parse(getLoginUserDetails);
           const payload = {
-            user_id: loginUserId,
+            user_id: convertAsJson?.user_id,
             lead_id: pickLeadItem.id,
             is_assigned: false,
           };

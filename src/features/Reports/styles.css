@@ -244,3 +244,65 @@
   z-index: 4;
 }
 */
+
+/* transaction report styles */
+.transactionreport_new_type {
+  background-color: #3c91111e;
+  color: #3c9111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 12px !important;
+  width: max-content !important;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+  text-transform: uppercase;
+}
+.transactionreport_lmj_type {
+  background-color: #1e8fff1c;
+  color: #1e90ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 12px !important;
+  width: max-content !important;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+  text-transform: uppercase;
+}
+.transactionreport_cmj_type {
+  background-color: #ffa6021f;
+  color: #ffa502;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 12px !important;
+  width: max-content !important;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+  text-transform: uppercase;
+}
+.transactionreport_pmj_type {
+  background-color: #d32f2f1c;
+  color: #d32f2f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 12px !important;
+  width: max-content !important;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+  text-transform: uppercase;
+}

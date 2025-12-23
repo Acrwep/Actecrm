@@ -304,7 +304,6 @@ export default function DownloadRegistrationForm({ customerDetails }) {
       height: 90px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #1b538c;
     }
 
     .section-title {

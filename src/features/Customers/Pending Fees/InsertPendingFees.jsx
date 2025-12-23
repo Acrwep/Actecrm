@@ -70,6 +70,8 @@ const InsertPendingFees = forwardRef(
     const [convenienceFeesError, setConvenienceFeesError] = useState("");
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState(null);
+    const [placeOfPayment, setPlaceOfPayment] = useState(null);
+    const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
     const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
     const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
     const [paymentValidationTrigger, setPaymentValidationTrigger] =
@@ -246,6 +248,7 @@ const InsertPendingFees = forwardRef(
       setPaymentValidationTrigger(true);
       const paymentTypeValidate = selectValidator(paymentMode);
       const paymentDateValidate = selectValidator(paymentDate);
+      const placeOfPaymentValidate = selectValidator(placeOfPayment);
       const payAmountValidate = priceValidator(
         parseInt(payAmount),
         parseInt(pendingAmount)
@@ -263,6 +266,7 @@ const InsertPendingFees = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPayAmountError(payAmountValidate);
       setPaymentDateError(paymentDateValidate);
+      setPlaceOfPaymentError(placeOfPaymentValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
 
@@ -271,6 +275,7 @@ const InsertPendingFees = forwardRef(
         payAmountValidate ||
         paymentDateValidate ||
         screenshotValidate ||
+        placeOfPaymentValidate ||
         dueDateValidate
       )
         return;
@@ -279,10 +284,8 @@ const InsertPendingFees = forwardRef(
 
       const today = new Date();
 
-      // setTimeout(() => {
-      //   setInvoiceButtonLoading(false);
-      //   setButtonLoading(false);
-      // }, 300);
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
 
       const payload = {
         payment_master_id: customerDetails.payment_master_id,
@@ -296,12 +299,16 @@ const InsertPendingFees = forwardRef(
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
+        place_of_payment: placeOfPayment,
+        collected_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       };
 
       console.log("payload", payload);
       try {
         await customerDuePayment(payload);
         setTimeout(() => {
+          CommonMessage("success", "Payment Added");
           handleCustomerTrack("Part Payment Added");
         }, 300);
       } catch (error) {
@@ -1028,7 +1035,51 @@ const InsertPendingFees = forwardRef(
             />
           </Col>
 
+          {/* <Col span={8} style={{ marginTop: "34px" }}>
+            <ImageUploadCrop
+              label="Payment Screenshot"
+              aspect={1}
+              maxSizeMB={1}
+              required={true}
+              value={paymentScreenShotBase64}
+              onChange={(base64) => setPaymentScreenShotBase64(base64)}
+              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+            />
+            {paymentScreenShotError && (
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#d32f2f",
+                  marginTop: 4,
+                }}
+              >
+                {`Payment Screenshot ${paymentScreenShotError}`}
+              </p>
+            )}
+          </Col> */}
           <Col span={8} style={{ marginTop: "34px" }}>
+            <CommonSelectField
+              label="Place of Payment"
+              required={true}
+              options={[
+                { id: "Tamil Nadu", name: "Tamil Nadu" },
+                { id: "Out of TN", name: "Out of TN" },
+                { id: "Out of IND", name: "Out of IND" },
+              ]}
+              onChange={(e) => {
+                setPlaceOfPayment(e.target.value);
+                if (paymentValidationTrigger) {
+                  setPlaceOfPaymentError(selectValidator(e.target.value));
+                }
+              }}
+              value={placeOfPayment}
+              error={placeOfPaymentError}
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={16} className="leadmanager_paymentdetails_drawer_rowdiv">
+          <Col span={24} style={{ marginTop: "30px" }}>
             <ImageUploadCrop
               label="Payment Screenshot"
               aspect={1}
