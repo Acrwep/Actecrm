@@ -1435,6 +1435,15 @@ export const transactionReport = async (payload) => {
   }
 };
 
+export const userwiseTransactionReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getUserwiseTransaction`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const qualityReport = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseQuality`, payload);

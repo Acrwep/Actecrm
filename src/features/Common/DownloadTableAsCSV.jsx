@@ -38,9 +38,14 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "date" ||
           column.dataIndex === "DATE"
         ) {
-          return row[column.dataIndex]
-            ? moment(row[column.dataIndex]).format("DD/MM/YYYY")
-            : null;
+          const value = row[column.dataIndex];
+
+          // ✅ Keep TOTAL as is
+          if (value === "total" || value === "Total") return "Total";
+
+          const parsed = moment(value, ["DD/MM/YYYY", "YYYY-MM-DD"], true);
+
+          return parsed.isValid() ? parsed.format("YYYY-MM-DD") : value;
         }
         if (
           column.dataIndex === "percentage" ||

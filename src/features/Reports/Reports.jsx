@@ -15,6 +15,7 @@ import PostSalePerformanceReport from "./PostSalePerformanceReport";
 import TopPerformanceReport from "./TopPerformanceReport";
 import PaymentReport from "./PaymentReport";
 import TransactionReport from "./TransactionReport";
+import UserwiseTransactionReport from "./UserwiseTransactionReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -52,33 +53,38 @@ export default function Reports() {
             children: <UserwiseSalesReport />,
           },
           {
-            label: "Branchwise Lead Analysis",
+            label: "Userwise Transaction Analysis",
             key: "4",
+            children: <UserwiseTransactionReport />,
+          },
+          {
+            label: "Branchwise Lead Analysis",
+            key: "5",
             children: <BranchwiseLeadsReport />,
           },
           {
             label: "Branchwise Sales Analysis",
-            key: "5",
+            key: "6",
             children: <BranchwiseSalesReport />,
           },
           {
             label: "Top Performance Channel",
-            key: "6",
+            key: "7",
             children: <TopPerformanceReport />,
           },
           {
             label: "Post Sale Performance",
-            key: "7",
+            key: "8",
             children: <PostSalePerformanceReport />,
           },
           {
             label: "Payment Report",
-            key: "8",
+            key: "9",
             children: <PaymentReport />,
           },
           {
             label: "Transaction Report",
-            key: "9",
+            key: "10",
             children: <TransactionReport />,
           },
           // {
