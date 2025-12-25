@@ -30,6 +30,7 @@ import PrismaZoom from "react-prismazoom";
 import { BsPatchCheckFill } from "react-icons/bs";
 import moment from "moment";
 import CommonTextArea from "../Common/CommonTextArea";
+import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 
 const FinanceVerify = forwardRef(
   ({ customerDetails, drawerContentStatus, callgetCustomersApi }, ref) => {
@@ -1275,17 +1276,8 @@ const FinanceVerify = forwardRef(
                   />
                 </Col>
                 <Col span={8}>
-                  <CommonSelectField
+                  <CommonGroupedSelectField
                     label="Payment Mode"
-                    required={true}
-                    options={[
-                      { id: 1, name: "Cash" },
-                      { id: 2, name: "Card" },
-                      { id: 3, name: "Bank" },
-                      { id: 4, name: "UPI" },
-                      { id: 5, name: "Razorpay" },
-                      { id: 6, name: "Razorpay - UPI" },
-                    ]}
                     onChange={handlePaymentMode}
                     value={paymentMode}
                     error={paymentModeError}
