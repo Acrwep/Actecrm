@@ -182,7 +182,7 @@ const FinanceVerify = forwardRef(
         getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
       );
 
-      if (paymentMode == 2 || paymentMode == 5) {
+      if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
         const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
         setConvenienceFees(conve_fees);
       } else {
@@ -196,8 +196,7 @@ const FinanceVerify = forwardRef(
       }
     };
 
-    const handlePaymentType = (e) => {
-      const value = e.target.value;
+    const handlePaymentMode = (value) => {
       setPaymentMode(value);
 
       if (paymentValidationTrigger) {
@@ -225,7 +224,7 @@ const FinanceVerify = forwardRef(
       );
 
       //handle convenience fees
-      if (value == 2 || value == 5) {
+      if (value == 2 || value == 5 || value == 10) {
         const conve_fees = getConvenienceFees(paidNow ? parseInt(paidNow) : 0);
         setConvenienceFees(conve_fees);
       } else {
@@ -1287,7 +1286,7 @@ const FinanceVerify = forwardRef(
                       { id: 5, name: "Razorpay" },
                       { id: 6, name: "Razorpay - UPI" },
                     ]}
-                    onChange={handlePaymentType}
+                    onChange={handlePaymentMode}
                     value={paymentMode}
                     error={paymentModeError}
                   />

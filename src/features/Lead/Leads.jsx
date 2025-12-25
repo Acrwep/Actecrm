@@ -73,6 +73,9 @@ import { useSelector } from "react-redux";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import QualityIcon from "../../assets/q.png";
 import AddLead from "./AddLead";
+import { FormControl, TextField } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
+import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -979,7 +982,7 @@ export default function Leads({
       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
     );
 
-    if (paymentMode == 2 || paymentMode == 5) {
+    if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
       const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
       setConvenienceFees(conve_fees);
     } else {
@@ -1021,8 +1024,7 @@ export default function Leads({
     );
   };
 
-  const handlePaymentType = (e) => {
-    const value = e.target.value;
+  const handlePaymentMode = (value) => {
     setPaymentMode(value);
     console.log("taxType", taxType);
     const amnt = calculateAmount(
@@ -1053,7 +1055,7 @@ export default function Leads({
     );
 
     //handle convenience fees
-    if (value == 2 || value == 5) {
+    if (value == 2 || value == 5 || value == 10) {
       const conve_fees = getConvenienceFees(paidNow ? paidNow : 0);
       setConvenienceFees(conve_fees);
     } else {
@@ -1163,16 +1165,13 @@ export default function Leads({
         setButtonLoading(false);
         setInvoiceButtonLoading(false);
         formReset();
-        setPagination({
-          page: 1,
-        });
         getAllLeadData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
           allDownliners,
           leadSourceFilterId,
-          1,
+          pagination.page,
           pagination.limit
         );
         refreshLeadFollowUp();
@@ -1248,102 +1247,6 @@ export default function Leads({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
-    }
-  };
-
-  const handleQualityComment = async () => {
-    const commentValidate = addressValidator(qualityComments);
-    const statusValidate = selectValidator(qualityStatus);
-    let dateValidate;
-
-    if (qualityStatus == 3) {
-      dateValidate = selectValidator(cnaDate);
-    }
-
-    setQualityCommentsError(commentValidate);
-    setQualityStatusError(statusValidate);
-    setCnaDateError(dateValidate);
-
-    if (commentValidate || statusValidate || dateValidate) return;
-
-    setButtonLoading(true);
-
-    const today = new Date();
-    const payload = {
-      lead_id: clickedLeadItem.id,
-      comments: qualityComments,
-      status: qualityStatus,
-      ...(cnaDate && {
-        cna_date: cnaDate ? formatToBackendIST(cnaDate) : null,
-      }),
-      updated_by: loginUserId,
-      updated_date: formatToBackendIST(today),
-    };
-
-    if (isQualityCommentUpdate) {
-      try {
-        await updateQualityComments(payload);
-        CommonMessage("success", "Updated");
-        setTimeout(() => {
-          setButtonLoading(false);
-          qualityFormReset();
-          setPagination({
-            page: 1,
-          });
-          getAllLeadData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            allDownliners,
-            leadSourceFilterId,
-            1,
-            pagination.limit
-          );
-          refreshLeadFollowUp();
-          if (permissions.includes("Add Quality Comment")) {
-            setRefreshToggle(!refreshToggle);
-          }
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later"
-        );
-      }
-    } else {
-      try {
-        await addQualityComments(payload);
-        CommonMessage("success", "Updated");
-        setTimeout(() => {
-          setButtonLoading(false);
-          qualityFormReset();
-          setPagination({
-            page: 1,
-          });
-          getAllLeadData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            allDownliners,
-            leadSourceFilterId,
-            1,
-            pagination.limit
-          );
-          refreshLeadFollowUp();
-          if (permissions.includes("Add Quality Comment")) {
-            setRefreshToggle(!refreshToggle);
-          }
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later"
-        );
-      }
     }
   };
 
@@ -1483,16 +1386,13 @@ export default function Leads({
       try {
         await assignLead(payload);
         setTimeout(() => {
-          setPagination({
-            page: 1,
-          });
           getAllLeadData(
             searchValue,
             selectedDates[0],
             selectedDates[1],
             allDownliners,
             leadSourceFilterId,
-            1,
+            pagination.page,
             pagination.limit
           );
           formReset();
@@ -1992,16 +1892,13 @@ export default function Leads({
           setIsOpenAddDrawer={setIsOpenAddDrawer}
           callgetLeadsApi={() => {
             setUpdateLeadItem(null);
-            setPagination({
-              page: 1,
-            });
             getAllLeadData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               allDownliners,
               leadSourceFilterId,
-              1,
+              pagination.page,
               pagination.limit
             );
             refreshLeadFollowUp();
@@ -2479,18 +2376,9 @@ export default function Leads({
                 />
               </Col>
               <Col span={8}>
-                <CommonSelectField
+                <CommonGroupedSelectField
                   label="Payment Mode"
-                  required={true}
-                  options={[
-                    { id: 1, name: "Cash" },
-                    { id: 2, name: "Card" },
-                    { id: 3, name: "Bank" },
-                    { id: 4, name: "UPI" },
-                    { id: 5, name: "Razorpay" },
-                    { id: 6, name: "Razorpay - UPI" },
-                  ]}
-                  onChange={handlePaymentType}
+                  onChange={handlePaymentMode}
                   value={paymentMode}
                   error={paymentModeError}
                 />
@@ -2710,11 +2598,7 @@ export default function Leads({
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={
-                  isQualityCommentSection
-                    ? handleQualityComment
-                    : handlePaymentSubmit
-                }
+                onClick={handlePaymentSubmit}
               >
                 Submit
               </button>

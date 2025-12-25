@@ -21,12 +21,16 @@ import {
   getLeadAndFollowupCount,
   getLiveLeads,
   getTableColumns,
+  getUsers,
+  liveLeadManualAssign,
   moveLiveLeadToJunk,
   updateTableColumns,
 } from "../ApiService/action";
 import {
   addressValidator,
+  formatToBackendIST,
   getCurrentandPreviousweekDate,
+  selectValidator,
 } from "../Common/Validation";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -46,6 +50,7 @@ import {
   storeLiveLeadSelectedDates,
 } from "../Redux/Slice";
 import CommonDnd from "../Common/CommonDnd";
+import CommonSelectField from "../Common/CommonSelectField";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -58,6 +63,8 @@ export default function LiveLead({
   setJunkLeadCount,
   isJunkPageVisited,
   refreshJunkLeads,
+  isAssignLeadPageVisited,
+  refreshAssignLeads,
 }) {
   //useref
   const filterTypeRef = useRef("");
@@ -90,6 +97,11 @@ export default function LiveLead({
   const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
   const [pickLoadingRow, setPickLoadingRow] = useState(null);
+  //assign lead
+  const [isOpenAssignModal, setIsOpenAssignModal] = useState(false);
+  const [allUsersList, setAllUsersList] = useState([]);
+  const [assignId, setAssignId] = useState(null);
+  const [assignIdError, setAssignIdError] = useState("");
   //junk usestates
   const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
   const [junkComments, setJunkComments] = useState("");
@@ -492,9 +504,13 @@ export default function LiveLead({
 
   useEffect(() => {
     setCallCountApi(
-      isLeadPageVisited == true && isJunkPageVisited == true ? false : true
+      isLeadPageVisited == true &&
+        isJunkPageVisited == true &&
+        isAssignLeadPageVisited == true
+        ? false
+        : true
     );
-  }, [isLeadPageVisited, isJunkPageVisited]);
+  }, [isLeadPageVisited, isJunkPageVisited, isAssignLeadPageVisited]);
 
   useEffect(() => {
     paginationRef.current = pagination;
@@ -578,7 +594,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 600); // your interval
+    }, 10000); // your interval
 
     // Cleanup
     return () => clearInterval(interval);
@@ -1130,6 +1146,21 @@ export default function LiveLead({
     }
   };
 
+  const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data?.data || []);
+    } catch (error) {
+      setAllUsersList([]);
+      console.log("get all users error", error);
+    }
+  };
+
   const getLeadAndFollowupCountData = async () => {
     if (callCountApi == false) return;
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -1157,6 +1188,57 @@ export default function LiveLead({
     setSelectedRowKeys(keys);
   };
 
+  const handleAssignLead = async () => {
+    console.log("selectedRowKeys", selectedRowKeys);
+    const userValidate = selectValidator(assignId);
+
+    setAssignIdError(userValidate);
+
+    if (userValidate) return;
+
+    setButtonLoading(true);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const today = new Date();
+
+    const payload = {
+      user_id: assignId,
+      assigned_by: convertAsJson?.id,
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      is_assigned: true,
+      assigned_date: formatToBackendIST(today),
+    };
+
+    try {
+      await liveLeadManualAssign(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenAssignModal(false);
+        setAssignId(null);
+        setAssignIdError("");
+        setLiveLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        getLiveLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit
+        );
+        refreshAssignLeads();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
   const handleMoveToJunk = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
     const commentsValidate = addressValidator(junkComments);
@@ -1181,14 +1263,11 @@ export default function LiveLead({
         setSelectedRows([]);
         setSelectedRowKeys([]);
         setJunkComments("");
-        setPagination({
-          page: 1,
-        });
         getLiveLeadsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
-          1,
+          pagination.page,
           pagination.limit
         );
         getLeadAndFollowupCountData();
@@ -1352,14 +1431,25 @@ export default function LiveLead({
         <Col xs={24} sm={24} md={24} lg={7}>
           <div className="livelead_junkbutton_container">
             {selectedRows.length >= 1 && (
-              <Button
-                className="livelead_junkbutton"
-                onClick={() => {
-                  setIsOpenJunkModal(true);
-                }}
-              >
-                Move to Junk
-              </Button>
+              <>
+                <button
+                  className="leadmanager_addleadbutton"
+                  onClick={() => {
+                    setIsOpenAssignModal(true);
+                    getUsersData();
+                  }}
+                >
+                  Assign Lead
+                </button>
+                <Button
+                  className="livelead_junkbutton"
+                  onClick={() => {
+                    setIsOpenJunkModal(true);
+                  }}
+                >
+                  Move to Junk
+                </Button>
+              </>
             )}
             <FiFilter
               size={20}
@@ -1573,14 +1663,11 @@ export default function LiveLead({
               return;
             }
             setPickLeadItem(null);
-            setPagination({
-              page: 1,
-            });
             getLiveLeadsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
-              1,
+              pagination.page,
               pagination.limit
             );
             refreshLeadFollowUp();
@@ -1675,6 +1762,63 @@ export default function LiveLead({
             }}
             value={junkComments}
             error={junkCommentsError}
+          />
+        </div>
+      </Modal>
+
+      {/* assign lead modal */}
+      <Modal
+        title="Assign Leads"
+        open={isOpenAssignModal}
+        onCancel={() => {
+          setIsOpenAssignModal(false);
+          setAssignId(null);
+          setAssignIdError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAssignModal(false);
+              setAssignId(null);
+              setAssignIdError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleAssignLead}
+              className="leads_coursemodal_createbutton"
+            >
+              Assign
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonSelectField
+            label="Assign To"
+            options={allUsersList}
+            onChange={(e) => {
+              setAssignId(e.target.value);
+              setAssignIdError(selectValidator(e.target.value));
+            }}
+            value={assignId}
+            error={assignIdError}
           />
         </div>
       </Modal>

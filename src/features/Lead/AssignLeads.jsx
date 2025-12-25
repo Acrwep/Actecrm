@@ -6,58 +6,83 @@ import {
   Tooltip,
   Radio,
   Button,
-  Drawer,
   Badge,
+  Drawer,
   Modal,
 } from "antd";
-import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
+import { IoFilter } from "react-icons/io5";
+import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import { GiCardPickup } from "react-icons/gi";
+import { MdOutlinePlaylistRemove } from "react-icons/md";
+import { MdOutlineRefresh } from "react-icons/md";
+import CommonSelectField from "../Common/CommonSelectField";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
-  deleteJunkLeads,
+  assignLiveLead,
   getAllDownlineUsers,
-  getJunkLeads,
   getLeadAndFollowupCount,
-  getLiveLeads,
+  getManualAssignLeads,
+  liveLeadManualAssign,
   moveLiveLeadToJunk,
 } from "../ApiService/action";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
-import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import {
+  addressValidator,
+  getCurrentandPreviousweekDate,
+} from "../Common/Validation";
 import CommonTable from "../Common/CommonTable";
-import { MdOutlineRefresh } from "react-icons/md";
-import { RiDeleteBinLine } from "react-icons/ri";
-import CommonSpinner from "../Common/CommonSpinner";
-import { useSelector } from "react-redux";
-import CommonDeleteModal from "../Common/CommonDeleteModal";
+import { useDispatch, useSelector } from "react-redux";
+import AddLead from "./AddLead";
 import { CommonMessage } from "../Common/CommonMessage";
+import CommonSpinner from "../Common/CommonSpinner";
+import CommonTextArea from "../Common/CommonTextArea";
 import moment from "moment";
-import CourseCard from "./CourseCard";
 
-export default function JunkLeads({
+export default function AssignLeads({
   setLiveLeadCount,
+  leadTypeOptions,
+  regionOptions,
+  refreshLeadFollowUp,
+  refreshLeads,
+  setLeadCount,
+  isLeadPageVisited,
   setJunkLeadCount,
-  setIsJunkPageVisited,
+  isJunkPageVisited,
+  refreshJunkLeads,
+  setAssignLeadCount,
+  setIsAssignLeadPageVisited,
 }) {
+  const dispatch = useDispatch();
   //useref
-  //useselector
-  const tabName = useSelector((state) => state.leadmanageractivepage);
+  const addLeaduseRef = useRef();
+
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
   //usestates
-  const [selectedDates, setSelectedDates] = useState([]);
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedDates, setSelectedDates] = useState([]);
+  //pick lead drawer
+  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+  const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
-  //modal usestates
-  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
-  const [leadId, setLeadId] = useState(null);
+  const [pickLoadingRow, setPickLoadingRow] = useState(null);
+  //junk usestates
+  const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
+  const [junkComments, setJunkComments] = useState("");
+  const [junkCommentsError, setJunkCommentsError] = useState("");
+  const [liveLeadId, setLiveLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   //move modal
+  const [leadId, setLeadId] = useState(null);
   const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
+  //loading
+  const [loading, setLoading] = useState(true);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -69,12 +94,38 @@ export default function JunkLeads({
   const columns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
-      title: "Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 130,
+      title: "Assined At",
+      key: "assigned_date_ist",
+      dataIndex: "assigned_date_ist",
+      width: 100,
       render: (text) => {
-        return <p>{moment(text).format("MM/DD/YYYY")}</p>;
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
+    },
+    {
+      title: "Assin By",
+      key: "assigned_by_user",
+      dataIndex: "assigned_by_user",
+      width: 130,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.assigned_by} - ${text}`}</p>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Assin To",
+      key: "assigned_to_user",
+      dataIndex: "assigned_to_user",
+      width: 130,
+      render: (text, record) => {
+        return (
+          <div>
+            <p> {`${record.assigned_to} - ${text}`}</p>
+          </div>
+        );
       },
     },
     {
@@ -84,8 +135,26 @@ export default function JunkLeads({
       width: 200,
       render: (text, record) => {
         return (
-          <>
-            {text.length > 22 ? (
+          <Badge
+            size="small"
+            count={
+              record.lead_type == "New" || record.lead_type == null
+                ? "New"
+                : "Existing"
+            }
+            offset={
+              record.lead_type == "New" || record.lead_type == null
+                ? [22, 0]
+                : [30, 0]
+            }
+            color={
+              record.lead_type == "New" || record.lead_type == null
+                ? "#1e90ff"
+                : "#d32f2f"
+            }
+            style={{ fontSize: "10px" }}
+          >
+            {text.length > 16 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -101,49 +170,16 @@ export default function JunkLeads({
                 }}
               >
                 <p style={{ cursor: "pointer", fontSize: "13px" }}>
-                  {text.slice(0, 21) + "..."}
+                  {text.slice(0, 15) + "..."}
                 </p>
               </Tooltip>
             ) : (
               <p style={{ fontSize: "13px" }}>{text}</p>
             )}
-          </>
+          </Badge>
         );
       },
     },
-    {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 240,
-      render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
-      },
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     {
       title: "Course",
       key: "course",
@@ -168,6 +204,39 @@ export default function JunkLeads({
                 }}
               >
                 <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
+              </Tooltip>
+            ) : (
+              <p>{text}</p>
+            )}
+          </>
+        );
+      },
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 240,
+      render: (text) => {
+        return (
+          <>
+            {text.length > 26 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={text}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip text color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text}</p>
@@ -209,6 +278,13 @@ export default function JunkLeads({
       },
     },
     {
+      title: "Origin",
+      key: "domain_origin",
+      dataIndex: "domain_origin",
+      width: 90,
+      hidden: permissions.includes("Show Origin in Live Leads") ? false : true,
+    },
+    {
       title: "Training Mode",
       key: "training",
       dataIndex: "training",
@@ -241,11 +317,11 @@ export default function JunkLeads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 200,
+      width: 220,
       render: (text) => {
         return (
           <>
-            {text && text.length > 24 ? (
+            {text && text.length > 26 ? (
               <Tooltip
                 color="#fff"
                 placement="bottom"
@@ -260,52 +336,13 @@ export default function JunkLeads({
                   },
                 }}
               >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
+                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
               </Tooltip>
             ) : (
               <p>{text ? text : "-"}</p>
             )}
           </>
         );
-      },
-    },
-    {
-      title: "Junk Reason",
-      key: "junk_reason",
-      dataIndex: "junk_reason",
-      fixed: "right",
-      width: 160,
-      render: (text) => {
-        if (text) {
-          return (
-            <>
-              {text.length > 20 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 19) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
-        } else {
-          <p>-</p>;
-        }
       },
     },
     {
@@ -328,14 +365,24 @@ export default function JunkLeads({
                 }}
               />
             </Tooltip>
-            <Tooltip placement="bottom" title="Delete">
-              <RiDeleteBinLine
-                color="#d32f2f"
-                size={18}
+            <Tooltip placement="bottom" title="Pick">
+              <GiCardPickup
+                size={22}
+                color="#5b69ca"
                 className="trainers_action_icons"
                 onClick={() => {
-                  setLeadId(record.id);
-                  setIsOpenDeleteModal(true);
+                  handlePick(record);
+                }}
+              />
+            </Tooltip>
+            <Tooltip placement="bottom" title="Move to Junk">
+              <MdOutlinePlaylistRemove
+                color="#d32f2f"
+                size={20}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setLiveLeadId(record.id);
+                  setIsOpenJunkModal(true);
                 }}
               />
             </Tooltip>
@@ -346,25 +393,19 @@ export default function JunkLeads({
   ];
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
-    setIsJunkPageVisited(true);
-
-    // Initial Call
-    getJunkLeadsData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      1,
-      10
+    setCallCountApi(
+      isLeadPageVisited == true && isJunkPageVisited == true ? false : true
     );
+  }, [isLeadPageVisited, isJunkPageVisited]);
 
-    setTimeout(() => {
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      getAllDownlineUsersData(convertAsJson?.user_id);
-    }, 300);
-  }, []);
+  useEffect(() => {
+    if (permissions.length >= 1) {
+      setIsAssignLeadPageVisited(true);
+      getAllDownlineUsersData();
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
+    }
+  }, [permissions]);
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -375,18 +416,30 @@ export default function JunkLeads({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getManualAssignLeadsData(
+        null,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        1,
+        10
+      );
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
-  const getJunkLeadsData = async (
+  const getManualAssignLeadsData = async (
     searchvalue,
     startDate,
     endDate,
     pageNumber,
     limit
   ) => {
+    setLoading(true);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
@@ -399,26 +452,26 @@ export default function JunkLeads({
         : {}),
       start_date: startDate,
       end_date: endDate,
+      user_id: convertAsJson?.user_id,
       page: pageNumber,
       limit: limit,
     };
     try {
-      const response = await getJunkLeads(payload);
-      console.log("junk lead response", response);
-      const paginations = response?.data?.data?.pagination;
-
-      setLeadData(response?.data?.data?.data || []);
-
-      setJunkLeadCount(paginations.total);
+      const response = await getManualAssignLeads(payload);
+      console.log("get manual assign leads response", response);
+      const data = response?.data?.data?.data || [];
+      const pagination = response?.data?.data?.pagination;
+      setLeadData(data);
+      setAssignLeadCount(pagination.total);
       setPagination({
-        page: paginations.page,
-        limit: paginations.limit,
-        total: paginations.total,
-        totalPages: paginations.totalPages,
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
       });
     } catch (error) {
       setLeadData([]);
-      console.log("get live lead error", error);
+      console.log("get manual assign leads error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -426,57 +479,66 @@ export default function JunkLeads({
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchValue(e.target.value);
-    setLoading(true);
-    setTimeout(() => {
-      setPagination({
-        page: 1,
-      });
-      getJunkLeadsData(
-        e.target.value,
-        selectedDates[0],
-        selectedDates[1],
-        1,
-        pagination.limit
-      );
-    }, 300);
+  const handlePick = async (item) => {
+    console.log("itemmmm", item);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    setPickLeadItem({
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      location: item.location ? item.location : "",
+      course: item.course ? item.course : "",
+      training: item.training ? item.training : "",
+      comments: item.comments ? item.comments : "",
+      is_assign_lead: true,
+    });
+    setIsOpenAddDrawer(true);
   };
 
-  const handlePaginationChange = ({ page, limit }) => {
-    getJunkLeadsData(
-      searchValue,
-      selectedDates[0],
-      selectedDates[1],
-      page,
-      limit
-    );
-  };
+  const handleMoveToJunk = async () => {
+    console.log("selectedRowKeys", selectedRowKeys);
+    const commentsValidate = addressValidator(junkComments);
 
-  const getLeadAndFollowupCountData = async () => {
-    if (callCountApi == false) return;
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setJunkCommentsError(commentsValidate);
+
+    if (commentsValidate) return;
+
+    setButtonLoading(true);
     const payload = {
-      user_ids: allDownliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      is_junk: true,
+      reason: junkComments,
     };
     try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setLiveLeadCount(countDetails.web_lead_count);
+      await moveLiveLeadToJunk(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenJunkModal(false);
+        setLiveLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        setJunkComments("");
+        getLiveLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit
+        );
+        getLeadAndFollowupCountData();
+        refreshJunkLeads();
+      }, 300);
     } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
     }
-  };
-
-  const handleSelectedRow = (row) => {
-    console.log("selected rowwww", row);
-    setSelectedRows(row);
-    const keys = row.map((item) => item.id); // or your unique row key
-    setSelectedRowKeys(keys);
   };
 
   const handleMoveToLiveLead = async () => {
@@ -484,10 +546,10 @@ export default function JunkLeads({
     setButtonLoading(true);
     const payload = {
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
-      is_junk: false,
+      is_assigned: false,
     };
     try {
-      await moveLiveLeadToJunk(payload);
+      await liveLeadManualAssign(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
         setButtonLoading(false);
@@ -495,7 +557,7 @@ export default function JunkLeads({
         setLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
-        getJunkLeadsData(
+        getManualAssignLeadsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
@@ -517,38 +579,57 @@ export default function JunkLeads({
     }
   };
 
-  const handleDelete = async () => {
-    console.log("selectedRowKeys", selectedRowKeys);
-    setButtonLoading(true);
+  const handlePaginationChange = ({ page, limit }) => {
+    getManualAssignLeadsData(
+      searchValue,
+      selectedDates[0],
+      selectedDates[1],
+      page,
+      limit
+    );
+  };
+
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setLoading(true);
+    setTimeout(() => {
+      setPagination({
+        page: 1,
+      });
+      getManualAssignLeadsData(
+        e.target.value,
+        selectedDates[0],
+        selectedDates[1],
+        1,
+        pagination.limit
+      );
+    }, 300);
+  };
+
+  const getLeadAndFollowupCountData = async () => {
+    if (callCountApi == false) return;
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const payload = {
-      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
+      user_ids: allDownliners,
+      start_date: PreviousAndCurrentDate[0],
+      end_date: PreviousAndCurrentDate[1],
+      login_by: convertAsJson?.user_id,
     };
     try {
-      await deleteJunkLeads(payload);
-      CommonMessage("success", "Updated");
-      setTimeout(() => {
-        setButtonLoading(false);
-        setIsOpenDeleteModal(false);
-        setLeadId(null);
-        setSelectedRows([]);
-        setSelectedRowKeys([]);
-        getJunkLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit
-        );
-      }, 300);
+      const response = await getLeadAndFollowupCount(payload);
+      console.log("lead count response", response);
+      const countDetails = response?.data?.data;
+      setLeadCount(countDetails.total_lead_count);
+      setJunkLeadCount(countDetails.junk_lead_count);
     } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
+      console.log("lead count error", error);
+      // dispatch(storeUsersList([]));
     }
   };
+
   return (
     <div>
       <Row>
@@ -577,11 +658,10 @@ export default function JunkLeads({
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
-                          setLoading(true);
                           setPagination({
                             page: 1,
                           });
-                          getJunkLeadsData(
+                          getManualAssignLeadsData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
@@ -629,7 +709,7 @@ export default function JunkLeads({
                               setPagination({
                                 page: 1,
                               });
-                              getJunkLeadsData(
+                              getManualAssignLeadsData(
                                 null,
                                 selectedDates[0],
                                 selectedDates[1],
@@ -670,11 +750,10 @@ export default function JunkLeads({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  setLoading(true);
                   setPagination({
                     page: 1,
                   });
-                  getJunkLeadsData(
+                  getManualAssignLeadsData(
                     searchValue,
                     dates[0],
                     dates[1],
@@ -687,46 +766,155 @@ export default function JunkLeads({
           </Row>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>
-          {selectedRows.length >= 1 && (
-            <div className="livelead_junkbutton_container">
-              <Button
-                className="junklead_movetolivebutton"
-                onClick={() => {
-                  setIsOpenMoveModal(true);
-                }}
-              >
-                Move to Live Lead
-              </Button>
-              <Button
-                className="livelead_junkbutton"
-                onClick={() => {
-                  setIsOpenDeleteModal(true);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          ></div>
         </Col>
       </Row>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1300 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}
+          checkBox="true"
           loading={loading}
           size="small"
           className="questionupload_table"
-          selectedDatas={handleSelectedRow}
-          selectedRowKeys={selectedRowKeys}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
         />
       </div>
+
+      {/* add lead drawer */}
+      <Drawer
+        title="Add Lead"
+        open={isOpenAddDrawer}
+        onClose={async () => {
+          setIsOpenAddDrawer(false);
+          setPickLeadItem(null);
+        }}
+        width="52%"
+        style={{ position: "relative" }}
+        id="leadform_addlead_drawer"
+      >
+        <AddLead
+          ref={addLeaduseRef}
+          key={pickLeadItem}
+          leadTypeOptions={leadTypeOptions}
+          regionOptions={regionOptions}
+          updateLeadItem={null}
+          setSaveOnlyLoading={setButtonLoading}
+          setButtonLoading={setButtonLoading}
+          setIsOpenAddDrawer={setIsOpenAddDrawer}
+          liveLeadItem={pickLeadItem}
+          callgetLeadsApi={(is_refreshjunk) => {
+            console.log("is_refreshjunk", is_refreshjunk);
+            if (is_refreshjunk == true) {
+              setPickLeadItem(null);
+              getLeadAndFollowupCountData();
+              refreshJunkLeads();
+              return;
+            }
+            setPickLeadItem(null);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              pagination.page,
+              pagination.limit
+            );
+            refreshLeadFollowUp();
+            refreshLeads();
+            getLeadAndFollowupCountData();
+          }}
+        />
+
+        <div className="leadmanager_submitlead_buttoncontainer">
+          <div style={{ display: "flex", gap: "12px" }}>
+            <>
+              {buttonLoading ? (
+                <button className={"leadmanager_loadingupdateleadbutton"}>
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className={"leadmanager_updateleadbutton"}
+                  onClick={() =>
+                    addLeaduseRef.current.handleSubmit("Save Only")
+                  }
+                >
+                  Submit
+                </button>
+              )}
+            </>
+          </div>
+        </div>
+      </Drawer>
+
+      <Modal
+        title="Move to Junk"
+        open={isOpenJunkModal}
+        onCancel={() => {
+          setIsOpenJunkModal(false);
+          setLiveLeadId(null);
+          setJunkComments("");
+          setJunkCommentsError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAddCourseModal(false);
+              setCourseName("");
+              setCourseNameError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              style={{ width: "120px", opacity: 0.7 }}
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleMoveToJunk}
+              style={{ width: "120px" }}
+            >
+              Move to Junk
+            </Button>
+          ),
+        ]}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <CommonTextArea
+            label="Comments"
+            required={false}
+            onChange={(e) => {
+              setJunkComments(e.target.value);
+              setJunkCommentsError(addressValidator(e.target.value));
+            }}
+            value={junkComments}
+            error={junkCommentsError}
+          />
+        </div>
+      </Modal>
 
       {/* move to live lead modal */}
       <Modal
@@ -779,17 +967,6 @@ export default function JunkLeads({
           </div>
         </div>
       </Modal>
-      {/* delete modal */}
-      <CommonDeleteModal
-        open={isOpenDeleteModal}
-        onCancel={() => {
-          setIsOpenDeleteModal(false);
-          setLeadId(null);
-        }}
-        content="Are you sure want to delete the Lead?"
-        loading={buttonLoading}
-        onClick={handleDelete}
-      />
     </div>
   );
 }

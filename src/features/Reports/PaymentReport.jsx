@@ -90,7 +90,7 @@ export default function PaymentReport() {
       title: "Date",
       key: "date",
       dataIndex: "date",
-      width: 90,
+      // width: 90,
       fixed: "left",
       render: (text) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
@@ -100,7 +100,7 @@ export default function PaymentReport() {
       title: "Velachery",
       key: "velachery",
       dataIndex: "velachery",
-      width: 85,
+      // width: 85,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -109,7 +109,7 @@ export default function PaymentReport() {
       title: "Anna Nagar",
       key: "anna_nagar",
       dataIndex: "anna_nagar",
-      width: 100,
+      // width: 100,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -118,7 +118,7 @@ export default function PaymentReport() {
       title: "Porur",
       key: "porur",
       dataIndex: "porur",
-      width: 75,
+      // width: 75,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -127,7 +127,7 @@ export default function PaymentReport() {
       title: "OMR",
       key: "omr",
       dataIndex: "omr",
-      width: 74,
+      // width: 74,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -136,7 +136,7 @@ export default function PaymentReport() {
       title: "E-City",
       key: "e_city",
       dataIndex: "e_city",
-      width: 75,
+      // width: 75,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -145,7 +145,7 @@ export default function PaymentReport() {
       title: "BTM Layout",
       key: "btm_layout",
       dataIndex: "btm_layout",
-      width: 80,
+      // width: 80,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -154,7 +154,7 @@ export default function PaymentReport() {
       title: "Rajaji Nagar",
       key: "rajaji_nagar",
       dataIndex: "rajaji_nagar",
-      width: 85,
+      // width: 85,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -163,7 +163,7 @@ export default function PaymentReport() {
       title: "Marathahalli",
       key: "marathahalli",
       dataIndex: "marathahalli",
-      width: 82,
+      // width: 82,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -172,7 +172,7 @@ export default function PaymentReport() {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      width: 80,
+      // width: 80,
       fixed: "right",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
@@ -185,7 +185,6 @@ export default function PaymentReport() {
       title: "Date",
       key: "date",
       dataIndex: "date",
-      width: 160,
       fixed: "left",
       render: (text) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
@@ -195,7 +194,6 @@ export default function PaymentReport() {
       title: "Cash",
       key: "cash",
       dataIndex: "cash",
-      width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -204,7 +202,6 @@ export default function PaymentReport() {
       title: "Bank",
       key: "bank",
       dataIndex: "bank",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -213,7 +210,6 @@ export default function PaymentReport() {
       title: "UPI",
       key: "upi",
       dataIndex: "upi",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -222,7 +218,6 @@ export default function PaymentReport() {
       title: "Card",
       key: "card",
       dataIndex: "card",
-      width: 120,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -231,7 +226,6 @@ export default function PaymentReport() {
       title: "Razorpay",
       key: "razorpay",
       dataIndex: "razorpay",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -240,7 +234,6 @@ export default function PaymentReport() {
       title: "Razorpay-UPI",
       key: "razorpay_upi",
       dataIndex: "razorpay_upi",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -249,7 +242,6 @@ export default function PaymentReport() {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      width: 140,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -350,47 +342,47 @@ export default function PaymentReport() {
       totalCounts &&
       (totalCounts.velachery_total != undefined ||
         totalCounts.velachery_total != null)
-        ? Number(totalCounts.velachery_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.velachery_total).toLocaleString("en-IN")
         : "-",
     anna_nagar:
       totalCounts &&
       (totalCounts.anna_nagar_total != undefined ||
         totalCounts.anna_nagar_total != null)
-        ? Number(totalCounts.anna_nagar_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.anna_nagar_total).toLocaleString("en-IN")
         : "-",
     porur:
       totalCounts &&
       (totalCounts.porur_total != undefined || totalCounts.porur_total != null)
-        ? Number(totalCounts.porur_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.porur_total).toLocaleString("en-IN")
         : "-",
     omr:
       totalCounts &&
       (totalCounts.omr_total != undefined || totalCounts.omr_total != null)
-        ? Number(totalCounts.omr_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.omr_total).toLocaleString("en-IN")
         : "-",
     e_city:
       totalCounts &&
       (totalCounts.e_city_total != undefined ||
         totalCounts.e_city_total != null)
-        ? Number(totalCounts.e_city_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.e_city_total).toLocaleString("en-IN")
         : "-",
     btm_layout:
       totalCounts &&
       (totalCounts.btm_layout_total != undefined ||
         totalCounts.btm_layout_total != null)
-        ? Number(totalCounts.btm_layout_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.btm_layout_total).toLocaleString("en-IN")
         : "-",
     rajaji_nagar:
       totalCounts &&
       (totalCounts.rajaji_nagar != undefined ||
         totalCounts.rajaji_nagar != null)
-        ? Number(totalCounts.rajaji_nagar).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.rajaji_nagar).toLocaleString("en-IN")
         : "-",
     marathahalli:
       totalCounts &&
       (totalCounts.marathahalli_total != undefined ||
         totalCounts.marathahalli_total != null)
-        ? Number(totalCounts.marathahalli_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.marathahalli_total).toLocaleString("en-IN")
         : "-",
     total:
       totalCounts &&
@@ -404,34 +396,34 @@ export default function PaymentReport() {
     cash:
       totalCounts &&
       (totalCounts.cash_total != undefined || totalCounts.cash_total != null)
-        ? Number(totalCounts.cash_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.cash_total).toLocaleString("en-IN")
         : "-",
     bank:
       totalCounts &&
       (totalCounts.bank_total != undefined || totalCounts.bank_total != null)
-        ? Number(totalCounts.bank_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.bank_total).toLocaleString("en-IN")
         : "-",
     upi:
       totalCounts &&
       (totalCounts.upi_total != undefined || totalCounts.upi_total != null)
-        ? Number(totalCounts.upi_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.upi_total).toLocaleString("en-IN")
         : "-",
     card:
       totalCounts &&
       (totalCounts.card_total != undefined || totalCounts.card_total != null)
-        ? Number(totalCounts.card_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.card_total).toLocaleString("en-IN")
         : "-",
     razorpay:
       totalCounts &&
       (totalCounts.razorpay_total != undefined ||
         totalCounts.razorpay_total != null)
-        ? Number(totalCounts.razorpay_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.razorpay_total).toLocaleString("en-IN")
         : "-",
     razorpay_upi:
       totalCounts &&
       (totalCounts.razorpay_upi_total != undefined ||
         totalCounts.razorpay_upi_total != null)
-        ? Number(totalCounts.razorpay_upi_total).toLocaleString("en-IN")
+        ? "₹" + Number(totalCounts.razorpay_upi_total).toLocaleString("en-IN")
         : "-",
     total:
       totalCounts &&

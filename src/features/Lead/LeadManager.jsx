@@ -25,6 +25,7 @@ import {
 } from "../Redux/Slice";
 import LiveLead from "./LiveLeads";
 import JunkLeads from "./JunkLeads";
+import AssignLeads from "./AssignLeads";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -38,7 +39,9 @@ export default function LeadManager() {
   const [leadCount, setLeadCount] = useState(0);
   const [liveLeadCount, setLiveLeadCount] = useState(0);
   const [junkLeadCount, setJunkLeadCount] = useState(0);
+  const [assignLeadCount, setAssignLeadCount] = useState(0);
   const [isLeadPageVisited, setIsLeadPageVisited] = useState(false);
+  const [isAssignLeadPageVisited, setIsAssignLeadPageVisited] = useState(false);
   const [isJunkPageVisited, setIsJunkPageVisited] = useState(false);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
@@ -57,6 +60,7 @@ export default function LeadManager() {
     leads: false,
     live_leads: false,
     junk: false,
+    assign_leads: false,
   });
 
   // For forcing remount
@@ -65,6 +69,7 @@ export default function LeadManager() {
     leads: 0,
     live_leads: 0,
     junk: 0,
+    assign_leads: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -102,10 +107,14 @@ export default function LeadManager() {
 
   const getLeadAndFollowupCountData = async (downliners) => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const payload = {
       user_ids: downliners,
       start_date: PreviousAndCurrentDate[0],
       end_date: PreviousAndCurrentDate[1],
+      login_by: convertAsJson?.user_id,
     };
     try {
       const response = await getLeadAndFollowupCount(payload);
@@ -115,6 +124,7 @@ export default function LeadManager() {
       setLeadCount(countDetails.total_lead_count);
       setLiveLeadCount(countDetails.web_lead_count);
       setJunkLeadCount(countDetails.junk_lead_count);
+      setAssignLeadCount(countDetails.assign_lead_count);
       // dispatch(storeUsersList(response?.data?.data || []));
     } catch (error) {
       console.log("lead count error", error);
@@ -209,6 +219,13 @@ export default function LeadManager() {
     }));
   };
 
+  const refreshAssignLeads = () => {
+    setTabKeys((prev) => ({
+      ...prev,
+      assign_leads: prev.assign_leads + 1,
+    }));
+  };
+
   const refreshJunkLeads = () => {
     setTabKeys((prev) => ({
       ...prev,
@@ -250,6 +267,18 @@ export default function LeadManager() {
           >
             <p>{`Live Leads (${liveLeadCount})`}</p>
           </button>
+
+          <button
+            className={
+              activePage === "assign_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("assign_leads")}
+          >
+            <p>{`Assign Leads (${assignLeadCount})`}</p>
+          </button>
+
           {permissions.includes("Junk Leads Tab") && (
             <button
               className={
@@ -339,6 +368,32 @@ export default function LeadManager() {
             setJunkLeadCount={setJunkLeadCount}
             isJunkPageVisited={isJunkPageVisited}
             refreshJunkLeads={refreshJunkLeads}
+            isAssignLeadPageVisited={isAssignLeadPageVisited}
+            refreshAssignLeads={refreshAssignLeads}
+          />
+        </div>
+      )}
+
+      {loadedTabs.assign_leads && (
+        <div
+          style={{
+            display: activePage === "assign_leads" ? "block" : "none",
+          }}
+        >
+          <AssignLeads
+            key={tabKeys.assign_leads}
+            setLiveLeadCount={setLiveLeadCount}
+            refreshLeads={refreshLeads}
+            refreshLeadFollowUp={refreshLeadFollowUp}
+            leadTypeOptions={leadTypeOptions}
+            regionOptions={regionOptions}
+            setLeadCount={setLeadCount}
+            isLeadPageVisited={isLeadPageVisited}
+            setJunkLeadCount={setJunkLeadCount}
+            isJunkPageVisited={isJunkPageVisited}
+            refreshJunkLeads={refreshJunkLeads}
+            setAssignLeadCount={setAssignLeadCount}
+            setIsAssignLeadPageVisited={setIsAssignLeadPageVisited}
           />
         </div>
       )}

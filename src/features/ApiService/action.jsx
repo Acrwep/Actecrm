@@ -527,6 +527,33 @@ export const assignLiveLead = async (payload) => {
   }
 };
 
+export const liveLeadManualAssign = async (payload) => {
+  try {
+    const response = await api.put("/api/manualAssign", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getManualAssignLeads = async (payload) => {
+  try {
+    const response = await api.post("/api/getAssignedLeads", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateLiveLeadStatus = async (payload) => {
+  try {
+    const response = await api.put("/api/updateLeadStatus", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const moveLiveLeadToJunk = async (payload) => {
   try {
     const response = await api.put("/api/updateJunkValue", payload);

@@ -463,7 +463,7 @@ export default function UserwiseSalesReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 1000 }}
+          scroll={{ x: "auto" }}
           columns={columns}
           dataSource={reportData}
           dataPerPage={10}
@@ -475,6 +475,7 @@ export default function UserwiseSalesReport() {
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
+          totals={null}
         />
       </div>
     </div>

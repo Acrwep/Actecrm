@@ -1150,9 +1150,6 @@ export default function Trainers() {
         setTimeout(() => {
           setButtonLoading(false);
           formReset();
-          setPagination({
-            page: 1,
-          });
           getTrainersData(
             searchValue,
             status,
@@ -1177,9 +1174,6 @@ export default function Trainers() {
         setTimeout(() => {
           setButtonLoading(false);
           formReset();
-          setPagination({
-            page: 1,
-          });
           getTrainersData(
             searchValue,
             status,
@@ -1212,9 +1206,6 @@ export default function Trainers() {
       await trainerStatusUpdate(payload);
       CommonMessage("success", "Status Updated");
       setTimeout(() => {
-        setPagination({
-          page: 1,
-        });
         getTrainersData(
           searchValue,
           status,

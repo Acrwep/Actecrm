@@ -39,6 +39,7 @@ import {
 import PrismaZoom from "react-prismazoom";
 import moment from "moment";
 import { CommonMessage } from "../../Common/CommonMessage";
+import CommonGroupedSelectField from "../../Common/CommonGroupedSelectField";
 
 const InsertPendingFees = forwardRef(
   (
@@ -117,7 +118,7 @@ const InsertPendingFees = forwardRef(
         getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
       );
 
-      if (paymentMode == 2 || paymentMode == 5) {
+      if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
         const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
         setConvenienceFees(conve_fees);
       } else {
@@ -131,8 +132,7 @@ const InsertPendingFees = forwardRef(
       }
     };
 
-    const handlePaymentType = (e) => {
-      const value = e.target.value;
+    const handlePaymentMode = (value) => {
       setPaymentMode(value);
       setConvenienceFeesStatus(null);
       setConvenienceFees(0);
@@ -162,7 +162,7 @@ const InsertPendingFees = forwardRef(
       );
 
       //handle convenience fees
-      if (value == 2 || value == 5) {
+      if (value == 2 || value == 5 || value == 10) {
         const conve_fees = getConvenienceFees(
           payAmount ? parseInt(payAmount) : 0
         );
@@ -993,18 +993,9 @@ const InsertPendingFees = forwardRef(
             />
           </Col>
           <Col span={8} style={{ marginTop: "16px" }}>
-            <CommonSelectField
+            <CommonGroupedSelectField
               label="Payment Mode"
-              required={true}
-              options={[
-                { id: 1, name: "Cash" },
-                { id: 2, name: "Card" },
-                { id: 3, name: "Bank" },
-                { id: 4, name: "UPI" },
-                { id: 5, name: "Razorpay" },
-                { id: 6, name: "Razorpay - UPI" },
-              ]}
-              onChange={handlePaymentType}
+              onChange={handlePaymentMode}
               value={paymentMode}
               error={paymentModeError}
             />

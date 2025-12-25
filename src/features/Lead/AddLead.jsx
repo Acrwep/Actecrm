@@ -33,6 +33,7 @@ import {
   leadEmailAndMobileValidator,
   moveLiveLeadToJunk,
   updateLead,
+  updateLiveLeadStatus,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -819,7 +820,15 @@ const AddLead = forwardRef(
             container.scrollIntoView({
               behavior: "smooth",
             });
-            callgetLeadsApi();
+            if (
+              liveLeadItem.is_assign_lead &&
+              liveLeadItem.is_assign_lead == true
+            ) {
+              console.log("dont call getLeadsApi");
+            } else {
+              callgetLeadsApi();
+            }
+
             if (liveLeadItem) {
               handleAssignLiveLead();
             }
@@ -850,6 +859,27 @@ const AddLead = forwardRef(
         await assignLiveLead(payload);
       } catch (error) {
         console.log("assign live lead error", error);
+      } finally {
+        setTimeout(() => {
+          if (
+            liveLeadItem.is_assign_lead &&
+            liveLeadItem.is_assign_lead == true
+          ) {
+            handleUpdateLiveLeadStatus();
+          }
+        }, 300);
+      }
+    };
+
+    const handleUpdateLiveLeadStatus = async () => {
+      const payload = {
+        lead_id: liveLeadItem.id,
+      };
+      try {
+        await updateLiveLeadStatus(payload);
+        callgetLeadsApi();
+      } catch (error) {
+        console.log("livelead update status error", error);
       }
     };
 
@@ -988,7 +1018,7 @@ const AddLead = forwardRef(
                     <Col span={12}>
                       <>
                         {liveLeadItem && liveLeadItem.email ? (
-                          liveLeadItem.email.length > 20 ? (
+                          liveLeadItem.email.length > 16 ? (
                             <Tooltip
                               color="#fff"
                               placement="bottom"
@@ -1004,7 +1034,7 @@ const AddLead = forwardRef(
                               }}
                             >
                               <p className="customerdetails_text">
-                                {liveLeadItem.email.slice(0, 19) + "..."}
+                                {liveLeadItem.email.slice(0, 15) + "..."}
                               </p>
                             </Tooltip>
                           ) : (

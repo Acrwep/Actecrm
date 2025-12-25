@@ -792,9 +792,6 @@ export default function LeadFollowUp({
       await updateFollowUp(payload);
       CommonMessage("success", "Updated");
       setTimeout(() => {
-        setPagination({
-          page: 1,
-        });
         getLeadFollowUpsData(
           searchValue,
           selectedDates[0],
@@ -1634,16 +1631,13 @@ export default function LeadFollowUp({
           setSaveOnlyLoading={setSaveOnlyLoading}
           setIsOpenAddDrawer={setIsOpenAddDrawer}
           callgetLeadsApi={() => {
-            setPagination({
-              page: 1,
-            });
             getLeadFollowUpsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               false,
               allDownliners,
-              1,
+              pagination.page,
               pagination.limit
             );
             refreshLeads();
