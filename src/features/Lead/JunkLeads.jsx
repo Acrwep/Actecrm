@@ -34,11 +34,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import moment from "moment";
 import CourseCard from "./CourseCard";
 
-export default function JunkLeads({
-  setLiveLeadCount,
-  setJunkLeadCount,
-  setIsJunkPageVisited,
-}) {
+export default function JunkLeads({ setJunkLeadCount }) {
   //useref
   //useselector
   const tabName = useSelector((state) => state.leadmanageractivepage);
@@ -348,7 +344,6 @@ export default function JunkLeads({
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setIsJunkPageVisited(true);
 
     // Initial Call
     getJunkLeadsData(
@@ -453,25 +448,6 @@ export default function JunkLeads({
     );
   };
 
-  const getLeadAndFollowupCountData = async () => {
-    if (callCountApi == false) return;
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    const payload = {
-      user_ids: allDownliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setLiveLeadCount(countDetails.web_lead_count);
-    } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
-    }
-  };
-
   const handleSelectedRow = (row) => {
     console.log("selected rowwww", row);
     setSelectedRows(row);
@@ -510,10 +486,6 @@ export default function JunkLeads({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
-    } finally {
-      setTimeout(() => {
-        getLeadAndFollowupCountData();
-      });
     }
   };
 

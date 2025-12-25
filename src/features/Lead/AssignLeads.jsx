@@ -40,18 +40,12 @@ import CommonTextArea from "../Common/CommonTextArea";
 import moment from "moment";
 
 export default function AssignLeads({
-  setLiveLeadCount,
   leadTypeOptions,
   regionOptions,
   refreshLeadFollowUp,
   refreshLeads,
-  setLeadCount,
-  isLeadPageVisited,
-  setJunkLeadCount,
-  isJunkPageVisited,
   refreshJunkLeads,
   setAssignLeadCount,
-  setIsAssignLeadPageVisited,
 }) {
   const dispatch = useDispatch();
   //useref
@@ -68,9 +62,7 @@ export default function AssignLeads({
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
-  const [pickLoadingRow, setPickLoadingRow] = useState(null);
   //junk usestates
   const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
   const [junkComments, setJunkComments] = useState("");
@@ -393,14 +385,7 @@ export default function AssignLeads({
   ];
 
   useEffect(() => {
-    setCallCountApi(
-      isLeadPageVisited == true && isJunkPageVisited == true ? false : true
-    );
-  }, [isLeadPageVisited, isJunkPageVisited]);
-
-  useEffect(() => {
     if (permissions.length >= 1) {
-      setIsAssignLeadPageVisited(true);
       getAllDownlineUsersData();
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setSelectedDates(PreviousAndCurrentDate);
@@ -528,7 +513,6 @@ export default function AssignLeads({
           pagination.page,
           pagination.limit
         );
-        getLeadAndFollowupCountData();
         refreshJunkLeads();
       }, 300);
     } catch (error) {
@@ -572,10 +556,6 @@ export default function AssignLeads({
         error?.response?.data?.details ||
           "Something went wrong. Try again later"
       );
-    } finally {
-      setTimeout(() => {
-        getLeadAndFollowupCountData();
-      });
     }
   };
 
@@ -604,30 +584,6 @@ export default function AssignLeads({
         pagination.limit
       );
     }, 300);
-  };
-
-  const getLeadAndFollowupCountData = async () => {
-    if (callCountApi == false) return;
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-
-    const payload = {
-      user_ids: allDownliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
-      login_by: convertAsJson?.user_id,
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setLeadCount(countDetails.total_lead_count);
-      setJunkLeadCount(countDetails.junk_lead_count);
-    } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
-    }
   };
 
   return (
@@ -820,7 +776,6 @@ export default function AssignLeads({
             console.log("is_refreshjunk", is_refreshjunk);
             if (is_refreshjunk == true) {
               setPickLeadItem(null);
-              getLeadAndFollowupCountData();
               refreshJunkLeads();
               return;
             }
@@ -834,7 +789,6 @@ export default function AssignLeads({
             );
             refreshLeadFollowUp();
             refreshLeads();
-            getLeadAndFollowupCountData();
           }}
         />
 

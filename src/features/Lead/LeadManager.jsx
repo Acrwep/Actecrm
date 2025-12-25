@@ -16,8 +16,11 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import {
+  resetFollowUpFilterValues,
   storeAreaList,
   storeCourseList,
+  storeFollowUpFilterValues,
+  storeLeadFilterValues,
   storeLeadManagerActivePage,
   storeLiveLeadFilterType,
   storeLiveLeadSearchValue,
@@ -83,9 +86,34 @@ export default function LeadManager() {
         return;
       }
       mounted.current = true;
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
       dispatch(storeLiveLeadFilterType(null));
       dispatch(storeLiveLeadSelectedDates([]));
       dispatch(storeLiveLeadSearchValue(null));
+      dispatch(
+        storeFollowUpFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: PreviousAndCurrentDate[0],
+          end_date: PreviousAndCurrentDate[1],
+          user_id: null,
+          pageNumber: 1,
+          pageLimit: 10,
+        })
+      );
+      dispatch(
+        storeLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: PreviousAndCurrentDate[0],
+          end_date: PreviousAndCurrentDate[1],
+          user_id: null,
+          lead_source: null,
+          pageNumber: 1,
+          pageLimit: 10,
+        })
+      );
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
     }
@@ -315,7 +343,6 @@ export default function LeadManager() {
           <LeadFollowUp
             key={tabKeys.followup}
             setFollowupCount={setFollowupCount}
-            setLeadCount={setLeadCount}
             refreshLeads={refreshLeads}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
@@ -323,7 +350,6 @@ export default function LeadManager() {
             setCourseOptions={setCourseOptions}
             areaOptions={areaOptions}
             setAreaOptions={setAreaOptions}
-            isLeadPageVisited={isLeadPageVisited}
           />
         </div>
       )}
@@ -343,7 +369,6 @@ export default function LeadManager() {
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}
-            setIsLeadPageVisited={setIsLeadPageVisited}
             setRefreshToggle={setRefreshToggle}
           />
         </div>
@@ -363,12 +388,7 @@ export default function LeadManager() {
             refreshLeadFollowUp={refreshLeadFollowUp}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
-            setLeadCount={setLeadCount}
-            isLeadPageVisited={isLeadPageVisited}
-            setJunkLeadCount={setJunkLeadCount}
-            isJunkPageVisited={isJunkPageVisited}
             refreshJunkLeads={refreshJunkLeads}
-            isAssignLeadPageVisited={isAssignLeadPageVisited}
             refreshAssignLeads={refreshAssignLeads}
           />
         </div>
@@ -387,13 +407,8 @@ export default function LeadManager() {
             refreshLeadFollowUp={refreshLeadFollowUp}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
-            setLeadCount={setLeadCount}
-            isLeadPageVisited={isLeadPageVisited}
-            setJunkLeadCount={setJunkLeadCount}
-            isJunkPageVisited={isJunkPageVisited}
             refreshJunkLeads={refreshJunkLeads}
             setAssignLeadCount={setAssignLeadCount}
-            setIsAssignLeadPageVisited={setIsAssignLeadPageVisited}
           />
         </div>
       )}
@@ -404,12 +419,7 @@ export default function LeadManager() {
             display: activePage === "junk" ? "block" : "none",
           }}
         >
-          <JunkLeads
-            key={tabKeys.junk}
-            setLiveLeadCount={setLiveLeadCount}
-            setJunkLeadCount={setJunkLeadCount}
-            setIsJunkPageVisited={setIsJunkPageVisited}
-          />
+          <JunkLeads key={tabKeys.junk} setJunkLeadCount={setJunkLeadCount} />
         </div>
       )}
     </div>

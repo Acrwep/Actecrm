@@ -58,12 +58,7 @@ export default function LiveLead({
   regionOptions,
   refreshLeadFollowUp,
   refreshLeads,
-  setLeadCount,
-  isLeadPageVisited,
-  setJunkLeadCount,
-  isJunkPageVisited,
   refreshJunkLeads,
-  isAssignLeadPageVisited,
   refreshAssignLeads,
 }) {
   //useref
@@ -94,7 +89,6 @@ export default function LiveLead({
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [callCountApi, setCallCountApi] = useState(true);
   const [allDownliners, setAllDownliners] = useState([]);
   const [pickLoadingRow, setPickLoadingRow] = useState(null);
   //assign lead
@@ -501,16 +495,6 @@ export default function LiveLead({
     nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
-
-  useEffect(() => {
-    setCallCountApi(
-      isLeadPageVisited == true &&
-        isJunkPageVisited == true &&
-        isAssignLeadPageVisited == true
-        ? false
-        : true
-    );
-  }, [isLeadPageVisited, isJunkPageVisited, isAssignLeadPageVisited]);
 
   useEffect(() => {
     paginationRef.current = pagination;
@@ -1161,26 +1145,6 @@ export default function LiveLead({
     }
   };
 
-  const getLeadAndFollowupCountData = async () => {
-    if (callCountApi == false) return;
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    const payload = {
-      user_ids: allDownliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setLeadCount(countDetails.total_lead_count);
-      setJunkLeadCount(countDetails.junk_lead_count);
-    } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
-    }
-  };
-
   const handleSelectedRow = (row) => {
     console.log("selected rowwww", row);
     setSelectedRows(row);
@@ -1270,7 +1234,6 @@ export default function LiveLead({
           pagination.page,
           pagination.limit
         );
-        getLeadAndFollowupCountData();
         refreshJunkLeads();
       }, 300);
     } catch (error) {
@@ -1658,7 +1621,6 @@ export default function LiveLead({
             console.log("is_refreshjunk", is_refreshjunk);
             if (is_refreshjunk == true) {
               setPickLeadItem(null);
-              getLeadAndFollowupCountData();
               refreshJunkLeads();
               return;
             }
@@ -1672,7 +1634,6 @@ export default function LiveLead({
             );
             refreshLeadFollowUp();
             refreshLeads();
-            getLeadAndFollowupCountData();
           }}
         />
 

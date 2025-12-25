@@ -58,10 +58,11 @@ import CommonTextArea from "../Common/CommonTextArea";
 import { Country, State } from "country-state-city";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonAvatar from "../Common/CommonAvatar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
+import { storeFollowUpFilterValues } from "../Redux/Slice";
 
 const { TextArea } = Input;
 
@@ -70,9 +71,8 @@ export default function LeadFollowUp({
   refreshLeads,
   leadTypeOptions,
   regionOptions,
-  setLeadCount,
-  isLeadPageVisited,
 }) {
+  const dispatch = useDispatch();
   const chatBoxRef = useRef();
   const mounted = useRef(false);
   const addLeaduseRef = useRef();
@@ -81,6 +81,9 @@ export default function LeadFollowUp({
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
 
+  const filterValuesFromRedux = useSelector(
+    (state) => state.followupfiltervalues
+  );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -116,7 +119,6 @@ export default function LeadFollowUp({
   const [leadDetails, setLeadDetails] = useState(null);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
-  const [callCountApi, setCallCountApi] = useState(true);
   //lead executive usestates
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -365,17 +367,23 @@ export default function LeadFollowUp({
   }, []);
 
   useEffect(() => {
-    setCallCountApi(isLeadPageVisited == true ? false : true);
-  }, [isLeadPageVisited]);
-
-  useEffect(() => {
     if (permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
         return;
       }
       // ---------------------
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setSelectedDates(PreviousAndCurrentDate);
+      setSelectedDates([
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
+      ]);
+      setFilterType(filterValuesFromRedux.filterType);
+      setSearchValue(filterValuesFromRedux.searchValue);
+      setSelectedUserId(filterValuesFromRedux.user_id);
+      setPagination({
+        page: filterValuesFromRedux.pageNumber,
+        limit: filterValuesFromRedux.pageLimit,
+      });
+
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setTimeout(() => {
@@ -385,7 +393,11 @@ export default function LeadFollowUp({
         setSubUsers(downlineUsers);
         mounted.current = true;
         setLoginUserId(convertAsJson?.user_id);
-        getAllDownlineUsersData(convertAsJson?.user_id);
+        getAllDownlineUsersData(
+          filterValuesFromRedux.user_id
+            ? filterValuesFromRedux.user_id
+            : convertAsJson?.user_id
+        );
         // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         // getLeadFollowUpsData(
         //   null,
@@ -410,14 +422,15 @@ export default function LeadFollowUp({
       });
       setAllDownliners(downliners_ids);
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      console.log("filterValuesFromRedux", filterValuesFromRedux);
       getLeadFollowUpsData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
+        filterValuesFromRedux.searchValue,
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
         false,
         downliners_ids,
-        1,
-        10
+        filterValuesFromRedux.pageNumber,
+        filterValuesFromRedux.pageLimit
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -465,6 +478,13 @@ export default function LeadFollowUp({
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      dispatch(
+        storeFollowUpFilterValues({
+          pageNumber: pagination.page,
+          pageLimit: pagination.limit,
+        })
+      );
+
       if (updateStatus === true) {
         const record = followup_data[currentIndex];
         if (!record) {
@@ -740,6 +760,7 @@ export default function LeadFollowUp({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    dispatch(storeFollowUpFilterValues({ pageNumber: page, pageLimit: limit }));
     getLeadFollowUpsData(
       searchValue,
       selectedDates[0],
@@ -825,6 +846,13 @@ export default function LeadFollowUp({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    dispatch(
+      storeFollowUpFilterValues({
+        searchValue: e.target.value,
+        pageNumber: 1,
+        pageLimit: pagination.limit,
+      })
+    );
     setPagination({
       page: 1,
     });
@@ -914,6 +942,11 @@ export default function LeadFollowUp({
 
   const handleSelectUser = async (e) => {
     const value = e.target.value;
+    dispatch(
+      storeFollowUpFilterValues({
+        user_id: value,
+      })
+    );
     setSelectedUserId(value);
     try {
       const response = await getAllDownlineUsers(value ? value : loginUserId);
@@ -926,6 +959,12 @@ export default function LeadFollowUp({
       setPagination({
         page: 1,
       });
+      dispatch(
+        storeFollowUpFilterValues({
+          pageNumber: 1,
+          pageLimit: pagination.limit,
+        })
+      );
       getLeadFollowUpsData(
         null,
         selectedDates[0],
@@ -937,25 +976,6 @@ export default function LeadFollowUp({
       );
     } catch (error) {
       console.log("all downlines error", error);
-    }
-  };
-
-  const getLeadAndFollowupCountData = async () => {
-    if (callCountApi == false) return;
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    const payload = {
-      user_ids: allDownliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
-      const countDetails = response?.data?.data;
-      setLeadCount(countDetails.total_lead_count);
-    } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
     }
   };
 
@@ -1062,6 +1082,13 @@ export default function LeadFollowUp({
                           setPagination({
                             page: 1,
                           });
+                          dispatch(
+                            storeFollowUpFilterValues({
+                              searchValue: null,
+                              pageNumber: 1,
+                              pageLimit: pagination.limit,
+                            })
+                          );
                           getLeadFollowUpsData(
                             null,
                             selectedDates[0],
@@ -1105,10 +1132,22 @@ export default function LeadFollowUp({
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
+                            dispatch(
+                              storeFollowUpFilterValues({
+                                filterType: e.target.value,
+                              })
+                            );
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              dispatch(
+                                storeFollowUpFilterValues({
+                                  searchValue: "",
+                                  pageNumber: 1,
+                                  pageLimit: pagination.limit,
+                                })
+                              );
                               setPagination({
                                 page: 1,
                               });
@@ -1233,6 +1272,14 @@ export default function LeadFollowUp({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  dispatch(
+                    storeFollowUpFilterValues({
+                      start_date: dates[0],
+                      end_date: dates[1],
+                      pageNumber: 1,
+                      pageLimit: pagination.limit,
+                    })
+                  );
                   setPagination({
                     page: 1,
                   });
@@ -1641,7 +1688,6 @@ export default function LeadFollowUp({
               pagination.limit
             );
             refreshLeads();
-            getLeadAndFollowupCountData();
           }}
         />
         <div className="leadmanager_submitlead_buttoncontainer">

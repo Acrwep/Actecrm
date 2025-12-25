@@ -69,13 +69,14 @@ import { SlGlobe } from "react-icons/sl";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import QualityIcon from "../../assets/q.png";
 import AddLead from "./AddLead";
 import { FormControl, TextField } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
+import { storeLeadFilterValues } from "../Redux/Slice";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -83,16 +84,17 @@ export default function Leads({
   leadTypeOptions,
   regionOptions,
   setLeadCountLoading,
-  setIsLeadPageVisited,
   refreshToggle,
   setRefreshToggle,
 }) {
+  const dispatch = useDispatch();
   const mounted = useRef(false);
   const addLeaduseRef = useRef();
   const courseOptions = useSelector((state) => state.courselist);
 
   const [leadData, setLeadData] = useState([]);
 
+  const filterValuesFromRedux = useSelector((state) => state.leadfiltervalues);
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -545,7 +547,18 @@ export default function Leads({
         return;
       }
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setSelectedDates(PreviousAndCurrentDate);
+      setSelectedDates([
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
+      ]);
+      setFilterType(filterValuesFromRedux.filterType);
+      setSearchValue(filterValuesFromRedux.searchValue);
+      setLeadSourceFilterId(filterValuesFromRedux.lead_source);
+      setSelectedUserId(filterValuesFromRedux.user_id);
+      setPagination({
+        page: filterValuesFromRedux.pageNumber,
+        limit: filterValuesFromRedux.pageLimit,
+      });
 
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -556,9 +569,12 @@ export default function Leads({
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
         mounted.current = true;
-        setIsLeadPageVisited(true);
         setLoginUserId(convertAsJson?.user_id);
-        getAllDownlineUsersData(convertAsJson?.user_id);
+        getAllDownlineUsersData(
+          filterValuesFromRedux.user_id
+            ? filterValuesFromRedux.user_id
+            : convertAsJson?.user_id
+        );
         // getAllLeadData(
         //   null,
         //   PreviousAndCurrentDate[0],
@@ -892,13 +908,13 @@ export default function Leads({
       setAllDownliners(downliners_ids);
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getAllLeadData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
+        filterValuesFromRedux.searchValue,
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
         downliners_ids,
-        null,
-        1,
-        10
+        filterValuesFromRedux.lead_source,
+        filterValuesFromRedux.pageNumber,
+        filterValuesFromRedux.pageLimit
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -1175,7 +1191,9 @@ export default function Leads({
           pagination.limit
         );
         refreshLeadFollowUp();
-        handleSendCustomerFormLink(createdCustomerDetails);
+        if (import.meta.env.PROD) {
+          handleSendCustomerFormLink(createdCustomerDetails);
+        }
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -1338,6 +1356,13 @@ export default function Leads({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    dispatch(
+      storeLeadFilterValues({
+        searchValue: e.target.value,
+        pageNumber: 1,
+        pageLimit: pagination.limit,
+      })
+    );
     setTimeout(() => {
       setPagination({
         page: 1,
@@ -1413,6 +1438,12 @@ export default function Leads({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    dispatch(
+      storeLeadFilterValues({
+        pageNumber: page,
+        pageLimit: limit,
+      })
+    );
     getAllLeadData(
       searchValue,
       selectedDates[0],
@@ -1426,6 +1457,11 @@ export default function Leads({
 
   const handleSelectUser = async (e) => {
     const value = e.target.value;
+    dispatch(
+      storeLeadFilterValues({
+        user_id: value,
+      })
+    );
     setSelectedUserId(value);
 
     try {
@@ -1439,6 +1475,12 @@ export default function Leads({
       setPagination({
         page: 1,
       });
+      dispatch(
+        storeLeadFilterValues({
+          pageNumber: 1,
+          pageLimit: pagination.limit,
+        })
+      );
       getAllLeadData(
         searchValue,
         selectedDates[0],
@@ -1553,6 +1595,13 @@ export default function Leads({
                           setPagination({
                             page: 1,
                           });
+                          dispatch(
+                            storeLeadFilterValues({
+                              searchValue: null,
+                              pageNumber: 1,
+                              pageLimit: pagination.limit,
+                            })
+                          );
                           getAllLeadData(
                             null,
                             selectedDates[0],
@@ -1596,10 +1645,22 @@ export default function Leads({
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
+                            dispatch(
+                              storeLeadFilterValues({
+                                filterType: e.target.value,
+                              })
+                            );
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              dispatch(
+                                storeLeadFilterValues({
+                                  searchValue: "",
+                                  pageNumber: 1,
+                                  pageLimit: pagination.limit,
+                                })
+                              );
                               setPagination({
                                 page: 1,
                               });
@@ -1729,6 +1790,13 @@ export default function Leads({
                 options={leadTypeOptions}
                 onChange={(e) => {
                   setLeadSourceFilterId(e.target.value);
+                  dispatch(
+                    storeLeadFilterValues({
+                      lead_source: e.target.value,
+                      pageNumber: 1,
+                      pageLimit: pagination.limit,
+                    })
+                  );
                   getAllLeadData(
                     null,
                     selectedDates[0],
@@ -1748,6 +1816,14 @@ export default function Leads({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  dispatch(
+                    storeLeadFilterValues({
+                      start_date: dates[0],
+                      end_date: dates[1],
+                      pageNumber: 1,
+                      pageLimit: pagination.limit,
+                    })
+                  );
                   setPagination({
                     page: 1,
                   });
@@ -1875,6 +1951,7 @@ export default function Leads({
         onClose={() => {
           setIsOpenAddDrawer(false);
           setUpdateLeadItem(null);
+          setLeadId(null);
         }}
         width="52%"
         style={{ position: "relative" }}

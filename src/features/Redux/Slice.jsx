@@ -289,6 +289,58 @@ const userPermissionsSlice = createSlice({
     },
   },
 });
+//lead followup
+const followUpFilterValues = {
+  searchValue: null,
+  filterType: 1,
+  start_date: null,
+  end_date: null,
+  user_id: null,
+  pageNumber: 1,
+  pageLimit: 10,
+};
+
+const followUpFilterValuesSlice = createSlice({
+  name: "followupfiltervalues",
+  initialState: followUpFilterValues,
+  reducers: {
+    storeFollowUpFilterValues(state, action) {
+      return {
+        ...state,
+        ...action.payload, // merge object
+      };
+    },
+    resetFollowUpFilterValues() {
+      return followUpFilterValues;
+    },
+  },
+});
+
+//main lead page
+const leadFilterValues = {
+  searchValue: null,
+  filterType: 1,
+  start_date: null,
+  end_date: null,
+  user_id: null,
+  lead_source: null,
+  pageNumber: 1,
+  pageLimit: 10,
+};
+
+const leadFilterValuesSlice = createSlice({
+  name: "leadfiltervalues",
+  initialState: leadFilterValues,
+  reducers: {
+    storeLeadFilterValues(state, action) {
+      return {
+        ...state,
+        ...action.payload, // merge object
+      };
+    },
+  },
+});
+
 //table columns
 const tableColumnsSlice = createSlice({
   name: "tablecolumns",
@@ -380,6 +432,11 @@ export const { storeLiveLeadSearchValue } = liveLeadSearchValueSlice.actions;
 export const { storeLiveLeadFilterType } = liveLeadFilterTypeSlice.actions;
 export const { storeLiveLeadSelectedDates } =
   liveLeadSelectedDatesSlice.actions;
+//followup
+export const { storeFollowUpFilterValues, resetFollowUpFilterValues } =
+  followUpFilterValuesSlice.actions;
+//main lead
+export const { storeLeadFilterValues } = leadFilterValuesSlice.actions;
 //create reducer
 export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
@@ -422,3 +479,5 @@ export const tableColumnsReducer = tableColumnsSlice.reducer;
 export const liveLeadSearchValueReducer = liveLeadSearchValueSlice.reducer;
 export const liveLeadFilterTypeReducer = liveLeadFilterTypeSlice.reducer;
 export const liveLeadSelectedDatesReducer = liveLeadSelectedDatesSlice.reducer;
+export const followUpFilterValuesReducer = followUpFilterValuesSlice.reducer;
+export const LeadFilterValuesReducer = leadFilterValuesSlice.reducer;

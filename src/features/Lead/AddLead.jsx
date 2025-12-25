@@ -820,10 +820,7 @@ const AddLead = forwardRef(
             container.scrollIntoView({
               behavior: "smooth",
             });
-            if (
-              liveLeadItem.is_assign_lead &&
-              liveLeadItem.is_assign_lead == true
-            ) {
+            if (liveLeadItem?.is_assign_lead) {
               console.log("dont call getLeadsApi");
             } else {
               callgetLeadsApi();

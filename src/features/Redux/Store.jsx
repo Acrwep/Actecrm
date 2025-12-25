@@ -30,6 +30,8 @@ import {
   liveLeadSearchValueReducer,
   liveLeadFilterTypeReducer,
   liveLeadSelectedDatesReducer,
+  followUpFilterValuesReducer,
+  LeadFilterValuesReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -65,5 +67,7 @@ export const reduxStore = configureStore({
     liveleadsearchvalue: liveLeadSearchValueReducer,
     liveleadfiltertype: liveLeadFilterTypeReducer,
     liveleadselecteddates: liveLeadSelectedDatesReducer,
+    followupfiltervalues: followUpFilterValuesReducer,
+    leadfiltervalues: LeadFilterValuesReducer,
   },
 });
