@@ -25,6 +25,16 @@ const PaymentDownloadTableAsCSV = (
     btm_layout: "btm_layout",
     rajaji_nagar: "rajaji_nagar",
     marathahalli: "marathahalli",
+    cash: "cash",
+    upi: "upi",
+    razorpay: "razorpay",
+    razorpay_upi: "razorpay_upi",
+    tds: "tds",
+    sbi_bank: "sbi_bank",
+    axis_bank: "axis_bank",
+    hdfc_bank: "hdfc_bank",
+    sbi_pos: "sbi_pos",
+    razorpay_pos: "razorpay_pos",
   };
 
   // ----------------------------

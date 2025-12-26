@@ -199,25 +199,9 @@ export default function PaymentReport() {
       },
     },
     {
-      title: "Bank",
-      key: "bank",
-      dataIndex: "bank",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
       title: "UPI",
       key: "upi",
       dataIndex: "upi",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Card",
-      key: "card",
-      dataIndex: "card",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -234,6 +218,54 @@ export default function PaymentReport() {
       title: "Razorpay-UPI",
       key: "razorpay_upi",
       dataIndex: "razorpay_upi",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "TDS",
+      key: "tds",
+      dataIndex: "tds",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "SBI Bank",
+      key: "sbi_bank",
+      dataIndex: "sbi_bank",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "AXIS Bank",
+      key: "axis_bank",
+      dataIndex: "axis_bank",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "HDFC Bank",
+      key: "hdfc_bank",
+      dataIndex: "hdfc_bank",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "SBI POS",
+      key: "sbi_pos",
+      dataIndex: "sbi_pos",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Razorpay POS",
+      key: "razorpay_pos",
+      dataIndex: "razorpay_pos",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -398,20 +430,10 @@ export default function PaymentReport() {
       (totalCounts.cash_total != undefined || totalCounts.cash_total != null)
         ? "₹" + Number(totalCounts.cash_total).toLocaleString("en-IN")
         : "-",
-    bank:
-      totalCounts &&
-      (totalCounts.bank_total != undefined || totalCounts.bank_total != null)
-        ? "₹" + Number(totalCounts.bank_total).toLocaleString("en-IN")
-        : "-",
     upi:
       totalCounts &&
       (totalCounts.upi_total != undefined || totalCounts.upi_total != null)
         ? "₹" + Number(totalCounts.upi_total).toLocaleString("en-IN")
-        : "-",
-    card:
-      totalCounts &&
-      (totalCounts.card_total != undefined || totalCounts.card_total != null)
-        ? "₹" + Number(totalCounts.card_total).toLocaleString("en-IN")
         : "-",
     razorpay:
       totalCounts &&
@@ -424,6 +446,41 @@ export default function PaymentReport() {
       (totalCounts.razorpay_upi_total != undefined ||
         totalCounts.razorpay_upi_total != null)
         ? "₹" + Number(totalCounts.razorpay_upi_total).toLocaleString("en-IN")
+        : "-",
+    tds:
+      totalCounts &&
+      (totalCounts.tds_total != undefined || totalCounts.tds_total != null)
+        ? "₹" + Number(totalCounts.tds_total).toLocaleString("en-IN")
+        : "-",
+    sbi_bank:
+      totalCounts &&
+      (totalCounts.sbi_bank_total != undefined ||
+        totalCounts.sbi_bank_total != null)
+        ? "₹" + Number(totalCounts.sbi_bank_total).toLocaleString("en-IN")
+        : "-",
+    axis_bank:
+      totalCounts &&
+      (totalCounts.axis_bank_total != undefined ||
+        totalCounts.axis_bank_total != null)
+        ? "₹" + Number(totalCounts.axis_bank_total).toLocaleString("en-IN")
+        : "-",
+    hdfc_bank:
+      totalCounts &&
+      (totalCounts.hdfc_bank_total != undefined ||
+        totalCounts.hdfc_bank_total != null)
+        ? "₹" + Number(totalCounts.hdfc_bank_total).toLocaleString("en-IN")
+        : "-",
+    sbi_pos:
+      totalCounts &&
+      (totalCounts.sbi_pos_total != undefined ||
+        totalCounts.sbi_pos_total != null)
+        ? "₹" + Number(totalCounts.sbi_pos_total).toLocaleString("en-IN")
+        : "-",
+    razorpay_pos:
+      totalCounts &&
+      (totalCounts.razorpay_pos_total != undefined ||
+        totalCounts.razorpay_pos_total != null)
+        ? "₹" + Number(totalCounts.razorpay_pos_total).toLocaleString("en-IN")
         : "-",
     total:
       totalCounts &&
@@ -529,7 +586,7 @@ export default function PaymentReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 600 }}
+          scroll={{ x: typeId == "Paymode" ? "max-content" : 600 }}
           columns={
             typeId == "Region"
               ? columns
