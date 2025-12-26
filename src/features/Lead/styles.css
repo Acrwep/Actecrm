@@ -1,10 +1,9 @@
 .lead-ellipsis-text {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: pointer;
 }
 .leadmanager_addleadbutton {
   background-color: #5b69ca;

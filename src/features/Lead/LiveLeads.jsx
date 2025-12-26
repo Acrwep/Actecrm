@@ -51,6 +51,7 @@ import {
 } from "../Redux/Slice";
 import CommonDnd from "../Common/CommonDnd";
 import CommonSelectField from "../Common/CommonSelectField";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -232,7 +233,7 @@ export default function LiveLead({
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 200,
+      width: 180,
       render: (text, record) => {
         return (
           <Badge
@@ -286,30 +287,7 @@ export default function LiveLead({
       dataIndex: "course",
       width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -317,32 +295,9 @@ export default function LiveLead({
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 240,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -351,30 +306,7 @@ export default function LiveLead({
       dataIndex: "location",
       width: 160,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 20 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -417,32 +349,9 @@ export default function LiveLead({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -578,7 +487,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 600); // your interval
+    }, 10000); // your interval
 
     // Cleanup
     return () => clearInterval(interval);
@@ -815,32 +724,7 @@ export default function LiveLead({
                 ...col,
                 width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text.length > 22 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 21) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "phone":
@@ -851,34 +735,9 @@ export default function LiveLead({
             case "email":
               return {
                 ...col,
-                width: 240,
+                width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text.length > 26 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 25) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "location":
@@ -886,32 +745,7 @@ export default function LiveLead({
                 ...col,
                 width: 160,
                 render: (text) => {
-                  return (
-                    <>
-                      {text && text.length > 20 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 19) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text ? text : "-"}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "training":
@@ -952,34 +786,9 @@ export default function LiveLead({
             case "comments":
               return {
                 ...col,
-                width: 220,
+                width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text && text.length > 26 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 25) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text ? text : "-"}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "action":

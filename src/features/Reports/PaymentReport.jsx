@@ -343,7 +343,7 @@ export default function PaymentReport() {
       key: "razorpay_upi",
       dataIndex: "razorpay_upi",
       align: "right",
-      width: 105,
+      width: 110,
       render: (text, record) => {
         return (
           <p>
@@ -434,7 +434,7 @@ export default function PaymentReport() {
       key: "razorpay_pos",
       dataIndex: "razorpay_pos",
       align: "right",
-      width: 105,
+      width: 110,
       render: (text, record) => {
         return (
           <p>

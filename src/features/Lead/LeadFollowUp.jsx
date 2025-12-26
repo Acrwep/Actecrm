@@ -63,6 +63,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
 import { storeFollowUpFilterValues } from "../Redux/Slice";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const { TextArea } = Input;
 
@@ -161,32 +162,7 @@ export default function LeadFollowUp({
       width: 160,
       render: (text, record) => {
         const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-        return (
-          <>
-            {lead_executive && lead_executive.length > 15 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={lead_executive}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip lead_executive color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>
-                  {lead_executive.slice(0, 14) + "..."}
-                </p>
-              </Tooltip>
-            ) : (
-              <p>{lead_executive ? lead_executive : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
@@ -240,6 +216,9 @@ export default function LeadFollowUp({
       key: "candidate_name",
       dataIndex: "candidate_name",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Email",
@@ -247,30 +226,7 @@ export default function LeadFollowUp({
       dataIndex: "email",
       width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 130 },
@@ -279,6 +235,9 @@ export default function LeadFollowUp({
       key: "primary_course",
       dataIndex: "primary_course",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Course Fees",
@@ -318,36 +277,7 @@ export default function LeadFollowUp({
       fixed: "right",
       width: 200,
       render: (text) => {
-        if (text) {
-          return (
-            <>
-              {text.length > 25 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 24) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
-        } else {
-          <p>-</p>;
-        }
+        return <EllipsisTooltip text={text} />;
       },
     },
   ];
@@ -577,26 +507,7 @@ export default function LeadFollowUp({
                 width: 160,
                 render: (text, record) => {
                   const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-                  return (
-                    <Tooltip
-                      title={lead_executive || "-"}
-                      color="#fff"
-                      placement="bottom"
-                      className="leadtable_comments_tooltip"
-                      styles={{
-                        body: {
-                          backgroundColor: "#fff",
-                          color: "#333",
-                          fontWeight: 500,
-                          fontSize: "13px",
-                        },
-                      }}
-                    >
-                      <span className="lead-ellipsis-text">
-                        {lead_executive || "-"}
-                      </span>
-                    </Tooltip>
-                  );
+                  return <EllipsisTooltip text={lead_executive} />;
                 },
               };
             case "candidate_name":
@@ -604,24 +515,7 @@ export default function LeadFollowUp({
                 ...col,
                 width: 180,
                 render: (text) => {
-                  return (
-                    <Tooltip
-                      title={text || "-"}
-                      color="#fff"
-                      placement="bottom"
-                      className="leadtable_comments_tooltip"
-                      styles={{
-                        body: {
-                          backgroundColor: "#fff",
-                          color: "#333",
-                          fontWeight: 500,
-                          fontSize: "13px",
-                        },
-                      }}
-                    >
-                      <span className="lead-ellipsis-text">{text || "-"}</span>
-                    </Tooltip>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "email":
@@ -629,24 +523,7 @@ export default function LeadFollowUp({
                 ...col,
                 width: 200,
                 render: (text) => {
-                  return (
-                    <Tooltip
-                      title={text || "-"}
-                      color="#fff"
-                      placement="bottom"
-                      className="leadtable_comments_tooltip"
-                      styles={{
-                        body: {
-                          backgroundColor: "#fff",
-                          color: "#333",
-                          fontWeight: 500,
-                          fontSize: "13px",
-                        },
-                      }}
-                    >
-                      <span className="lead-ellipsis-text">{text || "-"}</span>
-                    </Tooltip>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "phone":
@@ -658,6 +535,9 @@ export default function LeadFollowUp({
               return {
                 ...col,
                 width: 180,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "next_follow_up_date":
               return {
@@ -713,6 +593,7 @@ export default function LeadFollowUp({
             case "primary_fees":
               return {
                 ...col,
+                width: 120,
                 render: (text, record) => {
                   return <p>{"₹" + text}</p>;
                 },
@@ -741,37 +622,9 @@ export default function LeadFollowUp({
             case "comments":
               return {
                 ...col,
+                width: 200,
                 render: (text) => {
-                  if (text) {
-                    return (
-                      <>
-                        {text.length > 25 ? (
-                          <Tooltip
-                            color="#fff"
-                            placement="bottom"
-                            title={text}
-                            className="leadtable_comments_tooltip"
-                            styles={{
-                              body: {
-                                backgroundColor: "#fff", // Tooltip background
-                                color: "#333", // Tooltip text color
-                                fontWeight: 500,
-                                fontSize: "13px",
-                              },
-                            }}
-                          >
-                            <p style={{ cursor: "pointer" }}>
-                              {text.slice(0, 24) + "..."}
-                            </p>
-                          </Tooltip>
-                        ) : (
-                          <p>{text}</p>
-                        )}
-                      </>
-                    );
-                  } else {
-                    <p>-</p>;
-                  }
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             default:

@@ -34,6 +34,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import moment from "moment";
 import CourseCard from "./CourseCard";
 import { storeJunkLeadFilterValues } from "../Redux/Slice";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function JunkLeads({ setJunkLeadCount }) {
   //permissions
@@ -73,7 +74,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
-      width: 130,
+      width: 100,
       render: (text) => {
         return <p>{moment(text).format("MM/DD/YYYY")}</p>;
       },
@@ -82,66 +83,18 @@ export default function JunkLeads({ setJunkLeadCount }) {
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 200,
-      render: (text, record) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer", fontSize: "13px" }}>
-                  {text.slice(0, 21) + "..."}
-                </p>
-              </Tooltip>
-            ) : (
-              <p style={{ fontSize: "13px" }}>{text}</p>
-            )}
-          </>
-        );
+      width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 240,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -151,30 +104,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       dataIndex: "course",
       width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -183,30 +113,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       dataIndex: "location",
       width: 160,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 20 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -242,32 +149,9 @@ export default function JunkLeads({ setJunkLeadCount }) {
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 200,
+      width: 160,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 24 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 23) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -277,36 +161,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       fixed: "right",
       width: 160,
       render: (text) => {
-        if (text) {
-          return (
-            <>
-              {text.length > 20 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 19) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
-        } else {
-          <p>-</p>;
-        }
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -746,7 +601,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1000 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}

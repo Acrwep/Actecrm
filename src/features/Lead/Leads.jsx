@@ -77,6 +77,7 @@ import { FormControl, TextField } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import { storeLeadFilterValues } from "../Redux/Slice";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -221,11 +222,8 @@ export default function Leads({
       dataIndex: "lead_assigned_to_name",
       width: 160,
       render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
-          </div>
-        );
+        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
@@ -237,37 +235,22 @@ export default function Leads({
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+    {
+      title: "Candidate Name",
+      key: "name",
+      dataIndex: "name",
+      width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 240,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -309,12 +292,18 @@ export default function Leads({
       key: "primary_course",
       dataIndex: "primary_course",
       width: 200,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Primary Course Fees",
       key: "primary_fees",
       dataIndex: "primary_fees",
-      width: 180,
+      width: 160,
+      render: (text, record) => {
+        return <p>{"₹" + text}</p>;
+      },
     },
     {
       title: "Secondary Course ",
@@ -393,32 +382,9 @@ export default function Leads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 25 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 24) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -615,40 +581,25 @@ export default function Leads({
             case "lead_assigned_to_name":
               return {
                 ...col,
-                render: (text, record) => (
-                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
-                ),
+                render: (text, record) => {
+                  const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+                  return <EllipsisTooltip text={lead_executive} />;
+                },
+              };
+            case "name":
+              return {
+                ...col,
+                width: 170,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "email":
               return {
                 ...col,
+                width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text.length > 26 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 25) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "created_date":
@@ -682,11 +633,17 @@ export default function Leads({
               return {
                 ...col,
                 width: 200,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "primary_fees":
               return {
                 ...col,
                 width: 160,
+                render: (text, record) => {
+                  return <p>{"₹" + text}</p>;
+                },
               };
             case "secondary_course":
               return {
@@ -724,34 +681,9 @@ export default function Leads({
             case "comments":
               return {
                 ...col,
-                width: 220,
+                width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text.length > 25 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 24) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "action":

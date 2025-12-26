@@ -39,6 +39,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonTextArea from "../Common/CommonTextArea";
 import moment from "moment";
 import { storeAssignLeadFilterValues } from "../Redux/Slice";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function AssignLeads({
   leadTypeOptions,
@@ -103,11 +104,8 @@ export default function AssignLeads({
       dataIndex: "assigned_by_user",
       width: 130,
       render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.assigned_by} - ${text}`}</p>
-          </div>
-        );
+        const lead_executive = `${record.assigned_by} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
@@ -116,11 +114,8 @@ export default function AssignLeads({
       dataIndex: "assigned_to_user",
       width: 130,
       render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.assigned_to} - ${text}`}</p>
-          </div>
-        );
+        const lead_executive = `${record.assigned_to} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
@@ -181,30 +176,7 @@ export default function AssignLeads({
       dataIndex: "course",
       width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
@@ -212,32 +184,9 @@ export default function AssignLeads({
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 240,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -246,30 +195,7 @@ export default function AssignLeads({
       dataIndex: "location",
       width: 160,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 20 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -312,32 +238,9 @@ export default function AssignLeads({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 26 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 25) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     {

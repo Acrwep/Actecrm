@@ -548,7 +548,7 @@
   border-color: #5b69ca !important;
 }
 
-/* domut chart styles */
+/* donut chart styles */
 .apexcharts-legend-series.legend-inactive {
   opacity: 0.3;
 }
@@ -556,4 +556,15 @@
 .apexcharts-legend-series.legend-active {
   opacity: 1;
   font-weight: 600;
+}
+
+/* ellipsis tooltip styles */
+.ellipsistooltip_smalltext {
+  color: gray;
+  font-size: 13px;
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
