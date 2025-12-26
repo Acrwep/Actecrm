@@ -341,6 +341,52 @@ const leadFilterValuesSlice = createSlice({
   },
 });
 
+//junk lead page
+const junkLeadFilterValues = {
+  searchValue: null,
+  filterType: 1,
+  start_date: null,
+  end_date: null,
+  pageNumber: 1,
+  pageLimit: 10,
+};
+
+const junkLeadFilterValuesSlice = createSlice({
+  name: "junkleadfiltervalues",
+  initialState: junkLeadFilterValues,
+  reducers: {
+    storeJunkLeadFilterValues(state, action) {
+      return {
+        ...state,
+        ...action.payload, // merge object
+      };
+    },
+  },
+});
+
+//assign lead page
+const assignLeadFilterValues = {
+  searchValue: null,
+  filterType: 1,
+  start_date: null,
+  end_date: null,
+  pageNumber: 1,
+  pageLimit: 10,
+};
+
+const assignLeadFilterValuesSlice = createSlice({
+  name: "assignleadfiltervalues",
+  initialState: assignLeadFilterValues,
+  reducers: {
+    storeAssignLeadFilterValues(state, action) {
+      return {
+        ...state,
+        ...action.payload, // merge object
+      };
+    },
+  },
+});
+
 //table columns
 const tableColumnsSlice = createSlice({
   name: "tablecolumns",
@@ -437,6 +483,9 @@ export const { storeFollowUpFilterValues, resetFollowUpFilterValues } =
   followUpFilterValuesSlice.actions;
 //main lead
 export const { storeLeadFilterValues } = leadFilterValuesSlice.actions;
+export const { storeJunkLeadFilterValues } = junkLeadFilterValuesSlice.actions;
+export const { storeAssignLeadFilterValues } =
+  assignLeadFilterValuesSlice.actions;
 //create reducer
 export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
@@ -481,3 +530,6 @@ export const liveLeadFilterTypeReducer = liveLeadFilterTypeSlice.reducer;
 export const liveLeadSelectedDatesReducer = liveLeadSelectedDatesSlice.reducer;
 export const followUpFilterValuesReducer = followUpFilterValuesSlice.reducer;
 export const LeadFilterValuesReducer = leadFilterValuesSlice.reducer;
+export const junkLeadFilterValuesReducer = junkLeadFilterValuesSlice.reducer;
+export const assignLeadFilterValuesReducer =
+  assignLeadFilterValuesSlice.reducer;

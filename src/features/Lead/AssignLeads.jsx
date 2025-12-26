@@ -38,6 +38,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonTextArea from "../Common/CommonTextArea";
 import moment from "moment";
+import { storeAssignLeadFilterValues } from "../Redux/Slice";
 
 export default function AssignLeads({
   leadTypeOptions,
@@ -54,6 +55,9 @@ export default function AssignLeads({
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   //usestates
+  const filterValuesFromRedux = useSelector(
+    (state) => state.assignleadfiltervalues
+  );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
@@ -67,11 +71,10 @@ export default function AssignLeads({
   const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
   const [junkComments, setJunkComments] = useState("");
   const [junkCommentsError, setJunkCommentsError] = useState("");
-  const [liveLeadId, setLiveLeadId] = useState(null);
+  const [leadId, setLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   //move modal
-  const [leadId, setLeadId] = useState(null);
   const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
   //loading
   const [loading, setLoading] = useState(true);
@@ -346,20 +349,23 @@ export default function AssignLeads({
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip placement="bottom" title="Move to Live Leads">
-              <MdOutlineRefresh
-                size={20}
-                color="#5b69ca"
-                className="trainers_action_icons"
-                onClick={() => {
-                  setLeadId(record.id);
-                  setIsOpenMoveModal(true);
-                }}
-              />
-            </Tooltip>
+            {permissions.includes("Revert to Live Leads") && (
+              <Tooltip placement="bottom" title="Move to Live Leads">
+                <MdOutlineRefresh
+                  size={20}
+                  color="#5b69ca"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setLeadId(record.id);
+                    setIsOpenMoveModal(true);
+                  }}
+                />
+              </Tooltip>
+            )}
+
             <Tooltip placement="bottom" title="Pick">
               <GiCardPickup
-                size={22}
+                size={23}
                 color="#5b69ca"
                 className="trainers_action_icons"
                 onClick={() => {
@@ -373,7 +379,7 @@ export default function AssignLeads({
                 size={20}
                 className="trainers_action_icons"
                 onClick={() => {
-                  setLiveLeadId(record.id);
+                  setLeadId(record.id);
                   setIsOpenJunkModal(true);
                 }}
               />
@@ -386,9 +392,20 @@ export default function AssignLeads({
 
   useEffect(() => {
     if (permissions.length >= 1) {
-      getAllDownlineUsersData();
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setSelectedDates(PreviousAndCurrentDate);
+      setSelectedDates([
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
+      ]);
+      setFilterType(filterValuesFromRedux.filterType);
+      setSearchValue(filterValuesFromRedux.searchValue);
+      setPagination({
+        page: filterValuesFromRedux.pageNumber,
+        limit: filterValuesFromRedux.pageLimit,
+      });
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [permissions]);
 
@@ -401,13 +418,12 @@ export default function AssignLeads({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getManualAssignLeadsData(
-        null,
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        1,
-        10
+        filterValuesFromRedux.searchValue,
+        filterValuesFromRedux.start_date,
+        filterValuesFromRedux.end_date,
+        filterValuesFromRedux.pageNumber,
+        filterValuesFromRedux.pageLimit
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -454,6 +470,12 @@ export default function AssignLeads({
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      dispatch(
+        storeAssignLeadFilterValues({
+          pageNumber: pagination.page,
+          pageLimit: pagination.limit,
+        })
+      );
     } catch (error) {
       setLeadData([]);
       console.log("get manual assign leads error", error);
@@ -482,6 +504,13 @@ export default function AssignLeads({
     setIsOpenAddDrawer(true);
   };
 
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
+  };
+
   const handleMoveToJunk = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
     const commentsValidate = addressValidator(junkComments);
@@ -492,21 +521,30 @@ export default function AssignLeads({
 
     setButtonLoading(true);
     const payload = {
-      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
       is_junk: true,
       reason: junkComments,
     };
     try {
       await moveLiveLeadToJunk(payload);
       CommonMessage("success", "Updated");
-      setTimeout(() => {
+      setTimeout(async () => {
         setButtonLoading(false);
         setIsOpenJunkModal(false);
-        setLiveLeadId(null);
+        setLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
         setJunkComments("");
-        getLiveLeadsData(
+        const payload = {
+          lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
+          is_assigned: false,
+        };
+        try {
+          await liveLeadManualAssign(payload);
+        } catch (error) {
+          console.log("manual assign error", error);
+        }
+        getManualAssignLeadsData(
           searchValue,
           selectedDates[0],
           selectedDates[1],
@@ -560,6 +598,12 @@ export default function AssignLeads({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    dispatch(
+      storeAssignLeadFilterValues({
+        pageNumber: page,
+        pageLimit: limit,
+      })
+    );
     getManualAssignLeadsData(
       searchValue,
       selectedDates[0],
@@ -572,6 +616,13 @@ export default function AssignLeads({
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    dispatch(
+      storeAssignLeadFilterValues({
+        searchValue: e.target.value,
+        pageNumber: 1,
+        pageLimit: pagination.limit,
+      })
+    );
     setTimeout(() => {
       setPagination({
         page: 1,
@@ -617,6 +668,13 @@ export default function AssignLeads({
                           setPagination({
                             page: 1,
                           });
+                          dispatch(
+                            storeAssignLeadFilterValues({
+                              searchValue: null,
+                              pageNumber: 1,
+                              pageLimit: pagination.limit,
+                            })
+                          );
                           getManualAssignLeadsData(
                             null,
                             selectedDates[0],
@@ -658,10 +716,22 @@ export default function AssignLeads({
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
+                            dispatch(
+                              storeAssignLeadFilterValues({
+                                filterType: e.target.value,
+                              })
+                            );
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              dispatch(
+                                storeAssignLeadFilterValues({
+                                  searchValue: "",
+                                  pageNumber: 1,
+                                  pageLimit: pagination.limit,
+                                })
+                              );
                               setPagination({
                                 page: 1,
                               });
@@ -706,6 +776,14 @@ export default function AssignLeads({
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  dispatch(
+                    storeAssignLeadFilterValues({
+                      start_date: dates[0],
+                      end_date: dates[1],
+                      pageNumber: 1,
+                      pageLimit: pagination.limit,
+                    })
+                  );
                   setPagination({
                     page: 1,
                   });
@@ -729,7 +807,20 @@ export default function AssignLeads({
               alignItems: "center",
               gap: "12px",
             }}
-          ></div>
+          >
+            {selectedRows.length >= 1 && (
+              <>
+                <Button
+                  className="livelead_junkbutton"
+                  onClick={() => {
+                    setIsOpenJunkModal(true);
+                  }}
+                >
+                  Move to Junk
+                </Button>
+              </>
+            )}
+          </div>
         </Col>
       </Row>
 
@@ -743,6 +834,8 @@ export default function AssignLeads({
           loading={loading}
           size="small"
           className="questionupload_table"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
@@ -819,7 +912,7 @@ export default function AssignLeads({
         open={isOpenJunkModal}
         onCancel={() => {
           setIsOpenJunkModal(false);
-          setLiveLeadId(null);
+          setLeadId(null);
           setJunkComments("");
           setJunkCommentsError("");
         }}
@@ -827,9 +920,10 @@ export default function AssignLeads({
           <Button
             key="cancel"
             onClick={() => {
-              setIsOpenAddCourseModal(false);
-              setCourseName("");
-              setCourseNameError("");
+              setIsOpenJunkModal(false);
+              setLeadId(null);
+              setJunkComments("");
+              setJunkCommentsError("");
             }}
             className="leads_coursemodal_cancelbutton"
           >
@@ -875,6 +969,7 @@ export default function AssignLeads({
         open={isOpenMoveModal}
         onCancel={() => {
           setIsOpenMoveModal(false);
+          setLeadId(null);
         }}
         footer={false}
         closable={false}
@@ -898,6 +993,7 @@ export default function AssignLeads({
               className="common_deletemodal_cancelbutton"
               onClick={() => {
                 setIsOpenMoveModal(false);
+                setLeadId(null);
               }}
             >
               No

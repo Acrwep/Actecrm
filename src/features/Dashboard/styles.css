@@ -246,3 +246,7 @@
   opacity: 1;
   font-weight: 600;
 }
+
+.post-sale-chart .apexcharts-bar-area {
+  cursor: pointer;
+}

@@ -578,7 +578,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 10000); // your interval
+    }, 600); // your interval
 
     // Cleanup
     return () => clearInterval(interval);
@@ -1684,9 +1684,10 @@ export default function LiveLead({
           <Button
             key="cancel"
             onClick={() => {
-              setIsOpenAddCourseModal(false);
-              setCourseName("");
-              setCourseNameError("");
+              setIsOpenJunkModal(false);
+              setLiveLeadId(null);
+              setJunkComments("");
+              setJunkCommentsError("");
             }}
             className="leads_coursemodal_cancelbutton"
           >

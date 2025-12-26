@@ -28,18 +28,23 @@ import CommonTable from "../Common/CommonTable";
 import { MdOutlineRefresh } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 import CommonSpinner from "../Common/CommonSpinner";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { CommonMessage } from "../Common/CommonMessage";
 import moment from "moment";
 import CourseCard from "./CourseCard";
+import { storeJunkLeadFilterValues } from "../Redux/Slice";
 
 export default function JunkLeads({ setJunkLeadCount }) {
-  //useref
-  //useselector
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions); //useselector
+  const dispatch = useDispatch();
   const tabName = useSelector((state) => state.leadmanageractivepage);
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
+  const filterValuesFromRedux = useSelector(
+    (state) => state.junkleadfiltervalues
+  );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
@@ -313,17 +318,19 @@ export default function JunkLeads({ setJunkLeadCount }) {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip placement="bottom" title="Move to Live Leads">
-              <MdOutlineRefresh
-                size={20}
-                color="#5b69ca"
-                className="trainers_action_icons"
-                onClick={() => {
-                  setLeadId(record.id);
-                  setIsOpenMoveModal(true);
-                }}
-              />
-            </Tooltip>
+            {permissions.includes("Revert to Live Leads") && (
+              <Tooltip placement="bottom" title="Move to Live Leads">
+                <MdOutlineRefresh
+                  size={20}
+                  color="#5b69ca"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setLeadId(record.id);
+                    setIsOpenMoveModal(true);
+                  }}
+                />
+              </Tooltip>
+            )}
             <Tooltip placement="bottom" title="Delete">
               <RiDeleteBinLine
                 color="#d32f2f"
@@ -343,15 +350,24 @@ export default function JunkLeads({ setJunkLeadCount }) {
 
   useEffect(() => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    setSelectedDates([
+      filterValuesFromRedux.start_date,
+      filterValuesFromRedux.end_date,
+    ]);
+    setFilterType(filterValuesFromRedux.filterType);
+    setSearchValue(filterValuesFromRedux.searchValue);
+    setPagination({
+      page: filterValuesFromRedux.pageNumber,
+      limit: filterValuesFromRedux.pageLimit,
+    });
 
     // Initial Call
     getJunkLeadsData(
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      1,
-      10
+      filterValuesFromRedux.searchValue,
+      filterValuesFromRedux.start_date,
+      filterValuesFromRedux.end_date,
+      filterValuesFromRedux.pageNumber,
+      filterValuesFromRedux.pageLimit
     );
 
     setTimeout(() => {
@@ -411,6 +427,12 @@ export default function JunkLeads({ setJunkLeadCount }) {
         total: paginations.total,
         totalPages: paginations.totalPages,
       });
+      dispatch(
+        storeJunkLeadFilterValues({
+          pageNumber: paginations.page,
+          pageLimit: paginations.limit,
+        })
+      );
     } catch (error) {
       setLeadData([]);
       console.log("get live lead error", error);
@@ -424,6 +446,13 @@ export default function JunkLeads({ setJunkLeadCount }) {
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
+    dispatch(
+      storeJunkLeadFilterValues({
+        searchValue: e.target.value,
+        pageNumber: 1,
+        pageLimit: pagination.limit,
+      })
+    );
     setTimeout(() => {
       setPagination({
         page: 1,
@@ -439,6 +468,12 @@ export default function JunkLeads({ setJunkLeadCount }) {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    dispatch(
+      storeJunkLeadFilterValues({
+        pageNumber: page,
+        pageLimit: limit,
+      })
+    );
     getJunkLeadsData(
       searchValue,
       selectedDates[0],
@@ -553,6 +588,13 @@ export default function JunkLeads({ setJunkLeadCount }) {
                           setPagination({
                             page: 1,
                           });
+                          dispatch(
+                            storeJunkLeadFilterValues({
+                              searchValue: null,
+                              pageNumber: 1,
+                              pageLimit: pagination.limit,
+                            })
+                          );
                           getJunkLeadsData(
                             null,
                             selectedDates[0],
@@ -594,10 +636,22 @@ export default function JunkLeads({ setJunkLeadCount }) {
                           value={filterType}
                           onChange={(e) => {
                             setFilterType(e.target.value);
+                            dispatch(
+                              storeJunkLeadFilterValues({
+                                filterType: e.target.value,
+                              })
+                            );
                             if (searchValue == "") {
                               return;
                             } else {
                               setSearchValue("");
+                              dispatch(
+                                storeJunkLeadFilterValues({
+                                  searchValue: "",
+                                  pageNumber: 1,
+                                  pageLimit: pagination.limit,
+                                })
+                              );
                               setPagination({
                                 page: 1,
                               });
@@ -643,6 +697,14 @@ export default function JunkLeads({ setJunkLeadCount }) {
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
                   setLoading(true);
+                  dispatch(
+                    storeJunkLeadFilterValues({
+                      start_date: dates[0],
+                      end_date: dates[1],
+                      pageNumber: 1,
+                      pageLimit: pagination.limit,
+                    })
+                  );
                   setPagination({
                     page: 1,
                   });
@@ -705,6 +767,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
         open={isOpenMoveModal}
         onCancel={() => {
           setIsOpenMoveModal(false);
+          setLeadId(null);
         }}
         footer={false}
         closable={false}
@@ -728,6 +791,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
               className="common_deletemodal_cancelbutton"
               onClick={() => {
                 setIsOpenMoveModal(false);
+                setLeadId(null);
               }}
             >
               No

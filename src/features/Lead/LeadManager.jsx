@@ -18,8 +18,10 @@ import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import {
   resetFollowUpFilterValues,
   storeAreaList,
+  storeAssignLeadFilterValues,
   storeCourseList,
   storeFollowUpFilterValues,
+  storeJunkLeadFilterValues,
   storeLeadFilterValues,
   storeLeadManagerActivePage,
   storeLiveLeadFilterType,
@@ -110,6 +112,26 @@ export default function LeadManager() {
           end_date: PreviousAndCurrentDate[1],
           user_id: null,
           lead_source: null,
+          pageNumber: 1,
+          pageLimit: 10,
+        })
+      );
+      dispatch(
+        storeAssignLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: PreviousAndCurrentDate[0],
+          end_date: PreviousAndCurrentDate[1],
+          pageNumber: 1,
+          pageLimit: 10,
+        })
+      );
+      dispatch(
+        storeJunkLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: PreviousAndCurrentDate[0],
+          end_date: PreviousAndCurrentDate[1],
           pageNumber: 1,
           pageLimit: 10,
         })

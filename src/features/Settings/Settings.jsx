@@ -223,6 +223,7 @@ export default function Settings() {
         "Add Quality Comment",
         "Junk Leads Tab",
         "Show Origin in Live Leads",
+        "Revert to Live Leads",
         "Download Leads",
       ];
 

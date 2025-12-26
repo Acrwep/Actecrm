@@ -513,6 +513,30 @@ export default function Dashboard() {
     }
   };
 
+  const handlePostSaleDashboard = (label) => {
+    console.log("ra dashboard clicked bar", label);
+    if (
+      label == "Google Reviews" ||
+      label == "LinkedIn Reviews" ||
+      label === "Verified Trainers"
+    ) {
+      return;
+    }
+    const filterData = {
+      status:
+        label === "Awaiting Student Verify"
+          ? "Awaiting Verify"
+          : label === "Rejected Trainers"
+          ? "Awaiting Trainer"
+          : label === "Class Completed"
+          ? "Completed"
+          : label,
+      startDate: postSaleSelectedDates[0],
+      endDate: postSaleSelectedDates[1],
+    };
+    navigate("/customers", { state: filterData });
+  };
+
   const getUserWiseLeadCountsData = async (
     dashboard_dates,
     startDate,
@@ -1371,19 +1395,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleRaDashboard = (label) => {
-    console.log("ra dashboard clicked bar", label);
-    if (label == "G-Review" || label == "L-Review") {
-      return;
-    }
-    const filterData = {
-      status: label === "Awaiting Student Verify" ? "Awaiting Verify" : label,
-      startDate: postSaleSelectedDates[0],
-      endDate: postSaleSelectedDates[1],
-    };
-    navigate("/customers", { state: filterData });
-  };
-
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
@@ -2123,6 +2134,7 @@ export default function Dashboard() {
                       {postSaleDataSeries.length >= 1 ? (
                         <PostSalePerformanceChart
                           chartData={postSaleDataSeries}
+                          clickedBar={handlePostSaleDashboard}
                         />
                       ) : (
                         <div className="dashboard_chart_nodata_conatiner">

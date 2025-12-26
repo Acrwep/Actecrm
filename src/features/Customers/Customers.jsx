@@ -1209,6 +1209,7 @@ export default function Customers() {
     }
     if (
       receivedValueFromDashboard == "Escalated" ||
+      receivedValueFromDashboard == "Others" ||
       receivedValueFromDashboard == "Completed"
     ) {
       scroll(1200);

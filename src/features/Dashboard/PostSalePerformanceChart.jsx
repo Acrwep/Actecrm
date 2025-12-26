@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import ReactApexChart from "react-apexcharts";
 import "./styles.css";
 
-export default function PostSalePerformanceChart({ chartData }) {
+export default function PostSalePerformanceChart({ chartData, clickedBar }) {
   const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
 
   const labels = [
@@ -74,6 +74,11 @@ export default function PostSalePerformanceChart({ chartData }) {
           legends.forEach((el) => {
             el.classList.remove("legend-active", "legend-inactive");
           });
+        },
+
+        dataPointSelection: function (event, chartContext, config) {
+          const label = labels?.[config.seriesIndex];
+          if (clickedBar) clickedBar(label);
         },
       },
     },
@@ -150,7 +155,11 @@ export default function PostSalePerformanceChart({ chartData }) {
   };
 
   return (
-    <div id={chartId.current} style={{ marginTop: 20 }}>
+    <div
+      id={chartId.current}
+      style={{ marginTop: 20 }}
+      className="post-sale-chart"
+    >
       <ReactApexChart
         options={options}
         series={series}
