@@ -11,6 +11,7 @@ import "./styles.css";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PaymentDownloadTableAsCSV from "./DownloadPaymentReport";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function PaymentReport() {
   const mounted = useRef(false);
@@ -48,39 +49,71 @@ export default function PaymentReport() {
       dataIndex: "date",
       fixed: "left",
       render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return (
+          <p>
+            {text && text === "Total"
+              ? "Total"
+              : text
+              ? moment(text).format("DD/MM/YYYY")
+              : "-"}
+          </p>
+        );
       },
     },
     {
       title: "Hub",
       key: "hub",
       dataIndex: "hub",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Chennai",
       key: "chennai",
       dataIndex: "chennai",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Bangalore",
       key: "bangalore",
       dataIndex: "bangalore",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
   ];
@@ -93,89 +126,151 @@ export default function PaymentReport() {
       // width: 90,
       fixed: "left",
       render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return (
+          <p>
+            {text && text === "Total"
+              ? "Total"
+              : text
+              ? moment(text).format("DD/MM/YYYY")
+              : "-"}
+          </p>
+        );
       },
     },
     {
       title: "Velachery",
       key: "velachery",
       dataIndex: "velachery",
-      // width: 85,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Anna Nagar",
       key: "anna_nagar",
       dataIndex: "anna_nagar",
-      // width: 100,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Porur",
       key: "porur",
       dataIndex: "porur",
-      // width: 75,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "OMR",
       key: "omr",
       dataIndex: "omr",
-      // width: 74,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "E-City",
       key: "e_city",
       dataIndex: "e_city",
-      // width: 75,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "BTM Layout",
       key: "btm_layout",
       dataIndex: "btm_layout",
-      // width: 80,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Rajaji Nagar",
       key: "rajaji_nagar",
       dataIndex: "rajaji_nagar",
-      // width: 85,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Marathahalli",
       key: "marathahalli",
       dataIndex: "marathahalli",
-      // width: 82,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "end",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      // width: 80,
+      align: "end",
       fixed: "right",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
   ];
@@ -187,95 +282,182 @@ export default function PaymentReport() {
       dataIndex: "date",
       fixed: "left",
       render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return (
+          <p>
+            {text && text === "Total"
+              ? "Total"
+              : text
+              ? moment(text).format("DD/MM/YYYY")
+              : "-"}
+          </p>
+        );
       },
     },
     {
       title: "Cash",
       key: "cash",
       dataIndex: "cash",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "UPI",
       key: "upi",
       dataIndex: "upi",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Razorpay",
       key: "razorpay",
       dataIndex: "razorpay",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Razorpay-UPI",
       key: "razorpay_upi",
       dataIndex: "razorpay_upi",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      width: 105,
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "TDS",
       key: "tds",
       dataIndex: "tds",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "SBI Bank",
       key: "sbi_bank",
       dataIndex: "sbi_bank",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "AXIS Bank",
       key: "axis_bank",
       dataIndex: "axis_bank",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "HDFC Bank",
       key: "hdfc_bank",
       dataIndex: "hdfc_bank",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "SBI POS",
       key: "sbi_pos",
       dataIndex: "sbi_pos",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Razorpay POS",
       key: "razorpay_pos",
       dataIndex: "razorpay_pos",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      width: 105,
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
     {
       title: "Total",
       key: "total",
       dataIndex: "total",
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      align: "right",
+      render: (text, record) => {
+        return (
+          <p>
+            {record.date == "Total"
+              ? `₹${Number(text).toLocaleString("en-IN")}`
+              : Number(text).toLocaleString("en-IN")}
+          </p>
+        );
       },
     },
   ];
@@ -298,6 +480,64 @@ export default function PaymentReport() {
     }
   }, [childUsers]);
 
+  const preparePaymodeData = (apiResponse, typeName) => {
+    const dayWise = apiResponse?.data?.data?.day_wise || [];
+    const overall = apiResponse?.data?.data?.over_all || {};
+    let totalRow;
+
+    if (typeName == "Region") {
+      totalRow = {
+        key: "total-row",
+        date: "Total",
+        hub: Number(overall.hub_total || 0),
+        chennai: Number(overall.chennai_total || 0),
+        bangalore: Number(overall.bangalore_total || 0),
+        total: Number(overall.over_all_total || 0),
+        isTotalRow: true,
+      };
+    } else if (typeName == "Branch") {
+      totalRow = {
+        key: "total-row",
+        date: "Total",
+        velachery: Number(overall.velachery_total || 0),
+        anna_nagar: Number(overall.anna_nagar_total || 0),
+        porur: Number(overall.porur_total || 0),
+        omr: Number(overall.omr_total || 0),
+        e_city: Number(overall.e_city_total || 0),
+        btm_layout: Number(overall.btm_layout_total || 0),
+        rajaji_nagar: Number(overall.rajaji_nagar || 0),
+        marathahalli: Number(overall.marathahalli_total || 0),
+        total: Number(overall.over_all_total || 0),
+        isTotalRow: true,
+      };
+    } else {
+      totalRow = {
+        key: "total-row",
+        date: "Total",
+        cash: Number(overall.cash_total || 0),
+        upi: Number(overall.upi_total || 0),
+        razorpay: Number(overall.razorpay_total || 0),
+        razorpay_upi: Number(overall.razorpay_upi_total || 0),
+        tds: Number(overall.tds_total || 0),
+        sbi_bank: Number(overall.sbi_bank_total || 0),
+        axis_bank: Number(overall.axis_bank_total || 0),
+        hdfc_bank: Number(overall.hdfc_bank_total || 0),
+        sbi_pos: Number(overall.sbi_pos_total || 0),
+        razorpay_pos: Number(overall.razorpay_pos_total || 0),
+        total: Number(overall.over_all_total || 0),
+        isTotalRow: true,
+      };
+    }
+
+    const dayRows = dayWise.map((item, index) => ({
+      key: index,
+      ...item,
+      isTotalRow: false,
+    }));
+
+    return [totalRow, ...dayRows];
+  };
+
   const getPaymentReportData = async (startDate, endDate, typeName) => {
     setLoading(true);
     const payload = {
@@ -308,7 +548,9 @@ export default function PaymentReport() {
     try {
       const response = await paymentReport(payload);
       console.log("payment report response", response);
-      setReportData(response?.data?.data?.day_wise || []);
+      const formatData = preparePaymodeData(response, typeName);
+      console.log("formatData 🙌", formatData);
+      setReportData(formatData);
       setTotalCounts(response?.data?.data?.over_all || null);
     } catch (error) {
       setReportData([]);
@@ -341,153 +583,6 @@ export default function PaymentReport() {
       PreviousAndCurrentDate[1],
       "Region"
     );
-  };
-
-  const regionTotals = {
-    hub:
-      totalCounts &&
-      (totalCounts.hub_total != undefined || totalCounts.hub_total != null)
-        ? "₹" + Number(totalCounts.hub_total).toLocaleString("en-IN")
-        : "-",
-    chennai:
-      totalCounts &&
-      (totalCounts.chennai_total != undefined ||
-        totalCounts.chennai_total != null)
-        ? "₹" + Number(totalCounts.chennai_total).toLocaleString("en-IN")
-        : "-",
-    bangalore:
-      totalCounts &&
-      (totalCounts.bangalore_total != undefined ||
-        totalCounts.bangalore_total != null)
-        ? "₹" + Number(totalCounts.bangalore_total).toLocaleString("en-IN")
-        : "-",
-    total:
-      totalCounts &&
-      (totalCounts.over_all_total != undefined ||
-        totalCounts.over_all_total != null)
-        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
-        : "-",
-  };
-
-  const branchTotals = {
-    velachery:
-      totalCounts &&
-      (totalCounts.velachery_total != undefined ||
-        totalCounts.velachery_total != null)
-        ? "₹" + Number(totalCounts.velachery_total).toLocaleString("en-IN")
-        : "-",
-    anna_nagar:
-      totalCounts &&
-      (totalCounts.anna_nagar_total != undefined ||
-        totalCounts.anna_nagar_total != null)
-        ? "₹" + Number(totalCounts.anna_nagar_total).toLocaleString("en-IN")
-        : "-",
-    porur:
-      totalCounts &&
-      (totalCounts.porur_total != undefined || totalCounts.porur_total != null)
-        ? "₹" + Number(totalCounts.porur_total).toLocaleString("en-IN")
-        : "-",
-    omr:
-      totalCounts &&
-      (totalCounts.omr_total != undefined || totalCounts.omr_total != null)
-        ? "₹" + Number(totalCounts.omr_total).toLocaleString("en-IN")
-        : "-",
-    e_city:
-      totalCounts &&
-      (totalCounts.e_city_total != undefined ||
-        totalCounts.e_city_total != null)
-        ? "₹" + Number(totalCounts.e_city_total).toLocaleString("en-IN")
-        : "-",
-    btm_layout:
-      totalCounts &&
-      (totalCounts.btm_layout_total != undefined ||
-        totalCounts.btm_layout_total != null)
-        ? "₹" + Number(totalCounts.btm_layout_total).toLocaleString("en-IN")
-        : "-",
-    rajaji_nagar:
-      totalCounts &&
-      (totalCounts.rajaji_nagar != undefined ||
-        totalCounts.rajaji_nagar != null)
-        ? "₹" + Number(totalCounts.rajaji_nagar).toLocaleString("en-IN")
-        : "-",
-    marathahalli:
-      totalCounts &&
-      (totalCounts.marathahalli_total != undefined ||
-        totalCounts.marathahalli_total != null)
-        ? "₹" + Number(totalCounts.marathahalli_total).toLocaleString("en-IN")
-        : "-",
-    total:
-      totalCounts &&
-      (totalCounts.over_all_total != undefined ||
-        totalCounts.over_all_total != null)
-        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
-        : "-",
-  };
-
-  const paymodeTotals = {
-    cash:
-      totalCounts &&
-      (totalCounts.cash_total != undefined || totalCounts.cash_total != null)
-        ? "₹" + Number(totalCounts.cash_total).toLocaleString("en-IN")
-        : "-",
-    upi:
-      totalCounts &&
-      (totalCounts.upi_total != undefined || totalCounts.upi_total != null)
-        ? "₹" + Number(totalCounts.upi_total).toLocaleString("en-IN")
-        : "-",
-    razorpay:
-      totalCounts &&
-      (totalCounts.razorpay_total != undefined ||
-        totalCounts.razorpay_total != null)
-        ? "₹" + Number(totalCounts.razorpay_total).toLocaleString("en-IN")
-        : "-",
-    razorpay_upi:
-      totalCounts &&
-      (totalCounts.razorpay_upi_total != undefined ||
-        totalCounts.razorpay_upi_total != null)
-        ? "₹" + Number(totalCounts.razorpay_upi_total).toLocaleString("en-IN")
-        : "-",
-    tds:
-      totalCounts &&
-      (totalCounts.tds_total != undefined || totalCounts.tds_total != null)
-        ? "₹" + Number(totalCounts.tds_total).toLocaleString("en-IN")
-        : "-",
-    sbi_bank:
-      totalCounts &&
-      (totalCounts.sbi_bank_total != undefined ||
-        totalCounts.sbi_bank_total != null)
-        ? "₹" + Number(totalCounts.sbi_bank_total).toLocaleString("en-IN")
-        : "-",
-    axis_bank:
-      totalCounts &&
-      (totalCounts.axis_bank_total != undefined ||
-        totalCounts.axis_bank_total != null)
-        ? "₹" + Number(totalCounts.axis_bank_total).toLocaleString("en-IN")
-        : "-",
-    hdfc_bank:
-      totalCounts &&
-      (totalCounts.hdfc_bank_total != undefined ||
-        totalCounts.hdfc_bank_total != null)
-        ? "₹" + Number(totalCounts.hdfc_bank_total).toLocaleString("en-IN")
-        : "-",
-    sbi_pos:
-      totalCounts &&
-      (totalCounts.sbi_pos_total != undefined ||
-        totalCounts.sbi_pos_total != null)
-        ? "₹" + Number(totalCounts.sbi_pos_total).toLocaleString("en-IN")
-        : "-",
-    razorpay_pos:
-      totalCounts &&
-      (totalCounts.razorpay_pos_total != undefined ||
-        totalCounts.razorpay_pos_total != null)
-        ? "₹" + Number(totalCounts.razorpay_pos_total).toLocaleString("en-IN")
-        : "-",
-    total:
-      totalCounts &&
-      (totalCounts.over_all_total != undefined ||
-        totalCounts.over_all_total != null)
-        ? "₹" + Number(totalCounts.over_all_total).toLocaleString("en-IN")
-        : "-",
   };
 
   return (
@@ -545,8 +640,14 @@ export default function PaymentReport() {
             <Button
               className="reports_download_button"
               onClick={() => {
-                PaymentDownloadTableAsCSV(
-                  reportData,
+                const formattedData = reportData.map((row) => ({
+                  ...row,
+                  date: row.date === "Total" ? "Total" : row.date, // Excel-safe
+                }));
+                console.log("formattedData", formattedData);
+                // return;
+                DownloadTableAsCSV(
+                  formattedData,
                   typeId == "Region"
                     ? columns
                     : typeId == "Branch"
@@ -560,12 +661,7 @@ export default function PaymentReport() {
                       : typeId == "Branch"
                       ? "Branchwise"
                       : "Modewise"
-                  } Payment Report.csv`,
-                  typeId == "Region"
-                    ? regionTotals
-                    : typeId == "Branch"
-                    ? branchTotals
-                    : paymodeTotals
+                  } Payment Report.csv`
                 );
               }}
             >
@@ -586,7 +682,7 @@ export default function PaymentReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: typeId == "Paymode" ? "max-content" : 600 }}
+          scroll={{ x: typeId == "Paymode" ? 600 : 600 }}
           columns={
             typeId == "Region"
               ? columns
@@ -604,13 +700,16 @@ export default function PaymentReport() {
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
-          totals={
-            typeId == "Region"
-              ? regionTotals
-              : typeId == "Branch"
-              ? branchTotals
-              : paymodeTotals
+          rowClassName={(record, index) =>
+            record.date === "Total" ? "total-row-bg" : ""
           }
+          // totals={
+          //   typeId == "Region"
+          //     ? regionTotals
+          //     : typeId == "Branch"
+          //     ? branchTotals
+          //     : paymodeTotals
+          // }
         />
       </div>
     </div>

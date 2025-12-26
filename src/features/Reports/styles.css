@@ -247,24 +247,6 @@
   justify-content: flex-start;
 }
 
-/* ===============================
-   OPTIONAL: STICKY TOTAL + HEADER
-   (UNCOMMENT IF NEEDED)
-================================ */
-/*
-.paymentreport_table .table-total-row {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.paymentreport_table .ant-table-thead {
-  position: sticky;
-  top: 22px;
-  z-index: 4;
-}
-*/
-
 /* transaction report styles */
 .transactionreport_new_type {
   background-color: #3c91111e;
@@ -329,6 +311,7 @@
 .total-row-bg td {
   background-color: #5b69ca !important;
   color: #fff !important;
+  font-weight: 600 !important;
 }
 
 .total-row-bg.ant-table-cell {

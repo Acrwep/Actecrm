@@ -78,11 +78,15 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "rajaji_nagar" ||
           column.dataIndex === "marathahalli" ||
           column.dataIndex === "cash" ||
-          column.dataIndex === "card" ||
-          column.dataIndex === "bank" ||
           column.dataIndex === "upi" ||
           column.dataIndex === "razorpay" ||
           column.dataIndex === "razorpay_upi" ||
+          column.dataIndex === "tds" ||
+          column.dataIndex === "sbi_bank" ||
+          column.dataIndex === "axis_bank" ||
+          column.dataIndex === "hdfc_bank" ||
+          column.dataIndex === "sbi_pos" ||
+          column.dataIndex === "razorpay_pos" ||
           column.dataIndex === "total"
         ) {
           return row[column.dataIndex]

@@ -160,10 +160,32 @@ export default function LeadFollowUp({
       dataIndex: "lead_assigned_to_name",
       width: 160,
       render: (text, record) => {
+        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
         return (
-          <div>
-            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
-          </div>
+          <>
+            {lead_executive && lead_executive.length > 15 ? (
+              <Tooltip
+                color="#fff"
+                placement="bottom"
+                title={lead_executive}
+                className="leadtable_comments_tooltip"
+                styles={{
+                  body: {
+                    backgroundColor: "#fff", // Tooltip background
+                    color: "#333", // Tooltip lead_executive color
+                    fontWeight: 500,
+                    fontSize: "13px",
+                  },
+                }}
+              >
+                <p style={{ cursor: "pointer" }}>
+                  {lead_executive.slice(0, 14) + "..."}
+                </p>
+              </Tooltip>
+            ) : (
+              <p>{lead_executive ? lead_executive : "-"}</p>
+            )}
+          </>
         );
       },
     },
@@ -553,14 +575,54 @@ export default function LeadFollowUp({
               return {
                 ...col,
                 width: 160,
-                render: (text, record) => (
-                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
-                ),
+                render: (text, record) => {
+                  const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+                  return (
+                    <Tooltip
+                      title={lead_executive || "-"}
+                      color="#fff"
+                      placement="bottom"
+                      className="leadtable_comments_tooltip"
+                      styles={{
+                        body: {
+                          backgroundColor: "#fff",
+                          color: "#333",
+                          fontWeight: 500,
+                          fontSize: "13px",
+                        },
+                      }}
+                    >
+                      <span className="lead-ellipsis-text">
+                        {lead_executive || "-"}
+                      </span>
+                    </Tooltip>
+                  );
+                },
               };
             case "candidate_name":
               return {
                 ...col,
                 width: 180,
+                render: (text) => {
+                  return (
+                    <Tooltip
+                      title={text || "-"}
+                      color="#fff"
+                      placement="bottom"
+                      className="leadtable_comments_tooltip"
+                      styles={{
+                        body: {
+                          backgroundColor: "#fff",
+                          color: "#333",
+                          fontWeight: 500,
+                          fontSize: "13px",
+                        },
+                      }}
+                    >
+                      <span className="lead-ellipsis-text">{text || "-"}</span>
+                    </Tooltip>
+                  );
+                },
               };
             case "email":
               return {
@@ -568,30 +630,22 @@ export default function LeadFollowUp({
                 width: 200,
                 render: (text) => {
                   return (
-                    <>
-                      {text.length > 22 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 21) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
+                    <Tooltip
+                      title={text || "-"}
+                      color="#fff"
+                      placement="bottom"
+                      className="leadtable_comments_tooltip"
+                      styles={{
+                        body: {
+                          backgroundColor: "#fff",
+                          color: "#333",
+                          fontWeight: 500,
+                          fontSize: "13px",
+                        },
+                      }}
+                    >
+                      <span className="lead-ellipsis-text">{text || "-"}</span>
+                    </Tooltip>
                   );
                 },
               };

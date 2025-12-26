@@ -217,6 +217,9 @@ button:focus-visible {
 }
 
 /* antd table styles */
+.ant-table-cell {
+  white-space: normal !important;
+}
 .users_table .ant-table-thead .ant-table-cell {
   background-color: #e0e3e8;
   color: white;
@@ -359,9 +362,6 @@ button:focus-visible {
   .ant-pagination-item-container
   .ant-pagination-item-link-icon {
   color: #535bf2 !important;
-}
-.ant-table-title {
-  display: none;
 }
 /* progress bar styles */
 .ant-progress .ant-progress-bg {

@@ -21,7 +21,6 @@ const CommonTable = ({
   page_number,
   totalPageNumber,
   onPaginationChange,
-  totals,
 }) => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -151,35 +150,6 @@ const CommonTable = ({
       return originalElement;
     },
   };
-  const renderTotalsRow = () => {
-    if (!totals || !columns?.length || totals == undefined) return null;
-    return (
-      <div
-        className="table-total-row"
-        style={{
-          gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
-        }}
-      >
-        {columns.map((col, index) => {
-          // Handle array dataIndex
-          const key = Array.isArray(col.dataIndex)
-            ? col.dataIndex.join(".")
-            : col.dataIndex;
-
-          // First column label
-          if (index === 0) {
-            return <div key={index}>TOTAL</div>;
-          }
-
-          return (
-            <div key={index}>
-              {key && totals[key] !== undefined ? totals[key] : ""}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
 
   return (
     <Table
@@ -196,7 +166,6 @@ const CommonTable = ({
       className={className}
       rowClassName={rowClassName}
       rowKey={(record) => record.id || record.question_id}
-      title={renderTotalsRow} // 👈 ADD THIS
     />
   );
 };
