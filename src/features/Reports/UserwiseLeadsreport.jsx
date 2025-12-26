@@ -46,12 +46,12 @@ export default function UserwiseLeadsReport() {
   const columns = [
     {
       title: "User Name",
-      key: "user_name",
-      dataIndex: "user_name",
+      key: "user_id",
+      dataIndex: "user_id",
       width: 160,
       fixed: "left",
       render: (text, row) => ({
-        children: <p> {`${row.user_id} - ${text}`}</p>,
+        children: <p> {`${text} - ${row.user_name}`}</p>,
         props: {
           rowSpan: row.branchRowSpan,
         },
@@ -146,27 +146,27 @@ export default function UserwiseLeadsReport() {
 
     // Count rows per branch
     data.forEach((item) => {
-      branchCount[item.user_name] = (branchCount[item.user_name] || 0) + 1;
+      branchCount[item.user_id] = (branchCount[item.user_id] || 0) + 1;
     });
 
     const branchRendered = {};
 
     return data.map((item) => {
       // Assign fixed group index per branch
-      if (branchIndexMap[item.user_name] === undefined) {
-        branchIndexMap[item.user_name] = currentGroupIndex++;
+      if (branchIndexMap[item.user_id] === undefined) {
+        branchIndexMap[item.user_id] = currentGroupIndex++;
       }
 
-      const isFirstRow = !branchRendered[item.user_name];
+      const isFirstRow = !branchRendered[item.user_id];
 
       if (isFirstRow) {
-        branchRendered[item.user_name] = true;
+        branchRendered[item.user_id] = true;
       }
 
       return {
         ...item,
-        groupIndex: branchIndexMap[item.user_name],
-        branchRowSpan: isFirstRow ? branchCount[item.user_name] : 0,
+        groupIndex: branchIndexMap[item.user_id],
+        branchRowSpan: isFirstRow ? branchCount[item.user_id] : 0,
       };
     });
   };
