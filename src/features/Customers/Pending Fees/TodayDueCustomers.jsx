@@ -89,7 +89,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 170,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -103,7 +103,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 110 },
     {
       title: "Course ",
       key: "course_name",
@@ -138,10 +138,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       },
     },
     {
-      title: "Trainer",
+      title: "Trainer Name",
       key: "trainer_name",
       dataIndex: "trainer_name",
-      width: 170,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -150,7 +150,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       title: "TR Number",
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
-      width: 150,
+      width: 110,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -511,7 +511,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               case "name":
                 return {
                   ...col,
-                  width: 170,
+                  width: 150,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
                   },
@@ -522,6 +522,18 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   width: 200,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
+                  },
+                };
+              case "phone":
+                return {
+                  ...col,
+                  width: 110,
+                  render: (text, record) => {
+                    if (record.is_trainer_verified === 1) {
+                      return <p>{text}</p>;
+                    } else {
+                      return <p>-</p>;
+                    }
                   },
                 };
               case "course_name":
@@ -549,7 +561,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               case "trainer_name":
                 return {
                   ...col,
-                  width: 170,
+                  title: "Trainer Name",
+                  width: 150,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
                   },
@@ -557,6 +570,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               case "trainer_mobile":
                 return {
                   ...col,
+                  width: 110,
                   render: (text, record) => {
                     if (record.is_trainer_verified === 1) {
                       return <p>{text}</p>;

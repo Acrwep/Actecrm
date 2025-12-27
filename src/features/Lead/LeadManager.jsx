@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
@@ -35,6 +35,7 @@ import AssignLeads from "./AssignLeads";
 export default function LeadManager() {
   const mounted = useRef(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const childUsers = useSelector((state) => state.childusers);
 
@@ -82,12 +83,18 @@ export default function LeadManager() {
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
+    console.log("locationnnnn", location);
     if (childUsers.length > 0 && !mounted.current && permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
         navigate("/dashboard");
         return;
       }
       mounted.current = true;
+      if (location) {
+        if (location?.state == "open live_leads") {
+          handleTabClick("live_leads");
+        }
+      }
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
       dispatch(storeLiveLeadFilterType(null));

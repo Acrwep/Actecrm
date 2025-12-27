@@ -93,45 +93,33 @@ export default function OverallDueCustomers({
         return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+    {
+      title: "Candidate Name",
+      key: "name",
+      dataIndex: "name",
+      width: 150,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 110 },
     {
       title: "Course ",
       key: "course_name",
       dataIndex: "course_name",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Joined ",
@@ -158,10 +146,10 @@ export default function OverallDueCustomers({
       },
     },
     {
-      title: "Trainer",
+      title: "Trainer Name",
       key: "trainer_name",
       dataIndex: "trainer_name",
-      width: 170,
+      width: 150,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -174,7 +162,7 @@ export default function OverallDueCustomers({
       title: "TR Number",
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
-      width: 150,
+      width: 110,
       render: (text, record) => {
         if (record.is_trainer_verified === 1) {
           return <p>{text}</p>;
@@ -545,7 +533,7 @@ export default function OverallDueCustomers({
               case "name":
                 return {
                   ...col,
-                  width: 170,
+                  width: 150,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
                   },
@@ -556,6 +544,18 @@ export default function OverallDueCustomers({
                   width: 200,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
+                  },
+                };
+              case "phone":
+                return {
+                  ...col,
+                  width: 110,
+                  render: (text, record) => {
+                    if (record.is_trainer_verified === 1) {
+                      return <p>{text}</p>;
+                    } else {
+                      return <p>-</p>;
+                    }
                   },
                 };
               case "course_name":
@@ -583,7 +583,8 @@ export default function OverallDueCustomers({
               case "trainer_name":
                 return {
                   ...col,
-                  width: 170,
+                  title: "Trainer Name",
+                  width: 150,
                   render: (text) => {
                     return <EllipsisTooltip text={text} />;
                   },
@@ -591,6 +592,7 @@ export default function OverallDueCustomers({
               case "trainer_mobile":
                 return {
                   ...col,
+                  width: 110,
                   render: (text, record) => {
                     if (record.is_trainer_verified === 1) {
                       return <p>{text}</p>;
