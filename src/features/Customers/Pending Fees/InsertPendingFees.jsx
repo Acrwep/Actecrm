@@ -40,6 +40,7 @@ import PrismaZoom from "react-prismazoom";
 import moment from "moment";
 import { CommonMessage } from "../../Common/CommonMessage";
 import CommonGroupedSelectField from "../../Common/CommonGroupedSelectField";
+import EllipsisTooltip from "../../Common/EllipsisTooltip";
 
 const InsertPendingFees = forwardRef(
   (
@@ -389,11 +390,14 @@ const InsertPendingFees = forwardRef(
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -405,11 +409,14 @@ const InsertPendingFees = forwardRef(
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -512,11 +519,14 @@ const InsertPendingFees = forwardRef(
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 

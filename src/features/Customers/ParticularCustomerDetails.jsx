@@ -9,6 +9,7 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import moment from "moment";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function ParticularCustomerDetails({
   customerDetails,
@@ -61,11 +62,14 @@ export default function ParticularCustomerDetails({
               </div>
             </Col>
             <Col span={12}>
-              <p className="customerdetails_text">
-                {customerDetails && customerDetails.name
-                  ? customerDetails.name
-                  : "-"}
-              </p>
+              <EllipsisTooltip
+                text={
+                  customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"
+                }
+                smallText={true}
+              />
             </Col>
           </Row>
 
@@ -77,11 +81,14 @@ export default function ParticularCustomerDetails({
               </div>
             </Col>
             <Col span={12}>
-              <p className="customerdetails_text">
-                {customerDetails && customerDetails.email
-                  ? customerDetails.email
-                  : "-"}
-              </p>
+              <EllipsisTooltip
+                text={
+                  customerDetails && customerDetails.email
+                    ? customerDetails.email
+                    : "-"
+                }
+                smallText={true}
+              />
             </Col>
           </Row>
 
@@ -211,11 +218,14 @@ export default function ParticularCustomerDetails({
                   </div>
                 </Col>
                 <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.course_name
-                      ? customerDetails.course_name
-                      : "-"}
-                  </p>
+                  <EllipsisTooltip
+                    text={
+                      customerDetails && customerDetails.course_name
+                        ? customerDetails.course_name
+                        : "-"
+                    }
+                    smallText={true}
+                  />
                 </Col>
               </Row>
 
@@ -347,11 +357,14 @@ export default function ParticularCustomerDetails({
                   </div>
                 </Col>
                 <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.branch_name
-                      ? customerDetails.branch_name
-                      : "-"}
-                  </p>
+                  <EllipsisTooltip
+                    text={
+                      customerDetails && customerDetails.branch_name
+                        ? customerDetails.branch_name
+                        : "-"
+                    }
+                    smallText={true}
+                  />
                 </Col>
               </Row>
 

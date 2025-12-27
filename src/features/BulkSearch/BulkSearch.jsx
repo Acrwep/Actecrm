@@ -30,6 +30,7 @@ import moment from "moment";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import { useSelector } from "react-redux";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const { Dragger } = Upload;
 
@@ -61,14 +62,36 @@ export default function BulkSearch() {
   });
 
   const columns = [
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 180 },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Lead Source", key: "lead_type", dataIndex: "lead_type" },
+    {
+      title: "Candidate Name",
+      key: "name",
+      dataIndex: "name",
+      width: 160,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 200,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    { title: "Mobile", key: "mobile", dataIndex: "mobile", width: 110 },
+    {
+      title: "Lead Source",
+      key: "lead_type",
+      dataIndex: "lead_type",
+      width: 130,
+    },
     {
       title: "Status",
       key: "status",
       dataIndex: "status",
+      width: 150,
       render: (text) => {
         return (
           <>
@@ -93,15 +116,16 @@ export default function BulkSearch() {
       title: "Lead Executive",
       key: "lead_by",
       dataIndex: "lead_by",
-      width: 180,
-      render: (text, record) => {
-        return <p>{`${record.lead_by_id} - ${text}`}</p>;
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={`${record.lead_by_id} - ${text}`} />;
       },
     },
     {
       title: "Created At",
       key: "created_on",
       dataIndex: "created_on",
+      width: 110,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },

@@ -1,5 +1,5 @@
 .lead-ellipsis-text {
-  display: inline-block;
+  display: block;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;

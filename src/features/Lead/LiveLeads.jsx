@@ -487,7 +487,7 @@ export default function LiveLead({
       if (isTabActive()) {
         fetchAndUpdate();
       }
-    }, 10000); // your interval
+    }, 600); // your interval
 
     // Cleanup
     return () => clearInterval(interval);

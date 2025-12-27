@@ -47,9 +47,11 @@ import {
   getCustomerById,
   getServerHistory,
   getServerRequest,
+  getTableColumns,
   insertServerTrack,
   serverIssue,
   updateServerStatus,
+  updateTableColumns,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -62,6 +64,8 @@ import ServerUpdateDetails from "./ServerUpdateDetails";
 import ServerVerify from "./ServerVerify";
 import ServerApproval from "./ServerApproval";
 import ServerIssue from "./ServerIssue";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonDnd from "../Common/CommonDnd";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -112,7 +116,10 @@ export default function Server() {
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [allDownliners, setAllDownliners] = useState([]);
-
+  //table dnd
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -126,7 +133,7 @@ export default function Server() {
       title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
-      width: 130,
+      width: 110,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
@@ -135,19 +142,41 @@ export default function Server() {
       title: "Created By",
       key: "created_by_id",
       dataIndex: "created_by_id",
-      width: 180,
+      width: 150,
       render: (text, record) => {
-        return <p>{text ? `${text} - ${record.created_by}` : "-"}</p>;
+        const lead_executive = `${
+          text ? `${text} - ${record.created_by}` : "-"
+        }`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    { title: "Name", key: "name", dataIndex: "name", width: 180 },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
+    {
+      title: "Name",
+      key: "name",
+      dataIndex: "name",
+      width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 200,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Server Name",
       key: "server_name",
       dataIndex: "server_name",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Server Cost",
@@ -466,6 +495,11 @@ export default function Server() {
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -475,6 +509,9 @@ export default function Server() {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
+      setTimeout(() => {
+        getTableColumnsData(convertAsJson?.user_id);
+      }, 300);
       getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
@@ -559,6 +596,448 @@ export default function Server() {
       setTimeout(() => {
         setLoading(false);
       }, 300);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      console.log("get table columns response", response);
+
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Server");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      // --- ✅ Helper function to reattach render logic ---
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "created_date":
+              return {
+                ...col,
+                width: 110,
+                render: (text) => {
+                  return (
+                    <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                  );
+                },
+              };
+            case "created_by_id":
+              return {
+                ...col,
+                width: 150,
+                render: (text, record) => {
+                  const lead_executive = `${
+                    text ? `${text} - ${record.created_by}` : "-"
+                  }`;
+                  return <EllipsisTooltip text={lead_executive} />;
+                },
+              };
+            case "name":
+              return {
+                ...col,
+                width: 180,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "email":
+              return {
+                ...col,
+                width: 200,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "phone":
+              return {
+                ...col,
+                width: 120,
+              };
+            case "server_name":
+              return {
+                ...col,
+                width: 180,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "server_cost":
+              return {
+                ...col,
+                width: 130,
+                render: (text) => {
+                  return <p>{text ? `₹${text}` : "-"}</p>;
+                },
+              };
+            case "duration":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => {
+                  return <p>{text ? `${text} Days` : "-"}</p>;
+                },
+              };
+            case "status":
+              return {
+                ...col,
+                width: 160,
+                fixed: "right",
+                render: (text, record) => {
+                  return (
+                    <Tooltip
+                      placement="bottomLeft"
+                      className="customers_statustooltip"
+                      color="#fff"
+                      styles={{
+                        body: {
+                          width: "240px",
+                          maxWidth: "none",
+                          whiteSpace: "normal",
+                        },
+                      }}
+                      title={
+                        <>
+                          <Row style={{ marginBottom: "8px" }}>
+                            <Col span={10}>
+                              {record.status == "Requested" ? (
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status == "Requested") {
+                                      setIsOpenRaiseModal(true);
+                                      setServerDetails(record);
+                                      getCustomerData(record.customer_id);
+                                    }
+                                  }}
+                                >
+                                  Raise
+                                </Checkbox>
+                              ) : (
+                                <div className="customers_classcompleted_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Raised
+                                  </p>
+                                </div>
+                              )}
+                            </Col>
+                            <Col span={14}>
+                              {record.status == "Requested" ||
+                              record.status == "Server Raised" ||
+                              record.status == "Verification Rejected" ||
+                              record.status == "Approval Rejected" ||
+                              record.status == "Server Rejected" ? (
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status == "Requested") {
+                                      CommonMessage(
+                                        "warning",
+                                        "Server not raised yet"
+                                      );
+                                    } else {
+                                      if (
+                                        !permissions.includes(
+                                          "Server Details Update"
+                                        )
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setIsOpenDetailsDrawer(true);
+                                      setVerifyHistory(record.server_history);
+                                      setDrawerStatus("Update Details");
+                                      setServerDetails(record);
+                                      getCustomerData(record.customer_id);
+                                    }
+                                  }}
+                                >
+                                  Update Details
+                                </Checkbox>
+                              ) : (
+                                <div className="customers_classcompleted_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Details Updated
+                                  </p>
+                                </div>
+                              )}
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginBottom: "6px" }}>
+                            <Col span={10}>
+                              {record.status == "Requested" ||
+                              record.status == "Server Raised" ||
+                              record.status == "Awaiting Verify" ||
+                              record.status == "Verification Rejected" ||
+                              record.status == "Approval Rejected" ? (
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status == "Awaiting Verify") {
+                                      if (
+                                        !permissions.includes("Server Verify")
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setIsOpenDetailsDrawer(true);
+                                      setDrawerStatus("Verify");
+                                      setServerDetails(record);
+                                      getCustomerData(record.customer_id);
+                                    } else {
+                                      CommonMessage(
+                                        "warning",
+                                        "Details not updated yet"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  Verify
+                                </Checkbox>
+                              ) : (
+                                <div className="customers_classcompleted_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Verified
+                                  </p>
+                                </div>
+                              )}
+                            </Col>
+
+                            <Col span={14}>
+                              {record.status == "Approved" ||
+                              record.status == "Issued" ? (
+                                <div className="customers_classcompleted_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Approved
+                                  </p>
+                                </div>
+                              ) : (
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status == "Awaiting Approval") {
+                                      if (
+                                        !permissions.includes("Server Approve")
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setIsOpenDetailsDrawer(true);
+                                      setDrawerStatus("Approve");
+                                      setServerDetails(record);
+                                      getCustomerData(record.customer_id);
+                                    } else {
+                                      CommonMessage(
+                                        "warning",
+                                        "Not verified yet"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  Approve
+                                </Checkbox>
+                              )}
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginBottom: "6px" }}>
+                            <Col span={10}>
+                              {record.status == "Requested" ||
+                              record.status == "Server Raised" ||
+                              record.status == "Awaiting Verify" ||
+                              record.status == "Verification Rejected" ||
+                              record.status == "Awaiting Approval" ||
+                              record.status == "Approval Rejected" ||
+                              record.status == "Approved" ? (
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (record.status == "Approved") {
+                                      if (
+                                        !permissions.includes("Server Issue")
+                                      ) {
+                                        CommonMessage("error", "Access Denied");
+                                        return;
+                                      }
+                                      setIsOpenDetailsDrawer(true);
+                                      setDrawerStatus("Issue");
+                                      setServerDetails(record);
+                                      getCustomerData(record.customer_id);
+                                      return;
+                                    } else {
+                                      CommonMessage(
+                                        "warning",
+                                        "Not approved yet"
+                                      );
+                                    }
+                                  }}
+                                >
+                                  Issue
+                                </Checkbox>
+                              ) : (
+                                <div className="customers_classcompleted_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Issued
+                                  </p>
+                                </div>
+                              )}
+                            </Col>
+                          </Row>
+                        </>
+                      }
+                    >
+                      {text == "Requested" ? (
+                        <div>
+                          <Button className="customers_status_awaitfeedback_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : text == "Server Raised" ? (
+                        <div>
+                          <Button className="customers_status_awaittrainer_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : text == "Awaiting Verify" ? (
+                        <div>
+                          <Button className="customers_status_awaitverify_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : text == "Awaiting Approval" ? (
+                        <div>
+                          <Button className="customers_status_classscheduled_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : text == "Approved" ? (
+                        <div>
+                          <Button className="customers_status_classgoing_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : text == "Issued" ? (
+                        <div>
+                          <Button className="customers_status_completed_button">
+                            Server Issued
+                          </Button>
+                        </div>
+                      ) : text == "Rejected" ||
+                        text == "Server Rejected" ||
+                        text == "Approval Rejected" ||
+                        text == "Verification Rejected" ||
+                        text == "Hold" ? (
+                        <div>
+                          <Button className="trainers_rejected_button">
+                            {text}
+                          </Button>
+                        </div>
+                      ) : (
+                        <p>{text}</p>
+                      )}
+                    </Tooltip>
+                  );
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                fixed: "right",
+                width: 100,
+                render: (text, record) => {
+                  return (
+                    <div className="trainers_actionbuttonContainer">
+                      <FaRegEye
+                        size={15}
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          setIsOpenViewDrawer(true);
+                          setServerDetails(record);
+                          getCustomerData(record.customer_id);
+                        }}
+                      />
+
+                      <Tooltip
+                        placement="top"
+                        title="View Server History"
+                        trigger={["hover", "click"]}
+                      >
+                        <LuFileClock
+                          size={15}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setServerDetails(record);
+                            getServerHistoryData(record.id, record.customer_id);
+                            // setTimeout(() => {
+                            //   const container = document.getElementById(
+                            //     "customer_history_profilecontainer"
+                            //   );
+                            //   container.scrollIntoView({
+                            //     behavior: "smooth",
+                            //     block: "start",
+                            //   });
+                            // }, 300);
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
+                  );
+                },
+              };
+            default:
+              return col;
+          }
+        });
+
+      // --- ✅ Process columns ---
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked)
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+
+      console.log("Visible columns:", visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Server",
+      column_names: columns,
+    };
+    console.log("updateTableColumnsData", payload);
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
     }
   };
 
@@ -916,8 +1395,8 @@ export default function Server() {
             color="#5b69ca"
             style={{ marginRight: "16px", cursor: "pointer" }}
             onClick={() => {
-              // setIsOpenFilterDrawer(true);
-              // getTableColumnsData(loginUserId);
+              setIsOpenFilterDrawer(true);
+              getTableColumnsData(loginUserId);
             }}
           />
 
@@ -1208,8 +1687,14 @@ export default function Server() {
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1600 }}
-          columns={nonChangeColumns}
+          // scroll={{ x: 1200 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0
+            ),
+          }}
+          columns={tableColumns}
           dataSource={serverData}
           loading={loading}
           checkBox="false"
@@ -2423,6 +2908,88 @@ export default function Server() {
           ) : (
             <ServerHistory data={serverHistory} />
           )}
+        </div>
+      </Drawer>
+
+      {/* table filter drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
+        open={isOpenFilterDrawer}
+        onClose={() => {
+          setIsOpenFilterDrawer(false);
+        }}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: 50 }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd data={columns} setColumns={setColumns} />
+            </div>
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={async () => {
+                const visibleColumns = columns
+                  .filter((col) => col.isChecked)
+                  .map((col) => ({
+                    ...col,
+                    width: col.width || 150, // fallback width for consistent layout
+                  }));
+                console.log("visibleColumns", visibleColumns);
+                setTableColumns(visibleColumns);
+                setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Server",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
         </div>
       </Drawer>
     </div>

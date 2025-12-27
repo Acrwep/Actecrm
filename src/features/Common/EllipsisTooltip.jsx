@@ -8,9 +8,14 @@ const EllipsisTooltip = ({ text, smallText = false }) => {
 
   useEffect(() => {
     const el = textRef.current;
-    if (el) {
-      setIsTruncated(el.scrollWidth > el.clientWidth);
-    }
+    if (!el) return;
+
+    // wait for Drawer open animation + layout settle
+    const timer = setTimeout(() => {
+      setIsTruncated(el.scrollWidth > el.offsetWidth);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [text]);
 
   return (
@@ -19,6 +24,7 @@ const EllipsisTooltip = ({ text, smallText = false }) => {
         <Tooltip
           title={text}
           placement="bottom"
+          getPopupContainer={(triggerNode) => triggerNode.parentElement} // 🔑 FIX
           color="#fff"
           styles={{
             body: {

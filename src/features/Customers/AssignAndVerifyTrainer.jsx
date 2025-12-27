@@ -41,6 +41,7 @@ import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const AssignAndVerifyTrainer = forwardRef(
   (
@@ -729,11 +730,14 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </div>
                                   </Col>
                                   <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.trainer_hr_name
-                                        ? item.trainer_hr_name
-                                        : "-"}
-                                    </p>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.trainer_hr_name
+                                          ? item.trainer_hr_name
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
                                   </Col>
                                 </Row>
                               </Col>
@@ -747,9 +751,14 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </div>
                                   </Col>
                                   <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.trainer_name}
-                                    </p>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.trainer_name
+                                          ? item.trainer_name
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
                                   </Col>
                                 </Row>
                               </Col>
@@ -878,9 +887,10 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </div>
                                   </Col>
                                   <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.comments}
-                                    </p>
+                                    <EllipsisTooltip
+                                      text={item.comments ? item.comments : "-"}
+                                      smallText={true}
+                                    />
                                   </Col>
                                 </Row>
                               </Col>
@@ -1123,11 +1133,14 @@ const AssignAndVerifyTrainer = forwardRef(
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {assignTrainerData && assignTrainerData.hr_head
-                        ? assignTrainerData.hr_head
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        assignTrainerData && assignTrainerData.hr_head
+                          ? assignTrainerData.hr_head
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
                 <Row style={{ marginTop: "12px" }} gutter={16}>
@@ -1137,15 +1150,18 @@ const AssignAndVerifyTrainer = forwardRef(
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {assignTrainerData && assignTrainerData.name
-                        ? `${assignTrainerData.name} (${
-                            assignTrainerData.trainer_code
-                              ? assignTrainerData.trainer_code
-                              : "-"
-                          })`
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        assignTrainerData && assignTrainerData.name
+                          ? `${assignTrainerData.name} (${
+                              assignTrainerData.trainer_code
+                                ? assignTrainerData.trainer_code
+                                : "-"
+                            })`
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
 
@@ -1158,11 +1174,14 @@ const AssignAndVerifyTrainer = forwardRef(
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {assignTrainerData && assignTrainerData.email
-                        ? assignTrainerData.email
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        assignTrainerData && assignTrainerData.email
+                          ? assignTrainerData.email
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
 
@@ -1226,14 +1245,16 @@ const AssignAndVerifyTrainer = forwardRef(
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {" "}
-                      {assignTrainerData && assignTrainerData.skills
-                        ? assignTrainerData.skills
-                            .map((item) => item.name)
-                            .join(", ")
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        assignTrainerData && assignTrainerData.skills
+                          ? assignTrainerData.skills
+                              .map((item) => item.name)
+                              .join(", ")
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
 

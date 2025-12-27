@@ -34,6 +34,7 @@ import { useSelector } from "react-redux";
 import CommonDnd from "../../Common/CommonDnd";
 import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
+import EllipsisTooltip from "../../Common/EllipsisTooltip";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
   const mounted = useRef(false);
@@ -78,46 +79,28 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       title: "Lead Executive",
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
-      width: 160,
+      width: 150,
       render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
-          </div>
-        );
+        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+    {
+      title: "Candidate Name",
+      key: "name",
+      dataIndex: "name",
+      width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
@@ -126,6 +109,9 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       key: "course_name",
       dataIndex: "course_name",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Joined ",
@@ -156,12 +142,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       key: "trainer_name",
       dataIndex: "trainer_name",
       width: 170,
-      render: (text, record) => {
-        if (record.is_trainer_verified === 1) {
-          return <p>{text}</p>;
-        } else {
-          return <p>-</p>;
-        }
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -520,44 +502,34 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               case "lead_assigned_to_name":
                 return {
                   ...col,
+                  width: 150,
                   render: (text, record) => {
-                    return (
-                      <div>
-                        <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
-                      </div>
-                    );
+                    const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+                    return <EllipsisTooltip text={lead_executive} />;
+                  },
+                };
+              case "name":
+                return {
+                  ...col,
+                  width: 170,
+                  render: (text) => {
+                    return <EllipsisTooltip text={text} />;
                   },
                 };
               case "email":
                 return {
                   ...col,
+                  width: 200,
                   render: (text) => {
-                    return (
-                      <>
-                        {text.length > 22 ? (
-                          <Tooltip
-                            color="#fff"
-                            placement="bottom"
-                            title={text}
-                            className="leadtable_comments_tooltip"
-                            styles={{
-                              body: {
-                                backgroundColor: "#fff", // Tooltip background
-                                color: "#333", // Tooltip text color
-                                fontWeight: 500,
-                                fontSize: "13px",
-                              },
-                            }}
-                          >
-                            <p style={{ cursor: "pointer" }}>
-                              {text.slice(0, 21) + "..."}
-                            </p>
-                          </Tooltip>
-                        ) : (
-                          <p>{text}</p>
-                        )}
-                      </>
-                    );
+                    return <EllipsisTooltip text={text} />;
+                  },
+                };
+              case "course_name":
+                return {
+                  ...col,
+                  width: 180,
+                  render: (text) => {
+                    return <EllipsisTooltip text={text} />;
                   },
                 };
               case "course_fees":
@@ -577,12 +549,9 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               case "trainer_name":
                 return {
                   ...col,
-                  render: (text, record) => {
-                    if (record.is_trainer_verified === 1) {
-                      return <p>{text}</p>;
-                    } else {
-                      return <p>-</p>;
-                    }
+                  width: 170,
+                  render: (text) => {
+                    return <EllipsisTooltip text={text} />;
                   },
                 };
               case "trainer_mobile":

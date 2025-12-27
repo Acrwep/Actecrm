@@ -39,6 +39,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { storeAreaList, storeCourseList } from "../Redux/Slice";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const AddLead = forwardRef(
   (
@@ -998,11 +999,14 @@ const AddLead = forwardRef(
                       </div>
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {liveLeadItem && liveLeadItem.name
-                          ? liveLeadItem.name
-                          : "-"}
-                      </p>
+                      <EllipsisTooltip
+                        text={
+                          liveLeadItem && liveLeadItem.name
+                            ? liveLeadItem.name
+                            : "-"
+                        }
+                        smallText={true}
+                      />
                     </Col>
                   </Row>
 
@@ -1013,36 +1017,14 @@ const AddLead = forwardRef(
                       </div>
                     </Col>
                     <Col span={12}>
-                      <>
-                        {liveLeadItem && liveLeadItem.email ? (
-                          liveLeadItem.email.length > 16 ? (
-                            <Tooltip
-                              color="#fff"
-                              placement="bottom"
-                              title={liveLeadItem.email}
-                              className="leadtable_comments_tooltip"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff", // Tooltip background
-                                  color: "#333", // Tooltip text color
-                                  fontWeight: 500,
-                                  fontSize: "13px",
-                                },
-                              }}
-                            >
-                              <p className="customerdetails_text">
-                                {liveLeadItem.email.slice(0, 15) + "..."}
-                              </p>
-                            </Tooltip>
-                          ) : (
-                            <p className="customerdetails_text">
-                              {liveLeadItem.email}
-                            </p>
-                          )
-                        ) : (
-                          <p className="customerdetails_text">-</p>
-                        )}
-                      </>
+                      <EllipsisTooltip
+                        text={
+                          liveLeadItem && liveLeadItem.email
+                            ? liveLeadItem.email
+                            : "-"
+                        }
+                        smallText={true}
+                      />
                     </Col>
                   </Row>
 
@@ -1068,36 +1050,14 @@ const AddLead = forwardRef(
                       </div>
                     </Col>
                     <Col span={12}>
-                      <>
-                        {liveLeadItem && liveLeadItem.location ? (
-                          liveLeadItem.location.length > 20 ? (
-                            <Tooltip
-                              color="#fff"
-                              placement="bottom"
-                              title={liveLeadItem.location}
-                              className="leadtable_comments_tooltip"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff", // Tooltip background
-                                  color: "#333", // Tooltip text color
-                                  fontWeight: 500,
-                                  fontSize: "13px",
-                                },
-                              }}
-                            >
-                              <p className="customerdetails_text">
-                                {liveLeadItem.location.slice(0, 19) + "..."}
-                              </p>
-                            </Tooltip>
-                          ) : (
-                            <p className="customerdetails_text">
-                              {liveLeadItem.location}
-                            </p>
-                          )
-                        ) : (
-                          <p className="customerdetails_text">-</p>
-                        )}
-                      </>
+                      <EllipsisTooltip
+                        text={
+                          liveLeadItem && liveLeadItem.location
+                            ? liveLeadItem.location
+                            : "-"
+                        }
+                        smallText={true}
+                      />
                     </Col>
                   </Row>
                 </Col>
@@ -1110,36 +1070,14 @@ const AddLead = forwardRef(
                       </div>
                     </Col>
                     <Col span={12}>
-                      <>
-                        {liveLeadItem && liveLeadItem.course ? (
-                          liveLeadItem.course.length > 20 ? (
-                            <Tooltip
-                              color="#fff"
-                              placement="bottom"
-                              title={liveLeadItem.course}
-                              className="leadtable_comments_tooltip"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff", // Tooltip background
-                                  color: "#333", // Tooltip text color
-                                  fontWeight: 500,
-                                  fontSize: "13px",
-                                },
-                              }}
-                            >
-                              <p className="customerdetails_text">
-                                {liveLeadItem.course.slice(0, 19) + "..."}
-                              </p>
-                            </Tooltip>
-                          ) : (
-                            <p className="customerdetails_text">
-                              {liveLeadItem.course}
-                            </p>
-                          )
-                        ) : (
-                          <p className="customerdetails_text">-</p>
-                        )}
-                      </>
+                      <EllipsisTooltip
+                        text={
+                          liveLeadItem && liveLeadItem.course
+                            ? liveLeadItem.course
+                            : "-"
+                        }
+                        smallText={true}
+                      />
                     </Col>
                   </Row>
 
@@ -1167,36 +1105,14 @@ const AddLead = forwardRef(
                       </div>
                     </Col>
                     <Col span={12}>
-                      <>
-                        {liveLeadItem && liveLeadItem.comments ? (
-                          liveLeadItem.comments.length > 20 ? (
-                            <Tooltip
-                              color="#fff"
-                              placement="bottom"
-                              title={liveLeadItem.comments}
-                              className="leadtable_comments_tooltip"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff", // Tooltip background
-                                  color: "#333", // Tooltip text color
-                                  fontWeight: 500,
-                                  fontSize: "13px",
-                                },
-                              }}
-                            >
-                              <p className="customerdetails_text">
-                                {liveLeadItem.comments.slice(0, 19) + "..."}
-                              </p>
-                            </Tooltip>
-                          ) : (
-                            <p className="customerdetails_text">
-                              {liveLeadItem.comments}
-                            </p>
-                          )
-                        ) : (
-                          <p className="customerdetails_text">-</p>
-                        )}
-                      </>
+                      <EllipsisTooltip
+                        text={
+                          liveLeadItem && liveLeadItem.comments
+                            ? liveLeadItem.comments
+                            : "-"
+                        }
+                        smallText={true}
+                      />
                     </Col>
                   </Row>
                 </Col>

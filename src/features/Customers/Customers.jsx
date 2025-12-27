@@ -75,6 +75,7 @@ import CustomerEmailTemplate from "./CustomerEmailTemplate";
 import ParticularCustomerDetails from "./ParticularCustomerDetails";
 import OthersHandling from "./OthersHandling";
 import ReAssignTrainer from "./ReAssignTrainer";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -176,55 +177,37 @@ export default function Customers() {
       title: "Lead Executive",
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
-      width: 160,
+      width: 150,
       render: (text, record) => {
-        return (
-          <div>
-            <p> {`${record.lead_assigned_to_id} - ${text}`}</p>
-          </div>
-        );
+        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
       title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
-      width: 120,
+      width: 100,
       render: (text, record) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
-    { title: "Candidate Name", key: "name", dataIndex: "name", width: 200 },
+    {
+      title: "Candidate Name",
+      key: "name",
+      dataIndex: "name",
+      width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 220,
+      width: 200,
       render: (text) => {
-        return (
-          <>
-            {text.length > 22 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 21) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text} />;
       },
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
@@ -233,6 +216,9 @@ export default function Customers() {
       key: "course_name",
       dataIndex: "course_name",
       width: 180,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Joined ",
@@ -266,12 +252,18 @@ export default function Customers() {
       key: "trainer_hr_name",
       dataIndex: "trainer_hr_name",
       width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Trainer",
       key: "trainer_name",
       dataIndex: "trainer_name",
       width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Trainer Commercial%",
@@ -1385,46 +1377,32 @@ export default function Customers() {
             case "lead_assigned_to_name":
               return {
                 ...col,
-                render: (text, record) => (
-                  <p>{`${record.lead_assigned_to_id} - ${text}`}</p>
-                ),
+                width: 150,
+                render: (text, record) => {
+                  const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+                  return <EllipsisTooltip text={lead_executive} />;
+                },
               };
             case "created_date":
               return {
                 ...col,
-                width: 120,
+                width: 100,
                 render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+              };
+            case "name":
+              return {
+                ...col,
+                width: 170,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "email":
               return {
                 ...col,
+                width: 200,
                 render: (text) => {
-                  return (
-                    <>
-                      {text.length > 22 ? (
-                        <Tooltip
-                          color="#fff"
-                          placement="bottom"
-                          title={text}
-                          className="leadtable_comments_tooltip"
-                          styles={{
-                            body: {
-                              backgroundColor: "#fff", // Tooltip background
-                              color: "#333", // Tooltip text color
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          <p style={{ cursor: "pointer" }}>
-                            {text.slice(0, 21) + "..."}
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p>{text}</p>
-                      )}
-                    </>
-                  );
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "phone":
@@ -1436,6 +1414,9 @@ export default function Customers() {
               return {
                 ...col,
                 width: 180,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "date_of_joining":
               return {
@@ -1467,16 +1448,16 @@ export default function Customers() {
               return {
                 ...col,
                 width: 170,
-                render: (text, record) => {
-                  return <p>{text ? text : "-"}</p>;
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "trainer_name":
               return {
                 ...col,
                 width: 170,
-                render: (text, record) => {
-                  return <p>{text ? text : "-"}</p>;
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
                 },
               };
             case "trainer_mobile":
@@ -3638,11 +3619,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3654,11 +3638,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3738,8 +3725,8 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     customerDetails && customerDetails.lead_assigned_to_id
                       ? customerDetails.lead_assigned_to_id
                       : "-"
@@ -3748,7 +3735,8 @@ export default function Customers() {
                       ? customerDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>
@@ -3761,11 +3749,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3829,11 +3820,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.branch_name
+                      ? customerDetails.branch_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -4476,11 +4470,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -4492,11 +4489,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -4541,8 +4541,8 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     customerDetails && customerDetails.lead_assigned_to_id
                       ? customerDetails.lead_assigned_to_id
                       : "-"
@@ -4551,7 +4551,8 @@ export default function Customers() {
                       ? customerDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>
@@ -4564,11 +4565,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -4632,11 +4636,14 @@ export default function Customers() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.branch_name
+                      ? customerDetails.branch_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 

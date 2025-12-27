@@ -61,6 +61,7 @@ import CommonDnd from "../Common/CommonDnd";
 import { FaRegCopy } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function Trainers() {
   const scrollRef = useRef();
@@ -170,36 +171,52 @@ export default function Trainers() {
       title: "HR",
       key: "hr_head",
       dataIndex: "hr_head",
-      width: 160,
+      width: 150,
       fixed: "left",
       render: (text, record) => {
-        return (
-          <div>
-            <p>{text ? `${record.created_by} - ${text}` : "-"}</p>
-          </div>
-        );
+        const lead_executive = `${
+          text ? `${record.created_by} - ${text}` : "-"
+        }`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
       title: "Trainer Id",
       key: "trainer_code",
       dataIndex: "trainer_code",
-      width: 140,
+      width: 90,
       fixed: "left",
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Trainer Name",
       key: "name",
       dataIndex: "name",
-      width: 190,
+      width: 150,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
-    { title: "Email", key: "email", dataIndex: "email", width: 220 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile", width: 140 },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 190,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    { title: "Mobile", key: "mobile", dataIndex: "mobile", width: 120 },
     {
       title: "Technology",
       key: "technology",
       dataIndex: "technology",
-      width: 220,
+      width: 170,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Overall Experience",
@@ -242,17 +259,25 @@ export default function Trainers() {
       title: "Skills",
       key: "skills",
       dataIndex: "skills",
-      width: 200,
+      width: 180,
       render: (text) => {
         const skillNames = text.map((item) => item.name).join(", ");
         return (
           <div style={{ display: "flex" }}>
-            <p>{skillNames}</p>
+            <EllipsisTooltip text={skillNames} />
           </div>
         );
       },
     },
-    { title: "Location", key: "location", dataIndex: "location", width: 120 },
+    {
+      title: "Location",
+      key: "location",
+      dataIndex: "location",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Form Status",
       key: "form_status",
@@ -550,18 +575,56 @@ export default function Trainers() {
             case "hr_head":
               return {
                 ...col,
+                width: 150,
+                fixed: "left",
                 render: (text, record) => {
-                  return (
-                    <div>
-                      <p>{text ? `${record.created_by} - ${text}` : "-"}</p>
-                    </div>
-                  );
+                  const lead_executive = `${
+                    text ? `${record.created_by} - ${text}` : "-"
+                  }`;
+                  return <EllipsisTooltip text={lead_executive} />;
                 },
               };
+            case "trainer_code": {
+              return {
+                ...col,
+                width: 90,
+                fixed: "left",
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            }
+            case "name": {
+              return {
+                ...col,
+                width: 150,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            }
+            case "email": {
+              return {
+                ...col,
+                width: 190,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            }
             case "mobile": {
               return {
                 ...col,
-                width: 140,
+                width: 120,
+              };
+            }
+            case "technology": {
+              return {
+                ...col,
+                width: 170,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             }
             case "overall_exp_year":
@@ -607,11 +670,12 @@ export default function Trainers() {
             case "skills":
               return {
                 ...col,
+                width: 180,
                 render: (text) => {
                   const skillNames = text.map((item) => item.name).join(", ");
                   return (
                     <div style={{ display: "flex" }}>
-                      <p>{skillNames}</p>
+                      <EllipsisTooltip text={skillNames} />
                     </div>
                   );
                 },
