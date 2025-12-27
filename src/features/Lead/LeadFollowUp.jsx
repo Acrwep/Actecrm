@@ -1658,11 +1658,14 @@ export default function LeadFollowUp({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.candidate_name
-                    ? leadDetails.candidate_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.candidate_name
+                      ? leadDetails.candidate_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1674,9 +1677,12 @@ export default function LeadFollowUp({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.email ? leadDetails.email : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.email ? leadDetails.email : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1753,11 +1759,14 @@ export default function LeadFollowUp({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.primary_course
-                    ? leadDetails.primary_course
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.primary_course
+                      ? leadDetails.primary_course
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1786,11 +1795,14 @@ export default function LeadFollowUp({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.branche_name
-                    ? leadDetails.branche_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.branche_name
+                      ? leadDetails.branche_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1831,8 +1843,8 @@ export default function LeadFollowUp({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     leadDetails && leadDetails.lead_assigned_to_id
                       ? leadDetails.lead_assigned_to_id
                       : "-"
@@ -1841,7 +1853,8 @@ export default function LeadFollowUp({
                       ? leadDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>

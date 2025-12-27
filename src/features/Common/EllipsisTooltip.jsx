@@ -24,7 +24,7 @@ const EllipsisTooltip = ({ text, smallText = false }) => {
         <Tooltip
           title={text}
           placement="bottom"
-          getPopupContainer={(triggerNode) => triggerNode.parentElement} // 🔑 FIX
+          getPopupContainer={() => document.body}
           color="#fff"
           styles={{
             body: {
