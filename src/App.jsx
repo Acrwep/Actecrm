@@ -2,7 +2,6 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import Pages from "./features/Pages/Pages";
-import { BiBell } from "react-icons/bi";
 import { Provider } from "react-redux";
 import { reduxStore } from "./features/Redux/Store";
 import { requestForToken, onMessageListener } from "./firebase";
@@ -60,21 +59,6 @@ function App() {
           "Notification permission is default. Call askPermission() on user action."
         );
       }
-
-      // Foreground notifications handler
-      onMessageListener()
-        .then((payload) => {
-          if (payload?.notification) {
-            // keep your UI-friendly notification rather than alert if possible
-            alert(
-              `${payload.notification.title}: ${payload.notification.body}`
-            );
-          }
-        })
-        .catch((err) => {
-          // onMessageListener might reject if messaging not initialized
-          console.warn("onMessageListener error:", err);
-        });
     };
 
     init();

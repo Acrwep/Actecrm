@@ -6,6 +6,7 @@ import Logo from "../../assets/logo.png";
 import CustomHeader from "./CustomHeader";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import Logo2 from "../../assets/a-logo.png";
+import { message } from "antd";
 
 const { Sider, Content, Header } = Layout;
 
@@ -31,6 +32,7 @@ import Settings from "../Settings/Settings";
 import PendingFeesCustomers from "../Customers/Pending Fees/PendingFeesCustomers";
 //reports
 import Reports from "../Reports/Reports";
+import { onMessageListener } from "../../firebase";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -107,6 +109,42 @@ export default function Pages() {
     }
   }, [location.pathname]);
 
+  //live lead forground notification handling
+
+  useEffect(() => {
+    const unsubscribe = onMessageListener((data) => {
+      console.log("onMessageListener", data);
+      if (!data) return;
+
+      message.open({
+        type: "info",
+        content: (
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              navigate("/lead-manager", {
+                state: "open live_leads",
+              });
+            }}
+          >
+            <b>{data.title || "Notification"}</b>
+            <div>{data.body}</div>
+          </div>
+        ),
+        duration: 3,
+        style: {
+          bottom: 24,
+          right: 24,
+        },
+      });
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  //live lead background notification handling
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       const handleSwMessage = (event) => {

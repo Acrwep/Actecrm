@@ -48,10 +48,9 @@ export const requestForToken = async () => {
 };
 
 // Listen for foreground messages
-export const onMessageListener = () =>
-  new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
-      console.log("Foreground message:", payload);
-      resolve(payload.data); // use .data
-    });
+export const onMessageListener = (callback) => {
+  return onMessage(messaging, (payload) => {
+    console.log("Foreground message:", payload);
+    callback(payload.data);
   });
+};
