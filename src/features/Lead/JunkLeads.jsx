@@ -83,7 +83,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 180,
+      width: 170,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },

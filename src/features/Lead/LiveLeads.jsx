@@ -285,12 +285,12 @@ export default function LiveLead({
       title: "Course",
       key: "course",
       dataIndex: "course",
-      width: 200,
+      width: 170,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
+    { title: "Mobile", key: "phone", dataIndex: "phone", width: 120 },
     {
       title: "Email",
       key: "email",
@@ -304,7 +304,7 @@ export default function LiveLead({
       title: "Location",
       key: "location",
       dataIndex: "location",
-      width: 160,
+      width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -722,7 +722,7 @@ export default function LiveLead({
             case "course":
               return {
                 ...col,
-                width: 200,
+                width: 170,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
@@ -730,7 +730,10 @@ export default function LiveLead({
             case "phone":
               return {
                 ...col,
-                width: 130,
+                width: 120,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             case "email":
               return {
@@ -743,7 +746,7 @@ export default function LiveLead({
             case "location":
               return {
                 ...col,
-                width: 160,
+                width: 140,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
