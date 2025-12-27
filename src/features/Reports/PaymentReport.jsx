@@ -12,6 +12,7 @@ import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PaymentDownloadTableAsCSV from "./DownloadPaymentReport";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function PaymentReport() {
   const mounted = useRef(false);
@@ -300,11 +301,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -315,11 +318,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -330,11 +335,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -346,11 +353,13 @@ export default function PaymentReport() {
       width: 110,
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -361,11 +370,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -376,11 +387,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -391,11 +404,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -404,13 +419,16 @@ export default function PaymentReport() {
       key: "hdfc_bank",
       dataIndex: "hdfc_bank",
       align: "right",
+      width: 90,
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -421,11 +439,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -437,11 +457,13 @@ export default function PaymentReport() {
       width: 110,
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },
@@ -452,11 +474,13 @@ export default function PaymentReport() {
       align: "right",
       render: (text, record) => {
         return (
-          <p>
-            {record.date == "Total"
-              ? `₹${Number(text).toLocaleString("en-IN")}`
-              : Number(text).toLocaleString("en-IN")}
-          </p>
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
         );
       },
     },

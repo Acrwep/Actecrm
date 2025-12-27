@@ -315,6 +315,9 @@ export default function LiveLead({
       dataIndex: "domain_origin",
       width: 90,
       hidden: permissions.includes("Show Origin in Live Leads") ? false : true,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
     {
       title: "Training Mode",
@@ -784,6 +787,9 @@ export default function LiveLead({
                 hidden: permissions.includes("Show Origin in Live Leads")
                   ? false
                   : true,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
               };
             }
             case "comments":
