@@ -512,6 +512,35 @@ export const customizeStartDateAndEndDate = (months) => {
   return [startDate, endDate];
 };
 
+export const getActiveTargetMonthRange = () => {
+  const today = dayjs();
+
+  const currentMonth = today.startOf("month");
+  const nextMonth = today.add(1, "month").startOf("month");
+
+  // After 26th select next month
+  const activeMonth = today.date() >= 26 ? nextMonth : currentMonth;
+
+  const month = activeMonth.format("MMMM - YYYY");
+
+  const [monthName, year] = month.split(" - ");
+  const selectedMonth = moment(`${monthName} ${year}`, "MMMM YYYY");
+
+  const startDate = selectedMonth
+    .clone()
+    .subtract(1, "month")
+    .date(26)
+    .format("YYYY-MM-DD");
+
+  const endDate = selectedMonth.clone().date(25).format("YYYY-MM-DD");
+
+  return {
+    month,
+    startDate,
+    endDate,
+  };
+};
+
 export const validateConvenienceFee = (payAmount, convenienceFees) => {
   let error = "";
 

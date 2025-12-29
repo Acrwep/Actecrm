@@ -13,6 +13,7 @@ import {
   addressValidator,
   confirmPasswordValidator,
   formatToBackendIST,
+  getActiveTargetMonthRange,
   nameValidator,
   passwordValidator,
   selectValidator,
@@ -276,6 +277,13 @@ export default function Users({
       },
     },
   ];
+
+  useEffect(() => {
+    const { month, startDate, endDate } = getActiveTargetMonthRange();
+    setAssignTargetMonth(month);
+    setAssignTargetMonthStartDate(startDate);
+    setAssignTargetMonthEndDate(endDate);
+  }, []);
 
   useEffect(() => {
     if (userSearchValue) {
@@ -684,12 +692,14 @@ export default function Users({
 
   const assignTargetReset = () => {
     setIsOpenAssignTargetModal(false);
-    setAssignTargetMonth(null);
     setAssignTargetMonthError("");
-    setAssignTargetMonthStartDate(null);
-    setAssignTargetMonthEndDate(null);
     setAssignTargetValue("");
     setAssignTargetValueError("");
+
+    const { month, startDate, endDate } = getActiveTargetMonthRange();
+    setAssignTargetMonth(month);
+    setAssignTargetMonthStartDate(startDate);
+    setAssignTargetMonthEndDate(endDate);
   };
 
   return (
@@ -1137,11 +1147,11 @@ export default function Users({
                   "MMMM YYYY"
                 );
 
-                // Start date: 25th of previous month
+                // Start date: 26th of previous month
                 const startDate = selectedMonth
                   .clone()
                   .subtract(1, "month")
-                  .date(25)
+                  .date(26)
                   .format("YYYY-MM-DD");
 
                 // End date: 25th of selected month

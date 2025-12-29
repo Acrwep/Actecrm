@@ -8,6 +8,7 @@ import { PiUsersThreeBold } from "react-icons/pi";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
+  getActiveTargetMonthRange,
   getCurrentandPreviousweekDate,
   getDatesFromRangeLabel,
   getRangeLabel,
@@ -51,6 +52,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import QualityChart from "./QualityChart";
 import PostSalePerformanceChart from "./PostSalePerformanceChart";
 import ReactApexChart from "react-apexcharts";
+import dayjs from "dayjs";
 
 export default function Dashboard() {
   const wrappertwoRef = useRef(null);
@@ -93,7 +95,7 @@ export default function Dashboard() {
   //User-Wise Sales Analysis
   const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
   const [userWiseStartDate, setUserWiseStartDate] = useState(
-    moment().subtract(1, "month").date(26).format("YYYY-MM-DD") // previous month 25
+    moment().subtract(1, "month").date(26).format("YYYY-MM-DD") // previous month 26
   );
 
   const [userWiseEndDate, setUserWiseEndDate] = useState(
@@ -158,6 +160,11 @@ export default function Dashboard() {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     if (childUsers.length > 0 && !mounted.current && permissions.length > 0) {
+      const { month, startDate, endDate } = getActiveTargetMonthRange();
+      setMonth(month);
+      setUserWiseStartDate(startDate);
+      setUserWiseEndDate(endDate);
+
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setScoreBoardSelectedDates(PreviousAndCurrentDate);
       setSaleDetailsSelectedDates(PreviousAndCurrentDate);
@@ -546,16 +553,11 @@ export default function Dashboard() {
     type
   ) => {
     if (!permissions.includes("User-Wise Lead Analysis")) {
-      const start_date = moment()
-        .subtract(1, "month")
-        .date(26)
-        .format("YYYY-MM-DD");
-
-      const end_date = moment().date(25).format("YYYY-MM-DD");
+      const { month, startDate, endDate } = getActiveTargetMonthRange();
       getUserWiseScoreBoardData(
         dashboard_dates,
-        start_date,
-        end_date,
+        startDate,
+        endDate,
         downliners,
         true,
         1
@@ -678,17 +680,12 @@ export default function Dashboard() {
     } finally {
       setTimeout(() => {
         setUserWiseLeadsLoader(false);
-        const start_date = moment()
-          .subtract(1, "month")
-          .date(26)
-          .format("YYYY-MM-DD");
-
-        const end_date = moment().date(25).format("YYYY-MM-DD");
+        const { month, startDate, endDate } = getActiveTargetMonthRange();
         if (call_api == true) {
           getUserWiseScoreBoardData(
             dashboard_dates,
-            start_date,
-            end_date,
+            startDate,
+            endDate,
             downliners,
             true,
             1
@@ -2383,7 +2380,7 @@ export default function Dashboard() {
                             "MMMM YYYY"
                           );
 
-                          // Start date: 25th of previous month
+                          // Start date: 26th of previous month
                           const startDate = selectedMonth
                             .clone()
                             .subtract(1, "month")

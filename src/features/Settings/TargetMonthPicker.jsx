@@ -29,7 +29,7 @@ export default function TargetMonthPicker({
       <DatePicker
         label={label}
         views={["month"]}
-        value={value ? dayjs(value) : null}
+        value={value ? dayjs(value) : activeMonth}
         onChange={(newValue) => {
           if (newValue) {
             const formatted = moment(newValue.toDate()).format("MMMM - YYYY");

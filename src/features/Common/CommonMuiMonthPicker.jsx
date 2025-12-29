@@ -26,7 +26,7 @@ export default function CommonMuiMonthPicker({
         onChange={(newValue) => {
           if (newValue) {
             const formatted = moment(newValue.toDate()).format("MMMM - YYYY");
-            onChange(formatted); // return August - 2025 format
+            onChange(formatted);
           } else {
             onChange(null);
           }
