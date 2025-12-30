@@ -18,6 +18,7 @@ import CommonInputField from "../Common/CommonInputField";
 import {
   addressValidator,
   calculateAmount,
+  formatAddress,
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
@@ -171,6 +172,13 @@ export default function Leads({
   const [customerBatchTimingId, setCustomerBatchTimingId] = useState(null);
   const [customerBatchTimingIdError, setCustomerBatchTimingIdError] =
     useState("");
+  const [currentLocation, setCurrentLocation] = useState("");
+  const [currentLocationError, setCurrentLocationError] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [customerAddressError, setCustomerAddressError] = useState("");
+  const [stateCode, setStateCode] = useState("");
+  const [stateCodeError, setStateCodeError] = useState("");
+  const [gstNumber, setGstNumber] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState("");
   const [serverRequired, setServerRequired] = useState(false);
@@ -841,8 +849,12 @@ export default function Leads({
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getAllLeadData(
         filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date,
-        filterValuesFromRedux.end_date,
+        filterValuesFromRedux.start_date
+          ? filterValuesFromRedux.start_date
+          : PreviousAndCurrentDate[0],
+        filterValuesFromRedux.end_date
+          ? filterValuesFromRedux.end_date
+          : PreviousAndCurrentDate[1],
         downliners_ids,
         filterValuesFromRedux.lead_source,
         filterValuesFromRedux.pageNumber,
@@ -1019,6 +1031,9 @@ export default function Leads({
     const paymentDateValidate = selectValidator(paymentDate);
     const placeOfPaymentValidate = selectValidator(placeOfPayment);
     const batchTimingValidate = selectValidator(customerBatchTimingId);
+    const currentLocationValidate = addressValidator(currentLocation);
+    const stateCodeValidate = selectValidator(stateCode);
+    const customerAddressValidate = addressValidator(customerAddress);
     const placementSupportValidate = selectValidator(placementSupport);
 
     console.log("eeeee", paidNow, amount);
@@ -1041,7 +1056,34 @@ export default function Leads({
     setPaymentScreenShotError(screenshotValidate);
     setDueDateError(dueDateValidate);
     setCustomerBatchTimingIdError(batchTimingValidate);
+    setCurrentLocationError(currentLocationValidate);
+    setStateCodeError(stateCodeValidate);
+    setCustomerAddressError(customerAddressValidate);
     setPlacementSupportError(placementSupportValidate);
+
+    if (
+      paymentTypeValidate ||
+      paidNowValidate ||
+      paymentDateValidate ||
+      placeOfPaymentValidate ||
+      screenshotValidate
+    ) {
+      setTimeout(() => {
+        const container = document.getElementById(
+          "leadmanager_paymentdetails_paymentinfo_heading"
+        );
+        container.scrollIntoView({ behavior: "smooth" });
+      }, 200);
+    }
+
+    if (taxTypeValidate) {
+      setTimeout(() => {
+        const container = document.getElementById(
+          "leadmanager_paymentdetails_heading"
+        );
+        container.scrollIntoView({ behavior: "smooth" });
+      }, 200);
+    }
 
     if (
       paymentTypeValidate ||
@@ -1052,6 +1094,9 @@ export default function Leads({
       screenshotValidate ||
       dueDateValidate ||
       batchTimingValidate ||
+      currentLocationValidate ||
+      stateCodeValidate ||
+      customerAddressValidate ||
       placementSupportValidate
     )
       return;
@@ -1096,6 +1141,10 @@ export default function Leads({
       enrolled_course: customerCourseId,
       batch_track_id: customerBatchTrackId,
       batch_timing_id: customerBatchTimingId,
+      place_of_supply: currentLocation,
+      address: customerAddress,
+      state_code: stateCode,
+      gst_number: gstNumber,
       placement_support: placementSupport,
       is_server_required: serverRequired,
       updated_by:
@@ -1247,6 +1296,13 @@ export default function Leads({
     setCustomerBatchTrackId(null);
     setCustomerBatchTimingId(null);
     setCustomerBatchTimingIdError("");
+    setCurrentLocation("");
+    setCurrentLocationError("");
+    setStateCode("");
+    setStateCodeError("");
+    setCustomerAddress("");
+    setCustomerAddressError("");
+    setGstNumber("");
     setPlacementSupport("");
     setPlacementSupportError("");
     setServerRequired(false);
@@ -2059,11 +2115,14 @@ export default function Leads({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.name
-                    ? clickedLeadItem.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    clickedLeadItem && clickedLeadItem.name
+                      ? clickedLeadItem.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -2075,11 +2134,14 @@ export default function Leads({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.email
-                    ? clickedLeadItem.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    clickedLeadItem && clickedLeadItem.email
+                      ? clickedLeadItem.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -2156,11 +2218,14 @@ export default function Leads({
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.primary_course
-                    ? clickedLeadItem.primary_course
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    clickedLeadItem && clickedLeadItem.primary_course
+                      ? clickedLeadItem.primary_course
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -2319,7 +2384,10 @@ export default function Leads({
           </>
         ) : (
           <>
-            <p className="leadmanager_paymentdetails_drawer_heading">
+            <p
+              className="leadmanager_paymentdetails_drawer_heading"
+              id="leadmanager_paymentdetails_heading"
+            >
               Payment Details
             </p>
             <Row
@@ -2365,7 +2433,10 @@ export default function Leads({
 
             <Divider className="leadmanger_paymentdrawer_divider" />
 
-            <p className="leadmanager_paymentdetails_drawer_heading">
+            <p
+              className="leadmanager_paymentdetails_drawer_heading"
+              id="leadmanager_paymentdetails_paymentinfo_heading"
+            >
               Payment Info
             </p>
 
@@ -2550,9 +2621,78 @@ export default function Leads({
 
             <Row
               gutter={16}
+              style={{ marginTop: "20px", marginBottom: "30px" }}
+              className="leadmanager_paymentdetails_drawer_rowdiv"
+            >
+              <Col span={8}>
+                <CommonInputField
+                  label="Customer Current State"
+                  required={true}
+                  onChange={(e) => {
+                    setCurrentLocation(e.target.value);
+                    if (paymentValidationTrigger) {
+                      setCurrentLocationError(addressValidator(e.target.value));
+                    }
+                  }}
+                  value={currentLocation}
+                  error={currentLocationError}
+                  errorFontSize="9px"
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="State Code"
+                  required={true}
+                  onChange={(e) => {
+                    const input = e.target.value;
+
+                    // Allow numbers, decimal point, or empty string
+                    if (!/^\d*\.?\d*$/.test(input)) return;
+
+                    setStateCode(input); // store as string for user input
+                    if (paymentValidationTrigger) {
+                      setStateCodeError(selectValidator(input));
+                    }
+                  }}
+                  value={stateCode}
+                  error={stateCodeError}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Address"
+                  required={true}
+                  multiline={true}
+                  // rows={1}
+                  onChange={(e) => {
+                    const formatted = e.target.value;
+                    setCustomerAddress(formatted);
+
+                    if (paymentValidationTrigger) {
+                      setCustomerAddressError(addressValidator(formatted));
+                    }
+                  }}
+                  value={customerAddress}
+                  error={customerAddressError}
+                />
+              </Col>
+            </Row>
+
+            <Row
+              gutter={16}
               style={{ marginTop: "20px", marginBottom: "50px" }}
               className="leadmanager_paymentdetails_drawer_rowdiv"
             >
+              <Col span={8}>
+                <CommonInputField
+                  label="GST No"
+                  required={false}
+                  onChange={(e) => {
+                    setGstNumber(e.target.value);
+                  }}
+                  value={gstNumber}
+                />{" "}
+              </Col>
               <Col span={8}>
                 <CommonSelectField
                   label="Placement Support"

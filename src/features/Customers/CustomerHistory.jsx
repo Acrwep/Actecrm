@@ -86,6 +86,26 @@ export default function CustomerHistory({ data = [], customerDetails }) {
         customerDetails && customerDetails.primary_fees
           ? customerDetails.primary_fees
           : "",
+      place_of_supply:
+        customerDetails && customerDetails.place_of_supply
+          ? customerDetails.place_of_supply
+          : "",
+      address:
+        customerDetails && customerDetails.address
+          ? customerDetails.address
+          : "",
+      state_code:
+        customerDetails && customerDetails.state_code
+          ? customerDetails.state_code
+          : "",
+      gst_number:
+        customerDetails && customerDetails.gst_number
+          ? customerDetails.gst_number
+          : "",
+      invoice_type:
+        customerDetails && customerDetails.invoice_type
+          ? customerDetails.invoice_type
+          : "",
     };
 
     try {

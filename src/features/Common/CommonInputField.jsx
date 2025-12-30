@@ -19,6 +19,8 @@ export default function CommonInputField({
   disabled,
   onInput,
   borderLeftNone,
+  rows,
+  multiline = false,
 }) {
   const handleChange = (e) => {
     let value = e.target.value.replace(/^\s+/, ""); // Removes leading spaces
@@ -28,7 +30,8 @@ export default function CommonInputField({
       label === "Trainer Email" ||
       label === "User Id" ||
       label === "Role Name" ||
-      label === "IFSC Code"
+      label === "IFSC Code" ||
+      label === "Address"
     ) {
       onChange({ target: { value } });
     } else {
@@ -45,7 +48,9 @@ export default function CommonInputField({
         className="common_inputfield"
         label={label}
         value={value}
+        rows={rows}
         onChange={handleChange}
+        multiline={multiline}
         size="small"
         error={error ? true : false}
         helperText={

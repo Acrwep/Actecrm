@@ -560,3 +560,28 @@ export const calculateThreePercentAmount = (payAmount) => {
   const threePercent = (payAmount * 3) / 100;
   return threePercent;
 };
+
+export const formatAddress = (value) => {
+  if (!value) return value;
+
+  return value
+    .split(",")
+    .map((part) =>
+      part
+        .split(" ")
+        .map((word) => {
+          if (!word) return "";
+
+          word = word.replace(
+            /(\d+)([a-zA-Z])/g,
+            (_, num, char) => num + char.toUpperCase()
+          );
+
+          if (/^\d+$/.test(word)) return word;
+
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
+        .join(" ")
+    )
+    .join(", ");
+};

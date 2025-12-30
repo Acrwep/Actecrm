@@ -377,8 +377,12 @@ export default function LeadFollowUp({
       console.log("filterValuesFromRedux", filterValuesFromRedux);
       getLeadFollowUpsData(
         filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date,
-        filterValuesFromRedux.end_date,
+        filterValuesFromRedux.start_date
+          ? filterValuesFromRedux.start_date
+          : PreviousAndCurrentDate[0],
+        filterValuesFromRedux.end_date
+          ? filterValuesFromRedux.end_date
+          : PreviousAndCurrentDate[1],
         false,
         downliners_ids,
         filterValuesFromRedux.pageNumber,

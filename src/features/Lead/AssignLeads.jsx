@@ -321,10 +321,15 @@ export default function AssignLeads({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getManualAssignLeadsData(
         filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date,
-        filterValuesFromRedux.end_date,
+        filterValuesFromRedux.start_date
+          ? filterValuesFromRedux.start_date
+          : PreviousAndCurrentDate[0],
+        filterValuesFromRedux.end_date
+          ? filterValuesFromRedux.end_date
+          : PreviousAndCurrentDate[1],
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit
       );

@@ -219,8 +219,12 @@ export default function JunkLeads({ setJunkLeadCount }) {
     // Initial Call
     getJunkLeadsData(
       filterValuesFromRedux.searchValue,
-      filterValuesFromRedux.start_date,
-      filterValuesFromRedux.end_date,
+      filterValuesFromRedux.start_date
+        ? filterValuesFromRedux.start_date
+        : PreviousAndCurrentDate[0],
+      filterValuesFromRedux.end_date
+        ? filterValuesFromRedux.end_date
+        : PreviousAndCurrentDate[1],
       filterValuesFromRedux.pageNumber,
       filterValuesFromRedux.pageLimit
     );

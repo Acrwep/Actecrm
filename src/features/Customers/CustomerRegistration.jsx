@@ -467,6 +467,22 @@ export default function CustomerRegistration() {
       area: getCustomerArea.name,
       signature_image: signatureBase64,
       profile_image: profilePicture,
+      place_of_supply:
+        customerFullDetails && customerFullDetails.place_of_supply
+          ? customerFullDetails.place_of_supply
+          : null,
+      address:
+        customerFullDetails && customerFullDetails.address
+          ? customerFullDetails.address
+          : null,
+      state_code:
+        customerFullDetails && customerFullDetails.state_code
+          ? customerFullDetails.state_code
+          : null,
+      gst_number:
+        customerFullDetails && customerFullDetails.gst_number
+          ? customerFullDetails.gst_number
+          : null,
       placement_support: placementSupport,
       is_server_required: server,
       is_customer_updated: 1,

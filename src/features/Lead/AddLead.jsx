@@ -1460,7 +1460,7 @@ const AddLead = forwardRef(
                 const value = e.target.value;
                 console.log("value", value);
                 setLeadStatus(value);
-                if (value == 4) {
+                if (value == 4 || value == 5) {
                   setNxtFollowupDate(null);
                   setNxtFollowupDateError("");
                   setExpectDateJoin(null);
@@ -1471,6 +1471,7 @@ const AddLead = forwardRef(
               }}
               value={leadStatus}
               error={leadStatusError}
+              disabled={updateLeadItem ? true : false}
             />
           </Col>
 

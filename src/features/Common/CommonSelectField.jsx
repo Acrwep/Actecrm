@@ -93,6 +93,7 @@ export default function CommonSelectField({
             })
           }
           disableClearable={disableClearable ?? true}
+          getOptionDisabled={(option) => option.is_active === false}
           noOptionsText={
             <span
               style={{

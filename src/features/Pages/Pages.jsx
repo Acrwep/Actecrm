@@ -61,54 +61,26 @@ export default function Pages() {
     };
   }, []);
 
+  // 🔐 Auth Guard
   useEffect(() => {
-    const AccessToken = localStorage.getItem("AccessToken");
-    const pathName = location.pathname.split("/")[1];
-    const fullPath = location.pathname;
+    const token = localStorage.getItem("AccessToken");
+    const path = location.pathname;
 
-    console.log("pathNameee", pathName);
+    const isPublicRoute =
+      path === "/login" ||
+      path.startsWith("/trainer-registration") ||
+      path.startsWith("/customer-registration") ||
+      path === "/success";
 
-    if (fullPath.startsWith("/trainer-registration")) {
-      console.log("Trainer Registration page detected");
-      // Extract ID (if exists)
-      const parts = fullPath.split("/");
-      const id = parts[2]; // /trainer-registration/:id
-      console.log("url iddd", id);
-      if (id) {
-        navigate(`/trainer-registration/${id}`, { replace: true });
-      }
-      return;
-    }
-
-    if (fullPath.startsWith("/customer-registration")) {
-      console.log("Customer Registration page detected");
-      // Extract ID (if exists)
-      const parts = fullPath.split("/");
-      const id = parts[2]; // /customer-registration/:id
-      console.log("url iddd", id);
-
-      if (id) {
-        navigate(`/customer-registration/${id}`, { replace: true });
-      }
-
-      return;
-    }
-
-    if (pathName === "success") {
-      setShowSidebar(false);
-      navigate("/success", { replace: true });
-      return;
-    }
-
-    if (AccessToken) {
-      setShowSidebar(true);
-      navigate(`/${pathName}`, { replace: true });
-    } else {
+    if (!token && !isPublicRoute) {
+      console.log("public routeee", isPublicRoute);
       setShowSidebar(false);
       navigate("/login", { replace: true });
+      return;
     }
-  }, [location.pathname]);
 
+    if (token) setShowSidebar(true);
+  }, [location.pathname]);
   //live lead forground notification handling
 
   useEffect(() => {
@@ -166,27 +138,21 @@ export default function Pages() {
 
   return (
     <div>
-      {location.pathname === "/login" ? (
+      {location.pathname === "/login" ||
+      location.pathname.startsWith("/trainer-registration") ||
+      location.pathname.startsWith("/customer-registration") ||
+      location.pathname === "/success" ? (
         <Routes>
-          <Route element={<Login />} path="/login" />
-        </Routes>
-      ) : location.pathname.includes("/trainer-registration") ? (
-        <Routes>
+          <Route path="/login" element={<Login />} />
           <Route
-            element={<TrainerRegistration />}
             path="/trainer-registration/:trainer_id"
+            element={<TrainerRegistration />}
           />
-        </Routes>
-      ) : location.pathname.includes("/customer-registration") ? (
-        <Routes>
           <Route
-            element={<CustomerRegistration />}
             path="/customer-registration/:customer_id"
+            element={<CustomerRegistration />}
           />
-        </Routes>
-      ) : location.pathname === "/success" ? (
-        <Routes>
-          <Route element={<Success />} path="/success" />
+          <Route path="/success" element={<Success />} />
         </Routes>
       ) : showSidebar ? (
         <Layout style={{ height: "100vh" }}>
