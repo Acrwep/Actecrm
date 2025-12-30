@@ -176,8 +176,6 @@ export default function Leads({
   const [currentLocationError, setCurrentLocationError] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerAddressError, setCustomerAddressError] = useState("");
-  const [stateCode, setStateCode] = useState("");
-  const [stateCodeError, setStateCodeError] = useState("");
   const [gstNumber, setGstNumber] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState("");
@@ -1032,7 +1030,6 @@ export default function Leads({
     const placeOfPaymentValidate = selectValidator(placeOfPayment);
     const batchTimingValidate = selectValidator(customerBatchTimingId);
     const currentLocationValidate = addressValidator(currentLocation);
-    const stateCodeValidate = selectValidator(stateCode);
     const customerAddressValidate = addressValidator(customerAddress);
     const placementSupportValidate = selectValidator(placementSupport);
 
@@ -1057,7 +1054,6 @@ export default function Leads({
     setDueDateError(dueDateValidate);
     setCustomerBatchTimingIdError(batchTimingValidate);
     setCurrentLocationError(currentLocationValidate);
-    setStateCodeError(stateCodeValidate);
     setCustomerAddressError(customerAddressValidate);
     setPlacementSupportError(placementSupportValidate);
 
@@ -1095,7 +1091,6 @@ export default function Leads({
       dueDateValidate ||
       batchTimingValidate ||
       currentLocationValidate ||
-      stateCodeValidate ||
       customerAddressValidate ||
       placementSupportValidate
     )
@@ -1143,7 +1138,7 @@ export default function Leads({
       batch_timing_id: customerBatchTimingId,
       place_of_supply: currentLocation,
       address: customerAddress,
-      state_code: stateCode,
+      state_code: "",
       gst_number: gstNumber,
       placement_support: placementSupport,
       is_server_required: serverRequired,
@@ -1298,8 +1293,6 @@ export default function Leads({
     setCustomerBatchTimingIdError("");
     setCurrentLocation("");
     setCurrentLocationError("");
-    setStateCode("");
-    setStateCodeError("");
     setCustomerAddress("");
     setCustomerAddressError("");
     setGstNumber("");
@@ -2641,25 +2634,6 @@ export default function Leads({
               </Col>
               <Col span={8}>
                 <CommonInputField
-                  label="State Code"
-                  required={true}
-                  onChange={(e) => {
-                    const input = e.target.value;
-
-                    // Allow numbers, decimal point, or empty string
-                    if (!/^\d*\.?\d*$/.test(input)) return;
-
-                    setStateCode(input); // store as string for user input
-                    if (paymentValidationTrigger) {
-                      setStateCodeError(selectValidator(input));
-                    }
-                  }}
-                  value={stateCode}
-                  error={stateCodeError}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonInputField
                   label="Address"
                   required={true}
                   multiline={true}
@@ -2676,6 +2650,17 @@ export default function Leads({
                   error={customerAddressError}
                 />
               </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="GST No"
+                  required={false}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    setGstNumber(value);
+                  }}
+                  value={gstNumber}
+                />{" "}
+              </Col>
             </Row>
 
             <Row
@@ -2683,16 +2668,6 @@ export default function Leads({
               style={{ marginTop: "20px", marginBottom: "50px" }}
               className="leadmanager_paymentdetails_drawer_rowdiv"
             >
-              <Col span={8}>
-                <CommonInputField
-                  label="GST No"
-                  required={false}
-                  onChange={(e) => {
-                    setGstNumber(e.target.value);
-                  }}
-                  value={gstNumber}
-                />{" "}
-              </Col>
               <Col span={8}>
                 <CommonSelectField
                   label="Placement Support"

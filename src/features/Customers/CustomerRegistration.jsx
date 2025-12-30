@@ -475,10 +475,7 @@ export default function CustomerRegistration() {
         customerFullDetails && customerFullDetails.address
           ? customerFullDetails.address
           : null,
-      state_code:
-        customerFullDetails && customerFullDetails.state_code
-          ? customerFullDetails.state_code
-          : null,
+      state_code: "",
       gst_number:
         customerFullDetails && customerFullDetails.gst_number
           ? customerFullDetails.gst_number

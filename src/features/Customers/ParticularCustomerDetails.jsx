@@ -1,5 +1,5 @@
-import React from "react";
-import { Row, Col } from "antd";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Upload, Modal } from "antd";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -15,15 +15,60 @@ export default function ParticularCustomerDetails({
   customerDetails,
   isCustomerPage,
 }) {
+  const [profilePictureArray, setProfilePictureArray] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+
+  useEffect(() => {
+    if (customerDetails.profile_image) {
+      setProfilePictureArray([
+        {
+          uid: "-1",
+          name: "profile.jpg",
+          status: "done",
+          url: customerDetails.profile_image, // Base64 string directly usable
+        },
+      ]);
+    } else {
+      setProfilePictureArray([]);
+    }
+  }, [customerDetails]);
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
+  };
+
   return (
     <div>
       <div className="customer_profileContainer">
         {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
         {customerDetails && customerDetails.profile_image ? (
-          <img
-            src={customerDetails.profile_image}
-            className="cutomer_profileimage"
-          />
+          <Upload
+            listType="picture-circle"
+            fileList={profilePictureArray}
+            onPreview={handlePreview}
+            onRemove={false}
+            showUploadList={{
+              showRemoveIcon: false,
+            }}
+            beforeUpload={() => false} // prevent auto upload
+            style={{ width: 90, height: 90 }} // reduce size
+            accept=".png,.jpg,.jpeg"
+          ></Upload>
         ) : (
           <FaRegUser size={50} color="#333" />
         )}
@@ -449,6 +494,15 @@ export default function ParticularCustomerDetails({
       ) : (
         ""
       )}
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
     </div>
   );
 }

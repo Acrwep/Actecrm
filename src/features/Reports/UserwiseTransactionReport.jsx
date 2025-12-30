@@ -64,23 +64,25 @@ export default function UserwiseTransactionReport() {
 
     return [
       {
-        title: "Date",
-        dataIndex: "date",
-        key: "date",
+        title: "User Name",
+        dataIndex: "user_name",
+        key: "user_name",
         fixed: "left",
-        render: (text) => (text === "total" ? "Total" : text),
+        render: (text) => {
+          return <p>{text === "total" ? "Total" : text}</p>;
+        },
       },
       ...Object.keys(firstRow)
-        .filter((key) => key !== "date" && key !== "key")
-        .map((name) => ({
-          title: name,
-          dataIndex: name,
-          key: name,
+        .filter((key) => key !== "user_name" && key !== "key")
+        .map((date) => ({
+          title: date == "total" ? "Total" : date,
+          dataIndex: date,
+          key: date,
           render: (value, record) => {
             const amount = Number(value || 0).toLocaleString("en-IN");
 
             // 🔥 Add ₹ only for TOTAL row
-            return record.date === "total" ? (
+            return record.user_name === "total" ? (
               <p style={{ fontWeight: 600 }}>{"₹" + amount}</p>
             ) : (
               <p>{amount}</p>
@@ -95,6 +97,7 @@ export default function UserwiseTransactionReport() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
+      user_ids: null,
     };
     try {
       const response = await userwiseTransactionReport(payload);
@@ -178,10 +181,8 @@ export default function UserwiseTransactionReport() {
               onClick={() => {
                 const formattedData = reportData.map((row) => ({
                   ...row,
-                  date:
-                    row.date === "total"
-                      ? "Total"
-                      : moment(row.date, "DD/MM/YYYY").format("YYYY-MM-DD"), // Excel-safe
+                  user_name:
+                    row.user_name === "total" ? "Total" : row.user_name, // Excel-safe
                 }));
                 DownloadTableAsCSV(
                   formattedData,
@@ -222,7 +223,7 @@ export default function UserwiseTransactionReport() {
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
           rowClassName={(record, index) =>
-            record.date === "total" ? "total-row-bg" : ""
+            record.user_name === "total" ? "total-row-bg" : ""
           }
         />
       </div>

@@ -100,6 +100,9 @@ const CustomerUpdate = forwardRef(
     const [batchTimingOptions, setBatchTimingOptions] = useState([]);
     const [batchTiming, setBatchTiming] = useState(null);
     const [batchTimingError, setBatchTimingError] = useState("");
+    const [currentLocation, setCurrentLocation] = useState("");
+    const [customerAddress, setCustomerAddress] = useState("");
+    const [gstNumber, setGstNumber] = useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
     const [placementSupportError, setPlacementSupportError] = useState(null);
     const [server, setServer] = useState("");
@@ -268,9 +271,12 @@ const CustomerUpdate = forwardRef(
           setAreaOptions([]);
           console.log("area error", error);
         }
-        setBatchTrack(customerDetails.batch_track_id);
-        setBatchTiming(customerDetails.batch_timing_id);
-        setBranchId(customerDetails.branch_id);
+        setBatchTrack(customerDetails?.batch_track_id ?? "");
+        setBatchTiming(customerDetails?.batch_timing_id ?? "");
+        setBranchId(customerDetails?.branch_id ?? "");
+        setCurrentLocation(customerDetails?.place_of_supply ?? "");
+        setCustomerAddress(customerDetails?.address ?? "");
+        setGstNumber(customerDetails?.gst_number ?? "");
         setPlacementSupport(customerDetails.placement_support);
         setServer(
           customerDetails.is_server_required === 1 ? "Need" : "Not Need"
@@ -556,6 +562,10 @@ const CustomerUpdate = forwardRef(
         area: getCustomerArea.name,
         signature_image: signatureBase64,
         profile_image: profilePictureBase64,
+        place_of_supply: currentLocation,
+        address: customerAddress,
+        state_code: "",
+        gst_number: gstNumber,
         placement_support: placementSupport,
         is_server_required: server == "Need" ? 1 : 0,
       };
@@ -675,6 +685,9 @@ const CustomerUpdate = forwardRef(
       setBatchTimingError("");
       setBranchId(null);
       setBranchIdError("");
+      setCurrentLocation("");
+      setCustomerAddress("");
+      setGstNumber("");
       setPlacementSupport("");
       setPlacementSupportError("");
       setServer("");
@@ -884,6 +897,47 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={areaId}
                   error={areaIdError}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Current State"
+                  required={true}
+                  onChange={(e) => {
+                    setCurrentLocation(e.target.value);
+                  }}
+                  value={currentLocation}
+                  error={""}
+                  errorFontSize="9px"
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonInputField
+                  label="GST No"
+                  required={false}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    setGstNumber(value);
+                  }}
+                  value={gstNumber}
+                  error={""}
+                />
+              </Col>
+            </Row>
+
+            <Row gutter={12} style={{ marginTop: "30px" }}>
+              <Col xs={24} sm={24} md={24} lg={14}>
+                <CommonInputField
+                  label="Address"
+                  required={true}
+                  multiline={true}
+                  // rows={1}
+                  onChange={(e) => {
+                    const formatted = e.target.value;
+                    setCustomerAddress(formatted);
+                  }}
+                  value={customerAddress}
+                  error={""}
                 />
               </Col>
             </Row>

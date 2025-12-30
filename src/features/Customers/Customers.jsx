@@ -11,6 +11,7 @@ import {
   Divider,
   Checkbox,
   Modal,
+  Upload,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -116,6 +117,11 @@ export default function Customers() {
   const [status, setStatus] = useState("");
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
+  //profile image usestates
+  const [profilePictureArray, setProfilePictureArray] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+
   //form usesates
   const [isOpenFormModal, setIsOpenFormModal] = useState(false);
   //awaiting finance
@@ -2562,6 +2568,24 @@ export default function Customers() {
     }
   };
 
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
+  };
+
   const getHistoryStatusColor = (status) => {
     if (
       [
@@ -3582,10 +3606,25 @@ export default function Customers() {
       >
         <div className="customer_statusupdate_drawer_profileContainer">
           {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
+            <Upload
+              listType="picture-circle"
+              fileList={[
+                {
+                  uid: "-1",
+                  name: "profile.jpg",
+                  status: "done",
+                  url: customerDetails.profile_image, // Base64 string directly usable
+                },
+              ]}
+              onPreview={handlePreview}
+              onRemove={false}
+              showUploadList={{
+                showRemoveIcon: false,
+              }}
+              beforeUpload={() => false} // prevent auto upload
+              style={{ width: 90, height: 90 }} // reduce size
+              accept=".png,.jpg,.jpeg"
+            ></Upload>
           ) : (
             <FaRegUser size={50} color="#333" />
           )}
@@ -4677,6 +4716,16 @@ export default function Customers() {
           )}
         </div>
       </Drawer>
+
+      {/* profile image modal */}
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
 
       {/* form modal */}
       <Modal
