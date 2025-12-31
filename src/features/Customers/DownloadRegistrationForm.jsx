@@ -547,7 +547,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
 
      <li><span style="font-weight: bold;">Payments & Initiation:</span> Once payment is made, the training process begins within 24–48 hours. Part-payment candidates must clear pending fees within 15 days of course start.</li>
 
-     <li><span style="font-weight: bold;">Strict Refund Policy:</span>
+     <li><span style="font-weight: bold;">Refund Policy:</span>
      <ul style="list-style-type: disc;">
   <li style="margin-top: 6px;">Refund requests must be raised within 7 days of purchase/start of batch.</li>
   <li>Refund is not applicable once trainer allocation or classes have started.</li>

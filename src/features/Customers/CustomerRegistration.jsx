@@ -1404,7 +1404,7 @@ export default function CustomerRegistration() {
             </li>
 
             <li>
-              <span style={{ fontWeight: 600 }}>Strict Refund Policy:</span>
+              <span style={{ fontWeight: 600 }}>Refund Policy:</span>
               <ul style={{ listStyleType: "disc" }}>
                 <li style={{ marginTop: "8px" }}>
                   Refund requests must be raised within 7 days of purchase/start

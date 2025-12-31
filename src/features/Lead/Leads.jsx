@@ -43,6 +43,7 @@ import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
+import { MdAutorenew } from "react-icons/md";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State } from "country-state-city";
 import { IoFilter } from "react-icons/io5";
@@ -219,6 +220,24 @@ export default function Leads({
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
+  //re entry lead
+  const [isReEntry, setIsReEntry] = useState(false);
+
+  const checkIsAfter45Days = (created_date) => {
+    // Convert to JS Date (replace space with T for ISO format)
+    const createdDateObj = new Date(created_date.replace(" ", "T"));
+
+    const now = new Date();
+
+    // Add 45 days to created date
+    const expiryDate = new Date(createdDateObj);
+    expiryDate.setDate(expiryDate.getDate() + 45);
+
+    // Check condition
+    const isAfter45Days = now > expiryDate;
+
+    return isAfter45Days;
+  };
 
   const nonChangeColumns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
@@ -399,81 +418,94 @@ export default function Leads({
       dataIndex: "action",
       fixed: "right",
       width: 120,
-      render: (text, record) => (
-        <div className="trainers_actionbuttonContainer">
-          {/* {permissions.includes("Add Quality Comment") && (
-            <Tooltip placement="bottom" title="Add Comments">
-              <img
-                src={QualityIcon}
-                className="leadmanager_qualityicon"
-                onClick={() => {
-                  setIsQualityCommentSection(true);
-                  setIsOpenPaymentDrawer(true);
-                  setClickedLeadItem(record);
-                }}
-              />
-            </Tooltip>
-          )} */}
-          {permissions.includes("Edit Lead Button") &&
-          isShowEdit &&
-          record.is_customer_reg === 0 ? (
-            <AiOutlineEdit
-              size={20}
-              className="trainers_action_icons"
-              // onClick={() => handleEdit(record)}
-              onClick={() => {
-                setUpdateLeadItem(record);
-                setLeadId(record.id);
-                setIsOpenAddDrawer(true);
-              }}
-            />
-          ) : (
-            ""
-          )}
+      render: (text, record) => {
+        const isAfter45Days = checkIsAfter45Days(record.created_date);
+        return (
+          <div className="trainers_actionbuttonContainer">
+            {record.is_customer_reg === 1 ? (
+              <Tooltip placement="bottom" title="Already a Customer">
+                <FaRegAddressCard
+                  size={19}
+                  color="#2ed573"
+                  className="trainers_action_icons"
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip placement="bottom" title="Make as customer">
+                <FaRegAddressCard
+                  size={19}
+                  color="#d32f2f"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    if (permissions.includes("Edit Lead Button")) {
+                      setIsOpenPaymentDrawer(true);
+                      setSubTotal(parseFloat(record.primary_fees));
+                      setAmount(parseFloat(record.primary_fees));
+                      setBalanceAmount(parseFloat(record.primary_fees));
+                      setCustomerCourseId(record.primary_course_id);
+                      setCustomerBatchTrackId(record.batch_track_id);
+                      setClickedLeadItem(record);
+                      setTimeout(() => {
+                        const drawerBody = document.querySelector(
+                          "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                        );
+                        if (drawerBody) {
+                          drawerBody.scrollTo({
+                            top: 0,
+                            behavior: "smooth",
+                          });
+                        }
+                      }, 300);
+                    } else {
+                      CommonMessage("error", "Access Denied");
+                    }
+                  }}
+                />
+              </Tooltip>
+            )}
 
-          {record.is_customer_reg === 1 ? (
-            <Tooltip placement="bottom" title="Already a Customer">
-              <FaRegAddressCard
-                size={19}
-                color="#2ed573"
+            {permissions.includes("Edit Lead Button") &&
+            isShowEdit &&
+            record.is_customer_reg === 0 ? (
+              <AiOutlineEdit
+                size={20}
                 className="trainers_action_icons"
-              />
-            </Tooltip>
-          ) : (
-            <Tooltip placement="bottom" title="Make as customer">
-              <FaRegAddressCard
-                size={19}
-                color="#d32f2f"
-                className="trainers_action_icons"
+                // onClick={() => handleEdit(record)}
                 onClick={() => {
-                  if (permissions.includes("Edit Lead Button")) {
-                    setIsOpenPaymentDrawer(true);
-                    setSubTotal(parseFloat(record.primary_fees));
-                    setAmount(parseFloat(record.primary_fees));
-                    setBalanceAmount(parseFloat(record.primary_fees));
-                    setCustomerCourseId(record.primary_course_id);
-                    setCustomerBatchTrackId(record.batch_track_id);
-                    setClickedLeadItem(record);
-                    setTimeout(() => {
-                      const drawerBody = document.querySelector(
-                        "#leadmanager_paymentdetails_drawer .ant-drawer-body"
-                      );
-                      if (drawerBody) {
-                        drawerBody.scrollTo({
-                          top: 0,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 300);
-                  } else {
-                    CommonMessage("error", "Access Denied");
-                  }
+                  setUpdateLeadItem(record);
+                  setLeadId(record.id);
+                  setIsOpenAddDrawer(true);
                 }}
               />
-            </Tooltip>
-          )}
-        </div>
-      ),
+            ) : (
+              ""
+            )}
+
+            {record.is_customer_reg == 0 &&
+            isAfter45Days == true &&
+            permissions.includes("Lead Re-Entry") ? (
+              <Tooltip
+                placement="bottom"
+                title="This lead is older than 45 days. Would you like to create it again?"
+              >
+                <MdAutorenew
+                  size={20}
+                  color="#5b69ca"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsReEntry(true);
+                    setUpdateLeadItem(record);
+                    setLeadId(record.id);
+                    setIsOpenAddDrawer(true);
+                  }}
+                />
+              </Tooltip>
+            ) : (
+              ""
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -695,98 +727,96 @@ export default function Leads({
             case "action":
               return {
                 ...col,
-                render: (text, record) => (
-                  <div className="trainers_actionbuttonContainer">
-                    {/* {permissions.includes("Add Quality Comment") && (
-                      <Tooltip placement="bottom" title="Add Comments">
-                        <img
-                          src={QualityIcon}
-                          className="leadmanager_qualityicon"
-                          onClick={() => {
-                            setIsQualityCommentSection(true);
-                            setIsOpenPaymentDrawer(true);
-                            setClickedLeadItem(record);
-                            if (record.quality_history.length >= 1) {
-                              const item =
-                                record.quality_history[
-                                  record.quality_history.length - 1
-                                ];
-                              if (item.comments) {
-                                setIsQualityCommentUpdate(true);
-                              } else {
-                                setIsQualityCommentUpdate(false);
-                              }
-                              setQualityComments(item.comments);
-                              setQualityStatus(item.status);
-                              setCnaDate(item.cna_date);
-                            } else {
-                              setIsQualityCommentUpdate(false);
-                            }
-                          }}
-                        />
-                      </Tooltip>
-                    )} */}
-
-                    {permissions.includes("Edit Lead Button") &&
-                    isShowEdit &&
-                    record.is_customer_reg === 0 ? (
-                      <AiOutlineEdit
-                        size={20}
-                        className="trainers_action_icons"
-                        // onClick={() => handleEdit(record)}
-                        onClick={() => {
-                          setUpdateLeadItem(record);
-                          setLeadId(record.id);
-                          setIsOpenAddDrawer(true);
-                        }}
-                      />
-                    ) : (
-                      ""
-                    )}
-
-                    {record.is_customer_reg === 1 ? (
-                      <Tooltip placement="bottom" title="Already a Customer">
-                        <FaRegAddressCard
-                          size={19}
-                          color="#2ed573"
-                          className="trainers_action_icons"
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip placement="bottom" title="Make as customer">
-                        <FaRegAddressCard
-                          size={19}
-                          color="#d32f2f"
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            if (permissions.includes("Edit Lead Button")) {
-                              setIsOpenPaymentDrawer(true);
-                              setSubTotal(parseFloat(record.primary_fees));
-                              setAmount(parseFloat(record.primary_fees));
-                              setBalanceAmount(parseFloat(record.primary_fees));
-                              setCustomerCourseId(record.primary_course_id);
-                              setCustomerBatchTrackId(record.batch_track_id);
-                              setClickedLeadItem(record);
-                              setTimeout(() => {
-                                const drawerBody = document.querySelector(
-                                  "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                render: (text, record) => {
+                  const isAfter45Days = checkIsAfter45Days(record.created_date);
+                  return (
+                    <div className="trainers_actionbuttonContainer">
+                      {record.is_customer_reg === 1 ? (
+                        <Tooltip placement="bottom" title="Already a Customer">
+                          <FaRegAddressCard
+                            size={19}
+                            color="#2ed573"
+                            className="trainers_action_icons"
+                          />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip placement="bottom" title="Make as customer">
+                          <FaRegAddressCard
+                            size={19}
+                            color="#d32f2f"
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              if (permissions.includes("Edit Lead Button")) {
+                                setIsOpenPaymentDrawer(true);
+                                setSubTotal(parseFloat(record.primary_fees));
+                                setAmount(parseFloat(record.primary_fees));
+                                setBalanceAmount(
+                                  parseFloat(record.primary_fees)
                                 );
-                                if (drawerBody) {
-                                  drawerBody.scrollTo({
-                                    top: 0,
-                                    behavior: "smooth",
-                                  });
-                                }
-                              }, 300);
-                            } else {
-                              CommonMessage("error", "Access Denied");
-                            }
+                                setCustomerCourseId(record.primary_course_id);
+                                setCustomerBatchTrackId(record.batch_track_id);
+                                setClickedLeadItem(record);
+                                setTimeout(() => {
+                                  const drawerBody = document.querySelector(
+                                    "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                                  );
+                                  if (drawerBody) {
+                                    drawerBody.scrollTo({
+                                      top: 0,
+                                      behavior: "smooth",
+                                    });
+                                  }
+                                }, 300);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+
+                      {permissions.includes("Edit Lead Button") &&
+                      isShowEdit &&
+                      record.is_customer_reg === 0 ? (
+                        <AiOutlineEdit
+                          size={20}
+                          className="trainers_action_icons"
+                          // onClick={() => handleEdit(record)}
+                          onClick={() => {
+                            setUpdateLeadItem(record);
+                            setLeadId(record.id);
+                            setIsOpenAddDrawer(true);
                           }}
                         />
-                      </Tooltip>
-                    )}
-                  </div>
-                ),
+                      ) : (
+                        ""
+                      )}
+
+                      {record.is_customer_reg === 0 &&
+                      isAfter45Days &&
+                      permissions.includes("Lead Re-Entry") ? (
+                        <Tooltip
+                          placement="bottom"
+                          title="This lead is older than 45 days. Would you like to create it again?"
+                        >
+                          <MdAutorenew
+                            size={20}
+                            color="#5b69ca"
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsReEntry(true);
+                              setUpdateLeadItem(record);
+                              setLeadId(record.id);
+                              setIsOpenAddDrawer(true);
+                            }}
+                          />
+                        </Tooltip>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  );
+                },
               };
             case "next_follow_up_date":
             case "expected_join_date":
@@ -893,17 +923,23 @@ export default function Leads({
     try {
       const response = await getLeads(payload);
       console.log("lead response", response);
-      const pagination = response?.data?.data?.pagination;
+      const paginations = response?.data?.data?.pagination;
 
       setLeadData(response?.data?.data?.data || []);
-      setLeadCount(pagination.total || 0);
+      setLeadCount(paginations.total || 0);
 
       setPagination({
-        page: pagination.page,
-        limit: pagination.limit,
-        total: pagination.total,
-        totalPages: pagination.totalPages,
+        page: paginations.page,
+        limit: paginations.limit,
+        total: paginations.total,
+        totalPages: paginations.totalPages,
       });
+      dispatch(
+        storeLeadFilterValues({
+          pageNumber: paginations.page,
+          pageLimit: paginations.limit,
+        })
+      );
       setLeadCountLoading(false);
     } catch (error) {
       setLeadData([]);
@@ -1932,6 +1968,7 @@ export default function Leads({
         onClose={() => {
           setIsOpenAddDrawer(false);
           setUpdateLeadItem(null);
+          setIsReEntry(false);
           setLeadId(null);
         }}
         width="52%"
@@ -1945,11 +1982,14 @@ export default function Leads({
           regionOptions={regionOptions}
           leadId={leadId}
           updateLeadItem={updateLeadItem}
+          isReEntry={isReEntry}
+          subUsers={subUsers}
           setButtonLoading={setButtonLoading}
           setSaveOnlyLoading={setSaveOnlyLoading}
           setIsOpenAddDrawer={setIsOpenAddDrawer}
           callgetLeadsApi={() => {
             setUpdateLeadItem(null);
+            setIsReEntry(false);
             getAllLeadData(
               searchValue,
               selectedDates[0],
@@ -2007,7 +2047,7 @@ export default function Leads({
                   addLeaduseRef.current.handleSubmit("Save And Add New")
                 }
               >
-                {leadId ? "Update" : "Save And Add New"}
+                {isReEntry ? "Add" : leadId ? "Update" : "Save And Add New"}
               </button>
             )}
           </div>

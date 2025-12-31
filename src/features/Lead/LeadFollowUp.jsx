@@ -64,6 +64,7 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
 import { storeFollowUpFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 
 const { TextArea } = Input;
 
@@ -175,7 +176,6 @@ export default function LeadFollowUp({
           <div
             className="leadfollowup_tabledateContainer"
             onClick={() => {
-              // setIsOpenCommentModal(true);
               if (!permissions.includes("Update Lead Followup")) {
                 CommonMessage("error", "Access Denied");
                 return;
@@ -552,7 +552,6 @@ export default function LeadFollowUp({
                     <div
                       className="leadfollowup_tabledateContainer"
                       onClick={() => {
-                        // setIsOpenCommentModal(true);
                         if (!permissions.includes("Update Lead Followup")) {
                           CommonMessage("error", "Access Denied");
                           return;
@@ -939,7 +938,6 @@ export default function LeadFollowUp({
 
   const formReset = (dontCloseAddDrawer) => {
     setIsOpenFilterDrawer(false);
-    setIsOpenCommentModal(false);
     setButtonLoading(false);
     setIsOpenFollowUpDrawer(false);
     setActionId(null);
@@ -1968,7 +1966,7 @@ export default function LeadFollowUp({
 
             {actionId == 1 || actionId == null ? (
               <Col span={12}>
-                <CommonMuiDatePicker
+                <CommonNxtFollowupDatePicker
                   label="Next Followup Date"
                   onChange={(value) => {
                     setNxtFollowupDate(value);
@@ -1977,7 +1975,7 @@ export default function LeadFollowUp({
                   value={nxtFollowupDate}
                   error={nxtFollowupDateError}
                   disablePreviousDates={true}
-                  disabled={true}
+                  // disabled={true}
                 />
               </Col>
             ) : (

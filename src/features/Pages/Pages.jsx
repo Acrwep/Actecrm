@@ -88,27 +88,27 @@ export default function Pages() {
       console.log("onMessageListener", data);
       if (!data) return;
 
-      message.open({
-        type: "info",
-        content: (
-          <div
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              navigate("/lead-manager", {
-                state: "open live_leads",
-              });
-            }}
-          >
-            <b>{data.title || "Notification"}</b>
-            <div>{data.body}</div>
-          </div>
-        ),
-        duration: 3,
-        style: {
-          bottom: 24,
-          right: 24,
-        },
-      });
+      // message.open({
+      //   type: "info",
+      //   content: (
+      //     <div
+      //       style={{ cursor: "pointer" }}
+      //       onClick={() => {
+      //         navigate("/lead-manager", {
+      //           state: "open live_leads",
+      //         });
+      //       }}
+      //     >
+      //       <b>{data.title || "Notification"}</b>
+      //       <div>{data.body}</div>
+      //     </div>
+      //   ),
+      //   duration: 5,
+      //   style: {
+      //     bottom: 24,
+      //     right: 24,
+      //   },
+      // });
     });
 
     return () => {

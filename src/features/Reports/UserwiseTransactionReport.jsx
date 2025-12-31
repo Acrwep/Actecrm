@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
   getAllDownlineUsers,
+  getUsers,
   transactionReport,
   userwiseLeadsAnalysisReports,
   userwiseSalesAnalysisReports,
@@ -32,6 +33,8 @@ export default function UserwiseTransactionReport() {
   const [reportData, setReportData] = useState([]);
   const [totalCounts, setTotalCounts] = useState(null);
   const [loginUserId, setLoginUserId] = useState("");
+  const [saleUsersData, setSaleUsersData] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   //pagination
   const [pagination, setPagination] = useState({
@@ -50,12 +53,36 @@ export default function UserwiseTransactionReport() {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
-      getTransactionReportData(
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1]
-      );
+      getAllUsersData();
     }
   }, [childUsers]);
+
+  const getAllUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      const users_data = response?.data?.data?.data || [];
+      const activeSaleUsers = users_data.filter(
+        (user) =>
+          user.is_active === 1 &&
+          user.roles?.some((role) => role.role_name === "Sale")
+      );
+      setSaleUsersData(activeSaleUsers);
+    } catch (error) {
+      setSaleUsersData([]);
+      console.log(error);
+    } finally {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getTransactionReportData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null
+      );
+    }
+  };
 
   const getColumns = (data) => {
     if (!data || !data.length) return [];
@@ -92,12 +119,12 @@ export default function UserwiseTransactionReport() {
     ];
   };
 
-  const getTransactionReportData = async (startDate, endDate) => {
+  const getTransactionReportData = async (startDate, endDate, user_id) => {
     setLoading(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: null,
+      user_ids: user_id ? [user_id] : null,
     };
     try {
       const response = await userwiseTransactionReport(payload);
@@ -130,6 +157,12 @@ export default function UserwiseTransactionReport() {
     });
   };
 
+  const handleSelectUser = (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    getTransactionReportData(selectedDates[0], selectedDates[1], value);
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -139,7 +172,8 @@ export default function UserwiseTransactionReport() {
     });
     getTransactionReportData(
       PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[0]
+      PreviousAndCurrentDate[1],
+      null
     );
   };
 
@@ -148,6 +182,18 @@ export default function UserwiseTransactionReport() {
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
+            <Col span={7}>
+              <CommonSelectField
+                height="35px"
+                label="Select User"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={saleUsersData}
+                onChange={handleSelectUser}
+                value={selectedUserId}
+                disableClearable={false}
+              />
+            </Col>
             <Col span={16}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
@@ -157,7 +203,7 @@ export default function UserwiseTransactionReport() {
                     page: 1,
                     limit: 100,
                   });
-                  getTransactionReportData(dates[0], dates[1]);
+                  getTransactionReportData(dates[0], dates[1], selectedUserId);
                 }}
               />
             </Col>

@@ -40,6 +40,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { storeAreaList, storeCourseList } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 
 const AddLead = forwardRef(
   (
@@ -47,7 +48,9 @@ const AddLead = forwardRef(
       leadTypeOptions,
       regionOptions,
       updateLeadItem,
+      isReEntry = false,
       liveLeadItem,
+      subUsers,
       setIsOpenAddDrawer,
       setButtonLoading,
       setSaveOnlyLoading,
@@ -164,6 +167,9 @@ const AddLead = forwardRef(
     const [isOpenAddAreaModal, setIsOpenAddAreaModal] = useState(false);
     const [areaName, setAreaName] = useState("");
     const [areaNameError, setAreaNameError] = useState("");
+    //assign lead
+    const [assignLeadId, setAssignLeadId] = useState("");
+    const [assignLeadIdError, setAssignLeadIdError] = useState("");
 
     useEffect(() => {
       const countries = Country.getAllCountries();
@@ -270,7 +276,14 @@ const AddLead = forwardRef(
         setSecondaryFees(updateLeadItem.secondary_fees);
         setLeadType(updateLeadItem.lead_type_id);
         setLeadStatus(updateLeadItem.lead_status_id);
-        setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+        if (isReEntry) {
+          setAssignLeadId(updateLeadItem.lead_assigned_to_id);
+          setNxtFollowupDate(null);
+          setNxtFollowupDateError("");
+        } else {
+          setAssignLeadId("");
+          setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+        }
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
         getBranchesData(updateLeadItem.region_id);
@@ -750,7 +763,7 @@ const AddLead = forwardRef(
 
       const payload = {
         ...(updateLeadItem && { lead_id: updateLeadItem.id }),
-        user_id: convertAsJson?.user_id,
+        user_id: isReEntry ? assignLeadId : convertAsJson?.user_id,
         name: name,
         phone_code: mobileCountryCode,
         phone: mobile,
@@ -777,13 +790,17 @@ const AddLead = forwardRef(
         branch_id: branch,
         batch_track_id: batchTrack,
         comments: comments,
+        ...(isReEntry && isReEntry == true
+          ? { is_reentry: true }
+          : { is_reentry: false }),
         created_date: formatToBackendIST(today),
         is_manager: permissions.includes("Add Lead With Existing Mobile Number")
           ? true
           : false,
       };
 
-      if (updateLeadItem) {
+      console.log("add leadd payload", payload);
+      if (updateLeadItem && isReEntry == false) {
         try {
           await updateLead(payload);
           CommonMessage("success", "Lead updated");
@@ -810,7 +827,7 @@ const AddLead = forwardRef(
           await createLead(payload);
           CommonMessage("success", "Lead created");
           setTimeout(() => {
-            if (saveType === "Save Only") {
+            if (saveType === "Save Only" || isReEntry == true) {
               formReset();
             } else {
               formReset(true);
@@ -965,6 +982,8 @@ const AddLead = forwardRef(
       setLeadStatusError("");
       setNxtFollowupDate(null);
       setNxtFollowupDateError("");
+      setAssignLeadId("");
+      setAssignLeadIdError("");
       setExpectDateJoin(null);
       setRegionId(null);
       setRegionError("");
@@ -1471,7 +1490,7 @@ const AddLead = forwardRef(
               }}
               value={leadStatus}
               error={leadStatusError}
-              disabled={updateLeadItem ? true : false}
+              disabled={updateLeadItem && isReEntry == false ? true : false}
             />
           </Col>
 
@@ -1480,7 +1499,7 @@ const AddLead = forwardRef(
           ) : (
             <>
               <Col span={8}>
-                <CommonMuiDatePicker
+                <CommonNxtFollowupDatePicker
                   label="Next Follow-Up Date"
                   required={true}
                   onChange={(value) => {
@@ -1493,7 +1512,7 @@ const AddLead = forwardRef(
                   value={nxtFollowupDate}
                   disablePreviousDates={true}
                   error={nxtFollowupDateError}
-                  disabled={updateLeadItem ? true : false}
+                  disabled={updateLeadItem && isReEntry == false ? true : false}
                 />
               </Col>
               <Col span={8}>
@@ -1513,7 +1532,13 @@ const AddLead = forwardRef(
           )}
         </Row>
 
-        <Row gutter={16} style={{ marginTop: "40px", marginBottom: "30px" }}>
+        <Row
+          gutter={16}
+          style={{
+            marginTop: "40px",
+            marginBottom: "30px",
+          }}
+        >
           <Col span={24}>
             <div style={{ marginTop: "-20px" }}>
               <CommonTextArea
@@ -1531,6 +1556,29 @@ const AddLead = forwardRef(
             </div>
           </Col>
         </Row>
+
+        {isReEntry && (
+          <>
+            <p className="addleaddrawer_headings">Assign Lead</p>
+            <Row gutter={16} style={{ marginBottom: "20px" }}>
+              <Col span={8}>
+                <CommonSelectField
+                  label="Lead Executive"
+                  required={true}
+                  options={subUsers}
+                  onChange={(e) => {
+                    setAssignLeadId(e.target.value);
+                    if (validationTrigger) {
+                      setAssignLeadIdError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={assignLeadId}
+                  error={assignLeadIdError}
+                />
+              </Col>
+            </Row>
+          </>
+        )}
 
         {/* add course modal */}
         <Modal

@@ -219,6 +219,7 @@ export default function Settings() {
         "Edit Lead Button",
         "Edit Lead Mobile Number",
         "Assign Lead",
+        "Lead Re-Entry",
         "Lead Executive Filter",
         "Add Quality Comment",
         "Junk Leads Tab",

@@ -4468,10 +4468,25 @@ export default function Customers() {
           id="customer_history_profilecontainer"
         >
           {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
+            <Upload
+              listType="picture-circle"
+              fileList={[
+                {
+                  uid: "-1",
+                  name: "profile.jpg",
+                  status: "done",
+                  url: customerDetails.profile_image, // Base64 string directly usable
+                },
+              ]}
+              onPreview={handlePreview}
+              onRemove={false}
+              showUploadList={{
+                showRemoveIcon: false,
+              }}
+              beforeUpload={() => false} // prevent auto upload
+              style={{ width: 90, height: 90 }} // reduce size
+              accept=".png,.jpg,.jpeg"
+            ></Upload>
           ) : (
             <FaRegUser size={50} color="#333" />
           )}
