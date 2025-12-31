@@ -470,7 +470,7 @@ export default function TransactionReport() {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
-                    limit: 100,
+                    limit: pagination.limit,
                   });
                   getTransactionReportData(dates[0], dates[1]);
                 }}

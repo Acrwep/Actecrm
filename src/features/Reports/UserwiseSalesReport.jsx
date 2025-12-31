@@ -352,7 +352,7 @@ export default function UserwiseSalesReport() {
       setAllDownliners(downliners_ids);
       setPagination({
         page: 1,
-        limit: 500,
+        limit: pagination.limit,
       });
       getUsersWiseSalesReportData(
         startDateAndEndDate[0],
@@ -407,7 +407,7 @@ export default function UserwiseSalesReport() {
                   setStartDateAndEndDate(customizeDate);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getUsersWiseSalesReportData(
                     customizeDate[0],

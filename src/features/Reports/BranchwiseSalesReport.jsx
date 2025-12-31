@@ -379,7 +379,7 @@ export default function BranchwiseSalesReport() {
                   setSelectedBranchId(null);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getBranchWiseSalesReportData(
                     startDateAndEndDate[0],
@@ -405,7 +405,7 @@ export default function BranchwiseSalesReport() {
                   setSelectedBranchId(value);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getBranchWiseSalesReportData(
                     startDateAndEndDate[0],
@@ -431,6 +431,10 @@ export default function BranchwiseSalesReport() {
                   ]);
                   const customizeDate = customizeStartDateAndEndDate(dates);
                   setStartDateAndEndDate(customizeDate);
+                  setPagination({
+                    page: 1,
+                    limit: pagination.limit,
+                  });
                   getBranchWiseSalesReportData(
                     customizeDate[0],
                     customizeDate[1],

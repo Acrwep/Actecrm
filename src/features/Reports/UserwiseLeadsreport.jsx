@@ -262,7 +262,7 @@ export default function UserwiseLeadsReport() {
       setAllDownliners(downliners_ids);
       setPagination({
         page: 1,
-        limit: 500,
+        limit: pagination.limit,
       });
       getUsersWiseLeadsReportData(
         startDateAndEndDate[0],
@@ -317,7 +317,7 @@ export default function UserwiseLeadsReport() {
                   setStartDateAndEndDate(customizeDate);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getUsersWiseLeadsReportData(
                     customizeDate[0],

@@ -160,6 +160,10 @@ export default function UserwiseTransactionReport() {
   const handleSelectUser = (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+    setPagination({
+      page: 1,
+      limit: pagination.limit,
+    });
     getTransactionReportData(selectedDates[0], selectedDates[1], value);
   };
 
@@ -201,7 +205,7 @@ export default function UserwiseTransactionReport() {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
-                    limit: 100,
+                    limit: pagination.limit,
                   });
                   getTransactionReportData(dates[0], dates[1], selectedUserId);
                 }}

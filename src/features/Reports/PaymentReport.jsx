@@ -640,7 +640,7 @@ export default function PaymentReport() {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
-                    limit: 100,
+                    limit: pagination.limit,
                   });
                   getPaymentReportData(dates[0], dates[1], typeId);
                 }}

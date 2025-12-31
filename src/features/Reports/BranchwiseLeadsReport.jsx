@@ -311,7 +311,7 @@ export default function BranchwiseLeadsReport() {
                   setSelectedBranchId(null);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getBranchWiseLeadsReportData(
                     startDateAndEndDate[0],
@@ -337,7 +337,7 @@ export default function BranchwiseLeadsReport() {
                   setSelectedBranchId(value);
                   setPagination({
                     page: 1,
-                    limit: 500,
+                    limit: pagination.limit,
                   });
                   getBranchWiseLeadsReportData(
                     startDateAndEndDate[0],
@@ -363,6 +363,10 @@ export default function BranchwiseLeadsReport() {
                   ]);
                   const customizeDate = customizeStartDateAndEndDate(dates);
                   setStartDateAndEndDate(customizeDate);
+                  setPagination({
+                    page: 1,
+                    limit: pagination.limit,
+                  });
                   getBranchWiseLeadsReportData(
                     customizeDate[0],
                     customizeDate[1],
