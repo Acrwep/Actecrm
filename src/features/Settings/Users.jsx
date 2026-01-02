@@ -42,6 +42,7 @@ import { IoIosClose } from "react-icons/io";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 import moment from "moment";
 import TargetMonthPicker from "./TargetMonthPicker";
+import CommonDeviceDetails from "../Common/CommonDeviceDetails";
 
 export default function Users({
   setUsersCount,
@@ -50,6 +51,7 @@ export default function Users({
   pagination,
   setPagination,
 }) {
+  // const device = CommonDeviceDetails();
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
   const userSearchValue = useSelector((state) => state.usersearchvalue);
@@ -280,8 +282,14 @@ export default function Users({
 
   useEffect(() => {
     const { month, startDate, endDate } = getActiveTargetMonthRange();
+    //month
+    setTargetMonth(month);
     setAssignTargetMonth(month);
+    //start
     setAssignTargetMonthStartDate(startDate);
+    setTargetMonthStartDate(startDate);
+    //end
+    setTargetMonthEndDate(endDate);
     setAssignTargetMonthEndDate(endDate);
   }, []);
 
@@ -382,11 +390,11 @@ export default function Users({
       const [monthName, year] = month.split(" - ");
       const selectedMonth = moment(`${monthName} ${year}`, "MMMM YYYY");
 
-      // Start date: 25th of previous month
+      // Start date: 26th of previous month
       const startDate = selectedMonth
         .clone()
         .subtract(1, "month")
-        .date(25)
+        .date(26)
         .format("YYYY-MM-DD");
 
       // End date: 25th of selected month
@@ -704,6 +712,10 @@ export default function Users({
 
   return (
     <div>
+      {/* <div>
+        <h2>Device Information</h2>
+        <pre>{JSON.stringify(device, null, 2)}</pre>
+      </div> */}
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
           <div
@@ -995,11 +1007,11 @@ export default function Users({
                     "MMMM YYYY"
                   );
 
-                  // Start date: 25th of previous month
+                  // Start date: 26th of previous month
                   const startDate = selectedMonth
                     .clone()
                     .subtract(1, "month")
-                    .date(25)
+                    .date(26)
                     .format("YYYY-MM-DD");
 
                   // End date: 25th of selected month

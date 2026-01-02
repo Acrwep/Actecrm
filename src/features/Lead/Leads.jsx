@@ -528,6 +528,7 @@ export default function Leads({
 
   useEffect(() => {
     getUsersData();
+    console.log("pageeeeeeeeeee", pagination);
   }, []);
 
   const getUsersData = async () => {
@@ -550,22 +551,11 @@ export default function Leads({
       if (!permissions.includes("Lead Manager Page")) {
         return;
       }
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setSelectedDates([
-        filterValuesFromRedux.start_date,
-        filterValuesFromRedux.end_date,
-      ]);
-      setFilterType(filterValuesFromRedux.filterType);
-      setSearchValue(filterValuesFromRedux.searchValue);
-      setLeadSourceFilterId(filterValuesFromRedux.lead_source);
-      setSelectedUserId(filterValuesFromRedux.user_id);
-      setPagination({
-        page: filterValuesFromRedux.pageNumber,
-        limit: filterValuesFromRedux.pageLimit,
-      });
 
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
+
       setTimeout(() => {
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
@@ -573,6 +563,20 @@ export default function Leads({
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
         mounted.current = true;
+        // ---------------------
+        setSelectedDates([
+          filterValuesFromRedux.start_date,
+          filterValuesFromRedux.end_date,
+        ]);
+        setFilterType(filterValuesFromRedux.filterType);
+        setSearchValue(filterValuesFromRedux.searchValue);
+        setLeadSourceFilterId(filterValuesFromRedux.lead_source);
+        setSelectedUserId(filterValuesFromRedux.user_id);
+        setPagination({
+          page: filterValuesFromRedux.pageNumber,
+          limit: filterValuesFromRedux.pageLimit,
+        });
+        // ---------------------
         setLoginUserId(convertAsJson?.user_id);
         getAllDownlineUsersData(
           filterValuesFromRedux.user_id

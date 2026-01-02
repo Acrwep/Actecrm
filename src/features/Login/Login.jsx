@@ -23,7 +23,7 @@ import {
   storeUserPermissions,
 } from "../Redux/Slice";
 import { useDispatch } from "react-redux";
-import { requestForToken } from "../../firebase";
+import { registerFCMServiceWorker, requestForToken } from "../../firebase";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -122,6 +122,7 @@ export default function Login() {
         JSON.stringify(loginUserDetails)
       );
       setTimeout(async () => {
+        await registerFCMServiceWorker();
         await requestForToken();
         const event = new Event("callGetNotificationApi");
         window.dispatchEvent(event);

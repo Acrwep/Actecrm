@@ -21,6 +21,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
+// ✅ EDGE FIX – Manual SW Register
+export const registerFCMServiceWorker = async () => {
+  if (!("serviceWorker" in navigator)) return null;
+
+  const reg = await navigator.serviceWorker.register(
+    "/firebase-messaging-sw.js"
+  );
+
+  // 🔥 EDGE FIX – force controller attach
+  if (!navigator.serviceWorker.controller) {
+    await new Promise((resolve) => {
+      navigator.serviceWorker.addEventListener("controllerchange", resolve);
+    });
+  }
+
+  return reg;
+};
+
 export const requestForToken = async () => {
   try {
     const currentToken = await getToken(messaging, {

@@ -452,7 +452,10 @@ export default function Customers() {
                                 "warning",
                                 "Form Not Submitted Yet"
                               );
-                            } else if (record.status === "Awaiting Finance") {
+                            } else if (
+                              record.status === "Awaiting Finance" ||
+                              record.status === "Payment Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Finance not Verified Yet"
@@ -492,7 +495,21 @@ export default function Customers() {
                       record.status === "Awaiting Verify" ||
                       record.status === "Awaiting Trainer" ||
                       record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ? (
+                      record.status === "Trainer Rejected" ||
+                      (record.status === "Escalated" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Hold" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Partially Closed" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Discontinued" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Videos Given" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Demo Completed" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Refund" &&
+                        record.trainer_hr_id == null) ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -502,7 +519,10 @@ export default function Customers() {
                                 "warning",
                                 "Form Not Submitted Yet"
                               );
-                            } else if (record.status === "Awaiting Finance") {
+                            } else if (
+                              record.status === "Awaiting Finance" ||
+                              record.status === "Payment Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Finance not Verified Yet"
@@ -514,7 +534,21 @@ export default function Customers() {
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected"
+                              record.status === "Trainer Rejected" ||
+                              (record.status === "Escalated" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Hold" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Partially Closed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Discontinued" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Videos Given" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Demo Completed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Refund" &&
+                                record.trainer_hr_id == null)
                             ) {
                               if (!permissions.includes("Trainer Assign")) {
                                 CommonMessage("error", "Access Denied");
@@ -554,7 +588,21 @@ export default function Customers() {
                       record.status === "Awaiting Trainer" ||
                       record.status === "Awaiting Trainer Verify" ||
                       record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ? (
+                      record.status === "Trainer Rejected" ||
+                      (record.status === "Escalated" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Hold" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Partially Closed" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Discontinued" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Videos Given" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Demo Completed" &&
+                        record.trainer_hr_id == null) ||
+                      (record.status === "Refund" &&
+                        record.trainer_hr_id == null) ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -564,7 +612,10 @@ export default function Customers() {
                                 "warning",
                                 "Form Not Submitted Yet"
                               );
-                            } else if (record.status === "Awaiting Finance") {
+                            } else if (
+                              record.status === "Awaiting Finance" ||
+                              record.status === "Payment Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Finance not Verified Yet"
@@ -576,7 +627,21 @@ export default function Customers() {
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected"
+                              record.status === "Trainer Rejected" ||
+                              (record.status === "Escalated" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Hold" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Partially Closed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Discontinued" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Videos Given" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Demo Completed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Refund" &&
+                                record.trainer_hr_id == null)
                             ) {
                               CommonMessage(
                                 "warning",
@@ -630,6 +695,7 @@ export default function Customers() {
                       record.status === "Partially Closed" ||
                       record.status === "Discontinued" ||
                       record.status === "Demo Completed" ||
+                      record.status === "Videos Given" ||
                       record.status === "Refund" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -640,7 +706,10 @@ export default function Customers() {
                                 "warning",
                                 "Form Not Submitted Yet"
                               );
-                            } else if (record.status === "Awaiting Finance") {
+                            } else if (
+                              record.status === "Awaiting Finance" ||
+                              record.status === "Payment Rejected"
+                            ) {
                               CommonMessage(
                                 "warning",
                                 "Finance not Verified Yet"
@@ -652,7 +721,21 @@ export default function Customers() {
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected"
+                              record.status === "Trainer Rejected" ||
+                              (record.status === "Escalated" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Hold" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Partially Closed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Discontinued" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Videos Given" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Demo Completed" &&
+                                record.trainer_hr_id == null) ||
+                              (record.status === "Refund" &&
+                                record.trainer_hr_id == null)
                             ) {
                               CommonMessage(
                                 "warning",
@@ -826,7 +909,20 @@ export default function Customers() {
                       ""
                     )}
 
-                    {record.status == "Escalated" ? (
+                    {(record.status === "Escalated" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Hold" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Partially Closed" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Discontinued" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Videos Given" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Demo Completed" &&
+                      record.trainer_hr_id != null) ||
+                    (record.status === "Refund" &&
+                      record.trainer_hr_id != null) ? (
                       <Col span={12}>
                         <div
                           style={{
@@ -1726,7 +1822,21 @@ export default function Customers() {
                                 record.status === "Awaiting Verify" ||
                                 record.status === "Awaiting Trainer" ||
                                 record.status === "Payment Rejected" ||
-                                record.status === "Trainer Rejected" ? (
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null) ? (
                                   <Checkbox
                                     className="customers_statuscheckbox"
                                     checked={false}
@@ -1753,7 +1863,21 @@ export default function Customers() {
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
-                                        record.status === "Trainer Rejected"
+                                        record.status === "Trainer Rejected" ||
+                                        (record.status === "Escalated" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Hold" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Partially Closed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Discontinued" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Videos Given" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Demo Completed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Refund" &&
+                                          record.trainer_hr_id == null)
                                       ) {
                                         if (
                                           !permissions.includes(
@@ -1802,7 +1926,21 @@ export default function Customers() {
                                 record.status === "Awaiting Trainer" ||
                                 record.status === "Awaiting Trainer Verify" ||
                                 record.status === "Payment Rejected" ||
-                                record.status === "Trainer Rejected" ? (
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null) ? (
                                   <Checkbox
                                     className="customers_statuscheckbox"
                                     checked={false}
@@ -1829,7 +1967,21 @@ export default function Customers() {
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
-                                        record.status === "Trainer Rejected"
+                                        record.status === "Trainer Rejected" ||
+                                        (record.status === "Escalated" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Hold" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Partially Closed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Discontinued" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Videos Given" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Demo Completed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Refund" &&
+                                          record.trainer_hr_id == null)
                                       ) {
                                         CommonMessage(
                                           "warning",
@@ -1893,6 +2045,7 @@ export default function Customers() {
                                 record.status === "Partially Closed" ||
                                 record.status === "Discontinued" ||
                                 record.status === "Demo Completed" ||
+                                record.status === "Videos Given" ||
                                 record.status === "Refund" ? (
                                   <Checkbox
                                     className="customers_statuscheckbox"
@@ -1920,7 +2073,21 @@ export default function Customers() {
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
-                                        record.status === "Trainer Rejected"
+                                        record.status === "Trainer Rejected" ||
+                                        (record.status === "Escalated" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Hold" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Partially Closed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Discontinued" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Videos Given" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Demo Completed" &&
+                                          record.trainer_hr_id == null) ||
+                                        (record.status === "Refund" &&
+                                          record.trainer_hr_id == null)
                                       ) {
                                         CommonMessage(
                                           "warning",
@@ -2120,7 +2287,20 @@ export default function Customers() {
                                 ""
                               )}
 
-                              {record.status == "Escalated" ? (
+                              {(record.status === "Escalated" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Hold" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Partially Closed" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Discontinued" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Videos Given" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Demo Completed" &&
+                                record.trainer_hr_id != null) ||
+                              (record.status === "Refund" &&
+                                record.trainer_hr_id != null) ? (
                                 <Col span={12}>
                                   <div
                                     style={{

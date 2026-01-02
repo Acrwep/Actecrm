@@ -104,6 +104,18 @@ export default function CommonDonutChart({
     return `${hours}hr ${minutes}m ${seconds}s`;
   };
 
+  const applyLegendFontFix = () => {
+    const root = document.getElementById(chartId.current);
+    if (!root) return;
+
+    setTimeout(() => {
+      root.querySelectorAll(".apexcharts-legend-text").forEach((el) => {
+        el.style.fontSize = legendFontSize || "11px";
+        el.style.fontFamily = "Poppins, sans-serif";
+      });
+    }, 300);
+  };
+
   const options = {
     chart: {
       type: "donut",
@@ -144,23 +156,90 @@ export default function CommonDonutChart({
       //     if (clickedBar) clickedBar(label);
       //   },
       // },
+      // events: {
+      //   dataPointMouseEnter: function (event, chartContext, config) {
+      //     const index = config.dataPointIndex;
+
+      //     // 🔹 Legend highlight sync
+      //     const legends = document.querySelectorAll(
+      //       `#${chartId.current} .apexcharts-legend-series`
+      //     );
+
+      //     legends.forEach((el, i) => {
+      //       if (i === index) {
+      //         el.classList.add("legend-active");
+      //         el.classList.remove("legend-inactive");
+      //       } else {
+      //         el.classList.add("legend-inactive");
+      //         el.classList.remove("legend-active");
+      //       }
+      //     });
+
+      //     // 🔹 Your existing center-label resize logic
+      //     const label = labels?.[index];
+      //     const totalLabel = document.querySelector(
+      //       `#${chartId.current} .apexcharts-datalabels-group text`
+      //     );
+
+      //     if (!totalLabel) return;
+
+      //     if (label === "Followup Un-Handled") {
+      //       totalLabel.style.fontSize = "10px";
+      //     } else if (
+      //       label === "Total Followup" ||
+      //       label === "Followup Handled"
+      //     ) {
+      //       totalLabel.style.fontSize = "12px";
+      //     } else {
+      //       totalLabel.style.fontSize = labelsfontSize;
+      //     }
+      //   },
+
+      //   dataPointMouseLeave: function () {
+      //     // 🔹 Reset legend styles
+      //     const legends = document.querySelectorAll(
+      //       `#${chartId.current} .apexcharts-legend-series`
+      //     );
+
+      //     legends.forEach((el) => {
+      //       el.classList.remove("legend-active", "legend-inactive");
+      //     });
+      //   },
+
+      //   dataPointSelection: function (event, chartContext, config) {
+      //     const label = labels && labels[config.dataPointIndex];
+      //     if (clickedBar) clickedBar(label);
+      //   },
+      // },
       events: {
         dataPointMouseEnter: function (event, chartContext, config) {
           const index = config.dataPointIndex;
 
-          // 🔹 Legend highlight sync
-          const legends = document.querySelectorAll(
-            `#${chartId.current} .apexcharts-legend-series`
-          );
+          const root = document.getElementById(chartId.current);
+          const paths = root.querySelectorAll(".apexcharts-pie-series path");
 
+          // remove existing ring
+          root.querySelectorAll(".slice-ring").forEach((el) => el.remove());
+
+          if (paths[index]) {
+            const slice = paths[index];
+
+            const ring = slice.cloneNode(true);
+            const color = slice.getAttribute("fill");
+
+            ring.classList.add("slice-ring");
+            ring.removeAttribute("fill");
+            ring.setAttribute("stroke", color);
+
+            // place behind real slice
+            slice.parentNode.insertBefore(ring, slice);
+          }
+
+          // legend sync
+          const legends = root.querySelectorAll(".apexcharts-legend-series");
           legends.forEach((el, i) => {
-            if (i === index) {
-              el.classList.add("legend-active");
-              el.classList.remove("legend-inactive");
-            } else {
-              el.classList.add("legend-inactive");
-              el.classList.remove("legend-active");
-            }
+            el.classList.toggle("legend-active", i === index);
+            el.classList.toggle("legend-inactive", i !== index);
           });
 
           // 🔹 Your existing center-label resize logic
@@ -184,14 +263,15 @@ export default function CommonDonutChart({
         },
 
         dataPointMouseLeave: function () {
-          // 🔹 Reset legend styles
-          const legends = document.querySelectorAll(
-            `#${chartId.current} .apexcharts-legend-series`
-          );
+          const root = document.getElementById(chartId.current);
 
-          legends.forEach((el) => {
-            el.classList.remove("legend-active", "legend-inactive");
-          });
+          root.querySelectorAll(".slice-ring").forEach((el) => el.remove());
+
+          root
+            .querySelectorAll(".apexcharts-legend-series")
+            .forEach((el) =>
+              el.classList.remove("legend-active", "legend-inactive")
+            );
         },
 
         dataPointSelection: function (event, chartContext, config) {

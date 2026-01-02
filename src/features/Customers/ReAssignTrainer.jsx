@@ -41,6 +41,7 @@ import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const ReAssignTrainer = forwardRef(
   (
@@ -460,9 +461,10 @@ const ReAssignTrainer = forwardRef(
                                   </div>
                                 </Col>
                                 <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.trainer_name}
-                                  </p>
+                                  <EllipsisTooltip
+                                    text={item.trainer_name}
+                                    smallText={true}
+                                  />
                                 </Col>
                               </Row>
                             </Col>
@@ -595,9 +597,10 @@ const ReAssignTrainer = forwardRef(
                                   </div>
                                 </Col>
                                 <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.comments}
-                                  </p>
+                                  <EllipsisTooltip
+                                    text={item.comments}
+                                    smallText={true}
+                                  />
                                 </Col>
                               </Row>
                             </Col>
