@@ -39,7 +39,7 @@ export default function UserwiseTransactionReport() {
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 100,
     total: 0,
     totalPages: 0,
   });
@@ -105,6 +105,7 @@ export default function UserwiseTransactionReport() {
           title: date == "total" ? "Total" : date,
           dataIndex: date,
           key: date,
+          fixed: date == "total" && "right",
           render: (value, record) => {
             const amount = Number(value || 0).toLocaleString("en-IN");
 

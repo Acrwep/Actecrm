@@ -68,10 +68,6 @@ export default function AssignLeads({
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [allDownliners, setAllDownliners] = useState([]);
-  //junk usestates
-  const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
-  const [junkComments, setJunkComments] = useState("");
-  const [junkCommentsError, setJunkCommentsError] = useState("");
   const [leadId, setLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -268,22 +264,11 @@ export default function AssignLeads({
 
             <Tooltip placement="bottom" title="Pick">
               <GiCardPickup
-                size={23}
+                size={24}
                 color="#5b69ca"
                 className="trainers_action_icons"
                 onClick={() => {
                   handlePick(record);
-                }}
-              />
-            </Tooltip>
-            <Tooltip placement="bottom" title="Move to Junk">
-              <MdOutlinePlaylistRemove
-                color="#d32f2f"
-                size={20}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setLeadId(record.id);
-                  setIsOpenJunkModal(true);
                 }}
               />
             </Tooltip>
@@ -417,58 +402,6 @@ export default function AssignLeads({
     setSelectedRows(row);
     const keys = row.map((item) => item.id); // or your unique row key
     setSelectedRowKeys(keys);
-  };
-
-  const handleMoveToJunk = async () => {
-    console.log("selectedRowKeys", selectedRowKeys);
-    const commentsValidate = addressValidator(junkComments);
-
-    setJunkCommentsError(commentsValidate);
-
-    if (commentsValidate) return;
-
-    setButtonLoading(true);
-    const payload = {
-      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
-      is_junk: true,
-      reason: junkComments,
-    };
-    try {
-      await moveLiveLeadToJunk(payload);
-      CommonMessage("success", "Updated");
-      setTimeout(async () => {
-        setButtonLoading(false);
-        setIsOpenJunkModal(false);
-        setLeadId(null);
-        setSelectedRows([]);
-        setSelectedRowKeys([]);
-        setJunkComments("");
-        const payload = {
-          lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [leadId],
-          is_assigned: false,
-        };
-        try {
-          await liveLeadManualAssign(payload);
-        } catch (error) {
-          console.log("manual assign error", error);
-        }
-        getManualAssignLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit
-        );
-        refreshJunkLeads();
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later"
-      );
-    }
   };
 
   const handleMoveToLiveLead = async () => {
@@ -715,20 +648,7 @@ export default function AssignLeads({
               alignItems: "center",
               gap: "12px",
             }}
-          >
-            {selectedRows.length >= 1 && (
-              <>
-                <Button
-                  className="livelead_junkbutton"
-                  onClick={() => {
-                    setIsOpenJunkModal(true);
-                  }}
-                >
-                  Move to Junk
-                </Button>
-              </>
-            )}
-          </div>
+          ></div>
         </Col>
       </Row>
 
@@ -814,63 +734,6 @@ export default function AssignLeads({
           </div>
         </div>
       </Drawer>
-
-      <Modal
-        title="Move to Junk"
-        open={isOpenJunkModal}
-        onCancel={() => {
-          setIsOpenJunkModal(false);
-          setLeadId(null);
-          setJunkComments("");
-          setJunkCommentsError("");
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsOpenJunkModal(false);
-              setLeadId(null);
-              setJunkComments("");
-              setJunkCommentsError("");
-            }}
-            className="leads_coursemodal_cancelbutton"
-          >
-            Cancel
-          </Button>,
-
-          buttonLoading ? (
-            <Button
-              key="create"
-              type="primary"
-              style={{ width: "120px", opacity: 0.7 }}
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              key="create"
-              type="primary"
-              onClick={handleMoveToJunk}
-              style={{ width: "120px" }}
-            >
-              Move to Junk
-            </Button>
-          ),
-        ]}
-      >
-        <div style={{ marginBottom: "20px" }}>
-          <CommonTextArea
-            label="Comments"
-            required={false}
-            onChange={(e) => {
-              setJunkComments(e.target.value);
-              setJunkCommentsError(addressValidator(e.target.value));
-            }}
-            value={junkComments}
-            error={junkCommentsError}
-          />
-        </div>
-      </Modal>
 
       {/* move to live lead modal */}
       <Modal
