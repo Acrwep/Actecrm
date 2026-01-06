@@ -247,13 +247,24 @@ export default function Login() {
                     error={passwordError}
                     helperTextContainerStyle={{
                       position: "absolute",
-                      bottom: "-21px",
-                      width: "65%",
+                      bottom: passwordError.includes("special character")
+                        ? "-21px"
+                        : "0px",
+                      width: "100%",
                     }}
                   />
                 </div>
 
-                <div className="login_forgotpasswordtextContainer">
+                <div
+                  className="login_forgotpasswordtextContainer"
+                  style={{
+                    marginTop: passwordError.includes("special character")
+                      ? "45px"
+                      : passwordError
+                      ? "25px"
+                      : "8px",
+                  }}
+                >
                   <Checkbox
                     className="login_remenberme_checkbox"
                     checked={rememberMe}

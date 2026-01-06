@@ -53,7 +53,9 @@ export default function CommonOutlinedInput({
         },
       }}
     >
-      <InputLabel htmlFor="outlined-adornment-password">{label}</InputLabel>
+      <InputLabel htmlFor="outlined-adornment-password" shrink={Boolean(value)}>
+        {label}
+      </InputLabel>
       <OutlinedInput
         id="outlined-adornment-password"
         endAdornment={<InputAdornment position="end">{icon}</InputAdornment>}
@@ -65,6 +67,7 @@ export default function CommonOutlinedInput({
         inputProps={{ maxLength: maxLength }}
         onInput={onInput}
         disabled={disabled}
+        notched={Boolean(value)}
       />
       {error && (
         <div style={helperTextContainerStyle}>

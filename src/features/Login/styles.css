@@ -191,7 +191,6 @@
   transition: all 0.3s ease-in-out;
 }
 .login_forgotpasswordtextContainer {
-  margin-top: 8px;
   font-weight: 400;
   display: flex;
   justify-content: space-between;

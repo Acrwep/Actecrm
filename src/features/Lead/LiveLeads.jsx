@@ -179,7 +179,13 @@ export default function LiveLead({
   };
 
   const nonChangeColumns = [
-    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
+    {
+      title: "Sl. No",
+      key: "row_num",
+      dataIndex: "row_num",
+      width: 60,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
     {
       title: "Created Before",
       key: "created_date",
@@ -305,6 +311,8 @@ export default function LiveLead({
       key: "location",
       dataIndex: "location",
       width: 140,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortDirections: ["ascend", "descend"],
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -726,6 +734,9 @@ export default function LiveLead({
               return {
                 ...col,
                 width: 170,
+                sorter: (a, b) =>
+                  (a.course || "").localeCompare(b.course || ""),
+                sortDirections: ["ascend", "descend"],
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
@@ -750,6 +761,9 @@ export default function LiveLead({
               return {
                 ...col,
                 width: 140,
+                sorter: (a, b) =>
+                  (a.location || "").localeCompare(b.location || ""),
+                sortDirections: ["ascend", "descend"],
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
@@ -758,6 +772,9 @@ export default function LiveLead({
               return {
                 ...col,
                 width: 140,
+                sorter: (a, b) =>
+                  (a.training || "").localeCompare(b.training || ""),
+                sortDirections: ["ascend", "descend"],
                 render: (text) => {
                   if (text.includes("Online")) {
                     return (
@@ -784,6 +801,9 @@ export default function LiveLead({
               return {
                 ...col,
                 width: 90,
+                sorter: (a, b) =>
+                  (a.domain_origin || "").localeCompare(b.domain_origin || ""),
+                sortDirections: ["ascend", "descend"],
                 hidden: permissions.includes("Show Origin in Live Leads")
                   ? false
                   : true,

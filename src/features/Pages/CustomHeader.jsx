@@ -15,6 +15,8 @@ import {
   Spin,
   Drawer,
   Divider,
+  Upload,
+  Modal,
 } from "antd";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -58,6 +60,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CommonMessage } from "../Common/CommonMessage";
 import NotificationImage from "../../assets/bell-colored.svg";
 import { NotificationContext } from "../../Context/NotificationContext";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function CustomHeader() {
   const location = useLocation();
@@ -79,6 +82,7 @@ export default function CustomHeader() {
   const [customerDetails, setCustomerDetails] = useState(null);
   const [customerHistory, setCustomerHistory] = useState([]);
   const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+  const [viewCustomerLoading, setViewCustomerLoading] = useState(false);
   //course search
   const [courseSearchValue, setCourseSearchValue] = useState("");
   const [courseData, setCourseData] = useState([]);
@@ -112,6 +116,10 @@ export default function CustomHeader() {
   const [passwordValidationTrigger, setPasswordValidationTrigger] =
     useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  //profile image usestates
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
 
   useEffect(() => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
@@ -190,6 +198,7 @@ export default function CustomHeader() {
   };
 
   const getCustomerData = async (customer_email) => {
+    setViewCustomerLoading(true);
     const payload = {
       email: customer_email,
     };
@@ -208,6 +217,7 @@ export default function CustomHeader() {
         );
       }, 300);
     } catch (error) {
+      setViewCustomerLoading(false);
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
     }
@@ -275,7 +285,29 @@ export default function CustomHeader() {
     } catch (error) {
       setCustomerHistoryLoading(false);
       console.log("history response", error);
+    } finally {
+      setTimeout(() => {
+        setViewCustomerLoading(false);
+      }, 300);
     }
+  };
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
   };
 
   const getHistoryStatusColor = (status) => {
@@ -452,6 +484,8 @@ export default function CustomHeader() {
               ? "Batches"
               : location.pathname === "/trainers"
               ? "Trainers"
+              : location.pathname === "/trainer-payment"
+              ? "Trainer Payment"
               : location.pathname === "/server"
               ? "Server"
               : location.pathname === "/settings"
@@ -678,9 +712,12 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.name ? leadDetails.name : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.name ? leadDetails.name : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -692,9 +729,12 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.email ? leadDetails.email : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.email ? leadDetails.email : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -752,8 +792,8 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     leadDetails && leadDetails.lead_assigned_to_id
                       ? leadDetails.lead_assigned_to_id
                       : "-"
@@ -762,7 +802,8 @@ export default function CustomHeader() {
                       ? leadDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -854,11 +895,14 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.primary_course
-                    ? leadDetails.primary_course
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    leadDetails && leadDetails.primary_course
+                      ? leadDetails.primary_course
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -981,17 +1025,27 @@ export default function CustomHeader() {
                       title="View Customer Track"
                       className="leadtable_comments_tooltip"
                     >
-                      <FaRegEye
-                        color="#333"
-                        style={{ marginTop: "2px", cursor: "pointer" }}
-                        onClick={() => {
-                          getCustomerData(
-                            leadDetails && leadDetails.email
-                              ? leadDetails.email
-                              : null
-                          );
-                        }}
-                      />
+                      {viewCustomerLoading ? (
+                        <FaRegEye
+                          color="#333"
+                          style={{
+                            marginTop: "2px",
+                            opacity: "0.7",
+                          }}
+                        />
+                      ) : (
+                        <FaRegEye
+                          color="#333"
+                          style={{ marginTop: "2px", cursor: "pointer" }}
+                          onClick={() => {
+                            getCustomerData(
+                              leadDetails && leadDetails.email
+                                ? leadDetails.email
+                                : null
+                            );
+                          }}
+                        />
+                      )}
                     </Tooltip>
                   </div>
                 ) : (
@@ -1056,10 +1110,29 @@ export default function CustomHeader() {
           id="customer_history_profilecontainer"
         >
           {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
+            // <img
+            //   src={customerDetails.profile_image}
+            //   className="cutomer_profileimage"
+            // />
+            <Upload
+              listType="picture-circle"
+              fileList={[
+                {
+                  uid: "-1",
+                  name: "profile.jpg",
+                  status: "done",
+                  url: customerDetails.profile_image, // Base64 string directly usable
+                },
+              ]}
+              onPreview={handlePreview}
+              onRemove={false}
+              showUploadList={{
+                showRemoveIcon: false,
+              }}
+              beforeUpload={() => false} // prevent auto upload
+              style={{ width: 90, height: 90 }} // reduce size
+              accept=".png,.jpg,.jpeg"
+            ></Upload>
           ) : (
             <FaRegUser size={50} color="#333" />
           )}
@@ -1097,11 +1170,14 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1113,11 +1189,14 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1162,8 +1241,8 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     customerDetails && customerDetails.lead_assigned_to_id
                       ? customerDetails.lead_assigned_to_id
                       : "-"
@@ -1172,7 +1251,8 @@ export default function CustomHeader() {
                       ? customerDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>
@@ -1185,11 +1265,14 @@ export default function CustomHeader() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1591,6 +1674,16 @@ export default function CustomHeader() {
           </div>
         )}
       </Drawer>
+
+      {/* profile image modal */}
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
+import { FaCaretDown } from "react-icons/fa";
 import {
   getAllAreas,
   getAllDownlineUsers,
@@ -44,6 +45,7 @@ export default function LeadManager() {
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
   const [liveLeadCount, setLiveLeadCount] = useState(0);
+  const [openLiveLeadTooltip, setOpenLiveLeadTooltip] = useState(false);
   const [junkLeadCount, setJunkLeadCount] = useState(0);
   const [assignLeadCount, setAssignLeadCount] = useState(0);
   const [isLeadPageVisited, setIsLeadPageVisited] = useState(false);
@@ -314,16 +316,42 @@ export default function LeadManager() {
           >
             <p>{`Leads (${leadCount})`}</p>
           </button>
+
+          {/* <Tooltip
+            open={openLiveLeadTooltip}
+            placement="bottomRight"
+            color="#fff"
+            styles={{
+              body: {
+                maxWidth: "none",
+                whiteSpace: "normal",
+              },
+            }}
+            title={
+              <div style={{ color: "#333" }}>
+                <p>Hiii</p>
+              </div>
+            }
+          > */}
           <button
             className={
               activePage === "live_leads"
-                ? "settings_tab_activebutton"
-                : "settings_tab_inactivebutton"
+                ? "livelead_tab_activebutton"
+                : "livelead_tab_inactivebutton"
             }
             onClick={() => handleTabClick("live_leads")}
           >
             <p>{`Live Leads (${liveLeadCount})`}</p>
+
+            {/* <FaCaretDown
+                size={15}
+                style={{ marginLeft: "8px", marginTop: "-2px" }}
+                color={activePage === "live_leads" ? "#fff" : "#333"}
+                onMouseEnter={() => setOpenLiveLeadTooltip(true)}
+                onMouseLeave={() => setOpenLiveLeadTooltip(false)}
+              /> */}
           </button>
+          {/* </Tooltip> */}
 
           <button
             className={

@@ -2,7 +2,8 @@ import { defaultCountries, parseCountry } from "react-international-phone";
 
 const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
 const descriptionRegex = /^(?!\s*$).+/;
-const emailRegex = /^[a-zA-Z0-9._-]{2,}@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
+const emailRegex =
+  /^[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 const mobileRegex = /^[0-9]+$/;
 const domainRegex =
   /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:[a-zA-Z]{2,})$/;

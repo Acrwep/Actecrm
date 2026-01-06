@@ -690,6 +690,28 @@
 }
 
 /* live lead styles */
+.livelead_tab_inactivebutton {
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.548);
+  background-color: transparent;
+  padding: 5px 14px 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+}
+.livelead_tab_activebutton {
+  border-radius: 6px;
+  /* border: 1px solid rgba(128, 128, 128, 0.548); */
+  background-color: #5b69ca;
+  color: #fff;
+  padding: 5px 14px 5px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
 .livelead_onlinetraining_container {
   background: #00796b1a;
   color: #00796b;

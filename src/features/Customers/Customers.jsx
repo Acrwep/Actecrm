@@ -1600,7 +1600,7 @@ export default function Customers() {
             case "is_customer_updated":
               return {
                 ...col,
-                width: 140,
+                width: 115,
                 render: (text, record) => {
                   return (
                     <>

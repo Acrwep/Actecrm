@@ -31,7 +31,8 @@ export default function CommonInputField({
       label === "User Id" ||
       label === "Role Name" ||
       label === "IFSC Code" ||
-      label === "Address"
+      label === "Address" ||
+      label === "Attendance Sheet Link"
     ) {
       onChange({ target: { value } });
     } else {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Menu } from "antd";
 import { GrAppsRounded } from "react-icons/gr";
 import { PiUsersThreeBold } from "react-icons/pi";
@@ -67,16 +67,21 @@ export default function SideMenu() {
       path: "trainers",
     },
     8: {
+      title: "Trainer Payment",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainer-payment",
+    },
+    9: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    9: {
+    10: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    10: {
+    11: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -120,16 +125,21 @@ export default function SideMenu() {
       path: "trainers",
     },
     8: {
+      title: "Trainer Payment",
+      icon: <FaChalkboardTeacher size={17} />,
+      path: "trainer-payment",
+    },
+    9: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    9: {
+    10: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    10: {
+    11: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -149,15 +159,15 @@ export default function SideMenu() {
     }
 
     if (!permissions.includes("Bulk Search Page")) {
-      delete updatedMenu[8];
-    }
-
-    if (!permissions.includes("Reports Page")) {
       delete updatedMenu[9];
     }
 
-    if (!permissions.includes("Settings Page")) {
+    if (!permissions.includes("Reports Page")) {
       delete updatedMenu[10];
+    }
+
+    if (!permissions.includes("Settings Page")) {
+      delete updatedMenu[11];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -227,15 +237,15 @@ export default function SideMenu() {
         }
 
         if (!permissions.includes("Bulk Search Page")) {
-          delete updatedMenu[8];
-        }
-
-        if (!permissions.includes("Reports Page")) {
           delete updatedMenu[9];
         }
 
-        if (!updateData.includes("Settings Page")) {
+        if (!permissions.includes("Reports Page")) {
           delete updatedMenu[10];
+        }
+
+        if (!updateData.includes("Settings Page")) {
+          delete updatedMenu[11];
         }
 
         setSideMenuOptions(updatedMenu);
@@ -246,13 +256,19 @@ export default function SideMenu() {
   };
 
   const renderMenuItems = (menuConfig) => {
-    return Object.entries(menuConfig).map(([key, item]) => {
-      return {
-        key: item.path,
-        icon: item.icon,
-        label: item.title,
-      };
-    });
+    return Object.entries(menuConfig).map(([key, item]) => ({
+      key: item.path,
+      icon: item.icon,
+      label: (
+        <Link
+          to={`/${item.path}`}
+          className="side-menu-link"
+          style={{ color: "inherit" }}
+        >
+          {item.title}
+        </Link>
+      ),
+    }));
   };
 
   const handleMenuClick = (e) => {

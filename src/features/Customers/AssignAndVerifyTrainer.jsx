@@ -55,6 +55,7 @@ const AssignAndVerifyTrainer = forwardRef(
     },
     ref
   ) => {
+    const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
     const [trainerId, setTrainerId] = useState(null);
     const [trainerIdError, setTrainerIdError] = useState("");
     const [commercial, setCommercial] = useState(null);
@@ -945,6 +946,8 @@ const AssignAndVerifyTrainer = forwardRef(
                       }}
                       value={trainerId}
                       error={trainerIdError}
+                      onFocus={() => setIsTrainerSelectFocused(true)}
+                      onBlur={() => setIsTrainerSelectFocused(false)}
                       borderRightNone={true}
                       showLabelStatus={
                         trainerFilterType == 1
@@ -996,7 +999,13 @@ const AssignAndVerifyTrainer = forwardRef(
                           </Radio.Group>
                         }
                       >
-                        <Button className="customer_trainermappingfilter_container">
+                        <Button
+                          className="customer_trainermappingfilter_container"
+                          style={{
+                            borderLeftColor:
+                              isTrainerSelectFocused && "#5b69ca",
+                          }}
+                        >
                           <IoFilter size={16} />
                         </Button>
                       </Tooltip>

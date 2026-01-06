@@ -33,6 +33,7 @@ import PendingFeesCustomers from "../Customers/Pending Fees/PendingFeesCustomers
 //reports
 import Reports from "../Reports/Reports";
 import { onMessageListener } from "../../firebase";
+import TrainerPayment from "../Trainers/TrainerPayment";
 
 export default function Pages() {
   const navigate = useNavigate();
@@ -235,6 +236,7 @@ export default function Pages() {
                 />
                 <Route element={<Batches />} path="/batches" />
                 <Route element={<Trainers />} path="/trainers" />
+                <Route element={<TrainerPayment />} path="/trainer-payment" />
                 <Route element={<Server />} path="/server" />
                 <Route element={<Settings />} path="/settings" />
                 <Route element={<Reports />} path="/reports" />

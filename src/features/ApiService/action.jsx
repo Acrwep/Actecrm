@@ -279,6 +279,38 @@ export const sendTrainerFormEmail = async (payload) => {
   }
 };
 
+// trainer payment api's
+export const insertTrainerPaymentRequest = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/insertTrainerPaymentRequest",
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateTrainerPaymentRequest = async (payload) => {
+  try {
+    const response = await api.put("/api/updateTrainerPaymentRequest", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTrainerPayments = async (payload) => {
+  try {
+    const response = await api.get("/api/getTrainerPayments", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // lead api's
 export const getAllAreas = async (payload) => {
   try {
