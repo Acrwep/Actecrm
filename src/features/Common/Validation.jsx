@@ -281,11 +281,12 @@ export const shortRelativeTime = (date) => {
   return `${diffWeeks}w ago`;
 };
 
-export const priceValidator = (price, totalprice) => {
+export const priceValidator = (price, totalprice, isCommecial = false) => {
   let error = "";
 
   if (!price || price.length <= 0) error = " is required";
-  else if (price > totalprice) error = " is > total amount";
+  else if (price > totalprice)
+    error = ` is > ${isCommecial == true ? "Commercial" : "total amount"}`;
 
   return error;
 };

@@ -1,112 +1,71 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button, Drawer, Flex, Radio, Modal } from "antd";
+import {
+  Row,
+  Col,
+  Tooltip,
+  Button,
+  Drawer,
+  Flex,
+  Radio,
+  Modal,
+  Checkbox,
+  Divider,
+  Collapse,
+} from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
 import { IoFilter } from "react-icons/io5";
-import { AiOutlineEdit } from "react-icons/ai";
-import { RedoOutlined } from "@ant-design/icons";
-import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { LuIndianRupee } from "react-icons/lu";
-import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
+import { AiOutlineEdit } from "react-icons/ai";
+import { RedoOutlined } from "@ant-design/icons";
+import { FaRegEye } from "react-icons/fa";
+import { FaRegCircleXmark } from "react-icons/fa6";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTable from "../Common/CommonTable";
 import {
-  getCustomerById,
+  approveTrainerPaymentTransaction,
+  createTrainerPaymentTransaction,
   getCustomers,
   getTrainerPayments,
   getTrainers,
-  insertTrainerPaymentRequest,
-  updateTrainerPaymentRequest,
+  rejectTrainerPayment,
+  updateTrainerPaymentTransaction,
 } from "../ApiService/action";
 import {
   addressValidator,
-  formatToBackendIST,
+  getBalanceAmount,
   getCurrentandPreviousweekDate,
+  priceValidator,
   selectValidator,
 } from "../Common/Validation";
 import moment from "moment";
-import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSpinner from "../Common/CommonSpinner";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
-import CommonCustomerSelectField from "../Common/CommonCustomerSelect";
-import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import PrismaZoom from "react-prismazoom";
+import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
+import CommonTextArea from "../Common/CommonTextArea";
+import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 
 export default function TrainerPayment() {
   const scrollRef = useRef();
+  const addTrainerPaymentRequestUseRef = useRef();
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
   const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
   //select trainer usestates
   const [trainersData, setTrainersData] = useState([]);
-  const [trainerId, setTrainerId] = useState(null);
-  const [trainerIdError, setTrainerIdError] = useState("");
-  const [trainerType, setTrainerType] = useState("");
-  const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
-  const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
-    useState(false);
   //form usestates
-  const [requestId, setRequestId] = useState(null);
-  const [billRaiseDate, setBillRaiseDate] = useState(null);
-  const [billRaiseDateError, setBillRaiseDateError] = useState(null);
-  const streamOptions = [
-    { id: "Online", name: "Online" },
-    { id: "Chennai", name: "Chennai" },
-    { id: "Bangalore", name: "Bangalore" },
-  ];
-  const [streamId, setStreamId] = useState("");
-  const [streamIdError, setStreamIdError] = useState("");
-  const attendanceStatusOptions = [
-    { id: "V Completed", name: "V Completed" },
-    { id: "ST SHT INC", name: "ST SHT INC" },
-    { id: "Class Not Completed", name: "Class Not Completed" },
-  ];
-  const [attendanceStatusId, setAttendanceStatusId] = useState("");
-  const [attendanceStatusIdError, setAttendanceStatusIdError] = useState("");
-  const attendanceTypeOptions = [
-    { id: "Link", name: "Link" },
-    { id: "Screenshot", name: "Screenshot" },
-  ];
-  const [attendanceType, setAttendanceType] = useState("Link");
-  const [attendanceTypeError, setAttendanceTypeError] = useState("");
-  const [attendanceScreenShotBase64, setAttendanceScreenShotBase64] =
-    useState("");
-  const [attendanceScreenShotBase64Error, setAttendanceScreenShotBase64Error] =
-    useState("");
-  const [attendanceSheetLink, setAttendanceSheetLink] = useState("");
-  const [attendanceSheetLinkError, setAttendanceSheetLinkError] = useState("");
-  const [commercial, setCommercial] = useState(null);
-  const [commercialError, setCommercialError] = useState();
-  const [commercialPercentage, setCommercialPercentage] = useState("");
-  const [daysTakenToPay, setDaysTakenToPay] = useState("");
-  const [deadLineDate, setDeadLineDate] = useState(null);
-  const [customersData, setCustomersData] = useState([]);
-  const [customerId, setCustomerId] = useState(null);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedCustomerError, setSelectedCustomerError] = useState("");
-  const [customerSearchText, setCustomerSearchText] = useState("");
-  const [requestComments, setRequsetComments] = useState("");
-  const [requestCommentsError, setRequsetCommentsError] = useState("");
-  const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
-    useState(false);
-  const [customerDetails, setCustomerDetails] = useState(null);
-  const [validationTrigger, setValidationTrigger] = useState(false);
-  //pagination
-  const [customerPage, setCustomerPage] = useState(1);
-  const [customerHasMore, setCustomerHasMore] = useState(true);
-  const [customerSelectloading, setCustomerSelectloading] = useState(false);
-  const [candidateIdError, setCandidateIdError] = useState("");
+  const [editRequestItem, setEditRequestItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
@@ -129,6 +88,39 @@ export default function TrainerPayment() {
   const [isOpenAttendanceScreenshotModal, setIsOpenAttendanceScreenshotModal] =
     useState(false);
   const [viewAttendanceScreenshot, setViewAttendanceScreenshot] = useState("");
+  //payment usesates
+  const [drawerContentStatus, setDrawerContentStatus] = useState("");
+  const [paidNow, setPaidNow] = useState("");
+  const [paidNowError, setPaidNowError] = useState("");
+  const [balanceAmount, setBalanceAmount] = useState("");
+  const paymentTypeOptions = [
+    { id: "Full", name: "Fully" },
+    { id: "Partial", name: "Partial" },
+  ];
+  const [paymentType, setPaymentType] = useState("");
+  const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
+  const [paymentScreenShotBase64Error, setPaymentScreenShotBase64Error] =
+    useState("");
+  const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [paymentValidationTrigger, setPaymentValidationTrigger] =
+    useState(false);
+  const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
+    useState(false);
+  const [transactionScreenshot, setTransactionScreenshot] = useState("");
+  const [isShowRejectPaymentCommentBox, setIsShowRejectPaymentCommentBox] =
+    useState(false);
+  const [rejectPaymentComments, setRejectPaymentComments] = useState("");
+  const [rejectPaymentCommentsError, setRejectPaymentCommentsError] =
+    useState("");
+  //customer details
+  const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
+    useState(false);
+  const [customerDetails, setCustomerDetails] = useState(null);
+  //trainer details
+  const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
+    useState(false);
+  const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
 
   // Table columns definition
   const columns = [
@@ -263,27 +255,147 @@ export default function TrainerPayment() {
       title: "Status",
       key: "status",
       dataIndex: "status",
-      width: 140,
+      width: 195,
       fixed: "right",
-      render: (text) => {
+      render: (text, record) => {
         return (
-          <Flex style={{ whiteSpace: "nowrap" }}>
-            {text === "Requested" ? (
-              <Button className="customers_status_formpending_button">
-                Requested
-              </Button>
-            ) : text === "Awaiting Finance" ? (
-              <Button className="trainers_pending_button">
-                Awaiting Finance
-              </Button>
-            ) : text === "Completed" ? (
-              <div className="trainers_verifieddiv">
-                <Button className="trainers_verified_button">Completed</Button>
-              </div>
-            ) : (
-              <p style={{ marginLeft: "6px" }}>-</p>
-            )}
-          </Flex>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              alignItems: "center",
+            }}
+          >
+            <Tooltip
+              placement="bottomLeft"
+              className="customers_statustooltip"
+              color="#fff"
+              styles={{
+                body: {
+                  width: "290px",
+                  maxWidth: "none",
+                  whiteSpace: "normal",
+                },
+              }}
+              title={
+                <>
+                  <Row>
+                    <Col span={12}>
+                      {record.status == "Requested" ? (
+                        <Checkbox
+                          className="server_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (
+                              record.status == "Requested" ||
+                              record.status == "Rejected"
+                            ) {
+                              setIsOpenDetailsDrawer(true);
+                              setDrawerContentStatus("Requested");
+                              setSelectedPaymentDetails(record);
+                              setPaymentHistory(record.transactions);
+                              setCollapseDefaultKey(["1"]);
+                            }
+                          }}
+                        >
+                          Raise Payment
+                        </Checkbox>
+                      ) : record.status === "Rejected" ? (
+                        <button
+                          className="customers_finance_updatepayment_button"
+                          onClick={() => {
+                            setDrawerContentStatus("Update Request");
+                            setIsOpenDetailsDrawer(true);
+                            setSelectedPaymentDetails(record);
+                            setPaymentHistory(record.transactions);
+                            setPaidNow(record.transactions[0].paid_amount);
+                            setPaymentType(record.transactions[0].payment_type);
+                            setCollapseDefaultKey(["1"]);
+                            setBalanceAmount(
+                              getBalanceAmount(
+                                isNaN(record.balance_amount)
+                                  ? 0
+                                  : record.balance_amount,
+                                isNaN(record.transactions[0].paid_amount)
+                                  ? 0
+                                  : record.transactions[0].paid_amount
+                              )
+                            );
+                          }}
+                        >
+                          Update Request
+                        </button>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Payment Raised
+                          </p>
+                        </div>
+                      )}
+                    </Col>
+
+                    <Col span={12}>
+                      {record.status == "Requested" ||
+                      record.status == "Awaiting Finance" ||
+                      record.status == "Rejected" ? (
+                        <Checkbox
+                          className="server_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status == "Awaiting Finance") {
+                              setIsOpenDetailsDrawer(true);
+                              setDrawerContentStatus("Awaiting Finance");
+                              setSelectedPaymentDetails(record);
+                              setPaymentHistory(record.transactions);
+                              setCollapseDefaultKey(["1"]);
+                              // getCustomerData(record.customer_id);
+                            } else {
+                              CommonMessage(
+                                "warning",
+                                "Payment not raised yet"
+                              );
+                            }
+                          }}
+                        >
+                          Awaiting Finance{" "}
+                        </Checkbox>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Finance Verified
+                          </p>
+                        </div>
+                      )}
+                    </Col>
+                  </Row>
+                </>
+              }
+            >
+              {text === "Requested" ? (
+                <Button className="customers_status_formpending_button">
+                  Requested
+                </Button>
+              ) : text === "Awaiting Finance" ? (
+                <Button className="trainers_pending_button">
+                  Awaiting Finance
+                </Button>
+              ) : text === "Completed" ? (
+                <div className="trainers_verifieddiv">
+                  <Button className="trainers_verified_button">
+                    Completed
+                  </Button>
+                </div>
+              ) : text === "Rejected" ? (
+                <div className="trainers_verifieddiv">
+                  <Button className="trainers_rejected_button">Rejected</Button>
+                </div>
+              ) : (
+                <p style={{ marginLeft: "6px" }}>-</p>
+              )}
+            </Tooltip>
+          </div>
         );
       },
     },
@@ -296,20 +408,19 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip placement="top" title="View Details">
-              <FaRegEye
-                size={18}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setSelectedPaymentDetails(record);
-                  setIsOpenDetailsDrawer(true);
-                }}
-              />
-            </Tooltip> */}
             <AiOutlineEdit
               size={18}
               className="trainers_action_icons"
-              onClick={() => handleEdit(record)}
+              onClick={() => {
+                if (record.status == "Requested") {
+                  handleEdit(record);
+                } else {
+                  CommonMessage(
+                    "error",
+                    `Unable to update in ${record.status} status`
+                  );
+                }
+              }}
             />
           </div>
         );
@@ -403,350 +514,221 @@ export default function TrainerPayment() {
     } finally {
       setTimeout(() => {
         setLoading(false);
-        if (callCustomerApi) {
-          getCustomersData(null, 1);
-        }
       }, 300);
     }
   };
 
-  const buildCustomerSearchPayload = (value) => {
-    if (!value) return {};
-
-    const trimmed = value.trim();
-
-    // Email
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      return { email: trimmed };
-    }
-
-    // Mobile (6–15 digits)
-    if (/^\d{6,15}$/.test(trimmed)) {
-      return { mobile: trimmed };
-    }
-
-    // Name
-    return { name: trimmed };
-  };
-
-  const getCustomersData = async (searchvalue, pageNumber = 1) => {
-    setCustomerSelectloading(true);
-
-    const searchPayload = buildCustomerSearchPayload(searchvalue);
-
-    const payload = {
-      ...searchPayload,
-      user_ids: null,
-      page: pageNumber,
-      limit: 10,
-    };
-
-    try {
-      const response = await getCustomers(payload);
-      const customers = response?.data?.data?.customers || [];
-      const pagination = response?.data?.data?.pagination;
-
-      setCustomersData((prev) =>
-        pageNumber == 1 ? customers : [...prev, ...customers]
-      );
-
-      setCustomerHasMore(pageNumber < pagination.totalPages);
-      setCustomerPage(pageNumber);
-    } catch (error) {
-      console.log("get customers error", error);
-    } finally {
-      setCustomerSelectloading(false);
-    }
-  };
-
-  //customer select onchange functions
-  // 🔍 Search while typing
-  const handleCustomerSearch = (value) => {
-    setCustomerSearchText(value);
-    setCustomerPage(1);
-    setCustomerHasMore(true);
-    setCustomersData([]);
-    getCustomersData(value, 1);
-  };
-
-  // ✅ Select option
-  const handleCustomerSelect = (event, option) => {
-    if (!option) return;
-
-    setSelectedCustomer(option);
-    if (validationTrigger) {
-      setSelectedCustomerError(selectValidator(option));
-    }
-    setCustomerId(option.id);
-    getParticularCustomerDetails(option.email);
-  };
-
-  // ⬇ Load first page when opened
-  const handleCustomerDropdownOpen = () => {
-    if (customersData.length === 0) getCustomersData(null, 1);
-  };
-
-  // ⬇ Infinite scroll
-  const handleCustomerScroll = (e) => {
-    const listbox = e.target;
-
-    if (
-      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
-      customerHasMore &&
-      !customerSelectloading
-    ) {
-      getCustomersData(customerSearchText, customerPage + 1);
-    }
-  };
-
-  const getParticularCustomerDetails = async (
-    customerEmail,
-    isEdit = false
-  ) => {
-    const payload = {
-      email: customerEmail ? customerEmail : selectedCustomer.email,
-    };
-    try {
-      const response = await getCustomers(payload);
-      const customer_details = response?.data?.data?.customers[0];
-      console.log("customer full details", customer_details);
-      setCustomerDetails(customer_details);
-      if (customerEmail) {
-        setIsOpenCustomerDetailsDrawer(false);
-      } else {
-        setIsOpenCustomerDetailsDrawer(true);
-      }
-      if (isEdit) {
-        setSelectedCustomer(customer_details);
-      }
-      //mapping trainer details
-      if (customer_details.trainer_verified_date) {
-        setTrainerId(customer_details?.trainer_id ?? null);
-        setTrainerIdError("");
-        setCommercial(customer_details?.commercial ?? "");
-        setCommercialPercentage(
-          customer_details?.commercial_percentage !== null &&
-            customer_details?.commercial_percentage !== undefined &&
-            customer_details?.commercial_percentage !== ""
-            ? customer_details.commercial_percentage
-            : ""
-        );
-      } else if (customerEmail) {
-        setTrainerId(null);
-        if (validationTrigger) {
-          setTrainerIdError(" is required");
-        }
-        setCommercial("");
-        setCommercialPercentage("");
-        CommonMessage("error", "Trainer not Assigned or Verified Yet");
-      }
-    } catch (error) {
-      console.log("getcustomer by id error", error);
-      setCustomerDetails(null);
-    }
-  };
-
-  const getDayDifference = (inputDate) => {
-    const today = new Date();
-    const given = new Date(inputDate);
-
-    // normalize both to UTC midnight
-    const utcToday = Date.UTC(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-
-    const utcGiven = Date.UTC(
-      given.getFullYear(),
-      given.getMonth(),
-      given.getDate()
-    );
-
-    const diffTime = utcToday - utcGiven; // today - past date
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays < 0 ? 0 : diffDays;
-  };
-
-  const addWorkingDays = (startDate, workingDays) => {
-    let date = new Date(startDate);
-    let addedDays = 0;
-
-    while (addedDays < workingDays) {
-      date.setDate(date.getDate() + 1);
-
-      const day = date.getDay();
-      // 0 = Sunday, 6 = Saturday
-
-      if (day !== 0 && day !== 6) {
-        addedDays++;
-      }
-    }
-
-    return date;
-  };
-
   const handleEdit = (item) => {
     setIsOpenAddRequestDrawer(true);
-    setRequestId(item.id);
-    setBillRaiseDate(item.bill_raisedate);
-    setStreamId(item.streams);
-    setAttendanceStatusId(item.attendance_status);
-    setAttendanceSheetLink(item.attendance_sheetlink);
-    setAttendanceScreenShotBase64(item.attendance_screenshot);
-    if (item.attendance_sheetlink) {
-      setAttendanceType("Link");
-    } else {
-      setAttendanceType("Screenshot");
-    }
-    setTrainerId(item.trainer_id);
-    setDaysTakenToPay(item.days_taken_topay);
-    setDeadLineDate(item.deadline_date);
-    getParticularCustomerDetails(item.customer_email, true);
+    setEditRequestItem(item);
+    // setRequestId(item.id);
+    // setBillRaiseDate(item.bill_raisedate);
+    // setStreamId(item.streams);
+    // setAttendanceStatusId(item.attendance_status);
+    // setAttendanceSheetLink(item.attendance_sheetlink);
+    // setAttendanceScreenShotBase64(item.attendance_screenshot);
+    // if (item.attendance_sheetlink) {
+    //   setAttendanceType("Link");
+    // } else {
+    //   setAttendanceType("Screenshot");
+    // }
+    // setTrainerId(item.trainer_id);
+    // setDaysTakenToPay(item.days_taken_topay);
+    // setDeadLineDate(item.deadline_date);
+    // getParticularCustomerDetails(item.customer_email, true);
   };
 
-  const handleRequestSubmit = async () => {
-    setValidationTrigger(true);
-    const raiseDateValidate = selectValidator(billRaiseDate);
-    const streamValidate = selectValidator(streamId);
-    const attendanceStatusIdValidate = selectValidator(attendanceStatusId);
-    const attendanceTypeValidate = selectValidator(attendanceType);
-    const trainerValidate = selectValidator(trainerId);
-    let attendanceSheetValidate;
-    let attendanceScreenshotValidate;
+  //payment onchange functions
+  const handlePaidNow = (e) => {
+    const input = e.target.value;
 
-    if (attendanceType == "Link") {
-      attendanceSheetValidate = addressValidator(attendanceSheetLink);
-      attendanceScreenshotValidate = "";
+    // Allow numbers, decimal point, or empty string
+    if (!/^\d*\.?\d*$/.test(input)) return;
+
+    setPaidNow(input); // store as string for user input
+
+    const value = parseFloat(input); // parse for calculations
+    const amt = parseFloat(selectedPaymentDetails?.balance_amount ?? "");
+
+    const balance_amount = getBalanceAmount(
+      isNaN(amt) ? 0 : amt,
+      isNaN(value) ? 0 : value
+    );
+
+    if (balance_amount == 0) {
+      setPaymentType("Full");
+    } else if (balance_amount > 0) {
+      setPaymentType("Partial");
     } else {
-      attendanceSheetValidate = "";
-      attendanceScreenshotValidate = selectValidator(
-        attendanceScreenShotBase64
+      setPaymentType("");
+    }
+    setBalanceAmount(balance_amount);
+
+    if (paymentValidationTrigger) {
+      setPaidNowError(
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt), true)
       );
     }
+  };
 
-    setBillRaiseDateError(raiseDateValidate);
-    setStreamIdError(streamValidate);
-    setAttendanceStatusIdError(attendanceStatusIdValidate);
-    setAttendanceTypeError(attendanceTypeValidate);
-    setAttendanceSheetLinkError(attendanceSheetValidate);
-    setAttendanceScreenShotBase64Error(attendanceScreenshotValidate);
-    setTrainerIdError(trainerValidate);
+  //payment submit
+  const handlePaymentSubmit = async () => {
+    setPaymentValidationTrigger(true);
+    const paidAmountValidate = priceValidator(
+      paidNow,
+      parseFloat(selectedPaymentDetails.balance_amount),
+      true
+    );
 
-    if (
-      raiseDateValidate ||
-      streamValidate ||
-      attendanceStatusIdValidate ||
-      attendanceTypeValidate ||
-      attendanceSheetValidate ||
-      attendanceScreenshotValidate ||
-      trainerValidate
-    )
-      return;
+    setPaidNowError(paidAmountValidate);
+    console.log("paidAmountValidate", paidAmountValidate);
 
+    if (paidAmountValidate) return;
     setButtonLoading(true);
-    const today = new Date();
-    const payload = {
-      ...(requestId && { id: requestId }),
-      bill_raisedate: moment(billRaiseDate).format("YYYY-MM-DD"),
-      streams: streamId,
-      attendance_status: attendanceStatusId,
-      ...(attendanceType == "Link"
-        ? { attendance_sheetlink: attendanceSheetLink }
-        : { attendance_screenshot: attendanceScreenShotBase64 }),
-      customer_id: selectedCustomer.id,
-      trainer_id: trainerId,
-      request_amount: commercial,
-      commercial_percentage: commercialPercentage,
-      days_taken_topay: daysTakenToPay,
-      deadline_date: moment(deadLineDate).format("YYYY-MM-DD"),
-      status: "Requested",
-      created_date: formatToBackendIST(today),
-    };
-    console.log("payloaddd", payload);
-    // setButtonLoading(false);
-    // return;
 
-    if (requestId) {
-      try {
-        await updateTrainerPaymentRequest(payload);
-        setTimeout(() => {
-          CommonMessage("success", "Updated Successfully");
-          formReset();
-          // Refresh the payment requests data
-          getTrainerPaymentsData(
-            selectedDates[0],
-            selectedDates[1],
-            status || null,
-            1,
-            pagination.limit
-          );
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later"
-        );
+    const payload = {
+      ...(drawerContentStatus == "Update Request"
+        ? { transaction_id: selectedPaymentDetails.transactions[0].id }
+        : { trainer_payment_id: selectedPaymentDetails.id }),
+      paid_amount: paidNow,
+      payment_type: paymentType,
+    };
+
+    try {
+      if (drawerContentStatus === "Update Request") {
+        await updateTrainerPaymentTransaction(payload);
+      } else {
+        await createTrainerPaymentTransaction(payload);
       }
-    } else {
-      try {
-        await insertTrainerPaymentRequest(payload);
-        setTimeout(() => {
-          CommonMessage("success", "Requested Successfully");
-          formReset();
-          // Refresh the payment requests data
-          getTrainerPaymentsData(
-            selectedDates[0],
-            selectedDates[1],
-            status || null,
-            1,
-            pagination.limit
-          );
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit
         );
-      }
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
     }
   };
 
-  const formReset = () => {
-    setIsOpenAddRequestDrawer(false);
+  const handlePaymentApprove = async (transactionId) => {
+    setPaymentValidationTrigger(true);
+    const paymentScreenshotValidate = selectValidator(paymentScreenShotBase64);
+
+    setPaymentScreenShotBase64Error(paymentScreenshotValidate);
+
+    if (paymentScreenshotValidate) return;
+
+    setButtonLoading(true);
+
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      transaction_id: transactionId,
+      payment_screenshot: paymentScreenShotBase64,
+      finance_head_id: convertAsJson?.user_id,
+    };
+
+    try {
+      await approveTrainerPaymentTransaction(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit
+        );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const handlePaymentReject = async () => {
+    setIsShowRejectPaymentCommentBox(true);
+    setTimeout(() => {
+      const container = document.getElementById(
+        "customer_trainerreject_commentContainer"
+      );
+      container.scrollIntoView({ behavior: "smooth" });
+    }, 200);
+
+    const commentValidate = addressValidator(rejectPaymentComments);
+
+    setRejectPaymentCommentsError(commentValidate);
+
+    if (commentValidate) return;
+
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      trainer_payment_id: selectedPaymentDetails.id,
+      reject_reason: rejectPaymentComments,
+      finance_head_id: convertAsJson?.user_id,
+    };
+
+    try {
+      await rejectTrainerPayment(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit
+        );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later"
+      );
+    }
+  };
+
+  const paymentformReset = () => {
     setButtonLoading(false);
-    setRequestId(null);
-    setBillRaiseDate(null);
-    setBillRaiseDateError("");
-    setStreamId("");
-    setStreamIdError("");
-    setAttendanceStatusId("");
-    setAttendanceStatusIdError("");
-    setAttendanceType("Link");
-    setAttendanceTypeError("");
-    setAttendanceScreenShotBase64("");
-    setAttendanceScreenShotBase64Error("");
-    setAttendanceSheetLink("");
-    setAttendanceSheetLinkError("");
-    setCommercial("");
-    setCommercialError("");
-    setCommercialPercentage("");
-    setTrainerId(null);
-    setTrainerIdError("");
-    setDaysTakenToPay("");
-    setDeadLineDate(null);
-    setCustomerId(null);
-    setCandidateIdError("");
-    setCustomerSearchText("");
-    setSelectedCustomer(null);
-    setSelectedCustomerError("");
-    setRequsetComments("");
-    setRequsetCommentsError("");
+    setIsOpenDetailsDrawer(false);
+    setSelectedPaymentDetails(null);
+    setPaymentValidationTrigger(false);
+    setPaidNow("");
+    setPaidNowError("");
+    setPaymentType("");
+    setBalanceAmount("");
+    setPaymentScreenShotBase64("");
+    setPaymentScreenShotBase64Error("");
+    setDrawerContentStatus("");
+    setPaymentHistory([]);
+    setIsShowRejectPaymentCommentBox(false);
+    setRejectPaymentComments("");
+    setRejectPaymentCommentsError("");
   };
 
   const handlePaginationChange = ({ page, limit }) => {
@@ -760,6 +742,22 @@ export default function TrainerPayment() {
       page,
       limit
     );
+  };
+
+  const getParticularCustomerDetails = async () => {
+    const payload = {
+      email: selectedPaymentDetails.customer_email,
+    };
+    try {
+      const response = await getCustomers(payload);
+      const customer_details = response?.data?.data?.customers[0];
+      console.log("customer full details", customer_details);
+      setCustomerDetails(customer_details);
+      setIsOpenCustomerDetailsDrawer(true);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    }
   };
 
   const handleRefresh = () => {
@@ -990,299 +988,34 @@ export default function TrainerPayment() {
       <Drawer
         title="Add Request"
         open={isOpenAddRequestDrawer}
-        onClose={formReset}
+        onClose={() => {
+          setIsOpenAddRequestDrawer(false);
+          setEditRequestItem(null);
+        }}
         width="50%"
         style={{ position: "relative", paddingBottom: 65 }}
       >
-        <Row gutter={16} style={{ marginTop: "14px" }}>
-          <Col span={8}>
-            <CommonMuiDatePicker
-              label="Bill Raise Date"
-              required={true}
-              onChange={(value) => {
-                setBillRaiseDate(value);
-                console.log("raise date", value);
-                const days_taken = getDayDifference(value);
-                console.log("days_taken", days_taken);
-                setDaysTakenToPay(days_taken);
-                const deadline = addWorkingDays(value, 14);
-                console.log("deadline", deadline);
-                setDeadLineDate(deadline);
-                if (validationTrigger) {
-                  setBillRaiseDateError(selectValidator(value));
-                }
-              }}
-              value={billRaiseDate}
-              error={billRaiseDateError}
-              disablePreviousDates={false}
-            />
-          </Col>
-
-          <Col span={8}>
-            <CommonSelectField
-              label="Streams"
-              options={streamOptions}
-              required={true}
-              onChange={(e) => {
-                setStreamId(e.target.value);
-                if (validationTrigger) {
-                  setStreamIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={streamId}
-              error={streamIdError}
-            />
-          </Col>
-
-          <Col span={8}>
-            <CommonSelectField
-              label="Attendance Status"
-              options={attendanceStatusOptions}
-              required={true}
-              onChange={(e) => {
-                setAttendanceStatusId(e.target.value);
-                if (validationTrigger) {
-                  setAttendanceStatusIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={attendanceStatusId}
-              error={attendanceStatusIdError}
-              errorFontSize={"10px"}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Attendance Type"
-              required={true}
-              options={attendanceTypeOptions}
-              onChange={(e) => {
-                setAttendanceType(e.target.value);
-                if (validationTrigger) {
-                  setAttendanceTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={attendanceType}
-              error={attendanceTypeError}
-            />
-          </Col>
-          <Col span={8}>
-            {attendanceType == "Link" ? (
-              <CommonInputField
-                label="Attendance Sheet Link"
-                required={true}
-                onChange={(e) => {
-                  setAttendanceSheetLink(e.target.value);
-                  if (validationTrigger) {
-                    setAttendanceSheetLinkError(
-                      addressValidator(e.target.value)
-                    );
-                  }
-                }}
-                value={attendanceSheetLink}
-                error={attendanceSheetLinkError}
-                errorFontSize={"9px"}
-              />
-            ) : (
-              <>
-                <ImageUploadCrop
-                  label="Attendance Screenshot"
-                  aspect={1}
-                  maxSizeMB={1}
-                  required={true}
-                  value={attendanceScreenShotBase64}
-                  onChange={(base64) => setAttendanceScreenShotBase64(base64)}
-                  onErrorChange={setAttendanceScreenShotBase64Error} // ✅ pass setter directly
-                />
-                {attendanceScreenShotBase64Error && validationTrigger ? (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#d32f2f",
-                      marginTop: 4,
-                    }}
-                  >
-                    {`Attendance Screenshot ${attendanceScreenShotBase64Error}`}
-                  </p>
-                ) : (
-                  ""
-                )}
-              </>
-            )}
-          </Col>
-          <Col span={8}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <CommonCustomerSelectField
-                  label="Select Customer"
-                  required={true}
-                  options={customersData}
-                  value={selectedCustomer}
-                  onChange={handleCustomerSelect}
-                  onInputChange={handleCustomerSearch}
-                  onDropdownOpen={handleCustomerDropdownOpen}
-                  onDropdownScroll={handleCustomerScroll}
-                  loading={customerSelectloading}
-                  showLabelStatus="Name"
-                  onBlur={() => {
-                    getCustomersData(null, 1);
-                  }}
-                  error={selectedCustomerError}
-                />
-              </div>
-              {selectedCustomer && (
-                <Tooltip
-                  placement="top"
-                  title="View Customer Details"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegEye
-                    size={16}
-                    className="trainers_action_icons"
-                    onClick={() => getParticularCustomerDetails(null)}
-                  />
-                </Tooltip>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonOutlinedInput
-              label="Commercial"
-              type="number"
-              required={true}
-              onChange={(e) => {
-                setCommercial(e.target.value);
-                if (validationTrigger) {
-                  setCommercialError(selectValidator(e.target.value));
-                }
-              }}
-              value={commercial}
-              error={commercialError}
-              icon={<LuIndianRupee size={16} />}
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Commercial %"
-              type="number"
-              required={true}
-              value={
-                commercialPercentage !== "" ? String(commercialPercentage) : ""
-              }
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  label="Trainer"
-                  required={true}
-                  options={trainersData}
-                  onChange={(e) => {
-                    setTrainerId(e.target.value);
-                    if (validationTrigger) {
-                      setTrainerIdError(selectValidator(e.target.value));
-                    }
-                    // getCustomerByTrainerIdData(e.target.value, 0);
-                  }}
-                  value={trainerId}
-                  error={trainerIdError}
-                  disabled={true}
-                />
-              </div>
-              {trainerId && (
-                <Tooltip
-                  placement="top"
-                  title="View Trainer Details"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegEye
-                    size={16}
-                    className="trainers_action_icons"
-                    onClick={() => {
-                      const clickedTrainer = trainersData.filter(
-                        (f) => f.id == trainerId
-                      );
-                      console.log("clickedTrainer", clickedTrainer);
-                      setTrainerType(
-                        clickedTrainer.length >= 1 &&
-                          clickedTrainer[0].trainer_type
-                          ? clickedTrainer[0].trainer_type
-                          : ""
-                      );
-                      setClickedTrainerDetails(clickedTrainer);
-                      setIsOpenTrainerDetailModal(true);
-                    }}
-                  />
-                </Tooltip>
-              )}
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonInputField
-              label="Days Taken To Pay"
-              required={true}
-              onChange={(e) => {
-                const input = e.target.value;
-
-                // Allow numbers, decimal point, or empty string
-                if (!/^\d*\.?\d*$/.test(input)) return;
-
-                setDaysTakenToPay(input);
-              }}
-              value={daysTakenToPay}
-              error={""}
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonMuiDatePicker
-              label="Deadline Date"
-              required={true}
-              onChange={(value) => {
-                setDeadLineDate(value);
-              }}
-              value={deadLineDate}
-              error={""}
-              disablePreviousDates={true}
-              disabled={true}
-            />
-          </Col>
-          {/* <Col span={8}>
-            <CommonInputField
-              label="Comments"
-              required={true}
-              multiline={true}
-              onChange={(e) => {
-                setRequsetComments(e.target.value);
-                setRequsetCommentsError(addressValidator(e.target.value));
-              }}
-              value={requestComments}
-              error={requestCommentsError}
-            />
-          </Col> */}
-        </Row>
+        <AddTrainerPaymentRequest
+          ref={addTrainerPaymentRequestUseRef}
+          trainersData={trainersData}
+          editRequestItem={editRequestItem}
+          setButtonLoading={setButtonLoading}
+          callgetTrainerPaymentsApi={() => {
+            setIsOpenAddRequestDrawer(false);
+            setEditRequestItem(null);
+            setPagination({
+              page: 1,
+            });
+            setButtonLoading(false);
+            getTrainerPaymentsData(
+              selectedDates[0],
+              selectedDates[1],
+              status || null,
+              1,
+              pagination.limit
+            );
+          }}
+        />
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
@@ -1293,13 +1026,907 @@ export default function TrainerPayment() {
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={handleRequestSubmit}
+                onClick={() =>
+                  addTrainerPaymentRequestUseRef.current?.handleRequestSubmit()
+                }
               >
                 Submit
               </button>
             )}
           </div>
         </div>
+      </Drawer>
+
+      {/* Payment Details Drawer */}
+      <Drawer
+        title="Update Status"
+        open={isOpenDetailsDrawer}
+        onClose={paymentformReset}
+        width="50%"
+        style={{ position: "relative", paddingBottom: "65px" }}
+        className="customer_statusupdate_drawer"
+      >
+        {selectedPaymentDetails && (
+          <>
+            <Row
+              gutter={16}
+              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+            >
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Bill Raise Date
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {moment(selectedPaymentDetails.bill_raisedate).format(
+                        "DD/MM/YYYY"
+                      )}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Trainer Name</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <EllipsisTooltip
+                        text={
+                          selectedPaymentDetails &&
+                          selectedPaymentDetails.trainer_name
+                            ? selectedPaymentDetails.trainer_name
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                      <FaRegEye
+                        size={16}
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          const clickedTrainer = trainersData.filter(
+                            (f) => f.id == selectedPaymentDetails.trainer_id
+                          );
+                          console.log("clickedTrainer", clickedTrainer);
+                          setClickedTrainerDetails(clickedTrainer);
+                          setIsOpenTrainerDetailModal(true);
+                        }}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Customer Name
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <EllipsisTooltip
+                        text={
+                          selectedPaymentDetails &&
+                          selectedPaymentDetails.customer_name
+                            ? selectedPaymentDetails.customer_name
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                      <FaRegEye
+                        size={16}
+                        className="trainers_action_icons"
+                        onClick={() => getParticularCustomerDetails(null)}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Commercial</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.request_amount !== undefined &&
+                      selectedPaymentDetails.request_amount !== null
+                        ? "₹" + selectedPaymentDetails.request_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Commercial%</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {" "}
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.commercial_percentage !==
+                        undefined &&
+                      selectedPaymentDetails.commercial_percentage !== null
+                        ? selectedPaymentDetails.commercial_percentage + "%"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.balance_amount !== undefined &&
+                      selectedPaymentDetails.balance_amount !== null
+                        ? "₹" + selectedPaymentDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Streams</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {selectedPaymentDetails && selectedPaymentDetails.streams
+                        ? selectedPaymentDetails.streams
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Attendance Status
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.attendance_status
+                        ? selectedPaymentDetails.attendance_status
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        {selectedPaymentDetails &&
+                        selectedPaymentDetails.attendance_sheetlink
+                          ? "Attendance Sheet Link"
+                          : "Attendance Screenshot"}
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.attendance_sheetlink ? (
+                      <EllipsisTooltip
+                        text={
+                          selectedPaymentDetails &&
+                          selectedPaymentDetails.attendance_sheetlink
+                            ? selectedPaymentDetails.attendance_sheetlink
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    ) : (
+                      <button
+                        className="pendingcustomer_paymentscreenshot_viewbutton"
+                        onClick={() => {
+                          setIsOpenAttendanceScreenshotModal(true);
+                          setViewAttendanceScreenshot(
+                            selectedPaymentDetails.attendance_screenshot
+                          );
+                        }}
+                      >
+                        <FaRegEye size={16} /> View screenshot
+                      </button>
+                    )}
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Days Taken To Pay
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.days_taken_topay !== undefined &&
+                      selectedPaymentDetails.days_taken_topay !== null
+                        ? selectedPaymentDetails.days_taken_topay
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Deadline Date
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {selectedPaymentDetails &&
+                      selectedPaymentDetails.deadline_date
+                        ? moment(selectedPaymentDetails.deadline_date).format(
+                            "DD/MM/YYYY"
+                          )
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div className="customer_statusupdate_adddetailsContainer">
+              {drawerContentStatus == "Requested" ||
+              drawerContentStatus == "Update Request" ? (
+                <>
+                  {paymentHistory.length >= 1 ? (
+                    <div>
+                      <p
+                        style={{
+                          fontWeight: 600,
+                          color: "#333",
+                          fontSize: "16px",
+                        }}
+                      >
+                        Payment History
+                      </p>
+
+                      <div>
+                        <div
+                          style={{ marginTop: "12px", marginBottom: "20px" }}
+                        >
+                          <Collapse
+                            activeKey={collapseDefaultKey}
+                            onChange={(keys) => setCollapseDefaultKey(keys)}
+                            className="customer_updatepayment_history_collapse"
+                          >
+                            {paymentHistory.map((item, index) => {
+                              const panelKey = String(index + 1); // convert to string
+                              return (
+                                <Collapse.Panel
+                                  key={panelKey} // unique key
+                                  header={
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        width: "100%",
+                                        fontSize: "13px",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <span>
+                                        Bill Raise Date -{" "}
+                                        <span style={{ fontWeight: "500" }}>
+                                          {moment(
+                                            selectedPaymentDetails.bill_raisedate
+                                          ).format("DD/MM/YYYY")}
+                                        </span>
+                                      </span>
+
+                                      {item.finance_status === "Rejected" ? (
+                                        <div className="customer_trans_statustext_container">
+                                          <FaRegCircleXmark color="#d32f2f" />
+                                          <p
+                                            style={{
+                                              color: "#d32f2f",
+                                            }}
+                                          >
+                                            Rejected
+                                          </p>
+                                        </div>
+                                      ) : (
+                                        <div className="customer_trans_statustext_container">
+                                          <BsPatchCheckFill color="#3c9111" />
+                                          <p
+                                            style={{
+                                              color: "#3c9111",
+                                            }}
+                                          >
+                                            Verified
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  }
+                                >
+                                  <div style={{ padding: "0px 12px" }}>
+                                    <Row
+                                      gutter={16}
+                                      style={{
+                                        marginTop: "6px",
+                                        marginBottom: "8px",
+                                      }}
+                                    >
+                                      <Col span={12}>
+                                        <Row>
+                                          <Col span={12}>
+                                            <div className="customerdetails_rowheadingContainer">
+                                              <p className="customerdetails_rowheading">
+                                                Paid Amount
+                                              </p>
+                                            </div>
+                                          </Col>
+                                          <Col span={12}>
+                                            <p className="customerdetails_text">
+                                              {"₹" + item.paid_amount}
+                                            </p>
+                                          </Col>
+                                        </Row>
+                                      </Col>
+
+                                      <Col span={12}>
+                                        <Row>
+                                          <Col span={12}>
+                                            <div className="customerdetails_rowheadingContainer">
+                                              <p className="customerdetails_rowheading">
+                                                Payment Type
+                                              </p>
+                                            </div>
+                                          </Col>
+                                          <Col span={12}>
+                                            <p className="customerdetails_text">
+                                              {item.payment_type}
+                                            </p>
+                                          </Col>
+                                        </Row>
+                                      </Col>
+                                    </Row>
+
+                                    {item.finance_status == "Rejected" ? (
+                                      <>
+                                        <Divider className="customer_statusupdate_divider" />
+                                        <div
+                                          style={{
+                                            padding: "0px 12px 6px 0px",
+                                          }}
+                                        >
+                                          <Row>
+                                            <Col span={24}>
+                                              <Row>
+                                                <Col span={6}>
+                                                  <div className="customerdetails_rowheadingContainer">
+                                                    <p
+                                                      className="customerdetails_rowheading"
+                                                      style={{
+                                                        color: "#d32f2f",
+                                                      }}
+                                                    >
+                                                      Rejection Reason:
+                                                    </p>
+                                                  </div>
+                                                </Col>
+                                                <Col span={18}>
+                                                  <p className="customerdetails_text">
+                                                    {item.reject_reason}
+                                                  </p>
+                                                </Col>
+                                              </Row>
+                                            </Col>
+                                          </Row>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <Row
+                                        gutter={16}
+                                        style={{
+                                          marginTop: "16px",
+                                          marginBottom: "12px",
+                                        }}
+                                      >
+                                        <Col span={12}>
+                                          <Row>
+                                            <Col span={12}>
+                                              <div className="customerdetails_rowheadingContainer">
+                                                <p className="customerdetails_rowheading">
+                                                  Paid Date
+                                                </p>
+                                              </div>
+                                            </Col>
+                                            <Col span={12}>
+                                              <p className="customerdetails_text">
+                                                {item.verified_date
+                                                  ? moment(
+                                                      item.verified_date
+                                                    ).format("DD/MM/YYYY")
+                                                  : "-"}
+                                              </p>
+                                            </Col>
+                                          </Row>
+                                        </Col>
+
+                                        <Col span={12}>
+                                          <Row>
+                                            <Col span={12}>
+                                              <div className="customerdetails_rowheadingContainer">
+                                                <p className="customerdetails_rowheading">
+                                                  Payment Screenshot
+                                                </p>
+                                              </div>
+                                            </Col>
+                                            <Col span={12}>
+                                              <button
+                                                className="pendingcustomer_paymentscreenshot_viewbutton"
+                                                onClick={() => {
+                                                  setIsOpenPaymentScreenshotModal(
+                                                    true
+                                                  );
+                                                  setTransactionScreenshot(
+                                                    item.payment_screenshot
+                                                  );
+                                                }}
+                                              >
+                                                <FaRegEye size={16} /> View
+                                                screenshot
+                                              </button>
+                                            </Col>
+                                          </Row>
+                                        </Col>
+                                      </Row>
+                                    )}
+                                  </div>
+                                </Collapse.Panel>
+                              );
+                            })}
+                          </Collapse>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                  <p className="customer_statusupdate_adddetails_heading">
+                    Add Details
+                  </p>
+
+                  <Row
+                    gutter={16}
+                    style={{ marginTop: "20px", marginBottom: "40px" }}
+                  >
+                    <Col span={8}>
+                      <CommonInputField
+                        label="Pay Amount"
+                        required={true}
+                        onChange={handlePaidNow}
+                        value={paidNow}
+                        error={paidNowError}
+                        errorFontSize="10px"
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <CommonSelectField
+                        label="Payment Type"
+                        required={true}
+                        options={paymentTypeOptions}
+                        value={paymentType}
+                        error={""}
+                        disabled={true}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <CommonInputField
+                        label="Balance Amount"
+                        required={true}
+                        value={balanceAmount}
+                        disabled={true}
+                        type="number"
+                      />
+                    </Col>
+                  </Row>
+                </>
+              ) : (
+                ""
+              )}
+
+              {drawerContentStatus == "Awaiting Finance" && (
+                <div>
+                  {paymentHistory.length >= 1 ? (
+                    <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                      <Collapse
+                        activeKey={collapseDefaultKey}
+                        onChange={(keys) => setCollapseDefaultKey(keys)}
+                        className="customer_updatepayment_history_collapse"
+                      >
+                        {paymentHistory.map((item, index) => {
+                          return (
+                            <Collapse.Panel
+                              key={index + 1} // unique key
+                              header={
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                    fontSize: "13px",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span>
+                                    Bill Raise Date -{" "}
+                                    <span style={{ fontWeight: "500" }}>
+                                      {moment(
+                                        selectedPaymentDetails.bill_raisedate
+                                      ).format("DD/MM/YYYY")}
+                                    </span>
+                                  </span>
+
+                                  {item.finance_status === "Pending" ? (
+                                    <div
+                                      style={{ display: "flex", gap: "12px" }}
+                                    >
+                                      <Button
+                                        className="customer_finance_rejectbutton"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePaymentReject(item.id);
+                                        }}
+                                      >
+                                        Reject
+                                      </Button>
+
+                                      <Button
+                                        className="customer_finance_verifybutton"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePaymentApprove(item.id);
+                                        }}
+                                      >
+                                        Verify
+                                      </Button>
+                                    </div>
+                                  ) : item.finance_status === "Rejected" ? (
+                                    <div className="customer_trans_statustext_container">
+                                      <FaRegCircleXmark color="#d32f2f" />
+                                      <p
+                                        style={{
+                                          color: "#d32f2f",
+                                          fontWeight: 500,
+                                        }}
+                                      >
+                                        Rejected
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div className="customer_trans_statustext_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p
+                                        style={{
+                                          color: "#3c9111",
+                                          fontWeight: 500,
+                                        }}
+                                      >
+                                        Verified
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              }
+                            >
+                              <div style={{ padding: "0px 12px" }}>
+                                <Row
+                                  gutter={16}
+                                  style={{
+                                    marginTop: "6px",
+                                    marginBottom: "8px",
+                                  }}
+                                >
+                                  <Col span={12}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Pay Amount
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <p className="customerdetails_text">
+                                          {"₹" + item.paid_amount}
+                                        </p>
+                                      </Col>
+                                    </Row>
+                                  </Col>
+
+                                  <Col span={12}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Payment Type
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <p className="customerdetails_text">
+                                          {item.payment_type}
+                                        </p>
+                                      </Col>
+                                    </Row>
+                                  </Col>
+                                </Row>
+
+                                {item.finance_status == "Approved" ? (
+                                  <Row
+                                    gutter={16}
+                                    style={{
+                                      marginTop: "16px",
+                                      marginBottom: "12px",
+                                    }}
+                                  >
+                                    <Col span={12}>
+                                      <Row>
+                                        <Col span={12}>
+                                          <div className="customerdetails_rowheadingContainer">
+                                            <p className="customerdetails_rowheading">
+                                              Paid Date
+                                            </p>
+                                          </div>
+                                        </Col>
+                                        <Col span={12}>
+                                          <p className="customerdetails_text">
+                                            {item.verified_date
+                                              ? moment(
+                                                  item.verified_date
+                                                ).format("DD/MM/YYYY")
+                                              : "-"}
+                                          </p>
+                                        </Col>
+                                      </Row>
+                                    </Col>
+
+                                    <Col span={12}>
+                                      <Row>
+                                        <Col span={12}>
+                                          <div className="customerdetails_rowheadingContainer">
+                                            <p className="customerdetails_rowheading">
+                                              Payment Screenshot
+                                            </p>
+                                          </div>
+                                        </Col>
+                                        <Col span={12}>
+                                          <button
+                                            className="pendingcustomer_paymentscreenshot_viewbutton"
+                                            onClick={() => {
+                                              setIsOpenPaymentScreenshotModal(
+                                                true
+                                              );
+                                              setTransactionScreenshot(
+                                                item.payment_screenshot
+                                              );
+                                            }}
+                                          >
+                                            <FaRegEye size={16} /> View
+                                            screenshot
+                                          </button>
+                                        </Col>
+                                      </Row>
+                                    </Col>
+                                  </Row>
+                                ) : (
+                                  <Row
+                                    gutter={16}
+                                    style={{
+                                      marginTop: "40px",
+                                      marginBottom: "20px",
+                                    }}
+                                  >
+                                    <Col span={12}>
+                                      <ImageUploadCrop
+                                        label="Payment Screenshot"
+                                        aspect={1}
+                                        maxSizeMB={1}
+                                        required={true}
+                                        value={paymentScreenShotBase64}
+                                        onChange={(base64) =>
+                                          setPaymentScreenShotBase64(base64)
+                                        }
+                                        onErrorChange={
+                                          setPaymentScreenShotBase64Error
+                                        } // ✅ pass setter directly
+                                      />
+                                      {paymentScreenShotBase64Error &&
+                                      paymentValidationTrigger ? (
+                                        <p
+                                          style={{
+                                            fontSize: "12px",
+                                            color: "#d32f2f",
+                                            marginTop: 4,
+                                          }}
+                                        >
+                                          {`Payment Screenshot ${paymentScreenShotBase64Error}`}
+                                        </p>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </Col>
+                                  </Row>
+                                )}
+                              </div>
+                            </Collapse.Panel>
+                          );
+                        })}
+                      </Collapse>
+
+                      {isShowRejectPaymentCommentBox ? (
+                        <div
+                          style={{ marginTop: "12px", position: "relative" }}
+                          id="customer_trainerreject_commentContainer"
+                        >
+                          <CommonTextArea
+                            label="Comments"
+                            required={true}
+                            onChange={(e) => {
+                              setRejectPaymentComments(e.target.value);
+                              setRejectPaymentCommentsError(
+                                addressValidator(e.target.value)
+                              );
+                            }}
+                            value={rejectPaymentComments}
+                            error={rejectPaymentCommentsError}
+                          />
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  ) : (
+                    <p className="customer_trainerhistory_nodatatext">
+                      No Data found
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {drawerContentStatus == "Requested" ||
+            drawerContentStatus == "Update Request" ? (
+              <div className="leadmanager_tablefiler_footer">
+                <div className="leadmanager_submitlead_buttoncontainer">
+                  {buttonLoading ? (
+                    <button className="users_adddrawer_loadingcreatebutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="users_adddrawer_createbutton"
+                      onClick={handlePaymentSubmit}
+                    >
+                      {drawerContentStatus == "Requested" ? "Submit" : "Update"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+          </>
+        )}
+      </Drawer>
+
+      {/* attendance screenshot modal */}
+      <Modal
+        title="Attendance Screenshot"
+        open={isOpenAttendanceScreenshotModal}
+        onCancel={() => {
+          setIsOpenAttendanceScreenshotModal(false);
+          setViewAttendanceScreenshot("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {viewAttendanceScreenshot ? (
+              <img
+                src={`data:image/png;base64,${viewAttendanceScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
+      </Modal>
+
+      {/* payment screenshot modal */}
+      <Modal
+        title="Payment Screenshot"
+        open={isOpenPaymentScreenshotModal}
+        onCancel={() => {
+          setIsOpenPaymentScreenshotModal(false);
+          setTransactionScreenshot("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {transactionScreenshot ? (
+              <img
+                src={`data:image/png;base64,${transactionScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
+      </Modal>
+
+      {/* customer fulldetails drawer */}
+      <Drawer
+        title="Customer Details"
+        open={isOpenCustomerDetailsDrawer}
+        onClose={() => {
+          setIsOpenCustomerDetailsDrawer(false);
+          setCustomerDetails(null);
+        }}
+        width="50%"
+        style={{ position: "relative" }}
+      >
+        {isOpenCustomerDetailsDrawer ? (
+          <ParticularCustomerDetails
+            customerDetails={customerDetails}
+            isCustomerPage={true}
+          />
+        ) : (
+          ""
+        )}
       </Drawer>
 
       {/* trainer fulldetails modal */}
@@ -1494,272 +2121,6 @@ export default function TrainerPayment() {
             </Row>
           );
         })}
-      </Modal>
-
-      {/* customer fulldetails drawer */}
-      <Drawer
-        title="Customer Details"
-        open={isOpenCustomerDetailsDrawer}
-        onClose={() => {
-          setIsOpenCustomerDetailsDrawer(false);
-          setCustomerDetails(null);
-        }}
-        width="50%"
-        style={{ position: "relative" }}
-      >
-        {isOpenCustomerDetailsDrawer ? (
-          <ParticularCustomerDetails
-            customerDetails={customerDetails}
-            isCustomerPage={true}
-          />
-        ) : (
-          ""
-        )}
-      </Drawer>
-
-      {/* Payment Details Drawer */}
-      <Drawer
-        title="Payment Request Details"
-        open={isOpenDetailsDrawer}
-        onClose={() => {
-          setIsOpenDetailsDrawer(false);
-          setSelectedPaymentDetails(null);
-        }}
-        width="50%"
-        style={{ position: "relative" }}
-      >
-        {selectedPaymentDetails && (
-          <>
-            <Row gutter={16} style={{ marginTop: "0px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Bill Raise Date
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {moment(selectedPaymentDetails.bill_raisedate).format(
-                        "DD/MM/YYYY"
-                      )}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        selectedPaymentDetails &&
-                        selectedPaymentDetails.trainer_name
-                          ? selectedPaymentDetails.trainer_name
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Customer Name
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        selectedPaymentDetails &&
-                        selectedPaymentDetails.customer_name
-                          ? selectedPaymentDetails.customer_name
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.request_amount !== undefined &&
-                      selectedPaymentDetails.request_amount !== null
-                        ? "₹" + selectedPaymentDetails.request_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial%</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">14%</p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Streams</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails && selectedPaymentDetails.streams
-                        ? selectedPaymentDetails.streams
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Attendance Status
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.attendance_status
-                        ? selectedPaymentDetails.attendance_status
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        {selectedPaymentDetails &&
-                        selectedPaymentDetails.attendance_sheetlink
-                          ? "Attendance Sheet Link"
-                          : "Attendance Screenshot"}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    {selectedPaymentDetails &&
-                    selectedPaymentDetails.attendance_sheetlink ? (
-                      <EllipsisTooltip
-                        text={
-                          selectedPaymentDetails &&
-                          selectedPaymentDetails.attendance_sheetlink
-                            ? selectedPaymentDetails.attendance_sheetlink
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    ) : (
-                      <button
-                        className="pendingcustomer_paymentscreenshot_viewbutton"
-                        onClick={() => {
-                          setIsOpenAttendanceScreenshotModal(true);
-                          setViewAttendanceScreenshot(
-                            selectedPaymentDetails.attendance_screenshot
-                          );
-                        }}
-                      >
-                        <FaRegEye size={16} /> View screenshot
-                      </button>
-                    )}
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Days Taken To Pay
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.days_taken_topay !== undefined &&
-                      selectedPaymentDetails.days_taken_topay !== null
-                        ? selectedPaymentDetails.days_taken_topay
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Deadline Date
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.deadline_date
-                        ? moment(selectedPaymentDetails.deadline_date).format(
-                            "DD/MM/YYYY"
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </>
-        )}
-      </Drawer>
-
-      {/* attendance screenshot modal */}
-      <Modal
-        title="Attendance Screenshot"
-        open={isOpenAttendanceScreenshotModal}
-        onCancel={() => {
-          setIsOpenAttendanceScreenshotModal(false);
-          setViewAttendanceScreenshot("");
-        }}
-        footer={false}
-        width="32%"
-        className="customer_paymentscreenshot_modal"
-      >
-        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
-          <PrismaZoom>
-            {viewAttendanceScreenshot ? (
-              <img
-                src={`data:image/png;base64,${viewAttendanceScreenshot}`}
-                alt="payment screenshot"
-                className="customer_paymentscreenshot_image"
-              />
-            ) : (
-              "-"
-            )}
-          </PrismaZoom>
-        </div>
       </Modal>
     </div>
   );

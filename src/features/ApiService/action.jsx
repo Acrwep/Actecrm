@@ -311,6 +311,73 @@ export const getTrainerPayments = async (payload) => {
     throw error;
   }
 };
+
+export const addTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/addTrainerPaymentTransaction",
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/verifyTrainerPaymentTransaction",
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//-------new----------
+export const createTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/createTrainerPaymentTransaction",
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const approveTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/approveTrainerPaymentTransaction",
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectTrainerPayment = async (payload) => {
+  try {
+    const response = await api.post("/api/rejectTrainerPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.post("/api/resendRejectedRequest", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // lead api's
 export const getAllAreas = async (payload) => {
   try {

@@ -551,11 +551,7 @@ export default function OverallDueCustomers({
                   ...col,
                   width: 110,
                   render: (text, record) => {
-                    if (record.is_trainer_verified === 1) {
-                      return <p>{text}</p>;
-                    } else {
-                      return <p>-</p>;
-                    }
+                    return <p>{text}</p>;
                   },
                 };
               case "course_name":
