@@ -1102,7 +1102,7 @@ export default function Dashboard() {
       end_date: regionwiseleads_dates
         ? regionwiseleads_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      // user_ids: downliners,
       type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
     try {
@@ -1259,7 +1259,7 @@ export default function Dashboard() {
       end_date: branchwisesales_dates
         ? branchwisesales_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      // user_ids: downliners,
       type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
     };
     try {

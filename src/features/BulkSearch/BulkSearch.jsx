@@ -31,6 +31,7 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import { useSelector } from "react-redux";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonSpinner from "../Common/CommonSpinner";
 
 const { Dragger } = Upload;
 
@@ -117,7 +118,7 @@ export default function BulkSearch() {
       key: "lead_by",
       dataIndex: "lead_by",
       width: 140,
-      render: (text) => {
+      render: (text, record) => {
         return <EllipsisTooltip text={`${record.lead_by_id} - ${text}`} />;
       },
     },
@@ -586,12 +587,21 @@ export default function BulkSearch() {
             >
               Cancel
             </Button>
-            <Button
-              className="bulksearch_bulkmodal_footerimport_button"
-              onClick={handleBulkUploadSubmit}
-            >
-              Import
-            </Button>
+            {loading ? (
+              <Button
+                className="bulksearch_bulkmodal_footerimport_button"
+                style={{ opacity: "0.7", cursor: "default" }}
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                className="bulksearch_bulkmodal_footerimport_button"
+                onClick={handleBulkUploadSubmit}
+              >
+                Import
+              </Button>
+            )}
           </div>,
         ]}
       >
