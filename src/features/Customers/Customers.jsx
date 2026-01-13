@@ -190,10 +190,10 @@ export default function Customers() {
       },
     },
     {
-      title: "Created At",
+      title: "Cr.Created At",
       key: "created_date",
       dataIndex: "created_date",
-      width: 100,
+      width: 115,
       render: (text, record) => {
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
@@ -1488,7 +1488,8 @@ export default function Customers() {
             case "created_date":
               return {
                 ...col,
-                width: 100,
+                title: "Cr.Created At",
+                width: 115,
                 render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
               };
             case "name":
@@ -2997,81 +2998,42 @@ export default function Customers() {
             }}
           />
 
-          <Tooltip
-            placement="bottomRight"
-            color="#fff"
-            // open={true}
-            classNames={{
-              body: "customers_download_tooltip_body",
-              root: "customers_download_tooltip_root",
-            }}
-            style={{ body: { padding: "6px 0" } }}
-            title={
-              <>
-                {permissions.includes("Download Customers Data") && (
-                  <div
-                    className="customer_download_container"
-                    style={{
-                      borderTopLeftRadius: "6px",
-                      borderTopRightRadius: "6px",
-                    }}
-                    onClick={() => {
-                      const isWithIn30days = isWithin30Days(
-                        selectedDates[0],
-                        selectedDates[1]
-                      );
-                      console.log("isWithIn30days", isWithIn30days);
-                      if (isWithIn30days == false) {
-                        CommonMessage(
-                          "error",
-                          "Please choose a date range within 30 days."
-                        );
-                        return;
-                      }
-                      const alterColumns = columns.filter(
-                        (f) => f.title != "Action"
-                      );
+          {permissions.includes("Download Customers Data") && (
+            <Tooltip placement="top" title="Download">
+              <Button
+                className="reports_download_button"
+                onClick={() => {
+                  const isWithIn30days = isWithin30Days(
+                    selectedDates[0],
+                    selectedDates[1]
+                  );
+                  console.log("isWithIn30days", isWithIn30days);
+                  if (isWithIn30days == false) {
+                    CommonMessage(
+                      "error",
+                      "Please choose a date range within 30 days."
+                    );
+                    return;
+                  }
+                  const alterColumns = columns.filter(
+                    (f) => f.title != "Action"
+                  );
 
-                      DownloadTableAsCSV(
-                        customersData,
-                        alterColumns,
-                        `${moment(selectedDates[0]).format(
-                          "DD-MM-YYYY"
-                        )} to ${moment(selectedDates[1]).format(
-                          "DD-MM-YYYY"
-                        )} ${status == "" ? "All" : status} Customers.csv`
-                      );
-                    }}
-                  >
-                    <DownloadOutlined />
-                    <p className="customer_download_text">Download</p>
-                  </div>
-                )}
-
-                <div
-                  className="customer_download_container"
-                  style={{ marginBottom: "1px" }}
-                  onClick={() => {
-                    if (permissions.includes("Create Email Template")) {
-                      setIsOpenEmailTemplateDrawer(true);
-                      setDrawerContentStatus("Create Email Template");
-                    } else {
-                      CommonMessage("error", "Access Denied");
-                    }
-                  }}
-                >
-                  <HiOutlineMail />
-                  <p className="customer_download_text">
-                    Create Email Template
-                  </p>
-                </div>
-              </>
-            }
-          >
-            <Button className="customer_download_button">
-              <HiDotsVertical size={16} color="#585858ff" />
-            </Button>
-          </Tooltip>
+                  DownloadTableAsCSV(
+                    customersData,
+                    alterColumns,
+                    `${moment(selectedDates[0]).format(
+                      "DD-MM-YYYY"
+                    )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
+                      status == "" ? "All" : status
+                    } Customers.csv`
+                  );
+                }}
+              >
+                <DownloadOutlined size={10} className="download_icon" />
+              </Button>
+            </Tooltip>
+          )}
 
           <Tooltip placement="top" title="Refresh">
             <Button
@@ -4951,23 +4913,18 @@ export default function Customers() {
 
       {/* email template drawer */}
       <Drawer
-        title={
-          drawerContentStatus == "Send Email"
-            ? "Send Email"
-            : "Create Email Template"
-        }
+        title="Send Email"
         open={isOpenEmailTemplateDrawer}
         onClose={() => {
           setIsOpenEmailTemplateDrawer(false);
           setCustomerDetails(null);
           setDrawerContentStatus("");
         }}
-        width={drawerContentStatus == "Send Email" ? "50%" : "40%"}
+        width="50%"
         style={{ position: "relative", paddingBottom: "60px" }}
         className="customer_statusupdate_drawer"
       >
-        {drawerContentStatus == "Create Email Template" ||
-        drawerContentStatus == "Send Email" ? (
+        {drawerContentStatus == "Send Email" ? (
           <CustomerEmailTemplate
             ref={emailTemplateRef}
             setUpdateButtonLoading={setUpdateButtonLoading}
@@ -4988,13 +4945,9 @@ export default function Customers() {
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={
-                  drawerContentStatus == "Send Email"
-                    ? () => emailTemplateRef.current?.handleSendEmail()
-                    : () => emailTemplateRef.current?.handleTemplateCreate()
-                }
+                onClick={() => emailTemplateRef.current?.handleSendEmail()}
               >
-                {drawerContentStatus == "Send Email" ? "Send" : "Create"}
+                Send
               </button>
             )}
           </div>

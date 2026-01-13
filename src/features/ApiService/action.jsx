@@ -282,10 +282,7 @@ export const sendTrainerFormEmail = async (payload) => {
 // trainer payment api's
 export const insertTrainerPaymentRequest = async (payload) => {
   try {
-    const response = await api.post(
-      "/api/insertTrainerPaymentRequest",
-      payload
-    );
+    const response = await api.post("/api/requestPayment", payload);
     return response;
   } catch (error) {
     throw error;
@@ -295,6 +292,15 @@ export const insertTrainerPaymentRequest = async (payload) => {
 export const updateTrainerPaymentRequest = async (payload) => {
   try {
     const response = await api.put("/api/updateTrainerPaymentRequest", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomersByTrainerId = async (trainer_id) => {
+  try {
+    const response = await api.get(`/api/getStudents?trainer_id=${trainer_id}`);
     return response;
   } catch (error) {
     throw error;

@@ -482,3 +482,29 @@
   margin-right: 2px;
   color: #333;
 }
+
+/* add trainer payment request styles */
+.trainerpaymentrequest_addrequestdrawer_rowcontainer {
+  padding: 0px 24px 0px 24px;
+}
+.trainerpaymentrequest_addrequestdrawer_deletebutton {
+  background-color: #d32f2f13;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #d32f2f;
+  border-color: #d32f2f13;
+  font-size: 13px;
+  font-weight: 500;
+  /* padding: 6px 22px; */
+  height: 34px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.trainerpaymentrequest_addrequestdrawer_deletebutton:hover {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}

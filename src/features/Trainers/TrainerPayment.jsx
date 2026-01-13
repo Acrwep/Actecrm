@@ -64,6 +64,8 @@ export default function TrainerPayment() {
   const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
   //select trainer usestates
   const [trainersData, setTrainersData] = useState([]);
+  const [isOpenAddRequestComponent, setIsOpenAddRequestComponent] =
+    useState(false);
   //form usestates
   const [editRequestItem, setEditRequestItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -958,6 +960,7 @@ export default function TrainerPayment() {
             className="leadmanager_addleadbutton"
             onClick={() => {
               setIsOpenAddRequestDrawer(true);
+              setIsOpenAddRequestComponent(true);
             }}
           >
             Add Request
@@ -991,31 +994,36 @@ export default function TrainerPayment() {
         onClose={() => {
           setIsOpenAddRequestDrawer(false);
           setEditRequestItem(null);
+          setIsOpenAddRequestComponent(false);
         }}
         width="50%"
+        className="customer_statusupdate_drawer"
         style={{ position: "relative", paddingBottom: 65 }}
       >
-        <AddTrainerPaymentRequest
-          ref={addTrainerPaymentRequestUseRef}
-          trainersData={trainersData}
-          editRequestItem={editRequestItem}
-          setButtonLoading={setButtonLoading}
-          callgetTrainerPaymentsApi={() => {
-            setIsOpenAddRequestDrawer(false);
-            setEditRequestItem(null);
-            setPagination({
-              page: 1,
-            });
-            setButtonLoading(false);
-            getTrainerPaymentsData(
-              selectedDates[0],
-              selectedDates[1],
-              status || null,
-              1,
-              pagination.limit
-            );
-          }}
-        />
+        {isOpenAddRequestComponent && (
+          <AddTrainerPaymentRequest
+            ref={addTrainerPaymentRequestUseRef}
+            trainersData={trainersData}
+            editRequestItem={editRequestItem}
+            setButtonLoading={setButtonLoading}
+            callgetTrainerPaymentsApi={() => {
+              setIsOpenAddRequestDrawer(false);
+              setEditRequestItem(null);
+              setIsOpenAddRequestComponent(false);
+              setPagination({
+                page: 1,
+              });
+              setButtonLoading(false);
+              getTrainerPaymentsData(
+                selectedDates[0],
+                selectedDates[1],
+                status || null,
+                1,
+                pagination.limit
+              );
+            }}
+          />
+        )}
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">

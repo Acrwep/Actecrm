@@ -1689,3 +1689,10 @@
   font-size: 13px;
   color: gray;
 }
+
+/* email template styles */
+.emailtemplate_createbutton {
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+  margin-top: 5px;
+}

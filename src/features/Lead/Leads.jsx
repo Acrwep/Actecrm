@@ -246,6 +246,11 @@ export default function Leads({
       key: "lead_assigned_to_name",
       dataIndex: "lead_assigned_to_name",
       width: 160,
+      sorter: (a, b) =>
+        (a.lead_assigned_to_name || "").localeCompare(
+          b.lead_assigned_to_name || ""
+        ),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
         return <EllipsisTooltip text={lead_executive} />;
@@ -284,6 +289,8 @@ export default function Leads({
       key: "country",
       dataIndex: "country",
       width: 120,
+      sorter: (a, b) => (a.country || "").localeCompare(b.country || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text) => {
         return (
           <div>
@@ -297,6 +304,8 @@ export default function Leads({
       key: "state",
       dataIndex: "state",
       width: 150,
+      sorter: (a, b) => (a.state || "").localeCompare(b.state || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         return (
           <div>
@@ -305,18 +314,30 @@ export default function Leads({
         );
       },
     },
-    { title: "City ", key: "area_id", dataIndex: "area_id", width: 120 },
+    {
+      title: "City ",
+      key: "area_id",
+      dataIndex: "area_id",
+      width: 120,
+      sorter: (a, b) => (a.area_id || "").localeCompare(b.area_id || ""),
+      sortDirections: ["ascend", "descend"],
+    },
     {
       title: "Lead Source",
       key: "lead_type",
       dataIndex: "lead_type",
       width: 140,
+      sorter: (a, b) => (a.lead_type || "").localeCompare(b.lead_type || ""),
+      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Primary Course",
       key: "primary_course",
       dataIndex: "primary_course",
       width: 200,
+      sorter: (a, b) =>
+        (a.primary_course || "").localeCompare(b.primary_course || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -346,6 +367,9 @@ export default function Leads({
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
+      sorter: (a, b) =>
+        (a.region_name || "").localeCompare(b.region_name || ""),
+      sortDirections: ["ascend", "descend"],
       width: 140,
     },
     {
@@ -353,6 +377,9 @@ export default function Leads({
       key: "branch_name",
       dataIndex: "branch_name",
       width: 160,
+      sorter: (a, b) =>
+        (a.branch_name || "").localeCompare(b.branch_name || ""),
+      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Batch Track",
@@ -384,6 +411,9 @@ export default function Leads({
       dataIndex: "lead_status",
       fixed: "right",
       width: 130,
+      sorter: (a, b) =>
+        (a.lead_status || "").localeCompare(b.lead_status || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text) => {
         return (
           <div
@@ -623,6 +653,11 @@ export default function Leads({
             case "lead_assigned_to_name":
               return {
                 ...col,
+                sorter: (a, b) =>
+                  (a.lead_assigned_to_name || "").localeCompare(
+                    b.lead_assigned_to_name || ""
+                  ),
+                sortDirections: ["ascend", "descend"],
                 render: (text, record) => {
                   const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
                   return <EllipsisTooltip text={lead_executive} />;
@@ -652,6 +687,9 @@ export default function Leads({
             case "country":
               return {
                 ...col,
+                sorter: (a, b) =>
+                  (a.country || "").localeCompare(b.country || ""),
+                sortDirections: ["ascend", "descend"],
                 render: (text) => {
                   return (
                     <div>
@@ -663,6 +701,8 @@ export default function Leads({
             case "state":
               return {
                 ...col,
+                sorter: (a, b) => (a.state || "").localeCompare(b.state || ""),
+                sortDirections: ["ascend", "descend"],
                 render: (text, record) => {
                   return (
                     <div>
@@ -671,9 +711,21 @@ export default function Leads({
                   );
                 },
               };
+            case "area_id":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.area_id || "").localeCompare(b.area_id || ""),
+                sortDirections: ["ascend", "descend"],
+              };
             case "primary_course":
               return {
                 ...col,
+                sorter: (a, b) =>
+                  (a.primary_course || "").localeCompare(
+                    b.primary_course || ""
+                  ),
+                sortDirections: ["ascend", "descend"],
                 width: 200,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
@@ -697,9 +749,19 @@ export default function Leads({
                 ...col,
                 width: 180,
               };
+            case "lead_type":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.lead_type || "").localeCompare(b.lead_type || ""),
+                sortDirections: ["ascend", "descend"],
+              };
             case "lead_status":
               return {
                 ...col,
+                sorter: (a, b) =>
+                  (a.lead_status || "").localeCompare(b.lead_status || ""),
+                sortDirections: ["ascend", "descend"],
                 title: "Lead Priority",
                 width: 130,
                 render: (text) => {
@@ -719,6 +781,20 @@ export default function Leads({
                     </div>
                   );
                 },
+              };
+            case "region_name":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.region_name || "").localeCompare(b.region_name || ""),
+                sortDirections: ["ascend", "descend"],
+              };
+            case "branch_name":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.branch_name || "").localeCompare(b.branch_name || ""),
+                sortDirections: ["ascend", "descend"],
               };
             case "comments":
               return {

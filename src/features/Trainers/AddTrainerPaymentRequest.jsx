@@ -4,7 +4,17 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Tooltip, Drawer, Modal } from "antd";
+import {
+  Row,
+  Col,
+  Tooltip,
+  Drawer,
+  Modal,
+  Divider,
+  Button,
+  Flex,
+  Radio,
+} from "antd";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonInputField from "../Common/CommonInputField";
@@ -12,6 +22,7 @@ import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonCustomerSelectField from "../Common/CommonCustomerSelect";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { FaRegEye } from "react-icons/fa";
+import { IoFilter } from "react-icons/io5";
 import { LuIndianRupee } from "react-icons/lu";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -22,6 +33,7 @@ import "./styles.css";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
   getCustomers,
+  getCustomersByTrainerId,
   insertTrainerPaymentRequest,
   updateTrainerPaymentRequest,
 } from "../ApiService/action";
@@ -45,6 +57,8 @@ const AddTrainerPaymentRequest = forwardRef(
     ref
   ) => {
     //select trainer usestates
+    const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+    const [trainerFilterType, setTrainerFilterType] = useState(1);
     const [trainerId, setTrainerId] = useState(null);
     const [trainerIdError, setTrainerIdError] = useState("");
     const [trainerType, setTrainerType] = useState("");
@@ -58,125 +72,49 @@ const AddTrainerPaymentRequest = forwardRef(
       { id: "Chennai", name: "Chennai" },
       { id: "Bangalore", name: "Bangalore" },
     ];
-    const [streamId, setStreamId] = useState("");
-    const [streamIdError, setStreamIdError] = useState("");
     const attendanceStatusOptions = [
       { id: "V Completed", name: "V Completed" },
       { id: "ST SHT INC", name: "ST SHT INC" },
       { id: "Class Not Completed", name: "Class Not Completed" },
     ];
-    const [attendanceStatusId, setAttendanceStatusId] = useState("");
-    const [attendanceStatusIdError, setAttendanceStatusIdError] = useState("");
     const attendanceTypeOptions = [
       { id: "Link", name: "Link" },
       { id: "Screenshot", name: "Screenshot" },
     ];
-    const [attendanceType, setAttendanceType] = useState("Link");
-    const [attendanceTypeError, setAttendanceTypeError] = useState("");
-    const [attendanceScreenShotBase64, setAttendanceScreenShotBase64] =
-      useState("");
-    const [
-      attendanceScreenShotBase64Error,
-      setAttendanceScreenShotBase64Error,
-    ] = useState("");
-    const [attendanceSheetLink, setAttendanceSheetLink] = useState("");
-    const [attendanceSheetLinkError, setAttendanceSheetLinkError] =
-      useState("");
-    const [commercial, setCommercial] = useState(null);
-    const [commercialError, setCommercialError] = useState();
-    const [commercialPercentage, setCommercialPercentage] = useState("");
     const [daysTakenToPay, setDaysTakenToPay] = useState("");
     const [deadLineDate, setDeadLineDate] = useState(null);
     const [customersData, setCustomersData] = useState([]);
-    const [customerId, setCustomerId] = useState(null);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [selectedCustomerError, setSelectedCustomerError] = useState("");
-    const [customerSearchText, setCustomerSearchText] = useState("");
-    const [requestComments, setRequsetComments] = useState("");
-    const [requestCommentsError, setRequsetCommentsError] = useState("");
     const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
       useState(false);
     const [customerDetails, setCustomerDetails] = useState(null);
     const [validationTrigger, setValidationTrigger] = useState(false);
-    //customer pagination
-    const [customerPage, setCustomerPage] = useState(1);
-    const [customerHasMore, setCustomerHasMore] = useState(true);
-    const [customerSelectloading, setCustomerSelectloading] = useState(false);
-    const [candidateIdError, setCandidateIdError] = useState("");
-
-    useEffect(() => {
-      getCustomersData(null, 1);
-    }, []);
+    //form fields
+    const [formFields, setFormFields] = useState([
+      {
+        streams: null,
+        streams_error: "",
+        attendance_status: null,
+        attendance_status_error: "",
+        attendanceType: "Link",
+        attendance_sheetlink: "",
+        attendance_sheetlink_error: "",
+        attendance_screenshot: "",
+        attendance_screenshot_error: "",
+        customerId: null,
+        customerIdError: null,
+        commercial: "",
+        commercial_percentage: "",
+        trainer_mapping_id: 0,
+      },
+    ]);
 
     useEffect(() => {
       if (editRequestItem) {
         setBillRaiseDate(editRequestItem.bill_raisedate);
-        setStreamId(editRequestItem.streams);
-        setAttendanceStatusId(editRequestItem.attendance_status);
-        setAttendanceSheetLink(editRequestItem.attendance_sheetlink);
-        setAttendanceScreenShotBase64(editRequestItem.attendance_screenshot);
-        if (editRequestItem.attendance_sheetlink) {
-          setAttendanceType("Link");
-        } else {
-          setAttendanceType("Screenshot");
-        }
-        setTrainerId(editRequestItem.trainer_id);
         setDaysTakenToPay(editRequestItem.days_taken_topay);
         setDeadLineDate(editRequestItem.deadline_date);
-        getParticularCustomerDetails(editRequestItem.customer_email, true);
-      } else {
-        formReset();
       }
-    }, [editRequestItem]);
-
-    const buildCustomerSearchPayload = (value) => {
-      if (!value) return {};
-
-      const trimmed = value.trim();
-
-      // Email
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-        return { email: trimmed };
-      }
-
-      // Mobile (6–15 digits)
-      if (/^\d{6,15}$/.test(trimmed)) {
-        return { mobile: trimmed };
-      }
-
-      // Name
-      return { name: trimmed };
-    };
-
-    const getCustomersData = async (searchvalue, pageNumber = 1) => {
-      setCustomerSelectloading(true);
-
-      const searchPayload = buildCustomerSearchPayload(searchvalue);
-
-      const payload = {
-        ...searchPayload,
-        user_ids: null,
-        page: pageNumber,
-        limit: 10,
-      };
-
-      try {
-        const response = await getCustomers(payload);
-        const customers = response?.data?.data?.customers || [];
-        const pagination = response?.data?.data?.pagination;
-
-        setCustomersData((prev) =>
-          pageNumber == 1 ? customers : [...prev, ...customers]
-        );
-
-        setCustomerHasMore(pageNumber < pagination.totalPages);
-        setCustomerPage(pageNumber);
-      } catch (error) {
-        console.log("get customers error", error);
-      } finally {
-        setCustomerSelectloading(false);
-      }
-    };
+    }, []);
 
     const getDayDifference = (inputDate) => {
       const today = new Date();
@@ -219,89 +157,154 @@ const AddTrainerPaymentRequest = forwardRef(
       return date;
     };
 
-    //onchange customer select
-    const handleCustomerSearch = (value) => {
-      setCustomerSearchText(value);
-      setCustomerPage(1);
-      setCustomerHasMore(true);
-      setCustomersData([]);
-      getCustomersData(value, 1);
-    };
-
-    // ✅ Select option
-    const handleCustomerSelect = (event, option) => {
-      if (!option) return;
-
-      setSelectedCustomer(option);
-      if (validationTrigger) {
-        setSelectedCustomerError(selectValidator(option));
-      }
-      setCustomerId(option.id);
-      getParticularCustomerDetails(option.email);
-    };
-
-    // ⬇ Load first page when opened
-    const handleCustomerDropdownOpen = () => {
-      if (customersData.length === 0) getCustomersData(null, 1);
-    };
-
-    // ⬇ Infinite scroll
-    const handleCustomerScroll = (e) => {
-      const listbox = e.target;
-
-      if (
-        listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
-        customerHasMore &&
-        !customerSelectloading
-      ) {
-        getCustomersData(customerSearchText, customerPage + 1);
-      }
-    };
-
-    const getParticularCustomerDetails = async (
-      customerEmail,
-      isEdit = false
-    ) => {
+    const getParticularCustomerDetails = async (customerEmail) => {
       const payload = {
-        email: customerEmail ? customerEmail : selectedCustomer.email,
+        email: customerEmail,
       };
       try {
         const response = await getCustomers(payload);
         const customer_details = response?.data?.data?.customers[0];
         console.log("customer full details", customer_details);
         setCustomerDetails(customer_details);
-        if (customerEmail) {
-          setIsOpenCustomerDetailsDrawer(false);
-        } else {
-          setIsOpenCustomerDetailsDrawer(true);
-        }
-        if (isEdit) {
-          setSelectedCustomer(customer_details);
-        }
-        //mapping trainer details
-        if (customer_details.trainer_verified_date) {
-          setTrainerId(customer_details?.trainer_id ?? null);
-          setTrainerIdError("");
-          setCommercial(customer_details?.commercial ?? "");
-          setCommercialPercentage(
-            customer_details?.commercial_percentage !== null &&
-              customer_details?.commercial_percentage !== undefined &&
-              customer_details?.commercial_percentage !== ""
-              ? customer_details.commercial_percentage
-              : ""
-          );
-        } else if (customerEmail) {
-          setTrainerId(null);
-          if (validationTrigger) {
-            setTrainerIdError(" is required");
-          }
-          setCommercial("");
-          setCommercialPercentage("");
-          CommonMessage("error", "Trainer not Assigned or Verified Yet");
-        }
+        setIsOpenCustomerDetailsDrawer(true);
       } catch (error) {
         console.log("getcustomer by id error", error);
         setCustomerDetails(null);
+      }
+    };
+
+    const handleTrainerId = (e) => {
+      setTrainerId(e.target.value);
+      const clickedTrainer = trainersData.filter((f) => f.id == e.target.value);
+      console.log("clickedTrainer", clickedTrainer);
+      setTrainerType(
+        clickedTrainer.length >= 1 && clickedTrainer[0].trainer_type
+          ? clickedTrainer[0].trainer_type
+          : ""
+      );
+      setClickedTrainerDetails(clickedTrainer);
+      setTrainerIdError(selectValidator(e.target.value));
+      getCustomerByTrainerIdData(e.target.value);
+      //formfields
+      const updateFormfields = formFields.map((item) => {
+        return { ...item, customerId: "" };
+      });
+      setFormFields(updateFormfields);
+    };
+
+    const getCustomerByTrainerIdData = async (trainer_id) => {
+      try {
+        const response = await getCustomersByTrainerId(trainer_id);
+        console.log("get customers response", response);
+        setCustomersData(response?.data?.data || []);
+      } catch (error) {
+        setCustomersData([]);
+        console.log("get students error", error);
+      }
+    };
+
+    const addFormFields = () => {
+      const obj = {
+        streams: null,
+        streamsError: "",
+        attendance_status: null,
+        attendance_status_error: "",
+        attendanceType: "Link",
+        attendance_sheetlink: "",
+        attendance_sheetlink_error: "",
+        attendance_screenshot: "",
+        attendance_screenshot_error: "",
+        customerId: null,
+        customerIdError: null,
+        commercial: "",
+        commercial_percentage: "",
+        trainer_mapping_id: 0,
+      };
+
+      setFormFields([...formFields, obj]);
+    };
+
+    const handleFormFields = (field, index, value) => {
+      const updatedDetails = [...formFields];
+      // update value
+      updatedDetails[index][field] = value;
+
+      if (field === "streams") {
+        updatedDetails[index].streams_error = selectValidator(value);
+      }
+      if (field === "attendance_status") {
+        updatedDetails[index].attendance_status_error = selectValidator(value);
+      }
+      if (field === "attendanceType") {
+        updatedDetails[index].attendance_sheetlink = "";
+        updatedDetails[index].attendance_screenshot = "";
+        updatedDetails[index].attendance_screenshot_error = selectValidator(
+          updatedDetails[index].attendance_screenshot
+        );
+      }
+      if (field === "attendance_sheetlink") {
+        updatedDetails[index].attendance_sheetlink_error =
+          selectValidator(value);
+      }
+      if (field === "attendance_screenshot") {
+        updatedDetails[index].attendance_screenshot_error =
+          selectValidator(value);
+      }
+
+      if (field === "customerId") {
+        const selectedCustomerData = customersData.filter(
+          (f) => f.id == updatedDetails[index].customerId
+        );
+        console.log("selectedCustomerData", selectedCustomerData);
+
+        if (selectedCustomerData.length >= 1) {
+          updatedDetails[index].trainer_mapping_id =
+            selectedCustomerData[0].trainer_mapping_id;
+          updatedDetails[index].commercial = selectedCustomerData[0].commercial;
+          updatedDetails[index].commercial_percentage =
+            selectedCustomerData[0].commercial_percentage;
+        } else {
+          updatedDetails[index].trainer_mapping_id = 0;
+          updatedDetails[index].commercial = "";
+        }
+
+        const customerMap = {};
+
+        updatedDetails.forEach((item, i) => {
+          if (item.customerId) {
+            if (!customerMap[item.customerId]) {
+              customerMap[item.customerId] = [];
+            }
+            customerMap[item.customerId].push(i);
+          }
+        });
+
+        // reset all previous errors
+        updatedDetails.forEach((item) => {
+          item.customerIdError = selectValidator(item.customerId);
+        });
+
+        // mark duplicates
+        Object.values(customerMap).forEach((indexes) => {
+          if (indexes.length > 1) {
+            indexes.forEach((i) => {
+              updatedDetails[i].customerIdError =
+                "already selected in another row";
+            });
+          }
+        });
+      }
+
+      updatedDetails[index][field] = value;
+      console.log("updatedDetails", updatedDetails);
+      setFormFields(updatedDetails);
+    };
+
+    const removeFormFields = (index) => {
+      if (formFields.length >= 2) {
+        let data = [...formFields];
+        data.splice(index, 1);
+        setFormFields(data);
       }
     };
 
@@ -312,59 +315,90 @@ const AddTrainerPaymentRequest = forwardRef(
     const handleRequestSubmit = async () => {
       setValidationTrigger(true);
       const raiseDateValidate = selectValidator(billRaiseDate);
-      const streamValidate = selectValidator(streamId);
-      const attendanceStatusIdValidate = selectValidator(attendanceStatusId);
-      const attendanceTypeValidate = selectValidator(attendanceType);
-      const trainerValidate = selectValidator(trainerId);
-      let attendanceSheetValidate;
-      let attendanceScreenshotValidate;
+      const trainerIdValidate = selectValidator(trainerId);
 
-      if (attendanceType == "Link") {
-        attendanceSheetValidate = addressValidator(attendanceSheetLink);
-        attendanceScreenshotValidate = "";
-      } else {
-        attendanceSheetValidate = "";
-        attendanceScreenshotValidate = selectValidator(
-          attendanceScreenShotBase64
+      let checkFormFieldsErrors = [];
+      if (formFields.length >= 1) {
+        const validateFormFields = formFields.map((item) => {
+          return {
+            ...item,
+            streams_error: selectValidator(item.streams),
+            attendance_status_error: selectValidator(item.attendance_status),
+            attendance_sheetlink_error:
+              item.attendanceType == "Link"
+                ? selectValidator(item.attendance_sheetlink)
+                : "",
+            attendance_screenshot_error:
+              item.attendanceType == "Screenshot"
+                ? selectValidator(item.attendance_screenshot)
+                : "",
+            customerIdError: selectValidator(item.customerId),
+          };
+        });
+
+        checkFormFieldsErrors = validateFormFields.filter(
+          (f) =>
+            f.streams_error != "" ||
+            f.attendance_status_error != "" ||
+            f.attendance_sheetlink_error != "" ||
+            f.attendance_screenshot_error != "" ||
+            f.customerIdError != ""
         );
+
+        // 🔥 DUPLICATE CUSTOMER CHECK
+        const customerMap = {};
+
+        validateFormFields.forEach((item, index) => {
+          if (item.customerId) {
+            if (!customerMap[item.customerId]) {
+              customerMap[item.customerId] = [];
+            }
+            customerMap[item.customerId].push(index);
+          }
+        });
+
+        Object.values(customerMap).forEach((indexes) => {
+          if (indexes.length > 1) {
+            indexes.forEach((i) => {
+              validateFormFields[i].customerIdError =
+                "already selected in another row";
+            });
+          }
+        });
+
+        setFormFields(validateFormFields);
       }
 
       setBillRaiseDateError(raiseDateValidate);
-      setStreamIdError(streamValidate);
-      setAttendanceStatusIdError(attendanceStatusIdValidate);
-      setAttendanceTypeError(attendanceTypeValidate);
-      setAttendanceSheetLinkError(attendanceSheetValidate);
-      setAttendanceScreenShotBase64Error(attendanceScreenshotValidate);
-      setTrainerIdError(trainerValidate);
+      setTrainerIdError(trainerIdValidate);
 
       if (
         raiseDateValidate ||
-        streamValidate ||
-        attendanceStatusIdValidate ||
-        attendanceTypeValidate ||
-        attendanceSheetValidate ||
-        attendanceScreenshotValidate ||
-        trainerValidate
+        trainerIdValidate ||
+        checkFormFieldsErrors.length >= 1
       )
         return;
 
       setButtonLoading(true);
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
+      const request_amount = formFields.reduce((sum, item) => {
+        const value = parseFloat(item.commercial || 0);
+        return sum + (isNaN(value) ? 0 : value);
+      }, 0);
+
       const payload = {
-        ...(editRequestItem && { id: editRequestItem.id }),
+        // ...(editRequestItem && { id: editRequestItem.id }),
         bill_raisedate: moment(billRaiseDate).format("YYYY-MM-DD"),
-        streams: streamId,
-        attendance_status: attendanceStatusId,
-        ...(attendanceType == "Link"
-          ? { attendance_sheetlink: attendanceSheetLink }
-          : { attendance_screenshot: attendanceScreenShotBase64 }),
-        customer_id: selectedCustomer.id,
         trainer_id: trainerId,
-        request_amount: commercial,
-        commercial_percentage: commercialPercentage,
+        request_amount: request_amount,
         days_taken_topay: daysTakenToPay,
         deadline_date: moment(deadLineDate).format("YYYY-MM-DD"),
-        status: "Requested",
+        created_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        students: formFields,
         created_date: formatToBackendIST(today),
       };
       console.log("payloaddd", payload);
@@ -376,7 +410,6 @@ const AddTrainerPaymentRequest = forwardRef(
           await updateTrainerPaymentRequest(payload);
           setTimeout(() => {
             CommonMessage("success", "Updated Successfully");
-            formReset();
             // Refresh the payment requests data
             callgetTrainerPaymentsApi();
           }, 300);
@@ -393,8 +426,8 @@ const AddTrainerPaymentRequest = forwardRef(
           await insertTrainerPaymentRequest(payload);
           setTimeout(() => {
             CommonMessage("success", "Requested Successfully");
-            formReset();
             // Refresh the payment requests data
+            setButtonLoading(false);
             callgetTrainerPaymentsApi();
           }, 300);
         } catch (error) {
@@ -408,36 +441,13 @@ const AddTrainerPaymentRequest = forwardRef(
       }
     };
 
-    const formReset = () => {
-      setButtonLoading(false);
-      setBillRaiseDate(null);
-      setBillRaiseDateError("");
-      setStreamId("");
-      setStreamIdError("");
-      setAttendanceStatusId("");
-      setAttendanceStatusIdError("");
-      setAttendanceType("Link");
-      setAttendanceTypeError("");
-      setAttendanceScreenShotBase64("");
-      setAttendanceScreenShotBase64Error("");
-      setAttendanceSheetLink("");
-      setAttendanceSheetLinkError("");
-      setCommercial("");
-      setCommercialError("");
-      setCommercialPercentage("");
-      setTrainerId(null);
-      setTrainerIdError("");
-      setDaysTakenToPay("");
-      setDeadLineDate(null);
-      setCustomerId(null);
-      setCustomerSearchText("");
-      setSelectedCustomer(null);
-      setSelectedCustomerError("");
-    };
-
     return (
       <div>
-        <Row gutter={16} style={{ marginTop: "14px" }}>
+        <Row
+          gutter={16}
+          className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+          style={{ marginTop: "14px" }}
+        >
           <Col span={8}>
             <CommonMuiDatePicker
               label="Bill Raise Date"
@@ -460,174 +470,8 @@ const AddTrainerPaymentRequest = forwardRef(
               disablePreviousDates={false}
             />
           </Col>
-
           <Col span={8}>
-            <CommonSelectField
-              label="Streams"
-              options={streamOptions}
-              required={true}
-              onChange={(e) => {
-                setStreamId(e.target.value);
-                if (validationTrigger) {
-                  setStreamIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={streamId}
-              error={streamIdError}
-            />
-          </Col>
-
-          <Col span={8}>
-            <CommonSelectField
-              label="Attendance Status"
-              options={attendanceStatusOptions}
-              required={true}
-              onChange={(e) => {
-                setAttendanceStatusId(e.target.value);
-                if (validationTrigger) {
-                  setAttendanceStatusIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={attendanceStatusId}
-              error={attendanceStatusIdError}
-              errorFontSize={"10px"}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonSelectField
-              label="Attendance Type"
-              required={true}
-              options={attendanceTypeOptions}
-              onChange={(e) => {
-                setAttendanceType(e.target.value);
-                if (validationTrigger) {
-                  setAttendanceTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={attendanceType}
-              error={attendanceTypeError}
-            />
-          </Col>
-          <Col span={8}>
-            {attendanceType == "Link" ? (
-              <CommonInputField
-                label="Attendance Sheet Link"
-                required={true}
-                onChange={(e) => {
-                  setAttendanceSheetLink(e.target.value);
-                  if (validationTrigger) {
-                    setAttendanceSheetLinkError(
-                      addressValidator(e.target.value)
-                    );
-                  }
-                }}
-                value={attendanceSheetLink}
-                error={attendanceSheetLinkError}
-                errorFontSize={"9px"}
-              />
-            ) : (
-              <>
-                <ImageUploadCrop
-                  label="Attendance Screenshot"
-                  aspect={1}
-                  maxSizeMB={1}
-                  required={true}
-                  value={attendanceScreenShotBase64}
-                  onChange={(base64) => setAttendanceScreenShotBase64(base64)}
-                  onErrorChange={setAttendanceScreenShotBase64Error} // ✅ pass setter directly
-                />
-                {attendanceScreenShotBase64Error && validationTrigger ? (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#d32f2f",
-                      marginTop: 4,
-                    }}
-                  >
-                    {`Attendance Screenshot ${attendanceScreenShotBase64Error}`}
-                  </p>
-                ) : (
-                  ""
-                )}
-              </>
-            )}
-          </Col>
-          <Col span={8}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <CommonCustomerSelectField
-                  label="Select Customer"
-                  required={true}
-                  options={customersData}
-                  value={selectedCustomer}
-                  onChange={handleCustomerSelect}
-                  onInputChange={handleCustomerSearch}
-                  onDropdownOpen={handleCustomerDropdownOpen}
-                  onDropdownScroll={handleCustomerScroll}
-                  loading={customerSelectloading}
-                  showLabelStatus="Name"
-                  onBlur={() => {
-                    getCustomersData(null, 1);
-                  }}
-                  error={selectedCustomerError}
-                />
-              </div>
-              {selectedCustomer && (
-                <Tooltip
-                  placement="top"
-                  title="View Customer Details"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegEye
-                    size={16}
-                    className="trainers_action_icons"
-                    onClick={() => getParticularCustomerDetails(null)}
-                  />
-                </Tooltip>
-              )}
-            </div>
-          </Col>
-        </Row>
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
-            <CommonOutlinedInput
-              label="Commercial"
-              type="number"
-              required={true}
-              onChange={(e) => {
-                setCommercial(e.target.value);
-                if (validationTrigger) {
-                  setCommercialError(selectValidator(e.target.value));
-                }
-              }}
-              value={commercial}
-              error={commercialError}
-              icon={<LuIndianRupee size={16} />}
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Commercial %"
-              type="number"
-              required={true}
-              value={
-                commercialPercentage !== "" ? String(commercialPercentage) : ""
-              }
-              disabled={true}
-            />
-          </Col>
-          <Col span={8}>
-            <div
+            {/* <div
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -648,7 +492,7 @@ const AddTrainerPaymentRequest = forwardRef(
                   }}
                   value={trainerId}
                   error={trainerIdError}
-                  disabled={true}
+                  // disabled={true}
                 />
               </div>
               {trainerId && (
@@ -677,11 +521,102 @@ const AddTrainerPaymentRequest = forwardRef(
                   />
                 </Tooltip>
               )}
+            </div> */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Trainer"
+                  required={true}
+                  options={trainersData}
+                  onChange={handleTrainerId}
+                  value={trainerId}
+                  error={trainerIdError}
+                  onFocus={() => setIsTrainerSelectFocused(true)}
+                  onBlur={() => setIsTrainerSelectFocused(false)}
+                  borderRightNone={true}
+                  showLabelStatus={
+                    trainerFilterType == 1
+                      ? "Name"
+                      : trainerFilterType == 2
+                      ? "Trainer Id"
+                      : trainerFilterType == 3
+                      ? "Email"
+                      : "Mobile"
+                  }
+                />
+              </div>
+
+              <div>
+                <Flex
+                  justify="center"
+                  align="center"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <Tooltip
+                    placement="bottomLeft"
+                    color="#fff"
+                    title={
+                      <Radio.Group
+                        value={trainerFilterType}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          setTrainerFilterType(e.target.value);
+                        }}
+                      >
+                        <Radio
+                          value={1}
+                          style={{
+                            marginTop: "6px",
+                            marginBottom: "12px",
+                          }}
+                        >
+                          Search by Name
+                        </Radio>
+                        <Radio value={2} style={{ marginBottom: "12px" }}>
+                          Search by Trainer Id
+                        </Radio>
+                        <Radio value={3} style={{ marginBottom: "12px" }}>
+                          Search by Email
+                        </Radio>
+                        <Radio value={4} style={{ marginBottom: "12px" }}>
+                          Search by Mobile
+                        </Radio>
+                      </Radio.Group>
+                    }
+                  >
+                    <Button
+                      className="customer_trainermappingfilter_container"
+                      style={{
+                        borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                      }}
+                    >
+                      <IoFilter size={16} />
+                    </Button>
+                  </Tooltip>
+                </Flex>
+              </div>
+              {trainerId && (
+                <Tooltip
+                  placement="top"
+                  title="View Trainer Details"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegEye
+                    size={17}
+                    className="trainers_action_icons"
+                    onClick={() => setIsOpenTrainerDetailModal(true)}
+                  />
+                </Tooltip>
+              )}
             </div>
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
           <Col span={8}>
             <CommonInputField
               label="Days Taken To Pay"
@@ -699,6 +634,13 @@ const AddTrainerPaymentRequest = forwardRef(
               disabled={true}
             />
           </Col>
+        </Row>
+
+        <Row
+          gutter={16}
+          className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+          style={{ marginTop: "30px" }}
+        >
           <Col span={8}>
             <CommonMuiDatePicker
               label="Deadline Date"
@@ -712,20 +654,236 @@ const AddTrainerPaymentRequest = forwardRef(
               disabled={true}
             />
           </Col>
-          {/* <Col span={8}>
-            <CommonInputField
-              label="Comments"
-              required={true}
-              multiline={true}
-              onChange={(e) => {
-                setRequsetComments(e.target.value);
-                setRequsetCommentsError(addressValidator(e.target.value));
-              }}
-              value={requestComments}
-              error={requestCommentsError}
-            />
-          </Col> */}
         </Row>
+
+        <Row
+          gutter={16}
+          className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+          style={{ marginTop: "30px", alignItems: "center" }}
+        >
+          <Col span={12}>
+            <p style={{ fontWeight: 600, fontSize: "15px" }}>
+              Add Customer Details
+            </p>
+          </Col>
+          <Col
+            span={12}
+            style={{ display: "flex", justifyContent: "flex-end" }}
+          >
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={addFormFields}
+            >
+              Add
+            </button>
+          </Col>
+        </Row>
+
+        {formFields.map((item, index) => {
+          return (
+            <>
+              <Row
+                gutter={16}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                style={{ marginTop: "20px" }}
+              >
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Streams"
+                    options={streamOptions}
+                    required={true}
+                    onChange={(e) =>
+                      handleFormFields("streams", index, e.target.value)
+                    }
+                    value={item.streams}
+                    error={item.streams_error}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Attendance Status"
+                    options={attendanceStatusOptions}
+                    required={true}
+                    onChange={(e) =>
+                      handleFormFields(
+                        "attendance_status",
+                        index,
+                        e.target.value
+                      )
+                    }
+                    value={item.attendance_status}
+                    error={item.attendance_status_error}
+                    errorFontSize={"10px"}
+                  />
+                </Col>
+
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Attendance Type"
+                    required={true}
+                    options={attendanceTypeOptions}
+                    onChange={(e) =>
+                      handleFormFields("attendanceType", index, e.target.value)
+                    }
+                    value={item.attendanceType}
+                    error={""}
+                  />
+                </Col>
+
+                <Col span={8} style={{ marginTop: "30px" }}>
+                  {item.attendanceType == "Link" ? (
+                    <CommonInputField
+                      label="Attendance Sheet Link"
+                      required={true}
+                      onChange={(e) =>
+                        handleFormFields(
+                          "attendance_sheetlink",
+                          index,
+                          e.target.value
+                        )
+                      }
+                      value={item.attendance_sheetlink}
+                      error={item.attendance_sheetlink_error}
+                      errorFontSize={"9px"}
+                    />
+                  ) : (
+                    <>
+                      <ImageUploadCrop
+                        label="Attendance Screenshot"
+                        aspect={1}
+                        maxSizeMB={1}
+                        required={true}
+                        value={item.attendance_screenshot}
+                        onChange={(base64) =>
+                          handleFormFields(
+                            "attendance_screenshot",
+                            index,
+                            base64
+                          )
+                        }
+                        onErrorChange={(error) =>
+                          handleFormFields(
+                            "attendance_screenshot_error",
+                            index,
+                            error
+                          )
+                        } // ✅ pass setter directly
+                      />
+                      {item.attendance_screenshot_error ? (
+                        <p
+                          style={{
+                            fontSize: "12px",
+                            color: "#d32f2f",
+                            marginTop: 4,
+                          }}
+                        >
+                          {`Attendance Screenshot ${item.attendance_screenshot_error}`}
+                        </p>
+                      ) : (
+                        ""
+                      )}
+                    </>
+                  )}
+                </Col>
+
+                <Col span={8} style={{ marginTop: "30px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <CommonSelectField
+                        label="Customer"
+                        required={true}
+                        options={customersData}
+                        onChange={(e) => {
+                          handleFormFields("customerId", index, e.target.value);
+                        }}
+                        value={item.customerId}
+                        error={item.customerIdError}
+                        errorFontSize={"10px"}
+                        disableClearable={false}
+                      />
+                    </div>
+                    {item.customerId && (
+                      <Tooltip
+                        placement="top"
+                        title="View Trainer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={16}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            const selectedCustomerData = customersData.filter(
+                              (f) => f.id == item.customerId
+                            );
+                            getParticularCustomerDetails(
+                              selectedCustomerData.customer_email
+                            );
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                </Col>
+
+                <Col span={8} style={{ marginTop: "30px" }}>
+                  <CommonOutlinedInput
+                    label="Commercial"
+                    type="number"
+                    required={true}
+                    onChange={(e) =>
+                      handleFormFields("commercial", index, e.target.value)
+                    }
+                    value={item.commercial}
+                    error={""}
+                    icon={<LuIndianRupee size={16} />}
+                    disabled={true}
+                  />
+                </Col>
+
+                <Col span={8} style={{ marginTop: "30px" }}>
+                  <CommonInputField
+                    label="Commercial %"
+                    type="number"
+                    required={true}
+                    value={
+                      item.commercial_percentage !== ""
+                        ? String(item.commercial_percentage)
+                        : ""
+                    }
+                    disabled={true}
+                  />
+                </Col>
+
+                <Col
+                  span={8}
+                  style={{
+                    marginTop:
+                      item.customerIdError &&
+                      item.customerIdError.includes("already")
+                        ? "42px"
+                        : "32px",
+                  }}
+                >
+                  <Button
+                    className="trainerpaymentrequest_addrequestdrawer_deletebutton"
+                    onClick={() => {
+                      removeFormFields(index);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </Col>
+              </Row>
+              <Divider className="customer_statusupdate_divider" />
+            </>
+          );
+        })}
 
         {/* customer fulldetails drawer */}
         <Drawer
