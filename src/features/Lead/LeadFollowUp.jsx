@@ -84,7 +84,7 @@ export default function LeadFollowUp({
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const filterValuesFromRedux = useSelector(
-    (state) => state.followupfiltervalues
+    (state) => state.followupfiltervalues,
   );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -100,11 +100,11 @@ export default function LeadFollowUp({
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
   const actionOptions = [
     { id: 1, name: "Follow Up" },
-    { id: 2, name: "Joined Other" },
-    { id: 3, name: "Fees High" },
-    { id: 4, name: "Negative Review" },
-    { id: 5, name: "Not interested Now" },
-    { id: 6, name: "Others" },
+    { id: 2, name: "Joined Other (Junk)" },
+    { id: 3, name: "Fees High (Junk)" },
+    { id: 4, name: "Negative Review (Junk)" },
+    { id: 5, name: "Not interested Now (Junk)" },
+    { id: 6, name: "Others (Junk)" },
   ];
   const [actionId, setActionId] = useState(null);
   const [actionIdError, setActionIdError] = useState(null);
@@ -261,8 +261,8 @@ export default function LeadFollowUp({
               text == "High"
                 ? "leadmanager_leadstatus_high_container"
                 : text == "Medium"
-                ? "leadmanager_leadstatus_medium_container"
-                : "leadmanager_leadstatus_low_container"
+                  ? "leadmanager_leadstatus_medium_container"
+                  : "leadmanager_leadstatus_low_container"
             }
           >
             <p>{text}</p>
@@ -283,7 +283,7 @@ export default function LeadFollowUp({
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
@@ -349,7 +349,7 @@ export default function LeadFollowUp({
         getAllDownlineUsersData(
           filterValuesFromRedux.user_id
             ? filterValuesFromRedux.user_id
-            : convertAsJson?.user_id
+            : convertAsJson?.user_id,
         );
         // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         // getLeadFollowUpsData(
@@ -387,7 +387,7 @@ export default function LeadFollowUp({
         false,
         downliners_ids,
         filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit
+        filterValuesFromRedux.pageLimit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -401,7 +401,7 @@ export default function LeadFollowUp({
     updateStatus,
     downliners,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
 
@@ -409,12 +409,12 @@ export default function LeadFollowUp({
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       from_date: startDate,
       to_date: endDate,
       user_ids: downliners,
@@ -439,7 +439,7 @@ export default function LeadFollowUp({
         storeFollowUpFilterValues({
           pageNumber: pagination.page,
           pageLimit: pagination.limit,
-        })
+        }),
       );
 
       if (updateStatus === true) {
@@ -576,7 +576,7 @@ export default function LeadFollowUp({
 
                         // Sort latest first
                         merged.sort(
-                          (a, b) => new Date(b.date) - new Date(a.date)
+                          (a, b) => new Date(b.date) - new Date(a.date),
                         );
 
                         console.log(merged);
@@ -614,8 +614,8 @@ export default function LeadFollowUp({
                         text == "High"
                           ? "leadmanager_leadstatus_high_container"
                           : text == "Medium"
-                          ? "leadmanager_leadstatus_medium_container"
-                          : "leadmanager_leadstatus_low_container"
+                            ? "leadmanager_leadstatus_medium_container"
+                            : "leadmanager_leadstatus_low_container"
                       }
                     >
                       <p>{text}</p>
@@ -641,7 +641,7 @@ export default function LeadFollowUp({
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -679,7 +679,7 @@ export default function LeadFollowUp({
       false,
       allDownliners,
       page,
-      limit
+      limit,
     );
   };
 
@@ -731,7 +731,7 @@ export default function LeadFollowUp({
           true,
           allDownliners,
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
         refreshLeads();
         setNewComment("");
@@ -748,7 +748,7 @@ export default function LeadFollowUp({
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -762,7 +762,7 @@ export default function LeadFollowUp({
         searchValue: e.target.value,
         pageNumber: 1,
         pageLimit: pagination.limit,
-      })
+      }),
     );
     setPagination({
       page: 1,
@@ -775,7 +775,7 @@ export default function LeadFollowUp({
         false,
         allDownliners,
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -811,7 +811,7 @@ export default function LeadFollowUp({
       updateDetailsByIndex(currentIndex - 1);
       setTimeout(() => {
         const container = document.getElementById(
-          "leadfollowup_leaddetails_heading"
+          "leadfollowup_leaddetails_heading",
         );
         container.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -823,7 +823,7 @@ export default function LeadFollowUp({
       updateDetailsByIndex(currentIndex + 1);
       setTimeout(() => {
         const container = document.getElementById(
-          "leadfollowup_leaddetails_heading"
+          "leadfollowup_leaddetails_heading",
         );
         container.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -856,7 +856,7 @@ export default function LeadFollowUp({
     dispatch(
       storeFollowUpFilterValues({
         user_id: value,
-      })
+      }),
     );
     setSelectedUserId(value);
     try {
@@ -874,7 +874,7 @@ export default function LeadFollowUp({
         storeFollowUpFilterValues({
           pageNumber: 1,
           pageLimit: pagination.limit,
-        })
+        }),
       );
       getLeadFollowUpsData(
         null,
@@ -883,7 +883,7 @@ export default function LeadFollowUp({
         false,
         downliners_ids,
         1,
-        10
+        10,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -905,12 +905,12 @@ export default function LeadFollowUp({
       ...(searchValue && filterType == 1
         ? { phone: searchValue }
         : searchValue && filterType == 2
-        ? { name: searchValue }
-        : searchValue && filterType == 3
-        ? { email: searchValue }
-        : searchValue && filterType == 4
-        ? { course: searchValue }
-        : {}),
+          ? { name: searchValue }
+          : searchValue && filterType == 3
+            ? { email: searchValue }
+            : searchValue && filterType == 4
+              ? { course: searchValue }
+              : {}),
     };
     try {
       const response = await downloadLeadFollowUps(payload);
@@ -921,8 +921,8 @@ export default function LeadFollowUp({
         data,
         alterColumns,
         `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-          selectedDates[1]
-        ).format("DD-MM-YYYY")} Followups.csv`
+          selectedDates[1],
+        ).format("DD-MM-YYYY")} Followups.csv`,
       );
       setTimeout(() => {
         setDownloadButtonLoader(false);
@@ -932,7 +932,7 @@ export default function LeadFollowUp({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -973,12 +973,12 @@ export default function LeadFollowUp({
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -997,7 +997,7 @@ export default function LeadFollowUp({
                               searchValue: null,
                               pageNumber: 1,
                               pageLimit: pagination.limit,
-                            })
+                            }),
                           );
                           getLeadFollowUpsData(
                             null,
@@ -1006,7 +1006,7 @@ export default function LeadFollowUp({
                             false,
                             allDownliners,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1045,7 +1045,7 @@ export default function LeadFollowUp({
                             dispatch(
                               storeFollowUpFilterValues({
                                 filterType: e.target.value,
-                              })
+                              }),
                             );
                             if (searchValue == "") {
                               return;
@@ -1056,7 +1056,7 @@ export default function LeadFollowUp({
                                   searchValue: "",
                                   pageNumber: 1,
                                   pageLimit: pagination.limit,
-                                })
+                                }),
                               );
                               setPagination({
                                 page: 1,
@@ -1068,7 +1068,7 @@ export default function LeadFollowUp({
                                 false,
                                 allDownliners,
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -1188,7 +1188,7 @@ export default function LeadFollowUp({
                       end_date: dates[1],
                       pageNumber: 1,
                       pageLimit: pagination.limit,
-                    })
+                    }),
                   );
                   setPagination({
                     page: 1,
@@ -1200,7 +1200,7 @@ export default function LeadFollowUp({
                     false,
                     allDownliners,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -1226,7 +1226,7 @@ export default function LeadFollowUp({
                     setIsOpenAddDrawer(true);
                     setTimeout(() => {
                       const drawerBody = document.querySelector(
-                        "#leadfollowup_addlead_drawer .ant-drawer-body"
+                        "#leadfollowup_addlead_drawer .ant-drawer-body",
                       );
                       if (drawerBody) {
                         drawerBody.scrollTo({
@@ -1308,7 +1308,7 @@ export default function LeadFollowUp({
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -1595,7 +1595,7 @@ export default function LeadFollowUp({
               false,
               allDownliners,
               pagination.page,
-              pagination.limit
+              pagination.limit,
             );
             refreshLeads();
           }}
@@ -1746,7 +1746,7 @@ export default function LeadFollowUp({
                 <p className="customerdetails_text">
                   {leadDetails && leadDetails.next_follow_up_date
                     ? moment(leadDetails.next_follow_up_date).format(
-                        "DD/MM/YYYY"
+                        "DD/MM/YYYY",
                       )
                     : "-"}
                 </p>
@@ -1882,13 +1882,13 @@ export default function LeadFollowUp({
                         <span className="leadfollowup_comment_time">
                           {item.updated_date
                             ? moment(item.updated_date).format(
-                                "YYYY-MM-DD hh:mm:ss A"
+                                "YYYY-MM-DD hh:mm:ss A",
                               )
                             : item.created_date
-                            ? moment(item.created_date).format(
-                                "YYYY-MM-DD hh:mm:ss A"
-                              )
-                            : "-"}
+                              ? moment(item.created_date).format(
+                                  "YYYY-MM-DD hh:mm:ss A",
+                                )
+                              : "-"}
                         </span>
                       </p>
                     </div>
@@ -1904,8 +1904,8 @@ export default function LeadFollowUp({
                         {item.status == 1
                           ? "Details Shared"
                           : item.status == 2
-                          ? "Details Not Shared"
-                          : "CNA"}
+                            ? "Details Not Shared"
+                            : "CNA"}
                       </p>
                     )}
                   </>
