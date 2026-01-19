@@ -16,12 +16,8 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
 import { IoFilter } from "react-icons/io5";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { IoLocationOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
+import { RiDeleteBinLine } from "react-icons/ri";
 import { RedoOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
@@ -30,6 +26,7 @@ import CommonTable from "../Common/CommonTable";
 import {
   approveTrainerPaymentTransaction,
   createTrainerPaymentTransaction,
+  deleteTrainerPaymentRequest,
   getCustomers,
   getTrainerPayments,
   getTrainers,
@@ -38,6 +35,7 @@ import {
 } from "../ApiService/action";
 import {
   addressValidator,
+  formatToBackendIST,
   getBalanceAmount,
   getCurrentandPreviousweekDate,
   priceValidator,
@@ -54,11 +52,16 @@ import PrismaZoom from "react-prismazoom";
 import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
 import CommonTextArea from "../Common/CommonTextArea";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
+import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
+import CommonDeleteModal from "../Common/CommonDeleteModal";
 
 export default function TrainerPayment() {
   const scrollRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
   //usestates
+  const [trainerFilterId, setTrainerFilterId] = useState(null);
+  const [trainerFilterType, setTrainerFilterType] = useState(1);
+  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
   const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
@@ -69,6 +72,8 @@ export default function TrainerPayment() {
   //form usestates
   const [editRequestItem, setEditRequestItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  //view
+  const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,18 +83,10 @@ export default function TrainerPayment() {
     total: 0,
     totalPages: 0,
   });
-  const [statusCounts, setStatusCounts] = useState({
-    Requested: 0,
-    "Awaiting Finance": 0,
-    Completed: 0,
-    all: 0,
-  });
+  const [statusCounts, setStatusCounts] = useState(null);
   // Payment details drawer states
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [selectedPaymentDetails, setSelectedPaymentDetails] = useState(null);
-  const [isOpenAttendanceScreenshotModal, setIsOpenAttendanceScreenshotModal] =
-    useState(false);
-  const [viewAttendanceScreenshot, setViewAttendanceScreenshot] = useState("");
   //payment usesates
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
   const [paidNow, setPaidNow] = useState("");
@@ -115,14 +112,9 @@ export default function TrainerPayment() {
   const [rejectPaymentComments, setRejectPaymentComments] = useState("");
   const [rejectPaymentCommentsError, setRejectPaymentCommentsError] =
     useState("");
-  //customer details
-  const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
+  //delete request
+  const [isOpenRequestDeleteModal, setIsOpenRequestDeleteModal] =
     useState(false);
-  const [customerDetails, setCustomerDetails] = useState(null);
-  //trainer details
-  const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
-    useState(false);
-  const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
 
   // Table columns definition
   const columns = [
@@ -163,76 +155,12 @@ export default function TrainerPayment() {
       },
     },
     {
-      title: "Customer Name",
-      key: "customer_name",
-      dataIndex: "customer_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
-      },
-    },
-    {
-      title: "Customer Email",
-      key: "customer_email",
-      dataIndex: "customer_email",
-      width: 180,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
-      },
-    },
-    {
-      title: "Stream",
-      key: "streams",
-      dataIndex: "streams",
-      width: 120,
-      render: (text) => {
-        return <p>{text || "-"}</p>;
-      },
-    },
-    {
-      title: "Attendance Status",
-      key: "attendance_status",
-      dataIndex: "attendance_status",
-      width: 150,
-      render: (text) => {
-        return <p>{text || "-"}</p>;
-      },
-    },
-    {
-      title: "Attendance Link",
-      key: "attendance_sheetlink",
-      dataIndex: "attendance_sheetlink",
-      width: 150,
-      render: (text, record) => {
-        return text ? (
-          <a
-            href={text}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#5b69ca" }}
-          >
-            View Sheet
-          </a>
-        ) : (
-          <p
-            style={{ color: "#5b69ca", fontWeight: 500, cursor: "pointer" }}
-            onClick={() => {
-              setIsOpenAttendanceScreenshotModal(true);
-              setViewAttendanceScreenshot(record.attendance_screenshot);
-            }}
-          >
-            View Screenshot
-          </p>
-        );
-      },
-    },
-    {
       title: "Request Amount",
       key: "request_amount",
       dataIndex: "request_amount",
       width: 140,
       render: (text) => {
-        return <p>{text ? `₹ ${parseFloat(text).toFixed(2)}` : "-"}</p>;
+        return <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>;
       },
     },
     {
@@ -302,30 +230,30 @@ export default function TrainerPayment() {
                         >
                           Raise Payment
                         </Checkbox>
-                      ) : record.status === "Rejected" ? (
+                      ) : record.status === "Payment Rejected" ? (
                         <button
                           className="customers_finance_updatepayment_button"
                           onClick={() => {
-                            setDrawerContentStatus("Update Request");
+                            setDrawerContentStatus("Update Payment");
                             setIsOpenDetailsDrawer(true);
                             setSelectedPaymentDetails(record);
-                            setPaymentHistory(record.transactions);
-                            setPaidNow(record.transactions[0].paid_amount);
-                            setPaymentType(record.transactions[0].payment_type);
+                            setPaymentHistory(record.payments);
+                            setPaidNow(record.payments[0].paid_amount);
+                            setPaymentType(record.payments[0].payment_type);
                             setCollapseDefaultKey(["1"]);
                             setBalanceAmount(
                               getBalanceAmount(
                                 isNaN(record.balance_amount)
                                   ? 0
                                   : record.balance_amount,
-                                isNaN(record.transactions[0].paid_amount)
+                                isNaN(record.payments[0].paid_amount)
                                   ? 0
-                                  : record.transactions[0].paid_amount
-                              )
+                                  : record.payments[0].paid_amount,
+                              ),
                             );
                           }}
                         >
-                          Update Request
+                          Update Payment
                         </button>
                       ) : (
                         <div className="customers_classcompleted_container">
@@ -340,7 +268,7 @@ export default function TrainerPayment() {
                     <Col span={12}>
                       {record.status == "Requested" ||
                       record.status == "Awaiting Finance" ||
-                      record.status == "Rejected" ? (
+                      record.status == "Payment Rejected" ? (
                         <Checkbox
                           className="server_statuscheckbox"
                           checked={false}
@@ -355,7 +283,7 @@ export default function TrainerPayment() {
                             } else {
                               CommonMessage(
                                 "warning",
-                                "Payment not raised yet"
+                                "Payment not raised yet",
                               );
                             }
                           }}
@@ -389,9 +317,11 @@ export default function TrainerPayment() {
                     Completed
                   </Button>
                 </div>
-              ) : text === "Rejected" ? (
+              ) : text === "Payment Rejected" ? (
                 <div className="trainers_verifieddiv">
-                  <Button className="trainers_rejected_button">Rejected</Button>
+                  <Button className="trainers_rejected_button">
+                    Payment Rejected
+                  </Button>
                 </div>
               ) : (
                 <p style={{ marginLeft: "6px" }}>-</p>
@@ -410,7 +340,7 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
+            {/* <AiOutlineEdit
               size={18}
               className="trainers_action_icons"
               onClick={() => {
@@ -419,11 +349,37 @@ export default function TrainerPayment() {
                 } else {
                   CommonMessage(
                     "error",
-                    `Unable to update in ${record.status} status`
+                    `Unable to update in ${record.status} status`,
                   );
                 }
               }}
-            />
+            /> */}
+            <Tooltip
+              placement="top"
+              title="View Details"
+              trigger={["hover", "click"]}
+            >
+              <FaRegEye
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setIsOpenViewDrawer(true);
+                  setSelectedPaymentDetails(record);
+                }}
+              />
+            </Tooltip>
+
+            {record.paid_amount == "0.00" && (
+              <RiDeleteBinLine
+                size={18}
+                color="#d32f2f"
+                className="trainers_action_icons"
+                onClick={() => {
+                  setSelectedPaymentDetails(record);
+                  setIsOpenRequestDeleteModal(true);
+                }}
+              />
+            )}
           </div>
         );
       },
@@ -455,27 +411,30 @@ export default function TrainerPayment() {
         const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
         setSelectedDates(PreviousAndCurrentDate);
         getTrainerPaymentsData(
+          null,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           null,
           1,
           10,
-          true
+          true,
         );
       }, 300);
     }
   };
 
   const getTrainerPaymentsData = async (
+    trainerId,
     startDate,
     endDate,
     status,
     pageNumber,
     pageLimit,
-    callCustomerApi = false
+    callCustomerApi = false,
   ) => {
     setLoading(true);
     const payload = {
+      trainer_id: trainerId,
       start_date: startDate,
       end_date: endDate,
       status: status,
@@ -487,28 +446,23 @@ export default function TrainerPayment() {
       console.log("trainer payment response", response);
 
       // Extract data from response
-      const responseData = response?.data?.data || [];
-      const paginationData = response?.data?.pagination || {};
-      const statusCountsData = response?.data?.statusCounts || {};
+      const responseData = response?.data?.data?.data || [];
+      const paginationData = response?.data?.data?.pagination || {};
+      const statusCountsData = response?.data?.data?.statusCount || {};
 
       // Set payment requests data
       setPaymentRequestsData(responseData);
 
       // Update pagination
       setPagination({
-        page: paginationData.currentPage || 1,
+        page: paginationData.page || 1,
         limit: paginationData.limit || 10,
-        total: paginationData.totalRecords || 0,
+        total: paginationData.total || 0,
         totalPages: paginationData.totalPages || 0,
       });
 
       // Update status counts
-      setStatusCounts({
-        Requested: statusCountsData.Requested || 0,
-        "Awaiting Finance": statusCountsData["Awaiting Finance"] || 0,
-        Completed: statusCountsData.Completed || 0,
-        all: statusCountsData.all || 0,
-      });
+      setStatusCounts(statusCountsData);
     } catch (error) {
       setPaymentRequestsData([]);
       setLoading(false);
@@ -554,7 +508,7 @@ export default function TrainerPayment() {
 
     const balance_amount = getBalanceAmount(
       isNaN(amt) ? 0 : amt,
-      isNaN(value) ? 0 : value
+      isNaN(value) ? 0 : value,
     );
 
     if (balance_amount == 0) {
@@ -568,7 +522,7 @@ export default function TrainerPayment() {
 
     if (paymentValidationTrigger) {
       setPaidNowError(
-        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt), true)
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt), true),
       );
     }
   };
@@ -579,7 +533,7 @@ export default function TrainerPayment() {
     const paidAmountValidate = priceValidator(
       paidNow,
       parseFloat(selectedPaymentDetails.balance_amount),
-      true
+      true,
     );
 
     setPaidNowError(paidAmountValidate);
@@ -589,15 +543,16 @@ export default function TrainerPayment() {
     setButtonLoading(true);
 
     const payload = {
-      ...(drawerContentStatus == "Update Request"
-        ? { transaction_id: selectedPaymentDetails.transactions[0].id }
-        : { trainer_payment_id: selectedPaymentDetails.id }),
+      trainer_payment_id: selectedPaymentDetails.id,
+      ...(drawerContentStatus == "Update Payment"
+        ? { payment_trans_id: selectedPaymentDetails.payments[0].id }
+        : {}),
       paid_amount: paidNow,
       payment_type: paymentType,
     };
 
     try {
-      if (drawerContentStatus === "Update Request") {
+      if (drawerContentStatus == "Update Payment") {
         await updateTrainerPaymentTransaction(payload);
       } else {
         await createTrainerPaymentTransaction(payload);
@@ -607,11 +562,12 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
+          trainerFilterId,
           selectedDates[0],
           selectedDates[1],
           status || null,
           1,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -619,12 +575,12 @@ export default function TrainerPayment() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
 
-  const handlePaymentApprove = async (transactionId) => {
+  const handlePaymentApprove = async (payment_trans_id) => {
     setPaymentValidationTrigger(true);
     const paymentScreenshotValidate = selectValidator(paymentScreenShotBase64);
 
@@ -637,10 +593,14 @@ export default function TrainerPayment() {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
+    const today = new Date();
+
     const payload = {
-      transaction_id: transactionId,
+      trainer_payment_id: selectedPaymentDetails.id,
+      payment_trans_id: payment_trans_id,
       payment_screenshot: paymentScreenShotBase64,
-      finance_head_id: convertAsJson?.user_id,
+      paid_date: formatToBackendIST(today),
+      paid_by: convertAsJson?.user_id,
     };
 
     try {
@@ -650,11 +610,12 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
+          trainerFilterId,
           selectedDates[0],
           selectedDates[1],
           status || null,
           1,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -662,16 +623,16 @@ export default function TrainerPayment() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
 
-  const handlePaymentReject = async () => {
+  const handlePaymentReject = async (payment_trans_id) => {
     setIsShowRejectPaymentCommentBox(true);
     setTimeout(() => {
       const container = document.getElementById(
-        "customer_trainerreject_commentContainer"
+        "customer_trainerreject_commentContainer",
       );
       container.scrollIntoView({ behavior: "smooth" });
     }, 200);
@@ -682,13 +643,13 @@ export default function TrainerPayment() {
 
     if (commentValidate) return;
 
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const today = new Date();
 
     const payload = {
       trainer_payment_id: selectedPaymentDetails.id,
-      reject_reason: rejectPaymentComments,
-      finance_head_id: convertAsJson?.user_id,
+      payment_trans_id: payment_trans_id,
+      rejected_reason: rejectPaymentComments,
+      rejected_date: formatToBackendIST(today),
     };
 
     try {
@@ -698,11 +659,12 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
+          trainerFilterId,
           selectedDates[0],
           selectedDates[1],
           status || null,
           1,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -710,7 +672,24 @@ export default function TrainerPayment() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleRequestDelete = async () => {
+    setButtonLoading(true);
+    try {
+      await deleteTrainerPaymentRequest(selectedPaymentDetails.id);
+      setTimeout(() => {
+        setButtonLoading(false);
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -738,28 +717,13 @@ export default function TrainerPayment() {
     setPagination({ ...pagination, page, limit });
     // Fetch data with new pagination
     getTrainerPaymentsData(
+      trainerFilterId,
       selectedDates[0],
       selectedDates[1],
       status || null,
       page,
-      limit
+      limit,
     );
-  };
-
-  const getParticularCustomerDetails = async () => {
-    const payload = {
-      email: selectedPaymentDetails.customer_email,
-    };
-    try {
-      const response = await getCustomers(payload);
-      const customer_details = response?.data?.data?.customers[0];
-      console.log("customer full details", customer_details);
-      setCustomerDetails(customer_details);
-      setIsOpenCustomerDetailsDrawer(true);
-    } catch (error) {
-      console.log("getcustomer by id error", error);
-      setCustomerDetails(null);
-    }
   };
 
   const handleRefresh = () => {
@@ -767,11 +731,12 @@ export default function TrainerPayment() {
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     getTrainerPaymentsData(
+      null,
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
       1,
-      10
+      10,
     );
   };
 
@@ -780,6 +745,114 @@ export default function TrainerPayment() {
       <Row style={{ marginBottom: "12px" }}>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
+            <Col span={8}>
+              {/* <CommonSelectField
+                height="35px"
+                label="Select Trainer"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                // options={subUsers}
+                // onChange={handleSelectUser}
+                // value={selectedUserId}
+                disableClearable={false}
+              /> */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <CommonSelectField
+                    label="Select Trainer"
+                    required={true}
+                    height="35px"
+                    labelMarginTop="0px"
+                    labelFontSize="13px"
+                    options={trainersData}
+                    onChange={(e) => {
+                      console.log("traineeeee", e.target.value);
+                      setTrainerFilterId(e.target.value);
+                      getTrainerPaymentsData(
+                        e.target.value,
+                        selectedDates[0],
+                        selectedDates[1],
+                        status || null,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                    value={trainerFilterId}
+                    error={""}
+                    disableClearable={false}
+                    onFocus={() => setIsTrainerSelectFocused(true)}
+                    onBlur={() => setIsTrainerSelectFocused(false)}
+                    borderRightNone={true}
+                    showLabelStatus={
+                      trainerFilterType == 1
+                        ? "Name"
+                        : trainerFilterType == 2
+                          ? "Trainer Id"
+                          : trainerFilterType == 3
+                            ? "Email"
+                            : "Mobile"
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={trainerFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setTrainerFilterType(e.target.value);
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Trainer Id
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={4} style={{ marginBottom: "12px" }}>
+                            Search by Mobile
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
             <Col span={16}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
@@ -789,11 +862,12 @@ export default function TrainerPayment() {
                     page: 1,
                   });
                   getTrainerPaymentsData(
+                    trainerFilterId,
                     dates[0],
                     dates[1],
                     status || null,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -834,7 +908,7 @@ export default function TrainerPayment() {
       </Row>
 
       <Row>
-        <Col span={16}>
+        <Col span={18}>
           <div className="customers_scroll_wrapper">
             {/* <button
           onClick={() => scroll(-600)}
@@ -857,15 +931,25 @@ export default function TrainerPayment() {
                   setStatus("");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
+                    trainerFilterId,
                     selectedDates[0],
                     selectedDates[1],
                     null,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
-                <p>All {`( ${statusCounts.all} )`}</p>
+                <p>
+                  All{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.total !== undefined &&
+                    statusCounts.total !== null
+                      ? statusCounts.total
+                      : "-"
+                  } )`}
+                </p>
               </div>
               <div
                 className={
@@ -880,15 +964,25 @@ export default function TrainerPayment() {
                   setStatus("Requested");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
+                    trainerFilterId,
                     selectedDates[0],
                     selectedDates[1],
                     "Requested",
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
-                <p>Requested {`( ${statusCounts.Requested} )`}</p>
+                <p>
+                  Requested{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.requested !== undefined &&
+                    statusCounts.requested !== null
+                      ? statusCounts.requested
+                      : "-"
+                  } )`}
+                </p>
               </div>
               <div
                 className={
@@ -903,16 +997,57 @@ export default function TrainerPayment() {
                   setStatus("Awaiting Finance");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
+                    trainerFilterId,
                     selectedDates[0],
                     selectedDates[1],
                     "Awaiting Finance",
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
                 <p>
-                  Awaiting Finance {`( ${statusCounts["Awaiting Finance"]} )`}
+                  Awaiting Finance{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.awaiting_finance !== undefined &&
+                    statusCounts.awaiting_finance !== null
+                      ? statusCounts.awaiting_finance
+                      : "-"
+                  } )`}
+                </p>
+              </div>
+              <div
+                className={
+                  status === "Payment Rejected"
+                    ? "customers_active_escalated_container"
+                    : "customers_escalated_container"
+                }
+                onClick={() => {
+                  if (status === "Payment Rejected") {
+                    return;
+                  }
+                  setStatus("Payment Rejected");
+                  setPagination({ ...pagination, page: 1 });
+                  getTrainerPaymentsData(
+                    trainerFilterId,
+                    selectedDates[0],
+                    selectedDates[1],
+                    "Payment Rejected",
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Payment Rejected{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.payment_rejected !== undefined &&
+                    statusCounts.payment_rejected !== null
+                      ? statusCounts.payment_rejected
+                      : "-"
+                  } )`}
                 </p>
               </div>
               <div
@@ -928,15 +1063,25 @@ export default function TrainerPayment() {
                   setStatus("Completed");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
+                    trainerFilterId,
                     selectedDates[0],
                     selectedDates[1],
                     "Completed",
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
-                <p>Completed {`( ${statusCounts.Completed} )`}</p>
+                <p>
+                  Completed{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.completed !== undefined &&
+                    statusCounts.completed !== null
+                      ? statusCounts.completed
+                      : "-"
+                  } )`}
+                </p>
               </div>
             </div>
             {/* <button
@@ -948,7 +1093,7 @@ export default function TrainerPayment() {
           </div>
         </Col>
         <Col
-          span={8}
+          span={6}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -1015,11 +1160,12 @@ export default function TrainerPayment() {
               });
               setButtonLoading(false);
               getTrainerPaymentsData(
+                trainerFilterId,
                 selectedDates[0],
                 selectedDates[1],
                 status || null,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           />
@@ -1056,269 +1202,16 @@ export default function TrainerPayment() {
       >
         {selectedPaymentDetails && (
           <>
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-            >
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Bill Raise Date
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {moment(selectedPaymentDetails.bill_raisedate).format(
-                        "DD/MM/YYYY"
-                      )}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <EllipsisTooltip
-                        text={
-                          selectedPaymentDetails &&
-                          selectedPaymentDetails.trainer_name
-                            ? selectedPaymentDetails.trainer_name
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                      <FaRegEye
-                        size={16}
-                        className="trainers_action_icons"
-                        onClick={() => {
-                          const clickedTrainer = trainersData.filter(
-                            (f) => f.id == selectedPaymentDetails.trainer_id
-                          );
-                          console.log("clickedTrainer", clickedTrainer);
-                          setClickedTrainerDetails(clickedTrainer);
-                          setIsOpenTrainerDetailModal(true);
-                        }}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Customer Name
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <EllipsisTooltip
-                        text={
-                          selectedPaymentDetails &&
-                          selectedPaymentDetails.customer_name
-                            ? selectedPaymentDetails.customer_name
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                      <FaRegEye
-                        size={16}
-                        className="trainers_action_icons"
-                        onClick={() => getParticularCustomerDetails(null)}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.request_amount !== undefined &&
-                      selectedPaymentDetails.request_amount !== null
-                        ? "₹" + selectedPaymentDetails.request_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial%</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {" "}
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.commercial_percentage !==
-                        undefined &&
-                      selectedPaymentDetails.commercial_percentage !== null
-                        ? selectedPaymentDetails.commercial_percentage + "%"
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Balance Amount
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: 700 }}
-                    >
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.balance_amount !== undefined &&
-                      selectedPaymentDetails.balance_amount !== null
-                        ? "₹" + selectedPaymentDetails.balance_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Streams</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails && selectedPaymentDetails.streams
-                        ? selectedPaymentDetails.streams
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Attendance Status
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.attendance_status
-                        ? selectedPaymentDetails.attendance_status
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        {selectedPaymentDetails &&
-                        selectedPaymentDetails.attendance_sheetlink
-                          ? "Attendance Sheet Link"
-                          : "Attendance Screenshot"}
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    {selectedPaymentDetails &&
-                    selectedPaymentDetails.attendance_sheetlink ? (
-                      <EllipsisTooltip
-                        text={
-                          selectedPaymentDetails &&
-                          selectedPaymentDetails.attendance_sheetlink
-                            ? selectedPaymentDetails.attendance_sheetlink
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    ) : (
-                      <button
-                        className="pendingcustomer_paymentscreenshot_viewbutton"
-                        onClick={() => {
-                          setIsOpenAttendanceScreenshotModal(true);
-                          setViewAttendanceScreenshot(
-                            selectedPaymentDetails.attendance_screenshot
-                          );
-                        }}
-                      >
-                        <FaRegEye size={16} /> View screenshot
-                      </button>
-                    )}
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Days Taken To Pay
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.days_taken_topay !== undefined &&
-                      selectedPaymentDetails.days_taken_topay !== null
-                        ? selectedPaymentDetails.days_taken_topay
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Deadline Date
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {selectedPaymentDetails &&
-                      selectedPaymentDetails.deadline_date
-                        ? moment(selectedPaymentDetails.deadline_date).format(
-                            "DD/MM/YYYY"
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            <Divider className="customer_statusupdate_divider" />
-
+            <ViewTrainerPaymentDetails
+              selectedPaymentDetails={selectedPaymentDetails}
+              trainersData={trainersData}
+              isShowPaymentDetails={false}
+            />
             <div className="customer_statusupdate_adddetailsContainer">
               {drawerContentStatus == "Requested" ||
-              drawerContentStatus == "Update Request" ? (
+              drawerContentStatus == "Update Payment" ? (
                 <>
-                  {paymentHistory.length >= 1 ? (
+                  {selectedPaymentDetails.payments.length >= 1 ? (
                     <div>
                       <p
                         style={{
@@ -1339,138 +1232,63 @@ export default function TrainerPayment() {
                             onChange={(keys) => setCollapseDefaultKey(keys)}
                             className="customer_updatepayment_history_collapse"
                           >
-                            {paymentHistory.map((item, index) => {
-                              const panelKey = String(index + 1); // convert to string
-                              return (
-                                <Collapse.Panel
-                                  key={panelKey} // unique key
-                                  header={
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        width: "100%",
-                                        fontSize: "13px",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <span>
-                                        Bill Raise Date -{" "}
-                                        <span style={{ fontWeight: "500" }}>
-                                          {moment(
-                                            selectedPaymentDetails.bill_raisedate
-                                          ).format("DD/MM/YYYY")}
+                            {selectedPaymentDetails.payments.map(
+                              (item, index) => {
+                                const panelKey = String(index + 1); // convert to string
+                                return (
+                                  <Collapse.Panel
+                                    key={panelKey} // unique key
+                                    header={
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          justifyContent: "space-between",
+                                          width: "100%",
+                                          fontSize: "13px",
+                                          alignItems: "center",
+                                        }}
+                                      >
+                                        <span>
+                                          Bill Raise Date -{" "}
+                                          <span style={{ fontWeight: "500" }}>
+                                            {moment(
+                                              selectedPaymentDetails.bill_raisedate,
+                                            ).format("DD/MM/YYYY")}
+                                          </span>
                                         </span>
-                                      </span>
 
-                                      {item.finance_status === "Rejected" ? (
-                                        <div className="customer_trans_statustext_container">
-                                          <FaRegCircleXmark color="#d32f2f" />
-                                          <p
-                                            style={{
-                                              color: "#d32f2f",
-                                            }}
-                                          >
-                                            Rejected
-                                          </p>
-                                        </div>
-                                      ) : (
-                                        <div className="customer_trans_statustext_container">
-                                          <BsPatchCheckFill color="#3c9111" />
-                                          <p
-                                            style={{
-                                              color: "#3c9111",
-                                            }}
-                                          >
-                                            Verified
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  }
-                                >
-                                  <div style={{ padding: "0px 12px" }}>
-                                    <Row
-                                      gutter={16}
-                                      style={{
-                                        marginTop: "6px",
-                                        marginBottom: "8px",
-                                      }}
-                                    >
-                                      <Col span={12}>
-                                        <Row>
-                                          <Col span={12}>
-                                            <div className="customerdetails_rowheadingContainer">
-                                              <p className="customerdetails_rowheading">
-                                                Paid Amount
-                                              </p>
-                                            </div>
-                                          </Col>
-                                          <Col span={12}>
-                                            <p className="customerdetails_text">
-                                              {"₹" + item.paid_amount}
+                                        {item.status === "Rejected" ? (
+                                          <div className="customer_trans_statustext_container">
+                                            <FaRegCircleXmark color="#d32f2f" />
+                                            <p
+                                              style={{
+                                                color: "#d32f2f",
+                                              }}
+                                            >
+                                              Rejected
                                             </p>
-                                          </Col>
-                                        </Row>
-                                      </Col>
-
-                                      <Col span={12}>
-                                        <Row>
-                                          <Col span={12}>
-                                            <div className="customerdetails_rowheadingContainer">
-                                              <p className="customerdetails_rowheading">
-                                                Payment Type
-                                              </p>
-                                            </div>
-                                          </Col>
-                                          <Col span={12}>
-                                            <p className="customerdetails_text">
-                                              {item.payment_type}
+                                          </div>
+                                        ) : (
+                                          <div className="customer_trans_statustext_container">
+                                            <BsPatchCheckFill color="#3c9111" />
+                                            <p
+                                              style={{
+                                                color: "#3c9111",
+                                              }}
+                                            >
+                                              Verified
                                             </p>
-                                          </Col>
-                                        </Row>
-                                      </Col>
-                                    </Row>
-
-                                    {item.finance_status == "Rejected" ? (
-                                      <>
-                                        <Divider className="customer_statusupdate_divider" />
-                                        <div
-                                          style={{
-                                            padding: "0px 12px 6px 0px",
-                                          }}
-                                        >
-                                          <Row>
-                                            <Col span={24}>
-                                              <Row>
-                                                <Col span={6}>
-                                                  <div className="customerdetails_rowheadingContainer">
-                                                    <p
-                                                      className="customerdetails_rowheading"
-                                                      style={{
-                                                        color: "#d32f2f",
-                                                      }}
-                                                    >
-                                                      Rejection Reason:
-                                                    </p>
-                                                  </div>
-                                                </Col>
-                                                <Col span={18}>
-                                                  <p className="customerdetails_text">
-                                                    {item.reject_reason}
-                                                  </p>
-                                                </Col>
-                                              </Row>
-                                            </Col>
-                                          </Row>
-                                        </div>
-                                      </>
-                                    ) : (
+                                          </div>
+                                        )}
+                                      </div>
+                                    }
+                                  >
+                                    <div style={{ padding: "0px 12px" }}>
                                       <Row
                                         gutter={16}
                                         style={{
-                                          marginTop: "16px",
-                                          marginBottom: "12px",
+                                          marginTop: "6px",
+                                          marginBottom: "8px",
                                         }}
                                       >
                                         <Col span={12}>
@@ -1478,17 +1296,13 @@ export default function TrainerPayment() {
                                             <Col span={12}>
                                               <div className="customerdetails_rowheadingContainer">
                                                 <p className="customerdetails_rowheading">
-                                                  Paid Date
+                                                  Paid Amount
                                                 </p>
                                               </div>
                                             </Col>
                                             <Col span={12}>
                                               <p className="customerdetails_text">
-                                                {item.verified_date
-                                                  ? moment(
-                                                      item.verified_date
-                                                    ).format("DD/MM/YYYY")
-                                                  : "-"}
+                                                {"₹" + item.paid_amount}
                                               </p>
                                             </Col>
                                           </Row>
@@ -1499,34 +1313,115 @@ export default function TrainerPayment() {
                                             <Col span={12}>
                                               <div className="customerdetails_rowheadingContainer">
                                                 <p className="customerdetails_rowheading">
-                                                  Payment Screenshot
+                                                  Payment Type
                                                 </p>
                                               </div>
                                             </Col>
                                             <Col span={12}>
-                                              <button
-                                                className="pendingcustomer_paymentscreenshot_viewbutton"
-                                                onClick={() => {
-                                                  setIsOpenPaymentScreenshotModal(
-                                                    true
-                                                  );
-                                                  setTransactionScreenshot(
-                                                    item.payment_screenshot
-                                                  );
-                                                }}
-                                              >
-                                                <FaRegEye size={16} /> View
-                                                screenshot
-                                              </button>
+                                              <p className="customerdetails_text">
+                                                {item.payment_type}
+                                              </p>
                                             </Col>
                                           </Row>
                                         </Col>
                                       </Row>
-                                    )}
-                                  </div>
-                                </Collapse.Panel>
-                              );
-                            })}
+
+                                      {item.status == "Rejected" ? (
+                                        <>
+                                          <Divider className="customer_statusupdate_divider" />
+                                          <div
+                                            style={{
+                                              padding: "0px 12px 6px 0px",
+                                            }}
+                                          >
+                                            <Row>
+                                              <Col span={24}>
+                                                <Row>
+                                                  <Col span={6}>
+                                                    <div className="customerdetails_rowheadingContainer">
+                                                      <p
+                                                        className="customerdetails_rowheading"
+                                                        style={{
+                                                          color: "#d32f2f",
+                                                        }}
+                                                      >
+                                                        Rejection Reason:
+                                                      </p>
+                                                    </div>
+                                                  </Col>
+                                                  <Col span={18}>
+                                                    <p className="customerdetails_text">
+                                                      {item.reason}
+                                                    </p>
+                                                  </Col>
+                                                </Row>
+                                              </Col>
+                                            </Row>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <Row
+                                          gutter={16}
+                                          style={{
+                                            marginTop: "16px",
+                                            marginBottom: "12px",
+                                          }}
+                                        >
+                                          <Col span={12}>
+                                            <Row>
+                                              <Col span={12}>
+                                                <div className="customerdetails_rowheadingContainer">
+                                                  <p className="customerdetails_rowheading">
+                                                    Paid Date
+                                                  </p>
+                                                </div>
+                                              </Col>
+                                              <Col span={12}>
+                                                <p className="customerdetails_text">
+                                                  {item.paid_date
+                                                    ? moment(
+                                                        item.paid_date,
+                                                      ).format("DD/MM/YYYY")
+                                                    : "-"}
+                                                </p>
+                                              </Col>
+                                            </Row>
+                                          </Col>
+
+                                          <Col span={12}>
+                                            <Row>
+                                              <Col span={12}>
+                                                <div className="customerdetails_rowheadingContainer">
+                                                  <p className="customerdetails_rowheading">
+                                                    Payment Screenshot
+                                                  </p>
+                                                </div>
+                                              </Col>
+                                              <Col span={12}>
+                                                <button
+                                                  className="pendingcustomer_paymentscreenshot_viewbutton"
+                                                  onClick={() => {
+                                                    setIsOpenPaymentScreenshotModal(
+                                                      true,
+                                                    );
+                                                    setTransactionScreenshot(
+                                                      item.payment_screenshot,
+                                                    );
+                                                  }}
+                                                >
+                                                  <FaRegEye size={16} /> View
+                                                  screenshot
+                                                </button>
+                                              </Col>
+                                            </Row>
+                                          </Col>
+                                        </Row>
+                                      )}
+                                    </div>
+                                  </Collapse.Panel>
+                                );
+                              },
+                            )}
                           </Collapse>
                         </div>
                       </div>
@@ -1579,14 +1474,23 @@ export default function TrainerPayment() {
 
               {drawerContentStatus == "Awaiting Finance" && (
                 <div>
-                  {paymentHistory.length >= 1 ? (
+                  <p
+                    style={{
+                      fontWeight: 600,
+                      color: "#333",
+                      fontSize: "16px",
+                    }}
+                  >
+                    Payment Details
+                  </p>
+                  {selectedPaymentDetails.payments.length >= 1 ? (
                     <div style={{ marginTop: "12px", marginBottom: "20px" }}>
                       <Collapse
                         activeKey={collapseDefaultKey}
                         onChange={(keys) => setCollapseDefaultKey(keys)}
                         className="customer_updatepayment_history_collapse"
                       >
-                        {paymentHistory.map((item, index) => {
+                        {selectedPaymentDetails.payments.map((item, index) => {
                           return (
                             <Collapse.Panel
                               key={index + 1} // unique key
@@ -1604,12 +1508,12 @@ export default function TrainerPayment() {
                                     Bill Raise Date -{" "}
                                     <span style={{ fontWeight: "500" }}>
                                       {moment(
-                                        selectedPaymentDetails.bill_raisedate
+                                        selectedPaymentDetails.bill_raisedate,
                                       ).format("DD/MM/YYYY")}
                                     </span>
                                   </span>
 
-                                  {item.finance_status === "Pending" ? (
+                                  {item.status === "Pending" ? (
                                     <div
                                       style={{ display: "flex", gap: "12px" }}
                                     >
@@ -1633,7 +1537,7 @@ export default function TrainerPayment() {
                                         Verify
                                       </Button>
                                     </div>
-                                  ) : item.finance_status === "Rejected" ? (
+                                  ) : item.status === "Rejected" ? (
                                     <div className="customer_trans_statustext_container">
                                       <FaRegCircleXmark color="#d32f2f" />
                                       <p
@@ -1697,14 +1601,14 @@ export default function TrainerPayment() {
                                       </Col>
                                       <Col span={12}>
                                         <p className="customerdetails_text">
-                                          {item.payment_type}
+                                          Partial
                                         </p>
                                       </Col>
                                     </Row>
                                   </Col>
                                 </Row>
 
-                                {item.finance_status == "Approved" ? (
+                                {item.status == "Completed" ? (
                                   <Row
                                     gutter={16}
                                     style={{
@@ -1723,10 +1627,10 @@ export default function TrainerPayment() {
                                         </Col>
                                         <Col span={12}>
                                           <p className="customerdetails_text">
-                                            {item.verified_date
-                                              ? moment(
-                                                  item.verified_date
-                                                ).format("DD/MM/YYYY")
+                                            {item.paid_date
+                                              ? moment(item.paid_date).format(
+                                                  "DD/MM/YYYY",
+                                                )
                                               : "-"}
                                           </p>
                                         </Col>
@@ -1747,10 +1651,10 @@ export default function TrainerPayment() {
                                             className="pendingcustomer_paymentscreenshot_viewbutton"
                                             onClick={() => {
                                               setIsOpenPaymentScreenshotModal(
-                                                true
+                                                true,
                                               );
                                               setTransactionScreenshot(
-                                                item.payment_screenshot
+                                                item.payment_screenshot,
                                               );
                                             }}
                                           >
@@ -1817,7 +1721,7 @@ export default function TrainerPayment() {
                             onChange={(e) => {
                               setRejectPaymentComments(e.target.value);
                               setRejectPaymentCommentsError(
-                                addressValidator(e.target.value)
+                                addressValidator(e.target.value),
                               );
                             }}
                             value={rejectPaymentComments}
@@ -1838,7 +1742,7 @@ export default function TrainerPayment() {
             </div>
 
             {drawerContentStatus == "Requested" ||
-            drawerContentStatus == "Update Request" ? (
+            drawerContentStatus == "Update Payment" ? (
               <div className="leadmanager_tablefiler_footer">
                 <div className="leadmanager_submitlead_buttoncontainer">
                   {buttonLoading ? (
@@ -1862,32 +1766,27 @@ export default function TrainerPayment() {
         )}
       </Drawer>
 
-      {/* attendance screenshot modal */}
-      <Modal
-        title="Attendance Screenshot"
-        open={isOpenAttendanceScreenshotModal}
-        onCancel={() => {
-          setIsOpenAttendanceScreenshotModal(false);
-          setViewAttendanceScreenshot("");
+      {/* view payment details drawer */}
+      <Drawer
+        title="Trainer Payment Details"
+        open={isOpenViewDrawer}
+        onClose={() => {
+          setIsOpenViewDrawer(false);
+          setSelectedPaymentDetails(null);
         }}
-        footer={false}
-        width="32%"
-        className="customer_paymentscreenshot_modal"
+        width="50%"
+        style={{ position: "relative", paddingBottom: "65px" }}
+        className="customer_statusupdate_drawer"
       >
-        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
-          <PrismaZoom>
-            {viewAttendanceScreenshot ? (
-              <img
-                src={`data:image/png;base64,${viewAttendanceScreenshot}`}
-                alt="payment screenshot"
-                className="customer_paymentscreenshot_image"
-              />
-            ) : (
-              "-"
-            )}
-          </PrismaZoom>
-        </div>
-      </Modal>
+        {isOpenViewDrawer ? (
+          <ViewTrainerPaymentDetails
+            selectedPaymentDetails={selectedPaymentDetails}
+            trainersData={trainersData}
+          />
+        ) : (
+          ""
+        )}
+      </Drawer>
 
       {/* payment screenshot modal */}
       <Modal
@@ -1916,220 +1815,17 @@ export default function TrainerPayment() {
         </div>
       </Modal>
 
-      {/* customer fulldetails drawer */}
-      <Drawer
-        title="Customer Details"
-        open={isOpenCustomerDetailsDrawer}
-        onClose={() => {
-          setIsOpenCustomerDetailsDrawer(false);
-          setCustomerDetails(null);
+      {/* delete request modal */}
+      <CommonDeleteModal
+        open={isOpenRequestDeleteModal}
+        onCancel={() => {
+          setIsOpenRequestDeleteModal(false);
+          setSelectedPaymentDetails(null);
         }}
-        width="50%"
-        style={{ position: "relative" }}
-      >
-        {isOpenCustomerDetailsDrawer ? (
-          <ParticularCustomerDetails
-            customerDetails={customerDetails}
-            isCustomerPage={true}
-          />
-        ) : (
-          ""
-        )}
-      </Drawer>
-
-      {/* trainer fulldetails modal */}
-      <Modal
-        title="Trainer Full Details"
-        open={isOpenTrainerDetailModal}
-        onCancel={() => setIsOpenTrainerDetailModal(false)}
-        footer={false}
-        width="50%"
-      >
-        {clickedTrainerDetails.map((item, index) => {
-          return (
-            <Row gutter={16} style={{ marginTop: "20px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">HR Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={item.hr_head ? item.hr_head : "-"}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        item.name
-                          ? `${item.name} (${
-                              item.trainer_code ? item.trainer_code : "-"
-                            })`
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <MdOutlineEmail size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Email</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip text={item.email} smallText={true} />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoCallOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Mobile</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.mobile}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaWhatsapp size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Whatsapp</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.whatsapp}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.location}</p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Technology</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip text={item.technology} smallText={true} />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Experience</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.overall_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Relevent Experience
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.relavant_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Avaibility Timing
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.availability_time
-                        ? moment(item.availability_time, "HH:mm:ss").format(
-                            "hh:mm A"
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Secondary Timing
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.secondary_time
-                        ? moment(item.secondary_time, "HH:mm:ss").format(
-                            "hh:mm A"
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Skills</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={item.skills.map((item) => item.name).join(", ")}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          );
-        })}
-      </Modal>
+        content="Are you sure want to delete the Role?"
+        loading={buttonLoading}
+        onClick={handleRequestDelete}
+      />
     </div>
   );
 }

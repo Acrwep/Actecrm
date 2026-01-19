@@ -28,7 +28,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 const isTokenExpired = (token) => {
@@ -235,7 +235,7 @@ export const getTrainers = async (payload) => {
 export const getTrainerById = async (trainer_id) => {
   try {
     const response = await api.get(
-      `/api/getTrainerById?trainer_id=${trainer_id}`
+      `/api/getTrainerById?trainer_id=${trainer_id}`,
     );
     return response;
   } catch (error) {
@@ -309,9 +309,7 @@ export const getCustomersByTrainerId = async (trainer_id) => {
 
 export const getTrainerPayments = async (payload) => {
   try {
-    const response = await api.get("/api/getTrainerPayments", {
-      params: payload,
-    });
+    const response = await api.post("/api/getPayments", payload);
     return response;
   } catch (error) {
     throw error;
@@ -322,7 +320,7 @@ export const addTrainerPaymentTransaction = async (payload) => {
   try {
     const response = await api.post(
       "/api/addTrainerPaymentTransaction",
-      payload
+      payload,
     );
     return response;
   } catch (error) {
@@ -334,7 +332,7 @@ export const verifyTrainerPaymentTransaction = async (payload) => {
   try {
     const response = await api.post(
       "/api/verifyTrainerPaymentTransaction",
-      payload
+      payload,
     );
     return response;
   } catch (error) {
@@ -344,10 +342,7 @@ export const verifyTrainerPaymentTransaction = async (payload) => {
 //-------new----------
 export const createTrainerPaymentTransaction = async (payload) => {
   try {
-    const response = await api.post(
-      "/api/createTrainerPaymentTransaction",
-      payload
-    );
+    const response = await api.put("/api/financeJuniorApprove", payload);
     return response;
   } catch (error) {
     throw error;
@@ -356,10 +351,7 @@ export const createTrainerPaymentTransaction = async (payload) => {
 
 export const approveTrainerPaymentTransaction = async (payload) => {
   try {
-    const response = await api.post(
-      "/api/approveTrainerPaymentTransaction",
-      payload
-    );
+    const response = await api.post("/api/approveTrainerPayment", payload);
     return response;
   } catch (error) {
     throw error;
@@ -368,7 +360,7 @@ export const approveTrainerPaymentTransaction = async (payload) => {
 
 export const rejectTrainerPayment = async (payload) => {
   try {
-    const response = await api.post("/api/rejectTrainerPayment", payload);
+    const response = await api.put("/api/rejectTrainerPayment", payload);
     return response;
   } catch (error) {
     throw error;
@@ -377,7 +369,18 @@ export const rejectTrainerPayment = async (payload) => {
 
 export const updateTrainerPaymentTransaction = async (payload) => {
   try {
-    const response = await api.post("/api/resendRejectedRequest", payload);
+    const response = await api.put("/api/updateTrainerPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteTrainerPaymentRequest = async (trainer_payment_id) => {
+  try {
+    const response = await api.delete(
+      `/api/deleteRequest?trainer_payment_id=${trainer_payment_id}`,
+    );
     return response;
   } catch (error) {
     throw error;
@@ -742,7 +745,7 @@ export const sendCustomerPaymentVerificationEmail = async (payload) => {
 export const getCustomerById = async (customer_id) => {
   try {
     const response = await api.get(
-      `/api/getCustomerById?customer_id=${customer_id}`
+      `/api/getCustomerById?customer_id=${customer_id}`,
     );
     return response;
   } catch (error) {
@@ -928,7 +931,7 @@ export const sendCustomerCertificate = async (payload) => {
 export const getCustomerFullHistory = async (customerid) => {
   try {
     const response = await api.get(
-      `/api/getCustomerHistory?customer_id=${customerid}`
+      `/api/getCustomerHistory?customer_id=${customerid}`,
     );
     return response;
   } catch (error) {
@@ -1110,7 +1113,7 @@ export const getAllPermissions = async () => {
 export const getRolePermissionsByRoleId = async (role_id) => {
   try {
     const response = await api.get(
-      `/api/getRolePermissionsById?role_id=${role_id}`
+      `/api/getRolePermissionsById?role_id=${role_id}`,
     );
     return response;
   } catch (error) {
@@ -1167,7 +1170,7 @@ export const updateDashboardDates = async (payload) => {
 export const getDashboardDates = async (user_id) => {
   try {
     const response = await api.get(
-      `/api/getDashboardCompounds?user_id=${user_id}`
+      `/api/getDashboardCompounds?user_id=${user_id}`,
     );
     return response;
   } catch (error) {
@@ -1385,7 +1388,7 @@ export const insertServerTrack = async (payload) => {
 export const getServerHistory = async (server_id) => {
   try {
     const response = await api.get(
-      `/api/getServerHistory?server_id=${server_id}`
+      `/api/getServerHistory?server_id=${server_id}`,
     );
     return response;
   } catch (error) {
