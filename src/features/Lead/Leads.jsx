@@ -248,7 +248,7 @@ export default function Leads({
       width: 160,
       sorter: (a, b) =>
         (a.lead_assigned_to_name || "").localeCompare(
-          b.lead_assigned_to_name || ""
+          b.lead_assigned_to_name || "",
         ),
       sortDirections: ["ascend", "descend"],
       render: (text, record) => {
@@ -421,10 +421,10 @@ export default function Leads({
               text == "High"
                 ? "leadmanager_leadstatus_high_container"
                 : text == "Medium"
-                ? "leadmanager_leadstatus_medium_container"
-                : text == "Low"
-                ? "leadmanager_leadstatus_low_container"
-                : "leadmanager_leadstatus_junk_container"
+                  ? "leadmanager_leadstatus_medium_container"
+                  : text == "Low"
+                    ? "leadmanager_leadstatus_low_container"
+                    : "leadmanager_leadstatus_junk_container"
             }
           >
             <p>{text}</p>
@@ -477,7 +477,7 @@ export default function Leads({
                       setClickedLeadItem(record);
                       setTimeout(() => {
                         const drawerBody = document.querySelector(
-                          "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                          "#leadmanager_paymentdetails_drawer .ant-drawer-body",
                         );
                         if (drawerBody) {
                           drawerBody.scrollTo({
@@ -540,7 +540,7 @@ export default function Leads({
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
 
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
@@ -611,7 +611,7 @@ export default function Leads({
         getAllDownlineUsersData(
           filterValuesFromRedux.user_id
             ? filterValuesFromRedux.user_id
-            : convertAsJson?.user_id
+            : convertAsJson?.user_id,
         );
         // getAllLeadData(
         //   null,
@@ -655,7 +655,7 @@ export default function Leads({
                 ...col,
                 sorter: (a, b) =>
                   (a.lead_assigned_to_name || "").localeCompare(
-                    b.lead_assigned_to_name || ""
+                    b.lead_assigned_to_name || "",
                   ),
                 sortDirections: ["ascend", "descend"],
                 render: (text, record) => {
@@ -723,7 +723,7 @@ export default function Leads({
                 ...col,
                 sorter: (a, b) =>
                   (a.primary_course || "").localeCompare(
-                    b.primary_course || ""
+                    b.primary_course || "",
                   ),
                 sortDirections: ["ascend", "descend"],
                 width: 200,
@@ -771,10 +771,10 @@ export default function Leads({
                         text == "High"
                           ? "leadmanager_leadstatus_high_container"
                           : text == "Medium"
-                          ? "leadmanager_leadstatus_medium_container"
-                          : text == "Low"
-                          ? "leadmanager_leadstatus_low_container"
-                          : "leadmanager_leadstatus_junk_container"
+                            ? "leadmanager_leadstatus_medium_container"
+                            : text == "Low"
+                              ? "leadmanager_leadstatus_low_container"
+                              : "leadmanager_leadstatus_junk_container"
                       }
                     >
                       <p>{text}</p>
@@ -831,14 +831,14 @@ export default function Leads({
                                 setSubTotal(parseFloat(record.primary_fees));
                                 setAmount(parseFloat(record.primary_fees));
                                 setBalanceAmount(
-                                  parseFloat(record.primary_fees)
+                                  parseFloat(record.primary_fees),
                                 );
                                 setCustomerCourseId(record.primary_course_id);
                                 setCustomerBatchTrackId(record.batch_track_id);
                                 setClickedLeadItem(record);
                                 setTimeout(() => {
                                   const drawerBody = document.querySelector(
-                                    "#leadmanager_paymentdetails_drawer .ant-drawer-body"
+                                    "#leadmanager_paymentdetails_drawer .ant-drawer-body",
                                   );
                                   if (drawerBody) {
                                     drawerBody.scrollTo({
@@ -916,7 +916,7 @@ export default function Leads({
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -966,7 +966,7 @@ export default function Leads({
         downliners_ids,
         filterValuesFromRedux.lead_source,
         filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit
+        filterValuesFromRedux.pageLimit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -980,19 +980,19 @@ export default function Leads({
     downliners,
     leadsource,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       start_date: startDate,
       end_date: endDate,
       user_ids: downliners,
@@ -1018,7 +1018,7 @@ export default function Leads({
         storeLeadFilterValues({
           pageNumber: paginations.page,
           pageLimit: paginations.limit,
-        })
+        }),
       );
       setLeadCountLoading(false);
     } catch (error) {
@@ -1053,7 +1053,7 @@ export default function Leads({
     }
 
     setBalanceAmount(
-      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
+      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
     );
 
     if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
@@ -1065,7 +1065,7 @@ export default function Leads({
 
     if (paymentValidationTrigger) {
       setPaidNowError(
-        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
       );
     }
   };
@@ -1077,7 +1077,7 @@ export default function Leads({
     }
     const amnt = calculateAmount(
       parseFloat(subTotal),
-      e.target.value == 5 ? 0 : 18
+      e.target.value == 5 ? 0 : 18,
     );
     if (isNaN(amnt)) {
       setAmount("");
@@ -1094,7 +1094,7 @@ export default function Leads({
       setDueDateError("");
     }
     setBalanceAmount(
-      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
     );
   };
 
@@ -1103,7 +1103,7 @@ export default function Leads({
     console.log("taxType", taxType);
     const amnt = calculateAmount(
       parseFloat(subTotal),
-      taxType == 5 || taxType == "" || taxType == null ? 0 : 18
+      taxType == 5 || taxType == "" || taxType == null ? 0 : 18,
     );
     setAmount(amnt);
 
@@ -1125,7 +1125,7 @@ export default function Leads({
       setDueDateError("");
     }
     setBalanceAmount(
-      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow)
+      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
     );
 
     //handle convenience fees
@@ -1182,7 +1182,7 @@ export default function Leads({
     ) {
       setTimeout(() => {
         const container = document.getElementById(
-          "leadmanager_paymentdetails_paymentinfo_heading"
+          "leadmanager_paymentdetails_paymentinfo_heading",
         );
         container.scrollIntoView({ behavior: "smooth" });
       }, 200);
@@ -1191,7 +1191,7 @@ export default function Leads({
     if (taxTypeValidate) {
       setTimeout(() => {
         const container = document.getElementById(
-          "leadmanager_paymentdetails_heading"
+          "leadmanager_paymentdetails_heading",
         );
         container.scrollIntoView({ behavior: "smooth" });
       }, 200);
@@ -1231,12 +1231,12 @@ export default function Leads({
         taxType == 1
           ? "GST (18%)"
           : taxType == 2
-          ? "SGST (18%)"
-          : taxType == 3
-          ? "IGST (18%)"
-          : taxType == 4
-          ? "VAT (18%)"
-          : "No Tax",
+            ? "SGST (18%)"
+            : taxType == 3
+              ? "IGST (18%)"
+              : taxType == 4
+                ? "VAT (18%)"
+                : "No Tax",
       gst_percentage: taxType == 5 ? "0%" : "18%",
       gst_amount: parseFloat(gstAmount).toFixed(2),
       total_amount: amount,
@@ -1280,7 +1280,7 @@ export default function Leads({
           allDownliners,
           leadSourceFilterId,
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
         refreshLeadFollowUp();
         if (import.meta.env.PROD) {
@@ -1293,7 +1293,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1313,7 +1313,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1334,7 +1334,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1355,7 +1355,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1458,7 +1458,7 @@ export default function Leads({
         searchValue: e.target.value,
         pageNumber: 1,
         pageLimit: pagination.limit,
-      })
+      }),
     );
     setTimeout(() => {
       setPagination({
@@ -1471,7 +1471,7 @@ export default function Leads({
         allDownliners,
         leadSourceFilterId,
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -1515,7 +1515,7 @@ export default function Leads({
             allDownliners,
             leadSourceFilterId,
             pagination.page,
-            pagination.limit
+            pagination.limit,
           );
           formReset();
           setAddCourseLoading(false);
@@ -1528,7 +1528,7 @@ export default function Leads({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -1539,7 +1539,7 @@ export default function Leads({
       storeLeadFilterValues({
         pageNumber: page,
         pageLimit: limit,
-      })
+      }),
     );
     getAllLeadData(
       searchValue,
@@ -1548,7 +1548,7 @@ export default function Leads({
       allDownliners,
       leadSourceFilterId,
       page,
-      limit
+      limit,
     );
   };
 
@@ -1557,7 +1557,7 @@ export default function Leads({
     dispatch(
       storeLeadFilterValues({
         user_id: value,
-      })
+      }),
     );
     setSelectedUserId(value);
 
@@ -1576,7 +1576,7 @@ export default function Leads({
         storeLeadFilterValues({
           pageNumber: 1,
           pageLimit: pagination.limit,
-        })
+        }),
       );
       getAllLeadData(
         searchValue,
@@ -1585,7 +1585,7 @@ export default function Leads({
         downliners_ids,
         leadSourceFilterId,
         1,
-        pagination.limit
+        pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -1598,6 +1598,7 @@ export default function Leads({
       start_date: selectedDates[0],
       end_date: selectedDates[1],
       user_ids: allDownliners,
+      lead_type_id: leadSourceFilterId,
     };
     try {
       const response = await getLeadsCountByUserIds(payload);
@@ -1628,12 +1629,12 @@ export default function Leads({
       ...(searchValue && filterType == 1
         ? { phone: searchValue }
         : searchValue && filterType == 2
-        ? { name: searchValue }
-        : searchValue && filterType == 3
-        ? { email: searchValue }
-        : searchValue && filterType == 4
-        ? { course: searchValue }
-        : {}),
+          ? { name: searchValue }
+          : searchValue && filterType == 3
+            ? { email: searchValue }
+            : searchValue && filterType == 4
+              ? { course: searchValue }
+              : {}),
     };
     try {
       const response = await downloadLeads(payload);
@@ -1644,8 +1645,8 @@ export default function Leads({
         data,
         alterColumns,
         `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-          selectedDates[1]
-        ).format("DD-MM-YYYY")} Leads.csv`
+          selectedDates[1],
+        ).format("DD-MM-YYYY")} Leads.csv`,
       );
       setTimeout(() => {
         setDownloadButtonLoader(false);
@@ -1656,7 +1657,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1673,12 +1674,12 @@ export default function Leads({
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -1697,7 +1698,7 @@ export default function Leads({
                               searchValue: null,
                               pageNumber: 1,
                               pageLimit: pagination.limit,
-                            })
+                            }),
                           );
                           getAllLeadData(
                             null,
@@ -1706,7 +1707,7 @@ export default function Leads({
                             allDownliners,
                             leadSourceFilterId,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1745,7 +1746,7 @@ export default function Leads({
                             dispatch(
                               storeLeadFilterValues({
                                 filterType: e.target.value,
-                              })
+                              }),
                             );
                             if (searchValue == "") {
                               return;
@@ -1756,7 +1757,7 @@ export default function Leads({
                                   searchValue: "",
                                   pageNumber: 1,
                                   pageLimit: pagination.limit,
-                                })
+                                }),
                               );
                               setPagination({
                                 page: 1,
@@ -1768,7 +1769,7 @@ export default function Leads({
                                 allDownliners,
                                 leadSourceFilterId,
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -1892,7 +1893,7 @@ export default function Leads({
                       lead_source: e.target.value,
                       pageNumber: 1,
                       pageLimit: pagination.limit,
-                    })
+                    }),
                   );
                   getAllLeadData(
                     null,
@@ -1901,7 +1902,7 @@ export default function Leads({
                     allDownliners,
                     e.target.value,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
                 value={leadSourceFilterId}
@@ -1919,7 +1920,7 @@ export default function Leads({
                       end_date: dates[1],
                       pageNumber: 1,
                       pageLimit: pagination.limit,
-                    })
+                    }),
                   );
                   setPagination({
                     page: 1,
@@ -1931,7 +1932,7 @@ export default function Leads({
                     allDownliners,
                     leadSourceFilterId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -1954,7 +1955,7 @@ export default function Leads({
                   setIsOpenAddDrawer(true);
                   setTimeout(() => {
                     const drawerBody = document.querySelector(
-                      "#leadform_addlead_drawer .ant-drawer-body"
+                      "#leadform_addlead_drawer .ant-drawer-body",
                     );
                     if (drawerBody) {
                       drawerBody.scrollTo({
@@ -2024,7 +2025,7 @@ export default function Leads({
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -2077,7 +2078,7 @@ export default function Leads({
               allDownliners,
               leadSourceFilterId,
               pagination.page,
-              pagination.limit
+              pagination.limit,
             );
             refreshLeadFollowUp();
           }}
@@ -2722,7 +2723,7 @@ export default function Leads({
                     setCustomerBatchTimingId(e.target.value);
                     if (paymentValidationTrigger) {
                       setCustomerBatchTimingIdError(
-                        selectValidator(e.target.value)
+                        selectValidator(e.target.value),
                       );
                     }
                   }}
