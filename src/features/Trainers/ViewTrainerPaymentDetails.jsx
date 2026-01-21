@@ -37,6 +37,11 @@ export default function ViewTrainerPaymentDetails({
     useState(false);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
 
+  //review  usestates
+  const [isOpenReviewModal, setIsOpenReviewModal] = useState(false);
+  const [reviewScreenshot, setReviewScreenshot] = useState("");
+  const [reviewType, setReviewType] = useState("");
+
   const getParticularCustomerDetails = async (customer_email) => {
     const payload = {
       email: customer_email,
@@ -187,6 +192,53 @@ export default function ViewTrainerPaymentDetails({
 
       <Divider className="customer_statusupdate_divider" />
 
+      <div
+        className="customerdetails_coursecard"
+        style={{ margin: "24px 24px" }}
+      >
+        <div className="customerdetails_coursecard_headercontainer">
+          <p>Score Card</p>
+        </div>
+
+        <div className="customerdetails_coursecard_contentcontainer">
+          <Row>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_headings">
+                Total Customers
+              </p>
+            </Col>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_headings">
+                G-Review Collected
+              </p>
+            </Col>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_headings">
+                L-Review Collected
+              </p>
+            </Col>
+          </Row>
+
+          <Row style={{ marginTop: "6px" }}>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_text">
+                {selectedPaymentDetails?.scoreCard?.total_students ?? "-"}
+              </p>
+            </Col>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_text">
+                {selectedPaymentDetails?.scoreCard?.total_google ?? "-"}
+              </p>
+            </Col>
+            <Col span={8}>
+              <p className="trainerpaymentrequest_scorecard_text">
+                {selectedPaymentDetails?.scoreCard?.total_linkedin ?? "-"}
+              </p>
+            </Col>
+          </Row>
+        </div>
+      </div>
+
       <div className="customer_statusupdate_adddetailsContainer">
         {selectedPaymentDetails.students.length >= 1 ? (
           <div>
@@ -275,13 +327,13 @@ export default function ViewTrainerPaymentDetails({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Stream
+                                      Commercial
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {item.streams}
+                                    {"₹" + item.commercial}
                                   </p>
                                 </Col>
                               </Row>
@@ -290,13 +342,13 @@ export default function ViewTrainerPaymentDetails({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Attendance Status
+                                      Commercial%
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {item.attendance_status}
+                                    {item.commercial_percentage + "%"}
                                   </p>
                                 </Col>
                               </Row>
@@ -342,13 +394,13 @@ export default function ViewTrainerPaymentDetails({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Commercial
+                                      Attendance Status
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {"₹" + item.commercial}
+                                    {item.attendance_status}
                                   </p>
                                 </Col>
                               </Row>
@@ -357,18 +409,184 @@ export default function ViewTrainerPaymentDetails({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Commercial%
+                                      Stream
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {item.commercial_percentage + "%"}
+                                    {item.streams}
                                   </p>
                                 </Col>
                               </Row>
                             </Col>
                           </Row>
+
+                          <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
+                            <Row gutter={12}>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_balanceamount_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    Balance Amount{" "}
+                                  </p>
+                                </div>
+                              </Col>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_classpercentage_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    Class Percentage
+                                  </p>
+                                </div>
+                              </Col>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_google_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    G-Review
+                                  </p>
+                                </div>
+                              </Col>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_linkedin_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    L-Review{" "}
+                                  </p>
+                                </div>
+                              </Col>
+                            </Row>
+
+                            <Row gutter={12} style={{ marginTop: "2px" }}>
+                              <Col span={6}>
+                                <p
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "11px",
+                                    padding: "2px 9px",
+                                  }}
+                                >
+                                  {"₹" + item.balance_amount}
+                                </p>{" "}
+                              </Col>
+                              <Col span={6}>
+                                <p
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "11px",
+                                    padding: "2px 9px",
+                                  }}
+                                >
+                                  {item.class_percentage
+                                    ? parseFloat(item.class_percentage) + "%"
+                                    : "0" + "%"}
+                                </p>{" "}
+                              </Col>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0px",
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "11px",
+                                      padding: "2px 9px",
+                                    }}
+                                  >
+                                    {item.google_review
+                                      ? "Collected"
+                                      : "Not Collected"}
+                                  </p>{" "}
+                                  {item.google_review ? (
+                                    <FaRegEye
+                                      size={12}
+                                      style={{
+                                        cursor: "pointer",
+                                        marginTop: "4px",
+                                      }}
+                                      onClick={() => {
+                                        setIsOpenReviewModal(true);
+                                        setReviewType("Google Review");
+                                        setReviewScreenshot(item.google_review);
+                                      }}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </Col>
+                              <Col span={6}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0px",
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "11px",
+                                      padding: "2px 9px",
+                                    }}
+                                  >
+                                    {item.linkedin_review
+                                      ? "Collected"
+                                      : "Not Collected"}
+                                  </p>{" "}
+                                  {item.linkedin_review ? (
+                                    <FaRegEye
+                                      size={12}
+                                      style={{
+                                        cursor: "pointer",
+                                        marginTop: "4px",
+                                      }}
+                                      onClick={() => {
+                                        setIsOpenReviewModal(true);
+                                        setReviewType("Linkedin Review");
+                                        setReviewScreenshot(
+                                          item.linkedin_review,
+                                        );
+                                      }}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </Col>
+                            </Row>
+                          </div>
                         </div>
                       </Collapse.Panel>
                     );
@@ -623,194 +841,303 @@ export default function ViewTrainerPaymentDetails({
 
       {/* trainer fulldetails modal */}
       <Modal
-        title="Trainer Full Details"
+        title={
+          <span style={{ padding: "0px 24px" }}>Trainer Full Details</span>
+        }
         open={isOpenTrainerDetailModal}
         onCancel={() => setIsOpenTrainerDetailModal(false)}
         footer={false}
         width="50%"
+        className="trainerpaymentrequest_trainerfulldetails_modal"
       >
         {clickedTrainerDetails.map((item, index) => {
           return (
-            <Row gutter={16} style={{ marginTop: "20px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">HR Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={item.hr_head ? item.hr_head : "-"}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
+            <>
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px" }}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+              >
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">HR Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.hr_head ? item.hr_head : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        item.name
-                          ? `${item.name} (${
-                              item.trainer_code ? item.trainer_code : "-"
-                            })`
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">
+                          Trainer Name
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          item.name
+                            ? `${item.name} (${
+                                item.trainer_code ? item.trainer_code : "-"
+                              })`
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <MdOutlineEmail size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Email</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip text={item.email} smallText={true} />
-                  </Col>
-                </Row>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <MdOutlineEmail size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Email</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip text={item.email} smallText={true} />
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoCallOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Mobile</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.mobile}</p>
-                  </Col>
-                </Row>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoCallOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Mobile</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.mobile}</p>
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaWhatsapp size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Whatsapp</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.whatsapp}</p>
-                  </Col>
-                </Row>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaWhatsapp size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Whatsapp</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.whatsapp}</p>
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.location}</p>
-                  </Col>
-                </Row>
-              </Col>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoLocationOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Location</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.location}</p>
+                    </Col>
+                  </Row>
+                </Col>
 
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Technology</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip text={item.technology} smallText={true} />
-                  </Col>
-                </Row>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Technology</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.technology}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Experience</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.overall_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Relevent Experience
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Experience</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.overall_exp_year + " Years"}
                       </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.relavant_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Avaibility Timing
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Relevent Experience
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.relavant_exp_year + " Years"}
                       </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.availability_time
-                        ? moment(item.availability_time, "HH:mm:ss").format(
-                            "hh:mm A",
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Secondary Timing
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Avaibility Timing
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.availability_time
+                          ? moment(item.availability_time, "HH:mm:ss").format(
+                              "hh:mm A",
+                            )
+                          : "-"}
                       </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.secondary_time
-                        ? moment(item.secondary_time, "HH:mm:ss").format(
-                            "hh:mm A",
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+                    </Col>
+                  </Row>
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Skills</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={item.skills.map((item) => item.name).join(", ")}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Secondary Timing
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.secondary_time
+                          ? moment(item.secondary_time, "HH:mm:ss").format(
+                              "hh:mm A",
+                            )
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Skills</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.skills.map((item) => item.name).join(", ")}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+              <Divider className="customer_statusupdate_divider" />
+
+              <p className="trainerpaymentrequest_traineraccountdetails_text">
+                Account Details
+              </p>
+
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px" }}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+              >
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Account Holder Name
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          item.account_holder_name
+                            ? item.account_holder_name
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Account Number
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.account_number ? item.account_number : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">IFSC Code</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.ifsc_code ? item.ifsc_code : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Bank Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.bank_name ? item.bank_name : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Branch Name
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.branch_name ? item.branch_name : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </>
           );
         })}
       </Modal>
@@ -880,6 +1207,34 @@ export default function ViewTrainerPaymentDetails({
             {transactionScreenshot ? (
               <img
                 src={`data:image/png;base64,${transactionScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
+      </Modal>
+
+      {/* review screenshot modal */}
+      <Modal
+        title={reviewType}
+        open={isOpenReviewModal}
+        onCancel={() => {
+          setIsOpenReviewModal(false);
+          setReviewScreenshot("");
+          setReviewType("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {reviewScreenshot ? (
+              <img
+                src={`data:image/png;base64,${reviewScreenshot}`}
                 alt="payment screenshot"
                 className="customer_paymentscreenshot_image"
               />

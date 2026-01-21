@@ -52,6 +52,7 @@ import {
   storeRoleSearchValue,
   storeServerModulePermissionList,
   storeSettingsModulePermissionList,
+  storeTrainerPaymentModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserPermissions,
 } from "../Redux/Slice";
@@ -72,37 +73,40 @@ export default function PageAccess({
   const roleSearchValue = useSelector((state) => state.rolesearchvalue);
   const usersData = useSelector((state) => state.userslist);
   const dashboardModulePermissionData = useSelector(
-    (state) => state.dashboardmodulepermissionlist
+    (state) => state.dashboardmodulepermissionlist,
   );
   const leadsModulePermissionData = useSelector(
-    (state) => state.leadsmodulepermissionlist
+    (state) => state.leadsmodulepermissionlist,
   );
   const leadFollowupModulePermissionData = useSelector(
-    (state) => state.leadfollowupmodulepermissionlist
+    (state) => state.leadfollowupmodulepermissionlist,
   );
   const customersModulePermissionData = useSelector(
-    (state) => state.customersmodulepermissionlist
+    (state) => state.customersmodulepermissionlist,
   );
   const feesPendingModulePermissionData = useSelector(
-    (state) => state.feespendingmodulepermissionlist
+    (state) => state.feespendingmodulepermissionlist,
   );
   const bulkSearchModulePermissionData = useSelector(
-    (state) => state.bulksearchmodulepermissionlist
+    (state) => state.bulksearchmodulepermissionlist,
   );
   const serverModulePermissionData = useSelector(
-    (state) => state.servermodulepermissionlist
+    (state) => state.servermodulepermissionlist,
   );
   const trainersModulePermissionData = useSelector(
-    (state) => state.trainersmodulepermissionlist
+    (state) => state.trainersmodulepermissionlist,
+  );
+  const trainerPaymentModulePermissionData = useSelector(
+    (state) => state.trainerpaymentmodulepermissionlist,
   );
   const emailTemplateModulePermissionData = useSelector(
-    (state) => state.emailtemplatemodulepermissionlist
+    (state) => state.emailtemplatemodulepermissionlist,
   );
   const reportsModulePermissionData = useSelector(
-    (state) => state.reportsmodulepermissionlist
+    (state) => state.reportsmodulepermissionlist,
   );
   const settingsModulePermissionData = useSelector(
-    (state) => state.settingsmodulepermissionlist
+    (state) => state.settingsmodulepermissionlist,
   );
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -259,7 +263,7 @@ export default function PageAccess({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     } else {
@@ -275,7 +279,7 @@ export default function PageAccess({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -295,7 +299,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -330,7 +334,7 @@ export default function PageAccess({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     } else {
@@ -345,7 +349,7 @@ export default function PageAccess({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -365,7 +369,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -386,7 +390,7 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(storeDashboardModulePermissionList(updatedDashboardPermissions));
@@ -396,9 +400,9 @@ export default function PageAccess({
         (lp) => ({
           ...lp,
           checked: role_permissions.some(
-            (rp) => rp.permission_id === lp.permission_id
+            (rp) => rp.permission_id === lp.permission_id,
           ),
-        })
+        }),
       );
       dispatch(storeLeadsModulePermissionList(updatedLeadsPermissions));
 
@@ -408,11 +412,11 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(
-        storeLeadFollowupModulePermissionList(updatedLeadFollowupPermissions)
+        storeLeadFollowupModulePermissionList(updatedLeadFollowupPermissions),
       );
 
       //customers module
@@ -421,7 +425,7 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(storeCustomersModulePermissionList(updatedCustomersPermissions));
@@ -432,11 +436,11 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(
-        storeFeesPendingModulePermissionList(updatedFeesPendingPermissions)
+        storeFeesPendingModulePermissionList(updatedFeesPendingPermissions),
       );
 
       //fees pending module
@@ -445,11 +449,11 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(
-        storeBulkSearchModulePermissionList(updatedBulkSearchPermissions)
+        storeBulkSearchModulePermissionList(updatedBulkSearchPermissions),
       );
 
       //server module
@@ -457,9 +461,9 @@ export default function PageAccess({
         (lp) => ({
           ...lp,
           checked: role_permissions.some(
-            (rp) => rp.permission_id === lp.permission_id
+            (rp) => rp.permission_id === lp.permission_id,
           ),
-        })
+        }),
       );
       dispatch(storeServerModulePermissionList(updatedServerPermissions));
 
@@ -469,10 +473,25 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(storeTrainersModulePermissionList(updatedTrainersPermissions));
+
+      //trainer payment module
+      const updatedTrainerPaymentPermissions = (
+        trainerPaymentModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id,
+        ),
+      }));
+      dispatch(
+        storeTrainerPaymentModulePermissionList(
+          updatedTrainerPaymentPermissions,
+        ),
+      );
 
       //email template module
       const updatedEmailTemplatePermissions = (
@@ -480,11 +499,11 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(
-        storeEmailTemplateModulePermissionList(updatedEmailTemplatePermissions)
+        storeEmailTemplateModulePermissionList(updatedEmailTemplatePermissions),
       );
 
       //reports module
@@ -492,9 +511,9 @@ export default function PageAccess({
         (lp) => ({
           ...lp,
           checked: role_permissions.some(
-            (rp) => rp.permission_id === lp.permission_id
+            (rp) => rp.permission_id === lp.permission_id,
           ),
-        })
+        }),
       );
       dispatch(storeReportsModulePermissionList(updatedReportsPermissions));
 
@@ -504,7 +523,7 @@ export default function PageAccess({
       ).map((lp) => ({
         ...lp,
         checked: role_permissions.some(
-          (rp) => rp.permission_id === lp.permission_id
+          (rp) => rp.permission_id === lp.permission_id,
         ),
       }));
       dispatch(storeSettingsModulePermissionList(updatedSettingsPermissions));
@@ -516,7 +535,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -531,6 +550,7 @@ export default function PageAccess({
       ...bulkSearchModulePermissionData,
       ...serverModulePermissionData,
       ...trainersModulePermissionData,
+      ...trainerPaymentModulePermissionData,
       ...emailTemplateModulePermissionData,
       ...reportsModulePermissionData,
       ...settingsModulePermissionData,
@@ -562,7 +582,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -639,7 +659,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -744,7 +764,7 @@ export default function PageAccess({
 
     // If any row has error, stop
     const isError = validateFormFields.filter(
-      (f) => f.user_id_error !== "" || f.roles_error !== ""
+      (f) => f.user_id_error !== "" || f.roles_error !== "",
     );
 
     console.log("isError", isError);
@@ -770,7 +790,7 @@ export default function PageAccess({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1313,11 +1333,11 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeDashboardModulePermissionList(updateItem)
+                          storeDashboardModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1352,7 +1372,7 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeLeadsModulePermissionList(updateItem));
@@ -1390,11 +1410,11 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeLeadFollowupModulePermissionList(updateItem)
+                          storeLeadFollowupModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1430,11 +1450,11 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeBulkSearchModulePermissionList(updateItem)
+                          storeBulkSearchModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1470,11 +1490,11 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeCustomersModulePermissionList(updateItem)
+                          storeCustomersModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1510,11 +1530,11 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeFeesPendingModulePermissionList(updateItem)
+                          storeFeesPendingModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1550,7 +1570,7 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeServerModulePermissionList(updateItem));
@@ -1583,10 +1603,44 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeTrainersModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Trainer Payment Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {trainerPaymentModulePermissionData.map((item) => {
+                return (
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem =
+                          trainerPaymentModulePermissionData.map((i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          });
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeTrainerPaymentModulePermissionList(updateItem),
+                        );
                       }}
                     >
                       {item.permission_name}
@@ -1619,7 +1673,7 @@ export default function PageAccess({
                           });
                         console.log("updateItem", updateItem);
                         dispatch(
-                          storeEmailTemplateModulePermissionList(updateItem)
+                          storeEmailTemplateModulePermissionList(updateItem),
                         );
                       }}
                     >
@@ -1650,7 +1704,7 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeReportsModulePermissionList(updateItem));
@@ -1683,7 +1737,7 @@ export default function PageAccess({
                             } else {
                               return { ...i };
                             }
-                          }
+                          },
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeSettingsModulePermissionList(updateItem));

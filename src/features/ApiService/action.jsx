@@ -291,7 +291,7 @@ export const insertTrainerPaymentRequest = async (payload) => {
 
 export const updateTrainerPaymentRequest = async (payload) => {
   try {
-    const response = await api.put("/api/updateTrainerPaymentRequest", payload);
+    const response = await api.put("/api/updateStudentStatus", payload);
     return response;
   } catch (error) {
     throw error;

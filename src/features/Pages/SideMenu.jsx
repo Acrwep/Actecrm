@@ -158,6 +158,10 @@ export default function SideMenu() {
       delete updatedMenu[7];
     }
 
+    if (!permissions.includes("Trainer Payment Page")) {
+      delete updatedMenu[8];
+    }
+
     if (!permissions.includes("Bulk Search Page")) {
       delete updatedMenu[9];
     }
@@ -234,6 +238,10 @@ export default function SideMenu() {
 
         if (!updateData.includes("Trainers Page")) {
           delete updatedMenu[7];
+        }
+
+        if (!permissions.includes("Trainer Payment Page")) {
+          delete updatedMenu[8];
         }
 
         if (!permissions.includes("Bulk Search Page")) {

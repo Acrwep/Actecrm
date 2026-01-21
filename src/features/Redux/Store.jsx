@@ -19,6 +19,7 @@ import {
   bulkSearchModulePermissionListReducer,
   serverModulePermissionListReducer,
   trainersModulePermissionListReducer,
+  trainerPaymentModulePermissionListReducer,
   emailTemplateModulePermissionListReducer,
   reportsModulePermissionListReducer,
   settingsModulePermissionListReducer,
@@ -61,6 +62,8 @@ export const reduxStore = configureStore({
     bulksearchmodulepermissionlist: bulkSearchModulePermissionListReducer,
     servermodulepermissionlist: serverModulePermissionListReducer,
     trainersmodulepermissionlist: trainersModulePermissionListReducer,
+    trainerpaymentmodulepermissionlist:
+      trainerPaymentModulePermissionListReducer,
     emailtemplatemodulepermissionlist: emailTemplateModulePermissionListReducer,
     reportsmodulepermissionlist: reportsModulePermissionListReducer,
     settingsmodulepermissionlist: settingsModulePermissionListReducer,

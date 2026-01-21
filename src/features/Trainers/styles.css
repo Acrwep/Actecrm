@@ -508,3 +508,115 @@
   color: #fff !important;
   opacity: 1 !important;
 }
+.trainerpaymentrequest_badge_rowcotainer {
+  display: flex;
+  padding: 0px 24px 0px 24px;
+  position: relative;
+}
+.trainerpaymentrequest_viewdetails_badge_cotainer {
+  display: flex;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.363);
+  padding: 4px 12px;
+  margin-top: 16px;
+  gap: 3px;
+  width: 100%;
+}
+.trainerpaymentrequest_badge_viewcotainer {
+  display: flex;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.363);
+  padding: 4px 12px;
+  margin-top: 16px;
+  gap: 3px;
+  width: 93%;
+  position: absolute;
+
+  transform: translateX(0);
+  opacity: 1;
+
+  transition:
+    transform 0.4s ease-in-out,
+    opacity 0.4s ease-in-out;
+}
+
+.trainerpaymentrequest_badge_hiddencotainer {
+  display: flex;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.363);
+  padding: 4px 12px;
+  margin-top: 16px;
+  gap: 3px;
+  width: 93%;
+  position: absolute;
+
+  transform: translateX(-100px);
+  opacity: 0;
+
+  transition:
+    transform 0.4s ease-in-out,
+    opacity 0.4s ease-in-out;
+}
+
+.trainerpaymentrequest_balanceamount_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #d32f2f;
+}
+.trainerpaymentrequest_classpercentage_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #00cec9;
+}
+.trainerpaymentrequest_google_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #27bf3e;
+}
+.trainerpaymentrequest_linkedin_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #0a66c2;
+}
+.trainerpaymentrequest_trainerfulldetails_modal.ant-modal .ant-modal-content {
+  padding: 20px 0px !important;
+}
+.trainerpaymentrequest_traineraccountdetails_text {
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0px 24px;
+}
+.trainerpaymentrequest_viewdrawer_customerbadge_container {
+  border: 1px solid rgba(128, 128, 128, 0.363);
+  padding: 4px 12px;
+  margin-top: 12px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+.trainerpaymentrequest_scorecard_headings {
+  font-weight: 600;
+  font-size: 13px;
+}
+.trainerpaymentrequest_scorecard_text {
+  font-weight: 400;
+  font-size: 13px;
+  padding: 0px 28px;
+}
+.trainerpaymentrequest_editrequest_customername_label {
+  font-weight: 500;
+  font-size: 13px;
+}
+.trainerpaymentrequest_editrequest_customername {
+  color: gray;
+  font-size: 13px;
+}
+.trainerpaymentrequest_editrequest_customername_container {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  align-items: center;
+}

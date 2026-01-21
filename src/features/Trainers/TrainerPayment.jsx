@@ -340,7 +340,7 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            {/* <AiOutlineEdit
+            <AiOutlineEdit
               size={18}
               className="trainers_action_icons"
               onClick={() => {
@@ -353,7 +353,7 @@ export default function TrainerPayment() {
                   );
                 }
               }}
-            /> */}
+            />
             <Tooltip
               placement="top"
               title="View Details"
@@ -476,6 +476,7 @@ export default function TrainerPayment() {
 
   const handleEdit = (item) => {
     setIsOpenAddRequestDrawer(true);
+    setIsOpenAddRequestComponent(true);
     setEditRequestItem(item);
     // setRequestId(item.id);
     // setBillRaiseDate(item.bill_raisedate);
@@ -1184,7 +1185,7 @@ export default function TrainerPayment() {
                   addTrainerPaymentRequestUseRef.current?.handleRequestSubmit()
                 }
               >
-                Submit
+                {editRequestItem ? "Update" : "Submit"}
               </button>
             )}
           </div>

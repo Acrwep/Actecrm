@@ -14,6 +14,7 @@ import {
   Button,
   Flex,
   Radio,
+  Switch,
 } from "antd";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -45,6 +46,8 @@ import {
   formatToBackendIST,
   selectValidator,
 } from "../Common/Validation";
+import CommonSpinner from "../Common/CommonSpinner";
+import PrismaZoom from "react-prismazoom";
 
 const AddTrainerPaymentRequest = forwardRef(
   (
@@ -54,14 +57,13 @@ const AddTrainerPaymentRequest = forwardRef(
       setButtonLoading,
       callgetTrainerPaymentsApi,
     },
-    ref
+    ref,
   ) => {
     //select trainer usestates
     const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
     const [trainerFilterType, setTrainerFilterType] = useState(1);
     const [trainerId, setTrainerId] = useState(null);
     const [trainerIdError, setTrainerIdError] = useState("");
-    const [trainerType, setTrainerType] = useState("");
     const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
     const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
       useState(false);
@@ -87,6 +89,7 @@ const AddTrainerPaymentRequest = forwardRef(
     const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
       useState(false);
     const [customerDetails, setCustomerDetails] = useState(null);
+    const [customerDetailsLoading, setCustomerDetailsLoading] = useState(false);
     const [validationTrigger, setValidationTrigger] = useState(false);
     //form fields
     const [formFields, setFormFields] = useState([
@@ -102,15 +105,42 @@ const AddTrainerPaymentRequest = forwardRef(
         attendance_screenshot_error: "",
         customerId: null,
         customerIdError: null,
+        class_percentage: "",
+        balance_amount: "",
+        google_review: "",
+        linkedin_review: "",
         commercial: "",
         commercial_percentage: "",
         trainer_mapping_id: 0,
       },
     ]);
+    const [isDisContinued, setIsDisContinued] = useState(false);
+    const [requestAmount, setRequestAmount] = useState("");
+    //review  usestates
+    const [isOpenReviewModal, setIsOpenReviewModal] = useState(false);
+    const [reviewScreenshot, setReviewScreenshot] = useState("");
+    const [reviewType, setReviewType] = useState("");
 
     useEffect(() => {
       if (editRequestItem) {
+        console.log("editRequestItem", editRequestItem);
         setBillRaiseDate(editRequestItem.bill_raisedate);
+        setTrainerId(editRequestItem.trainer_id);
+        const updateStudentsData = editRequestItem.students.map((item) => {
+          return {
+            ...item,
+            attendanceType: item.attendance_sheetlink ? "Link" : "Screenshot",
+            customerId: item.customer_id,
+          };
+        });
+        console.log("updateStudentsData", updateStudentsData);
+        setFormFields(updateStudentsData);
+        getCustomerByTrainerIdData(editRequestItem.trainer_id);
+        const clickedTrainer = trainersData.filter(
+          (f) => f.id == editRequestItem.trainer_id,
+        );
+        console.log("clickedTrainer", clickedTrainer);
+        setClickedTrainerDetails(clickedTrainer);
         setDaysTakenToPay(editRequestItem.days_taken_topay);
         setDeadLineDate(editRequestItem.deadline_date);
       }
@@ -124,13 +154,13 @@ const AddTrainerPaymentRequest = forwardRef(
       const utcToday = Date.UTC(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate()
+        today.getDate(),
       );
 
       const utcGiven = Date.UTC(
         given.getFullYear(),
         given.getMonth(),
-        given.getDate()
+        given.getDate(),
       );
 
       const diffTime = utcToday - utcGiven; // today - past date
@@ -158,6 +188,7 @@ const AddTrainerPaymentRequest = forwardRef(
     };
 
     const getParticularCustomerDetails = async (customerEmail) => {
+      setCustomerDetailsLoading(true);
       const payload = {
         email: customerEmail,
       };
@@ -166,8 +197,10 @@ const AddTrainerPaymentRequest = forwardRef(
         const customer_details = response?.data?.data?.customers[0];
         console.log("customer full details", customer_details);
         setCustomerDetails(customer_details);
+        setCustomerDetailsLoading(false);
         setIsOpenCustomerDetailsDrawer(true);
       } catch (error) {
+        setCustomerDetailsLoading(false);
         console.log("getcustomer by id error", error);
         setCustomerDetails(null);
       }
@@ -177,11 +210,6 @@ const AddTrainerPaymentRequest = forwardRef(
       setTrainerId(e.target.value);
       const clickedTrainer = trainersData.filter((f) => f.id == e.target.value);
       console.log("clickedTrainer", clickedTrainer);
-      setTrainerType(
-        clickedTrainer.length >= 1 && clickedTrainer[0].trainer_type
-          ? clickedTrainer[0].trainer_type
-          : ""
-      );
       setClickedTrainerDetails(clickedTrainer);
       setTrainerIdError(selectValidator(e.target.value));
       getCustomerByTrainerIdData(e.target.value);
@@ -216,6 +244,10 @@ const AddTrainerPaymentRequest = forwardRef(
         attendance_screenshot_error: "",
         customerId: null,
         customerIdError: null,
+        class_percentage: "",
+        balance_amount: "",
+        google_review: "",
+        linkedin_review: "",
         commercial: "",
         commercial_percentage: "",
         trainer_mapping_id: 0,
@@ -239,7 +271,7 @@ const AddTrainerPaymentRequest = forwardRef(
         updatedDetails[index].attendance_sheetlink = "";
         updatedDetails[index].attendance_screenshot = "";
         updatedDetails[index].attendance_screenshot_error = selectValidator(
-          updatedDetails[index].attendance_screenshot
+          updatedDetails[index].attendance_screenshot,
         );
       }
       if (field === "attendance_sheetlink") {
@@ -253,16 +285,30 @@ const AddTrainerPaymentRequest = forwardRef(
 
       if (field === "customerId") {
         const selectedCustomerData = customersData.filter(
-          (f) => f.id == updatedDetails[index].customerId
+          (f) => f.id == updatedDetails[index].customerId,
         );
         console.log("selectedCustomerData", selectedCustomerData);
 
         if (selectedCustomerData.length >= 1) {
           updatedDetails[index].trainer_mapping_id =
             selectedCustomerData[0].trainer_mapping_id;
+
           updatedDetails[index].commercial = selectedCustomerData[0].commercial;
+
           updatedDetails[index].commercial_percentage =
             selectedCustomerData[0].commercial_percentage;
+
+          updatedDetails[index].class_percentage =
+            selectedCustomerData[0].class_percentage;
+
+          updatedDetails[index].balance_amount =
+            selectedCustomerData[0].balance_amount;
+
+          updatedDetails[index].google_review =
+            selectedCustomerData[0].google_review;
+
+          updatedDetails[index].linkedin_review =
+            selectedCustomerData[0].linkedin_review;
         } else {
           updatedDetails[index].trainer_mapping_id = 0;
           updatedDetails[index].commercial = "";
@@ -342,7 +388,7 @@ const AddTrainerPaymentRequest = forwardRef(
             f.attendance_status_error != "" ||
             f.attendance_sheetlink_error != "" ||
             f.attendance_screenshot_error != "" ||
-            f.customerIdError != ""
+            f.customerIdError != "",
         );
 
         // 🔥 DUPLICATE CUSTOMER CHECK
@@ -390,7 +436,6 @@ const AddTrainerPaymentRequest = forwardRef(
       }, 0);
 
       const payload = {
-        // ...(editRequestItem && { id: editRequestItem.id }),
         bill_raisedate: moment(billRaiseDate).format("YYYY-MM-DD"),
         trainer_id: trainerId,
         request_amount: request_amount,
@@ -402,12 +447,16 @@ const AddTrainerPaymentRequest = forwardRef(
         created_date: formatToBackendIST(today),
       };
       console.log("payloaddd", payload);
-      // setButtonLoading(false);
-      // return;
 
       if (editRequestItem) {
+        const editPayload = {
+          trainer_payment_id: editRequestItem.id,
+          bill_raisedate: billRaiseDate,
+          students: formFields,
+        };
+
         try {
-          await updateTrainerPaymentRequest(payload);
+          await updateTrainerPaymentRequest(editPayload);
           setTimeout(() => {
             CommonMessage("success", "Updated Successfully");
             // Refresh the payment requests data
@@ -418,7 +467,7 @@ const AddTrainerPaymentRequest = forwardRef(
           CommonMessage(
             "error",
             error?.response?.data?.details ||
-              "Something went wrong. Try again later"
+              "Something went wrong. Try again later",
           );
         }
       } else {
@@ -435,10 +484,14 @@ const AddTrainerPaymentRequest = forwardRef(
           CommonMessage(
             "error",
             error?.response?.data?.message ||
-              "Something went wrong. Try again later"
+              "Something went wrong. Try again later",
           );
         }
       }
+    };
+
+    const keepOnlyIndex = (arr, index) => {
+      return arr.filter((_, i) => i === index);
     };
 
     return (
@@ -471,58 +524,6 @@ const AddTrainerPaymentRequest = forwardRef(
             />
           </Col>
           <Col span={8}>
-            {/* <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  label="Trainer"
-                  required={true}
-                  options={trainersData}
-                  onChange={(e) => {
-                    setTrainerId(e.target.value);
-                    if (validationTrigger) {
-                      setTrainerIdError(selectValidator(e.target.value));
-                    }
-                    // getCustomerByTrainerIdData(e.target.value, 0);
-                  }}
-                  value={trainerId}
-                  error={trainerIdError}
-                  // disabled={true}
-                />
-              </div>
-              {trainerId && (
-                <Tooltip
-                  placement="top"
-                  title="View Trainer Details"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegEye
-                    size={16}
-                    className="trainers_action_icons"
-                    onClick={() => {
-                      const clickedTrainer = trainersData.filter(
-                        (f) => f.id == trainerId
-                      );
-                      console.log("clickedTrainer", clickedTrainer);
-                      setTrainerType(
-                        clickedTrainer.length >= 1 &&
-                          clickedTrainer[0].trainer_type
-                          ? clickedTrainer[0].trainer_type
-                          : ""
-                      );
-                      setClickedTrainerDetails(clickedTrainer);
-                      setIsOpenTrainerDetailModal(true);
-                    }}
-                  />
-                </Tooltip>
-              )}
-            </div> */}
-
             <div
               style={{
                 display: "flex",
@@ -545,11 +546,12 @@ const AddTrainerPaymentRequest = forwardRef(
                     trainerFilterType == 1
                       ? "Name"
                       : trainerFilterType == 2
-                      ? "Trainer Id"
-                      : trainerFilterType == 3
-                      ? "Email"
-                      : "Mobile"
+                        ? "Trainer Id"
+                        : trainerFilterType == 3
+                          ? "Email"
+                          : "Mobile"
                   }
+                  disabled={editRequestItem ? true : false}
                 />
               </div>
 
@@ -670,12 +672,16 @@ const AddTrainerPaymentRequest = forwardRef(
             span={12}
             style={{ display: "flex", justifyContent: "flex-end" }}
           >
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={addFormFields}
-            >
-              Add
-            </button>
+            {editRequestItem || isDisContinued ? (
+              ""
+            ) : (
+              <button
+                className="leadmanager_addleadbutton"
+                onClick={addFormFields}
+              >
+                Add
+              </button>
+            )}
           </Col>
         </Row>
 
@@ -688,17 +694,246 @@ const AddTrainerPaymentRequest = forwardRef(
                 style={{ marginTop: "20px" }}
               >
                 <Col span={8}>
-                  <CommonSelectField
-                    label="Streams"
-                    options={streamOptions}
+                  {editRequestItem ? (
+                    <div>
+                      <p className="trainerpaymentrequest_editrequest_customername_label">
+                        Customer Name
+                      </p>
+
+                      <div className="trainerpaymentrequest_editrequest_customername_container">
+                        <div style={{ width: "85%" }}>
+                          <EllipsisTooltip
+                            text={item.customer_name ? item.customer_name : ""}
+                            smallText={true}
+                          />
+                        </div>
+                        <Tooltip
+                          placement="top"
+                          title="View Customer Details"
+                          trigger={["hover", "click"]}
+                        >
+                          <FaRegEye
+                            size={14}
+                            className="trainers_action_icons"
+                            onClick={() =>
+                              getParticularCustomerDetails(item.customer_email)
+                            }
+                          />
+                        </Tooltip>
+                        {/* <FaRegEye size={14} /> */}
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <CommonSelectField
+                          label="Customer"
+                          required={true}
+                          options={customersData}
+                          onChange={(e) => {
+                            handleFormFields(
+                              "customerId",
+                              index,
+                              e.target.value,
+                            );
+                          }}
+                          value={item.customerId}
+                          error={item.customerIdError}
+                          errorFontSize={"10px"}
+                          disableClearable={false}
+                        />
+                      </div>
+                      {item.customerId && (
+                        <>
+                          {customerDetailsLoading ? (
+                            <CommonSpinner color="#333" />
+                          ) : (
+                            <Tooltip
+                              placement="top"
+                              title="View Customer Details"
+                              trigger={["hover", "click"]}
+                            >
+                              <FaRegEye
+                                size={16}
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  const selectedCustomerData =
+                                    customersData.filter(
+                                      (f) => f.id == item.customerId,
+                                    );
+                                  getParticularCustomerDetails(
+                                    selectedCustomerData.customer_email,
+                                  );
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </Col>
+
+                <Col span={8}>
+                  <CommonOutlinedInput
+                    label="Commercial"
+                    type="number"
                     required={true}
                     onChange={(e) =>
-                      handleFormFields("streams", index, e.target.value)
+                      handleFormFields("commercial", index, e.target.value)
                     }
-                    value={item.streams}
-                    error={item.streams_error}
+                    value={item.commercial}
+                    error={""}
+                    icon={<LuIndianRupee size={16} />}
+                    disabled={true}
                   />
                 </Col>
+
+                <Col span={8}>
+                  <CommonInputField
+                    label="Commercial %"
+                    type="number"
+                    required={true}
+                    value={
+                      item.commercial_percentage !== ""
+                        ? String(item.commercial_percentage)
+                        : ""
+                    }
+                    disabled={true}
+                  />
+                </Col>
+              </Row>
+
+              <div
+                className="trainerpaymentrequest_badge_rowcotainer"
+                style={{
+                  marginBottom:
+                    item.customerId && item.attendanceType == "Screenshot"
+                      ? "70px"
+                      : item.customerId
+                        ? "60px"
+                        : "0px",
+                }}
+              >
+                <div
+                  className={
+                    item.customerId
+                      ? "trainerpaymentrequest_badge_viewcotainer"
+                      : "trainerpaymentrequest_badge_hiddencotainer"
+                  }
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      flex: 1,
+                    }}
+                  >
+                    <div className="trainerpaymentrequest_balanceamount_badge" />
+                    <p className="customer_trainer_onboardcount_badgecount">
+                      Balance Amount{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {"₹" + item.balance_amount}
+                      </span>{" "}
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "6px",
+                      flex: 1,
+                    }}
+                  >
+                    <div className="trainerpaymentrequest_classpercentage_badge" />
+                    <p className="customer_trainer_onboardcount_badgecount">
+                      Class Percentage{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {item.class_percentage
+                          ? parseFloat(item.class_percentage) + "%"
+                          : "0" + "%"}
+                      </span>{" "}
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      flex: 1,
+                    }}
+                  >
+                    <div className="trainerpaymentrequest_google_badge" />
+                    <p className="customer_trainer_onboardcount_badgecount">
+                      G-Review{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {item.google_review ? "Collected" : "Not Collected"}
+                      </span>{" "}
+                    </p>
+                    {item.google_review ? (
+                      <FaRegEye
+                        size={12}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setIsOpenReviewModal(true);
+                          setReviewType("Google Review");
+                          setReviewScreenshot(item.google_review);
+                        }}
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      flex: 1,
+                    }}
+                  >
+                    <div className="trainerpaymentrequest_linkedin_badge" />
+                    <p className="customer_trainer_onboardcount_badgecount">
+                      L-Review{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        <span style={{ fontWeight: 600 }}>
+                          {item.linkedin_review ? "Collected" : "Not Collected"}
+                        </span>{" "}
+                      </span>{" "}
+                    </p>
+                    {item.linkedin_review ? (
+                      <FaRegEye
+                        size={12}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setIsOpenReviewModal(true);
+                          setReviewType("Linkedin Review");
+                          setReviewScreenshot(item.linkedin_review);
+                        }}
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Row
+                gutter={16}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                style={{ marginTop: "30px" }}
+              >
                 <Col span={8}>
                   <CommonSelectField
                     label="Attendance Status"
@@ -708,7 +943,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       handleFormFields(
                         "attendance_status",
                         index,
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     value={item.attendance_status}
@@ -730,7 +965,7 @@ const AddTrainerPaymentRequest = forwardRef(
                   />
                 </Col>
 
-                <Col span={8} style={{ marginTop: "30px" }}>
+                <Col span={8}>
                   {item.attendanceType == "Link" ? (
                     <CommonInputField
                       label="Attendance Sheet Link"
@@ -739,7 +974,7 @@ const AddTrainerPaymentRequest = forwardRef(
                         handleFormFields(
                           "attendance_sheetlink",
                           index,
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       value={item.attendance_sheetlink}
@@ -758,14 +993,14 @@ const AddTrainerPaymentRequest = forwardRef(
                           handleFormFields(
                             "attendance_screenshot",
                             index,
-                            base64
+                            base64,
                           )
                         }
                         onErrorChange={(error) =>
                           handleFormFields(
                             "attendance_screenshot_error",
                             index,
-                            error
+                            error,
                           )
                         } // ✅ pass setter directly
                       />
@@ -785,101 +1020,102 @@ const AddTrainerPaymentRequest = forwardRef(
                     </>
                   )}
                 </Col>
+              </Row>
 
-                <Col span={8} style={{ marginTop: "30px" }}>
+              <Row
+                gutter={16}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                style={{
+                  marginTop:
+                    item.attendanceType == "Screenshot" ? "0px" : "30px",
+                  marginBottom: item.streams_error ? "30px" : "0px",
+                }}
+              >
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Streams"
+                    options={streamOptions}
+                    required={true}
+                    onChange={(e) =>
+                      handleFormFields("streams", index, e.target.value)
+                    }
+                    value={item.streams}
+                    error={item.streams_error}
+                  />
+                </Col>
+
+                <Col span={8}>
                   <div
                     style={{
+                      marginTop: "10px",
                       display: "flex",
+                      gap: "6px",
                       alignItems: "center",
-                      gap: "8px",
                     }}
                   >
-                    <div style={{ flex: 1 }}>
-                      <CommonSelectField
-                        label="Customer"
-                        required={true}
-                        options={customersData}
-                        onChange={(e) => {
-                          handleFormFields("customerId", index, e.target.value);
-                        }}
-                        value={item.customerId}
-                        error={item.customerIdError}
-                        errorFontSize={"10px"}
-                        disableClearable={false}
-                      />
-                    </div>
-                    {item.customerId && (
-                      <Tooltip
-                        placement="top"
-                        title="View Trainer Details"
-                        trigger={["hover", "click"]}
-                      >
-                        <FaRegEye
-                          size={16}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            const selectedCustomerData = customersData.filter(
-                              (f) => f.id == item.customerId
-                            );
-                            getParticularCustomerDetails(
-                              selectedCustomerData.customer_email
-                            );
-                          }}
-                        />
-                      </Tooltip>
-                    )}
+                    <p className="leads_serverrequired_label">Discontinued</p>
+                    <Switch
+                      style={{ color: "#333" }}
+                      checked={isDisContinued}
+                      onChange={(checked) => {
+                        setIsDisContinued(checked);
+                        if (checked == true) {
+                          const result = keepOnlyIndex(formFields, index);
+                          setFormFields(result);
+                        }
+                      }}
+                      className="leads_serverrequired_switch"
+                    />
                   </div>
                 </Col>
 
-                <Col span={8} style={{ marginTop: "30px" }}>
-                  <CommonOutlinedInput
-                    label="Commercial"
-                    type="number"
-                    required={true}
-                    onChange={(e) =>
-                      handleFormFields("commercial", index, e.target.value)
-                    }
-                    value={item.commercial}
-                    error={""}
-                    icon={<LuIndianRupee size={16} />}
-                    disabled={true}
-                  />
-                </Col>
-
-                <Col span={8} style={{ marginTop: "30px" }}>
-                  <CommonInputField
-                    label="Commercial %"
-                    type="number"
-                    required={true}
-                    value={
-                      item.commercial_percentage !== ""
-                        ? String(item.commercial_percentage)
-                        : ""
-                    }
-                    disabled={true}
-                  />
-                </Col>
-
-                <Col
-                  span={8}
-                  style={{
-                    marginTop:
-                      item.customerIdError &&
-                      item.customerIdError.includes("already")
-                        ? "42px"
-                        : "32px",
-                  }}
-                >
-                  <Button
-                    className="trainerpaymentrequest_addrequestdrawer_deletebutton"
-                    onClick={() => {
-                      removeFormFields(index);
-                    }}
-                  >
-                    Remove
-                  </Button>
+                <Col span={8}>
+                  {isDisContinued ? (
+                    <CommonInputField label="Request Amount" />
+                  ) : (
+                    <>
+                      {editRequestItem ? (
+                        ""
+                      ) : (
+                        <Button
+                          className="trainerpaymentrequest_addrequestdrawer_deletebutton"
+                          onClick={() => {
+                            removeFormFields(index);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </Col>
               </Row>
+
+              {isDisContinued ? (
+                <Row
+                  gutter={16}
+                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                  style={{ marginTop: "30px" }}
+                >
+                  <Col span={8}>
+                    {editRequestItem ? (
+                      ""
+                    ) : (
+                      <Button
+                        className="trainerpaymentrequest_addrequestdrawer_deletebutton"
+                        onClick={() => {
+                          removeFormFields(index);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </Col>
+                </Row>
+              ) : (
+                ""
+              )}
+
               <Divider className="customer_statusupdate_divider" />
             </>
           );
@@ -909,205 +1145,345 @@ const AddTrainerPaymentRequest = forwardRef(
 
         {/* trainer fulldetails modal */}
         <Modal
-          title="Trainer Full Details"
+          title={
+            <span style={{ padding: "0px 24px" }}>Trainer Full Details</span>
+          }
           open={isOpenTrainerDetailModal}
           onCancel={() => setIsOpenTrainerDetailModal(false)}
           footer={false}
           width="50%"
+          className="trainerpaymentrequest_trainerfulldetails_modal"
         >
           {clickedTrainerDetails.map((item, index) => {
             return (
-              <Row gutter={16} style={{ marginTop: "20px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaRegCircleUser size={15} color="gray" />
-                        <p className="customerdetails_rowheading">HR Name</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={item.hr_head ? item.hr_head : "-"}
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
+              <>
+                <Row
+                  gutter={16}
+                  style={{ marginTop: "20px" }}
+                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                >
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaRegCircleUser size={15} color="gray" />
+                          <p className="customerdetails_rowheading">HR Name</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.hr_head ? item.hr_head : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaRegCircleUser size={15} color="gray" />
-                        <p className="customerdetails_rowheading">
-                          Trainer Name
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaRegCircleUser size={15} color="gray" />
+                          <p className="customerdetails_rowheading">
+                            Trainer Name
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={
+                            item.name
+                              ? `${item.name} (${
+                                  item.trainer_code ? item.trainer_code : "-"
+                                })`
+                              : "-"
+                          }
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <MdOutlineEmail size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Email</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip text={item.email} smallText={true} />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <IoCallOutline size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Mobile</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.mobile}</p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaWhatsapp size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Whatsapp</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.whatsapp}</p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <IoLocationOutline size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Location</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.location}</p>
+                      </Col>
+                    </Row>
+                  </Col>
+
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Technology
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.technology}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Experience
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.overall_exp_year + " Years"}
                         </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={
-                          item.name
-                            ? `${item.name} (${
-                                item.trainer_code ? item.trainer_code : "-"
-                              })`
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <MdOutlineEmail size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Email</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip text={item.email} smallText={true} />
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <IoCallOutline size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Mobile</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.mobile}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaWhatsapp size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Whatsapp</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.whatsapp}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <IoLocationOutline size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Location</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.location}</p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Technology</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={item.technology}
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Experience</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.overall_exp_year + " Years"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Relevent Experience
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Relevent Experience
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.relavant_exp_year + " Years"}
                         </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.relavant_exp_year + " Years"}
-                      </p>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Avaibility Timing
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Avaibility Timing
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.availability_time
+                            ? moment(item.availability_time, "HH:mm:ss").format(
+                                "hh:mm A",
+                              )
+                            : "-"}
                         </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.availability_time
-                          ? moment(item.availability_time, "HH:mm:ss").format(
-                              "hh:mm A"
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Secondary Timing
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Secondary Timing
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.secondary_time
+                            ? moment(item.secondary_time, "HH:mm:ss").format(
+                                "hh:mm A",
+                              )
+                            : "-"}
                         </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.secondary_time
-                          ? moment(item.secondary_time, "HH:mm:ss").format(
-                              "hh:mm A"
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Skills</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={item.skills.map((item) => item.name).join(", ")}
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">Skills</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.skills.map((item) => item.name).join(", ")}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+                <Divider className="customer_statusupdate_divider" />
+
+                <p className="trainerpaymentrequest_traineraccountdetails_text">
+                  Account Details
+                </p>
+
+                <Row
+                  gutter={16}
+                  style={{ marginTop: "20px" }}
+                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                >
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Account Holder Name
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={
+                            item.account_holder_name
+                              ? item.account_holder_name
+                              : "-"
+                          }
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Account Number
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.account_number ? item.account_number : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            IFSC Code
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.ifsc_code ? item.ifsc_code : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Bank Name
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.bank_name ? item.bank_name : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Branch Name
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.branch_name ? item.branch_name : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </>
             );
           })}
         </Modal>
+
+        {/* review screenshot modal */}
+        <Modal
+          title={reviewType}
+          open={isOpenReviewModal}
+          onCancel={() => {
+            setIsOpenReviewModal(false);
+            setReviewScreenshot("");
+            setReviewType("");
+          }}
+          footer={false}
+          width="32%"
+          className="customer_paymentscreenshot_modal"
+        >
+          <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+            <PrismaZoom>
+              {reviewScreenshot ? (
+                <img
+                  src={`data:image/png;base64,${reviewScreenshot}`}
+                  alt="payment screenshot"
+                  className="customer_paymentscreenshot_image"
+                />
+              ) : (
+                "-"
+              )}
+            </PrismaZoom>
+          </div>
+        </Modal>
       </div>
     );
-  }
+  },
 );
 
 export default AddTrainerPaymentRequest;

@@ -290,8 +290,8 @@ export default function ParticularCustomerDetails({
                         ? "₹" + customerDetails.primary_fees
                         : "-"
                       : customerDetails && customerDetails.course_fees
-                      ? "₹" + customerDetails.course_fees
-                      : "-"}
+                        ? "₹" + customerDetails.course_fees
+                        : "-"}
                   </p>
                 </Col>
               </Row>
@@ -315,8 +315,8 @@ export default function ParticularCustomerDetails({
                         ? "₹" + customerDetails.payments.total_amount
                         : "-"
                       : customerDetails && customerDetails.payment.total_amount
-                      ? "₹" + customerDetails.payment.total_amount
-                      : "-"}
+                        ? "₹" + customerDetails.payment.total_amount
+                        : "-"}
                   </p>
                 </Col>
               </Row>
@@ -353,7 +353,7 @@ export default function ParticularCustomerDetails({
                     customerDetails.next_due_date !== undefined &&
                     customerDetails.next_due_date !== null
                       ? moment(customerDetails.next_due_date).format(
-                          "DD/MM/YYYY"
+                          "DD/MM/YYYY",
                         )
                       : "-"}
                   </p>
@@ -371,7 +371,7 @@ export default function ParticularCustomerDetails({
                     {" "}
                     {customerDetails && customerDetails.date_of_joining
                       ? moment(customerDetails.date_of_joining).format(
-                          "DD/MM/YYYY"
+                          "DD/MM/YYYY",
                         )
                       : "-"}
                   </p>

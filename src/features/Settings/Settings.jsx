@@ -28,6 +28,7 @@ import {
   storeServerModulePermissionList,
   storeSettingsCourseList,
   storeSettingsModulePermissionList,
+  storeTrainerPaymentModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserSearchValue,
   storeUsersList,
@@ -180,7 +181,7 @@ export default function Settings() {
       dispatch(storePermissionsList(allPermissions));
       //filter dashboard module
       const dashboardModule = allPermissions.filter(
-        (f) => f.section === "Dashboard Module"
+        (f) => f.section === "Dashboard Module",
       );
       const dashboardCustomOrder = [
         "Score Board",
@@ -199,7 +200,7 @@ export default function Settings() {
       const dashboardSortedArray = dashboardModule.sort(
         (a, b) =>
           dashboardCustomOrder.indexOf(a.permission_name) -
-          dashboardCustomOrder.indexOf(b.permission_name)
+          dashboardCustomOrder.indexOf(b.permission_name),
       );
 
       const updateDashboardModule = dashboardSortedArray.map((u) => {
@@ -210,7 +211,7 @@ export default function Settings() {
 
       //filter lead module
       const leadsModule = allPermissions.filter(
-        (f) => f.section === "Leads Module"
+        (f) => f.section === "Leads Module",
       );
       const leadsCustomOrder = [
         "Lead Manager Page",
@@ -231,7 +232,7 @@ export default function Settings() {
       const leadsSortedArray = leadsModule.sort(
         (a, b) =>
           leadsCustomOrder.indexOf(a.permission_name) -
-          leadsCustomOrder.indexOf(b.permission_name)
+          leadsCustomOrder.indexOf(b.permission_name),
       );
 
       const updateLeadsModule = leadsSortedArray.map((u) => {
@@ -242,7 +243,7 @@ export default function Settings() {
 
       //filter lead followup module
       const leadsFollowupModule = allPermissions.filter(
-        (f) => f.section === "Lead Followup Module"
+        (f) => f.section === "Lead Followup Module",
       );
       const updateLeadFollowupModule = leadsFollowupModule.map((u) => {
         return { ...u, checked: false };
@@ -251,7 +252,7 @@ export default function Settings() {
 
       //filter customers module
       const customersModule = allPermissions.filter(
-        (f) => f.section === "Customers Module"
+        (f) => f.section === "Customers Module",
       );
       const customersCustomOrder = [
         "Download Registration Form",
@@ -272,7 +273,7 @@ export default function Settings() {
       const customersSortedArray = customersModule.sort(
         (a, b) =>
           customersCustomOrder.indexOf(a.permission_name) -
-          customersCustomOrder.indexOf(b.permission_name)
+          customersCustomOrder.indexOf(b.permission_name),
       );
 
       const updateCustomersModule = customersSortedArray.map((u) => {
@@ -282,7 +283,7 @@ export default function Settings() {
 
       //filter fees pending module
       const feesPendingModule = allPermissions.filter(
-        (f) => f.section === "Fees Pending Module"
+        (f) => f.section === "Fees Pending Module",
       );
       const updateFeesPendingModule = feesPendingModule.map((u) => {
         return { ...u, checked: false };
@@ -291,14 +292,14 @@ export default function Settings() {
 
       //filter bulk search module
       const bulkSearchModule = allPermissions.filter(
-        (f) => f.section === "Bulk Search"
+        (f) => f.section === "Bulk Search",
       );
       const bulkSearchCustomOrder = ["Bulk Search Page", "Download Access"];
 
       const bulkSearchSortedArray = bulkSearchModule.sort(
         (a, b) =>
           bulkSearchCustomOrder.indexOf(a.permission_name) -
-          bulkSearchCustomOrder.indexOf(b.permission_name)
+          bulkSearchCustomOrder.indexOf(b.permission_name),
       );
 
       const updateBulkSearchModule = bulkSearchSortedArray.map((u) => {
@@ -308,7 +309,7 @@ export default function Settings() {
 
       //filter server module
       const serverModule = allPermissions.filter(
-        (f) => f.section === "Server Module"
+        (f) => f.section === "Server Module",
       );
       const serverCustomOrder = [
         "Server Details Update",
@@ -320,7 +321,7 @@ export default function Settings() {
       const serverSortedArray = serverModule.sort(
         (a, b) =>
           serverCustomOrder.indexOf(a.permission_name) -
-          serverCustomOrder.indexOf(b.permission_name)
+          serverCustomOrder.indexOf(b.permission_name),
       );
 
       const updateServerModule = serverSortedArray.map((u) => {
@@ -330,27 +331,38 @@ export default function Settings() {
 
       //filter trainers module
       const trainersModule = allPermissions.filter(
-        (f) => f.section === "Trainers Module"
+        (f) => f.section === "Trainers Module",
       );
       const updateTrainersModule = trainersModule.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeTrainersModulePermissionList(updateTrainersModule));
 
+      //filter trainers payment module
+      const trainerPaymentModule = allPermissions.filter(
+        (f) => f.section === "Trainer Payment Module",
+      );
+      const updateTrainerPaymentModule = trainerPaymentModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(
+        storeTrainerPaymentModulePermissionList(updateTrainerPaymentModule),
+      );
+
       //filter email template module
       const emailTemplateModule = allPermissions.filter(
-        (f) => f.section === "Email Template Module"
+        (f) => f.section === "Email Template Module",
       );
       const updateEmailTemplateModule = emailTemplateModule.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(
-        storeEmailTemplateModulePermissionList(updateEmailTemplateModule)
+        storeEmailTemplateModulePermissionList(updateEmailTemplateModule),
       );
 
       //filter reports module
       const reportsModule = allPermissions.filter(
-        (f) => f.section === "Reports Module"
+        (f) => f.section === "Reports Module",
       );
       const updateReportsModule = reportsModule.map((u) => {
         return { ...u, checked: false };
@@ -359,7 +371,7 @@ export default function Settings() {
 
       //filter settings module
       const settingsModule = allPermissions.filter(
-        (f) => f.section === "Settings Module"
+        (f) => f.section === "Settings Module",
       );
       // Define the custom order
       const customOrder = [
@@ -376,7 +388,7 @@ export default function Settings() {
       const sortedArray = settingsModule.sort(
         (a, b) =>
           customOrder.indexOf(a.permission_name) -
-          customOrder.indexOf(b.permission_name)
+          customOrder.indexOf(b.permission_name),
       );
 
       const updateSettingsModule = sortedArray.map((u) => {

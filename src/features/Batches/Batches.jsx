@@ -1,22 +1,33 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Row, Col, Drawer, Progress, Modal } from "antd";
 import { CiSearch } from "react-icons/ci";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
 import CommonInputField from "../Common/CommonInputField";
-import { nameValidator } from "../Common/Validation";
+import {
+  addressValidator,
+  nameValidator,
+  selectValidator,
+} from "../Common/Validation";
 import CommonDatePicker from "../Common/CommonDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
+import { getBranches, getRegions } from "../ApiService/action";
 
 export default function Batches() {
   const inputRef = useRef();
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenUserModal, setIsOpenUserModal] = useState(false);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [branchNameError, setBranchNameError] = useState("");
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [regionId, setRegionId] = useState(null);
+  const [regionError, setRegionError] = useState("");
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [branch, setBranch] = useState("");
+  const [branchError, setBranchError] = useState("");
 
   const columns = [
     { title: "Class Start", key: "classstart", dataIndex: "classstart" },
@@ -94,6 +105,48 @@ export default function Batches() {
     },
   ];
 
+  useEffect(() => {
+    getRegionData();
+  }, []);
+
+  const getRegionData = async () => {
+    try {
+      const response = await getRegions();
+      setRegionOptions(response?.data?.data || []);
+    } catch (error) {
+      setRegionOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions([]);
+          setBranch(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const formReset = () => {
     setIsOpenAddDrawer(false);
   };
@@ -157,58 +210,57 @@ export default function Batches() {
         title="Add Batch"
         open={isOpenAddDrawer}
         onClose={formReset}
-        width="38%"
+        width="40%"
         style={{ position: "relative" }}
       >
         <Row gutter={16}>
           <Col span={12}>
             <CommonInputField
-              label="Course"
-              value={name}
+              label="Batch Name"
+              value={branchName}
               onChange={(e) => {
-                setName(e.target.value);
-                setNameError(nameValidator(e.target.value));
+                setBranchName(e.target.value);
+                setBranchNameError(addressValidator(e.target.value));
               }}
-              error={nameError}
+              error={branchNameError}
               required={true}
               ref={inputRef}
             />
           </Col>
           <Col span={12}>
-            <CommonInputField label="Trainer Id" required={true} />
+            <CommonSelectField
+              label="Region"
+              required={true}
+              options={regionOptions}
+              onChange={(e) => {
+                setRegionId(e.target.value);
+                setBranch("");
+                getBranchesData(e.target.value);
+                setRegionError(selectValidator(e.target.value));
+              }}
+              value={regionId}
+            />
           </Col>
-        </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonDatePicker placeholder="Batch Staring Date" />
-          </Col>
-          <Col span={12}>
-            <CommonSelectField label="Commercial Type" required={true} />
-          </Col>
-        </Row>
+          {regionId == 3 ? (
+            ""
+          ) : (
+            <Col span={12} style={{ marginTop: "30px" }}>
+              <CommonSelectField
+                label="Branch"
+                required={true}
+                options={branchOptions}
+                onChange={(e) => {
+                  setBranch(e.target.value);
+                  setBranchError(selectValidator(e.target.value));
+                }}
+                value={branch}
+              />
+            </Col>
+          )}
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonInputField required={true} label="Batch Commercial" />
-          </Col>
-          <Col span={12}>
-            <CommonInputField required={true} label="Batch Commercial" />
-          </Col>
+          <Col span={12} style={{ marginTop: "30px" }}></Col>
         </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={12}>
-            <CommonSelectField label="Training Mode" required={true} />
-          </Col>
-          <Col span={12}>
-            <CommonSelectField label="Branch Name" required={true} />
-          </Col>
-        </Row>
-
-        <div style={{ marginTop: "20px" }}>
-          <CommonTextArea label="Comments" />
-        </div>
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">

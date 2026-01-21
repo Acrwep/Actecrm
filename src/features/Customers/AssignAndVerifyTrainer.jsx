@@ -53,7 +53,7 @@ const AssignAndVerifyTrainer = forwardRef(
       setRejectButtonLoader,
       callgetCustomersApi,
     },
-    ref
+    ref,
   ) => {
     const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
     const [trainerId, setTrainerId] = useState(null);
@@ -108,32 +108,7 @@ const AssignAndVerifyTrainer = forwardRef(
         dataIndex: "cus_name",
         width: 140,
         render: (text) => {
-          return (
-            <>
-              {text.length > 14 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 13) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
+          return <EllipsisTooltip text={text} />;
         },
       },
       {
@@ -142,32 +117,7 @@ const AssignAndVerifyTrainer = forwardRef(
         dataIndex: "cus_email",
         width: 140,
         render: (text) => {
-          return (
-            <>
-              {text.length > 12 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 11) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
+          return <EllipsisTooltip text={text} />;
         },
       },
       {
@@ -182,32 +132,7 @@ const AssignAndVerifyTrainer = forwardRef(
         dataIndex: "course_name",
         width: 160,
         render: (text) => {
-          return (
-            <>
-              {text.length > 22 ? (
-                <Tooltip
-                  color="#fff"
-                  placement="bottom"
-                  title={text}
-                  className="leadtable_comments_tooltip"
-                  styles={{
-                    body: {
-                      backgroundColor: "#fff", // Tooltip background
-                      color: "#333", // Tooltip text color
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    },
-                  }}
-                >
-                  <p style={{ cursor: "pointer" }}>
-                    {text.slice(0, 21) + "..."}
-                  </p>
-                </Tooltip>
-              ) : (
-                <p>{text}</p>
-              )}
-            </>
-          );
+          return <EllipsisTooltip text={text} />;
         },
       },
       {
@@ -263,7 +188,7 @@ const AssignAndVerifyTrainer = forwardRef(
         const response = await getTrainerById(
           customerDetails && customerDetails.trainer_id
             ? customerDetails.trainer_id
-            : null
+            : null,
         );
         const trainerDetails = response?.data?.data;
         setAssignTrainerData(trainerDetails);
@@ -338,7 +263,7 @@ const AssignAndVerifyTrainer = forwardRef(
       const modeOfClassValidate = selectValidator(modeOfClass);
       const commentValidate = addressValidator(assignTrainerComments);
       const assignTrainerProofValidate = selectValidator(
-        assignTrainerProofBase64
+        assignTrainerProofBase64,
       );
 
       setTrainerIdError(trainerIdValidate);
@@ -389,7 +314,7 @@ const AssignAndVerifyTrainer = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -398,7 +323,7 @@ const AssignAndVerifyTrainer = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -436,7 +361,7 @@ const AssignAndVerifyTrainer = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -445,7 +370,7 @@ const AssignAndVerifyTrainer = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -454,7 +379,7 @@ const AssignAndVerifyTrainer = forwardRef(
       setIsShowRejectTrainerCommentBox(true);
       setTimeout(() => {
         const container = document.getElementById(
-          "customer_trainerreject_commentContainer"
+          "customer_trainerreject_commentContainer",
         );
         container.scrollIntoView({ behavior: "smooth" });
       }, 200);
@@ -493,7 +418,7 @@ const AssignAndVerifyTrainer = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -502,7 +427,7 @@ const AssignAndVerifyTrainer = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -872,7 +797,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                   <Col span={12}>
                                     <p className="customerdetails_text">
                                       {moment(item.rejected_date).format(
-                                        "DD/MM/YYYY"
+                                        "DD/MM/YYYY",
                                       )}
                                     </p>
                                   </Col>
@@ -931,14 +856,14 @@ const AssignAndVerifyTrainer = forwardRef(
                       onChange={(e) => {
                         setTrainerId(e.target.value);
                         const clickedTrainer = trainersData.filter(
-                          (f) => f.id == e.target.value
+                          (f) => f.id == e.target.value,
                         );
                         console.log("clickedTrainer", clickedTrainer);
                         setTrainerType(
                           clickedTrainer.length >= 1 &&
                             clickedTrainer[0].trainer_type
                             ? clickedTrainer[0].trainer_type
-                            : ""
+                            : "",
                         );
                         setClickedTrainerDetails(clickedTrainer);
                         setTrainerIdError(selectValidator(e.target.value));
@@ -953,10 +878,10 @@ const AssignAndVerifyTrainer = forwardRef(
                         trainerFilterType == 1
                           ? "Name"
                           : trainerFilterType == 2
-                          ? "Trainer Id"
-                          : trainerFilterType == 3
-                          ? "Email"
-                          : "Mobile"
+                            ? "Trainer Id"
+                            : trainerFilterType == 3
+                              ? "Email"
+                              : "Mobile"
                       }
                     />
                   </div>
@@ -1085,7 +1010,7 @@ const AssignAndVerifyTrainer = forwardRef(
                     onChange={(e) => {
                       setAssignTrainerComments(e.target.value);
                       setAssignTrainerCommentsError(
-                        addressValidator(e.target.value)
+                        addressValidator(e.target.value),
                       );
                     }}
                     value={assignTrainerComments}
@@ -1300,11 +1225,11 @@ const AssignAndVerifyTrainer = forwardRef(
                             ? customerDetails.commercial_percentage < 18
                               ? "#3c9111" // green
                               : customerDetails.commercial_percentage > 18 &&
-                                customerDetails.commercial_percentage <= 22
-                              ? "#ffa502" // orange
-                              : customerDetails.commercial_percentage > 22
-                              ? "#d32f2f" // red
-                              : "inherit"
+                                  customerDetails.commercial_percentage <= 22
+                                ? "#ffa502" // orange
+                                : customerDetails.commercial_percentage > 22
+                                  ? "#d32f2f" // red
+                                  : "inherit"
                             : "inherit", // fallback color if null
                       }}
                     >
@@ -1333,7 +1258,7 @@ const AssignAndVerifyTrainer = forwardRef(
                           customerDetails &&
                             customerDetails.proof_communication !== null
                             ? customerDetails.proof_communication
-                            : "-"
+                            : "-",
                         );
                       }}
                     >
@@ -1376,7 +1301,7 @@ const AssignAndVerifyTrainer = forwardRef(
                             customerDetails && customerDetails.trainer_id
                               ? customerDetails.trainer_id
                               : null,
-                            1
+                            1,
                           );
                         }}
                       />
@@ -1417,7 +1342,7 @@ const AssignAndVerifyTrainer = forwardRef(
                             customerDetails && customerDetails.trainer_id
                               ? customerDetails.trainer_id
                               : null,
-                            0
+                            0,
                           );
                         }}
                       />
@@ -1438,7 +1363,7 @@ const AssignAndVerifyTrainer = forwardRef(
                   onChange={(e) => {
                     setRejectTrainerComments(e.target.value);
                     setRejectTrainerCommentsError(
-                      addressValidator(e.target.value)
+                      addressValidator(e.target.value),
                     );
                   }}
                   value={rejectTrainerComments}
@@ -1598,7 +1523,7 @@ const AssignAndVerifyTrainer = forwardRef(
                       <p className="customerdetails_text">
                         {item.availability_time
                           ? moment(item.availability_time, "HH:mm:ss").format(
-                              "hh:mm A"
+                              "hh:mm A",
                             )
                           : "-"}
                       </p>
@@ -1617,7 +1542,7 @@ const AssignAndVerifyTrainer = forwardRef(
                       <p className="customerdetails_text">
                         {item.secondary_time
                           ? moment(item.secondary_time, "HH:mm:ss").format(
-                              "hh:mm A"
+                              "hh:mm A",
                             )
                           : "-"}
                       </p>
@@ -1794,6 +1719,6 @@ const AssignAndVerifyTrainer = forwardRef(
         </Modal>
       </>
     );
-  }
+  },
 );
 export default AssignAndVerifyTrainer;

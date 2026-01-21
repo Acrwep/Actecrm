@@ -84,13 +84,21 @@ export default function Pages() {
     const token = localStorage.getItem("AccessToken");
     const path = location.pathname;
 
-    if (!token && !isPublicRoute(path)) {
+    // Public routes → no sidebar, no redirect
+    if (isPublicRoute(path)) {
+      setShowSidebar(false);
+      return;
+    }
+
+    // Private routes → no token
+    if (!token) {
       setShowSidebar(false);
       navigate("/login", { replace: true });
       return;
     }
 
-    if (token) setShowSidebar(true);
+    // Private routes → token exists
+    setShowSidebar(true);
   }, [location.pathname, navigate]);
 
   // Live lead foreground notifications
@@ -155,7 +163,7 @@ export default function Pages() {
   }
 
   // Private layout
-  if (!showSidebar) return null; // while auth guard redirects
+  if (!showSidebar && !isPublicRoute(location.pathname)) return null;
 
   return (
     <Layout style={{ height: "100vh" }}>
