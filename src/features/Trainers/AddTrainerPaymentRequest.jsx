@@ -116,6 +116,7 @@ const AddTrainerPaymentRequest = forwardRef(
     ]);
     const [isDisContinued, setIsDisContinued] = useState(false);
     const [requestAmount, setRequestAmount] = useState("");
+    const [requestAmountError, setRequestAmountError] = useState("");
     //review  usestates
     const [isOpenReviewModal, setIsOpenReviewModal] = useState(false);
     const [reviewScreenshot, setReviewScreenshot] = useState("");
@@ -351,6 +352,8 @@ const AddTrainerPaymentRequest = forwardRef(
         let data = [...formFields];
         data.splice(index, 1);
         setFormFields(data);
+      } else {
+        CommonMessage("warning", "At least one customer should be added");
       }
     };
 
@@ -362,6 +365,13 @@ const AddTrainerPaymentRequest = forwardRef(
       setValidationTrigger(true);
       const raiseDateValidate = selectValidator(billRaiseDate);
       const trainerIdValidate = selectValidator(trainerId);
+      let requestAmountValidate = "";
+
+      if (isDisContinued) {
+        requestAmountValidate = selectValidator(requestAmount);
+      } else {
+        requestAmountValidate = "";
+      }
 
       let checkFormFieldsErrors = [];
       if (formFields.length >= 1) {
@@ -417,10 +427,12 @@ const AddTrainerPaymentRequest = forwardRef(
 
       setBillRaiseDateError(raiseDateValidate);
       setTrainerIdError(trainerIdValidate);
+      setRequestAmountError(requestAmountValidate);
 
       if (
         raiseDateValidate ||
         trainerIdValidate ||
+        requestAmountValidate ||
         checkFormFieldsErrors.length >= 1
       )
         return;
@@ -438,7 +450,7 @@ const AddTrainerPaymentRequest = forwardRef(
       const payload = {
         bill_raisedate: moment(billRaiseDate).format("YYYY-MM-DD"),
         trainer_id: trainerId,
-        request_amount: request_amount,
+        request_amount: isDisContinued ? requestAmount : request_amount,
         days_taken_topay: daysTakenToPay,
         deadline_date: moment(deadLineDate).format("YYYY-MM-DD"),
         created_by:
@@ -1027,7 +1039,7 @@ const AddTrainerPaymentRequest = forwardRef(
                 className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
                 style={{
                   marginTop:
-                    item.attendanceType == "Screenshot" ? "0px" : "30px",
+                    item.attendanceType == "Screenshot" ? "20px" : "30px",
                   marginBottom: item.streams_error ? "30px" : "0px",
                 }}
               >
@@ -1044,34 +1056,52 @@ const AddTrainerPaymentRequest = forwardRef(
                   />
                 </Col>
 
-                <Col span={8}>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      display: "flex",
-                      gap: "6px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <p className="leads_serverrequired_label">Discontinued</p>
-                    <Switch
-                      style={{ color: "#333" }}
-                      checked={isDisContinued}
-                      onChange={(checked) => {
-                        setIsDisContinued(checked);
-                        if (checked == true) {
-                          const result = keepOnlyIndex(formFields, index);
-                          setFormFields(result);
-                        }
+                {editRequestItem ? (
+                  ""
+                ) : (
+                  <Col span={8}>
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        gap: "6px",
+                        alignItems: "center",
                       }}
-                      className="leads_serverrequired_switch"
-                    />
-                  </div>
-                </Col>
+                    >
+                      <p className="leads_serverrequired_label">Discontinued</p>
+                      <Switch
+                        style={{ color: "#333" }}
+                        checked={isDisContinued}
+                        onChange={(checked) => {
+                          setIsDisContinued(checked);
+                          if (checked == true) {
+                            const result = keepOnlyIndex(formFields, index);
+                            setFormFields(result);
+                          }
+                        }}
+                        className="leads_serverrequired_switch"
+                      />
+                    </div>
+                  </Col>
+                )}
 
                 <Col span={8}>
                   {isDisContinued ? (
-                    <CommonInputField label="Request Amount" />
+                    <CommonInputField
+                      label="Request Amount"
+                      required={true}
+                      onChange={(e) => {
+                        const input = e.target.value;
+
+                        // Allow numbers, decimal point, or empty string
+                        if (!/^\d*\.?\d*$/.test(input)) return;
+
+                        setRequestAmount(input);
+                        setRequestAmountError(selectValidator(input));
+                      }}
+                      value={requestAmount}
+                      error={requestAmountError}
+                    />
                   ) : (
                     <>
                       {editRequestItem ? (

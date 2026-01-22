@@ -62,6 +62,7 @@ export default function TrainerPayment() {
   const [trainerFilterId, setTrainerFilterId] = useState(null);
   const [trainerFilterType, setTrainerFilterType] = useState(1);
   const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+  const [dateFilterType, setDateFilterType] = useState("RaiseDate");
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
   const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
@@ -412,6 +413,7 @@ export default function TrainerPayment() {
         setSelectedDates(PreviousAndCurrentDate);
         getTrainerPaymentsData(
           null,
+          "RaiseDate",
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           null,
@@ -425,6 +427,7 @@ export default function TrainerPayment() {
 
   const getTrainerPaymentsData = async (
     trainerId,
+    dateType,
     startDate,
     endDate,
     status,
@@ -435,6 +438,7 @@ export default function TrainerPayment() {
     setLoading(true);
     const payload = {
       trainer_id: trainerId,
+      type: dateType,
       start_date: startDate,
       end_date: endDate,
       status: status,
@@ -564,6 +568,7 @@ export default function TrainerPayment() {
         // Refresh the payment requests data
         getTrainerPaymentsData(
           trainerFilterId,
+          dateFilterType,
           selectedDates[0],
           selectedDates[1],
           status || null,
@@ -612,6 +617,7 @@ export default function TrainerPayment() {
         // Refresh the payment requests data
         getTrainerPaymentsData(
           trainerFilterId,
+          dateFilterType,
           selectedDates[0],
           selectedDates[1],
           status || null,
@@ -661,6 +667,7 @@ export default function TrainerPayment() {
         // Refresh the payment requests data
         getTrainerPaymentsData(
           trainerFilterId,
+          dateFilterType,
           selectedDates[0],
           selectedDates[1],
           status || null,
@@ -683,7 +690,17 @@ export default function TrainerPayment() {
     try {
       await deleteTrainerPaymentRequest(selectedPaymentDetails.id);
       setTimeout(() => {
+        setIsOpenRequestDeleteModal(false);
         setButtonLoading(false);
+        getTrainerPaymentsData(
+          trainerFilterId,
+          dateFilterType,
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit,
+        );
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -719,6 +736,7 @@ export default function TrainerPayment() {
     // Fetch data with new pagination
     getTrainerPaymentsData(
       trainerFilterId,
+      dateFilterType,
       selectedDates[0],
       selectedDates[1],
       status || null,
@@ -731,8 +749,12 @@ export default function TrainerPayment() {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
+    setTrainerFilterId(null);
+    setTrainerFilterType(1);
+    setDateFilterType("RaiseDate");
     getTrainerPaymentsData(
       null,
+      "RaiseDate",
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
@@ -747,16 +769,6 @@ export default function TrainerPayment() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={8}>
-              {/* <CommonSelectField
-                height="35px"
-                label="Select Trainer"
-                labelMarginTop="0px"
-                labelFontSize="13px"
-                // options={subUsers}
-                // onChange={handleSelectUser}
-                // value={selectedUserId}
-                disableClearable={false}
-              /> */}
               <div
                 style={{
                   display: "flex",
@@ -777,6 +789,7 @@ export default function TrainerPayment() {
                       setTrainerFilterId(e.target.value);
                       getTrainerPaymentsData(
                         e.target.value,
+                        dateFilterType,
                         selectedDates[0],
                         selectedDates[1],
                         status || null,
@@ -854,24 +867,92 @@ export default function TrainerPayment() {
                 </div>
               </div>
             </Col>
-            <Col span={16}>
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainerPaymentsData(
-                    trainerFilterId,
-                    dates[0],
-                    dates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+            <Col span={10}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
-              />
+              >
+                <div style={{ flex: 1 }}>
+                  <CommonMuiCustomDatePicker
+                    value={selectedDates}
+                    onDateChange={(dates) => {
+                      setSelectedDates(dates);
+                      setPagination({
+                        page: 1,
+                      });
+                      getTrainerPaymentsData(
+                        trainerFilterId,
+                        dateFilterType,
+                        dates[0],
+                        dates[1],
+                        status || null,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={dateFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setDateFilterType(e.target.value);
+                            getTrainerPaymentsData(
+                              trainerFilterId,
+                              e.target.value,
+                              selectedDates[0],
+                              selectedDates[1],
+                              status || null,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                        >
+                          <Radio
+                            value="RaiseDate"
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Search by Bill Raise Date
+                          </Radio>
+                          <Radio
+                            value="Deadline"
+                            style={{ marginBottom: "12px" }}
+                          >
+                            Search by Deadline Date
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
             </Col>
           </Row>
         </Col>
@@ -933,6 +1014,7 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     trainerFilterId,
+                    dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
                     null,
@@ -966,6 +1048,7 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     trainerFilterId,
+                    dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
                     "Requested",
@@ -999,6 +1082,7 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     trainerFilterId,
+                    dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
                     "Awaiting Finance",
@@ -1032,6 +1116,7 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     trainerFilterId,
+                    dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
                     "Payment Rejected",
@@ -1065,6 +1150,7 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     trainerFilterId,
+                    dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
                     "Completed",
@@ -1162,6 +1248,7 @@ export default function TrainerPayment() {
               setButtonLoading(false);
               getTrainerPaymentsData(
                 trainerFilterId,
+                dateFilterType,
                 selectedDates[0],
                 selectedDates[1],
                 status || null,
@@ -1823,7 +1910,7 @@ export default function TrainerPayment() {
           setIsOpenRequestDeleteModal(false);
           setSelectedPaymentDetails(null);
         }}
-        content="Are you sure want to delete the Role?"
+        content="Are you sure want to delete the Request?"
         loading={buttonLoading}
         onClick={handleRequestDelete}
       />
