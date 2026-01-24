@@ -46,8 +46,9 @@ const OthersHandling = forwardRef(
 
     const handleCustomerStatus = async (updatestatus) => {
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
+        customer_ids: [
+          { customer_id: customerDetails.id, status: updatestatus },
+        ],
       };
       try {
         await updateCustomerStatus(payload);
@@ -57,7 +58,7 @@ const OthersHandling = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -73,12 +74,16 @@ const OthersHandling = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        details: deetails,
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            details: deetails,
+          },
+        ],
       };
 
       try {
@@ -132,7 +137,7 @@ const OthersHandling = forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );
 
 export default OthersHandling;

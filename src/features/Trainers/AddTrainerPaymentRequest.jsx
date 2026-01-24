@@ -776,7 +776,7 @@ const AddTrainerPaymentRequest = forwardRef(
                                 className="trainers_action_icons"
                                 onClick={() => {
                                   const selectedCustomerData =
-                                    customersData.filter(
+                                    customersData.find(
                                       (f) => f.id == item.customerId,
                                     );
                                   getParticularCustomerDetails(

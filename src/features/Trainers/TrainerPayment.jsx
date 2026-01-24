@@ -54,10 +54,12 @@ import CommonTextArea from "../Common/CommonTextArea";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
+import { useSelector } from "react-redux";
 
 export default function TrainerPayment() {
   const scrollRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
+  const permissions = useSelector((state) => state.userpermissions);
   //usestates
   const [trainerFilterId, setTrainerFilterId] = useState(null);
   const [trainerFilterType, setTrainerFilterType] = useState(1);
@@ -221,11 +223,17 @@ export default function TrainerPayment() {
                               record.status == "Requested" ||
                               record.status == "Rejected"
                             ) {
-                              setIsOpenDetailsDrawer(true);
-                              setDrawerContentStatus("Requested");
-                              setSelectedPaymentDetails(record);
-                              setPaymentHistory(record.transactions);
-                              setCollapseDefaultKey(["1"]);
+                              if (
+                                permissions.includes("Raise Trainer Payment")
+                              ) {
+                                setIsOpenDetailsDrawer(true);
+                                setDrawerContentStatus("Requested");
+                                setSelectedPaymentDetails(record);
+                                setPaymentHistory(record.transactions);
+                                setCollapseDefaultKey(["1"]);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
                             }
                           }}
                         >
@@ -235,23 +243,27 @@ export default function TrainerPayment() {
                         <button
                           className="customers_finance_updatepayment_button"
                           onClick={() => {
-                            setDrawerContentStatus("Update Payment");
-                            setIsOpenDetailsDrawer(true);
-                            setSelectedPaymentDetails(record);
-                            setPaymentHistory(record.payments);
-                            setPaidNow(record.payments[0].paid_amount);
-                            setPaymentType(record.payments[0].payment_type);
-                            setCollapseDefaultKey(["1"]);
-                            setBalanceAmount(
-                              getBalanceAmount(
-                                isNaN(record.balance_amount)
-                                  ? 0
-                                  : record.balance_amount,
-                                isNaN(record.payments[0].paid_amount)
-                                  ? 0
-                                  : record.payments[0].paid_amount,
-                              ),
-                            );
+                            if (permissions.includes("Raise Trainer Payment")) {
+                              setDrawerContentStatus("Update Payment");
+                              setIsOpenDetailsDrawer(true);
+                              setSelectedPaymentDetails(record);
+                              setPaymentHistory(record.payments);
+                              setPaidNow(record.payments[0].paid_amount);
+                              setPaymentType(record.payments[0].payment_type);
+                              setCollapseDefaultKey(["1"]);
+                              setBalanceAmount(
+                                getBalanceAmount(
+                                  isNaN(record.balance_amount)
+                                    ? 0
+                                    : record.balance_amount,
+                                  isNaN(record.payments[0].paid_amount)
+                                    ? 0
+                                    : record.payments[0].paid_amount,
+                                ),
+                              );
+                            } else {
+                              CommonMessage("error", "Access Denied");
+                            }
                           }}
                         >
                           Update Payment
@@ -275,11 +287,17 @@ export default function TrainerPayment() {
                           checked={false}
                           onChange={(e) => {
                             if (record.status == "Awaiting Finance") {
-                              setIsOpenDetailsDrawer(true);
-                              setDrawerContentStatus("Awaiting Finance");
-                              setSelectedPaymentDetails(record);
-                              setPaymentHistory(record.transactions);
-                              setCollapseDefaultKey(["1"]);
+                              if (
+                                permissions.includes("Verify Trainer Payment")
+                              ) {
+                                setIsOpenDetailsDrawer(true);
+                                setDrawerContentStatus("Awaiting Finance");
+                                setSelectedPaymentDetails(record);
+                                setPaymentHistory(record.transactions);
+                                setCollapseDefaultKey(["1"]);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
                               // getCustomerData(record.customer_id);
                             } else {
                               CommonMessage(
@@ -388,12 +406,18 @@ export default function TrainerPayment() {
   ];
 
   useEffect(() => {
-    getTrainersData();
+    if (permissions.length >= 1) {
+      if (!permissions.includes("Trainer Payment Page")) {
+        navigate("/dashboard");
+        return;
+      }
+      getTrainersData();
+    }
     // Set loading to false initially - will be true when fetching real data
     // setTimeout(() => {
     //   setLoading(false);
     // }, 300);
-  }, []);
+  }, [permissions]);
 
   const getTrainersData = async () => {
     const payload = {
@@ -482,21 +506,6 @@ export default function TrainerPayment() {
     setIsOpenAddRequestDrawer(true);
     setIsOpenAddRequestComponent(true);
     setEditRequestItem(item);
-    // setRequestId(item.id);
-    // setBillRaiseDate(item.bill_raisedate);
-    // setStreamId(item.streams);
-    // setAttendanceStatusId(item.attendance_status);
-    // setAttendanceSheetLink(item.attendance_sheetlink);
-    // setAttendanceScreenShotBase64(item.attendance_screenshot);
-    // if (item.attendance_sheetlink) {
-    //   setAttendanceType("Link");
-    // } else {
-    //   setAttendanceType("Screenshot");
-    // }
-    // setTrainerId(item.trainer_id);
-    // setDaysTakenToPay(item.days_taken_topay);
-    // setDeadLineDate(item.deadline_date);
-    // getParticularCustomerDetails(item.customer_email, true);
   };
 
   //payment onchange functions
@@ -1188,15 +1197,19 @@ export default function TrainerPayment() {
             gap: "12px",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddRequestDrawer(true);
-              setIsOpenAddRequestComponent(true);
-            }}
-          >
-            Add Request
-          </button>
+          {permissions.includes("Add Trainer Payment Request") ? (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddRequestDrawer(true);
+                setIsOpenAddRequestComponent(true);
+              }}
+            >
+              Add Request
+            </button>
+          ) : (
+            ""
+          )}
         </Col>
       </Row>
 
@@ -1689,7 +1702,7 @@ export default function TrainerPayment() {
                                       </Col>
                                       <Col span={12}>
                                         <p className="customerdetails_text">
-                                          Partial
+                                          {item.payment_type}
                                         </p>
                                       </Col>
                                     </Row>

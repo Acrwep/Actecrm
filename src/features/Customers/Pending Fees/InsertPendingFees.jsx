@@ -52,7 +52,7 @@ const InsertPendingFees = forwardRef(
       setButtonLoading,
       callgetCustomersApi,
     },
-    ref
+    ref,
   ) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [pendingAmount, setPendingAmount] = useState();
@@ -116,7 +116,7 @@ const InsertPendingFees = forwardRef(
       }
 
       setBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
+        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
       );
 
       if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
@@ -128,7 +128,7 @@ const InsertPendingFees = forwardRef(
 
       if (paymentValidationTrigger) {
         setPayAmountError(
-          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
         );
       }
     };
@@ -158,14 +158,14 @@ const InsertPendingFees = forwardRef(
       setBalanceAmount(
         getBalanceAmount(
           isNaN(pendingAmount) ? 0 : pendingAmount,
-          isNaN(payAmount) ? 0 : payAmount
-        )
+          isNaN(payAmount) ? 0 : payAmount,
+        ),
       );
 
       //handle convenience fees
       if (value == 2 || value == 5 || value == 10) {
         const conve_fees = getConvenienceFees(
-          payAmount ? parseInt(payAmount) : 0
+          payAmount ? parseInt(payAmount) : 0,
         );
         setConvenienceFees(conve_fees);
       } else {
@@ -252,7 +252,7 @@ const InsertPendingFees = forwardRef(
       const placeOfPaymentValidate = selectValidator(placeOfPayment);
       const payAmountValidate = priceValidator(
         parseInt(payAmount),
-        parseInt(pendingAmount)
+        parseInt(pendingAmount),
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);
@@ -318,7 +318,7 @@ const InsertPendingFees = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -330,11 +330,15 @@ const InsertPendingFees = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
 
       try {
@@ -856,7 +860,7 @@ const InsertPendingFees = forwardRef(
                                 onClick={() => {
                                   setIsOpenPaymentScreenshotModal(true);
                                   setTransactionScreenshot(
-                                    item.payment_screenshot
+                                    item.payment_screenshot,
                                   );
                                 }}
                               >
@@ -930,7 +934,7 @@ const InsertPendingFees = forwardRef(
                               <p className="customerdetails_text">
                                 {item.next_due_date
                                   ? moment(item.next_due_date).format(
-                                      "DD/MM/YYYY"
+                                      "DD/MM/YYYY",
                                     )
                                   : "-"}{" "}
                               </p>
@@ -1167,7 +1171,7 @@ const InsertPendingFees = forwardRef(
         </Modal>
       </div>
     );
-  }
+  },
 );
 
 export default InsertPendingFees;

@@ -45,7 +45,7 @@ const PassesOutProcess = forwardRef(
       setUpdateButtonLoading,
       callgetCustomersApi,
     },
-    ref
+    ref,
   ) => {
     const [callCusTrack, setCallCusTrack] = useState(false);
     const [googleFeedbackBase64, setGoogleFeedbackBase64] = useState("");
@@ -91,14 +91,18 @@ const PassesOutProcess = forwardRef(
       if (isGoogleReviewChange) {
         const today = new Date();
         const payload = {
-          customer_id: customerDetails.id,
-          linkedin_review: customerDetails.linkedin_review
-            ? customerDetails.linkedin_review
-            : linkedinFeedbackBase64,
-          google_review: googleFeedbackBase64,
-          course_duration: customerDetails.course_duration,
-          course_completed_date: customerDetails.course_completion_date,
-          review_updated_date: formatToBackendIST(today),
+          customers: [
+            {
+              customer_id: customerDetails.id,
+              linkedin_review: customerDetails.linkedin_review
+                ? customerDetails.linkedin_review
+                : linkedinFeedbackBase64,
+              google_review: googleFeedbackBase64,
+              course_duration: customerDetails.course_duration,
+              course_completed_date: customerDetails.course_completion_date,
+              review_updated_date: formatToBackendIST(today),
+            },
+          ],
         };
         try {
           await updatefeedbackForCustomer(payload);
@@ -113,7 +117,7 @@ const PassesOutProcess = forwardRef(
           CommonMessage(
             "error",
             error?.response?.data?.details ||
-              "Something went wrong. Try again later"
+              "Something went wrong. Try again later",
           );
         }
       } else {
@@ -125,7 +129,7 @@ const PassesOutProcess = forwardRef(
       if (customerDetails.is_certificate_generated === 0) {
         CommonMessage(
           "error",
-          "Please Generate Certificate. Before Go To Next Step"
+          "Please Generate Certificate. Before Go To Next Step",
         );
         return;
       } else {
@@ -178,7 +182,7 @@ const PassesOutProcess = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -202,7 +206,7 @@ const PassesOutProcess = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -216,22 +220,27 @@ const PassesOutProcess = forwardRef(
 
       const today = new Date();
       const payload = {
-        customer_id: customerDetails.id,
-        linkedin_review: linkedinFeedbackBase64,
-        google_review: customerDetails.google_review
-          ? customerDetails.google_review
-          : googleFeedbackBase64,
-        course_duration: null,
-        course_completed_date: null,
-        review_updated_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            linkedin_review: linkedinFeedbackBase64,
+            google_review: customerDetails.google_review
+              ? customerDetails.google_review
+              : googleFeedbackBase64,
+            course_duration: null,
+            course_completed_date: null,
+            review_updated_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await updatefeedbackForCustomer(payload);
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Completed",
+            customer_ids: [
+              { customer_id: customerDetails.id, status: "Completed" },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -245,7 +254,7 @@ const PassesOutProcess = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.details ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -254,7 +263,7 @@ const PassesOutProcess = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -270,7 +279,7 @@ const PassesOutProcess = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -290,16 +299,20 @@ const PassesOutProcess = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        ...(updatestatus === "Google Review Added"
-          ? { details: googleReviewDetails }
-          : updatestatus === "Linkedin Review Added"
-          ? { details: linkedinReviewDetails }
-          : {}),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            ...(updatestatus === "Google Review Added"
+              ? { details: googleReviewDetails }
+              : updatestatus === "Linkedin Review Added"
+                ? { details: linkedinReviewDetails }
+                : {}),
+          },
+        ],
       };
 
       try {
@@ -325,11 +338,15 @@ const PassesOutProcess = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await inserCustomerTrack(payload);
@@ -561,13 +578,13 @@ const PassesOutProcess = forwardRef(
               certificateName
                 ? certificateName
                 : customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"
+                  ? customerDetails.name
+                  : "-"
             }
           />
         </Modal>
       </div>
     );
-  }
+  },
 );
 export default PassesOutProcess;

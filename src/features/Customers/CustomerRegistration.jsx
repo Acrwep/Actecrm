@@ -176,10 +176,10 @@ export default function CustomerRegistration() {
       setEmail(customerDetails.email);
       //mobile fetch
       setMobileCountryCode(
-        customerDetails.phonecode ? customerDetails.phonecode : ""
+        customerDetails.phonecode ? customerDetails.phonecode : "",
       );
       const selected_mobile_country = getCountryFromDialCode(
-        `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`
+        `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`,
       );
       setMobileCountry(selected_mobile_country);
       setMobile(customerDetails.phone);
@@ -187,14 +187,14 @@ export default function CustomerRegistration() {
       setWhatsAppCountryCode(
         customerDetails.whatsapp_phone_code
           ? customerDetails.whatsapp_phone_code
-          : ""
+          : "",
       );
       const selected_whatsapp_country = getCountryFromDialCode(
         `+${
           customerDetails.whatsapp_phone_code
             ? customerDetails.whatsapp_phone_code
             : ""
-        }`
+        }`,
       );
       setWhatsAppCountry(selected_whatsapp_country);
       setWhatsApp(customerDetails.whatsapp);
@@ -207,7 +207,7 @@ export default function CustomerRegistration() {
       setPlacementSupport(customerDetails.placement_support);
       setServer(customerDetails.is_server_required);
       const findArea = all_areas.find(
-        (f) => f.name == customerDetails.current_location
+        (f) => f.name == customerDetails.current_location,
       );
       setAreaId(parseInt(findArea.id));
     } catch (error) {
@@ -282,7 +282,7 @@ export default function CustomerRegistration() {
 
   const handleRemoveProfile = (fileToRemove) => {
     const newFileList = profilePictureArray.filter(
-      (file) => file.uid !== fileToRemove.uid
+      (file) => file.uid !== fileToRemove.uid,
     );
     setProfilePictureArray(newFileList);
     // CommonToaster("Profile removed");
@@ -499,15 +499,14 @@ export default function CustomerRegistration() {
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
 
   const handleCustomerStatus = async () => {
     const payload = {
-      customer_id: customer_id,
-      status: "Awaiting Finance",
+      customer_ids: [{ customer_id: customer_id, status: "Awaiting Finance" }],
     };
     try {
       await updateCustomerStatus(payload);
@@ -524,10 +523,14 @@ export default function CustomerRegistration() {
     const today = new Date();
 
     const payload = {
-      customer_id: customer_id,
-      status: updateStatus,
-      status_date: formatToBackendIST(today),
-      updated_by: 211,
+      customers: [
+        {
+          customer_id: customer_id,
+          status: updateStatus,
+          status_date: formatToBackendIST(today),
+          updated_by: 211,
+        },
+      ],
     };
     try {
       await inserCustomerTrack(payload);

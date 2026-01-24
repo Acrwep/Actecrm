@@ -35,7 +35,7 @@ const StudentVerify = forwardRef(
     const handleStudentVerify = async () => {
       const commentValidate = addressValidator(studentVerifyComments);
       const studentVerifyProofValidate = selectValidator(
-        studentVerifyProofBase64
+        studentVerifyProofBase64,
       );
 
       setStudentVerifyProofError(studentVerifyProofValidate);
@@ -56,8 +56,12 @@ const StudentVerify = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Awaiting Trainer",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status: "Awaiting Trainer",
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -69,7 +73,7 @@ const StudentVerify = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -78,7 +82,7 @@ const StudentVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -95,12 +99,16 @@ const StudentVerify = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        details: studentVerifiedDetails,
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            details: studentVerifiedDetails,
+          },
+        ],
       };
 
       try {
@@ -120,11 +128,15 @@ const StudentVerify = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await inserCustomerTrack(payload);
@@ -176,6 +188,6 @@ const StudentVerify = forwardRef(
         </Row>
       </div>
     );
-  }
+  },
 );
 export default StudentVerify;

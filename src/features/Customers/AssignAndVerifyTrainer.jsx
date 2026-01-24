@@ -301,8 +301,12 @@ const AssignAndVerifyTrainer = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Awaiting Trainer Verify",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status: "Awaiting Trainer Verify",
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -348,8 +352,12 @@ const AssignAndVerifyTrainer = forwardRef(
         setTimeout(async () => {
           setButtonLoading(false);
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Awaiting Class",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status: "Awaiting Class",
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -405,8 +413,12 @@ const AssignAndVerifyTrainer = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Trainer Rejected",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status: "Trainer Rejected",
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -489,15 +501,19 @@ const AssignAndVerifyTrainer = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        // details: assignTrainerDetails,
-        ...(updatestatus && updatestatus === "Trainer Assigned"
-          ? { details: assignTrainerDetails }
-          : { details: verifyOrRejectTrainerDetails }),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            // details: assignTrainerDetails,
+            ...(updatestatus && updatestatus === "Trainer Assigned"
+              ? { details: assignTrainerDetails }
+              : { details: verifyOrRejectTrainerDetails }),
+          },
+        ],
       };
 
       try {
@@ -520,11 +536,15 @@ const AssignAndVerifyTrainer = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await inserCustomerTrack(payload);

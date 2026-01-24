@@ -43,6 +43,7 @@ import Reports from "../Reports/Reports";
 
 import { onMessageListener } from "../../firebase";
 import "./styles.css";
+import WorkSheet from "../WorkSheet/WorkSheet";
 
 const { Sider, Content, Header } = Layout;
 
@@ -249,6 +250,7 @@ export default function Pages() {
               element={<TrainerRegistration />}
               path="/trainer-registration"
             />
+            <Route element={<WorkSheet />} path="/react-worksheet" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>

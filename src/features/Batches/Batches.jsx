@@ -1,107 +1,123 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Row, Col, Drawer, Progress, Modal } from "antd";
+import { Row, Col, Drawer, Progress, Modal, Tooltip, Button } from "antd";
 import { CiSearch } from "react-icons/ci";
+import { RedoOutlined } from "@ant-design/icons";
+import { AiOutlineEdit } from "react-icons/ai";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import CommonDoubleDatePicker from "../Common/CommonDoubleDatePicker";
-import CommonInputField from "../Common/CommonInputField";
-import {
-  addressValidator,
-  nameValidator,
-  selectValidator,
-} from "../Common/Validation";
-import CommonDatePicker from "../Common/CommonDatePicker";
-import CommonSelectField from "../Common/CommonSelectField";
-import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
-import { getBranches, getRegions } from "../ApiService/action";
+import { getCustomerBatches, getRegions } from "../ApiService/action";
+import AddBatch from "./AddBatch";
+import CommonSpinner from "../Common/CommonSpinner";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import moment from "moment";
+import UpdateBatchCustomers from "./UpdateBatchCustomers";
 
 export default function Batches() {
+  // ----------userefs----------------
   const inputRef = useRef();
+  const addBatchRef = useRef();
+  const updateBatchCustomersRef = useRef();
+  // ----------usestates----------------
+  const [selectedDates, setSelectedDates] = useState([]);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const [isOpenUserModal, setIsOpenUserModal] = useState(false);
-  const [branchName, setBranchName] = useState("");
-  const [branchNameError, setBranchNameError] = useState("");
+  const [isOpenAddBatchComponent, setIsOpenAddBatchComponent] = useState(false);
   const [regionOptions, setRegionOptions] = useState([]);
-  const [regionId, setRegionId] = useState(null);
-  const [regionError, setRegionError] = useState("");
-  const [branchOptions, setBranchOptions] = useState([]);
-  const [branch, setBranch] = useState("");
-  const [branchError, setBranchError] = useState("");
+  const [batchesData, setBatchesData] = useState([]);
+  const [editBatchItem, setEditBatchItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
 
+  //-----------batch details usestates-------------
+  const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
+    useState(false);
   const columns = [
-    { title: "Class Start", key: "classstart", dataIndex: "classstart" },
-    { title: "Batch Id", key: "batchId", dataIndex: "batchId" },
-    { title: "Trainer Id", key: "trainerId", dataIndex: "trainerId" },
     {
-      title: "Trainer Name",
-      key: "trainerName",
-      dataIndex: "trainerName",
-      width: 170,
-    },
-    { title: "Course ", key: "course", dataIndex: "course", width: 200 },
-    { title: "Commercial ", key: "commercial", dataIndex: "commercial" },
-    { title: "Duration ", key: "duration", dataIndex: "duration" },
-    { title: "Mode ", key: "mode", dataIndex: "mode" },
-    {
-      title: "No of Users ",
-      key: "userCount",
-      dataIndex: "userCount",
+      title: "Created At",
+      key: "created_date",
+      dataIndex: "created_date",
+      width: 100,
       render: (text) => {
+        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+      },
+    },
+    {
+      title: "Batch Id",
+      key: "batch_number",
+      dataIndex: "batch_number",
+      width: 120,
+    },
+    {
+      title: "Batch Name",
+      key: "batch_name",
+      dataIndex: "batch_name",
+      width: 160,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Customers",
+      key: "customers",
+      dataIndex: "customers",
+      width: 110,
+      render: (text, record) => {
         return (
           <div
-            className="batches_usercountContainer"
-            onClick={() => setIsOpenUserModal(true)}
+            className="leadfollowup_tabledateContainer"
+            style={{ fontWeight: 500 }}
+            onClick={() => {
+              setEditBatchItem(record);
+              setIsOpenAddBatchComponent(true);
+              setIsOpenBatchDetailsDrawer(true);
+            }}
           >
-            <p>{text + " " + "Users"}</p>
+            {text.length + " Customers"}
           </div>
         );
       },
     },
-    { title: "Status", key: "status", dataIndex: "status" },
     {
-      title: "Progress",
-      key: "progress",
-      dataIndex: "progress",
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
+      width: 120,
       render: (text) => {
-        return <Progress percent={text} />;
+        return <EllipsisTooltip text={text} />;
       },
     },
-  ];
-
-  const batchData = [
     {
-      classstart: "28/07/2025",
-      batchId: "ONL260725003",
-      trainerId: "TR359896",
-      trainerName: "Test Trainer",
-      course: "Fullstack Developer",
-      branch: "Velachery",
-      commercial: "5000",
-      duration: "45",
-      mode: "Online",
-      userCount: 4,
-      status: "Intiated",
-      progress: 50,
+      title: "Branch",
+      key: "branch_name",
+      dataIndex: "branch_name",
+      width: 130,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
     },
-  ];
-
-  const usertableColumns = [
-    { title: "Name", key: "name", dataIndex: "name" },
-    { title: "Email", key: "email", dataIndex: "email", width: 190 },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile" },
-    { title: "Fees", key: "fees", dataIndex: "fees" },
-    { title: "Balance", key: "balance", dataIndex: "balance" },
-  ];
-
-  const usersData = [
     {
-      id: 1,
-      name: "Balaji",
-      email: "balaji@gmail.com",
-      mobile: "9787564545",
-      fees: "12000",
-      balance: "3000",
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      fixed: "right",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="trainers_actionbuttonContainer">
+            <AiOutlineEdit
+              size={18}
+              className="trainers_action_icons"
+              onClick={() => {
+                setEditBatchItem(record);
+                setIsOpenAddBatchComponent(true);
+                setIsOpenAddDrawer(true);
+              }}
+            />
+          </div>
+        );
+      },
     },
   ];
 
@@ -110,45 +126,55 @@ export default function Batches() {
   }, []);
 
   const getRegionData = async () => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
     try {
       const response = await getRegions();
       setRegionOptions(response?.data?.data || []);
     } catch (error) {
       setRegionOptions([]);
       console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getBatchesData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+      }, 300);
+      // getCustomersData(null, 1);
     }
   };
 
-  const getBranchesData = async (regionid) => {
+  const getBatchesData = async (startDate, endDate) => {
+    setLoading(true);
     const payload = {
-      region_id: regionid,
+      start_date: startDate,
+      end_date: endDate,
     };
     try {
-      const response = await getBranches(payload);
-      const branch_data = response?.data?.result || [];
-
-      if (branch_data.length >= 1) {
-        if (regionid == 1 || regionid == 2) {
-          const reordered = [
-            ...branch_data.filter((item) => item.name !== "Online"),
-            ...branch_data.filter((item) => item.name === "Online"),
-          ];
-          setBranchOptions(reordered);
-        } else {
-          setBranchOptions([]);
-          setBranch(branch_data[0]?.id);
-        }
-      } else {
-        setBranchOptions([]);
-      }
+      const response = await getCustomerBatches(payload);
+      console.log("get batches response", response);
+      setBatchesData(response?.data?.data || []);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     } catch (error) {
-      setBranchOptions([]);
-      console.log("response status error", error);
+      setLoading(false);
+      setBatchesData([]);
+      console.log("get batches error", error);
+    } finally {
+      // getCustomersData(null, 1);
     }
   };
 
   const formReset = () => {
     setIsOpenAddDrawer(false);
+    setIsOpenAddBatchComponent(false);
+    setEditBatchItem(null);
+    setIsOpenBatchDetailsDrawer(false);
+  };
+
+  const handleRefresh = () => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+    getBatchesData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   };
 
   return (
@@ -164,7 +190,12 @@ export default function Batches() {
               icon={<CiSearch size={16} />}
               labelMarginTop="-1px"
             />
-            <CommonDoubleDatePicker />
+            <CommonMuiCustomDatePicker
+              value={selectedDates}
+              onDateChange={(dates) => {
+                setSelectedDates(dates);
+              }}
+            />
           </div>
         </Col>
         <Col
@@ -176,12 +207,14 @@ export default function Batches() {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "12px",
           }}
         >
           <button
             className="leadmanager_addleadbutton"
             onClick={() => {
               setIsOpenAddDrawer(true);
+              setIsOpenAddBatchComponent(true);
               setTimeout(() => {
                 inputRef.current?.focus();
               }, 0);
@@ -189,16 +222,25 @@ export default function Batches() {
           >
             Add Batch
           </button>
+
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
         </Col>
       </Row>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1600 }}
+          scroll={{ x: 1000 }}
           columns={columns}
-          dataSource={batchData}
+          dataSource={batchesData}
           dataPerPage={10}
-          // loading={tableLoading}
+          loading={loading}
           checkBox="false"
           size="small"
           className="questionupload_table"
@@ -207,106 +249,62 @@ export default function Batches() {
 
       {/* add batch drawer */}
       <Drawer
-        title="Add Batch"
+        title={editBatchItem ? "Update Batch" : "Add Batch"}
         open={isOpenAddDrawer}
         onClose={formReset}
         width="40%"
         style={{ position: "relative" }}
       >
-        <Row gutter={16}>
-          <Col span={12}>
-            <CommonInputField
-              label="Batch Name"
-              value={branchName}
-              onChange={(e) => {
-                setBranchName(e.target.value);
-                setBranchNameError(addressValidator(e.target.value));
-              }}
-              error={branchNameError}
-              required={true}
-              ref={inputRef}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonSelectField
-              label="Region"
-              required={true}
-              options={regionOptions}
-              onChange={(e) => {
-                setRegionId(e.target.value);
-                setBranch("");
-                getBranchesData(e.target.value);
-                setRegionError(selectValidator(e.target.value));
-              }}
-              value={regionId}
-            />
-          </Col>
-
-          {regionId == 3 ? (
-            ""
-          ) : (
-            <Col span={12} style={{ marginTop: "30px" }}>
-              <CommonSelectField
-                label="Branch"
-                required={true}
-                options={branchOptions}
-                onChange={(e) => {
-                  setBranch(e.target.value);
-                  setBranchError(selectValidator(e.target.value));
-                }}
-                value={branch}
-              />
-            </Col>
-          )}
-
-          <Col span={12} style={{ marginTop: "30px" }}></Col>
-        </Row>
+        {isOpenAddBatchComponent ? (
+          <AddBatch
+            ref={addBatchRef}
+            regionOptions={regionOptions}
+            editBatchItem={editBatchItem}
+            setButtonLoading={setButtonLoading}
+            callgetBatchesApi={() => {
+              formReset();
+              getBatchesData(selectedDates[0], selectedDates[1]);
+            }}
+          />
+        ) : (
+          ""
+        )}
 
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
-            <button className="leadmanager_tablefilter_applybutton">
-              Save
-            </button>
+            {buttonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={() => addBatchRef.current.handleBatchCreate()}
+              >
+                {editBatchItem ? "Update" : "Submit"}
+              </button>
+            )}
           </div>
         </div>
       </Drawer>
 
-      {/* user modal */}
-
-      <Modal
-        title="Users"
-        open={isOpenUserModal}
-        onCancel={() => setIsOpenUserModal(false)}
-        footer={false}
-        width="60%"
-      >
-        <div style={{ marginTop: "20px" }}>
-          <CommonTable
-            scroll={{ x: 700 }}
-            columns={usertableColumns}
-            dataSource={usersData}
-            dataPerPage={10}
-            // loading={tableLoading}
-            checkBox="false"
-            size="small"
-            paginationStatus={false}
-            className="questionupload_table"
-          />{" "}
-        </div>
-
-        <p className="batch_usermodal_addcandidate">Add Candidate</p>
-
-        <Row>
-          <Col span={12}>
-            <div className="batch_usermodal_addcandidate_buttonContainer">
-              <CommonInputField label="Candidate Name" />
-              <button className="batch_usermodal_addcandidate_button">
-                + Add
-              </button>
-            </div>
-          </Col>
-        </Row>
-      </Modal>
+      {isOpenAddBatchComponent ? (
+        <Drawer
+          title="Batch Details"
+          open={isOpenBatchDetailsDrawer}
+          onClose={formReset}
+          width="50%"
+          className="customer_statusupdate_drawer"
+          style={{ position: "relative", paddingBottom: 65 }}
+        >
+          <UpdateBatchCustomers
+            ref={updateBatchCustomersRef}
+            editBatchItem={editBatchItem}
+          />
+        </Drawer>
+      ) : (
+        ""
+      )}
     </div>
   );
 }

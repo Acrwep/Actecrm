@@ -78,7 +78,7 @@ const FinanceVerify = forwardRef(
       setPaymentHistory(
         customerDetails.payments && customerDetails.payments
           ? customerDetails.payments.payment_trans
-          : []
+          : [],
       );
       if (drawerContentStatus == "Update Payment") {
         setSubTotal(parseFloat(customerDetails.primary_fees).toFixed(2));
@@ -88,58 +88,60 @@ const FinanceVerify = forwardRef(
             ? customerDetails.payments.tax_type == "GST (18%)"
               ? 1
               : customerDetails.payments.tax_type == "SGST (18%)"
-              ? 2
-              : customerDetails.payments.tax_type == "IGST (18%)"
-              ? 3
-              : customerDetails.payments.tax_type == "VAT (18%)"
-              ? 4
-              : customerDetails.payments.tax_type == "No Tax"
-              ? 5
-              : 0
-            : 0
+                ? 2
+                : customerDetails.payments.tax_type == "IGST (18%)"
+                  ? 3
+                  : customerDetails.payments.tax_type == "VAT (18%)"
+                    ? 4
+                    : customerDetails.payments.tax_type == "No Tax"
+                      ? 5
+                      : 0
+            : 0,
         );
         setTotalAmount(
           parseFloat(
             customerDetails.payments && customerDetails.payments.total_amount
               ? customerDetails.payments.total_amount
-              : 0
-          ).toFixed(2)
+              : 0,
+          ).toFixed(2),
         );
         //transaction handling
         const rejectedItem = customerDetails?.payments?.payment_trans?.find(
-          (f) => f?.payment_status === "Rejected"
+          (f) => f?.payment_status === "Rejected",
         );
         console.log("rejectedItem", rejectedItem);
         setUpdatePaymentTransId(
-          rejectedItem && rejectedItem.id ? rejectedItem.id : null
+          rejectedItem && rejectedItem.id ? rejectedItem.id : null,
         );
         setPaidNow(
           parseFloat(
-            rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0
-          ).toFixed(2)
+            rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0,
+          ).toFixed(2),
         );
         setPaymentMode(
-          rejectedItem && rejectedItem.paymode_id ? rejectedItem.paymode_id : 0
+          rejectedItem && rejectedItem.paymode_id ? rejectedItem.paymode_id : 0,
         );
         setConvenienceFees(
           parseFloat(
             rejectedItem && rejectedItem.convenience_fees
               ? rejectedItem.convenience_fees
-              : 0
-          ).toFixed(2)
+              : 0,
+          ).toFixed(2),
         );
         setPaymentDate(
-          rejectedItem && rejectedItem.paid_date ? rejectedItem.paid_date : null
+          rejectedItem && rejectedItem.paid_date
+            ? rejectedItem.paid_date
+            : null,
         );
         setPlaceOfPayment(
           rejectedItem && rejectedItem.place_of_payment
             ? rejectedItem.place_of_payment
-            : null
+            : null,
         );
         setPaymentScreenShotBase64(
           rejectedItem && rejectedItem.payment_screenshot
             ? rejectedItem.payment_screenshot
-            : ""
+            : "",
         );
         const rej_balance_amount =
           rejectedItem && rejectedItem.balance_amount
@@ -154,7 +156,7 @@ const FinanceVerify = forwardRef(
         setDueDate(
           rejectedItem && rejectedItem.next_due_date
             ? rejectedItem.next_due_date
-            : null
+            : null,
         );
       }
     }, []);
@@ -180,7 +182,7 @@ const FinanceVerify = forwardRef(
       }
 
       setBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value)
+        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
       );
 
       if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
@@ -192,7 +194,7 @@ const FinanceVerify = forwardRef(
 
       if (paymentValidationTrigger) {
         setPaidNowError(
-          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt))
+          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
         );
       }
     };
@@ -220,8 +222,8 @@ const FinanceVerify = forwardRef(
       setBalanceAmount(
         getBalanceAmount(
           isNaN(pendingAmount) ? 0 : pendingAmount,
-          isNaN(paidNow) ? 0 : paidNow
-        )
+          isNaN(paidNow) ? 0 : paidNow,
+        ),
       );
 
       //handle convenience fees
@@ -246,20 +248,24 @@ const FinanceVerify = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status:
-              customerDetails?.is_second_due === 1
-                ? customerDetails?.status ?? "Unknown"
-                : "Awaiting Verify",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status:
+                  customerDetails?.is_second_due === 1
+                    ? (customerDetails?.status ?? "Unknown")
+                    : "Awaiting Verify",
+              },
+            ],
           };
           console.log("payloaddd", payload);
           try {
             await updateCustomerStatus(payload);
             handleCustomerTrack(
               customerDetails?.is_second_due === 1
-                ? "Part Payment Verified" ?? "Unknown"
+                ? ("Part Payment Verified" ?? "Unknown")
                 : "Payment Verified",
-              transactionDetails?.id || ""
+              transactionDetails?.id || "",
             );
             setTimeout(() => {
               if (customerDetails?.is_second_due === 1) {
@@ -272,7 +278,7 @@ const FinanceVerify = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
           sendInvoiceEmail(transactionDetails);
@@ -282,7 +288,7 @@ const FinanceVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -302,8 +308,9 @@ const FinanceVerify = forwardRef(
         rejected_date: formatToBackendIST(today),
       };
       const statusPayload = {
-        customer_id: customerDetails.id,
-        status: "Payment Rejected",
+        customer_ids: [
+          { customer_id: customerDetails.id, status: "Payment Rejected" },
+        ],
       };
       try {
         await rejectCustomerPayment(payload);
@@ -319,8 +326,8 @@ const FinanceVerify = forwardRef(
           }
           handleCustomerTrack(
             customerDetails?.is_second_due === 1
-              ? "Part Payment Rejected" ?? "Unknown"
-              : "Payment Rejected"
+              ? ("Part Payment Rejected" ?? "Unknown")
+              : "Payment Rejected",
           );
         }, 300);
       } catch (error) {
@@ -328,7 +335,7 @@ const FinanceVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -387,7 +394,7 @@ const FinanceVerify = forwardRef(
 
       const paidNowValidate = priceValidator(
         parseInt(paidNow),
-        parseInt(pendingAmount)
+        parseInt(pendingAmount),
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);
@@ -434,15 +441,19 @@ const FinanceVerify = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
             // status:
             //   customerDetails?.is_second_due == 0
             //     ? "Awaiting Finance"
             //     : customerDetails.status,
-            status:
-              customerDetails.status == "Payment Rejected"
-                ? "Awaiting Finance"
-                : customerDetails.status,
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status:
+                  customerDetails.status == "Payment Rejected"
+                    ? "Awaiting Finance"
+                    : customerDetails.status,
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -451,7 +462,7 @@ const FinanceVerify = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -460,7 +471,7 @@ const FinanceVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -476,16 +487,20 @@ const FinanceVerify = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        ...(updatestatus && updatestatus === "Payment Verified"
-          ? { details: paymentVerifyDetails }
-          : updatestatus === "Part Payment Verified"
-          ? { details: paymentVerifyDetails }
-          : {}),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            ...(updatestatus && updatestatus === "Payment Verified"
+              ? { details: paymentVerifyDetails }
+              : updatestatus === "Part Payment Verified"
+                ? { details: paymentVerifyDetails }
+                : {}),
+          },
+        ],
       };
 
       try {
@@ -508,11 +523,15 @@ const FinanceVerify = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await inserCustomerTrack(payload);
@@ -709,12 +728,12 @@ const FinanceVerify = forwardRef(
                                   onClick={() => {
                                     setIsShowFinanceRejectComment(true);
                                     setFinanceRejectCommentError(
-                                      addressValidator(financeRejectComment)
+                                      addressValidator(financeRejectComment),
                                     );
                                     setRejectTransItem(item);
                                     setTimeout(() => {
                                       const container = document.getElementById(
-                                        "customer_financereject_comment_container"
+                                        "customer_financereject_comment_container",
                                       );
                                       container.scrollIntoView({
                                         behavior: "smooth",
@@ -774,7 +793,7 @@ const FinanceVerify = forwardRef(
                                 <Col span={12}>
                                   <p className="customerdetails_text">
                                     {moment(item.invoice_date).format(
-                                      "DD/MM/YYYY"
+                                      "DD/MM/YYYY",
                                     )}
                                   </p>
                                 </Col>
@@ -824,7 +843,7 @@ const FinanceVerify = forwardRef(
                                     onClick={() => {
                                       setIsOpenPaymentScreenshotModal(true);
                                       setTransactionScreenshot(
-                                        item.payment_screenshot
+                                        item.payment_screenshot,
                                       );
                                     }}
                                   >
@@ -898,7 +917,7 @@ const FinanceVerify = forwardRef(
                                   <p className="customerdetails_text">
                                     {item.next_due_date
                                       ? moment(item.next_due_date).format(
-                                          "DD/MM/YYYY"
+                                          "DD/MM/YYYY",
                                         )
                                       : "-"}{" "}
                                   </p>
@@ -928,7 +947,7 @@ const FinanceVerify = forwardRef(
                     onChange={(e) => {
                       setFinanceRejectComment(e.target.value);
                       setFinanceRejectCommentError(
-                        addressValidator(e.target.value)
+                        addressValidator(e.target.value),
                       );
                     }}
                     value={financeRejectComment}
@@ -989,7 +1008,7 @@ const FinanceVerify = forwardRef(
                                 Transaction Date -{" "}
                                 <span style={{ fontWeight: "500" }}>
                                   {moment(item.invoice_date).format(
-                                    "DD/MM/YYYY"
+                                    "DD/MM/YYYY",
                                   )}
                                 </span>
                               </span>
@@ -1037,7 +1056,7 @@ const FinanceVerify = forwardRef(
                                   <Col span={12}>
                                     <p className="customerdetails_text">
                                       {moment(item.invoice_date).format(
-                                        "DD/MM/YYYY"
+                                        "DD/MM/YYYY",
                                       )}
                                     </p>
                                   </Col>
@@ -1087,7 +1106,7 @@ const FinanceVerify = forwardRef(
                                       onClick={() => {
                                         setIsOpenPaymentScreenshotModal(true);
                                         setTransactionScreenshot(
-                                          item.payment_screenshot
+                                          item.payment_screenshot,
                                         );
                                       }}
                                     >
@@ -1161,7 +1180,7 @@ const FinanceVerify = forwardRef(
                                     <p className="customerdetails_text">
                                       {item.next_due_date
                                         ? moment(item.next_due_date).format(
-                                            "DD/MM/YYYY"
+                                            "DD/MM/YYYY",
                                           )
                                         : "-"}{" "}
                                     </p>
@@ -1498,6 +1517,6 @@ const FinanceVerify = forwardRef(
         </Modal>
       </div>
     );
-  }
+  },
 );
 export default FinanceVerify;

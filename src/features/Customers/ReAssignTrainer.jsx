@@ -52,7 +52,7 @@ const ReAssignTrainer = forwardRef(
       setUpdateButtonLoading,
       callgetCustomersApi,
     },
-    ref
+    ref,
   ) => {
     const [trainerId, setTrainerId] = useState(null);
     const [trainerIdError, setTrainerIdError] = useState("");
@@ -214,7 +214,7 @@ const ReAssignTrainer = forwardRef(
       const modeOfClassValidate = selectValidator(modeOfClass);
       const commentValidate = addressValidator(assignTrainerComments);
       const assignTrainerProofValidate = selectValidator(
-        assignTrainerProofBase64
+        assignTrainerProofBase64,
       );
 
       setTrainerIdError(trainerIdValidate);
@@ -251,7 +251,7 @@ const ReAssignTrainer = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -277,8 +277,12 @@ const ReAssignTrainer = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
-            customer_id: customerDetails.id,
-            status: "Awaiting Trainer Verify",
+            customer_ids: [
+              {
+                customer_id: customerDetails.id,
+                status: "Awaiting Trainer Verify",
+              },
+            ],
           };
           try {
             await updateCustomerStatus(payload);
@@ -290,7 +294,7 @@ const ReAssignTrainer = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -299,7 +303,7 @@ const ReAssignTrainer = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -325,12 +329,16 @@ const ReAssignTrainer = forwardRef(
       };
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        ...(updatestatus && { details: assignTrainerDetails }),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            ...(updatestatus && { details: assignTrainerDetails }),
+          },
+        ],
       };
 
       try {
@@ -352,11 +360,15 @@ const ReAssignTrainer = forwardRef(
       console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
+        customers: [
+          {
+            customer_id: customerDetails.id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
         await inserCustomerTrack(payload);
@@ -578,7 +590,7 @@ const ReAssignTrainer = forwardRef(
                                   <Col span={12}>
                                     <p className="customerdetails_text">
                                       {moment(item.rejected_date).format(
-                                        "DD/MM/YYYY"
+                                        "DD/MM/YYYY",
                                       )}
                                     </p>
                                   </Col>
@@ -640,14 +652,14 @@ const ReAssignTrainer = forwardRef(
                     onChange={(e) => {
                       setTrainerId(e.target.value);
                       const clickedTrainer = trainersData.filter(
-                        (f) => f.id == e.target.value
+                        (f) => f.id == e.target.value,
                       );
                       console.log("clickedTrainer", clickedTrainer);
                       setTrainerType(
                         clickedTrainer.length >= 1 &&
                           clickedTrainer[0].trainer_type
                           ? clickedTrainer[0].trainer_type
-                          : ""
+                          : "",
                       );
                       setClickedTrainerDetails(clickedTrainer);
                       setTrainerIdError(selectValidator(e.target.value));
@@ -660,10 +672,10 @@ const ReAssignTrainer = forwardRef(
                       trainerFilterType == 1
                         ? "Name"
                         : trainerFilterType == 2
-                        ? "Trainer Id"
-                        : trainerFilterType == 3
-                        ? "Email"
-                        : "Mobile"
+                          ? "Trainer Id"
+                          : trainerFilterType == 3
+                            ? "Email"
+                            : "Mobile"
                     }
                   />
                 </div>
@@ -786,7 +798,7 @@ const ReAssignTrainer = forwardRef(
                   onChange={(e) => {
                     setAssignTrainerComments(e.target.value);
                     setAssignTrainerCommentsError(
-                      addressValidator(e.target.value)
+                      addressValidator(e.target.value),
                     );
                   }}
                   value={assignTrainerComments}
@@ -973,7 +985,7 @@ const ReAssignTrainer = forwardRef(
                       <p className="customerdetails_text">
                         {item.availability_time
                           ? moment(item.availability_time, "HH:mm:ss").format(
-                              "hh:mm A"
+                              "hh:mm A",
                             )
                           : "-"}
                       </p>
@@ -992,7 +1004,7 @@ const ReAssignTrainer = forwardRef(
                       <p className="customerdetails_text">
                         {item.secondary_time
                           ? moment(item.secondary_time, "HH:mm:ss").format(
-                              "hh:mm A"
+                              "hh:mm A",
                             )
                           : "-"}
                       </p>
@@ -1110,6 +1122,6 @@ const ReAssignTrainer = forwardRef(
         </Modal>
       </>
     );
-  }
+  },
 );
 export default ReAssignTrainer;

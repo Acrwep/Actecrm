@@ -32,8 +32,9 @@ const ClassSchedule = forwardRef(
       drawerContentStatus,
       setUpdateButtonLoading,
       callgetCustomersApi,
+      customerIdsFromBatch = [],
     },
-    ref
+    ref,
   ) => {
     //class schedule usestates
     const scheduleOptions = [
@@ -70,20 +71,21 @@ const ClassSchedule = forwardRef(
     const [isShowAddAttachment, setIsShowAddAttachment] = useState(false);
 
     useEffect(() => {
+      console.log("customerIdsFromBatch", customerIdsFromBatch);
       setScheduleId(
         customerDetails && customerDetails.class_schedule_id
           ? customerDetails.class_schedule_id
-          : null
+          : null,
       );
       setClassStartDate(
         customerDetails && customerDetails.class_start_date
           ? customerDetails.class_start_date
-          : null
+          : null,
       );
       setClassGoingPercentage(
         customerDetails && customerDetails.class_percentage
           ? parseFloat(customerDetails.class_percentage)
-          : null
+          : null,
       );
     }, []);
 
@@ -123,17 +125,31 @@ const ClassSchedule = forwardRef(
 
       const today = new Date();
 
-      const payload = {
-        customer_id: customerDetails.id,
-        schedule_id: scheduleId,
-        ...(classStartDate
-          ? {
-              class_start_date: formatToBackendIST(classStartDate),
-            }
-          : { class_start_date: null }),
-        schedule_at: formatToBackendIST(today),
-        ...(classHoldComments && { comments: classHoldComments }),
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              schedule_id: scheduleId,
+              ...(classStartDate
+                ? { class_start_date: formatToBackendIST(classStartDate) }
+                : { class_start_date: null }),
+              schedule_at: formatToBackendIST(today),
+              ...(classHoldComments && { comments: classHoldComments }),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                schedule_id: scheduleId,
+                ...(classStartDate
+                  ? { class_start_date: formatToBackendIST(classStartDate) }
+                  : { class_start_date: null }),
+                schedule_at: formatToBackendIST(today),
+                ...(classHoldComments && { comments: classHoldComments }),
+              },
+            ];
+
+      const payload = { customers };
+
       console.log("class schedule payload", payload);
       try {
         await classScheduleForCustomer(payload);
@@ -143,12 +159,12 @@ const ClassSchedule = forwardRef(
             scheduleId == 1
               ? "Class Going"
               : scheduleId == 3
-              ? "Hold"
-              : scheduleId == 10
-              ? "Demo Completed"
-              : scheduleId == 5
-              ? "Escalated"
-              : "Class Scheduled"
+                ? "Hold"
+                : scheduleId == 10
+                  ? "Demo Completed"
+                  : scheduleId == 5
+                    ? "Escalated"
+                    : "Class Scheduled",
           );
         }, 300);
       } catch (error) {
@@ -156,7 +172,7 @@ const ClassSchedule = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -183,13 +199,27 @@ const ClassSchedule = forwardRef(
         return;
 
       setUpdateButtonLoading(true);
-      const payload = {
-        customer_id: customerDetails.id,
-        schedule_id: scheduleId,
-        class_percentage: classGoingPercentage,
-        class_comments: classGoingComments,
-        class_attachment: addattachmentBase64,
-      };
+
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              schedule_id: scheduleId,
+              class_percentage: classGoingPercentage,
+              class_comments: classGoingComments,
+              class_attachment: addattachmentBase64,
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                schedule_id: scheduleId,
+                class_percentage: classGoingPercentage,
+                class_comments: classGoingComments,
+                class_attachment: addattachmentBase64,
+              },
+            ];
+
+      const payload = { customers };
 
       if (classGoingPercentage >= 100) {
         setIsOpenClassCompleteModal(true);
@@ -206,16 +236,16 @@ const ClassSchedule = forwardRef(
               scheduleId == 1
                 ? "Class Going"
                 : scheduleId == 3
-                ? "Hold"
-                : scheduleId == 5
-                ? "Escalated"
-                : scheduleId == 7
-                ? "Partially Closed"
-                : scheduleId == 8
-                ? "Discontinued"
-                : scheduleId == 9
-                ? "Refund"
-                : ""
+                  ? "Hold"
+                  : scheduleId == 5
+                    ? "Escalated"
+                    : scheduleId == 7
+                      ? "Partially Closed"
+                      : scheduleId == 8
+                        ? "Discontinued"
+                        : scheduleId == 9
+                          ? "Refund"
+                          : "",
             );
             setUpdateButtonLoading(false);
             // updateStatusDrawerReset();
@@ -226,32 +256,56 @@ const ClassSchedule = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
 
     const handleCompleteClass = async () => {
       setClassCompleteLoading(true);
-      const payload = {
-        customer_id: customerDetails.id,
-        schedule_id: scheduleId,
-        class_percentage: classGoingPercentage,
-        class_comments: classGoingComments,
-        class_attachment: addattachmentBase64,
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              schedule_id: scheduleId,
+              class_percentage: classGoingPercentage,
+              class_comments: classGoingComments,
+              class_attachment: addattachmentBase64,
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                schedule_id: scheduleId,
+                class_percentage: classGoingPercentage,
+                class_comments: classGoingComments,
+                class_attachment: addattachmentBase64,
+              },
+            ];
+
+      const payload = { customers };
 
       try {
         await updateClassGoingForCustomer(payload);
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           setIsOpenClassCompleteModal(false);
-          const payload = {
-            customer_id: customerDetails.id,
-            status: "Passedout process",
-          };
+          const customerss =
+            customerIdsFromBatch && customerIdsFromBatch.length > 0
+              ? customerIdsFromBatch.map((item) => ({
+                  customer_ids: item.customer_id,
+                  status: "Passedout process",
+                }))
+              : [
+                  {
+                    customer_ids: customerDetails.id,
+                    status: "Passedout process",
+                  },
+                ];
+
+          const statusPayload = { customerss };
+
           try {
-            await updateCustomerStatus(payload);
+            await updateCustomerStatus(statusPayload);
             handleCustomerTrack("Class Completed");
             setTimeout(() => {
               handleSecondCustomerTrack("Passedout Process");
@@ -261,7 +315,7 @@ const ClassSchedule = forwardRef(
             CommonMessage(
               "error",
               error?.response?.data?.message ||
-                "Something went wrong. Try again later"
+                "Something went wrong. Try again later",
             );
           }
         }, 300);
@@ -270,16 +324,26 @@ const ClassSchedule = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
 
     const handleCustomerStatus = async (updatestatus) => {
-      const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_ids: item.customer_id,
+              status: updatestatus,
+            }))
+          : [
+              {
+                customer_ids: customerDetails.id,
+                status: updatestatus,
+              },
+            ];
+
+      const payload = { customers };
       try {
         await updateCustomerStatus(payload);
         handleCustomerTrack(updatestatus);
@@ -287,7 +351,7 @@ const ClassSchedule = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -326,27 +390,57 @@ const ClassSchedule = forwardRef(
         class_going_percentage: 100,
       };
 
-      const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-        ...(updatestatus === "Class Scheduled"
-          ? { details: classScheduledDetails }
-          : updatestatus === "Class Going"
-          ? { details: classGoingDetails }
-          : updatestatus === "Hold" || updatestatus === "Demo Completed"
-          ? { details: holdDetails }
-          : updatestatus == "Escalated" ||
-            updatestatus == "Partially Closed" ||
-            updatestatus == "Discontinued" ||
-            updatestatus == "Refund"
-          ? { details: escalatedDetails }
-          : updatestatus == "Class Completed"
-          ? { details: classCompletedDetails }
-          : {}),
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+              status_date: formatToBackendIST(today),
+              ...(updatestatus === "Class Scheduled"
+                ? { details: classScheduledDetails }
+                : updatestatus === "Class Going"
+                  ? { details: classGoingDetails }
+                  : updatestatus === "Hold" || updatestatus === "Demo Completed"
+                    ? { details: holdDetails }
+                    : updatestatus == "Escalated" ||
+                        updatestatus == "Partially Closed" ||
+                        updatestatus == "Discontinued" ||
+                        updatestatus == "Refund"
+                      ? { details: escalatedDetails }
+                      : updatestatus == "Class Completed"
+                        ? { details: classCompletedDetails }
+                        : {}),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: updatestatus,
+                updated_by:
+                  converAsJson && converAsJson.user_id
+                    ? converAsJson.user_id
+                    : 0,
+                status_date: formatToBackendIST(today),
+                ...(updatestatus === "Class Scheduled"
+                  ? { details: classScheduledDetails }
+                  : updatestatus === "Class Going"
+                    ? { details: classGoingDetails }
+                    : updatestatus === "Hold" ||
+                        updatestatus === "Demo Completed"
+                      ? { details: holdDetails }
+                      : updatestatus == "Escalated" ||
+                          updatestatus == "Partially Closed" ||
+                          updatestatus == "Discontinued" ||
+                          updatestatus == "Refund"
+                        ? { details: escalatedDetails }
+                        : updatestatus == "Class Completed"
+                          ? { details: classCompletedDetails }
+                          : {}),
+              },
+            ];
+
+      const payload = { customers };
 
       try {
         await inserCustomerTrack(payload);
@@ -364,13 +458,29 @@ const ClassSchedule = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
-      const payload = {
-        customer_id: customerDetails.id,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+              status_date: formatToBackendIST(today),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: updatestatus,
+                updated_by:
+                  converAsJson && converAsJson.user_id
+                    ? converAsJson.user_id
+                    : 0,
+                status_date: formatToBackendIST(today),
+              },
+            ];
+
+      const payload = { customers };
+
       try {
         await inserCustomerTrack(payload);
       } catch (error) {
@@ -399,7 +509,7 @@ const ClassSchedule = forwardRef(
                   if (value == 6) {
                     setTimeout(() => {
                       const container = document.getElementById(
-                        "customer_scheduledatefield_container"
+                        "customer_scheduledatefield_container",
                       );
                       container.scrollIntoView({ behavior: "smooth" });
                     }, 200);
@@ -412,12 +522,12 @@ const ClassSchedule = forwardRef(
                   if (value == 3 || value == 10) {
                     setTimeout(() => {
                       const container = document.getElementById(
-                        "customer_scheduledatefield_container"
+                        "customer_scheduledatefield_container",
                       );
                       container.scrollIntoView({ behavior: "smooth" });
                     }, 200);
                     setClassHoldCommentsError(
-                      addressValidator(classHoldComments)
+                      addressValidator(classHoldComments),
                     );
                   } else {
                     setClassHoldCommentsError("");
@@ -460,7 +570,7 @@ const ClassSchedule = forwardRef(
                     onChange={(e) => {
                       setClassHoldComments(e.target.value);
                       setClassHoldCommentsError(
-                        addressValidator(e.target.value)
+                        addressValidator(e.target.value),
                       );
                     }}
                     value={classHoldComments}
@@ -478,7 +588,7 @@ const ClassSchedule = forwardRef(
               Update Class-Going Process
             </p>
 
-            <Row gutter={16} style={{ marginTop: "30px" }}>
+            <Row gutter={16} style={{ marginTop: "20px" }}>
               <Col span={12}>
                 <CommonSelectField
                   label="Schedule Status"
@@ -491,15 +601,15 @@ const ClassSchedule = forwardRef(
                     if (value != 1) {
                       setTimeout(() => {
                         const container = document.getElementById(
-                          "customer_scheduledatefield_container"
+                          "customer_scheduledatefield_container",
                         );
                         container.scrollIntoView({ behavior: "smooth" });
                       }, 200);
                       setClassGoingCommentsError(
-                        addressValidator(classGoingComments)
+                        addressValidator(classGoingComments),
                       );
                       setAddattachmentError(
-                        selectValidator(addattachmentBase64)
+                        selectValidator(addattachmentBase64),
                       );
                     } else {
                       setClassGoingCommentsError("");
@@ -553,7 +663,7 @@ const ClassSchedule = forwardRef(
                       onChange={(e) => {
                         setClassGoingComments(e.target.value);
                         setClassGoingCommentsError(
-                          addressValidator(e.target.value)
+                          addressValidator(e.target.value),
                         );
                       }}
                       value={classGoingComments}
@@ -639,6 +749,6 @@ const ClassSchedule = forwardRef(
         </Modal>
       </>
     );
-  }
+  },
 );
 export default ClassSchedule;

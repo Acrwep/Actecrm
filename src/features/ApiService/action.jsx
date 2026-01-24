@@ -1587,3 +1587,30 @@ export const getCNAFolloups = async (payload) => {
     throw error;
   }
 };
+//batch api's
+export const createBatch = async (payload) => {
+  try {
+    const response = await api.post(`/api/createBatch`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomerBatches = async (payload) => {
+  try {
+    const response = await api.post(`/api/getCustomerBatches`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateBatch = async (payload) => {
+  try {
+    const response = await api.put(`/api/updateBatch`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
