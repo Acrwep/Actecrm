@@ -11,9 +11,12 @@ import { IoLocationOutline } from "react-icons/io5";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
+import { CloseOutlined } from "@ant-design/icons";
 import PrismaZoom from "react-prismazoom";
-import { getCustomers } from "../ApiService/action";
+import { getCustomers, viewCertForCustomer } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
+import CommonCertificateViewer from "../Common/CommonCertificateViewer";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function ViewTrainerPaymentDetails({
   selectedPaymentDetails,
@@ -41,6 +44,10 @@ export default function ViewTrainerPaymentDetails({
   const [isOpenReviewModal, setIsOpenReviewModal] = useState(false);
   const [reviewScreenshot, setReviewScreenshot] = useState("");
   const [reviewType, setReviewType] = useState("");
+  const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
+  const [certHtmlContent, setCertHtmlContent] = useState("");
+  const [certificateName, setCertificateName] = useState("");
+  const [generateCertLoading, setGenerateCertLoading] = useState(false);
 
   const getParticularCustomerDetails = async (customer_email) => {
     const payload = {
@@ -55,6 +62,30 @@ export default function ViewTrainerPaymentDetails({
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
+    }
+  };
+
+  const handleViewCert = async (customer_id) => {
+    setGenerateCertLoading(true);
+    const payload = {
+      customer_id: customer_id ? customer_id : customerDetails.id,
+    };
+    try {
+      const response = await viewCertForCustomer(payload);
+      console.log("cert response", response);
+      const htmlTemplate = response?.data?.data?.html_template;
+      setCertHtmlContent(htmlTemplate);
+      setTimeout(() => {
+        setGenerateCertLoading(false);
+        setIsOpenViewCertModal(true);
+      }, 300);
+    } catch (error) {
+      setGenerateCertLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
     }
   };
 
@@ -424,7 +455,7 @@ export default function ViewTrainerPaymentDetails({
 
                           <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
                             <Row gutter={12}>
-                              <Col span={6}>
+                              <Col flex="20%">
                                 <div
                                   style={{
                                     display: "flex",
@@ -439,7 +470,7 @@ export default function ViewTrainerPaymentDetails({
                                   </p>
                                 </div>
                               </Col>
-                              <Col span={6}>
+                              <Col flex="20%">
                                 <div
                                   style={{
                                     display: "flex",
@@ -450,26 +481,11 @@ export default function ViewTrainerPaymentDetails({
                                 >
                                   <div className="trainerpaymentrequest_classpercentage_badge" />
                                   <p className="customer_trainer_onboardcount_badgecount">
-                                    Class Percentage
+                                    Class Pct
                                   </p>
                                 </div>
                               </Col>
-                              <Col span={6}>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_google_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    G-Review
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col span={6}>
+                              <Col flex="20%">
                                 <div
                                   style={{
                                     display: "flex",
@@ -484,10 +500,40 @@ export default function ViewTrainerPaymentDetails({
                                   </p>
                                 </div>
                               </Col>
+                              <Col flex="20%">
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_google_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    G-Review
+                                  </p>
+                                </div>
+                              </Col>
+                              <Col flex="20%">
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div className="trainerpaymentrequest_certificate_badge" />
+                                  <p className="customer_trainer_onboardcount_badgecount">
+                                    Certificate
+                                  </p>
+                                </div>
+                              </Col>
                             </Row>
 
                             <Row gutter={12} style={{ marginTop: "2px" }}>
-                              <Col span={6}>
+                              <Col flex="20%">
                                 <p
                                   style={{
                                     fontWeight: 600,
@@ -498,7 +544,7 @@ export default function ViewTrainerPaymentDetails({
                                   {"₹" + item.balance_amount}
                                 </p>{" "}
                               </Col>
-                              <Col span={6}>
+                              <Col flex="20%">
                                 <p
                                   style={{
                                     fontWeight: 600,
@@ -511,7 +557,45 @@ export default function ViewTrainerPaymentDetails({
                                     : "0" + "%"}
                                 </p>{" "}
                               </Col>
-                              <Col span={6}>
+                              <Col flex="20%">
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0px",
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "11px",
+                                      padding: "2px 9px",
+                                    }}
+                                  >
+                                    {item.linkedin_review
+                                      ? "Collected"
+                                      : "Not Collected"}
+                                  </p>{" "}
+                                  {item.linkedin_review ? (
+                                    <FaRegEye
+                                      size={12}
+                                      style={{
+                                        cursor: "pointer",
+                                        marginTop: "4px",
+                                      }}
+                                      onClick={() => {
+                                        setIsOpenReviewModal(true);
+                                        setReviewType("Linkedin Review");
+                                        setReviewScreenshot(
+                                          item.linkedin_review,
+                                        );
+                                      }}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </Col>
+                              <Col flex="20%">
                                 <div
                                   style={{
                                     display: "flex",
@@ -547,7 +631,8 @@ export default function ViewTrainerPaymentDetails({
                                   )}
                                 </div>
                               </Col>
-                              <Col span={6}>
+
+                              <Col flex="20%">
                                 <div
                                   style={{
                                     display: "flex",
@@ -561,25 +646,30 @@ export default function ViewTrainerPaymentDetails({
                                       padding: "2px 9px",
                                     }}
                                   >
-                                    {item.linkedin_review
-                                      ? "Collected"
-                                      : "Not Collected"}
+                                    {item.is_certificate_generated == 1
+                                      ? "Generated"
+                                      : "Not Generated"}
                                   </p>{" "}
-                                  {item.linkedin_review ? (
-                                    <FaRegEye
-                                      size={12}
-                                      style={{
-                                        cursor: "pointer",
-                                        marginTop: "4px",
-                                      }}
-                                      onClick={() => {
-                                        setIsOpenReviewModal(true);
-                                        setReviewType("Linkedin Review");
-                                        setReviewScreenshot(
-                                          item.linkedin_review,
-                                        );
-                                      }}
-                                    />
+                                  {item.is_certificate_generated == 1 ? (
+                                    <>
+                                      {generateCertLoading ? (
+                                        <CommonSpinner color="#333" />
+                                      ) : (
+                                        <FaRegEye
+                                          size={12}
+                                          style={{
+                                            cursor: "pointer",
+                                            marginTop: "4px",
+                                          }}
+                                          onClick={() => {
+                                            handleViewCert(item.customer_id);
+                                            setCertificateName(
+                                              item.customer_name,
+                                            );
+                                          }}
+                                        />
+                                      )}
+                                    </>
                                   ) : (
                                     ""
                                   )}
@@ -1243,6 +1333,43 @@ export default function ViewTrainerPaymentDetails({
             )}
           </PrismaZoom>
         </div>
+      </Modal>
+
+      {/* view certificate modal */}
+      <Modal
+        open={isOpenViewCertModal}
+        onCancel={() => {
+          setIsOpenViewCertModal(false);
+          setCertificateName("");
+        }}
+        footer={false}
+        width="64%"
+        style={{ marginBottom: "20px", top: 10 }}
+        className="customer_certificate_viewmodal"
+        zIndex={1100}
+        // centered={true}
+        closeIcon={
+          <span
+            style={{
+              color: "#ffffff", // white color
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+          >
+            <CloseOutlined />
+          </span>
+        }
+      >
+        <CommonCertificateViewer
+          htmlTemplate={certHtmlContent}
+          candidateName={
+            certificateName
+              ? certificateName
+              : customerDetails && customerDetails.name
+                ? customerDetails.name
+                : "-"
+          }
+        />
       </Modal>
     </div>
   );

@@ -1614,3 +1614,12 @@ export const updateBatch = async (payload) => {
     throw error;
   }
 };
+
+export const getBatchStudents = async (payload) => {
+  try {
+    const response = await api.post(`/api/batchStudents`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

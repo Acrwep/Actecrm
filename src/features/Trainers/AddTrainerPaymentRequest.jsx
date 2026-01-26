@@ -30,6 +30,7 @@ import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
+import { CloseOutlined } from "@ant-design/icons";
 import "./styles.css";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
@@ -37,6 +38,7 @@ import {
   getCustomersByTrainerId,
   insertTrainerPaymentRequest,
   updateTrainerPaymentRequest,
+  viewCertForCustomer,
 } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -48,6 +50,7 @@ import {
 } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
+import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 
 const AddTrainerPaymentRequest = forwardRef(
   (
@@ -105,10 +108,12 @@ const AddTrainerPaymentRequest = forwardRef(
         attendance_screenshot_error: "",
         customerId: null,
         customerIdError: null,
+        customer_name: "",
         class_percentage: "",
         balance_amount: "",
         google_review: "",
         linkedin_review: "",
+        is_certificate_generated: 0,
         commercial: "",
         commercial_percentage: "",
         trainer_mapping_id: 0,
@@ -121,6 +126,10 @@ const AddTrainerPaymentRequest = forwardRef(
     const [isOpenReviewModal, setIsOpenReviewModal] = useState(false);
     const [reviewScreenshot, setReviewScreenshot] = useState("");
     const [reviewType, setReviewType] = useState("");
+    const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
+    const [certHtmlContent, setCertHtmlContent] = useState("");
+    const [certificateName, setCertificateName] = useState("");
+    const [generateCertLoading, setGenerateCertLoading] = useState(false);
 
     useEffect(() => {
       if (editRequestItem) {
@@ -245,10 +254,12 @@ const AddTrainerPaymentRequest = forwardRef(
         attendance_screenshot_error: "",
         customerId: null,
         customerIdError: null,
+        customer_name: "",
         class_percentage: "",
         balance_amount: "",
         google_review: "",
         linkedin_review: "",
+        is_certificate_generated: 0,
         commercial: "",
         commercial_percentage: "",
         trainer_mapping_id: 0,
@@ -310,6 +321,11 @@ const AddTrainerPaymentRequest = forwardRef(
 
           updatedDetails[index].linkedin_review =
             selectedCustomerData[0].linkedin_review;
+
+          updatedDetails[index].is_certificate_generated =
+            selectedCustomerData[0].is_certificate_generated;
+
+          updatedDetails[index].customer_name = selectedCustomerData[0].name;
         } else {
           updatedDetails[index].trainer_mapping_id = 0;
           updatedDetails[index].commercial = "";
@@ -504,6 +520,30 @@ const AddTrainerPaymentRequest = forwardRef(
 
     const keepOnlyIndex = (arr, index) => {
       return arr.filter((_, i) => i === index);
+    };
+
+    const handleViewCert = async (customer_id) => {
+      setGenerateCertLoading(true);
+      const payload = {
+        customer_id: customer_id ? customer_id : customerDetails.id,
+      };
+      try {
+        const response = await viewCertForCustomer(payload);
+        console.log("cert response", response);
+        const htmlTemplate = response?.data?.data?.html_template;
+        setCertHtmlContent(htmlTemplate);
+        setTimeout(() => {
+          setGenerateCertLoading(false);
+          setIsOpenViewCertModal(true);
+        }, 300);
+      } catch (error) {
+        setGenerateCertLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
     };
 
     return (
@@ -823,121 +863,237 @@ const AddTrainerPaymentRequest = forwardRef(
               </Row>
 
               <div
-                className="trainerpaymentrequest_badge_rowcotainer"
+                className="trainerpaymentrequest_addrequest_badge_maincotainer"
                 style={{
                   marginBottom:
                     item.customerId && item.attendanceType == "Screenshot"
-                      ? "70px"
+                      ? "100px"
                       : item.customerId
-                        ? "60px"
+                        ? "90px"
                         : "0px",
                 }}
               >
                 <div
                   className={
                     item.customerId
-                      ? "trainerpaymentrequest_badge_viewcotainer"
-                      : "trainerpaymentrequest_badge_hiddencotainer"
+                      ? "trainerpaymentrequest_addrequest_badge_sub_view_cotainer"
+                      : "trainerpaymentrequest_addrequest_badge_sub_hide_cotainer"
                   }
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      flex: 1,
-                    }}
-                  >
-                    <div className="trainerpaymentrequest_balanceamount_badge" />
-                    <p className="customer_trainer_onboardcount_badgecount">
-                      Balance Amount{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        {"₹" + item.balance_amount}
-                      </span>{" "}
-                    </p>
-                  </div>
+                  <Row gutter={12}>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flex: 1,
+                        }}
+                      >
+                        <div className="trainerpaymentrequest_balanceamount_badge" />
+                        <p className="customer_trainer_onboardcount_badgecount">
+                          Balance Amount{" "}
+                        </p>
+                      </div>
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flex: 1,
+                        }}
+                      >
+                        <div className="trainerpaymentrequest_classpercentage_badge" />
+                        <p className="customer_trainer_onboardcount_badgecount">
+                          Class Pct
+                        </p>
+                      </div>
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flex: 1,
+                        }}
+                      >
+                        <div className="trainerpaymentrequest_linkedin_badge" />
+                        <p className="customer_trainer_onboardcount_badgecount">
+                          L-Review{" "}
+                        </p>
+                      </div>
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flex: 1,
+                        }}
+                      >
+                        <div className="trainerpaymentrequest_google_badge" />
+                        <p className="customer_trainer_onboardcount_badgecount">
+                          G-Review
+                        </p>
+                      </div>
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          flex: 1,
+                        }}
+                      >
+                        <div className="trainerpaymentrequest_certificate_badge" />
+                        <p className="customer_trainer_onboardcount_badgecount">
+                          Certificate
+                        </p>
+                      </div>
+                    </Col>
+                  </Row>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "6px",
-                      flex: 1,
-                    }}
-                  >
-                    <div className="trainerpaymentrequest_classpercentage_badge" />
-                    <p className="customer_trainer_onboardcount_badgecount">
-                      Class Percentage{" "}
-                      <span style={{ fontWeight: 600 }}>
+                  <Row gutter={12} style={{ marginTop: "2px" }}>
+                    <Col flex="20%">
+                      <p
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "11px",
+                          padding: "2px 9px",
+                        }}
+                      >
+                        {"₹" + item.balance_amount}
+                      </p>{" "}
+                    </Col>
+                    <Col flex="20%">
+                      <p
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "11px",
+                          padding: "2px 9px",
+                        }}
+                      >
                         {item.class_percentage
                           ? parseFloat(item.class_percentage) + "%"
                           : "0" + "%"}
-                      </span>{" "}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      flex: 1,
-                    }}
-                  >
-                    <div className="trainerpaymentrequest_google_badge" />
-                    <p className="customer_trainer_onboardcount_badgecount">
-                      G-Review{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        {item.google_review ? "Collected" : "Not Collected"}
-                      </span>{" "}
-                    </p>
-                    {item.google_review ? (
-                      <FaRegEye
-                        size={12}
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          setIsOpenReviewModal(true);
-                          setReviewType("Google Review");
-                          setReviewScreenshot(item.google_review);
+                      </p>{" "}
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0px",
                         }}
-                      />
-                    ) : (
-                      ""
-                    )}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      flex: 1,
-                    }}
-                  >
-                    <div className="trainerpaymentrequest_linkedin_badge" />
-                    <p className="customer_trainer_onboardcount_badgecount">
-                      L-Review{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        <span style={{ fontWeight: 600 }}>
+                      >
+                        <p
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "11px",
+                            padding: "2px 9px",
+                          }}
+                        >
                           {item.linkedin_review ? "Collected" : "Not Collected"}
-                        </span>{" "}
-                      </span>{" "}
-                    </p>
-                    {item.linkedin_review ? (
-                      <FaRegEye
-                        size={12}
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          setIsOpenReviewModal(true);
-                          setReviewType("Linkedin Review");
-                          setReviewScreenshot(item.linkedin_review);
+                        </p>{" "}
+                        {item.linkedin_review ? (
+                          <FaRegEye
+                            size={12}
+                            style={{
+                              cursor: "pointer",
+                              marginTop: "4px",
+                            }}
+                            onClick={() => {
+                              setIsOpenReviewModal(true);
+                              setReviewType("Linkedin Review");
+                              setReviewScreenshot(item.linkedin_review);
+                            }}
+                          />
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    </Col>
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0px",
                         }}
-                      />
-                    ) : (
-                      ""
-                    )}
-                  </div>
+                      >
+                        <p
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "11px",
+                            padding: "2px 9px",
+                          }}
+                        >
+                          {item.google_review ? "Collected" : "Not Collected"}
+                        </p>{" "}
+                        {item.google_review ? (
+                          <FaRegEye
+                            size={12}
+                            style={{
+                              cursor: "pointer",
+                              marginTop: "4px",
+                            }}
+                            onClick={() => {
+                              setIsOpenReviewModal(true);
+                              setReviewType("Google Review");
+                              setReviewScreenshot(item.google_review);
+                            }}
+                          />
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    </Col>
+
+                    <Col flex="20%">
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "11px",
+                            padding: "2px 9px",
+                          }}
+                        >
+                          {item.is_certificate_generated == 1
+                            ? "Generated"
+                            : "Not Generated"}
+                        </p>{" "}
+                        {item.is_certificate_generated == 1 ? (
+                          <>
+                            {generateCertLoading ? (
+                              <CommonSpinner color="#333" />
+                            ) : (
+                              <FaRegEye
+                                size={12}
+                                style={{
+                                  cursor: "pointer",
+                                  marginTop: "4px",
+                                }}
+                                onClick={() => {
+                                  handleViewCert(item.customerId);
+                                  setCertificateName(item.customer_name);
+                                }}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
                 </div>
               </div>
 
@@ -1510,6 +1666,43 @@ const AddTrainerPaymentRequest = forwardRef(
               )}
             </PrismaZoom>
           </div>
+        </Modal>
+
+        {/* view certificate modal */}
+        <Modal
+          open={isOpenViewCertModal}
+          onCancel={() => {
+            setIsOpenViewCertModal(false);
+            setCertificateName("");
+          }}
+          footer={false}
+          width="64%"
+          style={{ marginBottom: "20px", top: 10 }}
+          className="customer_certificate_viewmodal"
+          zIndex={1100}
+          // centered={true}
+          closeIcon={
+            <span
+              style={{
+                color: "#ffffff", // white color
+                fontSize: "18px",
+                fontWeight: "bold",
+              }}
+            >
+              <CloseOutlined />
+            </span>
+          }
+        >
+          <CommonCertificateViewer
+            htmlTemplate={certHtmlContent}
+            candidateName={
+              certificateName
+                ? certificateName
+                : customerDetails && customerDetails.name
+                  ? customerDetails.name
+                  : "-"
+            }
+          />
         </Modal>
       </div>
     );

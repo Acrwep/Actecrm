@@ -5,7 +5,14 @@ import React, {
   useImperativeHandle,
   useMemo,
 } from "react";
-import { Row, Col } from "antd";
+import { Row, Col, Button, Flex, Tooltip, Radio, Modal, Divider } from "antd";
+import { IoFilter } from "react-icons/io5";
+import { FaRegEye } from "react-icons/fa";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineEmail } from "react-icons/md";
+import { IoCallOutline } from "react-icons/io5";
+import { FaWhatsapp } from "react-icons/fa";
+import { IoLocationOutline } from "react-icons/io5";
 import CommonInputField from "../Common/CommonInputField";
 import {
   selectValidator,
@@ -15,16 +22,25 @@ import {
 import CommonSelectField from "../Common/CommonSelectField";
 import {
   createBatch,
+  getBatchStudents,
   getBranches,
   getCustomers,
   updateBatch,
 } from "../ApiService/action";
 import CommonCustomerMultiSelectField from "../Common/CommonCustomerSelect";
 import { CommonMessage } from "../Common/CommonMessage";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import moment from "moment";
 
 const AddBatch = forwardRef(
   (
-    { regionOptions, editBatchItem, callgetBatchesApi, setButtonLoading },
+    {
+      regionOptions,
+      trainersData,
+      editBatchItem,
+      callgetBatchesApi,
+      setButtonLoading,
+    },
     ref,
   ) => {
     /* ---------------- BASIC STATES ---------------- */
@@ -36,14 +52,19 @@ const AddBatch = forwardRef(
     const [branchId, setBranchId] = useState(null);
     const [branchIdError, setBranchIdError] = useState("");
 
+    /* ---------------- Trainer STATES ---------------- */
+    const [trainerId, setTrainerId] = useState(null);
+    const [trainerFilterType, setTrainerFilterType] = useState(1);
+    const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+    const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
+    const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
+      useState(false);
     /* ---------------- CUSTOMER STATES ---------------- */
     const [customersData, setCustomersData] = useState([]);
 
     // ✅ IMPORTANT: keep IDs & Objects separately
     const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
     const [selectedCustomerObjects, setSelectedCustomerObjects] = useState([]);
-
-    const [selectedCustomerError, setSelectedCustomerError] = useState("");
     const [customerSearchText, setCustomerSearchText] = useState("");
 
     /* ---------------- PAGINATION ---------------- */
@@ -83,7 +104,8 @@ const AddBatch = forwardRef(
       };
 
       try {
-        const response = await getCustomers(payload);
+        const response = await getBatchStudents(payload);
+
         const customers = response?.data?.data?.customers || [];
         const pagination = response?.data?.data?.pagination;
 
@@ -99,6 +121,7 @@ const AddBatch = forwardRef(
           setBatchName(editBatchItem?.batch_name ?? "");
           setRegionId(editBatchItem?.region_id ?? null);
           setBranchId(editBatchItem?.branch_id ?? null);
+          setTrainerId(editBatchItem?.trainer_id);
           getBranchesData(editBatchItem?.region_id ?? null);
           setSelectedCustomerIds(
             editBatchItem?.customers.map((c) => String(c.id)),
@@ -141,6 +164,13 @@ const AddBatch = forwardRef(
       }
     };
 
+    const handleTrainerId = (e) => {
+      setTrainerId(e.target.value);
+      const clickedTrainer = trainersData.filter((f) => f.id == e.target.value);
+      console.log("clickedTrainer", clickedTrainer);
+      setClickedTrainerDetails(clickedTrainer);
+    };
+
     /* ---------------- SEARCH HANDLER ---------------- */
     const handleCustomerSearch = (value) => {
       setCustomerSearchText(value);
@@ -166,7 +196,7 @@ const AddBatch = forwardRef(
         return Array.from(map.values());
       });
 
-      setSelectedCustomerError(selectedIds.length ? "" : "is required");
+      // setSelectedCustomerError(selectedIds.length ? "" : "is required");
     };
 
     /* ---------------- MERGED OPTIONS (CRITICAL) ---------------- */
@@ -189,7 +219,6 @@ const AddBatch = forwardRef(
     /* ---------------- INFINITE SCROLL ---------------- */
     const handleCustomerScroll = (e) => {
       const listbox = e.target;
-
       if (
         listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
         customerHasMore &&
@@ -208,20 +237,12 @@ const AddBatch = forwardRef(
       const batchNameValidate = addressValidator(batchName);
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = regionId == 3 ? "" : selectValidator(branchId);
-      const customersValidate = selectValidator(selectedCustomerIds);
 
       setBatchNameError(batchNameValidate);
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
-      setSelectedCustomerError(customersValidate);
 
-      if (
-        batchNameValidate ||
-        regionIdValidate ||
-        branchIdValidate ||
-        customersValidate
-      )
-        return;
+      if (batchNameValidate || regionIdValidate || branchIdValidate) return;
 
       setButtonLoading(true);
       const today = new Date();
@@ -234,7 +255,7 @@ const AddBatch = forwardRef(
       const payload = {
         ...(editBatchItem && { batch_id: editBatchItem?.batch_id }),
         batch_name: batchName,
-        trainer_id: null,
+        trainer_id: trainerId,
         region_id: regionId,
         branch_id: branchId,
         customers: updateCustomerIds,
@@ -291,7 +312,6 @@ const AddBatch = forwardRef(
       setSelectedCustomerIds([]);
       setSelectedCustomerObjects([]);
       setCustomerSearchText("");
-      setSelectedCustomerError("");
     };
 
     return (
@@ -343,9 +363,106 @@ const AddBatch = forwardRef(
           )}
 
           <Col span={12} style={{ marginTop: "30px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <CommonSelectField
+                  label="Trainer"
+                  required={false}
+                  options={trainersData}
+                  onChange={handleTrainerId}
+                  value={trainerId}
+                  error={""}
+                  onFocus={() => setIsTrainerSelectFocused(true)}
+                  onBlur={() => setIsTrainerSelectFocused(false)}
+                  borderRightNone={true}
+                  showLabelStatus={
+                    trainerFilterType == 1
+                      ? "Name"
+                      : trainerFilterType == 2
+                        ? "Trainer Id"
+                        : trainerFilterType == 3
+                          ? "Email"
+                          : "Mobile"
+                  }
+                  disableClearable={false}
+                />
+              </div>
+
+              <div>
+                <Flex
+                  justify="center"
+                  align="center"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <Tooltip
+                    placement="bottomLeft"
+                    color="#fff"
+                    title={
+                      <Radio.Group
+                        value={trainerFilterType}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          setTrainerFilterType(e.target.value);
+                        }}
+                      >
+                        <Radio
+                          value={1}
+                          style={{
+                            marginTop: "6px",
+                            marginBottom: "12px",
+                          }}
+                        >
+                          Search by Name
+                        </Radio>
+                        <Radio value={2} style={{ marginBottom: "12px" }}>
+                          Search by Trainer Id
+                        </Radio>
+                        <Radio value={3} style={{ marginBottom: "12px" }}>
+                          Search by Email
+                        </Radio>
+                        <Radio value={4} style={{ marginBottom: "12px" }}>
+                          Search by Mobile
+                        </Radio>
+                      </Radio.Group>
+                    }
+                  >
+                    <Button
+                      className="customer_trainermappingfilter_container"
+                      style={{
+                        borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                      }}
+                    >
+                      <IoFilter size={16} />
+                    </Button>
+                  </Tooltip>
+                </Flex>
+              </div>
+              {trainerId && (
+                <Tooltip
+                  placement="top"
+                  title="View Trainer Details"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegEye
+                    size={17}
+                    className="trainers_action_icons"
+                    onClick={() => setIsOpenTrainerDetailModal(true)}
+                  />
+                </Tooltip>
+              )}
+            </div>
+          </Col>
+
+          <Col span={12} style={{ marginTop: "30px" }}>
             <CommonCustomerMultiSelectField
               label="Select Customer"
-              required
+              required={false}
               options={mergedCustomers}
               value={selectedCustomerIds}
               inputValue={customerSearchText}
@@ -355,11 +472,223 @@ const AddBatch = forwardRef(
               onDropdownScroll={handleCustomerScroll}
               loading={customerSelectloading}
               showLabelStatus="Name"
-              error={selectedCustomerError}
+              error={""}
               disableClearable={false}
             />
           </Col>
         </Row>
+
+        {/* trainer fulldetails modal */}
+        <Modal
+          title={
+            <span style={{ padding: "0px 24px" }}>Trainer Full Details</span>
+          }
+          open={isOpenTrainerDetailModal}
+          onCancel={() => setIsOpenTrainerDetailModal(false)}
+          footer={false}
+          width="50%"
+          className="trainerpaymentrequest_trainerfulldetails_modal"
+        >
+          {clickedTrainerDetails.map((item, index) => {
+            return (
+              <>
+                <Row
+                  gutter={16}
+                  style={{ marginTop: "20px" }}
+                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                >
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaRegCircleUser size={15} color="gray" />
+                          <p className="customerdetails_rowheading">HR Name</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.hr_head ? item.hr_head : "-"}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaRegCircleUser size={15} color="gray" />
+                          <p className="customerdetails_rowheading">
+                            Trainer Name
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={
+                            item.name
+                              ? `${item.name} (${
+                                  item.trainer_code ? item.trainer_code : "-"
+                                })`
+                              : "-"
+                          }
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <MdOutlineEmail size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Email</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip text={item.email} smallText={true} />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <IoCallOutline size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Mobile</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.mobile}</p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <FaWhatsapp size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Whatsapp</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.whatsapp}</p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <IoLocationOutline size={15} color="gray" />
+                          <p className="customerdetails_rowheading">Location</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">{item.location}</p>
+                      </Col>
+                    </Row>
+                  </Col>
+
+                  <Col span={12}>
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Technology
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.technology}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Experience
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.overall_exp_year + " Years"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Relevent Experience
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.relavant_exp_year + " Years"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Avaibility Timing
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.availability_time
+                            ? moment(item.availability_time, "HH:mm:ss").format(
+                                "hh:mm A",
+                              )
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Secondary Timing
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {item.secondary_time
+                            ? moment(item.secondary_time, "HH:mm:ss").format(
+                                "hh:mm A",
+                              )
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">Skills</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <EllipsisTooltip
+                          text={item.skills.map((item) => item.name).join(", ")}
+                          smallText={true}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </>
+            );
+          })}
+        </Modal>
       </div>
     );
   },

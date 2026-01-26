@@ -508,28 +508,18 @@
   color: #fff !important;
   opacity: 1 !important;
 }
-.trainerpaymentrequest_badge_rowcotainer {
-  display: flex;
-  padding: 0px 24px 0px 24px;
+.trainerpaymentrequest_addrequest_badge_maincotainer {
+  margin: 0px 24px 0px 24px;
   position: relative;
 }
-.trainerpaymentrequest_viewdetails_badge_cotainer {
-  display: flex;
+.trainerpaymentrequest_addrequest_badge_sub_view_cotainer {
+  /* display: flex; */
   border-radius: 4px;
   border: 1px solid rgba(128, 128, 128, 0.363);
   padding: 4px 12px;
   margin-top: 16px;
   gap: 3px;
   width: 100%;
-}
-.trainerpaymentrequest_badge_viewcotainer {
-  display: flex;
-  border-radius: 4px;
-  border: 1px solid rgba(128, 128, 128, 0.363);
-  padding: 4px 12px;
-  margin-top: 16px;
-  gap: 3px;
-  width: 93%;
   position: absolute;
 
   transform: translateX(0);
@@ -539,15 +529,13 @@
     transform 0.4s ease-in-out,
     opacity 0.4s ease-in-out;
 }
-
-.trainerpaymentrequest_badge_hiddencotainer {
-  display: flex;
+.trainerpaymentrequest_addrequest_badge_sub_hide_cotainer {
   border-radius: 4px;
   border: 1px solid rgba(128, 128, 128, 0.363);
   padding: 4px 12px;
   margin-top: 16px;
   gap: 3px;
-  width: 93%;
+  width: 100%;
   position: absolute;
 
   transform: translateX(-100px);
@@ -557,7 +545,6 @@
     transform 0.4s ease-in-out,
     opacity 0.4s ease-in-out;
 }
-
 .trainerpaymentrequest_balanceamount_badge {
   border-radius: 50%;
   width: 4px;
@@ -581,6 +568,12 @@
   width: 4px;
   height: 4px;
   background-color: #0a66c2;
+}
+.trainerpaymentrequest_certificate_badge {
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #5b69ca;
 }
 .trainerpaymentrequest_trainerfulldetails_modal.ant-modal .ant-modal-content {
   padding: 20px 0px !important;

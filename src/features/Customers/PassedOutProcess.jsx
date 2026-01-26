@@ -37,6 +37,7 @@ const PassesOutProcess = forwardRef(
   (
     {
       customerDetails,
+      customerIdsFromBatch = [],
       stepIndex,
       setStepIndex,
       isCertGenerated,
@@ -90,20 +91,32 @@ const PassesOutProcess = forwardRef(
     const handleGoogleReview = async () => {
       if (isGoogleReviewChange) {
         const today = new Date();
-        const payload = {
-          customers: [
-            {
-              customer_id: customerDetails.id,
-              linkedin_review: customerDetails.linkedin_review
-                ? customerDetails.linkedin_review
-                : linkedinFeedbackBase64,
-              google_review: googleFeedbackBase64,
-              course_duration: customerDetails.course_duration,
-              course_completed_date: customerDetails.course_completion_date,
-              review_updated_date: formatToBackendIST(today),
-            },
-          ],
-        };
+        const customers =
+          customerIdsFromBatch && customerIdsFromBatch.length > 0
+            ? customerIdsFromBatch.map((item) => ({
+                customer_id: item.customer_id,
+                linkedin_review: customerDetails.linkedin_review
+                  ? customerDetails.linkedin_review
+                  : linkedinFeedbackBase64,
+                google_review: googleFeedbackBase64,
+                course_duration: customerDetails.course_duration,
+                course_completed_date: customerDetails.course_completion_date,
+                review_updated_date: formatToBackendIST(today),
+              }))
+            : [
+                {
+                  customer_id: customerDetails.id,
+                  linkedin_review: customerDetails.linkedin_review
+                    ? customerDetails.linkedin_review
+                    : linkedinFeedbackBase64,
+                  google_review: googleFeedbackBase64,
+                  course_duration: customerDetails.course_duration,
+                  course_completed_date: customerDetails.course_completion_date,
+                  review_updated_date: formatToBackendIST(today),
+                },
+              ];
+
+        const payload = { customers };
         try {
           await updatefeedbackForCustomer(payload);
           callgetCustomersApi(false, false);
@@ -219,31 +232,54 @@ const PassesOutProcess = forwardRef(
       setUpdateButtonLoading(true);
 
       const today = new Date();
-      const payload = {
-        customers: [
-          {
-            customer_id: customerDetails.id,
-            linkedin_review: linkedinFeedbackBase64,
-            google_review: customerDetails.google_review
-              ? customerDetails.google_review
-              : googleFeedbackBase64,
-            course_duration: null,
-            course_completed_date: null,
-            review_updated_date: formatToBackendIST(today),
-          },
-        ],
-      };
+
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              linkedin_review: linkedinFeedbackBase64,
+              google_review: customerDetails.google_review
+                ? customerDetails.google_review
+                : googleFeedbackBase64,
+              course_duration: null,
+              course_completed_date: null,
+              review_updated_date: formatToBackendIST(today),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                linkedin_review: linkedinFeedbackBase64,
+                google_review: customerDetails.google_review
+                  ? customerDetails.google_review
+                  : googleFeedbackBase64,
+                course_duration: null,
+                course_completed_date: null,
+                review_updated_date: formatToBackendIST(today),
+              },
+            ];
+
+      const payload = { customers };
+
       try {
         await updatefeedbackForCustomer(payload);
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
-          const payload = {
-            customer_ids: [
-              { customer_id: customerDetails.id, status: "Completed" },
-            ],
-          };
+          const customer_ids =
+            customerIdsFromBatch && customerIdsFromBatch.length > 0
+              ? customerIdsFromBatch.map((item) => ({
+                  customer_id: item.customer_id,
+                  status: "Completed",
+                }))
+              : [
+                  {
+                    customer_id: customerDetails.id,
+                    status: "Completed",
+                  },
+                ];
+
+          const statusPayload = { customer_ids };
           try {
-            await updateCustomerStatus(payload);
+            await updateCustomerStatus(statusPayload);
             handleCustomerTrack("Linkedin Review Added");
             setTimeout(() => {
               handleSecondCustomerTrack("Completed");
@@ -298,22 +334,38 @@ const PassesOutProcess = forwardRef(
         linkedin_review: linkedinFeedbackBase64,
       };
 
-      const payload = {
-        customers: [
-          {
-            customer_id: customerDetails.id,
-            status: updatestatus,
-            updated_by:
-              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-            status_date: formatToBackendIST(today),
-            ...(updatestatus === "Google Review Added"
-              ? { details: googleReviewDetails }
-              : updatestatus === "Linkedin Review Added"
-                ? { details: linkedinReviewDetails }
-                : {}),
-          },
-        ],
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+              status_date: formatToBackendIST(today),
+              ...(updatestatus === "Google Review Added"
+                ? { details: googleReviewDetails }
+                : updatestatus === "Linkedin Review Added"
+                  ? { details: linkedinReviewDetails }
+                  : {}),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: updatestatus,
+                updated_by:
+                  converAsJson && converAsJson.user_id
+                    ? converAsJson.user_id
+                    : 0,
+                status_date: formatToBackendIST(today),
+                ...(updatestatus === "Google Review Added"
+                  ? { details: googleReviewDetails }
+                  : updatestatus === "Linkedin Review Added"
+                    ? { details: linkedinReviewDetails }
+                    : {}),
+              },
+            ];
+
+      const payload = { customers };
 
       try {
         await inserCustomerTrack(payload);
@@ -337,17 +389,29 @@ const PassesOutProcess = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
-      const payload = {
-        customers: [
-          {
-            customer_id: customerDetails.id,
-            status: updatestatus,
-            updated_by:
-              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-            status_date: formatToBackendIST(today),
-          },
-        ],
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+              status_date: formatToBackendIST(today),
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: updatestatus,
+                updated_by:
+                  converAsJson && converAsJson.user_id
+                    ? converAsJson.user_id
+                    : 0,
+                status_date: formatToBackendIST(today),
+              },
+            ];
+
+      const payload = { customers };
+
       try {
         await inserCustomerTrack(payload);
       } catch (error) {

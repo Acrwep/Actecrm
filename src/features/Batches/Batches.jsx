@@ -6,7 +6,11 @@ import { AiOutlineEdit } from "react-icons/ai";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
-import { getCustomerBatches, getRegions } from "../ApiService/action";
+import {
+  getCustomerBatches,
+  getRegions,
+  getTrainers,
+} from "../ApiService/action";
 import AddBatch from "./AddBatch";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
@@ -29,6 +33,9 @@ export default function Batches() {
   const [editBatchItem, setEditBatchItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
+
+  /* ---------------- Trainer STATES ---------------- */
+  const [trainersData, setTrainersData] = useState([]);
 
   //-----------batch details usestates-------------
   const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
@@ -98,6 +105,15 @@ export default function Batches() {
       },
     },
     {
+      title: "Trainer",
+      key: "trainer_name",
+      dataIndex: "trainer_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
       title: "Action",
       key: "action",
       dataIndex: "action",
@@ -122,8 +138,27 @@ export default function Batches() {
   ];
 
   useEffect(() => {
-    getRegionData();
+    getTrainersData();
   }, []);
+
+  const getTrainersData = async () => {
+    const payload = {
+      status: "Verified",
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getTrainers(payload);
+      setTrainersData(response?.data?.data?.trainers || []);
+    } catch (error) {
+      setTrainersData([]);
+      console.log(error);
+    } finally {
+      setTimeout(() => {
+        getRegionData();
+      }, 300);
+    }
+  };
 
   const getRegionData = async () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -138,7 +173,6 @@ export default function Batches() {
       setTimeout(() => {
         getBatchesData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
       }, 300);
-      // getCustomersData(null, 1);
     }
   };
 
@@ -258,6 +292,7 @@ export default function Batches() {
         {isOpenAddBatchComponent ? (
           <AddBatch
             ref={addBatchRef}
+            trainersData={trainersData}
             regionOptions={regionOptions}
             editBatchItem={editBatchItem}
             setButtonLoading={setButtonLoading}
@@ -300,6 +335,10 @@ export default function Batches() {
           <UpdateBatchCustomers
             ref={updateBatchCustomersRef}
             editBatchItem={editBatchItem}
+            callgetBatchesApi={() => {
+              formReset();
+              getBatchesData(selectedDates[0], selectedDates[1]);
+            }}
           />
         </Drawer>
       ) : (

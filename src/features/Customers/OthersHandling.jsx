@@ -16,7 +16,15 @@ import { inserCustomerTrack, updateCustomerStatus } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 
 const OthersHandling = forwardRef(
-  ({ customerDetails, callgetCustomersApi, setUpdateButtonLoading }, ref) => {
+  (
+    {
+      customerDetails,
+      customerIdsFromBatch = [],
+      callgetCustomersApi,
+      setUpdateButtonLoading,
+    },
+    ref,
+  ) => {
     const othersOptions = [
       { id: "Videos Given", name: "Videos Given" },
       { id: "Demo Completed", name: "Demo Completed" },
@@ -45,13 +53,23 @@ const OthersHandling = forwardRef(
     };
 
     const handleCustomerStatus = async (updatestatus) => {
-      const payload = {
-        customer_ids: [
-          { customer_id: customerDetails.id, status: updatestatus },
-        ],
-      };
+      const customer_ids =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+            }))
+          : [
+              {
+                customer_ids: customerDetails.id,
+                status: updatestatus,
+              },
+            ];
+
+      const payload = { customer_ids };
       try {
         await updateCustomerStatus(payload);
+        CommonMessage("success", "Updated");
         handleCustomerTrack(updatestatus);
       } catch (error) {
         setUpdateButtonLoading(false);
@@ -73,18 +91,30 @@ const OthersHandling = forwardRef(
         comments: comments,
       };
 
-      const payload = {
-        customers: [
-          {
-            customer_id: customerDetails.id,
-            status: updatestatus,
-            updated_by:
-              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-            status_date: formatToBackendIST(today),
-            details: deetails,
-          },
-        ],
-      };
+      const customers =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: updatestatus,
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+              status_date: formatToBackendIST(today),
+              details: deetails,
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: updatestatus,
+                updated_by:
+                  converAsJson && converAsJson.user_id
+                    ? converAsJson.user_id
+                    : 0,
+                status_date: formatToBackendIST(today),
+                details: deetails,
+              },
+            ];
+
+      const payload = { customers };
 
       try {
         await inserCustomerTrack(payload);

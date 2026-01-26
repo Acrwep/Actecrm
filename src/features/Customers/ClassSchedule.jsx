@@ -289,20 +289,20 @@ const ClassSchedule = forwardRef(
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           setIsOpenClassCompleteModal(false);
-          const customerss =
+          const customer_ids =
             customerIdsFromBatch && customerIdsFromBatch.length > 0
               ? customerIdsFromBatch.map((item) => ({
-                  customer_ids: item.customer_id,
+                  customer_id: item.customer_id,
                   status: "Passedout process",
                 }))
               : [
                   {
-                    customer_ids: customerDetails.id,
+                    customer_id: customerDetails.id,
                     status: "Passedout process",
                   },
                 ];
 
-          const statusPayload = { customerss };
+          const statusPayload = { customer_ids };
 
           try {
             await updateCustomerStatus(statusPayload);
@@ -330,10 +330,10 @@ const ClassSchedule = forwardRef(
     };
 
     const handleCustomerStatus = async (updatestatus) => {
-      const customers =
+      const customer_ids =
         customerIdsFromBatch && customerIdsFromBatch.length > 0
           ? customerIdsFromBatch.map((item) => ({
-              customer_ids: item.customer_id,
+              customer_id: item.customer_id,
               status: updatestatus,
             }))
           : [
@@ -343,7 +343,7 @@ const ClassSchedule = forwardRef(
               },
             ];
 
-      const payload = { customers };
+      const payload = { customer_ids };
       try {
         await updateCustomerStatus(payload);
         handleCustomerTrack(updatestatus);
@@ -496,7 +496,15 @@ const ClassSchedule = forwardRef(
               Add Details
             </p>
 
-            <div style={{ marginTop: "16px" }}>
+            <div
+              style={{
+                marginTop: "16px",
+                marginBottom:
+                  scheduleId == null || scheduleId == "" || scheduleId == 1
+                    ? "40px"
+                    : "0px",
+              }}
+            >
               <CommonSelectField
                 label="Schedule Status"
                 options={scheduleOptions}
