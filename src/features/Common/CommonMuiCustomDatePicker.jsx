@@ -269,7 +269,7 @@ export default function CommonMuiCustomDatePicker({
                       setEndDate(adjustedEnd);
                       CommonMessage(
                         "error",
-                        "End date cannot be earlier than start date"
+                        "End date cannot be earlier than start date",
                       );
                     }
 
@@ -295,7 +295,7 @@ export default function CommonMuiCustomDatePicker({
                     ) {
                       CommonMessage(
                         "error",
-                        "End date cannot be earlier than start date."
+                        "End date cannot be earlier than start date.",
                       );
                       return; // ignore invalid selection
                     }

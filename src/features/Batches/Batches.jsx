@@ -1,8 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Row, Col, Drawer, Progress, Modal, Tooltip, Button } from "antd";
+import {
+  Row,
+  Col,
+  Drawer,
+  Progress,
+  Modal,
+  Tooltip,
+  Button,
+  Flex,
+  Radio,
+} from "antd";
 import { CiSearch } from "react-icons/ci";
 import { RedoOutlined } from "@ant-design/icons";
 import { AiOutlineEdit } from "react-icons/ai";
+import { IoFilter } from "react-icons/io5";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -18,6 +29,7 @@ import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import UpdateBatchCustomers from "./UpdateBatchCustomers";
+import CommonSelectField from "../Common/CommonSelectField";
 
 export default function Batches() {
   // ----------userefs----------------
@@ -36,7 +48,9 @@ export default function Batches() {
 
   /* ---------------- Trainer STATES ---------------- */
   const [trainersData, setTrainersData] = useState([]);
-
+  const [trainerFilterId, setTrainerFilterId] = useState(null);
+  const [trainerFilterType, setTrainerFilterType] = useState(1);
+  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
   //-----------batch details usestates-------------
   const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
     useState(false);
@@ -171,14 +185,19 @@ export default function Batches() {
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
-        getBatchesData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+        getBatchesData(
+          null,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+        );
       }, 300);
     }
   };
 
-  const getBatchesData = async (startDate, endDate) => {
+  const getBatchesData = async (trainerId, startDate, endDate) => {
     setLoading(true);
     const payload = {
+      trainer_id: trainerId,
       start_date: startDate,
       end_date: endDate,
     };
@@ -208,35 +227,129 @@ export default function Batches() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    getBatchesData(PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+    setTrainerFilterId(null);
+    getBatchesData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   };
 
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div className="leadmanager_filterContainer">
-            <CommonOutlinedInput
-              label="Search"
-              width="36%"
-              height="33px"
-              labelFontSize="12px"
-              icon={<CiSearch size={16} />}
-              labelMarginTop="-1px"
-            />
-            <CommonMuiCustomDatePicker
-              value={selectedDates}
-              onDateChange={(dates) => {
-                setSelectedDates(dates);
-              }}
-            />
-          </div>
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={8}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <CommonSelectField
+                    label="Select Trainer"
+                    required={false}
+                    height="35px"
+                    labelMarginTop="0px"
+                    labelFontSize="13px"
+                    options={trainersData}
+                    onChange={(e) => {
+                      console.log("traineeeee", e.target.value);
+                      setTrainerFilterId(e.target.value);
+                      getBatchesData(
+                        e.target.value,
+                        selectedDates[0],
+                        selectedDates[1],
+                      );
+                    }}
+                    value={trainerFilterId}
+                    error={""}
+                    disableClearable={false}
+                    onFocus={() => setIsTrainerSelectFocused(true)}
+                    onBlur={() => setIsTrainerSelectFocused(false)}
+                    borderRightNone={true}
+                    showLabelStatus={
+                      trainerFilterType == 1
+                        ? "Name"
+                        : trainerFilterType == 2
+                          ? "Trainer Id"
+                          : trainerFilterType == 3
+                            ? "Email"
+                            : "Mobile"
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={trainerFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setTrainerFilterType(e.target.value);
+                          }}
+                        >
+                          <Radio
+                            value={1}
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Search by Name
+                          </Radio>
+                          <Radio value={2} style={{ marginBottom: "12px" }}>
+                            Search by Trainer Id
+                          </Radio>
+                          <Radio value={3} style={{ marginBottom: "12px" }}>
+                            Search by Email
+                          </Radio>
+                          <Radio value={4} style={{ marginBottom: "12px" }}>
+                            Search by Mobile
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+            <Col span={10}>
+              <CommonMuiCustomDatePicker
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  // setPagination({
+                  //   page: 1,
+                  // });
+                  getBatchesData(trainerFilterId, dates[0], dates[1]);
+                }}
+              />
+            </Col>
+          </Row>
         </Col>
         <Col
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={7}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -268,7 +381,7 @@ export default function Batches() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "30px" }}>
         <CommonTable
           scroll={{ x: 1000 }}
           columns={columns}
@@ -298,7 +411,11 @@ export default function Batches() {
             setButtonLoading={setButtonLoading}
             callgetBatchesApi={() => {
               formReset();
-              getBatchesData(selectedDates[0], selectedDates[1]);
+              getBatchesData(
+                trainerFilterId,
+                selectedDates[0],
+                selectedDates[1],
+              );
             }}
           />
         ) : (
@@ -337,7 +454,11 @@ export default function Batches() {
             editBatchItem={editBatchItem}
             callgetBatchesApi={() => {
               formReset();
-              getBatchesData(selectedDates[0], selectedDates[1]);
+              getBatchesData(
+                trainerFilterId,
+                selectedDates[0],
+                selectedDates[1],
+              );
             }}
           />
         </Drawer>

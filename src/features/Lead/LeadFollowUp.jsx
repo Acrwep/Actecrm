@@ -333,9 +333,14 @@ export default function LeadFollowUp({
         setSubUsers(downlineUsers);
         mounted.current = true;
         // ---------------------
+        const today = new Date();
         setSelectedDates([
-          filterValuesFromRedux.start_date,
-          filterValuesFromRedux.end_date,
+          filterValuesFromRedux.start_date
+            ? filterValuesFromRedux.start_date
+            : moment(today).format("YYYY-MM-DD"),
+          filterValuesFromRedux.end_date
+            ? filterValuesFromRedux.end_date
+            : moment(today).format("YYYY-MM-DD"),
         ]);
         setFilterType(filterValuesFromRedux.filterType);
         setSearchValue(filterValuesFromRedux.searchValue);
@@ -374,16 +379,17 @@ export default function LeadFollowUp({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       console.log("filterValuesFromRedux", filterValuesFromRedux);
+      const today = new Date();
+
       getLeadFollowUpsData(
         filterValuesFromRedux.searchValue,
         filterValuesFromRedux.start_date
           ? filterValuesFromRedux.start_date
-          : PreviousAndCurrentDate[0],
+          : moment(today).format("YYYY-MM-DD"),
         filterValuesFromRedux.end_date
           ? filterValuesFromRedux.end_date
-          : PreviousAndCurrentDate[1],
+          : moment(today).format("YYYY-MM-DD"),
         false,
         downliners_ids,
         filterValuesFromRedux.pageNumber,
@@ -404,7 +410,6 @@ export default function LeadFollowUp({
     limit,
   ) => {
     setLoading(true);
-
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }

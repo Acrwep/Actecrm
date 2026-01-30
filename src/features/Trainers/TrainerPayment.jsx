@@ -882,9 +882,10 @@ export default function TrainerPayment() {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
+                  flexWrap: "nowrap",
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: "0 0 260px" }}>
                   <CommonMuiCustomDatePicker
                     value={selectedDates}
                     onDateChange={(dates) => {
@@ -977,15 +978,15 @@ export default function TrainerPayment() {
             alignItems: "center",
           }}
         >
-          <FiFilter
+          {/* <FiFilter
             size={20}
             color="#5b69ca"
             style={{ marginRight: "16px", cursor: "pointer" }}
-            // onClick={() => {
-            //   setIsOpenFilterDrawer(true);
-            //   getTableColumnsData(loginUserId);
-            // }}
-          />
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              getTableColumnsData(loginUserId);
+            }}
+          /> */}
 
           <Tooltip placement="top" title="Refresh">
             <Button

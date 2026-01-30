@@ -213,7 +213,7 @@ export default function CustomHeader() {
         getCustomerHistoryData(
           leadDetails && leadDetails.customer_id
             ? leadDetails.customer_id
-            : null
+            : null,
         );
       }, 300);
     } catch (error) {
@@ -328,7 +328,7 @@ export default function CustomHeader() {
     if (status.includes("Awaiting")) return "gray";
     if (
       ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
-        status.includes(s)
+        status.includes(s),
       )
     ) {
       return "#d32f2f";
@@ -342,7 +342,7 @@ export default function CustomHeader() {
     const newPasswordValidate = passwordValidator(newPassword);
     const confirmPasswordValidate = confirmPasswordValidator(
       newPassword,
-      confirmPassword
+      confirmPassword,
     );
 
     setOldPasswordError(oldPasswordValidate);
@@ -373,7 +373,7 @@ export default function CustomHeader() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -419,7 +419,7 @@ export default function CustomHeader() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -427,6 +427,29 @@ export default function CustomHeader() {
   const handleNotification = (item) => {
     const message = JSON.parse(item.message);
 
+    if (item.title == "Server Raised") {
+      console.log("Hiiiiiiiiiiiiiiiiii", message);
+
+      const serverFilterData = {
+        searchValue: message.customer_phone,
+        startDate: message.customer_raise_date,
+        endDate: message.customer_raise_date,
+      };
+
+      if (location.pathname === "/server") {
+        window.dispatchEvent(
+          new CustomEvent("serverNotificationFilter", {
+            detail: serverFilterData,
+          }),
+        );
+        setIsOpenNotificationsDrawer(false);
+        return;
+      }
+      console.log("Hiiiiiiiiiiiiiiiiiiee");
+      navigate("/customers", { state: filterData });
+      setIsOpenNotificationsDrawer(false);
+      return;
+    }
     const filterData = {
       status:
         item.title == "Trainer Rejected"
@@ -439,12 +462,12 @@ export default function CustomHeader() {
 
     if (location.pathname === "/customers") {
       window.dispatchEvent(
-        new CustomEvent("notificationFilter", { detail: filterData })
+        new CustomEvent("notificationFilter", { detail: filterData }),
       );
       setIsOpenNotificationsDrawer(false);
       return;
     }
-
+    console.log("Hiiiiiiiiiiiiiiiiiiee");
     navigate("/customers", { state: filterData });
     setIsOpenNotificationsDrawer(false);
   };
@@ -473,26 +496,26 @@ export default function CustomHeader() {
             {location.pathname === "/dashboard"
               ? "Dashboard"
               : location.pathname === "/lead-manager"
-              ? "Lead Manager"
-              : location.pathname === "/lead-followup"
-              ? "Lead Followup"
-              : location.pathname === "/customers"
-              ? "Customers"
-              : location.pathname === "/fee-pending-customers"
-              ? "Fee Pending Customers"
-              : location.pathname === "/batches"
-              ? "Batches"
-              : location.pathname === "/trainers"
-              ? "Trainers"
-              : location.pathname === "/trainer-payment"
-              ? "Trainer Payment"
-              : location.pathname === "/server"
-              ? "Server"
-              : location.pathname === "/settings"
-              ? "Settings"
-              : location.pathname === "/reports"
-              ? "Reports"
-              : ""}
+                ? "Lead Manager"
+                : location.pathname === "/lead-followup"
+                  ? "Lead Followup"
+                  : location.pathname === "/customers"
+                    ? "Customers"
+                    : location.pathname === "/fee-pending-customers"
+                      ? "Fee Pending Customers"
+                      : location.pathname === "/batches"
+                        ? "Batches"
+                        : location.pathname === "/trainers"
+                          ? "Trainers"
+                          : location.pathname === "/trainer-payment"
+                            ? "Trainer Payment"
+                            : location.pathname === "/server"
+                              ? "Server"
+                              : location.pathname === "/settings"
+                                ? "Settings"
+                                : location.pathname === "/reports"
+                                  ? "Reports"
+                                  : ""}
           </p>
         </div>
 
@@ -545,7 +568,7 @@ export default function CustomHeader() {
                                       {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2,
-                                      }
+                                      },
                                     )}`}
                                   </span>
                                 </p>
@@ -557,7 +580,7 @@ export default function CustomHeader() {
                                       {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2,
-                                      }
+                                      },
                                     )}`}
                                   </span>
                                 </p>
@@ -835,7 +858,7 @@ export default function CustomHeader() {
                   <p className="customerdetails_text">
                     {leadDetails && leadDetails.next_follow_up_date
                       ? moment(leadDetails.next_follow_up_date).format(
-                          "DD/MM/YYYY"
+                          "DD/MM/YYYY",
                         )
                       : "-"}
                   </p>
@@ -1041,7 +1064,7 @@ export default function CustomHeader() {
                             getCustomerData(
                               leadDetails && leadDetails.email
                                 ? leadDetails.email
-                                : null
+                                : null,
                             );
                           }}
                         />
@@ -1083,7 +1106,7 @@ export default function CustomHeader() {
                 <span
                   style={{
                     color: getHistoryStatusColor(
-                      customerHistory?.[0]?.status || "N/A"
+                      customerHistory?.[0]?.status || "N/A",
                     ),
                   }}
                 >
@@ -1449,7 +1472,7 @@ export default function CustomHeader() {
                 if (passwordValidationTrigger) {
                   setNewPasswordError(passwordValidator(e.target.value));
                   setConfirmPasswordError(
-                    confirmPasswordValidator(e.target.value, confirmPassword)
+                    confirmPasswordValidator(e.target.value, confirmPassword),
                   );
                 }
               }}
@@ -1494,7 +1517,7 @@ export default function CustomHeader() {
                 setConfirmPassword(e.target.value);
                 if (passwordValidationTrigger) {
                   setConfirmPasswordError(
-                    confirmPasswordValidator(newPassword, e.target.value)
+                    confirmPasswordValidator(newPassword, e.target.value),
                   );
                 }
               }}
@@ -1643,8 +1666,17 @@ export default function CustomHeader() {
                         <p className="header_notification_drawer_list_message">
                           {`Customer Name: ${message.customer_name ?? "-"} | 
      Mobile: ${message.customer_phonecode ?? ""}${
-                            message.customer_phone ?? ""
-                          } | 
+       message.customer_phone ?? ""
+     } | 
+     Course: ${message.customer_course ?? "-"}`}
+                        </p>
+                      ) : item.title === "Server Raised" &&
+                        typeof message === "object" ? (
+                        <p className="header_notification_drawer_list_message">
+                          {`Customer Name: ${message.customer_name ?? "-"} | 
+     Mobile: ${message.customer_phonecode ?? ""}${
+       message.customer_phone ?? ""
+     } | 
      Course: ${message.customer_course ?? "-"}`}
                         </p>
                       ) : (

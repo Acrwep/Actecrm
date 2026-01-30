@@ -32,6 +32,7 @@ import {
 import LiveLead from "./LiveLeads";
 import JunkLeads from "./JunkLeads";
 import AssignLeads from "./AssignLeads";
+import moment from "moment";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -97,7 +98,8 @@ export default function LeadManager() {
           handleTabClick("live_leads");
         }
       }
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      const today = new Date();
 
       dispatch(storeLiveLeadFilterType(null));
       dispatch(storeLiveLeadSelectedDates([]));
@@ -106,44 +108,44 @@ export default function LeadManager() {
         storeFollowUpFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: PreviousAndCurrentDate[0],
-          end_date: PreviousAndCurrentDate[1],
+          start_date: moment(today).format("YYYY-MM-DD"),
+          end_date: moment(today).format("YYYY-MM-DD"),
           user_id: null,
           pageNumber: 1,
           pageLimit: 10,
-        })
+        }),
       );
       dispatch(
         storeLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: PreviousAndCurrentDate[0],
-          end_date: PreviousAndCurrentDate[1],
+          start_date: moment(today).format("YYYY-MM-DD"),
+          end_date: moment(today).format("YYYY-MM-DD"),
           user_id: null,
           lead_source: null,
           pageNumber: 1,
           pageLimit: 10,
-        })
+        }),
       );
       dispatch(
         storeAssignLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: PreviousAndCurrentDate[0],
-          end_date: PreviousAndCurrentDate[1],
+          start_date: moment(today).format("YYYY-MM-DD"),
+          end_date: moment(today).format("YYYY-MM-DD"),
           pageNumber: 1,
           pageLimit: 10,
-        })
+        }),
       );
       dispatch(
         storeJunkLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: PreviousAndCurrentDate[0],
-          end_date: PreviousAndCurrentDate[1],
+          start_date: moment(today).format("YYYY-MM-DD"),
+          end_date: moment(today).format("YYYY-MM-DD"),
           pageNumber: 1,
           pageLimit: 10,
-        })
+        }),
       );
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
@@ -165,14 +167,14 @@ export default function LeadManager() {
   };
 
   const getLeadAndFollowupCountData = async (downliners) => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const today = new Date();
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const payload = {
       user_ids: downliners,
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
+      start_date: moment(today).format("YYYY-MM-DD"),
+      end_date: moment(today).format("YYYY-MM-DD"),
       login_by: convertAsJson?.user_id,
     };
     try {

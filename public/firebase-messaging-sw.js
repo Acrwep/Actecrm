@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"
+  "https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js",
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"
+  "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js",
 );
 
 firebase.initializeApp({
@@ -91,6 +91,13 @@ messaging.onBackgroundMessage((payload) => {
           message.customer_phone ?? ""
         } | ` +
         `Course: ${message.customer_course ?? "-"}`;
+    } else if (title === "Server Raised" && typeof message === "object") {
+      body =
+        `Customer Name: ${message.customer_name ?? "-"} | ` +
+        `Mobile: ${message.customer_phonecode ?? ""}${
+          message.customer_phone ?? ""
+        } | ` +
+        `Course: ${message.customer_course ?? "-"}`;
     } else {
       // Plain string message fallback
       body = typeof message === "string" ? message : raw;
@@ -131,7 +138,7 @@ self.addEventListener("notificationclick", (event) => {
             }
           }
           return self.clients.openWindow(self.origin + targetUrl);
-        })
+        }),
     );
   }
   event.notification.close();

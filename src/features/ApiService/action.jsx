@@ -910,6 +910,15 @@ export const generateCertForCustomer = async (payload) => {
   }
 };
 
+export const viewPreCertForCustomer = async (payload) => {
+  try {
+    const response = await api.post("/api/preCertificate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const viewCertForCustomer = async (payload) => {
   try {
     const response = await api.get("/api/getCertificate", { params: payload });
@@ -1546,6 +1555,15 @@ export const transactionReport = async (payload) => {
 export const userwiseTransactionReport = async (payload) => {
   try {
     const response = await api.post(`/api/getUserwiseTransaction`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const serverReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getServerReport`, payload);
     return response;
   } catch (error) {
     throw error;

@@ -52,6 +52,7 @@ import {
 import CommonDnd from "../Common/CommonDnd";
 import CommonSelectField from "../Common/CommonSelectField";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import moment from "moment";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -73,7 +74,7 @@ export default function LiveLead({
   const liveLeadSearchValue = useSelector((state) => state.liveleadsearchvalue);
   const liveLeadFilterType = useSelector((state) => state.liveleadfiltertype);
   const liveLeadSelecteDates = useSelector(
-    (state) => state.liveleadselecteddates
+    (state) => state.liveleadselecteddates,
   );
   const tabName = useSelector((state) => state.leadmanageractivepage);
   //permissions
@@ -412,7 +413,7 @@ export default function LiveLead({
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
@@ -432,10 +433,14 @@ export default function LiveLead({
       setSelectedDates(liveLeadSelecteDates);
       datesRef.current = liveLeadSelecteDates;
     } else {
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      setSelectedDates(PreviousAndCurrentDate);
-      dispatch(storeLiveLeadSelectedDates(PreviousAndCurrentDate));
-      datesRef.current = PreviousAndCurrentDate;
+      const today = new Date();
+      const todayArray = [
+        moment(today).format("YYYY-MM-DD"),
+        moment(today).format("YYYY-MM-DD"),
+      ];
+      setSelectedDates(todayArray);
+      dispatch(storeLiveLeadSelectedDates(todayArray));
+      datesRef.current = todayArray;
     }
 
     if (liveLeadFilterType) {
@@ -466,7 +471,7 @@ export default function LiveLead({
         datesRef.current[0],
         datesRef.current[1],
         paginationRef.current.page,
-        paginationRef.current.limit
+        paginationRef.current.limit,
       );
 
       if (!res) return;
@@ -563,7 +568,7 @@ export default function LiveLead({
     startDate,
     endDate,
     pageNumber,
-    limit
+    limit,
   ) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -572,12 +577,12 @@ export default function LiveLead({
       ...(searchvalue && filterTypeRef.current == 1
         ? { phone: searchvalue }
         : searchvalue && filterTypeRef.current == 2
-        ? { name: searchvalue }
-        : searchvalue && filterTypeRef.current == 3
-        ? { email: searchvalue }
-        : searchvalue && filterTypeRef.current == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterTypeRef.current == 3
+            ? { email: searchvalue }
+            : searchvalue && filterTypeRef.current == 4
+              ? { course: searchvalue }
+              : {}),
       start_date: startDate,
       end_date: endDate,
       page: pageNumber,
@@ -873,7 +878,7 @@ export default function LiveLead({
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -916,7 +921,7 @@ export default function LiveLead({
         selectedDates[0],
         selectedDates[1],
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -928,7 +933,7 @@ export default function LiveLead({
       selectedDates[0],
       selectedDates[1],
       page,
-      limit
+      limit,
     );
   };
 
@@ -961,7 +966,7 @@ export default function LiveLead({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     } finally {
       setPickLoadingRow(null); // remove loading
@@ -1027,7 +1032,7 @@ export default function LiveLead({
           selectedDates[0],
           selectedDates[1],
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
         refreshAssignLeads();
       }, 300);
@@ -1036,7 +1041,7 @@ export default function LiveLead({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1070,7 +1075,7 @@ export default function LiveLead({
           selectedDates[0],
           selectedDates[1],
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
         refreshJunkLeads();
       }, 300);
@@ -1079,7 +1084,7 @@ export default function LiveLead({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1096,12 +1101,12 @@ export default function LiveLead({
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -1123,7 +1128,7 @@ export default function LiveLead({
                             selectedDates[0],
                             selectedDates[1],
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1175,7 +1180,7 @@ export default function LiveLead({
                                 selectedDates[0],
                                 selectedDates[1],
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -1222,7 +1227,7 @@ export default function LiveLead({
                     dates[0],
                     dates[1],
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -1320,7 +1325,7 @@ export default function LiveLead({
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -1468,7 +1473,7 @@ export default function LiveLead({
               selectedDates[0],
               selectedDates[1],
               pagination.page,
-              pagination.limit
+              pagination.limit,
             );
             refreshLeadFollowUp();
             refreshLeads();

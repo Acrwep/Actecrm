@@ -22,7 +22,7 @@ import moment from "moment";
 const ServerUpdateDetails = forwardRef(
   (
     { serverDetails, setButtonLoading, verifyHistory, callgetServerApi },
-    ref
+    ref,
   ) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [vendorName, setVendorName] = useState("");
@@ -69,7 +69,7 @@ const ServerUpdateDetails = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -89,7 +89,7 @@ const ServerUpdateDetails = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -180,7 +180,7 @@ const ServerUpdateDetails = forwardRef(
                             <span style={{ fontWeight: "500" }}>
                               {item.rejected_date
                                 ? moment(item.rejected_date).format(
-                                    "DD/MM/YYYY"
+                                    "DD/MM/YYYY",
                                   )
                                 : "-"}
                             </span>
@@ -289,7 +289,7 @@ const ServerUpdateDetails = forwardRef(
             </Col>
             <Col span={8}>
               <CommonInputField
-                label="Vendor Name"
+                label="Vendor"
                 required={true}
                 onChange={(e) => {
                   setVendorName(e.target.value);
@@ -354,7 +354,7 @@ const ServerUpdateDetails = forwardRef(
         </>
       </div>
     );
-  }
+  },
 );
 
 export default ServerUpdateDetails;

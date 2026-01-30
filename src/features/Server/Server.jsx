@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Row,
   Col,
@@ -49,6 +50,7 @@ import {
   getServerRequest,
   getTableColumns,
   insertServerTrack,
+  sendNotification,
   serverIssue,
   updateServerStatus,
   updateTableColumns,
@@ -70,6 +72,7 @@ import CommonDnd from "../Common/CommonDnd";
 export default function Server() {
   const scrollRef = useRef();
   const mounted = useRef(false);
+  const location = useLocation();
   const serverUpdateDetailsRef = useRef();
   const serverVerifyRef = useRef();
   const serverApproveRef = useRef();
@@ -87,6 +90,7 @@ export default function Server() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [status, setStatus] = useState("");
+  const [dateFilterType, setDateFilterType] = useState("Raise Date");
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
@@ -98,6 +102,8 @@ export default function Server() {
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   //raise usestates
   const [isOpenRaiseModal, setIsOpenRaiseModal] = useState(false);
+  //hold usestates
+  const [isOpenHoldModal, setIsOpenHoldModal] = useState(false);
   //drawer usestates
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [drawerStatus, setDrawerStatus] = useState("");
@@ -133,6 +139,15 @@ export default function Server() {
       title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
+      width: 110,
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
+    },
+    {
+      title: "Raise Date",
+      key: "server_raise_date",
+      dataIndex: "server_raise_date",
       width: 110,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
@@ -210,15 +225,15 @@ export default function Server() {
             color="#fff"
             styles={{
               body: {
-                width: "240px",
+                width: "260px",
                 maxWidth: "none",
                 whiteSpace: "normal",
               },
             }}
             title={
               <>
-                <Row style={{ marginBottom: "8px" }}>
-                  <Col span={10}>
+                <Row>
+                  <Col span={12} style={{ marginBottom: "8px" }}>
                     {record.status == "Requested" ? (
                       <Checkbox
                         className="server_statuscheckbox"
@@ -242,7 +257,8 @@ export default function Server() {
                       </div>
                     )}
                   </Col>
-                  <Col span={14}>
+
+                  <Col span={12} style={{ marginBottom: "8px" }}>
                     {record.status == "Requested" ||
                     record.status == "Server Raised" ||
                     record.status == "Verification Rejected" ||
@@ -280,20 +296,22 @@ export default function Server() {
                       </div>
                     )}
                   </Col>
-                </Row>
 
-                <Row style={{ marginBottom: "6px" }}>
-                  <Col span={10}>
+                  <Col span={12} style={{ marginBottom: "8px" }}>
                     {record.status == "Requested" ||
                     record.status == "Server Raised" ||
                     record.status == "Awaiting Verify" ||
                     record.status == "Verification Rejected" ||
-                    record.status == "Approval Rejected" ? (
+                    record.status == "Approval Rejected" ||
+                    record.status == "Hold" ? (
                       <Checkbox
                         className="server_statuscheckbox"
                         checked={false}
                         onChange={(e) => {
-                          if (record.status == "Awaiting Verify") {
+                          if (
+                            record.status == "Awaiting Verify" ||
+                            record.status == "Hold"
+                          ) {
                             if (!permissions.includes("Server Verify")) {
                               CommonMessage("error", "Access Denied");
                               return;
@@ -319,7 +337,29 @@ export default function Server() {
                     )}
                   </Col>
 
-                  <Col span={14}>
+                  {record.status == "Awaiting Verify" ? (
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      <Checkbox
+                        className="server_statuscheckbox"
+                        checked={false}
+                        onChange={(e) => {
+                          if (!permissions.includes("Server Verify")) {
+                            CommonMessage("error", "Access Denied");
+                            return;
+                          }
+
+                          setIsOpenHoldModal(true);
+                          setServerDetails(record);
+                        }}
+                      >
+                        Hold
+                      </Checkbox>
+                    </Col>
+                  ) : (
+                    ""
+                  )}
+
+                  <Col span={12} style={{ marginBottom: "8px" }}>
                     {record.status == "Approved" ||
                     record.status == "Issued" ? (
                       <div className="customers_classcompleted_container">
@@ -351,17 +391,16 @@ export default function Server() {
                       </Checkbox>
                     )}
                   </Col>
-                </Row>
 
-                <Row style={{ marginBottom: "6px" }}>
-                  <Col span={10}>
+                  <Col span={12} style={{ marginBottom: "8px" }}>
                     {record.status == "Requested" ||
                     record.status == "Server Raised" ||
                     record.status == "Awaiting Verify" ||
                     record.status == "Verification Rejected" ||
                     record.status == "Awaiting Approval" ||
                     record.status == "Approval Rejected" ||
-                    record.status == "Approved" ? (
+                    record.status == "Approved" ||
+                    record.status == "Hold" ? (
                       <Checkbox
                         className="server_statuscheckbox"
                         checked={false}
@@ -496,7 +535,7 @@ export default function Server() {
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
@@ -509,12 +548,50 @@ export default function Server() {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
-      setTimeout(() => {
-        getTableColumnsData(convertAsJson?.user_id);
-      }, 300);
       getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
+
+  useEffect(() => {
+    const handler = async (e) => {
+      const data = e.detail;
+      console.log("Received via event:", data, allDownliners);
+      setSearchValue("");
+      setSelectedUserId(null);
+
+      // Re-run your existing logic
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      try {
+        const response = await getAllDownlineUsers(convertAsJson.user_id);
+        console.log("all downlines response", response);
+        const downliners = response?.data?.data || [];
+        const downliners_ids = downliners.map((u) => {
+          return u.user_id;
+        });
+        setAllDownliners(downliners_ids);
+        rerunServerFilters(data, downliners_ids);
+      } catch (error) {
+        console.log("all downlines error", error);
+      }
+    };
+
+    window.addEventListener("serverNotificationFilter", handler);
+    return () =>
+      window.removeEventListener("serverNotificationFilter", handler);
+  }, []);
+
+  useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    setLoginUserId(convertAsJson?.user_id);
+    setTimeout(() => {
+      getTableColumnsData(convertAsJson?.user_id);
+    }, 300);
+
+    setTableColumns(nonChangeColumns);
+  }, [permissions]);
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -526,33 +603,70 @@ export default function Server() {
       });
       setAllDownliners(downliners_ids);
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getServerRequestData(
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        downliners_ids,
-        null,
-        null,
-        1,
-        10
-      );
+      // getServerRequestData(
+      //   PreviousAndCurrentDate[0],
+      //   PreviousAndCurrentDate[1],
+      //   "Raise Date",
+      //   downliners_ids,
+      //   null,
+      //   null,
+      //   1,
+      //   10,
+      // );
+      rerunServerFilters(location.state, downliners_ids);
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
+  const rerunServerFilters = (stateData, downliners) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
+    const receivedSearchValueFromNotification = stateData?.searchValue || null;
+    const receivedStartDateFromNotification = stateData?.startDate || null;
+    const receivedEndDateFromNotification = stateData?.endDate || null;
+
+    if (receivedSearchValueFromNotification) {
+      setFilterType(1);
+      setSearchValue(receivedSearchValueFromNotification);
+    }
+    if (receivedStartDateFromNotification) {
+      setDateFilterType(1);
+      setSelectedDates([
+        receivedStartDateFromNotification,
+        receivedEndDateFromNotification,
+      ]);
+    } else {
+      setSelectedDates(PreviousAndCurrentDate);
+    }
+
+    getServerRequestData(
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+      "Raise Date",
+      downliners,
+      null,
+      receivedSearchValueFromNotification,
+      1,
+      10,
+    );
+  };
+
   const getServerRequestData = async (
     startDate,
     endDate,
+    dateType,
     downliners,
     serverStatus,
     searchvalue,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
+      type: dateType,
       user_ids: downliners,
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
@@ -566,12 +680,12 @@ export default function Server() {
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { server: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { server: searchvalue }
+              : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -629,6 +743,17 @@ export default function Server() {
                   );
                 },
               };
+            case "server_raise_date":
+              return {
+                ...col,
+                title: "Raise Date",
+                width: 110,
+                render: (text) => {
+                  return (
+                    <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                  );
+                },
+              };
             case "created_by_id":
               return {
                 ...col,
@@ -672,6 +797,7 @@ export default function Server() {
             case "server_cost":
               return {
                 ...col,
+                hidden: true,
                 width: 130,
                 render: (text) => {
                   return <p>{text ? `₹${text}` : "-"}</p>;
@@ -698,15 +824,15 @@ export default function Server() {
                       color="#fff"
                       styles={{
                         body: {
-                          width: "240px",
+                          width: "260px",
                           maxWidth: "none",
                           whiteSpace: "normal",
                         },
                       }}
                       title={
                         <>
-                          <Row style={{ marginBottom: "8px" }}>
-                            <Col span={10}>
+                          <Row>
+                            <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Requested" ? (
                                 <Checkbox
                                   className="server_statuscheckbox"
@@ -730,7 +856,8 @@ export default function Server() {
                                 </div>
                               )}
                             </Col>
-                            <Col span={14}>
+
+                            <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Requested" ||
                               record.status == "Server Raised" ||
                               record.status == "Verification Rejected" ||
@@ -743,12 +870,12 @@ export default function Server() {
                                     if (record.status == "Requested") {
                                       CommonMessage(
                                         "warning",
-                                        "Server not raised yet"
+                                        "Server not raised yet",
                                       );
                                     } else {
                                       if (
                                         !permissions.includes(
-                                          "Server Details Update"
+                                          "Server Details Update",
                                         )
                                       ) {
                                         CommonMessage("error", "Access Denied");
@@ -773,20 +900,22 @@ export default function Server() {
                                 </div>
                               )}
                             </Col>
-                          </Row>
 
-                          <Row style={{ marginBottom: "6px" }}>
-                            <Col span={10}>
+                            <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Requested" ||
                               record.status == "Server Raised" ||
                               record.status == "Awaiting Verify" ||
                               record.status == "Verification Rejected" ||
-                              record.status == "Approval Rejected" ? (
+                              record.status == "Approval Rejected" ||
+                              record.status == "Hold" ? (
                                 <Checkbox
                                   className="server_statuscheckbox"
                                   checked={false}
                                   onChange={(e) => {
-                                    if (record.status == "Awaiting Verify") {
+                                    if (
+                                      record.status == "Awaiting Verify" ||
+                                      record.status == "Hold"
+                                    ) {
                                       if (
                                         !permissions.includes("Server Verify")
                                       ) {
@@ -800,7 +929,7 @@ export default function Server() {
                                     } else {
                                       CommonMessage(
                                         "warning",
-                                        "Details not updated yet"
+                                        "Details not updated yet",
                                       );
                                     }
                                   }}
@@ -817,7 +946,31 @@ export default function Server() {
                               )}
                             </Col>
 
-                            <Col span={14}>
+                            {record.status == "Awaiting Verify" ? (
+                              <Col span={12} style={{ marginBottom: "8px" }}>
+                                <Checkbox
+                                  className="server_statuscheckbox"
+                                  checked={false}
+                                  onChange={(e) => {
+                                    if (
+                                      !permissions.includes("Server Verify")
+                                    ) {
+                                      CommonMessage("error", "Access Denied");
+                                      return;
+                                    }
+
+                                    setIsOpenHoldModal(true);
+                                    setServerDetails(record);
+                                  }}
+                                >
+                                  Hold
+                                </Checkbox>
+                              </Col>
+                            ) : (
+                              ""
+                            )}
+
+                            <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Approved" ||
                               record.status == "Issued" ? (
                                 <div className="customers_classcompleted_container">
@@ -845,7 +998,7 @@ export default function Server() {
                                     } else {
                                       CommonMessage(
                                         "warning",
-                                        "Not verified yet"
+                                        "Not verified yet",
                                       );
                                     }
                                   }}
@@ -854,17 +1007,16 @@ export default function Server() {
                                 </Checkbox>
                               )}
                             </Col>
-                          </Row>
 
-                          <Row style={{ marginBottom: "6px" }}>
-                            <Col span={10}>
+                            <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Requested" ||
                               record.status == "Server Raised" ||
                               record.status == "Awaiting Verify" ||
                               record.status == "Verification Rejected" ||
                               record.status == "Awaiting Approval" ||
                               record.status == "Approval Rejected" ||
-                              record.status == "Approved" ? (
+                              record.status == "Approved" ||
+                              record.status == "Hold" ? (
                                 <Checkbox
                                   className="server_statuscheckbox"
                                   checked={false}
@@ -884,7 +1036,7 @@ export default function Server() {
                                     } else {
                                       CommonMessage(
                                         "warning",
-                                        "Not approved yet"
+                                        "Not approved yet",
                                       );
                                     }
                                   }}
@@ -1012,7 +1164,7 @@ export default function Server() {
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -1050,11 +1202,12 @@ export default function Server() {
       getServerRequestData(
         selectedDates[0],
         selectedDates[1],
+        dateFilterType,
         allDownliners,
         status,
         e.target.value,
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -1076,11 +1229,12 @@ export default function Server() {
       getServerRequestData(
         selectedDates[0],
         selectedDates[1],
+        dateFilterType,
         downliners_ids,
         status,
         searchValue,
         1,
-        pagination.limit
+        pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -1091,11 +1245,12 @@ export default function Server() {
     getServerRequestData(
       selectedDates[0],
       selectedDates[1],
+      dateFilterType,
       allDownliners,
       status,
       searchValue,
       page,
-      limit
+      limit,
     );
   };
 
@@ -1113,23 +1268,27 @@ export default function Server() {
 
   const handleServerStatus = async (updateStatus) => {
     setVerifyButtonLoading(true);
+    const today = new Date();
     const payload = {
+      ...(updateStatus == "Server Raised" ? { server_raise_date: today } : {}),
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status: updateStatus,
     };
     try {
       await updateServerStatus(payload);
       setTimeout(() => {
+        setVerifyButtonLoading(false);
         handleServerTrack(updateStatus);
         drawerReset();
         getServerRequestData(
           selectedDates[0],
           selectedDates[1],
+          dateFilterType,
           allDownliners,
           status,
           searchValue,
           1,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -1137,7 +1296,7 @@ export default function Server() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1158,6 +1317,45 @@ export default function Server() {
       await insertServerTrack(payload);
     } catch (error) {
       console.log("server track error", error);
+    } finally {
+      if (updateStatus == "Server Raised") {
+        handleSendNotification();
+      }
+    }
+  };
+
+  const handleSendNotification = async () => {
+    const today = new Date();
+    const payload = {
+      user_ids: [import.meta.env.PROD ? "ACC0003" : "DEV2119"],
+      title: "Server Raised",
+      message: {
+        customer_name:
+          customerDetails && customerDetails.name ? customerDetails.name : "-",
+        customer_phonecode:
+          customerDetails && customerDetails.phonecode
+            ? customerDetails.phonecode
+            : "-",
+        customer_phone:
+          customerDetails && customerDetails.phone
+            ? customerDetails.phone
+            : "-",
+        customer_course:
+          customerDetails && customerDetails.course_name
+            ? customerDetails.course_name
+            : "-",
+        customer_raise_date: formatToBackendIST(today),
+        customer_status:
+          customerDetails && customerDetails.status
+            ? customerDetails.status
+            : "-",
+      },
+      created_at: formatToBackendIST(today),
+    };
+    try {
+      await sendNotification(payload);
+    } catch (error) {
+      console.log("send notification error", error);
     }
   };
 
@@ -1185,7 +1383,7 @@ export default function Server() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1210,6 +1408,7 @@ export default function Server() {
   const drawerReset = () => {
     setDrawerStatus("");
     setIsOpenDetailsDrawer(false);
+    setIsOpenHoldModal(false);
     setIsOpenRaiseModal(false);
     setIsOpenViewDrawer(false);
     setServerDetails(null);
@@ -1233,7 +1432,7 @@ export default function Server() {
   return (
     <div>
       <Row style={{ marginBottom: "12px" }}>
-        <Col xs={24} sm={24} md={24} lg={17}>
+        <Col xs={24} sm={24} md={24} lg={19}>
           <Row gutter={16}>
             <Col span={7}>
               <div className="overallduecustomers_filterContainer">
@@ -1242,10 +1441,10 @@ export default function Server() {
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : ""
                   }
                   width="100%"
                   height="33px"
@@ -1262,11 +1461,12 @@ export default function Server() {
                           getServerRequestData(
                             selectedDates[0],
                             selectedDates[1],
+                            dateFilterType,
                             allDownliners,
                             status,
                             null,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1357,7 +1557,7 @@ export default function Server() {
               </Col>
             )}
             <Col span={10}>
-              <CommonMuiCustomDatePicker
+              {/* <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
@@ -1371,10 +1571,98 @@ export default function Server() {
                     status,
                     searchValue,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
-              />
+              /> */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexWrap: "nowrap",
+                }}
+              >
+                <div style={{ flex: "0 0 260px" }}>
+                  <CommonMuiCustomDatePicker
+                    value={selectedDates}
+                    onDateChange={(dates) => {
+                      setSelectedDates(dates);
+                      setPagination({
+                        page: 1,
+                      });
+                      getServerRequestData(
+                        dates[0],
+                        dates[1],
+                        dateFilterType,
+                        allDownliners,
+                        status,
+                        searchValue,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={dateFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setDateFilterType(e.target.value);
+                            getServerRequestData(
+                              selectedDates[0],
+                              selectedDates[1],
+                              e.target.value,
+                              allDownliners,
+                              status,
+                              searchValue,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                        >
+                          <Radio
+                            value="Raise Date"
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Search by Raise Date
+                          </Radio>
+                          <Radio
+                            value="Created Date"
+                            style={{ marginBottom: "12px" }}
+                          >
+                            Search by Created Date
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
             </Col>
           </Row>
         </Col>
@@ -1383,7 +1671,7 @@ export default function Server() {
           xs={24}
           sm={24}
           md={24}
-          lg={7}
+          lg={5}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -1434,11 +1722,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 null,
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1465,11 +1754,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Requested",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1499,11 +1789,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Server Raised",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1533,11 +1824,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Awaiting Verify",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1564,11 +1856,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Awaiting Approval",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1598,11 +1891,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Approved",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1632,11 +1926,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Issued",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1661,11 +1956,12 @@ export default function Server() {
               getServerRequestData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 allDownliners,
                 "Expired",
                 searchValue,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -1673,6 +1969,36 @@ export default function Server() {
               Expired Servers{" "}
               {`( ${
                 statusCount && statusCount.expired ? statusCount.expired : "-"
+              } )`}
+            </p>
+          </div>
+          <div
+            className={
+              status === "Hold"
+                ? "customers_active_escalated_container"
+                : "customers_escalated_container"
+            }
+            onClick={() => {
+              if (status === "Hold") {
+                return;
+              }
+              setStatus("Hold");
+              getServerRequestData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                allDownliners,
+                "Hold",
+                searchValue,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Hold{" "}
+              {`( ${
+                statusCount && statusCount.hold ? statusCount.hold : "-"
               } )`}
             </p>
           </div>
@@ -1691,7 +2017,7 @@ export default function Server() {
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -1758,11 +2084,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1774,11 +2103,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1842,11 +2174,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.current_location
+                      ? customerDetails.current_location
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -1858,8 +2193,8 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     customerDetails && customerDetails.lead_assigned_to_id
                       ? customerDetails.lead_assigned_to_id
                       : "-"
@@ -1868,7 +2203,8 @@ export default function Server() {
                       ? customerDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>
@@ -1881,11 +2217,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -2003,11 +2342,12 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   allDownliners,
                   status,
                   searchValue,
                   1,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -2021,11 +2361,12 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   allDownliners,
                   status,
                   searchValue,
                   1,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -2039,11 +2380,12 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   allDownliners,
                   status,
                   searchValue,
                   1,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -2057,11 +2399,12 @@ export default function Server() {
                 getServerRequestData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   allDownliners,
                   status,
                   searchValue,
                   1,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -2085,8 +2428,9 @@ export default function Server() {
                         ? () =>
                             serverVerifyRef.current?.handleVerificationReject()
                         : drawerStatus == "Approve"
-                        ? () => serverApproveRef.current?.handleApprovalReject()
-                        : ""
+                          ? () =>
+                              serverApproveRef.current?.handleApprovalReject()
+                          : ""
                     }
                   >
                     Reject
@@ -2109,23 +2453,23 @@ export default function Server() {
                     ? () =>
                         serverUpdateDetailsRef.current?.handleUpdateDetails()
                     : drawerStatus == "Verify"
-                    ? () => serverVerifyRef.current?.handleServerVerify()
-                    : drawerStatus == "Approve"
-                    ? () => serverApproveRef.current?.handleServerApprove()
-                    : drawerStatus == "Issue"
-                    ? () => serverIssueRef.current?.handleServerIssue()
-                    : handleStatusMismatch
+                      ? () => serverVerifyRef.current?.handleServerVerify()
+                      : drawerStatus == "Approve"
+                        ? () => serverApproveRef.current?.handleServerApprove()
+                        : drawerStatus == "Issue"
+                          ? () => serverIssueRef.current?.handleServerIssue()
+                          : handleStatusMismatch
                 }
               >
                 {drawerStatus == "Update Details"
                   ? "Update"
                   : drawerStatus == "Verify"
-                  ? "Verify"
-                  : drawerStatus == "Approve"
-                  ? "Approve"
-                  : drawerStatus == "Issue"
-                  ? "Issue"
-                  : ""}
+                    ? "Verify"
+                    : drawerStatus == "Approve"
+                      ? "Approve"
+                      : drawerStatus == "Issue"
+                        ? "Issue"
+                        : ""}
               </button>
             )}
           </div>
@@ -2438,7 +2782,7 @@ export default function Server() {
                       <p className="customerdetails_text">
                         {serverDetails && serverDetails.created_date
                           ? moment(serverDetails.created_date).format(
-                              "DD/MM/YYYY"
+                              "DD/MM/YYYY",
                             )
                           : "-"}
                       </p>
@@ -2511,7 +2855,7 @@ export default function Server() {
                       <p className="customerdetails_text">
                         {serverDetails && serverDetails.start_date
                           ? moment(serverDetails.start_date).format(
-                              "DD/MM/YYYY"
+                              "DD/MM/YYYY",
                             )
                           : "-"}
                       </p>
@@ -2588,6 +2932,54 @@ export default function Server() {
         </div>
       </Modal>
 
+      {/* hold modal */}
+      <Modal
+        open={isOpenHoldModal}
+        onCancel={() => {
+          setIsOpenHoldModal(false);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Hold the Server for{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {serverDetails && serverDetails.name ? serverDetails.name : ""}
+          </span>{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenHoldModal(false);
+            }}
+          >
+            No
+          </Button>
+          {verifyButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleServerStatus("Hold");
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
       {/* server history drawer */}
       <Drawer
         title={
@@ -2608,7 +3000,7 @@ export default function Server() {
                 <span
                   style={{
                     color: getHistoryStatusColor(
-                      serverHistory?.[0]?.status || "N/A"
+                      serverHistory?.[0]?.status || "N/A",
                     ),
                   }}
                 >

@@ -17,6 +17,7 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
 import { LuSend } from "react-icons/lu";
+import { FaLinkedinIn } from "react-icons/fa";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
@@ -77,6 +78,7 @@ import ParticularCustomerDetails from "./ParticularCustomerDetails";
 import OthersHandling from "./OthersHandling";
 import ReAssignTrainer from "./ReAssignTrainer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import PreCertificate from "./PreCertificate";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -88,6 +90,7 @@ export default function Customers() {
   const classScheduleRef = useRef();
   const passedOutProcessRef = useRef();
   const othersHandlingRef = useRef();
+  const preCertificateRef = useRef();
   const emailTemplateRef = useRef();
   const mounted = useRef(false);
   const location = useLocation();
@@ -287,10 +290,10 @@ export default function Customers() {
                   ? text < 18
                     ? "#3c9111" // green
                     : text > 18 && text <= 22
-                    ? "#ffa502" // orange
-                    : text > 22
-                    ? "#d32f2f" // red
-                    : "inherit"
+                      ? "#ffa502" // orange
+                      : text > 22
+                        ? "#d32f2f" // red
+                        : "inherit"
                   : "inherit", // fallback color if null
             }}
           >
@@ -408,7 +411,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else {
                               if (!permissions.includes("Finance Verify")) {
@@ -450,7 +453,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -458,7 +461,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet"
+                                "Finance not Verified Yet",
                               );
                             } else if (record.status != "Awaiting Verify") {
                               CommonMessage("warning", "Already Verified");
@@ -517,7 +520,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -525,12 +528,12 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet"
+                                "Finance not Verified Yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
                                 "warning",
-                                "Customer not Verified Yet"
+                                "Customer not Verified Yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
@@ -561,7 +564,7 @@ export default function Customers() {
                             } else {
                               CommonMessage(
                                 "warning",
-                                "Trainer Already Assigned"
+                                "Trainer Already Assigned",
                               );
                             }
                           }}
@@ -610,7 +613,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -618,12 +621,12 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet"
+                                "Finance not Verified Yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
                                 "warning",
-                                "Customer not Verified Yet"
+                                "Customer not Verified Yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
@@ -645,7 +648,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Assigned yet"
+                                "Trainer not Assigned yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer Verify"
@@ -661,7 +664,7 @@ export default function Customers() {
                             } else {
                               CommonMessage(
                                 "warning",
-                                "Trainer Already Verified"
+                                "Trainer Already Verified",
                               );
                             }
                           }}
@@ -704,7 +707,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -712,12 +715,12 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet"
+                                "Finance not Verified Yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
                                 "warning",
-                                "Customer not Verified Yet"
+                                "Customer not Verified Yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer" ||
@@ -739,14 +742,14 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Assigned yet"
+                                "Trainer not Assigned yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer Verify"
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Verified yet"
+                                "Trainer not Verified yet",
                               );
                             } else if (
                               record.status === "Awaiting Class" ||
@@ -768,7 +771,7 @@ export default function Customers() {
                             } else {
                               CommonMessage(
                                 "warning",
-                                "Class Already Scheduled"
+                                "Class Already Scheduled",
                               );
                             }
                           }}
@@ -876,7 +879,7 @@ export default function Customers() {
                                 setIsCertGenerated(
                                   record.is_certificate_generated === 1
                                     ? true
-                                    : false
+                                    : false,
                                 );
                               }}
                             >
@@ -952,12 +955,12 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet"
+                                "Form Not Submitted Yet",
                               );
                             } else if (record.status === "Awaiting Finance") {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet"
+                                "Finance not Verified Yet",
                               );
                             } else {
                               if (!permissions.includes("Others Checkbox")) {
@@ -1073,7 +1076,7 @@ export default function Customers() {
                   </Button>
 
                   <p className="customer_classgoing_percentage">{`${parseFloat(
-                    classPercent
+                    classPercent,
                   )}%`}</p>
                 </div>
               ) : (
@@ -1090,14 +1093,14 @@ export default function Customers() {
                     navigator.clipboard.writeText(
                       `${
                         import.meta.env.VITE_EMAIL_URL
-                      }/customer-registration/${record.id}`
+                      }/customer-registration/${record.id}`,
                     );
                     CommonMessage("success", "Link Copied");
                   }}
                 />
               </Tooltip>
             )}
-            {record.status === "Completed" && (
+            {record.status === "Completed" ? (
               <Tooltip placement="top" title="View Certificate">
                 <GrCertificate
                   size={14}
@@ -1110,6 +1113,26 @@ export default function Customers() {
                   }}
                 />
               </Tooltip>
+            ) : (
+              ""
+            )}
+            {record.status == "Class Going" ? (
+              <Tooltip placement="top" title="Linkedin CheckIn">
+                <FaLinkedinIn
+                  size={14}
+                  color="#0a66c2"
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer", marginTop: "-2px" }}
+                  onClick={() => {
+                    setCustomerDetails(record);
+                    setDrawerContentStatus("Pre Certificate");
+                    setIsStatusUpdateDrawer(true);
+                    return;
+                  }}
+                />
+              </Tooltip>
+            ) : (
+              ""
             )}
           </div>
         );
@@ -1178,7 +1201,7 @@ export default function Customers() {
                   getCustomerHistoryData(record.id);
                   setTimeout(() => {
                     const container = document.getElementById(
-                      "customer_history_profilecontainer"
+                      "customer_history_profilecontainer",
                     );
                     container.scrollIntoView({
                       behavior: "smooth",
@@ -1195,7 +1218,7 @@ export default function Customers() {
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
   const [customersData, setCustomersData] = useState([]);
@@ -1289,7 +1312,7 @@ export default function Customers() {
         ? receivedValueFromDashboard === "Trainer Rejected"
           ? "Awaiting Trainer"
           : receivedValueFromDashboard
-        : ""
+        : "",
     );
 
     if (
@@ -1341,7 +1364,7 @@ export default function Customers() {
         { id: 1, name: "Online", checked: true },
       ],
       1,
-      10
+      10,
     );
   };
 
@@ -1350,7 +1373,7 @@ export default function Customers() {
     const convertAsJson = JSON.parse(getLoginUserDetails);
     try {
       const response = await getAllDownlineUsers(
-        user_id ? user_id : convertAsJson.user_id
+        user_id ? user_id : convertAsJson.user_id,
       );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
@@ -1373,7 +1396,7 @@ export default function Customers() {
     branch_options,
     pageNumber,
     limit,
-    is_generate_certificate
+    is_generate_certificate,
   ) => {
     setLoading(true);
 
@@ -1385,12 +1408,12 @@ export default function Customers() {
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       from_date: startDate,
       to_date: endDate,
       ...(customerStatus && {
@@ -1403,10 +1426,10 @@ export default function Customers() {
       ...(region_data.includes("Classroom") && region_data.includes("Online")
         ? {}
         : region_data.includes("Classroom")
-        ? { region: "Classroom" }
-        : region_data.includes("Online")
-        ? { region: "Online" }
-        : {}),
+          ? { region: "Classroom" }
+          : region_data.includes("Online")
+            ? { region: "Online" }
+            : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -1425,18 +1448,18 @@ export default function Customers() {
         totalPages: pagination.totalPages,
       });
       setCustomerStatusCount(
-        response?.data?.data?.customer_status_count || null
+        response?.data?.data?.customer_status_count || null,
       );
       if (is_generate_certificate === true) {
         if (customers.length >= 1) {
           const findCurrentCustomer = customers.find(
-            (f) => f.id === customerDetails.id
+            (f) => f.id === customerDetails.id,
           );
 
           if (findCurrentCustomer) {
             setCustomerDetails(findCurrentCustomer);
             setIsCertGenerated(
-              findCurrentCustomer.is_certificate_generated === 1 ? true : false
+              findCurrentCustomer.is_certificate_generated === 1 ? true : false,
             );
             setGenerateCertLoading(false);
           } else {
@@ -1586,10 +1609,10 @@ export default function Customers() {
                             ? text < 18
                               ? "#3c9111" // green
                               : text > 18 && text <= 22
-                              ? "#ffa502" // orange
-                              : text > 22
-                              ? "#d32f2f" // red
-                              : "inherit"
+                                ? "#ffa502" // orange
+                                : text > 22
+                                  ? "#d32f2f" // red
+                                  : "inherit"
                             : "inherit", // fallback color if null
                       }}
                     >
@@ -1609,7 +1632,7 @@ export default function Customers() {
                         <div style={{ display: "flex", gap: "6px" }}>
                           <p>Completed</p>
                           {permissions.includes(
-                            "Download Registration Form"
+                            "Download Registration Form",
                           ) && (
                             <Tooltip
                               placement="top"
@@ -1679,17 +1702,17 @@ export default function Customers() {
                                       onClick={() => {
                                         if (
                                           !permissions.includes(
-                                            "Update Payment"
+                                            "Update Payment",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setDrawerContentStatus(
-                                          "Update Payment"
+                                          "Update Payment",
                                         );
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
@@ -1711,24 +1734,24 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else {
                                         if (
                                           !permissions.includes(
-                                            "Finance Verify"
+                                            "Finance Verify",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Finance Verify"
+                                          "Finance Verify",
                                         );
                                         setCollapseDefaultKey(["1"]);
                                         setIsStatusUpdateDrawer(true);
@@ -1762,7 +1785,7 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Finance" ||
@@ -1770,33 +1793,33 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Finance not Verified Yet"
+                                          "Finance not Verified Yet",
                                         );
                                       } else if (
                                         record.status != "Awaiting Verify"
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Already Verified"
+                                          "Already Verified",
                                         );
                                       } else if (
                                         record.status === "Awaiting Verify"
                                       ) {
                                         if (
                                           !permissions.includes(
-                                            "Student Verify"
+                                            "Student Verify",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Student Verify"
+                                          "Student Verify",
                                         );
                                         setIsStatusUpdateDrawer(true);
                                       }
@@ -1845,7 +1868,7 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Finance" ||
@@ -1853,14 +1876,14 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Finance not Verified Yet"
+                                          "Finance not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Verify"
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Customer not Verified Yet"
+                                          "Customer not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
@@ -1882,25 +1905,25 @@ export default function Customers() {
                                       ) {
                                         if (
                                           !permissions.includes(
-                                            "Trainer Assign"
+                                            "Trainer Assign",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Assign Trainer"
+                                          "Assign Trainer",
                                         );
                                         setIsStatusUpdateDrawer(true);
                                       } else {
                                         CommonMessage(
                                           "warning",
-                                          "Trainer Already Assigned"
+                                          "Trainer Already Assigned",
                                         );
                                       }
                                     }}
@@ -1949,7 +1972,7 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Finance" ||
@@ -1957,14 +1980,14 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Finance not Verified Yet"
+                                          "Finance not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Verify"
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Customer not Verified Yet"
+                                          "Customer not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
@@ -1986,7 +2009,7 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Trainer not Assigned yet"
+                                          "Trainer not Assigned yet",
                                         );
                                       } else if (
                                         record.status ===
@@ -1994,25 +2017,25 @@ export default function Customers() {
                                       ) {
                                         if (
                                           !permissions.includes(
-                                            "Trainer Verify"
+                                            "Trainer Verify",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Trainer Verify"
+                                          "Trainer Verify",
                                         );
                                         setIsStatusUpdateDrawer(true);
                                       } else {
                                         CommonMessage(
                                           "warning",
-                                          "Trainer Already Verified"
+                                          "Trainer Already Verified",
                                         );
                                       }
                                     }}
@@ -2055,7 +2078,7 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Finance" ||
@@ -2063,14 +2086,14 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Finance not Verified Yet"
+                                          "Finance not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Verify"
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Customer not Verified Yet"
+                                          "Customer not Verified Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Trainer" ||
@@ -2092,7 +2115,7 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Trainer not Assigned yet"
+                                          "Trainer not Assigned yet",
                                         );
                                       } else if (
                                         record.status ===
@@ -2100,7 +2123,7 @@ export default function Customers() {
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Trainer not Verified yet"
+                                          "Trainer not Verified yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Class" ||
@@ -2113,25 +2136,25 @@ export default function Customers() {
                                       ) {
                                         if (
                                           !permissions.includes(
-                                            "Class Schedule"
+                                            "Class Schedule",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Class Schedule"
+                                          "Class Schedule",
                                         );
                                         setIsStatusUpdateDrawer(true);
                                       } else {
                                         CommonMessage(
                                           "warning",
-                                          "Class Already Scheduled"
+                                          "Class Already Scheduled",
                                         );
                                       }
                                     }}
@@ -2185,12 +2208,12 @@ export default function Customers() {
                                         onClick={() => {
                                           if (
                                             !permissions.includes(
-                                              "Update Class Going"
+                                              "Update Class Going",
                                             )
                                           ) {
                                             CommonMessage(
                                               "error",
-                                              "Access Denied"
+                                              "Access Denied",
                                             );
                                             return;
                                           }
@@ -2226,19 +2249,19 @@ export default function Customers() {
                                         onClick={() => {
                                           if (
                                             !permissions.includes(
-                                              "Passedout Process"
+                                              "Passedout Process",
                                             )
                                           ) {
                                             CommonMessage(
                                               "error",
-                                              "Access Denied"
+                                              "Access Denied",
                                             );
                                             return;
                                           }
                                           setCustomerId(record.id);
                                           setCustomerDetails(record);
                                           setDrawerContentStatus(
-                                            "Add G-Review"
+                                            "Add G-Review",
                                           );
                                           setIsStatusUpdateDrawer(true);
                                           if (record.google_review === null) {
@@ -2255,7 +2278,7 @@ export default function Customers() {
                                             record.is_certificate_generated ===
                                               1
                                               ? true
-                                              : false
+                                              : false,
                                           );
                                         }}
                                       >
@@ -2315,7 +2338,7 @@ export default function Customers() {
                                         setCustomerId(record.id);
                                         setCustomerDetails(record);
                                         setDrawerContentStatus(
-                                          "Re-Assign Trainer"
+                                          "Re-Assign Trainer",
                                         );
                                         setIsStatusUpdateDrawer(true);
                                       }}
@@ -2333,24 +2356,24 @@ export default function Customers() {
                                       if (record.status === "Form Pending") {
                                         CommonMessage(
                                           "warning",
-                                          "Form Not Submitted Yet"
+                                          "Form Not Submitted Yet",
                                         );
                                       } else if (
                                         record.status === "Awaiting Finance"
                                       ) {
                                         CommonMessage(
                                           "warning",
-                                          "Finance not Verified Yet"
+                                          "Finance not Verified Yet",
                                         );
                                       } else {
                                         if (
                                           !permissions.includes(
-                                            "Others Checkbox"
+                                            "Others Checkbox",
                                           )
                                         ) {
                                           CommonMessage(
                                             "error",
-                                            "Access Denied"
+                                            "Access Denied",
                                           );
                                           return;
                                         }
@@ -2466,7 +2489,7 @@ export default function Customers() {
                             </Button>
 
                             <p className="customer_classgoing_percentage">{`${parseFloat(
-                              classPercent
+                              classPercent,
                             )}%`}</p>
                           </div>
                         ) : (
@@ -2483,14 +2506,14 @@ export default function Customers() {
                               navigator.clipboard.writeText(
                                 `${
                                   import.meta.env.VITE_EMAIL_URL
-                                }/customer-registration/${record.id}`
+                                }/customer-registration/${record.id}`,
                               );
                               CommonMessage("success", "Link Copied");
                             }}
                           />
                         </Tooltip>
                       )}
-                      {record.status === "Completed" && (
+                      {record.status === "Completed" ? (
                         <Tooltip placement="top" title="View Certificate">
                           <GrCertificate
                             size={14}
@@ -2503,6 +2526,26 @@ export default function Customers() {
                             }}
                           />
                         </Tooltip>
+                      ) : (
+                        ""
+                      )}
+                      {record.status == "Class Going" ? (
+                        <Tooltip placement="top" title="Linkedin CheckIn">
+                          <FaLinkedinIn
+                            size={14}
+                            color="#0a66c2"
+                            className="customers_formlink_copybutton"
+                            style={{ cursor: "pointer", marginTop: "-2px" }}
+                            onClick={() => {
+                              setCustomerDetails(record);
+                              setDrawerContentStatus("Pre Certificate");
+                              setIsStatusUpdateDrawer(true);
+                              return;
+                            }}
+                          />
+                        </Tooltip>
+                      ) : (
+                        ""
                       )}
                     </div>
                   );
@@ -2568,7 +2611,7 @@ export default function Customers() {
                             getCustomerHistoryData(record.id);
                             setTimeout(() => {
                               const container = document.getElementById(
-                                "customer_history_profilecontainer"
+                                "customer_history_profilecontainer",
                               );
                               container.scrollIntoView({
                                 behavior: "smooth",
@@ -2592,7 +2635,7 @@ export default function Customers() {
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -2630,7 +2673,7 @@ export default function Customers() {
       allDownliners,
       branchOptions,
       page,
-      limit
+      limit,
     );
   };
 
@@ -2667,7 +2710,7 @@ export default function Customers() {
         allDownliners,
         branchOptions,
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -2694,7 +2737,7 @@ export default function Customers() {
         downliners_ids,
         branchOptions,
         1,
-        pagination.limit
+        pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -2744,7 +2787,7 @@ export default function Customers() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -2785,7 +2828,7 @@ export default function Customers() {
     if (status.includes("Awaiting")) return "gray";
     if (
       ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
-        status.includes(s)
+        status.includes(s),
       )
     ) {
       return "#d32f2f";
@@ -2830,12 +2873,12 @@ export default function Customers() {
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -2857,7 +2900,7 @@ export default function Customers() {
                             allDownliners,
                             branchOptions,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -2908,7 +2951,7 @@ export default function Customers() {
                                 allDownliners,
                                 branchOptions,
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -2969,7 +3012,7 @@ export default function Customers() {
                     allDownliners,
                     branchOptions,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -3005,28 +3048,28 @@ export default function Customers() {
                 onClick={() => {
                   const isWithIn30days = isWithin30Days(
                     selectedDates[0],
-                    selectedDates[1]
+                    selectedDates[1],
                   );
                   console.log("isWithIn30days", isWithIn30days);
                   if (isWithIn30days == false) {
                     CommonMessage(
                       "error",
-                      "Please choose a date range within 30 days."
+                      "Please choose a date range within 30 days.",
                     );
                     return;
                   }
                   const alterColumns = columns.filter(
-                    (f) => f.title != "Action"
+                    (f) => f.title != "Action",
                   );
 
                   DownloadTableAsCSV(
                     customersData,
                     alterColumns,
                     `${moment(selectedDates[0]).format(
-                      "DD-MM-YYYY"
+                      "DD-MM-YYYY",
                     )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
                       status == "" ? "All" : status
-                    } Customers.csv`
+                    } Customers.csv`,
                   );
                 }}
               >
@@ -3076,7 +3119,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3113,7 +3156,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3134,10 +3177,10 @@ export default function Customers() {
               status === "Awaiting Finance"
                 ? "customers_active_awaitfinance_container"
                 : status === "Payment Rejected"
-                ? "customers_active_paymentreject_container"
-                : isSwap
-                ? "customers_paymentreject_container"
-                : "customers_awaitfinance_container"
+                  ? "customers_active_paymentreject_container"
+                  : isSwap
+                    ? "customers_paymentreject_container"
+                    : "customers_awaitfinance_container"
             }
           >
             <div
@@ -3165,7 +3208,7 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   1,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             >
@@ -3218,7 +3261,7 @@ export default function Customers() {
                     allDownliners,
                     branchOptions,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                   return newSwap;
                 });
@@ -3247,7 +3290,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3285,7 +3328,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3323,7 +3366,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3362,7 +3405,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3401,7 +3444,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3439,7 +3482,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3478,7 +3521,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3516,7 +3559,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3555,7 +3598,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3594,7 +3637,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 1,
-                pagination.limit
+                pagination.limit,
               );
             }}
           >
@@ -3625,7 +3668,7 @@ export default function Customers() {
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -3695,7 +3738,7 @@ export default function Customers() {
               allDownliners,
               branchOptions,
               pagination.page,
-              pagination.limit
+              pagination.limit,
             );
           }} // pass function as prop
         />
@@ -4083,7 +4126,7 @@ export default function Customers() {
                 allDownliners,
                 branchOptions,
                 pagination.page,
-                pagination.limit
+                pagination.limit,
               );
             }}
           />
@@ -4106,7 +4149,7 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -4134,7 +4177,7 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -4160,7 +4203,7 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -4186,7 +4229,7 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
               }}
             />
@@ -4220,7 +4263,7 @@ export default function Customers() {
                   branchOptions,
                   pagination.page,
                   pagination.limit,
-                  cert_gen
+                  cert_gen,
                 );
               }}
             />
@@ -4244,8 +4287,19 @@ export default function Customers() {
                   allDownliners,
                   branchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
+              }}
+            />
+          </>
+        ) : drawerContentStatus === "Pre Certificate" ? (
+          <>
+            <PreCertificate
+              ref={preCertificateRef}
+              customerDetails={customerDetails}
+              setUpdateButtonLoading={setUpdateButtonLoading}
+              callgetCustomersApi={() => {
+                updateStatusDrawerReset();
               }}
             />
           </>
@@ -4328,12 +4382,12 @@ export default function Customers() {
                               ? () =>
                                   passedOutProcessRef.current?.handleGoogleReview()
                               : stepIndex == 1
-                              ? () =>
-                                  passedOutProcessRef.current?.handleCertificateDetails()
-                              : stepIndex == 2
-                              ? () =>
-                                  passedOutProcessRef.current?.handleCompleteProcess()
-                              : ""
+                                ? () =>
+                                    passedOutProcessRef.current?.handleCertificateDetails()
+                                : stepIndex == 2
+                                  ? () =>
+                                      passedOutProcessRef.current?.handleCompleteProcess()
+                                  : ""
                           }
                           className={
                             stepIndex == 2
@@ -4361,38 +4415,45 @@ export default function Customers() {
                           ? () =>
                               studentVerifyRef.current?.handleStudentVerify()
                           : drawerContentStatus === "Assign Trainer"
-                          ? () =>
-                              assignAndVerifyTrainerRef.current?.handleAssignTrainer()
-                          : drawerContentStatus === "Re-Assign Trainer"
-                          ? () =>
-                              reAssignTrainerRef.current?.handleReAssignTrainer()
-                          : drawerContentStatus === "Trainer Verify"
-                          ? () =>
-                              assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
-                          : drawerContentStatus === "Class Schedule"
-                          ? () =>
-                              classScheduleRef.current?.handleClassSchedule()
-                          : drawerContentStatus === "Class Going"
-                          ? () =>
-                              classScheduleRef.current?.handleUpdateClassGoing()
-                          : drawerContentStatus === "Add G-Review"
-                          ? () =>
-                              passedOutProcessRef.current?.handleGoogleReview()
-                          : drawerContentStatus === "Others"
-                          ? () => othersHandlingRef.current?.handleSubmit()
-                          : handleStatusMismatch
+                            ? () =>
+                                assignAndVerifyTrainerRef.current?.handleAssignTrainer()
+                            : drawerContentStatus === "Re-Assign Trainer"
+                              ? () =>
+                                  reAssignTrainerRef.current?.handleReAssignTrainer()
+                              : drawerContentStatus === "Trainer Verify"
+                                ? () =>
+                                    assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
+                                : drawerContentStatus === "Class Schedule"
+                                  ? () =>
+                                      classScheduleRef.current?.handleClassSchedule()
+                                  : drawerContentStatus === "Class Going"
+                                    ? () =>
+                                        classScheduleRef.current?.handleUpdateClassGoing()
+                                    : drawerContentStatus === "Add G-Review"
+                                      ? () =>
+                                          passedOutProcessRef.current?.handleGoogleReview()
+                                      : drawerContentStatus ===
+                                          "Pre Certificate"
+                                        ? () =>
+                                            preCertificateRef.current?.handleGeneratePreCert()
+                                        : drawerContentStatus === "Others"
+                                          ? () =>
+                                              othersHandlingRef.current?.handleSubmit()
+                                          : handleStatusMismatch
                       }
                     >
                       {drawerContentStatus === "Assign Trainer"
                         ? "Assign"
                         : drawerContentStatus === "Re-Assign Trainer"
-                        ? "Re-Assign"
-                        : drawerContentStatus === "Class Going" ||
-                          drawerContentStatus === "Class Schedule" ||
-                          drawerContentStatus === "Add G-Review" ||
-                          drawerContentStatus === "Others"
-                        ? "Update"
-                        : "Verify"}
+                          ? "Re-Assign"
+                          : drawerContentStatus === "Class Going" ||
+                              drawerContentStatus === "Class Schedule" ||
+                              drawerContentStatus === "Add G-Review" ||
+                              drawerContentStatus === "Others"
+                            ? "Update"
+                            : drawerContentStatus == "Pre Certificate"
+                              ? "Generate"
+                              : "Verify"}
                     </button>
                   )}
                 </>
@@ -4463,10 +4524,10 @@ export default function Customers() {
                               return { ...u, checked: e.target.checked };
                             }
                             return u;
-                          }
+                          },
                         );
                         const bothFalse = updateBranchData.every(
-                          (item) => item.checked === false
+                          (item) => item.checked === false,
                         );
 
                         if (bothFalse) {
@@ -4508,7 +4569,7 @@ export default function Customers() {
                   allDownliners,
                   duplicateBranchOptions,
                   pagination.page,
-                  pagination.limit
+                  pagination.limit,
                 );
                 try {
                   await updateTableColumns(payload);
@@ -4557,8 +4618,8 @@ export default function Customers() {
             certificateName
               ? certificateName
               : customerDetails && customerDetails.name
-              ? customerDetails.name
-              : "-"
+                ? customerDetails.name
+                : "-"
           }
         />
       </Modal>
@@ -4583,7 +4644,7 @@ export default function Customers() {
                 <span
                   style={{
                     color: getHistoryStatusColor(
-                      customerHistory?.[0]?.status || "N/A"
+                      customerHistory?.[0]?.status || "N/A",
                     ),
                   }}
                 >
