@@ -57,6 +57,7 @@ const AddTrainerPaymentRequest = forwardRef(
     {
       trainersData,
       editRequestItem,
+      allBranchesData,
       setButtonLoading,
       callgetTrainerPaymentsApi,
     },
@@ -97,8 +98,10 @@ const AddTrainerPaymentRequest = forwardRef(
     //form fields
     const [formFields, setFormFields] = useState([
       {
-        streams: null,
-        streams_error: "",
+        place_of_sale: "",
+        place_of_sale_error: "",
+        place_of_supply: "",
+        place_of_supply_error: "",
         attendance_status: null,
         attendance_status_error: "",
         attendanceType: "Link",
@@ -243,8 +246,10 @@ const AddTrainerPaymentRequest = forwardRef(
 
     const addFormFields = () => {
       const obj = {
-        streams: null,
-        streamsError: "",
+        place_of_sale: "",
+        place_of_sale_error: "",
+        place_of_supply: "",
+        place_of_supply_error: "",
         attendance_status: null,
         attendance_status_error: "",
         attendanceType: "Link",
@@ -273,8 +278,11 @@ const AddTrainerPaymentRequest = forwardRef(
       // update value
       updatedDetails[index][field] = value;
 
-      if (field === "streams") {
-        updatedDetails[index].streams_error = selectValidator(value);
+      if (field === "place_of_sale") {
+        updatedDetails[index].place_of_sale_error = selectValidator(value);
+      }
+      if (field === "place_of_supply") {
+        updatedDetails[index].place_of_supply_error = selectValidator(value);
       }
       if (field === "attendance_status") {
         updatedDetails[index].attendance_status_error = selectValidator(value);
@@ -394,7 +402,8 @@ const AddTrainerPaymentRequest = forwardRef(
         const validateFormFields = formFields.map((item) => {
           return {
             ...item,
-            streams_error: selectValidator(item.streams),
+            place_of_sale_error: selectValidator(item.place_of_sale),
+            place_of_supply_error: selectValidator(item.place_of_supply),
             attendance_status_error: selectValidator(item.attendance_status),
             attendance_sheetlink_error:
               item.attendanceType == "Link"
@@ -410,7 +419,8 @@ const AddTrainerPaymentRequest = forwardRef(
 
         checkFormFieldsErrors = validateFormFields.filter(
           (f) =>
-            f.streams_error != "" ||
+            f.place_of_sale_error != "" ||
+            f.place_of_supply_error != "" ||
             f.attendance_status_error != "" ||
             f.attendance_sheetlink_error != "" ||
             f.attendance_screenshot_error != "" ||
@@ -1201,14 +1211,27 @@ const AddTrainerPaymentRequest = forwardRef(
               >
                 <Col span={8}>
                   <CommonSelectField
-                    label="Streams"
-                    options={streamOptions}
+                    label="Place of Sale"
+                    options={allBranchesData}
                     required={true}
                     onChange={(e) =>
-                      handleFormFields("streams", index, e.target.value)
+                      handleFormFields("place_of_sale", index, e.target.value)
                     }
-                    value={item.streams}
-                    error={item.streams_error}
+                    value={item.place_of_sale}
+                    error={item.place_of_sale_error}
+                  />
+                </Col>
+
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Place of Supply"
+                    options={allBranchesData}
+                    required={true}
+                    onChange={(e) =>
+                      handleFormFields("place_of_supply", index, e.target.value)
+                    }
+                    value={item.place_of_supply}
+                    error={item.place_of_supply_error}
                   />
                 </Col>
 
@@ -1240,9 +1263,15 @@ const AddTrainerPaymentRequest = forwardRef(
                     </div>
                   </Col>
                 )}
+              </Row>
 
-                <Col span={8}>
-                  {isDisContinued ? (
+              <Row
+                gutter={16}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+                style={{ marginTop: "30px" }}
+              >
+                {isDisContinued ? (
+                  <Col span={8}>
                     <CommonInputField
                       label="Request Amount"
                       required={true}
@@ -1258,50 +1287,26 @@ const AddTrainerPaymentRequest = forwardRef(
                       value={requestAmount}
                       error={requestAmountError}
                     />
+                  </Col>
+                ) : (
+                  ""
+                )}
+
+                <Col span={8}>
+                  {editRequestItem ? (
+                    ""
                   ) : (
-                    <>
-                      {editRequestItem ? (
-                        ""
-                      ) : (
-                        <Button
-                          className="trainerpaymentrequest_addrequestdrawer_deletebutton"
-                          onClick={() => {
-                            removeFormFields(index);
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </>
+                    <Button
+                      className="trainerpaymentrequest_addrequestdrawer_deletebutton"
+                      onClick={() => {
+                        removeFormFields(index);
+                      }}
+                    >
+                      Remove
+                    </Button>
                   )}
                 </Col>
               </Row>
-
-              {isDisContinued ? (
-                <Row
-                  gutter={16}
-                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
-                  style={{ marginTop: "30px" }}
-                >
-                  <Col span={8}>
-                    {editRequestItem ? (
-                      ""
-                    ) : (
-                      <Button
-                        className="trainerpaymentrequest_addrequestdrawer_deletebutton"
-                        onClick={() => {
-                          removeFormFields(index);
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </Col>
-                </Row>
-              ) : (
-                ""
-              )}
-
               <Divider className="customer_statusupdate_divider" />
             </>
           );

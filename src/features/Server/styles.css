@@ -45,3 +45,28 @@
     margin-bottom: 130px;
   }
 }
+.server_movetosupport_button {
+  background-color: #1e90ff !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
+
+.server_movetoissued_button {
+  background-color: #3c9111 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}

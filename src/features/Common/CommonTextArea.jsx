@@ -14,6 +14,7 @@ const CommonTextArea = ({
   required,
   className,
   style,
+  disabled = false,
 }) => {
   const handleChange = (e) => {
     const newValue = capitalizeWords(e.target.value);
@@ -41,6 +42,7 @@ const CommonTextArea = ({
         error={error}
         status={error ? "error" : ""}
         maxLength={maxLength}
+        disabled={disabled}
         className={`${
           error === "" || error === null || error === undefined
             ? "commontextarea"

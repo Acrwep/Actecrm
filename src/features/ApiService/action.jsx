@@ -376,6 +376,15 @@ export const updateTrainerPaymentTransaction = async (payload) => {
   }
 };
 
+export const completeTrainerPaymentTransaction = async (payload) => {
+  try {
+    const response = await api.put("/api/completeRequest", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteTrainerPaymentRequest = async (trainer_payment_id) => {
   try {
     const response = await api.delete(
@@ -471,6 +480,15 @@ export const getBranches = async (payload) => {
   }
 };
 
+export const getAllBranches = async (payload) => {
+  try {
+    const response = await api.get("/api/getAllBranches", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBatchTrack = async (payload) => {
   try {
     const response = await api.get("/api/getBatchTrack", { params: payload });
@@ -503,6 +521,15 @@ export const createLead = async (payload) => {
 export const updateLead = async (payload) => {
   try {
     const response = await api.put("/api/updateLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const leadReEntry = async (payload) => {
+  try {
+    const response = await api.post("/api/leadReEntry", payload);
     return response;
   } catch (error) {
     throw error;

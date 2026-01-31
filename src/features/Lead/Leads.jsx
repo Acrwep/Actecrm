@@ -12,6 +12,7 @@ import {
   Modal,
   Switch,
   Spin,
+  Badge,
 } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -262,7 +263,25 @@ export default function Leads({
       dataIndex: "created_date",
       width: 120,
       render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return (
+          <>
+            {record.re_assigned_date ? (
+              <Badge
+                size="small"
+                count={moment(record.re_assigned_date).format("DD/MM/YYYY")}
+                offset={[0, 0]}
+                color="#1e90ff"
+                style={{ fontSize: "10px" }}
+              >
+                <p style={{ fontSize: "12px", marginTop: "9px" }}>
+                  {moment(text).format("DD/MM/YYYY")}
+                </p>
+              </Badge>
+            ) : (
+              <p>{moment(text).format("DD/MM/YYYY")}</p>
+            )}
+          </>
+        );
       },
     },
     {
@@ -309,7 +328,7 @@ export default function Leads({
       render: (text, record) => {
         return (
           <div>
-            <p> {getStateName(record.country, text)}</p>
+            <EllipsisTooltip text={getStateName(record.country, text)} />
           </div>
         );
       },
@@ -682,7 +701,29 @@ export default function Leads({
             case "created_date":
               return {
                 ...col,
-                render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+                render: (text, record) => {
+                  return (
+                    <>
+                      {record.re_assigned_date ? (
+                        <Badge
+                          size="small"
+                          count={moment(record.re_assigned_date).format(
+                            "DD/MM/YYYY",
+                          )}
+                          offset={[0, 0]}
+                          color="#1e90ff"
+                          style={{ fontSize: "10px" }}
+                        >
+                          <p style={{ fontSize: "12px", marginTop: "9px" }}>
+                            {moment(text).format("DD/MM/YYYY")}
+                          </p>
+                        </Badge>
+                      ) : (
+                        <p>{moment(text).format("DD/MM/YYYY")}</p>
+                      )}
+                    </>
+                  );
+                },
               };
             case "country":
               return {
@@ -706,7 +747,9 @@ export default function Leads({
                 render: (text, record) => {
                   return (
                     <div>
-                      <p> {getStateName(record.country, text)}</p>
+                      <EllipsisTooltip
+                        text={getStateName(record.country, text)}
+                      />
                     </div>
                   );
                 },
@@ -2128,7 +2171,11 @@ export default function Leads({
                   addLeaduseRef.current.handleSubmit("Save And Add New")
                 }
               >
-                {isReEntry ? "Add" : leadId ? "Update" : "Save And Add New"}
+                {isReEntry
+                  ? "Re-Assign"
+                  : leadId
+                    ? "Update"
+                    : "Save And Add New"}
               </button>
             )}
           </div>

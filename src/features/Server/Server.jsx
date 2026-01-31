@@ -68,6 +68,7 @@ import ServerApproval from "./ServerApproval";
 import ServerIssue from "./ServerIssue";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonDnd from "../Common/CommonDnd";
+import CommonTextArea from "../Common/CommonTextArea";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -102,6 +103,11 @@ export default function Server() {
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   //raise usestates
   const [isOpenRaiseModal, setIsOpenRaiseModal] = useState(false);
+  //support usestates
+  const [isOpenSupportModal, setIsOpenSupportModal] = useState(false);
+  const [supportComment, setSupportComment] = useState("");
+  const [supportCommentError, setSupportCommentError] = useState("");
+  const [isOpenMoveToIssueModal, setIsOpenMoveToIssueModal] = useState(false);
   //hold usestates
   const [isOpenHoldModal, setIsOpenHoldModal] = useState(false);
   //drawer usestates
@@ -469,6 +475,12 @@ export default function Server() {
               <div>
                 <Button className="customers_status_completed_button">
                   Server Issued
+                </Button>
+              </div>
+            ) : text == "Support" ? (
+              <div>
+                <Button className="customers_status_awaittrainerverify_button">
+                  Support
                 </Button>
               </div>
             ) : text == "Rejected" ||
@@ -972,7 +984,8 @@ export default function Server() {
 
                             <Col span={12} style={{ marginBottom: "8px" }}>
                               {record.status == "Approved" ||
-                              record.status == "Issued" ? (
+                              record.status == "Issued" ||
+                              record.status == "Support" ? (
                                 <div className="customers_classcompleted_container">
                                   <BsPatchCheckFill color="#3c9111" />
                                   <p className="customers_classgoing_completedtext">
@@ -1052,6 +1065,38 @@ export default function Server() {
                                 </div>
                               )}
                             </Col>
+
+                            {record.status == "Issued" ? (
+                              <Col span={12} style={{ marginBottom: "8px" }}>
+                                <button
+                                  className="server_movetosupport_button"
+                                  onClick={() => {
+                                    setIsOpenSupportModal(true);
+                                    setServerDetails(record);
+                                  }}
+                                >
+                                  Move to Support
+                                </button>
+                              </Col>
+                            ) : (
+                              ""
+                            )}
+
+                            {record.status == "Support" ? (
+                              <Col span={12} style={{ marginBottom: "8px" }}>
+                                <button
+                                  className="server_movetoissued_button"
+                                  onClick={() => {
+                                    setIsOpenMoveToIssueModal(true);
+                                    setServerDetails(record);
+                                  }}
+                                >
+                                  Move to Issued
+                                </button>
+                              </Col>
+                            ) : (
+                              ""
+                            )}
                           </Row>
                         </>
                       }
@@ -1090,6 +1135,12 @@ export default function Server() {
                         <div>
                           <Button className="customers_status_completed_button">
                             Server Issued
+                          </Button>
+                        </div>
+                      ) : text == "Support" ? (
+                        <div>
+                          <Button className="customers_status_awaittrainerverify_button">
+                            Support
                           </Button>
                         </div>
                       ) : text == "Rejected" ||
@@ -1267,6 +1318,17 @@ export default function Server() {
   };
 
   const handleServerStatus = async (updateStatus) => {
+    let supportCommentValidate = "";
+    if (updateStatus == "Support") {
+      supportCommentValidate = addressValidator(supportComment);
+    } else {
+      supportCommentValidate = "";
+    }
+
+    setSupportCommentError(supportCommentValidate);
+
+    if (supportCommentValidate) return;
+
     setVerifyButtonLoading(true);
     const today = new Date();
     const payload = {
@@ -1306,12 +1368,17 @@ export default function Server() {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
 
+    const supportDetails = {
+      comments: supportComment,
+    };
+
     const payload = {
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status: updateStatus,
       status_date: formatToBackendIST(today),
       updated_by:
         converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+      ...(updateStatus == "Support" ? { details: supportDetails } : {}),
     };
     try {
       await insertServerTrack(payload);
@@ -1411,6 +1478,9 @@ export default function Server() {
     setIsOpenHoldModal(false);
     setIsOpenRaiseModal(false);
     setIsOpenViewDrawer(false);
+    setIsOpenSupportModal(false);
+    setSupportComment("");
+    setSupportCommentError("");
     setServerDetails(null);
     setButtonLoading(false);
     setRejectButtonLoading(false);
@@ -1939,6 +2009,36 @@ export default function Server() {
               Server Issued{" "}
               {`( ${
                 statusCount && statusCount.issued ? statusCount.issued : "-"
+              } )`}
+            </p>
+          </div>
+          <div
+            className={
+              status === "Support"
+                ? "customers_active_verifytrainers_container"
+                : "customers_verifytrainers_container"
+            }
+            onClick={() => {
+              if (status === "Support") {
+                return;
+              }
+              setStatus("Support");
+              // getServerRequestData(
+              //   selectedDates[0],
+              //   selectedDates[1],
+              //   dateFilterType,
+              //   allDownliners,
+              //   "Issued",
+              //   searchValue,
+              //   1,
+              //   pagination.limit,
+              // );
+            }}
+          >
+            <p>
+              Support{" "}
+              {`( ${
+                statusCount && statusCount.support ? statusCount.support : "-"
               } )`}
             </p>
           </div>
@@ -2932,6 +3032,110 @@ export default function Server() {
         </div>
       </Modal>
 
+      {/* server support confirm modal */}
+      <Modal
+        open={isOpenSupportModal}
+        onCancel={() => {
+          setIsOpenSupportModal(false);
+          setSupportComment("");
+          setSupportCommentError("");
+          setServerDetails(null);
+        }}
+        footer={false}
+        width="35%"
+        zIndex={1100}
+      >
+        <CommonTextArea
+          label="Comments"
+          required={true}
+          value={supportComment}
+          onChange={(e) => {
+            setSupportComment(e.target.value);
+            setSupportCommentError(addressValidator(e.target.value));
+          }}
+          error={supportCommentError}
+        />
+        <div
+          className="customer_classcompletemodal_button_container"
+          style={{ justifyContent: "flex-end" }}
+        >
+          {verifyButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleServerStatus("Support");
+              }}
+            >
+              Submit
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      {/* moveto issue confirm modal */}
+      <Modal
+        open={isOpenMoveToIssueModal}
+        onCancel={() => {
+          setIsOpenMoveToIssueModal(false);
+          setServerDetails(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You want to move the server for{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {serverDetails?.name || ""}
+          </span>{" "}
+          from Support Status to{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            Server Issued
+          </span>{" "}
+          Status?
+        </p>
+
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenMoveToIssueModal(false);
+              setServerDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {verifyButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleServerStatus("Issued");
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
       {/* hold modal */}
       <Modal
         open={isOpenHoldModal}
@@ -3061,11 +3265,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.name
+                      ? customerDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3077,11 +3284,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.email
+                      ? customerDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3145,11 +3355,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.current_location
+                      ? customerDetails.current_location
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 
@@ -3161,8 +3374,8 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
+                <EllipsisTooltip
+                  text={`${
                     customerDetails && customerDetails.lead_assigned_to_id
                       ? customerDetails.lead_assigned_to_id
                       : "-"
@@ -3171,7 +3384,8 @@ export default function Server() {
                       ? customerDetails.lead_assigned_to_name
                       : "-"
                   })`}
-                </p>
+                  smallText={true}
+                />
               </Col>
             </Row>
           </Col>
@@ -3184,11 +3398,14 @@ export default function Server() {
                 </div>
               </Col>
               <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                <EllipsisTooltip
+                  text={
+                    customerDetails && customerDetails.course_name
+                      ? customerDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
               </Col>
             </Row>
 

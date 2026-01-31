@@ -31,6 +31,7 @@ import {
   getBranches,
   getTechnologies,
   leadEmailAndMobileValidator,
+  leadReEntry,
   moveLiveLeadToJunk,
   updateLead,
   updateLiveLeadStatus,
@@ -56,7 +57,7 @@ const AddLead = forwardRef(
       setSaveOnlyLoading,
       callgetLeadsApi,
     },
-    ref
+    ref,
   ) => {
     const dispatch = useDispatch();
     //course and area options
@@ -193,9 +194,10 @@ const AddLead = forwardRef(
 
     const fetchLeadDetails = async () => {
       if (updateLeadItem) {
+        console.log("updateLeadItem", updateLeadItem);
         setTimeout(() => {
           const drawerBody = document.querySelector(
-            "#leadform_addlead_drawer .ant-drawer-body"
+            "#leadform_addlead_drawer .ant-drawer-body",
           );
           if (drawerBody) {
             drawerBody.scrollTo({
@@ -218,10 +220,10 @@ const AddLead = forwardRef(
         setDuplicateEmail(updateLeadItem.email);
         //mobile fetch
         setMobileCountryCode(
-          updateLeadItem.phone_code ? updateLeadItem.phone_code : ""
+          updateLeadItem.phone_code ? updateLeadItem.phone_code : "",
         );
         const selected_mobile_country = getCountryFromDialCode(
-          `+${updateLeadItem.phone_code ? updateLeadItem.phone_code : ""}`
+          `+${updateLeadItem.phone_code ? updateLeadItem.phone_code : ""}`,
         );
         setMobileCountry(selected_mobile_country);
         setMobile(updateLeadItem.phone);
@@ -230,14 +232,14 @@ const AddLead = forwardRef(
         setWhatsAppCountryCode(
           updateLeadItem.whatsapp_phone_code
             ? updateLeadItem.whatsapp_phone_code
-            : ""
+            : "",
         );
         const selected_whatsapp_country = getCountryFromDialCode(
           `+${
             updateLeadItem.whatsapp_phone_code
               ? updateLeadItem.whatsapp_phone_code
               : ""
-          }`
+          }`,
         );
         setWhatsAppCountry(selected_whatsapp_country);
         setWhatsApp(updateLeadItem.whatsapp);
@@ -260,7 +262,7 @@ const AddLead = forwardRef(
         // setAreaId(parseInt(updateLeadItem.area_id));
         console.log("areaOptions", areasList);
         const findArea = areasList.find(
-          (f) => f.name == updateLeadItem.area_id
+          (f) => f.name == updateLeadItem.area_id,
         );
         console.log("findArea", findArea);
 
@@ -278,7 +280,8 @@ const AddLead = forwardRef(
         setLeadStatus(updateLeadItem.lead_status_id);
         if (isReEntry) {
           setAssignLeadId(updateLeadItem.lead_assigned_to_id);
-          setNxtFollowupDate(null);
+          const today = new Date();
+          setNxtFollowupDate(today);
           setNxtFollowupDateError("");
         } else {
           setAssignLeadId("");
@@ -293,7 +296,7 @@ const AddLead = forwardRef(
       } else if (liveLeadItem) {
         setTimeout(() => {
           const drawerBody = document.querySelector(
-            "#leadform_addlead_drawer .ant-drawer-body"
+            "#leadform_addlead_drawer .ant-drawer-body",
           );
           if (drawerBody) {
             drawerBody.scrollTo({
@@ -616,7 +619,7 @@ const AddLead = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -648,7 +651,7 @@ const AddLead = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -801,6 +804,7 @@ const AddLead = forwardRef(
 
       console.log("add leadd payload", payload);
       if (updateLeadItem && isReEntry == false) {
+        //---------------lead update--------------
         try {
           await updateLead(payload);
           CommonMessage("success", "Lead updated");
@@ -815,10 +819,45 @@ const AddLead = forwardRef(
           CommonMessage(
             "error",
             error?.response?.data?.details ||
-              "Something went wrong. Try again later"
+              "Something went wrong. Try again later",
+          );
+        }
+      } else if (isReEntry) {
+        //---------------lead re-assign--------------
+        const today = new Date();
+        const reEntryPayload = {
+          lead_id: updateLeadItem?.id,
+          assign_date: formatToBackendIST(today),
+          next_follow_up_date: formatToBackendIST(today),
+          assigned_to: assignLeadId,
+          updated_by: convertAsJson?.user_id,
+        };
+
+        try {
+          await leadReEntry(reEntryPayload);
+          CommonMessage("success", "Lead Assigned");
+          setTimeout(() => {
+            formReset();
+            const container = document.getElementById(
+              "leadform_basicinfo_heading",
+            );
+            container.scrollIntoView({
+              behavior: "smooth",
+            });
+            callgetLeadsApi();
+          }, 300);
+        } catch (error) {
+          console.log("lead create error", error);
+          setButtonLoading(false);
+          setSaveOnlyLoading(false);
+          CommonMessage(
+            "error",
+            error?.response?.data?.details ||
+              "Something went wrong. Try again later",
           );
         }
       } else {
+        //---------------lead cerate--------------
         if (leadStatus == 4 || leadStatus == 5) {
           handleMoveLiveLeadToJunk(saveType);
           return;
@@ -833,7 +872,7 @@ const AddLead = forwardRef(
               formReset(true);
             }
             const container = document.getElementById(
-              "leadform_basicinfo_heading"
+              "leadform_basicinfo_heading",
             );
             container.scrollIntoView({
               behavior: "smooth",
@@ -855,7 +894,7 @@ const AddLead = forwardRef(
           CommonMessage(
             "error",
             error?.response?.data?.details ||
-              "Something went wrong. Try again later"
+              "Something went wrong. Try again later",
           );
         }
       }
@@ -915,7 +954,7 @@ const AddLead = forwardRef(
             formReset(true);
           }
           const container = document.getElementById(
-            "leadform_basicinfo_heading"
+            "leadform_basicinfo_heading",
           );
           container.scrollIntoView({
             behavior: "smooth",
@@ -926,7 +965,7 @@ const AddLead = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -1156,6 +1195,7 @@ const AddLead = forwardRef(
               }}
               error={nameError}
               required={true}
+              disabled={isReEntry}
             />
           </Col>
           <Col span={8}>
@@ -1175,18 +1215,20 @@ const AddLead = forwardRef(
                 error={mobileError}
                 errorFontSize={mobileError.length >= 10 ? "10px" : "13px"}
                 disabled={
-                  permissions.includes("Edit Lead Mobile Number")
-                    ? false
-                    : updateLeadItem
+                  isReEntry
                     ? true
-                    : false
+                    : permissions.includes("Edit Lead Mobile Number")
+                      ? false
+                      : updateLeadItem
+                        ? true
+                        : false
                 }
                 disableCountrySelect={
                   permissions.includes("Edit Lead Mobile Number")
                     ? false
                     : updateLeadItem
-                    ? true
-                    : false
+                      ? true
+                      : false
                 }
               />
             </div>
@@ -1205,6 +1247,7 @@ const AddLead = forwardRef(
                 setWhatsAppCountry(iso2);
               }}
               errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
+              disabled={isReEntry}
             />
           </Col>
         </Row>
@@ -1217,6 +1260,7 @@ const AddLead = forwardRef(
               value={email}
               onChange={handleEmail}
               error={emailError}
+              disabled={isReEntry}
             />
           </Col>
           <Col span={8}>
@@ -1232,6 +1276,7 @@ const AddLead = forwardRef(
               }}
               value={leadType}
               error={leadTypeError}
+              disabled={isReEntry}
             />
           </Col>
           <Col span={8}>
@@ -1242,6 +1287,7 @@ const AddLead = forwardRef(
               options={countryOptions}
               error={countryError}
               required={true}
+              disabled={isReEntry}
             />
           </Col>
         </Row>
@@ -1255,6 +1301,7 @@ const AddLead = forwardRef(
               options={stateOptions}
               error={stateError}
               required={true}
+              disabled={isReEntry}
             />
           </Col>
           <Col span={8}>
@@ -1275,6 +1322,7 @@ const AddLead = forwardRef(
                   borderRightNone={true}
                   onFocus={() => setIsAreaFocused(true)}
                   onBlur={() => setIsAreaFocused(false)}
+                  disabled={isReEntry}
                 />
               </div>
 
@@ -1283,8 +1331,8 @@ const AddLead = forwardRef(
                   areaError
                     ? "leads_errorcourse_addcontainer"
                     : isAreaFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
+                      ? "leads_focusedcourse_addcontainer"
+                      : "leads_course_addcontainer"
                 }
               >
                 <Tooltip
@@ -1324,6 +1372,7 @@ const AddLead = forwardRef(
                   errorFontSize="9px"
                   onFocus={() => setIsPrimaryCourseFocused(true)}
                   onBlur={() => setIsPrimaryCourseFocused(false)}
+                  disabled={isReEntry}
                 />
               </div>
 
@@ -1332,8 +1381,8 @@ const AddLead = forwardRef(
                   primaryCourseError
                     ? "leads_errorcourse_addcontainer"
                     : isPrimaryCourseFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
+                      ? "leads_focusedcourse_addcontainer"
+                      : "leads_course_addcontainer"
                 }
               >
                 <Tooltip
@@ -1362,6 +1411,7 @@ const AddLead = forwardRef(
                 }
               }}
               error={primaryFeesError}
+              disabled={isReEntry}
             />
           </Col>
           <Col span={8}>
@@ -1421,6 +1471,7 @@ const AddLead = forwardRef(
               }}
               value={regionId}
               error={regionError}
+              disabled={isReEntry}
             />
           </Col>
 
@@ -1440,6 +1491,7 @@ const AddLead = forwardRef(
                 }}
                 value={branch}
                 error={branchError}
+                disabled={isReEntry}
               />
             </Col>
           )}
@@ -1457,6 +1509,7 @@ const AddLead = forwardRef(
               }}
               value={batchTrack}
               error={batchTrackError}
+              disabled={isReEntry}
             />
           </Col>
         </Row>
@@ -1490,7 +1543,7 @@ const AddLead = forwardRef(
               }}
               value={leadStatus}
               error={leadStatusError}
-              disabled={updateLeadItem && isReEntry == false ? true : false}
+              disabled={updateLeadItem ? true : false}
             />
           </Col>
 
@@ -1512,7 +1565,7 @@ const AddLead = forwardRef(
                   value={nxtFollowupDate}
                   disablePreviousDates={true}
                   error={nxtFollowupDateError}
-                  disabled={updateLeadItem && isReEntry == false ? true : false}
+                  disabled={updateLeadItem ? true : false}
                 />
               </Col>
               <Col span={8}>
@@ -1526,6 +1579,7 @@ const AddLead = forwardRef(
                   value={expectDateJoin}
                   error=""
                   disablePreviousDates={true}
+                  disabled={isReEntry}
                 />
               </Col>
             </>
@@ -1552,6 +1606,7 @@ const AddLead = forwardRef(
                   }
                 }}
                 error={commentsError}
+                disabled={isReEntry}
               />
             </div>
           </Col>
@@ -1724,7 +1779,7 @@ const AddLead = forwardRef(
         </Modal>
       </div>
     );
-  }
+  },
 );
 
 export default AddLead;

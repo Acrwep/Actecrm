@@ -41,8 +41,10 @@ const CustomerEmailTemplate = forwardRef(
       setIsOpenEmailTemplateDrawer,
       customerDetails,
       setUpdateButtonLoading,
+      isTrainerPaymentPage = false,
+      trainerEmail = "",
     },
-    ref
+    ref,
   ) => {
     const permissions = useSelector((state) => state.userpermissions);
 
@@ -200,7 +202,7 @@ const CustomerEmailTemplate = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -250,7 +252,7 @@ const CustomerEmailTemplate = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -278,7 +280,7 @@ const CustomerEmailTemplate = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -295,11 +297,12 @@ const CustomerEmailTemplate = forwardRef(
         CommonMessage("error", "Email Content is required");
         return;
       }
-
-      setUpdateButtonLoading(true);
+      if (isTrainerPaymentPage == false) {
+        setUpdateButtonLoading(true);
+      }
 
       const payload = {
-        email: customerDetails.email,
+        email: isTrainerPaymentPage ? trainerEmail : customerDetails.email,
         subject: subject,
         content: emailContent,
       };
@@ -308,16 +311,20 @@ const CustomerEmailTemplate = forwardRef(
         await sendEmailToCustomer(payload);
         CommonMessage("success", "Email has been sent successfully");
         setTimeout(() => {
-          setUpdateButtonLoading(false);
+          if (isTrainerPaymentPage == false) {
+            setUpdateButtonLoading(false);
+          }
           setDrawerContentStatus("");
           setIsOpenEmailTemplateDrawer(false);
         }, 300);
       } catch (error) {
-        setUpdateButtonLoading(false);
+        if (isTrainerPaymentPage == false) {
+          setUpdateButtonLoading(false);
+        }
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -333,303 +340,326 @@ const CustomerEmailTemplate = forwardRef(
     return (
       <div>
         <div>
-          <div className="customer_statusupdate_drawer_profileContainer">
-            {customerDetails && customerDetails.profile_image ? (
-              <img
-                src={customerDetails.profile_image}
-                className="cutomer_profileimage"
-              />
-            ) : (
-              <FaRegUser size={50} color="#333" />
-            )}
+          {isTrainerPaymentPage ? (
+            ""
+          ) : (
+            <>
+              <div className="customer_statusupdate_drawer_profileContainer">
+                {customerDetails && customerDetails.profile_image ? (
+                  <img
+                    src={customerDetails.profile_image}
+                    className="cutomer_profileimage"
+                  />
+                ) : (
+                  <FaRegUser size={50} color="#333" />
+                )}
 
-            <div>
-              <p className="customer_nametext">
-                {" "}
-                {customerDetails && customerDetails.name
-                  ? customerDetails.name
-                  : "-"}
-              </p>
-              <p className="customer_coursenametext">
-                {" "}
-                {customerDetails && customerDetails.course_name
-                  ? customerDetails.course_name
-                  : "-"}
-              </p>
-            </div>
-          </div>
-
-          <Row
-            gutter={16}
-            style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-          >
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaRegCircleUser size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Name</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
+                <div>
+                  <p className="customer_nametext">
+                    {" "}
                     {customerDetails && customerDetails.name
                       ? customerDetails.name
                       : "-"}
                   </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <MdOutlineEmail size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Email</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.email
-                      ? customerDetails.email
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <IoCallOutline size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Mobile</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.phone
-                      ? customerDetails.phone
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaWhatsapp size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Whatsapp</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.whatsapp
-                      ? customerDetails.whatsapp
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    {customerDetails && customerDetails.gender === "Male" ? (
-                      <BsGenderMale size={15} color="gray" />
-                    ) : (
-                      <BsGenderFemale size={15} color="gray" />
-                    )}
-                    <p className="customerdetails_rowheading">Gender</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.gender
-                      ? customerDetails.gender
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <IoLocationOutline size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Location</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.current_location
-                      ? customerDetails.current_location
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaRegUser size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Lead Executive</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {`${
-                      customerDetails && customerDetails.lead_assigned_to_id
-                        ? customerDetails.lead_assigned_to_id
-                        : "-"
-                    } (${
-                      customerDetails && customerDetails.lead_assigned_to_name
-                        ? customerDetails.lead_assigned_to_name
-                        : "-"
-                    })`}
-                  </p>
-                </Col>
-              </Row>
-            </Col>
-
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Course</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
+                  <p className="customer_coursenametext">
+                    {" "}
                     {customerDetails && customerDetails.course_name
                       ? customerDetails.course_name
                       : "-"}
                   </p>
+                </div>
+              </div>
+
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+              >
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.name
+                          ? customerDetails.name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <MdOutlineEmail size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Email</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.email
+                          ? customerDetails.email
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoCallOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Mobile</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.phone
+                          ? customerDetails.phone
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaWhatsapp size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Whatsapp</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.whatsapp
+                          ? customerDetails.whatsapp
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        {customerDetails &&
+                        customerDetails.gender === "Male" ? (
+                          <BsGenderMale size={15} color="gray" />
+                        ) : (
+                          <BsGenderFemale size={15} color="gray" />
+                        )}
+                        <p className="customerdetails_rowheading">Gender</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.gender
+                          ? customerDetails.gender
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoLocationOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Location</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.current_location
+                          ? customerDetails.current_location
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">
+                          Lead Executive
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {`${
+                          customerDetails && customerDetails.lead_assigned_to_id
+                            ? customerDetails.lead_assigned_to_id
+                            : "-"
+                        } (${
+                          customerDetails &&
+                          customerDetails.lead_assigned_to_name
+                            ? customerDetails.lead_assigned_to_name
+                            : "-"
+                        })`}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Course</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.course_name
+                          ? customerDetails.course_name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Course Fees
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails && customerDetails.primary_fees
+                          ? "₹" + customerDetails.primary_fees
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Course Fees
+                          <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails &&
+                        customerDetails.payments.total_amount
+                          ? "₹" + customerDetails.payments.total_amount
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Balance Amount
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{ color: "#d32f2f", fontWeight: 700 }}
+                      >
+                        {customerDetails &&
+                        customerDetails.balance_amount !== undefined &&
+                        customerDetails.balance_amount !== null
+                          ? "₹" + customerDetails.balance_amount
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Branch</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.branch_name
+                          ? customerDetails.branch_name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Batch Track
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.batch_tracking
+                          ? customerDetails.batch_tracking
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Batch Type</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.batch_timing
+                          ? customerDetails.batch_timing
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Server</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails &&
+                        customerDetails.is_server_required !== undefined
+                          ? customerDetails.is_server_required === 1
+                            ? "Required"
+                            : "Not Required"
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
 
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Course Fees</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p
-                    className="customerdetails_text"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {customerDetails && customerDetails.primary_fees
-                      ? "₹" + customerDetails.primary_fees
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
+              <Divider className="customer_statusupdate_divider" />
+            </>
+          )}
 
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">
-                      Course Fees
-                      <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                    </p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p
-                    className="customerdetails_text"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {customerDetails && customerDetails.payments.total_amount
-                      ? "₹" + customerDetails.payments.total_amount
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Balance Amount</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p
-                    className="customerdetails_text"
-                    style={{ color: "#d32f2f", fontWeight: 700 }}
-                  >
-                    {customerDetails &&
-                    customerDetails.balance_amount !== undefined &&
-                    customerDetails.balance_amount !== null
-                      ? "₹" + customerDetails.balance_amount
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Branch</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.branch_name
-                      ? customerDetails.branch_name
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Batch Track</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.batch_tracking
-                      ? customerDetails.batch_tracking
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Batch Type</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.batch_timing
-                      ? customerDetails.batch_timing
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Server</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails &&
-                    customerDetails.is_server_required !== undefined
-                      ? customerDetails.is_server_required === 1
-                        ? "Required"
-                        : "Not Required"
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Divider className="customer_statusupdate_divider" />
-
-          <div className="customer_statusupdate_adddetailsContainer">
+          <div
+            className={
+              isTrainerPaymentPage
+                ? ""
+                : "customer_statusupdate_adddetailsContainer"
+            }
+          >
             <p className="customer_statusupdate_adddetails_heading">
               Send Email
             </p>
@@ -670,7 +700,7 @@ const CustomerEmailTemplate = forwardRef(
                     options={templateOptions}
                     value={
                       templateOptions.find(
-                        (o) => o.id === selectedTemplateId
+                        (o) => o.id === selectedTemplateId,
                       ) ?? null
                     }
                     getOptionLabel={(option) => option?.name}
@@ -971,7 +1001,7 @@ const CustomerEmailTemplate = forwardRef(
         />
       </div>
     );
-  }
+  },
 );
 
 export default CustomerEmailTemplate;

@@ -16,6 +16,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
 import { IoFilter } from "react-icons/io5";
+import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { RedoOutlined } from "@ant-design/icons";
@@ -25,8 +26,10 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CommonTable from "../Common/CommonTable";
 import {
   approveTrainerPaymentTransaction,
+  completeTrainerPaymentTransaction,
   createTrainerPaymentTransaction,
   deleteTrainerPaymentRequest,
+  getAllBranches,
   getCustomers,
   getTrainerPayments,
   getTrainers,
@@ -55,11 +58,20 @@ import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { useSelector } from "react-redux";
+import CustomerEmailTemplate from "../Customers/CustomerEmailTemplate";
 
 export default function TrainerPayment() {
   const scrollRef = useRef();
+  const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
   const permissions = useSelector((state) => state.userpermissions);
+
+  const scroll = (scrollOffset) => {
+    scrollRef.current.scrollBy({
+      left: scrollOffset,
+      behavior: "smooth",
+    });
+  };
   //usestates
   const [trainerFilterId, setTrainerFilterId] = useState(null);
   const [trainerFilterType, setTrainerFilterType] = useState(1);
@@ -68,6 +80,15 @@ export default function TrainerPayment() {
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
   const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
+  const [allBranchesData, setAllBranchesData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [isOpenMoveToPaidModal, setIsOpenMoveToPaidModal] = useState(false);
+  const moveToOptions = [
+    { id: 1, name: "Paid" },
+    { id: 2, name: "Reject" },
+  ];
+  const [moveToId, setMoveToId] = useState(null);
   //select trainer usestates
   const [trainersData, setTrainersData] = useState([]);
   const [isOpenAddRequestComponent, setIsOpenAddRequestComponent] =
@@ -110,8 +131,6 @@ export default function TrainerPayment() {
   const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
     useState(false);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
-  const [isShowRejectPaymentCommentBox, setIsShowRejectPaymentCommentBox] =
-    useState(false);
   const [rejectPaymentComments, setRejectPaymentComments] = useState("");
   const [rejectPaymentCommentsError, setRejectPaymentCommentsError] =
     useState("");
@@ -213,7 +232,7 @@ export default function TrainerPayment() {
               title={
                 <>
                   <Row>
-                    <Col span={12}>
+                    <Col span={12} style={{ marginBottom: "8px" }}>
                       {record.status == "Requested" ? (
                         <Checkbox
                           className="server_statuscheckbox"
@@ -278,7 +297,7 @@ export default function TrainerPayment() {
                       )}
                     </Col>
 
-                    <Col span={12}>
+                    <Col span={12} style={{ marginBottom: "8px" }}>
                       {record.status == "Requested" ||
                       record.status == "Awaiting Finance" ||
                       record.status == "Payment Rejected" ? (
@@ -290,11 +309,14 @@ export default function TrainerPayment() {
                               if (
                                 permissions.includes("Verify Trainer Payment")
                               ) {
-                                setIsOpenDetailsDrawer(true);
-                                setDrawerContentStatus("Awaiting Finance");
+                                // setDrawerContentStatus("Awaiting Finance");
                                 setSelectedPaymentDetails(record);
-                                setPaymentHistory(record.transactions);
-                                setCollapseDefaultKey(["1"]);
+                                // setPaymentHistory(record.transactions);
+                                // setCollapseDefaultKey(["1"]);
+                                CommonMessage(
+                                  "warning",
+                                  "Please Select Rows to Verify",
+                                );
                               } else {
                                 CommonMessage("error", "Access Denied");
                               }
@@ -318,6 +340,45 @@ export default function TrainerPayment() {
                         </div>
                       )}
                     </Col>
+
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Requested" ||
+                      record.status == "Awaiting Finance" ||
+                      record.status == "Payment Rejected" ||
+                      record.status == "Paid" ? (
+                        <Checkbox
+                          className="server_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status == "Paid") {
+                              if (
+                                permissions.includes("Verify Trainer Payment")
+                              ) {
+                                setIsOpenDetailsDrawer(true);
+                                setDrawerContentStatus("Complete");
+                                setSelectedPaymentDetails(record);
+                                setPaymentHistory(record.transactions);
+                                setCollapseDefaultKey(["1"]);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
+                              // getCustomerData(record.customer_id);
+                            } else {
+                              CommonMessage("warning", "Not Paid Yet");
+                            }
+                          }}
+                        >
+                          Complete{" "}
+                        </Checkbox>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Completed
+                          </p>
+                        </div>
+                      )}
+                    </Col>
                   </Row>
                 </>
               }
@@ -330,12 +391,14 @@ export default function TrainerPayment() {
                 <Button className="trainers_pending_button">
                   Awaiting Finance
                 </Button>
-              ) : text === "Completed" ? (
+              ) : text === "Paid" ? (
                 <div className="trainers_verifieddiv">
-                  <Button className="trainers_verified_button">
-                    Completed
-                  </Button>
+                  <Button className="trainers_verified_button">Paid</Button>
                 </div>
+              ) : text === "Completed" ? (
+                <Button className="customers_status_completed_button">
+                  Completed
+                </Button>
               ) : text === "Payment Rejected" ? (
                 <div className="trainers_verifieddiv">
                   <Button className="trainers_rejected_button">
@@ -430,6 +493,21 @@ export default function TrainerPayment() {
       setTrainersData(response?.data?.data?.trainers || []);
     } catch (error) {
       setTrainersData([]);
+      console.log(error);
+    } finally {
+      setTimeout(() => {
+        getAllBranchesData();
+      }, 300);
+    }
+  };
+
+  const getAllBranchesData = async () => {
+    try {
+      const response = await getAllBranches();
+      console.log("all branches response", response);
+      setAllBranchesData(response?.data?.result || []);
+    } catch (error) {
+      setAllBranchesData([]);
       console.log(error);
     } finally {
       setTimeout(() => {
@@ -595,28 +673,36 @@ export default function TrainerPayment() {
     }
   };
 
-  const handlePaymentApprove = async (payment_trans_id) => {
+  const handleMoveToPaidNow = async () => {
+    console.log("seee", selectedRows);
+
     setPaymentValidationTrigger(true);
+
     const paymentScreenshotValidate = selectValidator(paymentScreenShotBase64);
 
     setPaymentScreenShotBase64Error(paymentScreenshotValidate);
 
     if (paymentScreenshotValidate) return;
 
-    setButtonLoading(true);
-
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const today = new Date();
 
-    const payload = {
-      trainer_payment_id: selectedPaymentDetails.id,
-      payment_trans_id: payment_trans_id,
-      payment_screenshot: paymentScreenShotBase64,
+    const trainers = selectedRows.map((item) => ({
+      trainer_payment_id: item.id, // arr id
+      payment_trans_id: item.payments?.[0]?.id, // always 0th index
       paid_date: formatToBackendIST(today),
       paid_by: convertAsJson?.user_id,
+    }));
+
+    console.log({ trainers });
+    const payload = {
+      trainers,
+      screenshot: paymentScreenShotBase64,
     };
+    console.log("payload", payload);
+    setButtonLoading(true);
 
     try {
       await approveTrainerPaymentTransaction(payload);
@@ -644,15 +730,7 @@ export default function TrainerPayment() {
     }
   };
 
-  const handlePaymentReject = async (payment_trans_id) => {
-    setIsShowRejectPaymentCommentBox(true);
-    setTimeout(() => {
-      const container = document.getElementById(
-        "customer_trainerreject_commentContainer",
-      );
-      container.scrollIntoView({ behavior: "smooth" });
-    }, 200);
-
+  const handlePaymentReject = async () => {
     const commentValidate = addressValidator(rejectPaymentComments);
 
     setRejectPaymentCommentsError(commentValidate);
@@ -661,18 +739,75 @@ export default function TrainerPayment() {
 
     const today = new Date();
 
-    const payload = {
-      trainer_payment_id: selectedPaymentDetails.id,
-      payment_trans_id: payment_trans_id,
+    const trainers = selectedRows.map((item) => ({
+      trainer_payment_id: item.id, // arr id
+      payment_trans_id: item.payments?.[0]?.id, // always 0th index
       rejected_reason: rejectPaymentComments,
       rejected_date: formatToBackendIST(today),
-    };
+    }));
 
+    console.log({ trainers });
+    const payload = {
+      trainers,
+    };
+    console.log("payload", payload);
+
+    setButtonLoading(true);
+
+    // return;
     try {
       await rejectTrainerPayment(payload);
       setTimeout(() => {
         CommonMessage("success", "Updated Successfully");
         paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          trainerFilterId,
+          dateFilterType,
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleCompletePayment = async () => {
+    setPaymentValidationTrigger(true);
+
+    const paymentScreenshotValidate = selectValidator(paymentScreenShotBase64);
+
+    setPaymentScreenShotBase64Error(paymentScreenshotValidate);
+
+    if (paymentScreenshotValidate) return;
+
+    const payload = {
+      trainers: [
+        {
+          trainer_payment_id: selectedPaymentDetails.id,
+          payment_trans_id: selectedPaymentDetails.payments[0].id,
+          screenshot: paymentScreenShotBase64,
+        },
+      ],
+    };
+
+    console.log("payload", payload);
+    setButtonLoading(true);
+    try {
+      await completeTrainerPaymentTransaction(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        paymentformReset();
+        emailTemplateRef.current?.handleSendEmail();
         // Refresh the payment requests data
         getTrainerPaymentsData(
           trainerFilterId,
@@ -726,6 +861,9 @@ export default function TrainerPayment() {
     setIsOpenDetailsDrawer(false);
     setSelectedPaymentDetails(null);
     setPaymentValidationTrigger(false);
+    setIsOpenMoveToPaidModal(false);
+    setSelectedRows([]);
+    setSelectedRowKeys([]);
     setPaidNow("");
     setPaidNowError("");
     setPaymentType("");
@@ -734,7 +872,7 @@ export default function TrainerPayment() {
     setPaymentScreenShotBase64Error("");
     setDrawerContentStatus("");
     setPaymentHistory([]);
-    setIsShowRejectPaymentCommentBox(false);
+    setMoveToId(1);
     setRejectPaymentComments("");
     setRejectPaymentCommentsError("");
   };
@@ -757,6 +895,8 @@ export default function TrainerPayment() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    setSelectedRowKeys([]);
+    setSelectedRows([]);
     setStatus("");
     setTrainerFilterId(null);
     setTrainerFilterType(1);
@@ -770,6 +910,13 @@ export default function TrainerPayment() {
       1,
       10,
     );
+  };
+
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
   };
 
   return (
@@ -1002,12 +1149,12 @@ export default function TrainerPayment() {
       <Row>
         <Col span={18}>
           <div className="customers_scroll_wrapper">
-            {/* <button
-          onClick={() => scroll(-600)}
-          className="customer_statusscroll_button"
-        >
-          <IoMdArrowDropleft size={25} />
-        </button> */}
+            <button
+              onClick={() => scroll(-600)}
+              className="customer_statusscroll_button"
+            >
+              <IoMdArrowDropleft size={25} />
+            </button>
             <div className="customers_status_mainContainer" ref={scrollRef}>
               {" "}
               <div
@@ -1148,6 +1295,40 @@ export default function TrainerPayment() {
               </div>
               <div
                 className={
+                  status === "Paid"
+                    ? "customers_active_classgoing_container"
+                    : "customers_classgoing_container"
+                }
+                onClick={() => {
+                  if (status === "Paid") {
+                    return;
+                  }
+                  setStatus("Paid");
+                  setPagination({ ...pagination, page: 1 });
+                  getTrainerPaymentsData(
+                    trainerFilterId,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    "Paid",
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Paid{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.paid !== undefined &&
+                    statusCounts.paid !== null
+                      ? statusCounts.paid
+                      : "-"
+                  } )`}
+                </p>
+              </div>
+              <div
+                className={
                   status === "Completed"
                     ? "trainers_active_verifiedtrainers_container"
                     : "customers_completed_container"
@@ -1181,14 +1362,15 @@ export default function TrainerPayment() {
                 </p>
               </div>
             </div>
-            {/* <button
-          onClick={() => scroll(600)}
-          className="customer_statusscroll_button"
-        >
-          <IoMdArrowDropright size={25} />
-        </button> */}
+            <button
+              onClick={() => scroll(900)}
+              className="customer_statusscroll_button"
+            >
+              <IoMdArrowDropright size={25} />
+            </button>
           </div>
         </Col>
+
         <Col
           span={6}
           style={{
@@ -1211,6 +1393,20 @@ export default function TrainerPayment() {
           ) : (
             ""
           )}
+
+          {selectedRows.length >= 1 ? (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenMoveToPaidModal(true);
+                setMoveToId(1);
+              }}
+            >
+              Move To Paid
+            </button>
+          ) : (
+            ""
+          )}
         </Col>
       </Row>
 
@@ -1224,9 +1420,13 @@ export default function TrainerPayment() {
           dataSource={paymentRequestsData}
           dataPerPage={10}
           loading={loading}
-          checkBox="false"
+          checkBox={
+            permissions.includes("Verify Trainer Payment") ? "true" : "false"
+          }
           size="small"
           className="questionupload_table"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
           onPaginationChange={handlePaginationChange}
           limit={pagination.limit}
           page_number={pagination.page}
@@ -1251,6 +1451,7 @@ export default function TrainerPayment() {
             ref={addTrainerPaymentRequestUseRef}
             trainersData={trainersData}
             editRequestItem={editRequestItem}
+            allBranchesData={allBranchesData}
             setButtonLoading={setButtonLoading}
             callgetTrainerPaymentsApi={() => {
               setIsOpenAddRequestDrawer(false);
@@ -1574,277 +1775,297 @@ export default function TrainerPayment() {
                 ""
               )}
 
-              {drawerContentStatus == "Awaiting Finance" && (
-                <div>
-                  <p
-                    style={{
-                      fontWeight: 600,
-                      color: "#333",
-                      fontSize: "16px",
-                    }}
-                  >
-                    Payment Details
-                  </p>
-                  {selectedPaymentDetails.payments.length >= 1 ? (
-                    <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-                      <Collapse
-                        activeKey={collapseDefaultKey}
-                        onChange={(keys) => setCollapseDefaultKey(keys)}
-                        className="customer_updatepayment_history_collapse"
-                      >
-                        {selectedPaymentDetails.payments.map((item, index) => {
-                          return (
-                            <Collapse.Panel
-                              key={index + 1} // unique key
-                              header={
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    width: "100%",
-                                    fontSize: "13px",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span>
-                                    Bill Raise Date -{" "}
-                                    <span style={{ fontWeight: "500" }}>
-                                      {moment(
-                                        selectedPaymentDetails.bill_raisedate,
-                                      ).format("DD/MM/YYYY")}
-                                    </span>
-                                  </span>
-
-                                  {item.status === "Pending" ? (
+              {drawerContentStatus == "Awaiting Finance" ||
+                (drawerContentStatus == "Complete" && (
+                  <div>
+                    <p
+                      style={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: "16px",
+                      }}
+                    >
+                      Payment Details
+                    </p>
+                    {selectedPaymentDetails.payments.length >= 1 ? (
+                      <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                        <Collapse
+                          activeKey={collapseDefaultKey}
+                          onChange={(keys) => setCollapseDefaultKey(keys)}
+                          className="customer_updatepayment_history_collapse"
+                        >
+                          {selectedPaymentDetails.payments.map(
+                            (item, index) => {
+                              return (
+                                <Collapse.Panel
+                                  key={index + 1} // unique key
+                                  header={
                                     <div
-                                      style={{ display: "flex", gap: "12px" }}
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        width: "100%",
+                                        fontSize: "13px",
+                                        alignItems: "center",
+                                      }}
                                     >
-                                      <Button
-                                        className="customer_finance_rejectbutton"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handlePaymentReject(item.id);
-                                        }}
-                                      >
-                                        Reject
-                                      </Button>
+                                      <span>
+                                        Bill Raise Date -{" "}
+                                        <span style={{ fontWeight: "500" }}>
+                                          {moment(
+                                            selectedPaymentDetails.bill_raisedate,
+                                          ).format("DD/MM/YYYY")}
+                                        </span>
+                                      </span>
 
-                                      <Button
-                                        className="customer_finance_verifybutton"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handlePaymentApprove(item.id);
-                                        }}
-                                      >
-                                        Verify
-                                      </Button>
-                                    </div>
-                                  ) : item.status === "Rejected" ? (
-                                    <div className="customer_trans_statustext_container">
-                                      <FaRegCircleXmark color="#d32f2f" />
-                                      <p
-                                        style={{
-                                          color: "#d32f2f",
-                                          fontWeight: 500,
-                                        }}
-                                      >
-                                        Rejected
-                                      </p>
-                                    </div>
-                                  ) : (
-                                    <div className="customer_trans_statustext_container">
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p
-                                        style={{
-                                          color: "#3c9111",
-                                          fontWeight: 500,
-                                        }}
-                                      >
-                                        Verified
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              }
-                            >
-                              <div style={{ padding: "0px 12px" }}>
-                                <Row
-                                  gutter={16}
-                                  style={{
-                                    marginTop: "6px",
-                                    marginBottom: "8px",
-                                  }}
-                                >
-                                  <Col span={12}>
-                                    <Row>
-                                      <Col span={12}>
-                                        <div className="customerdetails_rowheadingContainer">
-                                          <p className="customerdetails_rowheading">
-                                            Pay Amount
-                                          </p>
-                                        </div>
-                                      </Col>
-                                      <Col span={12}>
-                                        <p className="customerdetails_text">
-                                          {"₹" + item.paid_amount}
-                                        </p>
-                                      </Col>
-                                    </Row>
-                                  </Col>
-
-                                  <Col span={12}>
-                                    <Row>
-                                      <Col span={12}>
-                                        <div className="customerdetails_rowheadingContainer">
-                                          <p className="customerdetails_rowheading">
-                                            Payment Type
-                                          </p>
-                                        </div>
-                                      </Col>
-                                      <Col span={12}>
-                                        <p className="customerdetails_text">
-                                          {item.payment_type}
-                                        </p>
-                                      </Col>
-                                    </Row>
-                                  </Col>
-                                </Row>
-
-                                {item.status == "Completed" ? (
-                                  <Row
-                                    gutter={16}
-                                    style={{
-                                      marginTop: "16px",
-                                      marginBottom: "12px",
-                                    }}
-                                  >
-                                    <Col span={12}>
-                                      <Row>
-                                        <Col span={12}>
-                                          <div className="customerdetails_rowheadingContainer">
-                                            <p className="customerdetails_rowheading">
-                                              Paid Date
-                                            </p>
-                                          </div>
-                                        </Col>
-                                        <Col span={12}>
-                                          <p className="customerdetails_text">
-                                            {item.paid_date
-                                              ? moment(item.paid_date).format(
-                                                  "DD/MM/YYYY",
-                                                )
-                                              : "-"}
-                                          </p>
-                                        </Col>
-                                      </Row>
-                                    </Col>
-
-                                    <Col span={12}>
-                                      <Row>
-                                        <Col span={12}>
-                                          <div className="customerdetails_rowheadingContainer">
-                                            <p className="customerdetails_rowheading">
-                                              Payment Screenshot
-                                            </p>
-                                          </div>
-                                        </Col>
-                                        <Col span={12}>
-                                          <button
-                                            className="pendingcustomer_paymentscreenshot_viewbutton"
-                                            onClick={() => {
-                                              setIsOpenPaymentScreenshotModal(
-                                                true,
-                                              );
-                                              setTransactionScreenshot(
-                                                item.payment_screenshot,
-                                              );
-                                            }}
-                                          >
-                                            <FaRegEye size={16} /> View
-                                            screenshot
-                                          </button>
-                                        </Col>
-                                      </Row>
-                                    </Col>
-                                  </Row>
-                                ) : (
-                                  <Row
-                                    gutter={16}
-                                    style={{
-                                      marginTop: "40px",
-                                      marginBottom: "20px",
-                                    }}
-                                  >
-                                    <Col span={12}>
-                                      <ImageUploadCrop
-                                        label="Payment Screenshot"
-                                        aspect={1}
-                                        maxSizeMB={1}
-                                        required={true}
-                                        value={paymentScreenShotBase64}
-                                        onChange={(base64) =>
-                                          setPaymentScreenShotBase64(base64)
-                                        }
-                                        onErrorChange={
-                                          setPaymentScreenShotBase64Error
-                                        } // ✅ pass setter directly
-                                      />
-                                      {paymentScreenShotBase64Error &&
-                                      paymentValidationTrigger ? (
-                                        <p
+                                      {item.status === "Pending" ? (
+                                        <div
                                           style={{
-                                            fontSize: "12px",
-                                            color: "#d32f2f",
-                                            marginTop: 4,
+                                            display: "flex",
+                                            gap: "12px",
                                           }}
                                         >
-                                          {`Payment Screenshot ${paymentScreenShotBase64Error}`}
-                                        </p>
-                                      ) : (
-                                        ""
-                                      )}
-                                    </Col>
-                                  </Row>
-                                )}
-                              </div>
-                            </Collapse.Panel>
-                          );
-                        })}
-                      </Collapse>
+                                          <Button className="customer_finance_rejectbutton">
+                                            Reject
+                                          </Button>
 
-                      {isShowRejectPaymentCommentBox ? (
-                        <div
-                          style={{ marginTop: "12px", position: "relative" }}
-                          id="customer_trainerreject_commentContainer"
-                        >
-                          <CommonTextArea
-                            label="Comments"
-                            required={true}
-                            onChange={(e) => {
-                              setRejectPaymentComments(e.target.value);
-                              setRejectPaymentCommentsError(
-                                addressValidator(e.target.value),
+                                          <Button className="customer_finance_verifybutton">
+                                            Verify
+                                          </Button>
+                                        </div>
+                                      ) : item.status === "Rejected" ? (
+                                        <div className="customer_trans_statustext_container">
+                                          <FaRegCircleXmark color="#d32f2f" />
+                                          <p
+                                            style={{
+                                              color: "#d32f2f",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            Rejected
+                                          </p>
+                                        </div>
+                                      ) : (
+                                        <div className="customer_trans_statustext_container">
+                                          <BsPatchCheckFill color="#3c9111" />
+                                          <p
+                                            style={{
+                                              color: "#3c9111",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            Verified
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  }
+                                >
+                                  <div style={{ padding: "0px 12px" }}>
+                                    <Row
+                                      gutter={16}
+                                      style={{
+                                        marginTop: "6px",
+                                        marginBottom: "8px",
+                                      }}
+                                    >
+                                      <Col span={12}>
+                                        <Row>
+                                          <Col span={12}>
+                                            <div className="customerdetails_rowheadingContainer">
+                                              <p className="customerdetails_rowheading">
+                                                Pay Amount
+                                              </p>
+                                            </div>
+                                          </Col>
+                                          <Col span={12}>
+                                            <p className="customerdetails_text">
+                                              {"₹" + item.paid_amount}
+                                            </p>
+                                          </Col>
+                                        </Row>
+                                      </Col>
+
+                                      <Col span={12}>
+                                        <Row>
+                                          <Col span={12}>
+                                            <div className="customerdetails_rowheadingContainer">
+                                              <p className="customerdetails_rowheading">
+                                                Payment Type
+                                              </p>
+                                            </div>
+                                          </Col>
+                                          <Col span={12}>
+                                            <p className="customerdetails_text">
+                                              {item.payment_type}
+                                            </p>
+                                          </Col>
+                                        </Row>
+                                      </Col>
+                                    </Row>
+
+                                    {item.status == "Completed" ||
+                                    item.status == "Paid" ? (
+                                      <Row
+                                        gutter={16}
+                                        style={{
+                                          marginTop: "16px",
+                                          marginBottom: "12px",
+                                        }}
+                                      >
+                                        <Col span={12}>
+                                          <Row>
+                                            <Col span={12}>
+                                              <div className="customerdetails_rowheadingContainer">
+                                                <p className="customerdetails_rowheading">
+                                                  Paid Date
+                                                </p>
+                                              </div>
+                                            </Col>
+                                            <Col span={12}>
+                                              <p className="customerdetails_text">
+                                                {item.paid_date
+                                                  ? moment(
+                                                      item.paid_date,
+                                                    ).format("DD/MM/YYYY")
+                                                  : "-"}
+                                              </p>
+                                            </Col>
+                                          </Row>
+                                        </Col>
+
+                                        <Col span={12}>
+                                          <Row>
+                                            <Col span={12}>
+                                              <div className="customerdetails_rowheadingContainer">
+                                                <p className="customerdetails_rowheading">
+                                                  Payment Screenshot
+                                                </p>
+                                              </div>
+                                            </Col>
+                                            <Col span={12}>
+                                              <button
+                                                className="pendingcustomer_paymentscreenshot_viewbutton"
+                                                onClick={() => {
+                                                  setIsOpenPaymentScreenshotModal(
+                                                    true,
+                                                  );
+                                                  setTransactionScreenshot(
+                                                    item.payment_screenshot,
+                                                  );
+                                                }}
+                                              >
+                                                <FaRegEye size={16} /> View
+                                                screenshot
+                                              </button>
+                                            </Col>
+                                          </Row>
+                                        </Col>
+                                      </Row>
+                                    ) : (
+                                      <Row
+                                        gutter={16}
+                                        style={{
+                                          marginTop: "40px",
+                                          marginBottom: "20px",
+                                        }}
+                                      >
+                                        <Col span={12}>
+                                          <ImageUploadCrop
+                                            label="Payment Screenshot"
+                                            aspect={1}
+                                            maxSizeMB={1}
+                                            required={true}
+                                            value={paymentScreenShotBase64}
+                                            onChange={(base64) =>
+                                              setPaymentScreenShotBase64(base64)
+                                            }
+                                            onErrorChange={
+                                              setPaymentScreenShotBase64Error
+                                            } // ✅ pass setter directly
+                                          />
+                                          {paymentScreenShotBase64Error &&
+                                          paymentValidationTrigger ? (
+                                            <p
+                                              style={{
+                                                fontSize: "12px",
+                                                color: "#d32f2f",
+                                                marginTop: 4,
+                                              }}
+                                            >
+                                              {`Payment Screenshot ${paymentScreenShotBase64Error}`}
+                                            </p>
+                                          ) : (
+                                            ""
+                                          )}
+                                        </Col>
+                                      </Row>
+                                    )}
+                                  </div>
+                                </Collapse.Panel>
                               );
-                            }}
-                            value={rejectPaymentComments}
-                            error={rejectPaymentCommentsError}
-                          />
-                        </div>
+                            },
+                          )}
+                        </Collapse>
+                      </div>
+                    ) : (
+                      <p className="customer_trainerhistory_nodatatext">
+                        No Data found
+                      </p>
+                    )}
+
+                    <p
+                      style={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: "16px",
+                      }}
+                    >
+                      Add Details
+                    </p>
+
+                    <div style={{ marginTop: "30px", marginBottom: "40px" }}>
+                      <ImageUploadCrop
+                        label="Payment Screenshot"
+                        aspect={1}
+                        maxSizeMB={1}
+                        required={true}
+                        value={paymentScreenShotBase64}
+                        onChange={(base64) =>
+                          setPaymentScreenShotBase64(base64)
+                        }
+                        onErrorChange={setPaymentScreenShotBase64Error} // ✅ pass setter directly
+                      />
+                      {paymentScreenShotBase64Error &&
+                      paymentValidationTrigger ? (
+                        <p
+                          style={{
+                            fontSize: "12px",
+                            color: "#d32f2f",
+                            marginTop: 4,
+                          }}
+                        >
+                          {`Payment Screenshot ${paymentScreenShotBase64Error}`}
+                        </p>
                       ) : (
                         ""
                       )}
+
+                      <div style={{ marginTop: "20px" }}>
+                        <CustomerEmailTemplate
+                          ref={emailTemplateRef}
+                          isTrainerPaymentPage={true}
+                          trainerEmail={selectedPaymentDetails?.trainer_email}
+                        />
+                      </div>
                     </div>
-                  ) : (
-                    <p className="customer_trainerhistory_nodatatext">
-                      No Data found
-                    </p>
-                  )}
-                </div>
-              )}
+                  </div>
+                ))}
             </div>
 
             {drawerContentStatus == "Requested" ||
-            drawerContentStatus == "Update Payment" ? (
+            drawerContentStatus == "Update Payment" ||
+            drawerContentStatus == "Complete" ? (
               <div className="leadmanager_tablefiler_footer">
                 <div className="leadmanager_submitlead_buttoncontainer">
                   {buttonLoading ? (
@@ -1854,9 +2075,18 @@ export default function TrainerPayment() {
                   ) : (
                     <button
                       className="users_adddrawer_createbutton"
-                      onClick={handlePaymentSubmit}
+                      onClick={() => {
+                        if (drawerContentStatus == "Complete") {
+                          handleCompletePayment();
+                        } else {
+                          handlePaymentSubmit();
+                        }
+                      }}
                     >
-                      {drawerContentStatus == "Requested" ? "Submit" : "Update"}
+                      {drawerContentStatus == "Requested" ||
+                      drawerContentStatus == "Complete"
+                        ? "Submit"
+                        : "Update"}
                     </button>
                   )}
                 </div>
@@ -1917,6 +2147,104 @@ export default function TrainerPayment() {
         </div>
       </Modal>
 
+      {/* move to paid modal */}
+      <Modal
+        title="Move to Paid"
+        open={isOpenMoveToPaidModal}
+        onCancel={() => {
+          setIsOpenMoveToPaidModal(false);
+          setPaymentValidationTrigger(true);
+          setRejectPaymentComments("");
+          setRejectPaymentCommentsError("");
+          setMoveToId(1);
+        }}
+        footer={false}
+        width="33%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ marginTop: "20px" }}>
+          <div style={{ marginBottom: moveToId == 1 ? "40px" : "20px" }}>
+            <CommonSelectField
+              label="Select Status"
+              required={true}
+              options={moveToOptions}
+              onChange={(e) => {
+                setMoveToId(e.target.value);
+              }}
+              value={moveToId}
+              error={""}
+            />
+          </div>
+          {moveToId == 1 ? (
+            <>
+              <ImageUploadCrop
+                label="Payment Screenshot"
+                aspect={1}
+                maxSizeMB={1}
+                required={true}
+                value={paymentScreenShotBase64}
+                onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                onErrorChange={setPaymentScreenShotBase64Error} // ✅ pass setter directly
+              />
+              {paymentScreenShotBase64Error && paymentValidationTrigger ? (
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#d32f2f",
+                    marginTop: 4,
+                  }}
+                >
+                  {`Payment Screenshot ${paymentScreenShotBase64Error}`}
+                </p>
+              ) : (
+                ""
+              )}
+            </>
+          ) : (
+            <div>
+              <CommonTextArea
+                label="Comments"
+                required={true}
+                onChange={(e) => {
+                  setRejectPaymentComments(e.target.value);
+                  setRejectPaymentCommentsError(
+                    addressValidator(e.target.value),
+                  );
+                }}
+                value={rejectPaymentComments}
+                error={rejectPaymentCommentsError}
+              />
+            </div>
+          )}
+          <div
+            className="customer_classcompletemodal_button_container"
+            style={{ justifyContent: "flex-end" }}
+          >
+            {buttonLoading ? (
+              <Button
+                type="primary"
+                className="customer_classcompletemodal_loading_okbutton"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                className="customer_classcompletemodal_okbutton"
+                onClick={() => {
+                  if (moveToId == 1) {
+                    handleMoveToPaidNow();
+                  } else {
+                    handlePaymentReject();
+                  }
+                }}
+              >
+                Submit
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
       {/* delete request modal */}
       <CommonDeleteModal
         open={isOpenRequestDeleteModal}
