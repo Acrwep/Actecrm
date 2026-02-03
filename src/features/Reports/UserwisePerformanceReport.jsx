@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Spin } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
+import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
@@ -11,15 +12,15 @@ import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
   getAllDownlineUsers,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
+  getMonthwiseTotalCollectionReport,
+  userwisePerformanceReports,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 
-export default function UserwiseLeadsReport() {
+export default function UserwisePerformanceReport() {
   const mounted = useRef(false);
   //permissions
   const childUsers = useSelector((state) => state.childusers);
@@ -30,7 +31,9 @@ export default function UserwiseLeadsReport() {
   const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [totalCounts, setTotalCounts] = useState(null);
+  const [collectionHistory, setCollectionHistory] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
+  const [collectionLoading, setCollectionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -42,6 +45,20 @@ export default function UserwiseLeadsReport() {
     total: 0,
     totalPages: 0,
   });
+
+  const getPercentageColor = (val) => {
+    if (val <= 25)
+      return "#E53935"; // red
+    else if (val <= 50)
+      return "#FB8C00"; // orange
+    else if (val <= 75)
+      return "#00ACC1"; // teal green
+    else if (val <= 99)
+      return "#A2C148"; // lime-green
+    else if (val <= 125)
+      return "#2E7D32"; // dark green
+    else return "#ffbf00"; // gold
+  };
 
   const columns = [
     {
@@ -128,13 +145,139 @@ export default function UserwiseLeadsReport() {
       },
     },
     {
+      title: "Target",
+      key: "target_value",
+      dataIndex: "target_value",
+      width: 130,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Sale Volume",
+      key: "sale_volume",
+      dataIndex: "sale_volume",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Total Collection",
+      key: "total_collection",
+      dataIndex: "total_collection",
+      width: 140,
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <p>{Number(text).toLocaleString("en-IN")}</p>
+            {text == 0 ? (
+              ""
+            ) : (
+              <Tooltip
+                placement="bottomLeft"
+                color="#fff"
+                trigger={["click"]}
+                title={
+                  <>
+                    {collectionLoading ? (
+                      <div className="reports_collection_tooltip_container">
+                        <Spin size="small" />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          maxHeight: "140px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-line",
+                          lineHeight: "26px",
+                        }}
+                      >
+                        {collectionHistory.map((item, index) => {
+                          return (
+                            <p className="reports_collection_tooltip_text">
+                              {index + 1}. {item.month_name} -{" "}
+                              <span style={{ fontWeight: 600 }}>
+                                ₹
+                                {Number(item.collection).toLocaleString(
+                                  "en-IN",
+                                )}
+                              </span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                }
+              >
+                <MdHistory
+                  size={18}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const [monthName, year] = record.label.split(" ");
+                    const selectedMonth = moment(
+                      `${monthName} ${year}`,
+                      "MMMM YYYY",
+                    );
+                    // Start date: 25th of previous month
+                    const startDate = selectedMonth
+                      .clone()
+                      .subtract(1, "month")
+                      .date(26)
+                      .format("YYYY-MM-DD");
+
+                    // End date: 25th of selected month
+                    const endDate = selectedMonth
+                      .clone()
+                      .date(25)
+                      .format("YYYY-MM-DD");
+
+                    console.log("s", startDate, "e", endDate);
+                    getMonthwiseTotalCollectionData(
+                      record.user_id,
+                      startDate,
+                      endDate,
+                    );
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Pending",
+      key: "pending",
+      dataIndex: "pending",
+      width: 130,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
       title: "Followup Efficiency%",
       key: "followup_handled_percentage",
       dataIndex: "followup_handled_percentage",
-      width: 180,
+      width: 160,
       fixed: "right",
       render: (text) => {
         return <p style={{ fontWeight: 600 }}>{`${text}%`}</p>;
+      },
+    },
+    {
+      title: "Target%",
+      key: "percentage",
+      dataIndex: "percentage",
+      width: 110,
+      fixed: "right",
+      render: (text) => {
+        return (
+          <p
+            style={{ fontWeight: 600, color: getPercentageColor(text) }}
+          >{`${text}%`}</p>
+        );
       },
     },
   ];
@@ -203,7 +346,7 @@ export default function UserwiseLeadsReport() {
       getUsersWiseLeadsReportData(
         customizeDate[0],
         customizeDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -213,7 +356,7 @@ export default function UserwiseLeadsReport() {
   const getUsersWiseLeadsReportData = async (
     startDate,
     endDate,
-    downliners
+    downliners,
   ) => {
     setLoading(true);
     const payload = {
@@ -222,7 +365,7 @@ export default function UserwiseLeadsReport() {
       end_date: endDate,
     };
     try {
-      const response = await userwiseLeadsAnalysisReports(payload);
+      const response = await userwisePerformanceReports(payload);
       console.log("userwise leads report response", response);
       const data = response?.data?.data || [];
       if (data.length >= 1) {
@@ -267,10 +410,35 @@ export default function UserwiseLeadsReport() {
       getUsersWiseLeadsReportData(
         startDateAndEndDate[0],
         startDateAndEndDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getMonthwiseTotalCollectionData = async (
+    userId,
+    startDate,
+    endDate,
+  ) => {
+    setCollectionLoading(true);
+    const payload = {
+      user_ids: [userId],
+      start_date: startDate,
+      end_date: endDate,
+    };
+    try {
+      const response = await getMonthwiseTotalCollectionReport(payload);
+      console.log("collection report response", response);
+      setCollectionHistory(response?.data?.data || []);
+      setTimeout(() => {
+        setCollectionLoading(false);
+      }, 300);
+    } catch (error) {
+      setCollectionLoading(false);
+      setCollectionHistory([]);
+      console.log("collection report error", error);
     }
   };
 
@@ -279,6 +447,7 @@ export default function UserwiseLeadsReport() {
     setSelectedDates(getLast3MonthDates);
     const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
     setStartDateAndEndDate(customizeDate);
+    setSelectedUserId(null);
     setPagination({
       page: 1,
       limit: 500,
@@ -322,7 +491,7 @@ export default function UserwiseLeadsReport() {
                   getUsersWiseLeadsReportData(
                     customizeDate[0],
                     customizeDate[1],
-                    allDownliners
+                    allDownliners,
                   );
                 }}
               />
@@ -349,10 +518,10 @@ export default function UserwiseLeadsReport() {
                   reportData,
                   columns,
                   `${moment(startDateAndEndDate[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(startDateAndEndDate[1]).format(
-                    "DD MMMM YYYY"
-                  )} Userwise Lead Report.csv`
+                    "DD MMMM YYYY",
+                  )} Userwise Performance.csv`,
                 );
               }}
             >

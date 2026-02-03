@@ -12,7 +12,7 @@ import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
   getAllDownlineUsers,
   getMonthwiseTotalCollectionReport,
-  userwiseSalesAnalysisReports,
+  userwisePerformanceReports,
 } from "../ApiService/action";
 import { MdHistory } from "react-icons/md";
 import CommonTable from "../Common/CommonTable";
@@ -47,11 +47,16 @@ export default function UserwiseSalesReport() {
   });
 
   const getPercentageColor = (val) => {
-    if (val <= 25) return "#E53935"; // red
-    else if (val <= 50) return "#FB8C00"; // orange
-    else if (val <= 75) return "#00ACC1"; // teal green
-    else if (val <= 99) return "#A2C148"; // lime-green
-    else if (val <= 125) return "#2E7D32"; // dark green
+    if (val <= 25)
+      return "#E53935"; // red
+    else if (val <= 50)
+      return "#FB8C00"; // orange
+    else if (val <= 75)
+      return "#00ACC1"; // teal green
+    else if (val <= 99)
+      return "#A2C148"; // lime-green
+    else if (val <= 125)
+      return "#2E7D32"; // dark green
     else return "#ffbf00"; // gold
   };
 
@@ -132,7 +137,7 @@ export default function UserwiseSalesReport() {
                               <span style={{ fontWeight: 600 }}>
                                 ₹
                                 {Number(item.collection).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )}
                               </span>
                             </p>
@@ -150,7 +155,7 @@ export default function UserwiseSalesReport() {
                     const [monthName, year] = record.label.split(" ");
                     const selectedMonth = moment(
                       `${monthName} ${year}`,
-                      "MMMM YYYY"
+                      "MMMM YYYY",
                     );
                     // Start date: 25th of previous month
                     const startDate = selectedMonth
@@ -169,7 +174,7 @@ export default function UserwiseSalesReport() {
                     getMonthwiseTotalCollectionData(
                       record.user_id,
                       startDate,
-                      endDate
+                      endDate,
                     );
                   }}
                 />
@@ -268,7 +273,7 @@ export default function UserwiseSalesReport() {
       getUsersWiseSalesReportData(
         customizeDate[0],
         customizeDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -278,7 +283,7 @@ export default function UserwiseSalesReport() {
   const getUsersWiseSalesReportData = async (
     startDate,
     endDate,
-    downliners
+    downliners,
   ) => {
     setLoading(true);
     const payload = {
@@ -287,7 +292,7 @@ export default function UserwiseSalesReport() {
       end_date: endDate,
     };
     try {
-      const response = await userwiseSalesAnalysisReports(payload);
+      const response = await userwisePerformanceReports(payload);
       console.log("userwise sales report response", response);
       const data = response?.data?.data || [];
       if (data.length >= 1) {
@@ -310,7 +315,7 @@ export default function UserwiseSalesReport() {
   const getMonthwiseTotalCollectionData = async (
     userId,
     startDate,
-    endDate
+    endDate,
   ) => {
     setCollectionLoading(true);
     const payload = {
@@ -357,7 +362,7 @@ export default function UserwiseSalesReport() {
       getUsersWiseSalesReportData(
         startDateAndEndDate[0],
         startDateAndEndDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -412,7 +417,7 @@ export default function UserwiseSalesReport() {
                   getUsersWiseSalesReportData(
                     customizeDate[0],
                     customizeDate[1],
-                    allDownliners
+                    allDownliners,
                   );
                 }}
               />
@@ -439,10 +444,10 @@ export default function UserwiseSalesReport() {
                   reportData,
                   columns,
                   `${moment(startDateAndEndDate[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(startDateAndEndDate[1]).format(
-                    "DD MMMM YYYY"
-                  )} Userwise Sales Report.csv`
+                    "DD MMMM YYYY",
+                  )} Userwise Sales Report.csv`,
                 );
               }}
             >

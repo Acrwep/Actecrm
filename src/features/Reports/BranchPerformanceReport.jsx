@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Spin } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
+import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
@@ -11,17 +12,15 @@ import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
   branchwiseLeadsAnalysisReports,
-  getAllDownlineUsers,
   getBranches,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
+  getMonthwiseTotalCollectionReport,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 
-export default function BranchwiseLeadsReport() {
+export default function BranchPerformanceReport() {
   const mounted = useRef(false);
   //permissions
   const childUsers = useSelector((state) => state.childusers);
@@ -30,6 +29,8 @@ export default function BranchwiseLeadsReport() {
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
+  const [collectionHistory, setCollectionHistory] = useState([]);
+  const [collectionLoading, setCollectionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   //filter usestates
   const [selectedRegionId, setSelectedRegionId] = useState(null);
@@ -128,6 +129,118 @@ export default function BranchwiseLeadsReport() {
       },
     },
     {
+      title: "Sale Volume",
+      key: "sale_volume",
+      dataIndex: "sale_volume",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Collection",
+      key: "collection",
+      dataIndex: "collection",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Total Collection",
+      key: "total_collection",
+      dataIndex: "total_collection",
+      width: 140,
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <p>{Number(text).toLocaleString("en-IN")}</p>
+            {text == 0 ? (
+              ""
+            ) : (
+              <Tooltip
+                placement="bottomLeft"
+                color="#fff"
+                trigger={["click"]}
+                title={
+                  <>
+                    {collectionLoading ? (
+                      <div className="reports_collection_tooltip_container">
+                        <Spin size="small" />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          maxHeight: "140px",
+                          overflowY: "auto",
+                          whiteSpace: "pre-line",
+                          lineHeight: "26px",
+                        }}
+                      >
+                        {collectionHistory.map((item, index) => {
+                          return (
+                            <p className="reports_collection_tooltip_text">
+                              {index + 1}. {item.month_name} -{" "}
+                              <span style={{ fontWeight: 600 }}>
+                                ₹
+                                {Number(item.collection).toLocaleString(
+                                  "en-IN",
+                                )}
+                              </span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                }
+              >
+                <MdHistory
+                  size={18}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const [monthName, year] = record.label.split(" ");
+                    const selectedMonth = moment(
+                      `${monthName} ${year}`,
+                      "MMMM YYYY",
+                    );
+                    // Start date: 25th of previous month
+                    const startDate = selectedMonth
+                      .clone()
+                      .subtract(1, "month")
+                      .date(26)
+                      .format("YYYY-MM-DD");
+
+                    // End date: 25th of selected month
+                    const endDate = selectedMonth
+                      .clone()
+                      .date(25)
+                      .format("YYYY-MM-DD");
+
+                    console.log("s", startDate, "e", endDate);
+                    getMonthwiseTotalCollectionData(
+                      record.branch_id,
+                      startDate,
+                      endDate,
+                    );
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Pending",
+      key: "pending",
+      dataIndex: "pending",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
       title: "Followup Efficiency%",
       key: "followup_handled_percentage",
       dataIndex: "followup_handled_percentage",
@@ -189,7 +302,7 @@ export default function BranchwiseLeadsReport() {
         customizeDate[0],
         customizeDate[1],
         null,
-        null
+        null,
       );
     }
   }, [childUsers]);
@@ -198,7 +311,7 @@ export default function BranchwiseLeadsReport() {
     startDate,
     endDate,
     regionId,
-    branchId
+    branchId,
   ) => {
     setLoading(true);
     const payload = {
@@ -262,6 +375,31 @@ export default function BranchwiseLeadsReport() {
     });
   };
 
+  const getMonthwiseTotalCollectionData = async (
+    branchId,
+    startDate,
+    endDate,
+  ) => {
+    setCollectionLoading(true);
+    const payload = {
+      branch_id: branchId,
+      start_date: startDate,
+      end_date: endDate,
+    };
+    try {
+      const response = await getMonthwiseTotalCollectionReport(payload);
+      console.log("collection report response", response);
+      setCollectionHistory(response?.data?.data || []);
+      setTimeout(() => {
+        setCollectionLoading(false);
+      }, 300);
+    } catch (error) {
+      setCollectionLoading(false);
+      setCollectionHistory([]);
+      console.log("collection report error", error);
+    }
+  };
+
   const handleRefresh = () => {
     const getLast3MonthDates = getLast3Months();
     setSelectedDates(getLast3MonthDates);
@@ -276,7 +414,7 @@ export default function BranchwiseLeadsReport() {
       customizeDate[0],
       customizeDate[1],
       null,
-      null
+      null,
     );
   };
 
@@ -317,7 +455,7 @@ export default function BranchwiseLeadsReport() {
                     startDateAndEndDate[0],
                     startDateAndEndDate[1],
                     value,
-                    null
+                    null,
                   );
                   getBranchesData(value);
                 }}
@@ -343,7 +481,7 @@ export default function BranchwiseLeadsReport() {
                     startDateAndEndDate[0],
                     startDateAndEndDate[1],
                     selectedRegionId,
-                    value
+                    value,
                   );
                 }}
                 value={selectedBranchId}
@@ -371,7 +509,7 @@ export default function BranchwiseLeadsReport() {
                     customizeDate[0],
                     customizeDate[1],
                     selectedRegionId,
-                    selectedBranchId
+                    selectedBranchId,
                   );
                 }}
               />
@@ -398,10 +536,10 @@ export default function BranchwiseLeadsReport() {
                   reportData,
                   columns,
                   `${moment(startDateAndEndDate[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(startDateAndEndDate[1]).format(
-                    "DD MMMM YYYY"
-                  )} Branchwise Lead Report.csv`
+                    "DD MMMM YYYY",
+                  )} Branchwise Performance.csv`,
                 );
               }}
             >

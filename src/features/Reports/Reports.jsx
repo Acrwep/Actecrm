@@ -2,15 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs } from "antd";
 import LeadsScoreboardReport from "./LeadsScoreboardReport";
-import UserwiseSalesReport from "./UserwiseSalesReport";
-import UserwiseLeadsReport from "./UserwiseLeadsreport";
-import BranchwiseLeadsReport from "./BranchwiseLeadsReport";
-import BranchwiseSalesReport from "./BranchwiseSalesReport";
-import HrPerformanceReport from "./HrPeroformanceReport";
-import RaPerformanceReport from "./RaPerformanceReport";
+import UserwisePerformanceReport from "./UserwisePerformanceReport";
+import BranchPerformanceReport from "./BranchPerformanceReport";
 import { useSelector } from "react-redux";
 import "./styles.css";
-import QualityReport from "./QualityReport";
 import PostSalePerformanceReport from "./PostSalePerformanceReport";
 import TopPerformanceReport from "./TopPerformanceReport";
 import PaymentReport from "./PaymentReport";
@@ -44,53 +39,43 @@ export default function Reports() {
             children: <LeadsScoreboardReport />,
           },
           {
-            label: "Userwise Lead Analysis",
+            label: "Userwise Performance",
             key: "2",
-            children: <UserwiseLeadsReport />,
-          },
-          {
-            label: "Userwise Sales Analysis",
-            key: "3",
-            children: <UserwiseSalesReport />,
+            children: <UserwisePerformanceReport />,
           },
           {
             label: "Userwise Transaction Analysis",
-            key: "4",
+            key: "3",
             children: <UserwiseTransactionReport />,
           },
           {
-            label: "Branchwise Lead Analysis",
-            key: "5",
-            children: <BranchwiseLeadsReport />,
-          },
-          {
-            label: "Branchwise Sales Analysis",
-            key: "6",
-            children: <BranchwiseSalesReport />,
+            label: "Branchwise Performance",
+            key: "4",
+            children: <BranchPerformanceReport />,
           },
           {
             label: "Top Performance Channel",
-            key: "7",
+            key: "5",
             children: <TopPerformanceReport />,
           },
           {
             label: "Post Sale Performance",
-            key: "8",
+            key: "6",
             children: <PostSalePerformanceReport />,
           },
           {
             label: "Payment Report",
-            key: "9",
+            key: "7",
             children: <PaymentReport />,
           },
           {
             label: "Transaction Report",
-            key: "10",
+            key: "8",
             children: <TransactionReport />,
           },
           {
             label: "Server Report",
-            key: "11",
+            key: "9",
             children: <ServerReport />,
           },
           // {

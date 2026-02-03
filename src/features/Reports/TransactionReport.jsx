@@ -10,12 +10,7 @@ import {
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
-import {
-  getAllDownlineUsers,
-  transactionReport,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
-} from "../ApiService/action";
+import { transactionReport } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
@@ -412,7 +407,7 @@ export default function TransactionReport() {
       setLoginUserId(convertAsJson?.user_id);
       getTransactionReportData(
         PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1]
+        PreviousAndCurrentDate[1],
       );
     }
   }, [childUsers]);
@@ -454,7 +449,7 @@ export default function TransactionReport() {
     });
     getTransactionReportData(
       PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[0]
+      PreviousAndCurrentDate[0],
     );
   };
 
@@ -498,10 +493,10 @@ export default function TransactionReport() {
                   reportData,
                   columns,
                   `${moment(selectedDates[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(selectedDates[1]).format(
-                    "DD MMMM YYYY"
-                  )} Transaction Report.csv`
+                    "DD MMMM YYYY",
+                  )} Transaction Report.csv`,
                 );
               }}
             >

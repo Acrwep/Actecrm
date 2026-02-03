@@ -10,14 +10,7 @@ import {
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
-import {
-  getAllDownlineUsers,
-  getUsers,
-  transactionReport,
-  userwiseLeadsAnalysisReports,
-  userwiseSalesAnalysisReports,
-  userwiseTransactionReport,
-} from "../ApiService/action";
+import { getUsers, userwiseTransactionReport } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
@@ -68,7 +61,7 @@ export default function UserwiseTransactionReport() {
       const activeSaleUsers = users_data.filter(
         (user) =>
           user.is_active === 1 &&
-          user.roles?.some((role) => role.role_name === "Sale")
+          user.roles?.some((role) => role.role_name === "Sale"),
       );
       setSaleUsersData(activeSaleUsers);
     } catch (error) {
@@ -79,7 +72,7 @@ export default function UserwiseTransactionReport() {
       getTransactionReportData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        null
+        null,
       );
     }
   };
@@ -178,7 +171,7 @@ export default function UserwiseTransactionReport() {
     getTransactionReportData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
-      null
+      null,
     );
   };
 
@@ -239,8 +232,8 @@ export default function UserwiseTransactionReport() {
                   formattedData,
                   columns,
                   `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-                    selectedDates[1]
-                  ).format("DD-MM-YYYY")} Userwise Transaction Report.csv`
+                    selectedDates[1],
+                  ).format("DD-MM-YYYY")} Userwise Transaction Report.csv`,
                 );
               }}
             >

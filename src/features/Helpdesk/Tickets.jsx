@@ -135,7 +135,7 @@ export default function Tickets() {
       width: 150,
       render: (text) => {
         if (text.length >= 1) {
-          return <p>{text[0].base64string}</p>;
+          return <p>-</p>;
         } else {
           <p>-</p>;
         }

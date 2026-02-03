@@ -1498,7 +1498,7 @@ export const userwiseLeadsAnalysisReports = async (payload) => {
   }
 };
 
-export const userwiseSalesAnalysisReports = async (payload) => {
+export const userwisePerformanceReports = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseScoreBoard`, payload);
     return response;

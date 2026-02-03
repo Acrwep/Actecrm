@@ -320,7 +320,11 @@ const AddTicket = forwardRef(
         sub_category_id: subCategoryId,
         priority: priorityId,
         type: typeId,
-        attachments: fileAttachmentBase64,
+        attachments: [
+          {
+            base64string: fileAttachmentBase64,
+          },
+        ],
         raised_by_id:
           raisedByTypeId == "Customer" ? selectedCustomerId : trainerId,
         raised_by_role: raisedByTypeId,
