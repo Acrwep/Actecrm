@@ -51,7 +51,7 @@ export default function Tickets() {
       title: "Created At",
       key: "created_at",
       dataIndex: "created_at",
-      width: 130,
+      width: 110,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
@@ -69,7 +69,7 @@ export default function Tickets() {
       title: "Category",
       key: "category_name",
       dataIndex: "category_name",
-      width: 150,
+      width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text || "-"} />;
       },
@@ -78,7 +78,7 @@ export default function Tickets() {
       title: "Sub Category",
       key: "sub_category_name",
       dataIndex: "sub_category_name",
-      width: 150,
+      width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text || "-"} />;
       },
@@ -87,16 +87,34 @@ export default function Tickets() {
       title: "Priority",
       key: "priority",
       dataIndex: "priority",
-      width: 150,
+      width: 100,
       render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
+        if (text) {
+          return (
+            <div
+              className={
+                text == "High"
+                  ? "leadmanager_leadstatus_high_container"
+                  : text == "Medium"
+                    ? "leadmanager_leadstatus_medium_container"
+                    : text == "Low"
+                      ? "leadmanager_leadstatus_low_container"
+                      : "leadmanager_leadstatus_junk_container"
+              }
+            >
+              <p>{text}</p>
+            </div>
+          );
+        } else {
+          <p>-</p>;
+        }
       },
     },
     {
       title: "Type",
       key: "type",
       dataIndex: "type",
-      width: 150,
+      width: 100,
       render: (text) => {
         return <EllipsisTooltip text={text || "-"} />;
       },
@@ -105,9 +123,50 @@ export default function Tickets() {
       title: "Description",
       key: "description",
       dataIndex: "description",
-      width: 150,
+      width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text || "-"} />;
+      },
+    },
+    {
+      title: "Attachment",
+      key: "attachments",
+      dataIndex: "attachments",
+      width: 150,
+      render: (text) => {
+        if (text.length >= 1) {
+          return <p>{text[0].base64string}</p>;
+        } else {
+          <p>-</p>;
+        }
+      },
+    },
+    {
+      title: "Status",
+      key: "status",
+      dataIndex: "status",
+      width: 150,
+      fixed: "right",
+      render: (text) => {
+        return (
+          <>
+            {text === "Open" ? (
+              <Button className="customers_status_classscheduled_button">
+                Open
+              </Button>
+            ) : text === "Hold" ? (
+              <Button className="trainers_pending_button">Hold</Button>
+            ) : text === "Overdue" ? (
+              <Button className="trainers_rejected_button">Overdue</Button>
+            ) : text === "Closed" ? (
+              <Button className="customers_status_completed_button">
+                Closed
+              </Button>
+            ) : (
+              <p style={{ marginLeft: "6px" }}>-</p>
+            )}
+          </>
+        );
       },
     },
   ];
@@ -309,6 +368,14 @@ export default function Tickets() {
                     return;
                   }
                   setStatus("");
+                  setPagination({ ...pagination, page: 1 });
+                  getTicketsData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    "",
+                    1,
+                    pagination.limit,
+                  );
                 }}
               >
                 <p>

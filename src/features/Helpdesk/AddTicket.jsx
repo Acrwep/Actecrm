@@ -63,6 +63,13 @@ const AddTicket = forwardRef(
     ];
     const [typeId, setTypeId] = useState("");
     const [typeIdError, setTypeIdError] = useState("");
+    const priorityOptions = [
+      { id: "High", name: "High" },
+      { id: "Medium", name: "Medium" },
+      { id: "Low", name: "Low" },
+    ];
+    const [priorityId, setPriorityId] = useState("");
+    const [priorityIdError, setPriorityIdError] = useState("");
     const [description, setDescription] = useState("");
     const [fileAttachmentBase64, setFileAttachmentBase64] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
@@ -265,6 +272,7 @@ const AddTicket = forwardRef(
       const categoryIdValidate = selectValidator(categoryId);
       const subCategoryIdValidate = selectValidator(subCategoryId);
       const typeIdValidate = selectValidator(typeId);
+      const priorityIdValidate = selectValidator(priorityId);
 
       let trainerIdValidate = "";
       let customerIdValidate = "";
@@ -288,6 +296,7 @@ const AddTicket = forwardRef(
       setCategoryIdError(categoryIdValidate);
       setSubCategoryIdError(subCategoryIdValidate);
       setTypeIdError(typeIdValidate);
+      setPriorityIdError(priorityIdValidate);
 
       if (
         raisedByTypeValidate ||
@@ -296,7 +305,8 @@ const AddTicket = forwardRef(
         titleValidate ||
         categoryIdValidate ||
         subCategoryIdValidate ||
-        typeIdValidate
+        typeIdValidate ||
+        priorityIdValidate
       )
         return;
 
@@ -308,7 +318,7 @@ const AddTicket = forwardRef(
         description: description,
         category_id: categoryId,
         sub_category_id: subCategoryId,
-        priority: null,
+        priority: priorityId,
         type: typeId,
         attachments: fileAttachmentBase64,
         raised_by_id:
@@ -573,6 +583,22 @@ const AddTicket = forwardRef(
               }}
               value={typeId}
               error={typeIdError}
+            />
+          </Col>
+
+          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+            <CommonSelectField
+              label="Priority"
+              required={true}
+              options={priorityOptions}
+              onChange={(e) => {
+                setPriorityId(e.target.value);
+                if (validationTrigger) {
+                  setPriorityIdError(selectValidator(e.target.value));
+                }
+              }}
+              value={priorityId}
+              error={priorityIdError}
             />
           </Col>
 

@@ -54,6 +54,7 @@ export default function CommonInputField({
         multiline={multiline}
         size="small"
         error={error ? true : false}
+        autoComplete="on"
         helperText={
           error ? (
             <span
