@@ -306,9 +306,7 @@ export default function TrainerPayment() {
                           checked={false}
                           onChange={(e) => {
                             if (record.status == "Awaiting Finance") {
-                              if (
-                                permissions.includes("Verify Trainer Payment")
-                              ) {
+                              if (permissions.includes("Payment Approval")) {
                                 // setDrawerContentStatus("Awaiting Finance");
                                 setSelectedPaymentDetails(record);
                                 // setPaymentHistory(record.transactions);
@@ -351,9 +349,7 @@ export default function TrainerPayment() {
                           checked={false}
                           onChange={(e) => {
                             if (record.status == "Paid") {
-                              if (
-                                permissions.includes("Verify Trainer Payment")
-                              ) {
+                              if (permissions.includes("Payment Completion")) {
                                 setIsOpenDetailsDrawer(true);
                                 setDrawerContentStatus("Complete");
                                 setSelectedPaymentDetails(record);
@@ -1420,9 +1416,7 @@ export default function TrainerPayment() {
           dataSource={paymentRequestsData}
           dataPerPage={10}
           loading={loading}
-          checkBox={
-            permissions.includes("Verify Trainer Payment") ? "true" : "false"
-          }
+          checkBox={permissions.includes("Payment Approval") ? "true" : "false"}
           size="small"
           className="questionupload_table"
           selectedDatas={handleSelectedRow}
@@ -1664,62 +1658,103 @@ export default function TrainerPayment() {
                                           </div>
                                         </>
                                       ) : (
-                                        <Row
-                                          gutter={16}
-                                          style={{
-                                            marginTop: "16px",
-                                            marginBottom: "12px",
-                                          }}
-                                        >
-                                          <Col span={12}>
-                                            <Row>
-                                              <Col span={12}>
-                                                <div className="customerdetails_rowheadingContainer">
-                                                  <p className="customerdetails_rowheading">
-                                                    Paid Date
+                                        <>
+                                          <Row
+                                            gutter={16}
+                                            style={{
+                                              marginTop: "16px",
+                                              marginBottom: "12px",
+                                            }}
+                                          >
+                                            <Col span={12}>
+                                              <Row>
+                                                <Col span={12}>
+                                                  <div className="customerdetails_rowheadingContainer">
+                                                    <p className="customerdetails_rowheading">
+                                                      Paid Date
+                                                    </p>
+                                                  </div>
+                                                </Col>
+                                                <Col span={12}>
+                                                  <p className="customerdetails_text">
+                                                    {item.paid_date
+                                                      ? moment(
+                                                          item.paid_date,
+                                                        ).format("DD/MM/YYYY")
+                                                      : "-"}
                                                   </p>
-                                                </div>
-                                              </Col>
-                                              <Col span={12}>
-                                                <p className="customerdetails_text">
-                                                  {item.paid_date
-                                                    ? moment(
-                                                        item.paid_date,
-                                                      ).format("DD/MM/YYYY")
-                                                    : "-"}
-                                                </p>
-                                              </Col>
-                                            </Row>
-                                          </Col>
+                                                </Col>
+                                              </Row>
+                                            </Col>
 
-                                          <Col span={12}>
-                                            <Row>
+                                            <Col span={12}>
+                                              <Row>
+                                                <Col span={12}>
+                                                  <div className="customerdetails_rowheadingContainer">
+                                                    <p className="customerdetails_rowheading">
+                                                      Bulk Payment SS
+                                                    </p>
+                                                  </div>
+                                                </Col>
+                                                <Col span={12}>
+                                                  <button
+                                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                                    onClick={() => {
+                                                      setIsOpenPaymentScreenshotModal(
+                                                        true,
+                                                      );
+                                                      setTransactionScreenshot(
+                                                        item.payment_screenshot,
+                                                      );
+                                                    }}
+                                                  >
+                                                    <FaRegEye size={16} /> View
+                                                    screenshot
+                                                  </button>
+                                                </Col>
+                                              </Row>
+                                            </Col>
+                                          </Row>
+
+                                          {/* ----------individual screenshot---------------- */}
+                                          {item.approved_screenshot && (
+                                            <Row
+                                              gutter={16}
+                                              style={{
+                                                marginTop: "16px",
+                                                marginBottom: "12px",
+                                              }}
+                                            >
                                               <Col span={12}>
-                                                <div className="customerdetails_rowheadingContainer">
-                                                  <p className="customerdetails_rowheading">
-                                                    Payment Screenshot
-                                                  </p>
-                                                </div>
-                                              </Col>
-                                              <Col span={12}>
-                                                <button
-                                                  className="pendingcustomer_paymentscreenshot_viewbutton"
-                                                  onClick={() => {
-                                                    setIsOpenPaymentScreenshotModal(
-                                                      true,
-                                                    );
-                                                    setTransactionScreenshot(
-                                                      item.payment_screenshot,
-                                                    );
-                                                  }}
-                                                >
-                                                  <FaRegEye size={16} /> View
-                                                  screenshot
-                                                </button>
+                                                <Row>
+                                                  <Col span={12}>
+                                                    <div className="customerdetails_rowheadingContainer">
+                                                      <p className="customerdetails_rowheading">
+                                                        Ind. Payment SS
+                                                      </p>
+                                                    </div>
+                                                  </Col>
+                                                  <Col span={12}>
+                                                    <button
+                                                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                                                      onClick={() => {
+                                                        setIsOpenPaymentScreenshotModal(
+                                                          true,
+                                                        );
+                                                        setTransactionScreenshot(
+                                                          item.approved_screenshot,
+                                                        );
+                                                      }}
+                                                    >
+                                                      <FaRegEye size={16} />{" "}
+                                                      View screenshot
+                                                    </button>
+                                                  </Col>
+                                                </Row>
                                               </Col>
                                             </Row>
-                                          </Col>
-                                        </Row>
+                                          )}
+                                        </>
                                       )}
                                     </div>
                                   </Collapse.Panel>
