@@ -20,6 +20,8 @@ import { CommonMessage } from "../Common/CommonMessage";
 import ClassSchedule from "../Customers/ClassSchedule";
 import OthersHandling from "../Customers/OthersHandling";
 import PassesOutProcess from "../Customers/PassedOutProcess";
+import { FaLinkedinIn } from "react-icons/fa";
+import PreCertificate from "../Customers/PreCertificate";
 
 const UpdateBatchCustomers = forwardRef(
   ({ editBatchItem, callgetBatchesApi }) => {
@@ -27,6 +29,7 @@ const UpdateBatchCustomers = forwardRef(
     const classScheduleRef = useRef();
     const othersHandlingRef = useRef();
     const passedOutProcessRef = useRef();
+    const preCertificateRef = useRef();
     //--------------Basic usestates
     const [selectedRows, setSelectedRows] = useState([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -35,6 +38,7 @@ const UpdateBatchCustomers = forwardRef(
     const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
     const [customerDetails, setCustomerDetails] = useState(null);
     const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
+    const [isCertificate, setIsCertificate] = useState(false);
     //-----------update customer usestates----------------
     const [moveToOptions, setMoveToOptions] = useState([
       { id: "Class Schedule", name: "Class Schedule", is_active: true },
@@ -183,7 +187,9 @@ const UpdateBatchCustomers = forwardRef(
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Class Going" ? (
-                <div style={{ display: "flex", gap: "12px" }}>
+                <div
+                  style={{ display: "flex", gap: "6px", alignItems: "center" }}
+                >
                   <Button className="customers_status_classgoing_button">
                     {text}
                   </Button>
@@ -191,6 +197,23 @@ const UpdateBatchCustomers = forwardRef(
                   <p className="customer_classgoing_percentage">{`${parseFloat(
                     classPercent,
                   )}%`}</p>
+
+                  <Tooltip placement="top" title="Linkedin CheckIn">
+                    <FaLinkedinIn
+                      size={14}
+                      color="#0a66c2"
+                      className="customers_formlink_copybutton"
+                      style={{ cursor: "pointer", marginTop: "-2px" }}
+                      onClick={() => {
+                        setCustomerDetails(record);
+                        setIsCertificate(!isCertificate);
+                        setSelectedRowKeys([]);
+                        setSelectedRows([]);
+                        setSelectedStatus("");
+                        return;
+                      }}
+                    />
+                  </Tooltip>
                 </div>
               ) : (
                 <p style={{ marginLeft: "6px" }}>-</p>
@@ -286,6 +309,8 @@ const UpdateBatchCustomers = forwardRef(
       if (rows.length === 0) {
         resetCustomersTable();
         return;
+      } else {
+        setIsCertificate(false);
       }
 
       console.log("selected rows", rows);
@@ -677,6 +702,38 @@ const UpdateBatchCustomers = forwardRef(
           ""
         )}
 
+        {isCertificate ? (
+          <>
+            <PreCertificate
+              ref={preCertificateRef}
+              customerDetails={customerDetails}
+              setUpdateButtonLoading={setUpdateButtonLoading}
+              callgetCustomersApi={() => {
+                setIsCertificate(false);
+              }}
+            />
+            <div className="leadmanager_tablefiler_footer">
+              <div className="leadmanager_submitlead_buttoncontainer">
+                {updateButtonLoading ? (
+                  <button className="users_adddrawer_loadingcreatebutton">
+                    <CommonSpinner />
+                  </button>
+                ) : (
+                  <button
+                    className="users_adddrawer_createbutton"
+                    onClick={() =>
+                      preCertificateRef.current?.handleGeneratePreCert()
+                    }
+                  >
+                    Generate
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          ""
+        )}
         <Drawer
           title="Customer Details"
           open={isOpenDetailsDrawer}

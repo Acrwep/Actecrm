@@ -42,6 +42,7 @@ const CustomerEmailTemplate = forwardRef(
       customerDetails,
       setUpdateButtonLoading,
       isTrainerPaymentPage = false,
+      paymentScreenShotBase64 = "",
       trainerEmail = "",
     },
     ref,
@@ -305,6 +306,7 @@ const CustomerEmailTemplate = forwardRef(
         email: isTrainerPaymentPage ? trainerEmail : customerDetails.email,
         subject: subject,
         content: emailContent,
+        base64Image: paymentScreenShotBase64,
       };
 
       try {

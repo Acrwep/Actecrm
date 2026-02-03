@@ -11,6 +11,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { TbReport } from "react-icons/tb";
+import { IoTicketOutline } from "react-icons/io5";
 import {
   getTableColumns,
   getUserDownline,
@@ -82,6 +83,11 @@ export default function SideMenu() {
       path: "reports",
     },
     11: {
+      title: "Tickets",
+      icon: <IoTicketOutline size={17} />,
+      path: "tickets",
+    },
+    12: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -140,6 +146,11 @@ export default function SideMenu() {
       path: "reports",
     },
     11: {
+      title: "Tickets",
+      icon: <IoTicketOutline size={17} />,
+      path: "tickets",
+    },
+    12: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -171,7 +182,7 @@ export default function SideMenu() {
     }
 
     if (!permissions.includes("Settings Page")) {
-      delete updatedMenu[11];
+      delete updatedMenu[12];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -253,7 +264,7 @@ export default function SideMenu() {
         }
 
         if (!updateData.includes("Settings Page")) {
-          delete updatedMenu[11];
+          delete updatedMenu[12];
         }
 
         setSideMenuOptions(updatedMenu);

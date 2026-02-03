@@ -39,7 +39,7 @@ const ServerUpdateDetails = forwardRef(
 
     const handleUpdateDetails = async () => {
       setValidationTrigger(true);
-      const vendorNameValidate = addressValidator(vendorName);
+      const vendorNameValidate = selectValidator(vendorName);
       const costValidate = selectValidator(serverCost);
       const durationValidate = selectValidator(serverDuration);
 
@@ -77,6 +77,10 @@ const ServerUpdateDetails = forwardRef(
     const handleServerStatus = async () => {
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
         status: "Awaiting Verify",
       };
       try {
@@ -294,7 +298,7 @@ const ServerUpdateDetails = forwardRef(
                 onChange={(e) => {
                   setVendorName(e.target.value);
                   if (validationTrigger) {
-                    setVendorNameError(addressValidator(e.target.value));
+                    setVendorNameError(selectValidator(e.target.value));
                   }
                 }}
                 value={vendorName}

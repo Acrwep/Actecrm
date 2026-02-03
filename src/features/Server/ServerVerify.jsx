@@ -18,11 +18,14 @@ import {
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./styles.css";
+import ImageUploadCrop from "../Common/ImageUploadCrop";
 
 const ServerVerify = forwardRef(
   ({ serverDetails, setRejectButtonLoading, callgetServerApi }, ref) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
+    const [verifyScreenShotBase64, setVerifyScreenShotBase64] = useState("");
+    const [verifyScreenShotError, setVerifyScreenShotError] = useState("");
     const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
     const [isOpenRejectBox, setIsOpenRejectBox] = useState(false);
     const [rejectComment, setRejectComment] = useState("");
@@ -34,6 +37,12 @@ const ServerVerify = forwardRef(
     }));
 
     const handleServerVerify = () => {
+      const screenshotValidate = selectValidator(verifyScreenShotBase64);
+
+      setVerifyScreenShotError(screenshotValidate);
+
+      if (screenshotValidate) return;
+
       setIsOpenConfirmModal(true);
     };
 
@@ -43,7 +52,7 @@ const ServerVerify = forwardRef(
         setRejectCommentError(addressValidator(rejectComment));
         setTimeout(() => {
           const container = document.getElementById(
-            "server_commentreject_container"
+            "server_commentreject_container",
           );
           container.scrollIntoView({ behavior: "smooth" });
         }, 200);
@@ -63,6 +72,10 @@ const ServerVerify = forwardRef(
 
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
         status: "Verification Rejected",
         comments: rejectComment,
         rejected_by:
@@ -80,7 +93,7 @@ const ServerVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -89,6 +102,15 @@ const ServerVerify = forwardRef(
       setVerifyButtonLoading(true);
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        server_trans_id:
+          serverDetails && serverDetails.server_trans_id
+            ? serverDetails.server_trans_id
+            : null,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
+        screenshot: verifyScreenShotBase64,
         status: "Awaiting Approval",
       };
       try {
@@ -104,7 +126,7 @@ const ServerVerify = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -219,7 +241,7 @@ const ServerVerify = forwardRef(
           <Row
             gutter={16}
             style={{
-              marginTop: "22px",
+              marginTop: "30px",
               marginBottom: isOpenRejectBox ? "0px" : "40px",
             }}
           >
@@ -239,6 +261,28 @@ const ServerVerify = forwardRef(
                 }
                 disabled={true}
               />
+            </Col>
+            <Col span={8}>
+              <ImageUploadCrop
+                label="Verify Screenshot"
+                aspect={1}
+                maxSizeMB={1}
+                required={true}
+                value={verifyScreenShotBase64}
+                onChange={(base64) => setVerifyScreenShotBase64(base64)}
+                onErrorChange={setVerifyScreenShotError} // ✅ pass setter directly
+              />
+              {verifyScreenShotError && (
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#d32f2f",
+                    marginTop: 4,
+                  }}
+                >
+                  {`Verify Screenshot ${verifyScreenShotError}`}
+                </p>
+              )}
             </Col>
           </Row>
 
@@ -323,7 +367,7 @@ const ServerVerify = forwardRef(
         </Modal>
       </div>
     );
-  }
+  },
 );
 
 export default ServerVerify;

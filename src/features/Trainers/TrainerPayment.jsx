@@ -40,7 +40,7 @@ import {
   addressValidator,
   formatToBackendIST,
   getBalanceAmount,
-  getCurrentandPreviousweekDate,
+  getCurrentandLast90Date,
   priceValidator,
   selectValidator,
 } from "../Common/Validation";
@@ -511,7 +511,7 @@ export default function TrainerPayment() {
       console.log(error);
     } finally {
       setTimeout(() => {
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+        const PreviousAndCurrentDate = getCurrentandLast90Date();
         setSelectedDates(PreviousAndCurrentDate);
         getTrainerPaymentsData(
           null,
@@ -893,7 +893,7 @@ export default function TrainerPayment() {
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getCurrentandLast90Date();
     setSelectedDates(PreviousAndCurrentDate);
     setSelectedRowKeys([]);
     setSelectedRows([]);
@@ -1508,6 +1508,7 @@ export default function TrainerPayment() {
             <ViewTrainerPaymentDetails
               selectedPaymentDetails={selectedPaymentDetails}
               trainersData={trainersData}
+              allBranchesData={allBranchesData}
               isShowPaymentDetails={false}
             />
             <div className="customer_statusupdate_adddetailsContainer">
@@ -2055,6 +2056,7 @@ export default function TrainerPayment() {
                         <CustomerEmailTemplate
                           ref={emailTemplateRef}
                           isTrainerPaymentPage={true}
+                          paymentScreenShotBase64={paymentScreenShotBase64}
                           trainerEmail={selectedPaymentDetails?.trainer_email}
                         />
                       </div>
@@ -2114,6 +2116,7 @@ export default function TrainerPayment() {
           <ViewTrainerPaymentDetails
             selectedPaymentDetails={selectedPaymentDetails}
             trainersData={trainersData}
+            allBranchesData={allBranchesData}
           />
         ) : (
           ""

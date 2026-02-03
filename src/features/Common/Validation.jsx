@@ -226,6 +226,22 @@ export const getCurrentandPreviousweekDate = () => {
   return dates;
 };
 
+export const getCurrentandLast90Date = () => {
+  const currentDate = new Date();
+
+  // Calculate previous week date (subtract 7 days)
+  const previousWeekDate = new Date(currentDate);
+  previousWeekDate.setDate(previousWeekDate.getDate() - 89);
+
+  // Format dates
+  const formattedCurrentDate = formatDate(currentDate);
+  const formattedPreviousWeekDate = formatDate(previousWeekDate);
+
+  let dates = [];
+  dates.push(formattedPreviousWeekDate, formattedCurrentDate);
+  return dates;
+};
+
 export const parseTimeToDecimal = (timeString) => {
   const [hours, minutes, seconds] = timeString.split(":").map(Number);
   return hours + minutes / 60 + seconds / 3600;
@@ -233,7 +249,7 @@ export const parseTimeToDecimal = (timeString) => {
 
 export const formatToBackendIST = (date) => {
   const istDate = new Date(
-    date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
   );
 
   const pad = (n) => String(n).padStart(2, "0");
@@ -263,7 +279,7 @@ export const priceCategory = (fees) => {
 export const shortRelativeTime = (date) => {
   const diffSeconds = moment().diff(
     moment(date, "YYYY-MM-DD HH:mm:ss"),
-    "seconds"
+    "seconds",
   );
 
   if (diffSeconds < 60) return `${diffSeconds}s ago`;
@@ -376,7 +392,7 @@ export const capitalizeWords = (text) => {
     .map((word) =>
       word.length > 0
         ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        : ""
+        : "",
     )
     .join(" ");
 };
@@ -389,7 +405,7 @@ export const getCountryFromDialCode = (dialCode) => {
 
   // Find all countries matching this dial code
   const countries = defaultCountries.filter(
-    (c) => parseCountry(c).dialCode === code
+    (c) => parseCountry(c).dialCode === code,
   );
 
   // Return first ISO code if found, otherwise default "in"
@@ -576,14 +592,14 @@ export const formatAddress = (value) => {
 
           word = word.replace(
             /(\d+)([a-zA-Z])/g,
-            (_, num, char) => num + char.toUpperCase()
+            (_, num, char) => num + char.toUpperCase(),
           );
 
           if (/^\d+$/.test(word)) return word;
 
           return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
         })
-        .join(" ")
+        .join(" "),
     )
     .join(", ");
 };

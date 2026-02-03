@@ -40,6 +40,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
   formatToBackendIST,
+  getCurrentandLast90Date,
   getCurrentandPreviousweekDate,
   selectValidator,
 } from "../Common/Validation";
@@ -555,7 +556,7 @@ export default function Server() {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      const PreviousAndCurrentDate = getCurrentandLast90Date();
       setSelectedDates(PreviousAndCurrentDate);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -614,7 +615,7 @@ export default function Server() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      const PreviousAndCurrentDate = getCurrentandLast90Date();
       // getServerRequestData(
       //   PreviousAndCurrentDate[0],
       //   PreviousAndCurrentDate[1],
@@ -632,7 +633,7 @@ export default function Server() {
   };
 
   const rerunServerFilters = (stateData, downliners) => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getCurrentandLast90Date();
 
     const receivedSearchValueFromNotification = stateData?.searchValue || null;
     const receivedStartDateFromNotification = stateData?.startDate || null;
@@ -643,7 +644,7 @@ export default function Server() {
       setSearchValue(receivedSearchValueFromNotification);
     }
     if (receivedStartDateFromNotification) {
-      setDateFilterType(1);
+      setDateFilterType("Raise Date");
       setSelectedDates([
         receivedStartDateFromNotification,
         receivedEndDateFromNotification,
@@ -1332,7 +1333,14 @@ export default function Server() {
     setVerifyButtonLoading(true);
     const today = new Date();
     const payload = {
-      ...(updateStatus == "Server Raised" ? { server_raise_date: today } : {}),
+      ...(updateStatus == "Server Raised"
+        ? { server_raise_date: today }
+        : {
+            server_raise_date:
+              serverDetails && serverDetails.server_raise_date
+                ? serverDetails.server_raise_date
+                : null,
+          }),
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status: updateStatus,
     };
@@ -1484,11 +1492,12 @@ export default function Server() {
     setServerDetails(null);
     setButtonLoading(false);
     setRejectButtonLoading(false);
+    setIsOpenMoveToIssueModal(false);
     setCustomerDetails(null);
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getCurrentandLast90Date();
     setSelectedDates(PreviousAndCurrentDate);
     setSearchValue("");
     setSelectedUserId(null);

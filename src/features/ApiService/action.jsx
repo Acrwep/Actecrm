@@ -1668,3 +1668,51 @@ export const getBatchStudents = async (payload) => {
     throw error;
   }
 };
+
+//helpdesk api's
+export const checkTicketEmail = async (payload) => {
+  try {
+    const response = await api.post(`/api/validateEmail`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTicketCategories = async (payload) => {
+  try {
+    const response = await api.get(`/api/getCategories`, { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTicketSubCategories = async (payload) => {
+  try {
+    const response = await api.get(`/api/getSubCategories`, {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createTicket = async (payload) => {
+  try {
+    const response = await api.post(`/api/createTicket`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllTickets = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTickets`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -4,6 +4,7 @@ import ImgCrop from "antd-img-crop";
 import { UploadOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import { CommonMessage } from "./CommonMessage";
 import "./commonstyles.css";
+import PrismaZoom from "react-prismazoom";
 
 export default function ImageUploadCrop({
   label = "Upload Image",
@@ -141,7 +142,11 @@ export default function ImageUploadCrop({
         centered
         width="30%"
       >
-        <img alt="Preview" style={{ width: "100%" }} src={previewImage} />
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            <img alt="Preview" style={{ width: "100%" }} src={previewImage} />
+          </PrismaZoom>
+        </div>
       </Modal>
     </div>
   );

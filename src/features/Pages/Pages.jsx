@@ -44,6 +44,8 @@ import Reports from "../Reports/Reports";
 import { onMessageListener } from "../../firebase";
 import "./styles.css";
 import WorkSheet from "../WorkSheet/WorkSheet";
+import Helpdesk from "../Helpdesk/Helpdesk";
+import Tickets from "../Helpdesk/Tickets";
 
 const { Sider, Content, Header } = Layout;
 
@@ -64,7 +66,8 @@ export default function Pages() {
       path === "/login" ||
       path.startsWith("/trainer-registration") ||
       path.startsWith("/customer-registration") ||
-      path === "/success"
+      path === "/success" ||
+      path === "/helpdesk"
     );
   };
 
@@ -159,6 +162,7 @@ export default function Pages() {
           element={<CustomerRegistration />}
         />
         <Route path="/success" element={<Success />} />
+        <Route path="/helpdesk" element={<Helpdesk />} />
       </Routes>
     );
   }
@@ -250,6 +254,7 @@ export default function Pages() {
               element={<TrainerRegistration />}
               path="/trainer-registration"
             />
+            <Route element={<Tickets />} path="/tickets" />
             <Route element={<WorkSheet />} path="/react-worksheet" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>

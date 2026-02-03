@@ -45,7 +45,6 @@ export default function Batches() {
   const [editBatchItem, setEditBatchItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
-
   /* ---------------- Trainer STATES ---------------- */
   const [trainersData, setTrainersData] = useState([]);
   const [trainerFilterId, setTrainerFilterId] = useState(null);

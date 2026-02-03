@@ -3774,7 +3774,9 @@ export default function Customers() {
         title={
           drawerContentStatus == "Re-Assign Trainer"
             ? "Re-Assign Trainer"
-            : "Update Status"
+            : drawerContentStatus == "Pre Certificate"
+              ? "Generate Certificate"
+              : "Update Status"
         }
         open={isStatusUpdateDrawer}
         onClose={updateStatusDrawerReset}

@@ -5,6 +5,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTextArea from "../Common/CommonTextArea";
 import { LuIndianRupee } from "react-icons/lu";
+import { FaRegEye } from "react-icons/fa";
 import CommonSpinner from "../Common/CommonSpinner";
 import {
   insertServerTrack,
@@ -18,9 +19,14 @@ import {
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./styles.css";
+import PrismaZoom from "react-prismazoom";
 
 const ServerApproval = forwardRef(
   ({ serverDetails, setRejectButtonLoading, callgetServerApi }, ref) => {
+    const [isOpenVerifyScreenshotModal, setIsOpenVerifyScreenshotModal] =
+      useState(false);
+    const [verificationScreenshot, setVerificationScreenshot] = useState("");
+
     const [isOpenApproveModal, setIsOpenApproveModal] = useState(false);
     const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
     const [isOpenRejectBox, setIsOpenRejectBox] = useState(false);
@@ -42,7 +48,7 @@ const ServerApproval = forwardRef(
         setRejectCommentError(addressValidator(rejectComment));
         setTimeout(() => {
           const container = document.getElementById(
-            "server_commentreject_container"
+            "server_commentreject_container",
           );
           container.scrollIntoView({ behavior: "smooth" });
         }, 200);
@@ -62,6 +68,10 @@ const ServerApproval = forwardRef(
 
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
         status: "Approval Rejected",
         comments: rejectComment,
         rejected_by:
@@ -79,7 +89,7 @@ const ServerApproval = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -88,6 +98,10 @@ const ServerApproval = forwardRef(
       setVerifyButtonLoading(true);
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
         status: "Approved",
       };
       try {
@@ -103,7 +117,7 @@ const ServerApproval = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -145,8 +159,8 @@ const ServerApproval = forwardRef(
         ...(trackStatus && trackStatus == "Approved"
           ? { details: approveDetails }
           : trackStatus == "Approval Rejected"
-          ? { details: rejectDetails }
-          : {}),
+            ? { details: rejectDetails }
+            : {}),
       };
       try {
         await insertServerTrack(payload);
@@ -236,6 +250,21 @@ const ServerApproval = forwardRef(
                 disabled={true}
               />
             </Col>
+            <Col>
+              <button
+                className="pendingcustomer_paymentscreenshot_viewbutton"
+                onClick={() => {
+                  setIsOpenVerifyScreenshotModal(true);
+                  setVerificationScreenshot(
+                    serverDetails && serverDetails.screenshot
+                      ? serverDetails.screenshot
+                      : "-",
+                  );
+                }}
+              >
+                <FaRegEye size={16} /> View Verification Screenshot
+              </button>
+            </Col>
           </Row>
 
           {isOpenRejectBox && (
@@ -319,9 +348,36 @@ const ServerApproval = forwardRef(
             )}
           </div>
         </Modal>
+
+        {/* payment screenshot modal */}
+        <Modal
+          title="Verification Screenshot"
+          open={isOpenVerifyScreenshotModal}
+          onCancel={() => {
+            setIsOpenVerifyScreenshotModal(false);
+            setVerificationScreenshot("");
+          }}
+          footer={false}
+          width="32%"
+          className="customer_paymentscreenshot_modal"
+        >
+          <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+            <PrismaZoom>
+              {verificationScreenshot ? (
+                <img
+                  src={`data:image/png;base64,${verificationScreenshot}`}
+                  alt="payment screenshot"
+                  className="customer_paymentscreenshot_image"
+                />
+              ) : (
+                "-"
+              )}
+            </PrismaZoom>
+          </div>
+        </Modal>
       </div>
     );
-  }
+  },
 );
 
 export default ServerApproval;

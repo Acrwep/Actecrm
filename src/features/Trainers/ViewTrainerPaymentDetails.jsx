@@ -21,6 +21,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 export default function ViewTrainerPaymentDetails({
   selectedPaymentDetails,
   trainersData,
+  allBranchesData,
   isShowPaymentDetails = true,
 }) {
   //trainer details
@@ -89,6 +90,14 @@ export default function ViewTrainerPaymentDetails({
     }
   };
 
+  const getPlaceOfSupplyOrPlaceOfSaleName = (Id) => {
+    const item = allBranchesData.find((f) => f.id == Id);
+    if (item) {
+      return item.name;
+    } else {
+      return "";
+    }
+  };
   return (
     <div>
       <Row
@@ -383,6 +392,26 @@ export default function ViewTrainerPaymentDetails({
                                   </p>
                                 </Col>
                               </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Place Of Supply
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <EllipsisTooltip
+                                    text={getPlaceOfSupplyOrPlaceOfSaleName(
+                                      item.place_of_supply
+                                        ? item.place_of_supply
+                                        : 0,
+                                    )}
+                                    smallText={true}
+                                  />
+                                </Col>
+                              </Row>
                             </Col>
 
                             {/* ------------right------------ */}
@@ -440,14 +469,41 @@ export default function ViewTrainerPaymentDetails({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Stream
+                                      Place Of Sale
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.streams}
-                                  </p>
+                                  <EllipsisTooltip
+                                    text={getPlaceOfSupplyOrPlaceOfSaleName(
+                                      item.place_of_sale
+                                        ? item.place_of_sale
+                                        : 0,
+                                    )}
+                                    smallText={true}
+                                  />
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Screenshot
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <button
+                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                    onClick={() => {
+                                      setIsOpenReviewModal(true);
+                                      setReviewType("Verification Screenshot");
+                                      setReviewScreenshot(item.screenshot);
+                                    }}
+                                  >
+                                    <FaRegEye size={16} /> View screenshot
+                                  </button>
                                 </Col>
                               </Row>
                             </Col>
