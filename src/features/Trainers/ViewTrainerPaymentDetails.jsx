@@ -494,16 +494,22 @@ export default function ViewTrainerPaymentDetails({
                                   </div>
                                 </Col>
                                 <Col span={12}>
-                                  <button
-                                    className="pendingcustomer_paymentscreenshot_viewbutton"
-                                    onClick={() => {
-                                      setIsOpenReviewModal(true);
-                                      setReviewType("Verification Screenshot");
-                                      setReviewScreenshot(item.screenshot);
-                                    }}
-                                  >
-                                    <FaRegEye size={16} /> View screenshot
-                                  </button>
+                                  {item.screenshot ? (
+                                    <button
+                                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                                      onClick={() => {
+                                        setIsOpenReviewModal(true);
+                                        setReviewType(
+                                          "Verification Screenshot",
+                                        );
+                                        setReviewScreenshot(item.screenshot);
+                                      }}
+                                    >
+                                      <FaRegEye size={16} /> View screenshot
+                                    </button>
+                                  ) : (
+                                    "-"
+                                  )}
                                 </Col>
                               </Row>
                             </Col>

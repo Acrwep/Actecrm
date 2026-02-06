@@ -103,7 +103,6 @@ const AddTrainerPaymentRequest = forwardRef(
         place_of_supply: "",
         place_of_supply_error: "",
         screenshot: "",
-        screenshot_error: "",
         attendance_status: null,
         attendance_status_error: "",
         attendanceType: "Link",
@@ -253,7 +252,6 @@ const AddTrainerPaymentRequest = forwardRef(
         place_of_supply: "",
         place_of_supply_error: "",
         screenshot: "",
-        screenshot_error: "",
         attendance_status: null,
         attendance_status_error: "",
         attendanceType: "Link",
@@ -287,9 +285,6 @@ const AddTrainerPaymentRequest = forwardRef(
       }
       if (field === "place_of_supply") {
         updatedDetails[index].place_of_supply_error = selectValidator(value);
-      }
-      if (field === "screenshot") {
-        updatedDetails[index].screenshot_error = selectValidator(value);
       }
       if (field === "attendance_status") {
         updatedDetails[index].attendance_status_error = selectValidator(value);
@@ -411,7 +406,6 @@ const AddTrainerPaymentRequest = forwardRef(
             ...item,
             place_of_sale_error: selectValidator(item.place_of_sale),
             place_of_supply_error: selectValidator(item.place_of_supply),
-            screenshot_error: selectValidator(item.screenshot),
             attendance_status_error: selectValidator(item.attendance_status),
             attendance_sheetlink_error:
               item.attendanceType == "Link"
@@ -429,7 +423,6 @@ const AddTrainerPaymentRequest = forwardRef(
           (f) =>
             f.place_of_sale_error != "" ||
             f.place_of_supply_error != "" ||
-            f.screenshot_error != "" ||
             f.attendance_status_error != "" ||
             f.attendance_sheetlink_error != "" ||
             f.attendance_screenshot_error != "" ||
@@ -1249,26 +1242,13 @@ const AddTrainerPaymentRequest = forwardRef(
                     label="Screenshot"
                     aspect={1}
                     maxSizeMB={1}
-                    required={true}
+                    required={false}
                     value={item.screenshot}
                     onChange={(base64) =>
                       handleFormFields("screenshot", index, base64)
                     }
-                    onErrorChange={(error) =>
-                      handleFormFields("screenshot_error", index, error)
-                    }
+                    onErrorChange={""}
                   />
-                  {item.screenshot_error && (
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        color: "#d32f2f",
-                        marginTop: 4,
-                      }}
-                    >
-                      {`Screenshot ${item.screenshot_error}`}
-                    </p>
-                  )}
                 </Col>
               </Row>
 

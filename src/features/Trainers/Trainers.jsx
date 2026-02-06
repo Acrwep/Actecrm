@@ -305,7 +305,7 @@ export default function Trainers() {
                       navigator.clipboard.writeText(
                         `${
                           import.meta.env.VITE_EMAIL_URL
-                        }/trainer-registration/${record.id}`
+                        }/trainer-registration/${record.id}`,
                       );
                       CommonMessage("success", "Link Copied");
                       console.log("Copied: eeee");
@@ -400,7 +400,7 @@ export default function Trainers() {
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
@@ -496,24 +496,24 @@ export default function Trainers() {
     trainerStatus,
     hr_id,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : {}),
       ...(trainerStatus && trainerStatus == "Form Pending"
         ? { is_form_sent: 1 }
         : trainerStatus == "Onboarded"
-        ? { is_onboarding: 1 }
-        : trainerStatus == "Ongoing"
-        ? { ongoing: "Ongoing" }
-        : trainerStatus && { status: trainerStatus }),
+          ? { is_onboarding: 1 }
+          : trainerStatus == "Ongoing"
+            ? { ongoing: "Ongoing" }
+            : trainerStatus && { status: trainerStatus }),
       ...(hr_id && { created_by: hr_id }),
       page: pageNumber,
       limit: limit,
@@ -680,6 +680,14 @@ export default function Trainers() {
                   );
                 },
               };
+            case "location":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
             case "form_status":
               return {
                 ...col,
@@ -704,7 +712,7 @@ export default function Trainers() {
                                 navigator.clipboard.writeText(
                                   `${
                                     import.meta.env.VITE_EMAIL_URL
-                                  }/trainer-registration/${record.id}`
+                                  }/trainer-registration/${record.id}`,
                                 );
                                 CommonMessage("success", "Link Copied");
                                 console.log("Copied: eeee");
@@ -820,7 +828,7 @@ export default function Trainers() {
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -889,16 +897,16 @@ export default function Trainers() {
     //mobile fetch
     setMobileCountryCode(item.mobile_phone_code ? item.mobile_phone_code : "");
     const selected_mobile_country = getCountryFromDialCode(
-      `+${item.mobile_phone_code ? item.mobile_phone_code : ""}`
+      `+${item.mobile_phone_code ? item.mobile_phone_code : ""}`,
     );
     setSelectedCountry(selected_mobile_country);
     setMobile(item.mobile);
     //whatsapp fetch
     setWhatsAppCountryCode(
-      item.whatsapp_phone_code ? item.whatsapp_phone_code : ""
+      item.whatsapp_phone_code ? item.whatsapp_phone_code : "",
     );
     const selected_whatsapp_country = getCountryFromDialCode(
-      `+${item.whatsapp_phone_code ? item.whatsapp_phone_code : ""}`
+      `+${item.whatsapp_phone_code ? item.whatsapp_phone_code : ""}`,
     );
     setWhatsAppCountry(selected_whatsapp_country);
     setWhatsApp(item.whatsapp);
@@ -999,7 +1007,7 @@ export default function Trainers() {
 
   const handleRemoveProfile = (fileToRemove) => {
     const newFileList = profilePictureArray.filter(
-      (file) => file.uid !== fileToRemove.uid
+      (file) => file.uid !== fileToRemove.uid,
     );
     setProfilePictureArray(newFileList);
     // CommonToaster("Profile removed");
@@ -1034,7 +1042,7 @@ export default function Trainers() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1066,7 +1074,7 @@ export default function Trainers() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1219,7 +1227,7 @@ export default function Trainers() {
             status,
             hrId,
             pagination.page,
-            pagination.limit
+            pagination.limit,
           );
         }, 300);
       } catch (error) {
@@ -1227,7 +1235,7 @@ export default function Trainers() {
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     } else {
@@ -1243,11 +1251,11 @@ export default function Trainers() {
             status,
             hrId,
             pagination.page,
-            pagination.limit
+            pagination.limit,
           );
           handleSendFormLink(
             createdTrainerDetails.email,
-            createdTrainerDetails.insertId
+            createdTrainerDetails.insertId,
           );
         }, 300);
       } catch (error) {
@@ -1255,7 +1263,7 @@ export default function Trainers() {
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -1275,7 +1283,7 @@ export default function Trainers() {
           status,
           hrId,
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
       });
     } catch (error) {
@@ -1283,7 +1291,7 @@ export default function Trainers() {
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1313,7 +1321,7 @@ export default function Trainers() {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1447,8 +1455,8 @@ export default function Trainers() {
                   technologyError
                     ? "leads_errorcourse_addcontainer"
                     : isTechnologyFocused
-                    ? "leads_focusedcourse_addcontainer"
-                    : "leads_course_addcontainer"
+                      ? "leads_focusedcourse_addcontainer"
+                      : "leads_course_addcontainer"
                 }
               >
                 <Tooltip
@@ -1562,10 +1570,10 @@ export default function Trainers() {
                       skills.length <= 0 && !skillsError
                         ? "trainer_skills_multiselect"
                         : skills.length >= 1 && !skillsError
-                        ? "trainer_skills_multiselect_two"
-                        : skills.length <= 0 && skillsError
-                        ? "trainer_skills_multiselect_error"
-                        : "trainer_skills_multiselect"
+                          ? "trainer_skills_multiselect_two"
+                          : skills.length <= 0 && skillsError
+                            ? "trainer_skills_multiselect_error"
+                            : "trainer_skills_multiselect"
                     }
                     style={{ width: "100%" }}
                     suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
@@ -1620,8 +1628,8 @@ export default function Trainers() {
                     skillsError
                       ? "leads_errorcourse_addcontainer"
                       : isSkillFocused
-                      ? "leads_focusedcourse_addcontainer"
-                      : "leads_course_addcontainer"
+                        ? "leads_focusedcourse_addcontainer"
+                        : "leads_course_addcontainer"
                   }
                   style={{ height: "41px" }}
                 >
@@ -1771,10 +1779,10 @@ export default function Trainers() {
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : ""
                   }
                   width="100%"
                   height="33px"
@@ -1793,7 +1801,7 @@ export default function Trainers() {
                             status,
                             hrId,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1842,7 +1850,7 @@ export default function Trainers() {
                                 status,
                                 hrId,
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -1887,7 +1895,7 @@ export default function Trainers() {
                       status,
                       e.target.value,
                       1,
-                      pagination.limit
+                      pagination.limit,
                     );
                   }}
                   disableClearable={false}
@@ -1979,7 +1987,7 @@ export default function Trainers() {
                     "Form Pending",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2004,7 +2012,7 @@ export default function Trainers() {
                     "Verify Pending",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2029,7 +2037,7 @@ export default function Trainers() {
                     "Verified",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2054,7 +2062,7 @@ export default function Trainers() {
                     "Onboarded",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2079,7 +2087,7 @@ export default function Trainers() {
                     "Ongoing",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2104,7 +2112,7 @@ export default function Trainers() {
                     "Rejected",
                     hrId,
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               >
@@ -2146,7 +2154,7 @@ export default function Trainers() {
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}

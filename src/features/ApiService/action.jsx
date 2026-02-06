@@ -1716,3 +1716,32 @@ export const getAllTickets = async (payload) => {
     throw error;
   }
 };
+
+export const updateTicketStatus = async (payload) => {
+  try {
+    const response = await api.put(`/api/updateTicketStatus`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const ticketTrack = async (payload) => {
+  try {
+    const response = await api.post(`/api/ticketTrack`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTicketTracks = async (ticket_id) => {
+  try {
+    const response = await api.get(
+      `/api/getTicketTracks?ticket_id=${ticket_id}`,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

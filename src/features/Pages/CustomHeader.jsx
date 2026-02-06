@@ -27,6 +27,7 @@ import { FaRegUser } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { FcManager } from "react-icons/fc";
 import { AiOutlineLogout } from "react-icons/ai";
+import { MdAutorenew } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import { RiErrorWarningFill } from "react-icons/ri";
@@ -845,6 +846,26 @@ export default function CustomHeader() {
                 </p>
               </Col>
             </Row>
+
+            {leadDetails && leadDetails.re_assigned_date && (
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <MdAutorenew size={16} color="gray" />
+                    <p className="customerdetails_rowheading">Re-Assined At</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p className="customerdetails_text">
+                    {leadDetails && leadDetails.re_assigned_date
+                      ? moment(leadDetails.re_assigned_date).format(
+                          "DD/MM/YYYY",
+                        )
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
+            )}
 
             {leadDetails && leadDetails.is_customer_reg == 0 ? (
               <Row style={{ marginTop: "12px" }}>

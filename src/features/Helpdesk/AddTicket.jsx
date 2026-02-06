@@ -312,6 +312,8 @@ const AddTicket = forwardRef(
 
       setButtonLoading(true);
       const today = new Date();
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
 
       const payload = {
         title: title,
@@ -328,6 +330,7 @@ const AddTicket = forwardRef(
         raised_by_id:
           raisedByTypeId == "Customer" ? selectedCustomerId : trainerId,
         raised_by_role: raisedByTypeId,
+        assigned_to: convertAsJson?.user_id,
         created_at: formatToBackendIST(today),
       };
       try {

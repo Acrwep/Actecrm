@@ -1334,7 +1334,7 @@ export default function Server() {
     const today = new Date();
     const payload = {
       ...(updateStatus == "Server Raised"
-        ? { server_raise_date: today }
+        ? { server_raise_date: formatToBackendIST(today) }
         : {
             server_raise_date:
               serverDetails && serverDetails.server_raise_date

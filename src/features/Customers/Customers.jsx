@@ -3344,6 +3344,7 @@ export default function Customers() {
  )`}
             </p>
           </div>
+
           <div
             className={
               status === "Awaiting Trainer Verify"

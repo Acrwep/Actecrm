@@ -303,6 +303,7 @@ const CustomerEmailTemplate = forwardRef(
       }
 
       const payload = {
+        from_email: isTrainerPaymentPage ? "billing@acte.in" : "",
         email: isTrainerPaymentPage ? trainerEmail : customerDetails.email,
         subject: subject,
         content: emailContent,
