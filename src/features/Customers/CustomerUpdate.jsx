@@ -48,7 +48,7 @@ const CustomerUpdate = forwardRef(
       setIsOpenEditDrawer,
       paymentMasterDetails,
     },
-    ref
+    ref,
   ) => {
     //permissions
     const permissions = useSelector((state) => state.userpermissions);
@@ -72,11 +72,8 @@ const CustomerUpdate = forwardRef(
     const [whatsAppError, setWhatsAppError] = useState("");
 
     const [dateOfBirth, setDateOfBirth] = useState(null);
-    const [dateOfBirthError, setDateOfBirthError] = useState(null);
     const [gender, setGender] = useState(null);
-    const [genderError, setGenderError] = useState("");
     const [dateOfJoining, setDateOfJoining] = useState("");
-    const [dateOfJoiningError, setDateOfJoiningError] = useState("");
     const [countryOptions, setCountryOptions] = useState([]);
     const [countryId, setCountryId] = useState(null);
     const [countryIdError, setCountryIdError] = useState("");
@@ -219,10 +216,10 @@ const CustomerUpdate = forwardRef(
         setEmail(customerDetails.email);
         //mobile fetch
         setMobileCountryCode(
-          customerDetails.phonecode ? customerDetails.phonecode : ""
+          customerDetails.phonecode ? customerDetails.phonecode : "",
         );
         const selected_mobile_country = getCountryFromDialCode(
-          `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`
+          `+${customerDetails.phonecode ? customerDetails.phonecode : ""}`,
         );
         setMobileCountry(selected_mobile_country);
         setMobile(customerDetails.phone);
@@ -230,14 +227,14 @@ const CustomerUpdate = forwardRef(
         setWhatsAppCountryCode(
           customerDetails.whatsapp_phone_code
             ? customerDetails.whatsapp_phone_code
-            : ""
+            : "",
         );
         const selected_whatsapp_country = getCountryFromDialCode(
           `+${
             customerDetails.whatsapp_phone_code
               ? customerDetails.whatsapp_phone_code
               : ""
-          }`
+          }`,
         );
         setWhatsAppCountry(selected_whatsapp_country);
         setWhatsApp(customerDetails.whatsapp);
@@ -264,7 +261,7 @@ const CustomerUpdate = forwardRef(
           const allArea = response?.data?.data || [];
           setAreaOptions(allArea);
           const findArea = allArea.find(
-            (f) => f.name === customerDetails.current_location
+            (f) => f.name === customerDetails.current_location,
           );
           setAreaId(parseInt(findArea.id));
         } catch (error) {
@@ -279,7 +276,7 @@ const CustomerUpdate = forwardRef(
         setGstNumber(customerDetails?.gst_number ?? "");
         setPlacementSupport(customerDetails.placement_support);
         setServer(
-          customerDetails.is_server_required === 1 ? "Need" : "Not Need"
+          customerDetails.is_server_required === 1 ? "Need" : "Not Need",
         );
         setCourse(customerDetails.enrolled_course);
         if (customerDetails.profile_image) {
@@ -305,14 +302,14 @@ const CustomerUpdate = forwardRef(
           paymentMasterDetails?.tax_type == "GST (18%)"
             ? 1
             : paymentMasterDetails?.tax_type == "SGST (18%)"
-            ? 2
-            : paymentMasterDetails?.tax_type == "IGST (18%)"
-            ? 3
-            : paymentMasterDetails?.tax_type == "VAT (18%)"
-            ? 4
-            : paymentMasterDetails?.tax_type == "No Tax"
-            ? 5
-            : ""
+              ? 2
+              : paymentMasterDetails?.tax_type == "IGST (18%)"
+                ? 3
+                : paymentMasterDetails?.tax_type == "VAT (18%)"
+                  ? 4
+                  : paymentMasterDetails?.tax_type == "No Tax"
+                    ? 5
+                    : "",
         );
         setAmount(parseFloat(paymentMasterDetails?.total_amount));
       } catch (error) {
@@ -413,7 +410,7 @@ const CustomerUpdate = forwardRef(
 
     const handleRemoveProfile = (fileToRemove) => {
       const newFileList = profilePictureArray.filter(
-        (file) => file.uid !== fileToRemove.uid
+        (file) => file.uid !== fileToRemove.uid,
       );
       setProfilePictureArray(newFileList);
       // CommonToaster("Profile removed");
@@ -467,7 +464,7 @@ const CustomerUpdate = forwardRef(
       }
       const amnt = calculateAmount(
         parseFloat(subTotal),
-        e.target.value == 5 ? 0 : 18
+        e.target.value == 5 ? 0 : 18,
       );
       if (isNaN(amnt)) {
         setAmount("");
@@ -482,9 +479,6 @@ const CustomerUpdate = forwardRef(
       const emailValidate = emailValidator(email);
       const mobileValidate = mobileValidator(mobile);
       const whatsAppValidate = mobileValidator(whatsApp);
-      const dateOfBirthValidate = selectValidator(dateOfBirth);
-      const genderValidate = selectValidator(gender);
-      const dateOfJoiningValidate = selectValidator(dateOfJoining);
       const countryValidate = selectValidator(countryId);
       const stateValidate = selectValidator(stateId);
       const areaValidate = selectValidator(areaId);
@@ -499,9 +493,6 @@ const CustomerUpdate = forwardRef(
       setEmailError(emailValidate);
       setMobileError(mobileValidate);
       setWhatsAppError(whatsAppValidate);
-      setDateOfBirthError(dateOfBirthValidate);
-      setGenderError(genderValidate);
-      setDateOfJoiningError(dateOfJoiningValidate);
       setCountryIdError(countryValidate);
       setStateIdError(stateValidate);
       setAreaIdError(areaValidate);
@@ -517,9 +508,6 @@ const CustomerUpdate = forwardRef(
         emailValidate ||
         mobileValidate ||
         whatsAppValidate ||
-        dateOfBirthValidate ||
-        genderValidate ||
-        dateOfJoiningValidate ||
         countryValidate ||
         stateValidate ||
         areaValidate
@@ -585,7 +573,7 @@ const CustomerUpdate = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.message ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -616,12 +604,12 @@ const CustomerUpdate = forwardRef(
           taxType == 1
             ? "GST (18%)"
             : taxType == 2
-            ? "SGST (18%)"
-            : taxType == 3
-            ? "IGST (18%)"
-            : taxType == 4
-            ? "VAT (18%)"
-            : "No Tax",
+              ? "SGST (18%)"
+              : taxType == 3
+                ? "IGST (18%)"
+                : taxType == 4
+                  ? "VAT (18%)"
+                  : "No Tax",
         gst_percentage: taxType == 5 ? "0%" : "18%",
         gst_amount: parseFloat(gstAmount).toFixed(2),
         total_amount: amount,
@@ -642,7 +630,7 @@ const CustomerUpdate = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -666,11 +654,8 @@ const CustomerUpdate = forwardRef(
       setMobile("");
       setMobileError("");
       setDateOfBirth(null);
-      setDateOfBirthError("");
       setGender("");
-      setGenderError("");
       setDateOfJoining(null);
-      setDateOfJoiningError("");
       setCountryId(null);
       setCountryIdError("");
       setStateId(null);
@@ -805,34 +790,28 @@ const CustomerUpdate = forwardRef(
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonMuiDatePicker
                   label="Date Of Birth"
-                  required={true}
+                  required={false}
                   onChange={(value) => {
                     console.log("vallll", value);
                     setDateOfBirth(value);
-                    if (validationTrigger) {
-                      setDateOfBirthError(selectValidator(value));
-                    }
                   }}
                   value={dateOfBirth}
-                  error={dateOfBirthError}
+                  error={""}
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Gender"
-                  required={true}
+                  required={false}
                   options={[
                     { id: "Male", name: "Male" },
                     { id: "Female", name: "Female" },
                   ]}
                   onChange={(e) => {
                     setGender(e.target.value);
-                    if (validationTrigger) {
-                      setGenderError(selectValidator(e.target.value));
-                    }
                   }}
                   value={gender}
-                  error={genderError}
+                  error={""}
                 />
               </Col>
             </Row>
@@ -841,16 +820,13 @@ const CustomerUpdate = forwardRef(
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonMuiDatePicker
                   label="Date Of Joining"
-                  required={true}
+                  required={false}
                   maxLength={10}
                   onChange={(value) => {
                     setDateOfJoining(value);
-                    if (validationTrigger) {
-                      setDateOfJoiningError(selectValidator(value));
-                    }
                   }}
                   value={dateOfJoining}
-                  error={dateOfJoiningError}
+                  error={""}
                 />
               </Col>
 
@@ -1152,7 +1128,7 @@ const CustomerUpdate = forwardRef(
         </Modal>
       </>
     );
-  }
+  },
 );
 
 export default CustomerUpdate;

@@ -6,6 +6,7 @@ import React, {
 } from "react";
 import {
   getUsers,
+  sendNotification,
   ticketTrack,
   updateTicketStatus,
 } from "../ApiService/action";
@@ -13,6 +14,7 @@ import CommonSelectField from "../Common/CommonSelectField";
 import { formatToBackendIST, selectValidator } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
+import moment from "moment";
 
 const AssignTicket = forwardRef(
   (
@@ -49,10 +51,19 @@ const AssignTicket = forwardRef(
     }));
 
     const handleTicketTrack = async () => {
+      const userIdValidate = selectValidator(userId);
+
+      setUserIdError(userIdValidate);
+
+      if (userIdValidate) return;
+
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
+
+      const findUser = allUsersList.find((f) => f.user_id == userId);
+      console.log("findUser", findUser);
 
       setButtonLoading(true);
 
@@ -63,7 +74,7 @@ const AssignTicket = forwardRef(
         created_date: formatToBackendIST(today),
         details:
           drawerStatus == "Assign Ticket"
-            ? `Ticket Assigned to ${userId} (${converAsJson?.user_name ?? ""})`
+            ? `Ticket Assigned to ${userId} (${findUser?.user_name ?? ""})`
             : attachmentBase64,
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
@@ -98,9 +109,40 @@ const AssignTicket = forwardRef(
       try {
         await updateTicketStatus(payload);
         setButtonLoading(false);
+        handleSendNotification();
         callgetTicketsApi();
       } catch (error) {
         console.log("update ticker status error", error);
+      }
+    };
+
+    const handleSendNotification = async () => {
+      const today = new Date();
+      const payload = {
+        user_ids: [userId],
+        title: "Ticket Assigned",
+        message: {
+          title:
+            ticketDetails && ticketDetails.title ? ticketDetails.title : "-",
+          category_name:
+            ticketDetails && ticketDetails.category_name
+              ? ticketDetails.category_name
+              : "-",
+          priority:
+            ticketDetails && ticketDetails.priority
+              ? ticketDetails.priority
+              : "-",
+          ticket_created_date:
+            ticketDetails && ticketDetails.created_at
+              ? moment(ticketDetails.created_at).format("YYYY-MM-DD")
+              : "-",
+        },
+        created_at: formatToBackendIST(today),
+      };
+      try {
+        await sendNotification(payload);
+      } catch (error) {
+        console.log("send notification error", error);
       }
     };
 

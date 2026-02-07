@@ -654,8 +654,12 @@ export default function Server() {
     }
 
     getServerRequestData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
+      receivedStartDateFromNotification
+        ? receivedStartDateFromNotification
+        : PreviousAndCurrentDate[0],
+      receivedEndDateFromNotification
+        ? receivedEndDateFromNotification
+        : PreviousAndCurrentDate[1],
       "Raise Date",
       downliners,
       null,
@@ -676,11 +680,14 @@ export default function Server() {
     limit,
   ) => {
     setLoading(true);
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
     const payload = {
       start_date: startDate,
       end_date: endDate,
       type: dateType,
-      user_ids: downliners,
+      ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
             status: [

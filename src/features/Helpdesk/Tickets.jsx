@@ -9,6 +9,7 @@ import {
   Modal,
   Divider,
 } from "antd";
+import { useLocation } from "react-router-dom";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { RedoOutlined } from "@ant-design/icons";
 import { BsPatchCheckFill } from "react-icons/bs";
@@ -51,6 +52,7 @@ export default function Tickets() {
   const addTicketRef = useRef();
   const assignTicketRef = useRef();
   const mounted = useRef(false);
+  const location = useLocation();
 
   const scroll = (scrollOffset) => {
     scrollRef.current.scrollBy({
@@ -499,6 +501,34 @@ export default function Tickets() {
     }
   };
 
+  useEffect(() => {
+    const handler = async (e) => {
+      const data = e.detail;
+      console.log("Received via event:", data, allDownliners);
+      setSelectedUserId(null);
+
+      // Re-run your existing logic
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      try {
+        const response = await getAllDownlineUsers(convertAsJson.user_id);
+        console.log("all downlines response", response);
+        const downliners = response?.data?.data || [];
+        const downliners_ids = downliners.map((u) => {
+          return u.user_id;
+        });
+        setAllDownliners(downliners_ids);
+        rerunTicketsFilters(data, downliners_ids);
+      } catch (error) {
+        console.log("all downlines error", error);
+      }
+    };
+
+    window.addEventListener("serverNotificationFilter", handler);
+    return () =>
+      window.removeEventListener("serverNotificationFilter", handler);
+  }, []);
+
   const getAllDownlineUsersData = async (user_id) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -518,19 +548,49 @@ export default function Tickets() {
       setAllDownliners(downliners_ids);
 
       setTimeout(() => {
-        getTicketsData(
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          downliners_ids,
-          "",
-          1,
-          10,
-        );
+        // getTicketsData(
+        //   PreviousAndCurrentDate[0],
+        //   PreviousAndCurrentDate[1],
+        //   downliners_ids,
+        //   "",
+        //   1,
+        //   10,
+        // );
+        rerunTicketsFilters(location.state, downliners_ids);
       }, 300);
     } catch (error) {
       setTicketsData([]);
       console.log("all downlines error", error);
     }
+  };
+
+  const rerunTicketsFilters = (stateData, downliners) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
+    const receivedStartDateFromNotification = stateData?.startDate || null;
+    const receivedEndDateFromNotification = stateData?.endDate || null;
+
+    if (receivedStartDateFromNotification) {
+      setSelectedDates([
+        receivedStartDateFromNotification,
+        receivedEndDateFromNotification,
+      ]);
+    } else {
+      setSelectedDates(PreviousAndCurrentDate);
+    }
+
+    getTicketsData(
+      receivedStartDateFromNotification
+        ? receivedStartDateFromNotification
+        : PreviousAndCurrentDate[0],
+      receivedEndDateFromNotification
+        ? receivedEndDateFromNotification
+        : PreviousAndCurrentDate[1],
+      downliners,
+      null,
+      1,
+      10,
+    );
   };
 
   const getTicketsData = async (
@@ -799,10 +859,15 @@ export default function Tickets() {
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  // setPagination({
-                  //   page: 1,
-                  // });
-                  //    getBatchesData(trainerFilterId, dates[0], dates[1]);
+                  setPagination({ ...pagination, page: 1 });
+                  getTicketsData(
+                    dates[0],
+                    dates[1],
+                    allDownliners,
+                    status,
+                    1,
+                    pagination.limit,
+                  );
                 }}
               />
             </Col>

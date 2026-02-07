@@ -48,6 +48,7 @@ import { BiCommentDetail } from "react-icons/bi";
 import { FaRegEye } from "react-icons/fa";
 import { LuCircleUser } from "react-icons/lu";
 import { PiShield } from "react-icons/pi";
+import { IoTicketOutline } from "react-icons/io5";
 import moment from "moment";
 import CustomerHistory from "../Customers/CustomerHistory";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -429,12 +430,10 @@ export default function CustomHeader() {
     const message = JSON.parse(item.message);
 
     if (item.title == "Server Raised") {
-      console.log("Hiiiiiiiiiiiiiiiiii", message);
-
       const serverFilterData = {
         searchValue: message.customer_phone,
-        startDate: message.customer_raise_date,
-        endDate: message.customer_raise_date,
+        startDate: moment(message.customer_raise_date).format("YYYY/MM/DD"),
+        endDate: moment(message.customer_raise_date).format("YYYY/MM/DD"),
       };
 
       if (location.pathname === "/server") {
@@ -444,13 +443,31 @@ export default function CustomHeader() {
           }),
         );
         setIsOpenNotificationsDrawer(false);
-        return;
       }
-      console.log("Hiiiiiiiiiiiiiiiiiiee");
-      navigate("/customers", { state: filterData });
-      setIsOpenNotificationsDrawer(false);
+      navigate("/server", { state: serverFilterData });
       return;
     }
+
+    if (item.title == "Ticket Assigned") {
+      console.log("ticketss notifyyyyy", message);
+
+      const ticketFilterData = {
+        startDate: message.ticket_created_date,
+        endDate: message.ticket_created_date,
+      };
+
+      if (location.pathname === "/tickets") {
+        window.dispatchEvent(
+          new CustomEvent("serverNotificationFilter", {
+            detail: ticketFilterData,
+          }),
+        );
+        setIsOpenNotificationsDrawer(false);
+      }
+      navigate("/tickets", { state: ticketFilterData });
+      return;
+    }
+
     const filterData = {
       status:
         item.title == "Trainer Rejected"
@@ -506,17 +523,21 @@ export default function CustomHeader() {
                       ? "Fee Pending Customers"
                       : location.pathname === "/batches"
                         ? "Batches"
-                        : location.pathname === "/trainers"
-                          ? "Trainers"
-                          : location.pathname === "/trainer-payment"
-                            ? "Trainer Payment"
-                            : location.pathname === "/server"
-                              ? "Server"
-                              : location.pathname === "/settings"
-                                ? "Settings"
-                                : location.pathname === "/reports"
-                                  ? "Reports"
-                                  : ""}
+                        : location.pathname === "/bulk-search"
+                          ? "Bulk Search"
+                          : location.pathname === "/trainers"
+                            ? "Trainers"
+                            : location.pathname === "/trainer-payment"
+                              ? "Trainer Payment"
+                              : location.pathname === "/server"
+                                ? "Server"
+                                : location.pathname === "/tickets"
+                                  ? "Tickets"
+                                  : location.pathname === "/settings"
+                                    ? "Settings"
+                                    : location.pathname === "/reports"
+                                      ? "Reports"
+                                      : ""}
           </p>
         </div>
 
@@ -1660,8 +1681,19 @@ export default function CustomHeader() {
                     }}
                   >
                     <Col span={4}>
-                      <div className="header_notification_popup_list_icon_container">
-                        <RiErrorWarningFill color="#d32f2f" size={24} />
+                      <div
+                        className={
+                          item.title == "Ticket Assigned" ||
+                          item.title == "Server Raised"
+                            ? "header_notification_popup_list_ticket_icon_container"
+                            : "header_notification_popup_list_icon_container"
+                        }
+                      >
+                        {item.title == "Ticket Assigned" ? (
+                          <IoTicketOutline color="#5b69ca" size={22} />
+                        ) : (
+                          <RiErrorWarningFill color="#d32f2f" size={24} />
+                        )}
                       </div>
                     </Col>
                     <Col span={20}>
@@ -1699,6 +1731,13 @@ export default function CustomHeader() {
        message.customer_phone ?? ""
      } | 
      Course: ${message.customer_course ?? "-"}`}
+                        </p>
+                      ) : item.title === "Ticket Assigned" &&
+                        typeof message === "object" ? (
+                        <p className="header_notification_drawer_list_message">
+                          {`Title: ${message.title ?? "-"} | 
+     Category: ${message.category_name ?? ""}${message.category_name ?? ""} | 
+     Priority: ${message.priority ?? "-"}`}
                         </p>
                       ) : (
                         <p className="header_notification_drawer_list_message">
