@@ -28,6 +28,7 @@ import {
   storeServerModulePermissionList,
   storeSettingsCourseList,
   storeSettingsModulePermissionList,
+  storeTicketsModulePermissionList,
   storeTrainerPaymentModulePermissionList,
   storeTrainersModulePermissionList,
   storeUserSearchValue,
@@ -368,6 +369,15 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeReportsModulePermissionList(updateReportsModule));
+
+      //filter tickets module
+      const ticketsModule = allPermissions.filter(
+        (f) => f.section === "Tickets Module",
+      );
+      const updateTicketsModule = ticketsModule.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeTicketsModulePermissionList(updateTicketsModule));
 
       //filter settings module
       const settingsModule = allPermissions.filter(

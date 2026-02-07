@@ -259,6 +259,17 @@ const settingsModulePermissionListSlice = createSlice({
   },
 });
 
+const ticketsModulePermissionListSlice = createSlice({
+  name: "ticketsmodulepermissionlist",
+  initialState,
+  reducers: {
+    storeTicketsModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const settingsCourseListSlice = createSlice({
   name: "settingscourselist",
   initialState,
@@ -482,6 +493,8 @@ export const { storeReportsModulePermissionList } =
   reportsModulePermissionListSlice.actions;
 export const { storeSettingsModulePermissionList } =
   settingsModulePermissionListSlice.actions;
+export const { storeTicketsModulePermissionList } =
+  ticketsModulePermissionListSlice.actions;
 export const { storeSettingsCourseList } = settingsCourseListSlice.actions;
 export const { storeChildUsers } = childUsersSlice.actions;
 export const { storeDownlineUsers } = downlineUsersSlice.actions;
@@ -537,6 +550,8 @@ export const emailTemplateModulePermissionListReducer =
   emailTemplateModulePermissionListSlice.reducer;
 export const settingsModulePermissionListReducer =
   settingsModulePermissionListSlice.reducer;
+export const ticketsModulePermissionListReducer =
+  ticketsModulePermissionListSlice.reducer;
 export const settingsCourseListReducer = settingsCourseListSlice.reducer;
 export const nxtFollowupActionIdReducer = nxtFollowupActionIdSlice.reducer;
 export const tableColumnsReducer = tableColumnsSlice.reducer;

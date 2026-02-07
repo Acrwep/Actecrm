@@ -306,9 +306,13 @@ export default function Tickets() {
                           className="server_statuscheckbox"
                           checked={false}
                           onChange={(e) => {
-                            setIsOpenDetailsDrawer(true);
-                            setTicketDetails(record);
-                            setDrawerStatus("Assign Ticket");
+                            if (permissions.includes("Assign Ticket")) {
+                              setIsOpenDetailsDrawer(true);
+                              setTicketDetails(record);
+                              setDrawerStatus("Assign Ticket");
+                            } else {
+                              CommonMessage("error", "Access Denied");
+                            }
                           }}
                         >
                           Assigned to
@@ -376,8 +380,12 @@ export default function Tickets() {
                           checked={false}
                           onChange={(e) => {
                             if (record.status == "Close Request") {
-                              setTicketDetails(record);
-                              setIsOpenCloseModal(true);
+                              if (permissions.includes("Close Ticket")) {
+                                setTicketDetails(record);
+                                setIsOpenCloseModal(true);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
                             } else {
                               CommonMessage(
                                 "warning",
@@ -1158,14 +1166,16 @@ export default function Tickets() {
             gap: "12px",
           }}
         >
-          <button
-            className="leadmanager_addleadbutton"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Add Ticket
-          </button>
+          {permissions.includes("Add Ticket") && (
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add Ticket
+            </button>
+          )}
         </Col>
       </Row>
 

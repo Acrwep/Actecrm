@@ -35,6 +35,7 @@ import {
   LeadFilterValuesReducer,
   junkLeadFilterValuesReducer,
   assignLeadFilterValuesReducer,
+  ticketsModulePermissionListReducer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -67,6 +68,7 @@ export const reduxStore = configureStore({
     emailtemplatemodulepermissionlist: emailTemplateModulePermissionListReducer,
     reportsmodulepermissionlist: reportsModulePermissionListReducer,
     settingsmodulepermissionlist: settingsModulePermissionListReducer,
+    ticketsmodulepermissionlist: ticketsModulePermissionListReducer,
     settingscourselist: settingsCourseListReducer,
     tablecolumns: tableColumnsReducer,
     liveleadsearchvalue: liveLeadSearchValueReducer,
