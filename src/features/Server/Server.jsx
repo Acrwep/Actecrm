@@ -2928,28 +2928,6 @@ export default function Server() {
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">
-                          Server Cost
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {serverDetails && serverDetails.server_cost
-                          ? "₹" + serverDetails.server_cost
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
                           Server Duration
                         </p>
                       </div>
@@ -2962,8 +2940,10 @@ export default function Server() {
                       </p>
                     </Col>
                   </Row>
+                </Col>
 
-                  <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <Row>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">Start Date</p>
