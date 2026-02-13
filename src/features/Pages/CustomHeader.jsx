@@ -20,6 +20,9 @@ import {
 } from "antd";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
+import { PiShareFat } from "react-icons/pi";
+import { GoCopy } from "react-icons/go";
+import GmailIcon from "../../assets/gmail_icon.png";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
@@ -46,6 +49,7 @@ import {
 } from "../ApiService/action";
 import { BiCommentDetail } from "react-icons/bi";
 import { FaRegEye } from "react-icons/fa";
+import { BsWhatsapp } from "react-icons/bs";
 import { LuCircleUser } from "react-icons/lu";
 import { PiShield } from "react-icons/pi";
 import { IoTicketOutline } from "react-icons/io5";
@@ -505,6 +509,80 @@ export default function CustomHeader() {
     setNotificationData([]);
   };
 
+  const buildShareText = (item) => {
+    const price = Number(item.price).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    const offer = Number(item.offer_price).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    return `Course Name: ${item.name}
+Price: ₹${price}
+Offer Price: ₹${offer}
+Brouchures: ${item.brouchures || "-"}
+Syllabus: ${item.syllabus || "-"}`;
+  };
+
+  const copyCourseText = async (item) => {
+    try {
+      const text = buildShareText(item);
+      await navigator.clipboard.writeText(text);
+
+      // optional success message
+      CommonMessage("success", "Copied");
+    } catch (err) {
+      CommonMessage("error", "Copied failed");
+    }
+  };
+
+  const handleShare = async (item, sharePlatform) => {
+    //     const price = Number(item.price).toLocaleString("en-IN", {
+    //       minimumFractionDigits: 2,
+    //       maximumFractionDigits: 2,
+    //     });
+
+    //     const offer = Number(item.offer_price).toLocaleString("en-IN", {
+    //       minimumFractionDigits: 2,
+    //       maximumFractionDigits: 2,
+    //     });
+
+    //     const shareText = `Course Name: ${item.name}
+    // Price: ₹${price}
+    // Offer Price: ₹${offer}
+    // Syllabus: ${item.syllabus || "-"}
+    // Brouchures: ${item.brouchures || "-"}`;
+
+    //     try {
+    //       if (navigator.share) {
+    //         await navigator.share({
+    //           title: item.name,
+    //           text: shareText,
+    //         });
+    //       } else {
+    //         await navigator.clipboard.writeText(shareText);
+    //         alert("Course details copied to clipboard");
+    //       }
+    //     } catch (err) {
+    //       console.log("Share failed:", err);
+    //     }
+    if (sharePlatform == "whatsapp") {
+      const text = encodeURIComponent(buildShareText(item));
+      window.open(`https://wa.me/?text=${text}`, "_blank");
+    } else if (sharePlatform == "gmail") {
+      const subject = encodeURIComponent(item.name);
+      const body = encodeURIComponent(buildShareText(item));
+
+      window.open(
+        `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`,
+        "_blank",
+      );
+    }
+  };
+
   return (
     <div className="header_maincontainer">
       <div className="header_innercontainer">
@@ -577,37 +655,142 @@ export default function CustomHeader() {
                       {courseData.map((item, index) => {
                         return (
                           <React.Fragment key={index}>
-                            <div>
-                              <p className="header_search_options_course_name">
-                                {item.name}
-                              </p>
-                              <div className="header_search_options_courseprice_container">
-                                <p className="header_search_options_courseprice">
-                                  Actual Price:{" "}
-                                  <span style={{ fontWeight: 700 }}>
-                                    {`${Number(item.price).toLocaleString(
-                                      "en-IN",
-                                      {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                      },
-                                    )}`}
-                                  </span>
+                            <div className="header_search_course_card">
+                              {/* Course Name */}
+
+                              <div className="header_search_title_row">
+                                <p className="header_search_course_name">
+                                  {item.name}
                                 </p>
-                                <p className="header_search_options_courseprice">
-                                  Offer Price:{" "}
-                                  <span style={{ fontWeight: 700 }}>
-                                    {`${Number(item.offer_price).toLocaleString(
-                                      "en-IN",
-                                      {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
+
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "12px",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {/* ----------copy tooltip---------- */}
+                                  <Tooltip placement="bottom" title="Copy">
+                                    <GoCopy
+                                      size={14}
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() => copyCourseText(item)}
+                                    />
+                                  </Tooltip>
+
+                                  {/* ----------share tooltip---------- */}
+                                  <Tooltip
+                                    placement="bottom"
+                                    color="#fff"
+                                    title={
+                                      <>
+                                        <Row
+                                          gutter={12}
+                                          style={{ alignItems: "center" }}
+                                        >
+                                          <Col span={12}>
+                                            <BsWhatsapp
+                                              size={14}
+                                              color="green"
+                                              style={{
+                                                cursor: "pointer",
+                                                marginTop: "3px",
+                                              }}
+                                              onClick={() =>
+                                                handleShare(item, "whatsapp")
+                                              }
+                                            />
+                                          </Col>
+                                          <Col span={12}>
+                                            <img
+                                              src={GmailIcon}
+                                              style={{
+                                                width: "14px",
+                                                height: "14px",
+                                                cursor: "pointer",
+                                                marginTop: "-6px",
+                                              }}
+                                              onClick={() =>
+                                                handleShare(item, "gmail")
+                                              }
+                                            />
+                                          </Col>
+                                        </Row>
+                                      </>
+                                    }
+                                    styles={{
+                                      body: {
+                                        backgroundColor: "#fff", // Tooltip background
+                                        color: "#333", // Tooltip text color
+                                        fontWeight: 500,
+                                        fontSize: "13px",
+                                        width: "100%",
                                       },
-                                    )}`}
-                                  </span>
-                                </p>
+                                    }}
+                                  >
+                                    <PiShareFat
+                                      size={14}
+                                      style={{ cursor: "pointer" }}
+                                    />
+                                  </Tooltip>
+                                </div>
                               </div>
-                              <Divider style={{ margin: 0 }} />
+
+                              {/* Price Row */}
+                              <div className="header_search_price_row">
+                                <div>
+                                  <span className="label">Actual Price</span>
+                                  <span className="value">
+                                    {Number(item.price).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      },
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="label">Offer Price</span>
+                                  <span className="value offer">
+                                    {Number(item.offer_price).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      },
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Links Row */}
+                              <div className="header_search_link_row">
+                                {item.brouchures && (
+                                  <a
+                                    href={item.brouchures}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    Open Brouchure
+                                  </a>
+                                )}
+
+                                {item.syllabus && (
+                                  <a
+                                    href={item.syllabus}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    Open Syllabus
+                                  </a>
+                                )}
+                              </div>
+
+                              <Divider style={{ margin: "0px 0" }} />
                             </div>
                           </React.Fragment>
                         );

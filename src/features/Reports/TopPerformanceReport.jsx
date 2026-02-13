@@ -29,6 +29,7 @@ export default function TopPerformanceReport() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [selectedDates, setSelectedDates] = useState([]);
+  const [initialAllDownliners, setInitialAllDownliners] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
   const regionOptions = [
@@ -183,6 +184,7 @@ export default function TopPerformanceReport() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      setInitialAllDownliners(downliners_ids);
       const today = new Date();
 
       getTopPerformanceReportData(
@@ -190,7 +192,7 @@ export default function TopPerformanceReport() {
         moment(today).format("YYYY-MM-DD"),
         downliners_ids,
         null,
-        null
+        null,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -202,14 +204,14 @@ export default function TopPerformanceReport() {
     enddate,
     downliners,
     regionid,
-    branchid
+    branchid,
   ) => {
     setLoading(true);
 
     const payload = {
       start_date: startdate,
       end_date: enddate,
-      user_ids: downliners,
+      ...(regionid || branchid ? {} : { user_ids: downliners }),
       ...(regionid && { region_id: regionid }),
       ...(branchid && { branch_id: branchid }),
     };
@@ -287,13 +289,18 @@ export default function TopPerformanceReport() {
     setSelectedUserId(value);
     setRegionId(null);
     setBranchId(null);
+    console.log("loginUserId", loginUserId, value);
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        value.length >= 1 ? value : [loginUserId],
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
         return u.user_id;
       });
+      setAllDownliners(downliners_ids);
       setPagination({
         page: 1,
         limit: 500,
@@ -303,7 +310,7 @@ export default function TopPerformanceReport() {
         selectedDates[1],
         downliners_ids,
         null,
-        null
+        null,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -330,9 +337,9 @@ export default function TopPerformanceReport() {
     getTopPerformanceReportData(
       moment(today).format("YYYY-MM-DD"),
       moment(today).format("YYYY-MM-DD"),
-      allDownliners,
+      initialAllDownliners,
       null,
-      null
+      null,
     );
   };
   return (
@@ -363,9 +370,9 @@ export default function TopPerformanceReport() {
                   getTopPerformanceReportData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    initialAllDownliners,
                     value,
-                    null
+                    null,
                   );
                 }}
                 value={regionId}
@@ -390,9 +397,9 @@ export default function TopPerformanceReport() {
                   getTopPerformanceReportData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    initialAllDownliners,
                     regionId,
-                    value
+                    value,
                   );
                 }}
                 value={branchId}
@@ -422,9 +429,11 @@ export default function TopPerformanceReport() {
                   getTopPerformanceReportData(
                     dates[0],
                     dates[1],
-                    allDownliners,
+                    selectedUserId.length >= 1
+                      ? allDownliners
+                      : initialAllDownliners,
                     regionId,
-                    branchId
+                    branchId,
                   );
                 }}
               />
@@ -451,8 +460,8 @@ export default function TopPerformanceReport() {
                   reportData,
                   columns,
                   `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-                    selectedDates[1]
-                  ).format("DD-MM-YYYY")} Top Performance Channel Report.csv`
+                    selectedDates[1],
+                  ).format("DD-MM-YYYY")} Top Performance Channel Report.csv`,
                 );
               }}
             >
@@ -519,7 +528,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.call != undefined ||
                               totalSourceCounts.call != null)
                               ? Number(totalSourceCounts.call).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )
                               : "-"
                           }`}
@@ -530,7 +539,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.direct != undefined ||
                               totalSourceCounts.direct != null)
                               ? Number(totalSourceCounts.direct).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )
                               : "-"
                           }`}
@@ -541,7 +550,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.enquiry_form != undefined ||
                               totalSourceCounts.enquiry_form != null)
                               ? Number(
-                                  totalSourceCounts.enquiry_form
+                                  totalSourceCounts.enquiry_form,
                                 ).toLocaleString("en-IN")
                               : "-"
                           }`}
@@ -552,7 +561,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.ivr != undefined ||
                               totalSourceCounts.ivr != null)
                               ? Number(totalSourceCounts.ivr).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )
                               : "-"
                           }`}
@@ -563,7 +572,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.live_chat != undefined ||
                               totalSourceCounts.live_chat != null)
                               ? Number(
-                                  totalSourceCounts.live_chat
+                                  totalSourceCounts.live_chat,
                                 ).toLocaleString("en-IN")
                               : "-"
                           }`}
@@ -574,7 +583,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.reference != undefined ||
                               totalSourceCounts.reference != null)
                               ? Number(
-                                  totalSourceCounts.reference
+                                  totalSourceCounts.reference,
                                 ).toLocaleString("en-IN")
                               : "-"
                           }`}
@@ -585,7 +594,7 @@ export default function TopPerformanceReport() {
                             (totalSourceCounts.smo != undefined ||
                               totalSourceCounts.smo != null)
                               ? Number(totalSourceCounts.smo).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )
                               : "-"
                           }`}
@@ -624,7 +633,7 @@ export default function TopPerformanceReport() {
                 (totalCounts.converted_to_customer != undefined ||
                   totalCounts.converted_to_customer != null)
                   ? Number(totalCounts.converted_to_customer).toLocaleString(
-                      "en-IN"
+                      "en-IN",
                     )
                   : "-"}
               </p>

@@ -61,7 +61,7 @@ const OthersHandling = forwardRef(
             }))
           : [
               {
-                customer_ids: customerDetails.id,
+                customer_id: customerDetails.id,
                 status: updatestatus,
               },
             ];

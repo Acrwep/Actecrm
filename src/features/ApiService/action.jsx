@@ -178,6 +178,15 @@ export const updateTechnology = async (payload) => {
   }
 };
 
+export const updateBulkTechnology = async (payload) => {
+  try {
+    const response = await api.post("/api/bulkInsert", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteTechnology = async (course_id) => {
   try {
     const response = await api.delete(`/api/deleteTechnologies/${course_id}`);

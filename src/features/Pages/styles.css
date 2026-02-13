@@ -338,3 +338,61 @@
 .ant-menu-item-selected .side-menu-link {
   font-weight: 500;
 }
+
+/* course search styles */
+.header_search_course_card {
+  margin-top: 8px;
+}
+.header_search_title_row {
+  padding: 0px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header_search_course_name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* price row */
+.header_search_price_row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 0px 12px;
+}
+
+.header_search_price_row .label {
+  font-size: 10px;
+  color: #666;
+  display: block;
+}
+
+.header_search_price_row .value {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.header_search_price_row .offer {
+  color: #0a8f3c;
+}
+
+/* link row */
+.header_search_link_row {
+  display: flex;
+  gap: 16px;
+  padding: 0px 12px 6px 12px;
+}
+
+.header_search_link_row a {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2091d0;
+  text-decoration: none;
+}
+
+.header_search_link_row a:hover {
+  text-decoration: underline;
+}

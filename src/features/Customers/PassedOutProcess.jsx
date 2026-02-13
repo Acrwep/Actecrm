@@ -77,8 +77,16 @@ const PassesOutProcess = forwardRef(
       if (customerDetails.google_review) {
         setGoogleFeedbackBase64(customerDetails.google_review);
       }
-      setCertName(customerDetails.name);
-      setCertCourseName(customerDetails.course_name);
+      setCertName(
+        customerDetails.cer_customer_name
+          ? customerDetails.cer_customer_name
+          : customerDetails.name,
+      );
+      setCertCourseName(
+        customerDetails.cer_course_name
+          ? customerDetails.cer_course_name
+          : customerDetails.course_name,
+      );
       setCertLocation(customerDetails.cer_location);
     }, []);
 

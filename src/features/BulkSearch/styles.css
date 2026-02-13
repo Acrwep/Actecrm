@@ -106,7 +106,7 @@
 }
 .bulksearch_templatedownload_button:hover {
   color: #5b69ca;
-  border-color: #0057b36e;
+  border-color: #5b6aca67;
 }
 .bulksearch_templatedownload_button:active {
   transform: scale(0.9);

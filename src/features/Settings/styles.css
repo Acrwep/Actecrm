@@ -257,3 +257,18 @@
 .settings_formfields_submitbutton {
   width: 90px;
 }
+
+/* courses styles */
+.courses_bulkmodal_footer_updatecourses_button {
+  background-color: #5b69ca;
+  border-color: #5b69ca;
+  color: #fff;
+  font-weight: 500;
+  width: 140px;
+}
+.courses_bulkmodal_footer_updatecourses_button:hover {
+  opacity: 0.7;
+  background-color: #5b69ca !important;
+  border-color: #5b69ca !important;
+  color: #fff !important;
+}

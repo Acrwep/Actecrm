@@ -36,7 +36,7 @@ const CommonTable = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       const sizeChanger = document.querySelector(
-        ".ant-pagination-options-size-changer"
+        ".ant-pagination-options-size-changer",
       );
       if (
         sizeChanger &&
@@ -53,7 +53,7 @@ const CommonTable = ({
       if (tableContainer) {
         const observer = new MutationObserver(() => {
           const sizeChangerUpdated = document.querySelector(
-            ".ant-pagination-options-size-changer"
+            ".ant-pagination-options-size-changer",
           );
           if (
             sizeChangerUpdated &&
@@ -118,7 +118,7 @@ const CommonTable = ({
     pageSize: limit || 10,
     showSizeChanger: true,
     total: totalPageNumber || 0,
-    pageSizeOptions: ["10", "20", "50", "100", "250", "500"],
+    pageSizeOptions: ["10", "20", "50", "100"],
     position: ["bottomRight"],
     showLessItems: true, // <--- this reduces visible page buttons
     itemRender: (page, type, originalElement) => {
