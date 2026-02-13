@@ -1409,7 +1409,9 @@ export default function Server() {
   const handleSendNotification = async () => {
     const today = new Date();
     const payload = {
-      user_ids: [import.meta.env.PROD ? "ACC0003" : "DEV2119"],
+      user_ids: import.meta.env.PROD
+        ? ["ACC0003", "BNG9001"] // production → two IDs
+        : ["DEV2119"],
       title: "Server Raised",
       message: {
         customer_name:
