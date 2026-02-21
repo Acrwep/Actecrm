@@ -9,7 +9,9 @@ import { NotificationProvider } from "./Context/NotificationContext";
 import { CommonMessage } from "./features/Common/CommonMessage";
 
 function App() {
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(
+    typeof Notification !== "undefined" ? Notification.permission : "default"
+  );
 
   // Disable logs in production
   if (import.meta.env.PROD) {
@@ -21,6 +23,11 @@ function App() {
   }
 
   const askPermission = async () => {
+    if (typeof Notification === "undefined") {
+      console.log("Notification API is not supported on this browser.");
+      return;
+    }
+
     // If previously denied, we can't re-request — user must change browser settings
     if (Notification.permission === "denied") {
       CommonMessage("warning", "Unblock Notification for this site");
@@ -44,6 +51,8 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
+      if (typeof Notification === "undefined") return;
+
       // If already granted — request token
       if (Notification.permission === "granted") {
         await requestForToken();

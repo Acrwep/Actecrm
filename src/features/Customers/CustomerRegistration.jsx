@@ -1333,15 +1333,7 @@ export default function CustomerRegistration() {
         centered
       >
         <div className="customer_registration_terms_contentContainer">
-          {/* <ul>
-            <li>
-              Acte Technologies has rights to postpone/cancel courses due to
-              instructor illness or natural calamities. No refund in this case.
-            </li>
-            <li>The refund requisition will not be accepted</li>
-            <li>The registration fee is ₹2,000 and it is non-refundable.</li>
-          </ul> */}
-          <ol class="terms-list">
+          <ol className="terms-list">
             <li>
               Acte Technologies has the right to postpone/cancel classes due to
               instructor illness or natural calamities. No refund in such cases.

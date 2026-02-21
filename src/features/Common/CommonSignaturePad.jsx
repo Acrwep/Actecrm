@@ -67,8 +67,14 @@ export default function CommonSignaturePad({ instruction, onUpload }) {
           <ul>
             <li>
               {" "}
-              Acte Technologies has rights to postpone/cancel courses due to
-              instructor illness or natural calamities. No refund in this case.
+              ACTE Technologies may reschedule or cancel courses in the event of
+              unavoidable situations, such as natural calamities.
+            </li>
+            <li>
+              {" "}
+              In case of instructor illness, an alternate professional will be
+              arranged to conduct the sessions as per the schedule; no refund in
+              this case.
             </li>
             <li>The refund requisition will not be accepted</li>
           </ul>

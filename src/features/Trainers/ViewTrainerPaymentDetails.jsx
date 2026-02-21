@@ -805,6 +805,24 @@ export default function ViewTrainerPaymentDetails({
                                               Rejected
                                             </p>
                                           </div>
+                                        ) : item.status === "Pending" ? (
+                                          <div className="customer_trans_statustext_container">
+                                            <PiClockCounterClockwiseBold
+                                              size={16}
+                                              color="gray"
+                                            />
+                                            <p
+                                              style={{
+                                                color: "gray",
+                                                fontWeight: 500,
+                                              }}
+                                            >
+                                              {selectedPaymentDetails.status ==
+                                              "Awaiting Approval"
+                                                ? "Waiting for Approval"
+                                                : "Waiting for Pay"}{" "}
+                                            </p>
+                                          </div>
                                         ) : (
                                           <div className="customer_trans_statustext_container">
                                             <BsPatchCheckFill color="#3c9111" />
@@ -813,7 +831,7 @@ export default function ViewTrainerPaymentDetails({
                                                 color: "#3c9111",
                                               }}
                                             >
-                                              Verified
+                                              Paid
                                             </p>
                                           </div>
                                         )}
@@ -833,7 +851,10 @@ export default function ViewTrainerPaymentDetails({
                                             <Col span={12}>
                                               <div className="customerdetails_rowheadingContainer">
                                                 <p className="customerdetails_rowheading">
-                                                  Paid Amount
+                                                  {item.status == "Paid" ||
+                                                  item.status == "Completed"
+                                                    ? "Paid Amount"
+                                                    : "Requested Amount"}
                                                 </p>
                                               </div>
                                             </Col>
@@ -863,7 +884,9 @@ export default function ViewTrainerPaymentDetails({
                                         </Col>
                                       </Row>
 
-                                      {item.status == "Rejected" ? (
+                                      {item.status == "Pending" ? (
+                                        ""
+                                      ) : item.status == "Rejected" ? (
                                         <>
                                           <Divider className="customer_statusupdate_divider" />
                                           <div

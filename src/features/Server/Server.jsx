@@ -606,7 +606,7 @@ export default function Server() {
     setTableColumns(nonChangeColumns);
   }, [permissions]);
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -626,7 +626,7 @@ export default function Server() {
       //   1,
       //   10,
       // );
-      rerunServerFilters(location.state, downliners_ids);
+      rerunServerFilters(isRefresh ? null : location.state, downliners_ids);
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -636,6 +636,7 @@ export default function Server() {
     const PreviousAndCurrentDate = getCurrentandLast90Date();
 
     const receivedSearchValueFromNotification = stateData?.searchValue || null;
+    const receivedStatusValueFromNotification = stateData?.status || "";
     const receivedStartDateFromNotification = stateData?.startDate || null;
     const receivedEndDateFromNotification = stateData?.endDate || null;
 
@@ -643,6 +644,13 @@ export default function Server() {
       setFilterType(1);
       setSearchValue(receivedSearchValueFromNotification);
     }
+
+    setStatus(
+      receivedStatusValueFromNotification
+        ? receivedStatusValueFromNotification
+        : "",
+    );
+
     if (receivedStartDateFromNotification) {
       setDateFilterType("Raise Date");
       setSelectedDates([
@@ -1514,7 +1522,7 @@ export default function Server() {
     setPagination({
       page: 1,
     });
-    getAllDownlineUsersData(loginUserId);
+    getAllDownlineUsersData(loginUserId, true);
   };
 
   return (

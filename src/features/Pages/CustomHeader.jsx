@@ -436,8 +436,9 @@ export default function CustomHeader() {
     if (item.title == "Server Raised") {
       const serverFilterData = {
         searchValue: message.customer_phone,
-        startDate: moment(message.customer_raise_date).format("YYYY/MM/DD"),
-        endDate: moment(message.customer_raise_date).format("YYYY/MM/DD"),
+        startDate: moment(message.customer_raise_date).format("YYYY-MM-DD"),
+        endDate: moment(message.customer_raise_date).format("YYYY-MM-DD"),
+        status: "Server Raised",
       };
 
       if (location.pathname === "/server") {
@@ -449,6 +450,25 @@ export default function CustomHeader() {
         setIsOpenNotificationsDrawer(false);
       }
       navigate("/server", { state: serverFilterData });
+      return;
+    }
+
+    if (item.title == "Trainer Payment Rejected") {
+      const trainerPaymentFilterData = {
+        searchValue: message.trainer_id,
+        bill_raisedate: moment(message.bill_raisedate).format("YYYY-MM-DD"),
+        status: "Payment Rejected",
+      };
+
+      if (location.pathname === "/trainer-payment") {
+        window.dispatchEvent(
+          new CustomEvent("trainerPaymentNotificationFilter", {
+            detail: trainerPaymentFilterData,
+          }),
+        );
+        setIsOpenNotificationsDrawer(false);
+      }
+      navigate("/trainer-payment", { state: trainerPaymentFilterData });
       return;
     }
 
@@ -477,8 +497,14 @@ export default function CustomHeader() {
         item.title == "Trainer Rejected"
           ? "Trainer Rejected"
           : "Payment Rejected",
-      startDate: message.customer_created_date,
-      endDate: message.customer_created_date,
+      startDate:
+        item.title === "Payment Rejected"
+          ? message.customer_last_payment_date || message.customer_created_date
+          : message.customer_created_date,
+      endDate:
+        item.title === "Payment Rejected"
+          ? message.customer_last_payment_date || message.customer_created_date
+          : message.customer_created_date,
       payment_swap: true,
     };
 
@@ -1921,6 +1947,12 @@ Syllabus: ${item.syllabus || "-"}`;
                           {`Title: ${message.title ?? "-"} | 
      Category: ${message.category_name ?? ""}${message.category_name ?? ""} | 
      Priority: ${message.priority ?? "-"}`}
+                        </p>
+                      ) : item.title === "Trainer Payment Rejected" &&
+                        typeof message === "object" ? (
+                        <p className="header_notification_drawer_list_message">
+                          {`Trainer Name: ${message.trainer_name ?? "-"} | 
+     Mobile: +91 ${message.trainer_mobile ?? ""}`}
                         </p>
                       ) : (
                         <p className="header_notification_drawer_list_message">

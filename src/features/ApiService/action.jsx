@@ -358,9 +358,30 @@ export const createTrainerPaymentTransaction = async (payload) => {
   }
 };
 
+export const updateTrainerPaymentStatus = async (payload) => {
+  try {
+    const response = await api.post("/api/updateTrainerPaymentStatus", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const approveTrainerPaymentTransaction = async (payload) => {
   try {
     const response = await api.post("/api/approveTrainerPayment", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectTrainerPaymentApproval = async (payload) => {
+  try {
+    const response = await api.put(
+      "/api/rejectTrainerPaymentApproval",
+      payload,
+    );
     return response;
   } catch (error) {
     throw error;

@@ -131,6 +131,7 @@ export default function Customers() {
   const [isSwap, setIsSwap] = useState(false);
   //student verify usestates
   //assign trainer usestates
+  const [isAssignTrainerSwap, setIsAssignTrainerSwap] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
   const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
   //trainer verify usestates
@@ -290,11 +291,11 @@ export default function Customers() {
                   ? text < 18
                     ? "#3c9111" // green
                     : text > 18 && text <= 22
-                      ? "#ffa502" // orange
-                      : text > 22
+                      ? "#ffa502" // yellow
+                      : text > 24
                         ? "#d32f2f" // red
-                        : "inherit"
-                  : "inherit", // fallback color if null
+                        : ""
+                  : "", // fallback color if null
             }}
           >
             {text && text ? text + "%" : "-"}
@@ -1417,10 +1418,7 @@ export default function Customers() {
       from_date: startDate,
       to_date: endDate,
       ...(customerStatus && {
-        status:
-          customerStatus === "Awaiting Trainer"
-            ? ["Awaiting Trainer", "Trainer Rejected"]
-            : customerStatus,
+        status: customerStatus,
       }),
       user_ids: downliners,
       ...(region_data.includes("Classroom") && region_data.includes("Online")
@@ -1609,11 +1607,11 @@ export default function Customers() {
                             ? text < 18
                               ? "#3c9111" // green
                               : text > 18 && text <= 22
-                                ? "#ffa502" // orange
-                                : text > 22
+                                ? "#ffa502" // yellow
+                                : text > 24
                                   ? "#d32f2f" // red
-                                  : "inherit"
-                            : "inherit", // fallback color if null
+                                  : ""
+                            : "", // fallback color if null
                       }}
                     >
                       {text && text ? text + "%" : "-"}
@@ -3307,42 +3305,105 @@ export default function Customers() {
             </p>
           </div>
           <div
+            // className={
+            //   status === "Awaiting Trainer"
+            //     ? "customers_active_assigntrainers_container"
+            //     : "customers_assigntrainers_container"
+            // }
+
             className={
               status === "Awaiting Trainer"
                 ? "customers_active_assigntrainers_container"
-                : "customers_assigntrainers_container"
+                : status === "Trainer Rejected"
+                  ? "customers_active_paymentreject_container"
+                  : isAssignTrainerSwap
+                    ? "customers_paymentreject_container"
+                    : "customers_assigntrainers_container"
             }
-            onClick={() => {
-              if (status === "Awaiting Trainer") {
-                return;
-              }
-              setStatus("Awaiting Trainer");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                "Awaiting Trainer",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
           >
-            <p>
-              Assign Trainer{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_trainer !== undefined &&
-                customerStatusCount.awaiting_trainer !== null
-                  ? customerStatusCount.awaiting_trainer
-                  : "-"
-              }
+            <div
+              onClick={() => {
+                if (
+                  status === "Awaiting Trainer" ||
+                  status === "Trainer Rejected"
+                ) {
+                  return;
+                }
+                setStatus(
+                  isAssignTrainerSwap ? "Trainer Rejected" : "Awaiting Trainer",
+                );
+                setPagination({
+                  page: 1,
+                });
+                getCustomersData(
+                  selectedDates[0],
+                  selectedDates[1],
+                  searchValue,
+                  isAssignTrainerSwap ? "Trainer Rejected" : "Awaiting Trainer",
+                  allDownliners,
+                  branchOptions,
+                  1,
+                  pagination.limit,
+                );
+              }}
+            >
+              {isAssignTrainerSwap ? (
+                <p>
+                  Trainer Rejected{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.trainer_rejected !== undefined &&
+                    customerStatusCount.trainer_rejected !== null
+                      ? customerStatusCount.trainer_rejected
+                      : "-"
+                  }
  )`}
-            </p>
+                </p>
+              ) : (
+                <p>
+                  Assign Trainer{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.awaiting_trainer !== undefined &&
+                    customerStatusCount.awaiting_trainer !== null
+                      ? customerStatusCount.awaiting_trainer
+                      : "-"
+                  }
+ )`}
+                </p>
+              )}
+            </div>
+            <MdOutlineSwapVert
+              size={19}
+              style={{
+                cursor: "pointer",
+                transition: "transform 0.3s ease",
+                transform: isAssignTrainerSwap
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
+              }}
+              onClick={() => {
+                setIsAssignTrainerSwap((prev) => {
+                  const newSwap = !prev;
+                  const newStatus = newSwap
+                    ? "Trainer Rejected"
+                    : "Awaiting Trainer";
+                  console.log("newStatus", newStatus);
+                  setStatus(newStatus);
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    newStatus,
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                  return newSwap;
+                });
+              }}
+            />
           </div>
 
           <div

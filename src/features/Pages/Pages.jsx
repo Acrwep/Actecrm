@@ -62,12 +62,13 @@ export default function Pages() {
 
   // Helper to detect public routes
   const isPublicRoute = (path) => {
+    const lowerPath = path.toLowerCase();
     return (
-      path === "/login" ||
-      path.startsWith("/trainer-registration") ||
-      path.startsWith("/customer-registration") ||
-      path === "/success" ||
-      path === "/helpdesk"
+      lowerPath === "/login" ||
+      lowerPath.startsWith("/trainer-registration") ||
+      lowerPath.startsWith("/customer-registration") ||
+      lowerPath === "/success" ||
+      lowerPath === "/helpdesk"
     );
   };
 

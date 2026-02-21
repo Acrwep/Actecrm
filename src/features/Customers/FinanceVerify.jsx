@@ -566,6 +566,10 @@ const FinanceVerify = forwardRef(
             customerDetails && customerDetails.course_name
               ? customerDetails.course_name
               : "-",
+          customer_last_payment_date:
+            customerDetails && customerDetails.last_payment_date
+              ? moment(customerDetails.last_payment_date).format("YYYY-MM-DD")
+              : "-",
           customer_created_date:
             customerDetails && customerDetails.created_date
               ? moment(customerDetails.created_date).format("YYYY-MM-DD")

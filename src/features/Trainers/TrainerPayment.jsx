@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Row,
   Col,
@@ -34,6 +35,9 @@ import {
   getTrainerPayments,
   getTrainers,
   rejectTrainerPayment,
+  rejectTrainerPaymentApproval,
+  sendNotification,
+  updateTrainerPaymentStatus,
   updateTrainerPaymentTransaction,
 } from "../ApiService/action";
 import {
@@ -56,11 +60,13 @@ import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
 import CommonTextArea from "../Common/CommonTextArea";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { useSelector } from "react-redux";
 import CustomerEmailTemplate from "../Customers/CustomerEmailTemplate";
 
 export default function TrainerPayment() {
+  const location = useLocation();
   const scrollRef = useRef();
   const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
@@ -137,6 +143,12 @@ export default function TrainerPayment() {
   //delete request
   const [isOpenRequestDeleteModal, setIsOpenRequestDeleteModal] =
     useState(false);
+  //approve usestates
+  const [isOpenApproveModal, setIsOpenApproveModal] = useState(false);
+  const [approvePaymentDetails, setApprovePaymentDetails] = useState(null);
+  const [approveType, setApproveType] = useState("");
+  const [approveButtonLoading, setApproveButtonLoading] = useState(false);
+  const [rejectbuttonLoader, setRejectbuttonLoader] = useState(false);
 
   // Table columns definition
   const columns = [
@@ -258,7 +270,8 @@ export default function TrainerPayment() {
                         >
                           Raise Payment
                         </Checkbox>
-                      ) : record.status === "Payment Rejected" ? (
+                      ) : record.status === "Payment Rejected" ||
+                        record.status == "Approval Rejected" ? (
                         <button
                           className="customers_finance_updatepayment_button"
                           onClick={() => {
@@ -299,7 +312,48 @@ export default function TrainerPayment() {
 
                     <Col span={12} style={{ marginBottom: "8px" }}>
                       {record.status == "Requested" ||
+                      record.status == "Payment Rejected" ||
+                      record.status == "Approval Rejected" ||
+                      record.status == "Awaiting Approval" ? (
+                        <Checkbox
+                          className="server_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status == "Awaiting Approval") {
+                              if (permissions.includes("Payment Approval")) {
+                                setIsOpenDetailsDrawer(true);
+                                setDrawerContentStatus("Approve");
+                                setSelectedPaymentDetails(record);
+                                setPaymentHistory(record.transactions);
+                                setCollapseDefaultKey(["1"]);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
+                            } else {
+                              CommonMessage(
+                                "warning",
+                                "Payment not raised yet",
+                              );
+                            }
+                          }}
+                        >
+                          Approve
+                        </Checkbox>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Approved
+                          </p>
+                        </div>
+                      )}
+                    </Col>
+
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Requested" ||
                       record.status == "Awaiting Finance" ||
+                      record.status == "Awaiting Approval" ||
+                      record.status == "Approval Rejected" ||
                       record.status == "Payment Rejected" ? (
                         <Checkbox
                           className="server_statuscheckbox"
@@ -319,6 +373,11 @@ export default function TrainerPayment() {
                                 CommonMessage("error", "Access Denied");
                               }
                               // getCustomerData(record.customer_id);
+                            } else if (record.status == "Awaiting Approval") {
+                              CommonMessage(
+                                "warning",
+                                "Payment not approved yet",
+                              );
                             } else {
                               CommonMessage(
                                 "warning",
@@ -327,13 +386,13 @@ export default function TrainerPayment() {
                             }
                           }}
                         >
-                          Awaiting Finance{" "}
+                          Ready to Pay{" "}
                         </Checkbox>
                       ) : (
                         <div className="customers_classcompleted_container">
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
-                            Finance Verified
+                            Paid
                           </p>
                         </div>
                       )}
@@ -343,6 +402,8 @@ export default function TrainerPayment() {
                       {record.status == "Requested" ||
                       record.status == "Awaiting Finance" ||
                       record.status == "Payment Rejected" ||
+                      record.status == "Approval Rejected" ||
+                      record.status == "Awaiting Approval" ||
                       record.status == "Paid" ? (
                         <Checkbox
                           className="server_statuscheckbox"
@@ -359,6 +420,11 @@ export default function TrainerPayment() {
                                 CommonMessage("error", "Access Denied");
                               }
                               // getCustomerData(record.customer_id);
+                            } else if (record.status == "Awaiting Approval") {
+                              CommonMessage(
+                                "warning",
+                                "Payment not approved yet",
+                              );
                             } else {
                               CommonMessage("warning", "Not Paid Yet");
                             }
@@ -383,9 +449,13 @@ export default function TrainerPayment() {
                 <Button className="customers_status_formpending_button">
                   Requested
                 </Button>
+              ) : text === "Awaiting Approval" ? (
+                <Button className="customers_status_classscheduled_button">
+                  Awaiting Approval
+                </Button>
               ) : text === "Awaiting Finance" ? (
                 <Button className="trainers_pending_button">
-                  Awaiting Finance
+                  Ready to Pay
                 </Button>
               ) : text === "Paid" ? (
                 <div className="trainers_verifieddiv">
@@ -395,11 +465,10 @@ export default function TrainerPayment() {
                 <Button className="customers_status_completed_button">
                   Completed
                 </Button>
-              ) : text === "Payment Rejected" ? (
+              ) : text === "Payment Rejected" ||
+                text === "Approval Rejected" ? (
                 <div className="trainers_verifieddiv">
-                  <Button className="trainers_rejected_button">
-                    Payment Rejected
-                  </Button>
+                  <Button className="trainers_rejected_button">{text}</Button>
                 </div>
               ) : (
                 <p style={{ marginLeft: "6px" }}>-</p>
@@ -507,20 +576,69 @@ export default function TrainerPayment() {
       console.log(error);
     } finally {
       setTimeout(() => {
-        const PreviousAndCurrentDate = getCurrentandLast90Date();
-        setSelectedDates(PreviousAndCurrentDate);
-        getTrainerPaymentsData(
-          null,
-          "RaiseDate",
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          null,
-          1,
-          10,
-          true,
-        );
+        rerunTrainerPaymentFilters(location.state);
       }, 300);
     }
+  };
+
+  useEffect(() => {
+    const handler = async (e) => {
+      const data = e.detail;
+      console.log("Received via event:", data);
+      setTrainerFilterId("");
+      // Re-run your existing logic
+      rerunTrainerPaymentFilters(data);
+    };
+
+    window.addEventListener("trainerPaymentNotificationFilter", handler);
+    return () =>
+      window.removeEventListener("trainerPaymentNotificationFilter", handler);
+  }, []);
+
+  const rerunTrainerPaymentFilters = (stateData) => {
+    const PreviousAndCurrentDate = getCurrentandLast90Date();
+    const receivedSearchValueFromNotification = stateData?.searchValue || null;
+    const receivedStatusValueFromNotification = stateData?.status || null;
+    const receivedBillRaiseDateFromNotification =
+      stateData?.bill_raisedate || null;
+
+    if (receivedSearchValueFromNotification) {
+      setTrainerFilterId(receivedSearchValueFromNotification);
+    }
+
+    setStatus(
+      receivedStatusValueFromNotification
+        ? receivedStatusValueFromNotification
+        : "",
+    );
+    if (receivedBillRaiseDateFromNotification) {
+      setDateFilterType("RaiseDate");
+      setSelectedDates([
+        receivedBillRaiseDateFromNotification,
+        receivedBillRaiseDateFromNotification,
+      ]);
+    } else {
+      setSelectedDates(PreviousAndCurrentDate);
+    }
+
+    getTrainerPaymentsData(
+      receivedSearchValueFromNotification
+        ? receivedSearchValueFromNotification
+        : null,
+      "RaiseDate",
+      receivedBillRaiseDateFromNotification
+        ? receivedBillRaiseDateFromNotification
+        : PreviousAndCurrentDate[0],
+      receivedBillRaiseDateFromNotification
+        ? receivedBillRaiseDateFromNotification
+        : PreviousAndCurrentDate[1],
+      receivedStatusValueFromNotification
+        ? receivedStatusValueFromNotification
+        : "",
+      1,
+      10,
+      true,
+    );
   };
 
   const getTrainerPaymentsData = async (
@@ -669,6 +787,97 @@ export default function TrainerPayment() {
     }
   };
 
+  const handleTrainerPaymentStatus = async (updateStatus) => {
+    setApproveButtonLoading(true);
+    const payload = {
+      status: updateStatus,
+      trainer_payment_id: selectedPaymentDetails?.id,
+    };
+    try {
+      await updateTrainerPaymentStatus(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          trainerFilterId,
+          dateFilterType,
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setApproveButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleApprovalReject = async () => {
+    const lastIndex = selectedPaymentDetails.payments.length - 1;
+    const rejectPaymentItem = selectedPaymentDetails.payments[lastIndex];
+    setApproveType("Reject");
+    setApprovePaymentDetails(rejectPaymentItem);
+    const commentsValidate = addressValidator(rejectPaymentComments);
+
+    if (commentsValidate) {
+      setRejectPaymentCommentsError(addressValidator(rejectPaymentComments));
+      setTimeout(() => {
+        const container = document.getElementById(
+          "trainerpayment_approvalreject_comment_container",
+        );
+        container.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 200);
+      return;
+    }
+
+    setRejectPaymentCommentsError("");
+    const today = new Date();
+    setRejectbuttonLoader(true);
+
+    const payload = {
+      rejected_reason: rejectPaymentComments,
+      rejected_date: formatToBackendIST(today),
+      trainer_payment_id: selectedPaymentDetails?.id,
+      payment_trans_id: rejectPaymentItem?.id,
+    };
+
+    try {
+      await rejectTrainerPaymentApproval(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Updated Successfully");
+        setRejectbuttonLoader(false);
+        handleSendNotification();
+        paymentformReset();
+        // Refresh the payment requests data
+        getTrainerPaymentsData(
+          trainerFilterId,
+          dateFilterType,
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          1,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setRejectbuttonLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
   const handleMoveToPaidNow = async () => {
     console.log("seee", selectedRows);
 
@@ -755,6 +964,7 @@ export default function TrainerPayment() {
       await rejectTrainerPayment(payload);
       setTimeout(() => {
         CommonMessage("success", "Updated Successfully");
+        handleSendNotification();
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
@@ -774,6 +984,37 @@ export default function TrainerPayment() {
         error?.response?.data?.details ||
           "Something went wrong. Try again later",
       );
+    }
+  };
+
+  const handleSendNotification = async () => {
+    const today = new Date();
+    const payload = {
+      user_ids: import.meta.env.PROD
+        ? ["ACC0003"] // production
+        : ["DEV2119"],
+      title: "Trainer Payment Rejected",
+      message: {
+        trainer_id:
+          selectedPaymentDetails && selectedPaymentDetails.trainer_id
+            ? selectedPaymentDetails.trainer_id
+            : "-",
+        trainer_name:
+          selectedPaymentDetails && selectedPaymentDetails.trainer_name
+            ? selectedPaymentDetails.trainer_name
+            : "-",
+        trainer_mobile:
+          selectedPaymentDetails && selectedPaymentDetails.trainer_mobile
+            ? selectedPaymentDetails.trainer_mobile
+            : "-",
+        bill_raisedate: selectedPaymentDetails?.bill_raisedate,
+      },
+      created_at: formatToBackendIST(today),
+    };
+    try {
+      await sendNotification(payload);
+    } catch (error) {
+      console.log("send notification error", error);
     }
   };
 
@@ -858,6 +1099,8 @@ export default function TrainerPayment() {
     setSelectedPaymentDetails(null);
     setPaymentValidationTrigger(false);
     setIsOpenMoveToPaidModal(false);
+    setIsOpenApproveModal(false);
+    setApproveButtonLoading(false);
     setSelectedRows([]);
     setSelectedRowKeys([]);
     setPaidNow("");
@@ -931,7 +1174,7 @@ export default function TrainerPayment() {
                 <div style={{ flex: 1 }}>
                   <CommonSelectField
                     label="Select Trainer"
-                    required={true}
+                    required={false}
                     height="35px"
                     labelMarginTop="0px"
                     labelFontSize="13px"
@@ -1223,6 +1466,40 @@ export default function TrainerPayment() {
               </div>
               <div
                 className={
+                  status === "Awaiting Approval"
+                    ? "customers_active_classschedule_container"
+                    : "customers_classschedule_container"
+                }
+                onClick={() => {
+                  if (status === "Awaiting Approval") {
+                    return;
+                  }
+                  setStatus("Awaiting Approval");
+                  setPagination({ ...pagination, page: 1 });
+                  getTrainerPaymentsData(
+                    trainerFilterId,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    "Awaiting Approval",
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Awaiting Approval{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.awaiting_approval !== undefined &&
+                    statusCounts.awaiting_approval !== null
+                      ? statusCounts.awaiting_approval
+                      : "-"
+                  } )`}
+                </p>
+              </div>
+              <div
+                className={
                   status === "Awaiting Finance"
                     ? "trainers_active_verifypending_container"
                     : "customers_studentvefity_container"
@@ -1245,7 +1522,7 @@ export default function TrainerPayment() {
                 }}
               >
                 <p>
-                  Awaiting Finance{" "}
+                  Ready to Pay{" "}
                   {`( ${
                     statusCounts &&
                     statusCounts.awaiting_finance !== undefined &&
@@ -1279,7 +1556,7 @@ export default function TrainerPayment() {
                 }}
               >
                 <p>
-                  Payment Rejected{" "}
+                  Rejected{" "}
                   {`( ${
                     statusCounts &&
                     statusCounts.payment_rejected !== undefined &&
@@ -1507,7 +1784,8 @@ export default function TrainerPayment() {
             />
             <div className="customer_statusupdate_adddetailsContainer">
               {drawerContentStatus == "Requested" ||
-              drawerContentStatus == "Update Payment" ? (
+              drawerContentStatus == "Update Payment" ||
+              drawerContentStatus == "Approve" ? (
                 <>
                   {selectedPaymentDetails.payments.length >= 1 ? (
                     <div>
@@ -1566,6 +1844,24 @@ export default function TrainerPayment() {
                                               Rejected
                                             </p>
                                           </div>
+                                        ) : item.status === "Pending" ? (
+                                          <div className="customer_trans_statustext_container">
+                                            <PiClockCounterClockwiseBold
+                                              size={16}
+                                              color="gray"
+                                            />
+                                            <p
+                                              style={{
+                                                color: "gray",
+                                                fontWeight: 500,
+                                              }}
+                                            >
+                                              {selectedPaymentDetails.status ==
+                                              "Awaiting Approval"
+                                                ? "Waiting for Approval"
+                                                : "Waiting for Pay"}
+                                            </p>
+                                          </div>
                                         ) : (
                                           <div className="customer_trans_statustext_container">
                                             <BsPatchCheckFill color="#3c9111" />
@@ -1574,7 +1870,7 @@ export default function TrainerPayment() {
                                                 color: "#3c9111",
                                               }}
                                             >
-                                              Verified
+                                              Paid
                                             </p>
                                           </div>
                                         )}
@@ -1594,7 +1890,10 @@ export default function TrainerPayment() {
                                             <Col span={12}>
                                               <div className="customerdetails_rowheadingContainer">
                                                 <p className="customerdetails_rowheading">
-                                                  Paid Amount
+                                                  {item.status == "Paid" ||
+                                                  item.status == "Completed"
+                                                    ? "Paid Amount"
+                                                    : "Requested Amount"}
                                                 </p>
                                               </div>
                                             </Col>
@@ -1624,7 +1923,9 @@ export default function TrainerPayment() {
                                         </Col>
                                       </Row>
 
-                                      {item.status == "Rejected" ? (
+                                      {item.status == "Pending" ? (
+                                        ""
+                                      ) : item.status == "Rejected" ? (
                                         <>
                                           <Divider className="customer_statusupdate_divider" />
                                           <div
@@ -1768,44 +2069,69 @@ export default function TrainerPayment() {
                   ) : (
                     ""
                   )}
-                  <p className="customer_statusupdate_adddetails_heading">
-                    Add Details
-                  </p>
 
-                  <Row
-                    gutter={16}
-                    style={{ marginTop: "20px", marginBottom: "40px" }}
-                  >
-                    <Col span={8}>
-                      <CommonInputField
-                        label="Pay Amount"
-                        required={true}
-                        onChange={handlePaidNow}
-                        value={paidNow}
-                        error={paidNowError}
-                        errorFontSize="10px"
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <CommonSelectField
-                        label="Payment Type"
-                        required={true}
-                        options={paymentTypeOptions}
-                        value={paymentType}
-                        error={""}
-                        disabled={true}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <CommonInputField
-                        label="Balance Amount"
-                        required={true}
-                        value={balanceAmount}
-                        disabled={true}
-                        type="number"
-                      />
-                    </Col>
-                  </Row>
+                  {drawerContentStatus == "Approve" ? (
+                    <div
+                      style={{ position: "relative", marginBottom: "40px" }}
+                      id="trainerpayment_approvalreject_comment_container"
+                    >
+                      {approveType == "Reject" && (
+                        <CommonTextArea
+                          label="Comments"
+                          required={true}
+                          onChange={(e) => {
+                            setRejectPaymentComments(e.target.value);
+                            setRejectPaymentCommentsError(
+                              addressValidator(e.target.value),
+                            );
+                          }}
+                          value={rejectPaymentComments}
+                          error={rejectPaymentCommentsError}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="customer_statusupdate_adddetails_heading">
+                        Add Details
+                      </p>
+
+                      <Row
+                        gutter={16}
+                        style={{ marginTop: "20px", marginBottom: "40px" }}
+                      >
+                        <Col span={8}>
+                          <CommonInputField
+                            label="Request Amount"
+                            required={true}
+                            onChange={handlePaidNow}
+                            value={paidNow}
+                            error={paidNowError}
+                            errorFontSize="10px"
+                          />
+                        </Col>
+                        <Col span={8}>
+                          <CommonSelectField
+                            label="Payment Type"
+                            required={true}
+                            options={paymentTypeOptions}
+                            value={paymentType}
+                            error={""}
+                            disabled={true}
+                          />
+                        </Col>
+                        <Col span={8}>
+                          <CommonInputField
+                            label="Balance Amount"
+                            required={true}
+                            value={balanceAmount}
+                            disabled={true}
+                            type="number"
+                          />
+                        </Col>
+                      </Row>
+                    </>
+                  )}
                 </>
               ) : (
                 ""
@@ -1874,7 +2200,7 @@ export default function TrainerPayment() {
                                               color: "#3c9111",
                                             }}
                                           >
-                                            Verified
+                                            Paid
                                           </p>
                                         </div>
                                       )}
@@ -2121,9 +2447,29 @@ export default function TrainerPayment() {
 
             {drawerContentStatus == "Requested" ||
             drawerContentStatus == "Update Payment" ||
+            drawerContentStatus == "Approve" ||
             drawerContentStatus == "Complete" ? (
               <div className="leadmanager_tablefiler_footer">
                 <div className="leadmanager_submitlead_buttoncontainer">
+                  {drawerContentStatus === "Approve" ? (
+                    <>
+                      {rejectbuttonLoader ? (
+                        <button className="customer_trainerreject_loadingbutton">
+                          <CommonSpinner />
+                        </button>
+                      ) : (
+                        <button
+                          className="customer_trainerreject_button"
+                          onClick={handleApprovalReject}
+                        >
+                          Reject
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    ""
+                  )}
+
                   {buttonLoading ? (
                     <button className="users_adddrawer_loadingcreatebutton">
                       <CommonSpinner />
@@ -2134,6 +2480,14 @@ export default function TrainerPayment() {
                       onClick={() => {
                         if (drawerContentStatus == "Complete") {
                           handleCompletePayment();
+                        } else if (drawerContentStatus == "Approve") {
+                          const lastIndex =
+                            selectedPaymentDetails.payments.length - 1;
+                          setIsOpenApproveModal(true);
+                          setApproveType("Approve");
+                          setApprovePaymentDetails(
+                            selectedPaymentDetails.payments[lastIndex],
+                          );
                         } else {
                           handlePaymentSubmit();
                         }
@@ -2142,7 +2496,9 @@ export default function TrainerPayment() {
                       {drawerContentStatus == "Requested" ||
                       drawerContentStatus == "Complete"
                         ? "Submit"
-                        : "Update"}
+                        : drawerContentStatus == "Approve"
+                          ? "Approve"
+                          : "Update"}
                     </button>
                   )}
                 </div>
@@ -2176,6 +2532,66 @@ export default function TrainerPayment() {
           ""
         )}
       </Drawer>
+
+      {/* server raise confirm modal */}
+      <Modal
+        open={isOpenApproveModal}
+        onCancel={() => {
+          setIsOpenApproveModal(false);
+          setApproveType("");
+          setApprovePaymentDetails(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Approve The Amount Of{" "}
+          <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
+            {approvePaymentDetails && approvePaymentDetails.paid_amount
+              ? "₹" + approvePaymentDetails.paid_amount
+              : "-"}{" "}
+          </span>
+          for trainer{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {selectedPaymentDetails && selectedPaymentDetails.trainer_name
+              ? selectedPaymentDetails.trainer_name
+              : ""}
+          </span>{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenApproveModal(false);
+              setApproveType("");
+              setApprovePaymentDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {approveButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleTrainerPaymentStatus("Awaiting Finance");
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
 
       {/* payment screenshot modal */}
       <Modal
