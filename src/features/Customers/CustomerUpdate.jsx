@@ -323,6 +323,8 @@ const CustomerUpdate = forwardRef(
     };
 
     const getBranchesData = async (customerfulldetails, initialset) => {
+      console.log("customerfulldetails", customerfulldetails);
+
       const payload = {
         region_id:
           typeof customerfulldetails === "number"
@@ -537,9 +539,11 @@ const CustomerUpdate = forwardRef(
         phone: mobile,
         whatsapp_phone_code: whatsAppCountryCode,
         whatsapp: whatsApp,
-        date_of_birth: formatToBackendIST(dateOfBirth),
+        date_of_birth: dateOfBirth ? formatToBackendIST(dateOfBirth) : null,
         gender: gender,
-        date_of_joining: formatToBackendIST(dateOfJoining),
+        date_of_joining: dateOfJoining
+          ? formatToBackendIST(dateOfJoining)
+          : null,
         enrolled_course: course,
         region_id: regionId,
         branch_id: branchId,
@@ -945,7 +949,7 @@ const CustomerUpdate = forwardRef(
                   onChange={(e) => {
                     setRegionId(e.target.value);
                     setBranchId("");
-                    getBranchesData(e.target.value, false);
+                    getBranchesData(parseInt(e.target.value), false);
                     if (validationTrigger) {
                       setRegionError(selectValidator(e.target.value));
                     }

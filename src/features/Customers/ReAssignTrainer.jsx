@@ -13,6 +13,7 @@ import { LuIndianRupee } from "react-icons/lu";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
@@ -415,7 +416,20 @@ const ReAssignTrainer = forwardRef(
                                 {item.trainer_code ? item.trainer_code : "-"}
                               </span>
                             </span>
-                            {item.rejected_date ? (
+                            {item.is_verified == 1 ? (
+                              <div className="customer_trans_statustext_container">
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p
+                                  style={{
+                                    color: "#3c9111",
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  Verified
+                                </p>
+                              </div>
+                            ) : item.is_rejected == 1 &&
+                              item.is_verified == 0 ? (
                               <div className="customer_trans_statustext_container">
                                 <FaRegCircleXmark color="#d32f2f" />
                                 <p
@@ -429,14 +443,17 @@ const ReAssignTrainer = forwardRef(
                               </div>
                             ) : (
                               <div className="customer_trans_statustext_container">
-                                <BsPatchCheckFill color="#3c9111" />
+                                <PiClockCounterClockwiseBold
+                                  size={16}
+                                  color="gray"
+                                />
                                 <p
                                   style={{
-                                    color: "#3c9111",
+                                    color: "gray",
                                     fontWeight: 500,
                                   }}
                                 >
-                                  Verified
+                                  Waiting for Verify
                                 </p>
                               </div>
                             )}
@@ -577,45 +594,69 @@ const ReAssignTrainer = forwardRef(
                               marginBottom: "12px",
                             }}
                           >
-                            {item.rejected_date && (
+                            {item.is_rejected == 1 && item.is_verified == 0 ? (
+                              <>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Rejected Date
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {moment(item.rejected_date).format(
+                                          "DD/MM/YYYY",
+                                        )}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          {item.rejected_date
+                                            ? "Reason for Rejection"
+                                            : "Comments"}
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <EllipsisTooltip
+                                        text={item.comments}
+                                        smallText={true}
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </>
+                            ) : item.verified_date ? (
                               <Col span={12}>
                                 <Row>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
-                                        Rejected Date
+                                        Verified Date
                                       </p>
                                     </div>
                                   </Col>
                                   <Col span={12}>
                                     <p className="customerdetails_text">
-                                      {moment(item.rejected_date).format(
+                                      {moment(item.verified_date).format(
                                         "DD/MM/YYYY",
                                       )}
                                     </p>
                                   </Col>
                                 </Row>
                               </Col>
+                            ) : (
+                              ""
                             )}
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      {item.rejected_date
-                                        ? "Reason for Rejection"
-                                        : "Comments"}
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={item.comments}
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
-                            </Col>
                           </Row>
                         </div>
                       </Collapse.Panel>

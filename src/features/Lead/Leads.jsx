@@ -531,11 +531,10 @@ export default function Leads({
             )}
 
             {record.is_customer_reg == 0 &&
-            isAfter45Days == true &&
-            permissions.includes("Lead Re-Entry") ? (
+            permissions.includes("Assign Lead") ? (
               <Tooltip
                 placement="bottom"
-                title="This lead is older than 45 days. Would you like to create it again?"
+                title="Re-Assign this lead to another user"
               >
                 <MdAutorenew
                   size={20}
@@ -916,11 +915,10 @@ export default function Leads({
                       )}
 
                       {record.is_customer_reg === 0 &&
-                      isAfter45Days &&
-                      permissions.includes("Lead Re-Entry") ? (
+                      permissions.includes("Assign Lead") ? (
                         <Tooltip
                           placement="bottom"
-                          title="This lead is older than 45 days. Would you like to create it again?"
+                          title="Re-Assign this lead to another user"
                         >
                           <MdAutorenew
                             size={20}
@@ -2039,7 +2037,7 @@ export default function Leads({
               </Tooltip>
             )}
 
-            {permissions.includes("Assign Lead") && isShowEdit === false && (
+            {/* {permissions.includes("Assign Lead") && isShowEdit === false && (
               <button
                 className="leadmanager_addleadbutton"
                 onClick={() => {
@@ -2048,7 +2046,7 @@ export default function Leads({
               >
                 Assign Lead
               </button>
-            )}
+            )} */}
 
             <FiFilter
               size={20}
@@ -2075,7 +2073,7 @@ export default function Leads({
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
-          checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
+          checkBox={"false"}
           size="small"
           className="questionupload_table"
           selectedDatas={handleSelectedRow}

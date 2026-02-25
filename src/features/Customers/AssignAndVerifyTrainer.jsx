@@ -19,6 +19,7 @@ import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { IoFilter } from "react-icons/io5";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
@@ -176,27 +177,8 @@ const AssignAndVerifyTrainer = forwardRef(
     ];
 
     useEffect(() => {
-      if (drawerContentStatus == "Trainer Verify") {
-        getAssignTrainerData();
-      } else {
-        handleTrainerHistory();
-      }
+      handleTrainerHistory();
     }, []);
-
-    const getAssignTrainerData = async () => {
-      try {
-        const response = await getTrainerById(
-          customerDetails && customerDetails.trainer_id
-            ? customerDetails.trainer_id
-            : null,
-        );
-        const trainerDetails = response?.data?.data;
-        setAssignTrainerData(trainerDetails);
-      } catch (error) {
-        setAssignTrainerData(null);
-        console.log("get trainer by id error", error);
-      }
-    };
 
     const handleTrainerHistory = async () => {
       const payload = {
@@ -224,6 +206,27 @@ const AssignAndVerifyTrainer = forwardRef(
       } catch (error) {
         setTrainerHistory([]);
         console.log("trainer history error", error);
+      } finally {
+        setTimeout(() => {
+          if (drawerContentStatus == "Trainer Verify") {
+            getAssignTrainerData();
+          }
+        }, 100);
+      }
+    };
+
+    const getAssignTrainerData = async () => {
+      try {
+        const response = await getTrainerById(
+          customerDetails && customerDetails.trainer_id
+            ? customerDetails.trainer_id
+            : null,
+        );
+        const trainerDetails = response?.data?.data;
+        setAssignTrainerData(trainerDetails);
+      } catch (error) {
+        setAssignTrainerData(null);
+        console.log("get trainer by id error", error);
       }
     };
 
@@ -599,25 +602,27 @@ const AssignAndVerifyTrainer = forwardRef(
 
     return (
       <>
-        {drawerContentStatus == "Assign Trainer" ? (
-          <div className="customer_statusupdate_adddetailsContainer">
-            <p className="customer_statusupdate_adddetails_heading">
-              Previous Assigned Trainer History
-            </p>
+        <div className="customer_statusupdate_adddetailsContainer">
+          <p className="customer_statusupdate_adddetails_heading">
+            Previous Assigned Trainer History
+          </p>
 
-            {historyLoading === false ? (
-              <>
-                {trainerHistory.length >= 1 ? (
-                  <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-                    <Collapse
-                      className="assesmntresult_collapse"
-                      // items={trainerHistory}
-                      activeKey={collapseDefaultKey}
-                      onChange={(keys) => {
-                        setCollapseDefaultKey(keys);
-                      }}
-                    >
-                      {trainerHistory.map((item, index) => (
+          {historyLoading === false ? (
+            <>
+              {trainerHistory.length >= 1 ? (
+                <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                  <Collapse
+                    className="assesmntresult_collapse"
+                    // items={trainerHistory}
+                    activeKey={collapseDefaultKey}
+                    onChange={(keys) => {
+                      setCollapseDefaultKey(keys);
+                    }}
+                  >
+                    {trainerHistory.map((item, index) => {
+                      const firstIndexItem =
+                        trainerHistory.length >= 2 ? trainerHistory[1] : null;
+                      return (
                         <Collapse.Panel
                           key={index + 1}
                           header={
@@ -632,11 +637,35 @@ const AssignAndVerifyTrainer = forwardRef(
                             >
                               <span>
                                 Trainer Id -{" "}
-                                <span style={{ fontWeight: "500" }}>
+                                <span className="customer_trainerverify_accordion_heading">
                                   {item.trainer_code ? item.trainer_code : "-"}
+
+                                  {index == 0 &&
+                                  firstIndexItem &&
+                                  firstIndexItem.is_verified == 1 ? (
+                                    <span className="customer_trainerverify_accordion_heading_batch">
+                                      {`( Previous Trainer is Escalated )`}
+                                    </span>
+                                  ) : (
+                                    ""
+                                  )}
                                 </span>
                               </span>
-                              {item.rejected_date ? (
+
+                              {item.is_verified == 1 ? (
+                                <div className="customer_trans_statustext_container">
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p
+                                    style={{
+                                      color: "#3c9111",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Verified
+                                  </p>
+                                </div>
+                              ) : item.is_rejected == 1 &&
+                                item.is_verified == 0 ? (
                                 <div className="customer_trans_statustext_container">
                                   <FaRegCircleXmark color="#d32f2f" />
                                   <p
@@ -650,14 +679,17 @@ const AssignAndVerifyTrainer = forwardRef(
                                 </div>
                               ) : (
                                 <div className="customer_trans_statustext_container">
-                                  <BsPatchCheckFill color="#3c9111" />
+                                  <PiClockCounterClockwiseBold
+                                    size={16}
+                                    color="gray"
+                                  />
                                   <p
                                     style={{
-                                      color: "#3c9111",
+                                      color: "gray",
                                       fontWeight: 500,
                                     }}
                                   >
-                                    Verified
+                                    Waiting for Verify
                                   </p>
                                 </div>
                               )}
@@ -805,56 +837,90 @@ const AssignAndVerifyTrainer = forwardRef(
                                 marginBottom: "12px",
                               }}
                             >
-                              <Col span={12}>
-                                <Row>
+                              {item.is_rejected == 1 &&
+                              item.is_verified == 0 ? (
+                                <>
                                   <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Rejected Date
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Rejected Date
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <p className="customerdetails_text">
+                                          {moment(item.rejected_date).format(
+                                            "DD/MM/YYYY",
+                                          )}
+                                        </p>
+                                      </Col>
+                                    </Row>
+                                  </Col>
+
+                                  <Col span={12}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Reason for Rejection
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.comments ? item.comments : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Col>
+                                </>
+                              ) : item.verified_date ? (
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Verified Date
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {moment(item.verified_date).format(
+                                          "DD/MM/YYYY",
+                                        )}
                                       </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {moment(item.rejected_date).format(
-                                        "DD/MM/YYYY",
-                                      )}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              </Col>
-                              <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Reason for Rejection
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={item.comments ? item.comments : "-"}
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              ) : (
+                                ""
+                              )}
                             </Row>
                           </div>
                         </Collapse.Panel>
-                      ))}
-                    </Collapse>
-                  </div>
-                ) : (
-                  <p className="customer_trainerhistory_nodatatext">
-                    No Data found
-                  </p>
-                )}
-              </>
-            ) : (
-              ""
-            )}
+                      );
+                    })}
+                  </Collapse>
+                </div>
+              ) : (
+                <p className="customer_trainerhistory_nodatatext">
+                  No Data found
+                </p>
+              )}
+            </>
+          ) : (
+            ""
+          )}
+        </div>
+
+        {drawerContentStatus == "Assign Trainer" ? (
+          <div className="customer_statusupdate_adddetailsContainer">
             <p className="customer_statusupdate_adddetails_heading">
               Assign New Trainer
             </p>
