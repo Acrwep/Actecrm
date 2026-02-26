@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Flex, Tooltip, Radio, Button, Modal, Upload } from "antd";
+import {
+  Row,
+  Col,
+  Flex,
+  Tooltip,
+  Radio,
+  Button,
+  Modal,
+  Upload,
+  Drawer,
+} from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { IoCloudUploadOutline } from "react-icons/io5";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { useDispatch, useSelector } from "react-redux";
 import CommonTable from "../Common/CommonTable";
@@ -43,8 +54,12 @@ export default function Courses() {
   const [price, setPrice] = useState(0);
   const [priceError, setPriceError] = useState("");
   const [offerPrice, setOfferPrice] = useState(0);
-  const [brouchures, setBrouchures] = useState("");
+  // const [brouchures, setBrouchures] = useState("");
+  // const [syllabus, setSyllabus] = useState("");
+  const [brouchures, setBrouchures] = useState(null);
+  const [brouchuresArray, setBrouchuresArray] = useState([]);
   const [syllabus, setSyllabus] = useState("");
+  const [syllabusArray, setSyllabusArray] = useState([]);
   //delete modal
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   //update modal
@@ -170,6 +185,70 @@ export default function Courses() {
         setLoading(false);
       }, 300);
     }
+  };
+
+  const handleBrouchures = ({ file }) => {
+    console.log("fileeeeee", file);
+
+    const isPdf = file.type === "application/pdf";
+    const isLt5MB = file.size / 1024 / 1024 <= 5; // size in MB
+
+    if (file.status === "uploading" || file.status === "removed") {
+      setBrouchures(null);
+      setBrouchuresArray([]);
+      return;
+    }
+
+    if (!isPdf) {
+      setBrouchures(null);
+      setBrouchuresArray([]);
+      CommonMessage("error", "Only PDF files are accepted");
+      return;
+    }
+
+    if (!isLt5MB) {
+      setBrouchures(null);
+      setBrouchuresArray([]);
+      CommonMessage("error", "File must be smaller than 5MB");
+      return;
+    }
+
+    // ✅ If valid
+    setBrouchures(file);
+    setBrouchuresArray([file]);
+    CommonMessage("success", "Uploaded successfully");
+  };
+
+  const handleSyllabus = ({ file }) => {
+    console.log("fileeeeee", file);
+
+    const isPdf = file.type === "application/pdf";
+    const isLt5MB = file.size / 1024 / 1024 <= 5; // size in MB
+
+    if (file.status === "uploading" || file.status === "removed") {
+      setSyllabus(null);
+      setSyllabusArray([]);
+      return;
+    }
+
+    if (!isPdf) {
+      setSyllabus(null);
+      setSyllabusArray([]);
+      CommonMessage("error", "Only PDF files are accepted");
+      return;
+    }
+
+    if (!isLt5MB) {
+      setSyllabus(null);
+      setSyllabusArray([]);
+      CommonMessage("error", "File must be smaller than 5MB");
+      return;
+    }
+
+    // ✅ If valid
+    setSyllabus(file);
+    setSyllabusArray([file]);
+    CommonMessage("success", "Uploaded successfully");
   };
 
   const handleSubmit = async () => {
@@ -615,102 +694,141 @@ export default function Courses() {
         />
       </div>
 
-      <Modal
-        title={courseId ? "Update Course" : "Create Course"}
+      <Drawer
+        title={"Add Course"}
         open={isOpenAddModal}
-        onCancel={formReset}
-        width="35%"
-        footer={[
-          <Button
-            key="cancel"
-            onClick={formReset}
-            className="leads_coursemodal_cancelbutton"
-          >
-            Cancel
-          </Button>,
-
-          buttonLoading ? (
-            <Button
-              key="create"
-              type="primary"
-              className="leads_coursemodal_loading_createbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              key="create"
-              type="primary"
-              onClick={handleSubmit}
-              className="leads_coursemodal_createbutton"
-            >
-              {courseId ? "Update" : "Create"}
-            </Button>
-          ),
-        ]}
+        onClose={formReset}
+        width="50%"
+        style={{
+          position: "relative",
+          paddingBottom: "65px",
+        }}
+        className="customer_statusupdate_drawer"
       >
-        <div style={{ marginTop: "20px" }}>
-          <CommonInputField
-            label="Course Name"
-            required={true}
-            onChange={(e) => {
-              setCourseName(e.target.value);
-              setCourseNameError(addressValidator(e.target.value));
-            }}
-            value={courseName}
-            error={courseNameError}
-          />
-        </div>
-        <div style={{ marginTop: "30px" }}>
-          <CommonInputField
-            label="Price"
-            required={true}
-            onChange={(e) => {
-              setPrice(e.target.value);
-              setPriceError(selectValidator(e.target.value));
-            }}
-            value={price}
-            error={priceError}
-            type="number"
-          />
-        </div>
+        <div className="customer_statusupdate_adddetailsContainer">
+          <Row gutter={16} style={{ marginTop: "20px" }}>
+            <Col span={8}>
+              <CommonInputField
+                label="Course Name"
+                required={true}
+                onChange={(e) => {
+                  setCourseName(e.target.value);
+                  setCourseNameError(addressValidator(e.target.value));
+                }}
+                value={courseName}
+                error={courseNameError}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Price"
+                required={true}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  setPriceError(selectValidator(e.target.value));
+                }}
+                value={price}
+                error={priceError}
+                type="number"
+              />
+            </Col>
 
-        <div style={{ marginTop: "30px" }}>
-          <CommonInputField
-            label="Offer Price"
-            required={false}
-            onChange={(e) => {
-              setOfferPrice(e.target.value);
-            }}
-            value={offerPrice}
-            error=""
-          />
-        </div>
+            <Col span={8}>
+              <CommonInputField
+                label="Offer Price"
+                required={false}
+                onChange={(e) => {
+                  setOfferPrice(e.target.value);
+                }}
+                value={offerPrice}
+                error=""
+              />
+            </Col>
+          </Row>
 
-        <div style={{ marginTop: "30px" }}>
-          <CommonInputField
-            label="Brouchures Link"
-            required={false}
-            onChange={(e) => {
-              setBrouchures(e.target.value);
-            }}
-            value={brouchures}
-            error={""}
-          />
-        </div>
+          <div style={{ marginTop: "20px" }}>
+            {/* <CommonInputField
+              label="Brouchures Link"
+              required={false}
+              onChange={(e) => {
+                setBrouchures(e.target.value);
+              }}
+              value={brouchures}
+              error={""}
+            /> */}
+            <p className="courses_adddrawer_dragger_label">Brouchures</p>
+            <Dragger
+              className="courses_adddrawer_upload_dragger"
+              multiple={false}
+              beforeUpload={(file) => {
+                console.log(file);
+                return false; // Prevent auto-upload
+              }}
+              accept=".pdf"
+              maxCount={1}
+              onChange={handleBrouchures}
+              fileList={brouchuresArray}
+            >
+              <IoCloudUploadOutline
+                size={40}
+                className="courses_adddrawer_dragger_icon"
+              />
+              <p className="ant-upload-text">
+                Click or drag brouchures to this area to upload
+              </p>
+              <p className="ant-upload-hint">
+                Strictly prohibited from uploading company data or other banned
+                files.
+              </p>
+            </Dragger>
+          </div>
 
-        <div style={{ marginTop: "30px", marginBottom: "20px" }}>
-          <CommonInputField
-            label="Syllabus"
-            required={false}
-            onChange={(e) => {
-              setSyllabus(e.target.value);
-            }}
-            value={syllabus}
-            error={""}
-          />
+          <div style={{ marginTop: "20px", marginBottom: "40px" }}>
+            <p className="courses_adddrawer_dragger_label">Syllabus</p>
+            <Dragger
+              className="courses_adddrawer_upload_dragger"
+              multiple={false}
+              beforeUpload={(file) => {
+                console.log(file);
+                return false; // Prevent auto-upload
+              }}
+              accept=".pdf"
+              maxCount={1}
+              onChange={handleSyllabus}
+              fileList={syllabusArray}
+            >
+              <IoCloudUploadOutline
+                size={40}
+                className="courses_adddrawer_dragger_icon"
+              />
+              <p className="ant-upload-text">
+                Click or drag syllabus to this area to upload
+              </p>
+              <p className="ant-upload-hint">
+                Strictly prohibited from uploading company data or other banned
+                files.
+              </p>
+            </Dragger>
+          </div>
+
+          <div className="leadmanager_tablefiler_footer">
+            <div className="leadmanager_submitlead_buttoncontainer">
+              {buttonLoading ? (
+                <button className="users_adddrawer_loadingcreatebutton">
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className="users_adddrawer_createbutton"
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </Modal>
+      </Drawer>
 
       {/* delete Modal */}
       <CommonDeleteModal

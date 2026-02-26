@@ -272,3 +272,26 @@
   border-color: #5b69ca !important;
   color: #fff !important;
 }
+.courses_adddrawer_dragger_label {
+  font-size: 13px;
+  margin-bottom: 4px !important;
+}
+.courses_adddrawer_upload_dragger.ant-upload-wrapper .ant-upload-drag {
+  background-color: transparent !important;
+}
+.courses_adddrawer_upload_dragger.ant-upload-wrapper .ant-upload-drag:hover {
+  border-color: #5b69ca !important;
+}
+.courses_adddrawer_upload_dragger .ant-upload-text {
+  color: #5b69ca !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+.courses_adddrawer_upload_dragger .ant-upload-hint {
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+.courses_adddrawer_dragger_icon {
+  color: #5b69ca;
+  margin-bottom: 4px;
+}
