@@ -94,6 +94,7 @@ export default function CustomHeader() {
   const [courseData, setCourseData] = useState([]);
   const [isOpenCourseSearchOptions, setIsOpenCourseSearchOptions] =
     useState(true);
+  const [sharingItemId, setSharingItemId] = useState(null);
 
   //notification
   const [isOpenNotificationsDrawer, setIsOpenNotificationsDrawer] =
@@ -536,21 +537,10 @@ export default function CustomHeader() {
   };
 
   const buildShareText = (item) => {
-    const price = Number(item.price).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const price = Number(item.price).toLocaleString("en-IN");
+    const offer = Number(item.offer_price).toLocaleString("en-IN");
 
-    const offer = Number(item.offer_price).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-    return `Course Name: ${item.name}
-Price: ₹${price}
-Offer Price: ₹${offer}
-Brouchures: ${item.brouchures || "-"}
-Syllabus: ${item.syllabus || "-"}`;
+    return `Course Name: ${item.name}\nPrice: ₹${price}\nOffer Price: ₹${offer}`;
   };
 
   const copyCourseText = async (item) => {
@@ -566,37 +556,77 @@ Syllabus: ${item.syllabus || "-"}`;
   };
 
   const handleShare = async (item, sharePlatform) => {
-    //     const price = Number(item.price).toLocaleString("en-IN", {
-    //       minimumFractionDigits: 2,
-    //       maximumFractionDigits: 2,
-    //     });
+    if (sharePlatform === "whatsapp") {
+      const shareText = buildShareText(item);
+      const itemId = item.id || item.name;
 
-    //     const offer = Number(item.offer_price).toLocaleString("en-IN", {
-    //       minimumFractionDigits: 2,
-    //       maximumFractionDigits: 2,
-    //     });
+      // Proper URLs (use correct properties)
+      const brouchuresPdfUrl =
+        item.brouchures && item.brouchures.toLowerCase().endsWith(".pdf")
+          ? `${import.meta.env.VITE_API_URL}${item.brouchures}`
+          : "";
 
-    //     const shareText = `Course Name: ${item.name}
-    // Price: ₹${price}
-    // Offer Price: ₹${offer}
-    // Syllabus: ${item.syllabus || "-"}
-    // Brouchures: ${item.brouchures || "-"}`;
+      const syllabusPdfUrl =
+        item.syllabus && item.syllabus.toLowerCase().endsWith(".pdf")
+          ? `${import.meta.env.VITE_API_URL}${item.syllabus}`
+          : "";
 
-    //     try {
-    //       if (navigator.share) {
-    //         await navigator.share({
-    //           title: item.name,
-    //           text: shareText,
-    //         });
-    //       } else {
-    //         await navigator.clipboard.writeText(shareText);
-    //         alert("Course details copied to clipboard");
-    //       }
-    //     } catch (err) {
-    //       console.log("Share failed:", err);
-    //     }
-    if (sharePlatform == "whatsapp") {
-      const text = encodeURIComponent(buildShareText(item));
+      setSharingItemId(itemId);
+
+      try {
+        // Fetch both PDFs separately
+        const [brouchureResponse, syllabusResponse] = await Promise.all([
+          fetch(brouchuresPdfUrl),
+          fetch(syllabusPdfUrl),
+        ]);
+
+        if (!brouchureResponse.ok || !syllabusResponse.ok) {
+          throw new Error("Failed to fetch one of the PDFs");
+        }
+
+        const brouchureBlob = await brouchureResponse.blob();
+        const syllabusBlob = await syllabusResponse.blob();
+
+        const brouchureFile = new File(
+          [brouchureBlob],
+          `${item.name}_Brouchure.pdf`,
+          { type: "application/pdf" },
+        );
+
+        const syllabusFile = new File(
+          [syllabusBlob],
+          `${item.name}_Syllabus.pdf`,
+          { type: "application/pdf" },
+        );
+
+        // Copy message as fallback
+        try {
+          await navigator.clipboard.writeText(shareText);
+        } catch (err) {
+          console.error("Clipboard copy failed:", err);
+        }
+
+        if (
+          navigator.canShare &&
+          navigator.canShare({ files: [brouchureFile, syllabusFile] })
+        ) {
+          await navigator.share({
+            files: [brouchureFile, syllabusFile],
+            title: item.name,
+            text: shareText,
+          });
+
+          setSharingItemId(null);
+          return;
+        }
+      } catch (error) {
+        console.error("Error sharing PDFs:", error);
+      } finally {
+        setSharingItemId(null);
+      }
+
+      // Fallback for desktop
+      const text = encodeURIComponent(shareText);
       window.open(`https://wa.me/?text=${text}`, "_blank");
     } else if (sharePlatform == "gmail") {
       const subject = encodeURIComponent(item.name);
@@ -707,7 +737,7 @@ Syllabus: ${item.syllabus || "-"}`;
                                   </Tooltip>
 
                                   {/* ----------share tooltip---------- */}
-                                  <Tooltip
+                                  {/* <Tooltip
                                     placement="bottom"
                                     color="#fff"
                                     title={
@@ -717,17 +747,25 @@ Syllabus: ${item.syllabus || "-"}`;
                                           style={{ alignItems: "center" }}
                                         >
                                           <Col span={12}>
-                                            <BsWhatsapp
-                                              size={14}
-                                              color="green"
-                                              style={{
-                                                cursor: "pointer",
-                                                marginTop: "3px",
-                                              }}
-                                              onClick={() =>
-                                                handleShare(item, "whatsapp")
-                                              }
-                                            />
+                                            {sharingItemId ===
+                                            (item.id || item.name) ? (
+                                              <Spin
+                                                size="small"
+                                                style={{ marginTop: "3px" }}
+                                              />
+                                            ) : (
+                                              <BsWhatsapp
+                                                size={14}
+                                                color="green"
+                                                style={{
+                                                  cursor: "pointer",
+                                                  marginTop: "3px",
+                                                }}
+                                                onClick={() =>
+                                                  handleShare(item, "whatsapp")
+                                                }
+                                              />
+                                            )}
                                           </Col>
                                           <Col span={12}>
                                             <img
@@ -759,6 +797,22 @@ Syllabus: ${item.syllabus || "-"}`;
                                     <PiShareFat
                                       size={14}
                                       style={{ cursor: "pointer" }}
+                                    />
+                                  </Tooltip> */}
+                                  <Tooltip
+                                    placement="bottom"
+                                    title="Share on Whatsapp"
+                                  >
+                                    <BsWhatsapp
+                                      size={14}
+                                      color="green"
+                                      style={{
+                                        cursor: "pointer",
+                                        marginTop: "0px",
+                                      }}
+                                      onClick={() =>
+                                        handleShare(item, "whatsapp")
+                                      }
                                     />
                                   </Tooltip>
                                 </div>
@@ -797,7 +851,7 @@ Syllabus: ${item.syllabus || "-"}`;
                               <div className="header_search_link_row">
                                 {item.brouchures && (
                                   <a
-                                    href={item.brouchures}
+                                    href={`${import.meta.env.VITE_API_URL}${item.brouchures}`}
                                     target="_blank"
                                     rel="noreferrer"
                                   >
@@ -807,7 +861,7 @@ Syllabus: ${item.syllabus || "-"}`;
 
                                 {item.syllabus && (
                                   <a
-                                    href={item.syllabus}
+                                    href={`${import.meta.env.VITE_API_URL}${item.syllabus}`}
                                     target="_blank"
                                     rel="noreferrer"
                                   >

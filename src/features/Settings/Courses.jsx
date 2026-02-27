@@ -36,6 +36,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import { insertCourse } from "../ApiService/MultiPartApi";
 
 const { Dragger } = Upload;
 
@@ -113,7 +114,20 @@ export default function Courses() {
       dataIndex: "brouchures",
       width: 200,
       render: (text) => {
-        return <EllipsisTooltip text={text} />;
+        if (text) {
+          return (
+            <a
+              href={`${import.meta.env.VITE_API_URL}${text}`}
+              target="_blank"
+              rel="noreferrer"
+              className="courses_syllabus_a_tag"
+            >
+              Open Brouchure
+            </a>
+          );
+        } else {
+          return <p>-</p>;
+        }
       },
     },
     {
@@ -122,7 +136,20 @@ export default function Courses() {
       dataIndex: "syllabus",
       width: 200,
       render: (text) => {
-        return <EllipsisTooltip text={text} />;
+        if (text) {
+          return (
+            <a
+              href={`${import.meta.env.VITE_API_URL}${text}`}
+              target="_blank"
+              rel="noreferrer"
+              className="courses_syllabus_a_tag"
+            >
+              Open Syllabus
+            </a>
+          );
+        } else {
+          return <p>-</p>;
+        }
       },
     },
     {
@@ -260,19 +287,26 @@ export default function Courses() {
 
     if (nameValidate || priceValidate) return;
 
-    const payload = {
-      ...(courseId && { id: courseId }),
-      course_name: courseName,
-      price: price,
-      offer_price: offerPrice,
-      brouchures: brouchures,
-      syllabus: syllabus,
-    };
+    const formData = new FormData();
+
+    if (courseId) {
+      formData.append("id", courseId);
+    }
+    formData.append("course_name", courseName);
+    formData.append("price", price);
+    formData.append("offerPrice", offerPrice);
+    if (brouchuresArray.length >= 1) {
+      formData.append("brouchures", brouchures);
+    }
+    if (syllabusArray.length >= 1) {
+      formData.append("syllabus", syllabus);
+    }
+
     setButtonLoading(true);
 
     if (courseId) {
       try {
-        await updateTechnology(payload);
+        await updateTechnology(formData);
         CommonMessage("success", "Course Updated");
         setTimeout(() => {
           setButtonLoading(false);
@@ -289,7 +323,7 @@ export default function Courses() {
       }
     } else {
       try {
-        await createTechnology(payload);
+        await insertCourse(formData);
         CommonMessage("success", "Course Created");
         setTimeout(() => {
           setButtonLoading(false);
@@ -313,7 +347,31 @@ export default function Courses() {
     setPrice(item.price);
     setOfferPrice(item.offer_price);
     setBrouchures(item.brouchures);
+    if (item.brouchures) {
+      setBrouchuresArray([
+        {
+          uid: "-1",
+          name: item.brouchures.split("/").pop(),
+          status: "done",
+          url: `${import.meta.env.VITE_API_URL}${item.brouchures}`,
+        },
+      ]);
+    } else {
+      setBrouchuresArray([]);
+    }
     setSyllabus(item.syllabus);
+    if (item.syllabus) {
+      setSyllabusArray([
+        {
+          uid: "-2",
+          name: item.syllabus.split("/").pop(),
+          status: "done",
+          url: `${import.meta.env.VITE_API_URL}${item.syllabus}`,
+        },
+      ]);
+    } else {
+      setSyllabusArray([]);
+    }
     setIsOpenAddModal(true);
   };
 
@@ -600,6 +658,8 @@ export default function Courses() {
     setOfferPrice(0);
     setBrouchures("");
     setSyllabus("");
+    setBrouchuresArray([]);
+    setSyllabusArray([]);
     setIsOpenUpdateModal(false);
     setXlsxArray([]);
     setExcelData([]);
@@ -666,14 +726,14 @@ export default function Courses() {
             Add Course
           </button>
 
-          <button
+          {/* <button
             className="leadmanager_addleadbutton"
             onClick={() => {
               setIsOpenUpdateModal(true);
             }}
           >
             Update Course
-          </button>
+          </button> */}
         </Col>
       </Row>
 

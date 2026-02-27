@@ -530,8 +530,7 @@ export default function Leads({
               ""
             )}
 
-            {record.is_customer_reg == 0 &&
-            permissions.includes("Assign Lead") ? (
+            {permissions.includes("Assign Lead") ? (
               <Tooltip
                 placement="bottom"
                 title="Re-Assign this lead to another user"
@@ -914,8 +913,7 @@ export default function Leads({
                         ""
                       )}
 
-                      {record.is_customer_reg === 0 &&
-                      permissions.includes("Assign Lead") ? (
+                      {permissions.includes("Assign Lead") ? (
                         <Tooltip
                           placement="bottom"
                           title="Re-Assign this lead to another user"

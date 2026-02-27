@@ -10,7 +10,7 @@ import { CommonMessage } from "./features/Common/CommonMessage";
 
 function App() {
   const [permission, setPermission] = useState(
-    typeof Notification !== "undefined" ? Notification.permission : "default"
+    typeof Notification !== "undefined" ? Notification.permission : "default",
   );
 
   // Disable logs in production
@@ -65,7 +65,7 @@ function App() {
 
         // or wait for user gesture (recommended)
         console.log(
-          "Notification permission is default. Call askPermission() on user action."
+          "Notification permission is default. Call askPermission() on user action.",
         );
       }
     };
