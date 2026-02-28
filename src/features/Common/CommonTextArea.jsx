@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import { Input } from "antd";
 import { capitalizeWords } from "./Validation";
 import "./commonstyles.css";
@@ -16,13 +16,33 @@ const CommonTextArea = ({
   style,
   disabled = false,
 }) => {
+  const textAreaRef = useRef(null);
+  const cursorRef = useRef(null);
+
   const handleChange = (e) => {
-    const newValue = capitalizeWords(e.target.value);
+    const { selectionStart, selectionEnd, value: rawValue } = e.target;
+    // Store cursor position
+    cursorRef.current = { start: selectionStart, end: selectionEnd };
+
+    const newValue = capitalizeWords(rawValue);
+
     if (onChange) {
       // pass transformed value to parent
       onChange({ target: { value: newValue } });
     }
   };
+
+  useLayoutEffect(() => {
+    if (textAreaRef.current && cursorRef.current) {
+      const { start, end } = cursorRef.current;
+      // Get the native textarea element from Ant Design's TextArea
+      const nativeTextArea = textAreaRef.current.resizableTextArea?.textArea;
+      if (nativeTextArea) {
+        nativeTextArea.setSelectionRange(start, end);
+        cursorRef.current = null; // Clear after restoring
+      }
+    }
+  }, [value]);
 
   return (
     <div style={style}>
@@ -35,19 +55,17 @@ const CommonTextArea = ({
         )}
       </div>
       <TextArea
+        ref={textAreaRef}
         rows={4}
         placeholder="Type here..."
         onChange={handleChange}
         value={value}
-        error={error}
         status={error ? "error" : ""}
         maxLength={maxLength}
         disabled={disabled}
         className={`${
-          error === "" || error === null || error === undefined
-            ? "commontextarea"
-            : "commontextarea_error"
-        } ${className}`}
+          !error ? "commontextarea" : "commontextarea_error"
+        } ${className || ""}`}
       />
       {error && (
         <div

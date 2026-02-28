@@ -556,6 +556,7 @@ export default function CustomHeader() {
   };
 
   const handleShare = async (item, sharePlatform) => {
+    console.log(item.brouchures, item.syllabus);
     if (sharePlatform === "whatsapp") {
       const shareText = buildShareText(item);
       const itemId = item.id || item.name;
@@ -564,40 +565,43 @@ export default function CustomHeader() {
       const brouchuresPdfUrl =
         item.brouchures && item.brouchures.toLowerCase().endsWith(".pdf")
           ? `${import.meta.env.VITE_API_URL}${item.brouchures}`
-          : "";
+          : null;
 
       const syllabusPdfUrl =
         item.syllabus && item.syllabus.toLowerCase().endsWith(".pdf")
           ? `${import.meta.env.VITE_API_URL}${item.syllabus}`
-          : "";
+          : null;
 
       setSharingItemId(itemId);
 
       try {
-        // Fetch both PDFs separately
-        const [brouchureResponse, syllabusResponse] = await Promise.all([
-          fetch(brouchuresPdfUrl),
-          fetch(syllabusPdfUrl),
-        ]);
+        const filesToShare = [];
 
-        if (!brouchureResponse.ok || !syllabusResponse.ok) {
-          throw new Error("Failed to fetch one of the PDFs");
+        // Fetch brochure if URL exists
+        if (brouchuresPdfUrl) {
+          const brouchureResponse = await fetch(brouchuresPdfUrl);
+          if (brouchureResponse.ok) {
+            const brouchureBlob = await brouchureResponse.blob();
+            filesToShare.push(
+              new File([brouchureBlob], `${item.name}_Brouchure.pdf`, {
+                type: "application/pdf",
+              }),
+            );
+          }
         }
 
-        const brouchureBlob = await brouchureResponse.blob();
-        const syllabusBlob = await syllabusResponse.blob();
-
-        const brouchureFile = new File(
-          [brouchureBlob],
-          `${item.name}_Brouchure.pdf`,
-          { type: "application/pdf" },
-        );
-
-        const syllabusFile = new File(
-          [syllabusBlob],
-          `${item.name}_Syllabus.pdf`,
-          { type: "application/pdf" },
-        );
+        // Fetch syllabus if URL exists
+        if (syllabusPdfUrl) {
+          const syllabusResponse = await fetch(syllabusPdfUrl);
+          if (syllabusResponse.ok) {
+            const syllabusBlob = await syllabusResponse.blob();
+            filesToShare.push(
+              new File([syllabusBlob], `${item.name}_Syllabus.pdf`, {
+                type: "application/pdf",
+              }),
+            );
+          }
+        }
 
         // Copy message as fallback
         try {
@@ -606,12 +610,14 @@ export default function CustomHeader() {
           console.error("Clipboard copy failed:", err);
         }
 
+        // share text with files if available
         if (
           navigator.canShare &&
-          navigator.canShare({ files: [brouchureFile, syllabusFile] })
+          filesToShare.length > 0 &&
+          navigator.canShare({ files: filesToShare })
         ) {
           await navigator.share({
-            files: [brouchureFile, syllabusFile],
+            files: filesToShare,
             title: item.name,
             text: shareText,
           });
@@ -619,8 +625,18 @@ export default function CustomHeader() {
           setSharingItemId(null);
           return;
         }
+
+        // share text only if no files or canShare files is not supported
+        if (navigator.share) {
+          await navigator.share({
+            title: item.name,
+            text: shareText,
+          });
+          setSharingItemId(null);
+          return;
+        }
       } catch (error) {
-        console.error("Error sharing PDFs:", error);
+        console.error("Error sharing:", error);
       } finally {
         setSharingItemId(null);
       }

@@ -729,7 +729,8 @@ const FinanceVerify = forwardRef(
                               <div style={{ display: "flex", gap: "12px" }}>
                                 <Button
                                   className="customer_finance_rejectbutton"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setIsShowFinanceRejectComment(true);
                                     setFinanceRejectCommentError(
                                       addressValidator(financeRejectComment),
@@ -750,7 +751,8 @@ const FinanceVerify = forwardRef(
 
                                 <Button
                                   className="customer_finance_verifybutton"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setIsOpenFinanceVerifyModal(true);
                                     setTransactionDetails(item);
                                   }}

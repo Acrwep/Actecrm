@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import { TextField } from "@mui/material";
 import "./commonstyles.css";
 import { capitalizeWords } from "./Validation";
@@ -12,7 +12,7 @@ export default function CommonInputField({
   height,
   labelFontSize,
   errorFontSize,
-  ref,
+  ref: passedRef,
   maxLength,
   type,
   onFocus,
@@ -22,8 +22,15 @@ export default function CommonInputField({
   rows,
   multiline = false,
 }) {
+  const inputRef = useRef(null);
+  const cursorRef = useRef(null);
+
   const handleChange = (e) => {
-    let value = e.target.value.replace(/^\s+/, ""); // Removes leading spaces
+    let rawValue = e.target.value.replace(/^\s+/, ""); // Removes leading spaces
+    const { selectionStart, selectionEnd } = e.target;
+
+    // Store cursor position
+    cursorRef.current = { start: selectionStart, end: selectionEnd };
 
     if (
       label === "Email" ||
@@ -36,14 +43,24 @@ export default function CommonInputField({
       label == "Syllabus" ||
       label === "Attendance Sheet Link"
     ) {
-      onChange({ target: { value } });
+      if (onChange) {
+        onChange({ target: { value: rawValue } });
+      }
     } else {
-      const newValue = capitalizeWords(value);
+      const newValue = capitalizeWords(rawValue);
       if (onChange) {
         onChange({ target: { value: newValue } });
       }
     }
   };
+
+  useLayoutEffect(() => {
+    if (inputRef.current && cursorRef.current) {
+      const { start, end } = cursorRef.current;
+      inputRef.current.setSelectionRange(start, end);
+      cursorRef.current = null;
+    }
+  }, [value]);
 
   return (
     <div>
@@ -97,7 +114,13 @@ export default function CommonInputField({
             WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
           },
         }}
-        inputRef={ref}
+        inputRef={(node) => {
+          inputRef.current = node;
+          if (passedRef) {
+            if (typeof passedRef === "function") passedRef(node);
+            else passedRef.current = node;
+          }
+        }}
         slotProps={{
           htmlInput: { maxLength: maxLength },
           input: {

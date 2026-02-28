@@ -36,7 +36,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
-import { insertCourse } from "../ApiService/MultiPartApi";
+import { insertCourse, updateCourse } from "../ApiService/MultiPartApi";
 
 const { Dragger } = Upload;
 
@@ -61,6 +61,8 @@ export default function Courses() {
   const [brouchuresArray, setBrouchuresArray] = useState([]);
   const [syllabus, setSyllabus] = useState("");
   const [syllabusArray, setSyllabusArray] = useState([]);
+  const [isBrouchureDeleted, setIsBrouchureDeleted] = useState(false);
+  const [isSyllabusDeleted, setIsSyllabusDeleted] = useState(false);
   //delete modal
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   //update modal
@@ -220,9 +222,21 @@ export default function Courses() {
     const isPdf = file.type === "application/pdf";
     const isLt5MB = file.size / 1024 / 1024 <= 5; // size in MB
 
-    if (file.status === "uploading" || file.status === "removed") {
+    if (file.status === "removed") {
+      setIsBrouchureDeleted(true);
       setBrouchures(null);
       setBrouchuresArray([]);
+      return;
+    }
+
+    if (file.status === "uploading") {
+      return;
+    }
+
+    // If it's an existing file from server (has url)
+    if (file.url) {
+      setBrouchures(file);
+      setBrouchuresArray([file]);
       return;
     }
 
@@ -252,9 +266,21 @@ export default function Courses() {
     const isPdf = file.type === "application/pdf";
     const isLt5MB = file.size / 1024 / 1024 <= 5; // size in MB
 
-    if (file.status === "uploading" || file.status === "removed") {
+    if (file.status === "removed") {
+      setIsSyllabusDeleted(true);
       setSyllabus(null);
       setSyllabusArray([]);
+      return;
+    }
+
+    if (file.status === "uploading") {
+      return;
+    }
+
+    // If it's an existing file from server (has url)
+    if (file.url) {
+      setSyllabus(file);
+      setSyllabusArray([file]);
       return;
     }
 
@@ -290,54 +316,57 @@ export default function Courses() {
     const formData = new FormData();
 
     if (courseId) {
-      formData.append("id", courseId);
+      formData.append("course_id", courseId);
     }
+
     formData.append("course_name", courseName);
     formData.append("price", price);
-    formData.append("offerPrice", offerPrice);
-    if (brouchuresArray.length >= 1) {
+    formData.append("offer_price", offerPrice); // ✅ FIXED NAME
+
+    // ✅ ONLY send if real File object
+    if (brouchures instanceof File) {
       formData.append("brouchures", brouchures);
     }
-    if (syllabusArray.length >= 1) {
+
+    // 🔥 Send delete flag
+    if (isBrouchureDeleted) {
+      formData.append("remove_brouchures", "true");
+    }
+
+    if (syllabus instanceof File) {
       formData.append("syllabus", syllabus);
+    }
+
+    if (isSyllabusDeleted) {
+      formData.append("remove_syllabus", "true");
+    }
+    // Debug
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
     }
 
     setButtonLoading(true);
 
-    if (courseId) {
-      try {
-        await updateTechnology(formData);
+    try {
+      if (courseId) {
+        await updateCourse(formData);
         CommonMessage("success", "Course Updated");
-        setTimeout(() => {
-          setButtonLoading(false);
-          formReset();
-          getCourseData(searchValue);
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
-      }
-    } else {
-      try {
+      } else {
         await insertCourse(formData);
         CommonMessage("success", "Course Created");
-        setTimeout(() => {
-          setButtonLoading(false);
-          formReset();
-          getCourseData(searchValue);
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
       }
+
+      setTimeout(() => {
+        setButtonLoading(false);
+        formReset();
+        getCourseData(searchValue);
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.error || "Something went wrong. Try again later",
+      );
     }
   };
 
@@ -346,30 +375,32 @@ export default function Courses() {
     setCourseName(item.name);
     setPrice(item.price);
     setOfferPrice(item.offer_price);
-    setBrouchures(item.brouchures);
     if (item.brouchures) {
-      setBrouchuresArray([
-        {
-          uid: "-1",
-          name: item.brouchures.split("/").pop(),
-          status: "done",
-          url: `${import.meta.env.VITE_API_URL}${item.brouchures}`,
-        },
-      ]);
+      const brouchureObj = {
+        uid: "-1",
+        name: item.brouchures.split("/").pop(),
+        status: "done",
+        url: `${import.meta.env.VITE_API_URL}${item.brouchures}`,
+        path: item.brouchures,
+      };
+      setBrouchures(brouchureObj);
+      setBrouchuresArray([brouchureObj]);
     } else {
+      setBrouchures(null);
       setBrouchuresArray([]);
     }
-    setSyllabus(item.syllabus);
     if (item.syllabus) {
-      setSyllabusArray([
-        {
-          uid: "-2",
-          name: item.syllabus.split("/").pop(),
-          status: "done",
-          url: `${import.meta.env.VITE_API_URL}${item.syllabus}`,
-        },
-      ]);
+      const syllabusObj = {
+        uid: "-2",
+        name: item.syllabus.split("/").pop(),
+        status: "done",
+        url: `${import.meta.env.VITE_API_URL}${item.syllabus}`,
+        path: item.syllabus,
+      };
+      setSyllabus(syllabusObj);
+      setSyllabusArray([syllabusObj]);
     } else {
+      setSyllabus(null);
       setSyllabusArray([]);
     }
     setIsOpenAddModal(true);
@@ -660,6 +691,8 @@ export default function Courses() {
     setSyllabus("");
     setBrouchuresArray([]);
     setSyllabusArray([]);
+    setIsBrouchureDeleted(false);
+    setIsSyllabusDeleted(false);
     setIsOpenUpdateModal(false);
     setXlsxArray([]);
     setExcelData([]);
@@ -882,7 +915,7 @@ export default function Courses() {
                   className="users_adddrawer_createbutton"
                   onClick={handleSubmit}
                 >
-                  Submit
+                  {courseId ? "Update" : "Submit"}
                 </button>
               )}
             </div>

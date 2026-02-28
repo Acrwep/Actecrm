@@ -748,7 +748,7 @@ export const deleteJunkLeads = async (payload) => {
 // customers api's
 export const getCustomers = async (payload) => {
   try {
-    const response = await api.post("/api/getCustomers", payload);
+    const response = await api.post("/api/getCustomersV1", payload);
     return response;
   } catch (error) {
     throw error;
