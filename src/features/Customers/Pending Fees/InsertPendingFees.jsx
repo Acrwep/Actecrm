@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Divider, Collapse, Modal } from "antd";
+import { Row, Col, Divider, Collapse, Modal, Skeleton } from "antd";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
@@ -34,6 +34,8 @@ import {
 } from "../../Common/Validation";
 import {
   customerDuePayment,
+  getCustomerById,
+  getCustomersPaymentHistory,
   inserCustomerTrack,
 } from "../../ApiService/action";
 import PrismaZoom from "react-prismazoom";
@@ -43,17 +45,7 @@ import CommonGroupedSelectField from "../../Common/CommonGroupedSelectField";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
 
 const InsertPendingFees = forwardRef(
-  (
-    {
-      pending,
-      bal,
-      customerDetails,
-      paymentHistory,
-      setButtonLoading,
-      callgetCustomersApi,
-    },
-    ref,
-  ) => {
+  ({ selectedCustomerDetails, setButtonLoading, callgetCustomersApi }, ref) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [pendingAmount, setPendingAmount] = useState();
     const [payAmount, setPayAmount] = useState("");
@@ -85,11 +77,48 @@ const InsertPendingFees = forwardRef(
     const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
       useState(false);
     const [transactionScreenshot, setTransactionScreenshot] = useState("");
+    const [customerDetails, setCustomerDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
+    //payment api usestates
+    const [paymentDetails, setPaymentDetails] = useState(null);
 
     useEffect(() => {
-      setPendingAmount(pending);
-      setBalanceAmount(bal);
+      setLoading(true);
+      getParticularCustomerDetails();
     }, []);
+
+    const getParticularCustomerDetails = async () => {
+      try {
+        const response = await getCustomerById(selectedCustomerDetails?.id);
+        console.log("particular customer response", response);
+        const customer_details = response?.data?.data;
+        setCustomerDetails(customer_details);
+        setPendingAmount(parseFloat(customer_details?.balance_amount));
+        setBalanceAmount(parseFloat(customer_details?.balance_amount));
+      } catch (error) {
+        console.log("getcustomer by id error", error);
+        setCustomerDetails(null);
+      } finally {
+        setTimeout(() => {
+          getPaymentHistoryData();
+        }, 200);
+      }
+    };
+
+    const getPaymentHistoryData = async () => {
+      try {
+        const response = await getCustomersPaymentHistory(
+          selectedCustomerDetails?.lead_id,
+        );
+        console.log("particular customer payment history", response);
+        setPaymentDetails(response?.data?.data || null);
+      } catch (error) {
+        setPaymentDetails(null);
+        console.log("particular customer payment history error", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     useImperativeHandle(ref, () => ({
       handlePaymentSubmit,
@@ -289,7 +318,7 @@ const InsertPendingFees = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
 
       const payload = {
-        payment_master_id: customerDetails.payment_master_id,
+        payment_master_id: paymentDetails?.id,
         invoice_date: formatToBackendIST(paymentDate),
         paid_amount: payAmount,
         convenience_fees: convenienceFees,
@@ -354,693 +383,837 @@ const InsertPendingFees = forwardRef(
 
     return (
       <div>
-        <div className="customer_statusupdate_drawer_profileContainer">
-          {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
-          {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
-
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {customerDetails && customerDetails.course_name
-                ? customerDetails.course_name
-                : "-"}
-            </p>
-          </div>
-        </div>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.name
-                      ? customerDetails.name
-                      : "-"
-                  }
-                  smallText={true}
+        {loading ? (
+          <div style={{ padding: "20px" }}>
+            <div className="customer_profileContainer">
+              <Skeleton.Avatar active size={90} shape="circle" />
+              <div style={{ marginLeft: "20px", flex: 1 }}>
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2 }}
+                  title={{ width: 150 }}
                 />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.email
-                      ? customerDetails.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.phone
-                    ? customerDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.whatsapp
-                    ? customerDetails.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  {customerDetails && customerDetails.gender === "Male" ? (
-                    <BsGenderMale size={15} color="gray" />
-                  ) : (
-                    <BsGenderFemale size={15} color="gray" />
-                  )}
-                  <p className="customerdetails_rowheading">Gender</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.gender
-                    ? customerDetails.gender
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
-                    customerDetails && customerDetails.lead_assigned_to_id
-                      ? customerDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    customerDetails && customerDetails.lead_assigned_to_name
-                      ? customerDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.course_name
-                      ? customerDetails.course_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">
-                    Course Fees
-                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                  </p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.payment.total_amount
-                    ? "₹" + customerDetails.payment.total_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Server</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails &&
-                  customerDetails.is_server_required !== undefined
-                    ? customerDetails.is_server_required === 1
-                      ? "Required"
-                      : "Not Required"
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Type</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_timing
-                    ? customerDetails.batch_timing
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <div style={{ padding: "0px 24px" }}>
-          <div className="customerdetails_coursecard">
-            <div className="customerdetails_coursecard_headercontainer">
-              <p>Tax Details</p>
+              </div>
             </div>
 
-            <div className="customerdetails_coursecard_contentcontainer">
-              <Row>
-                <Col span={12}>
-                  <Row>
+            <Row gutter={16} style={{ marginTop: "30px" }}>
+              <Col span={12}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
                     <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Course Fees
-                        </p>
-                      </div>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
                     </Col>
                     <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.course_fees
-                          ? "₹" + customerDetails.course_fees
-                          : "-"}
-                      </p>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
                     </Col>
                   </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
+                ))}
+              </Col>
+              <Col span={12}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
                     <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Gst Amount</p>
-                      </div>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
                     </Col>
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails?.payment?.gst_amount ? (
-                          <>
-                            ₹{customerDetails.payment.gst_amount}{" "}
-                            <span style={{ fontSize: "11px" }}>
-                              ({customerDetails.payment.tax_type || "-"})
-                            </span>
-                          </>
-                        ) : (
-                          "-"
-                        )}
-                      </p>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
                     </Col>
                   </Row>
-                </Col>
+                ))}
+              </Col>
+            </Row>
 
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Total Fees</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.payment.total_amount
-                          ? "₹" + customerDetails.payment.total_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Balance Amount
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700, color: "rgb(211, 47, 47)" }}
-                      >
-                        {customerDetails && customerDetails.balance_amount
-                          ? "₹" + customerDetails.balance_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </div>
-          </div>
-        </div>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Transaction History
-        </p>
-
-        <div style={{ padding: "0px 24px" }}>
-          {paymentHistory.length >= 1 ? (
-            <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-              <Collapse
-                activeKey={collapseDefaultKey}
-                onChange={(keys) => setCollapseDefaultKey(keys)}
-                className="customer_updatepayment_history_collapse"
+            <div
+              className="customerdetails_coursecard"
+              style={{ marginTop: "30px" }}
+            >
+              <div className="customerdetails_coursecard_headercontainer">
+                <Skeleton.Input active size="small" style={{ width: 150 }} />
+              </div>
+              <div
+                className="customerdetails_coursecard_contentcontainer"
+                style={{ padding: "20px" }}
               >
-                {paymentHistory.map((item, index) => (
-                  <Collapse.Panel
-                    key={index + 1} // unique key
-                    header={
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          width: "100%",
-                          fontSize: "13px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span>
-                          Transaction Date -{" "}
-                          <span style={{ fontWeight: "500" }}>
-                            {moment(item.invoice_date).format("DD/MM/YYYY")}
-                          </span>
-                        </span>
-                        {item.payment_status === "Verify Pending" ? (
-                          <div className="customer_trans_statustext_container">
-                            <PiClockCounterClockwiseBold
-                              size={16}
-                              color="gray"
-                            />
-                            <p style={{ color: "gray", fontWeight: 500 }}>
-                              Waiting for Verify
-                            </p>
-                          </div>
-                        ) : item.payment_status === "Rejected" ? (
-                          <div className="customer_trans_statustext_container">
-                            <FaRegCircleXmark color="#d32f2f" />
-                            <p style={{ color: "#d32f2f", fontWeight: 500 }}>
-                              Rejected
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="customer_trans_statustext_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p style={{ color: "#3c9111", fontWeight: 500 }}>
-                              Verified
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    }
-                  >
-                    <div style={{ padding: "0px 12px" }}>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
                       <Row
-                        gutter={16}
-                        style={{ marginTop: "6px", marginBottom: "8px" }}
+                        key={i}
+                        style={{ marginTop: i === 1 ? "0" : "12px" }}
                       >
                         <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Invoice Date
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {moment(item.invoice_date).format("DD/MM/YYYY")}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Invoice Number
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.invoice_number}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Payment Mode
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.payment_mode}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Payment Screenshot
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <button
-                                className="pendingcustomer_paymentscreenshot_viewbutton"
-                                onClick={() => {
-                                  setIsOpenPaymentScreenshotModal(true);
-                                  setTransactionScreenshot(
-                                    item.payment_screenshot,
-                                  );
-                                }}
-                              >
-                                <FaRegEye size={16} /> View screenshot
-                              </button>
-                            </Col>
-                          </Row>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "80%" }}
+                          />
                         </Col>
-
                         <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Base Amount
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.amount}
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Convenience Fees
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.convenience_fees}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Paid Amount{" "}
-                                  <span className="customerdetails_coursegst">{` (Total)`}</span>
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p
-                                className="customerdetails_text"
-                                style={{
-                                  color: "#3c9111",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {"₹" + item.paid_amount}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Nxt Due Date
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.next_due_date
-                                  ? moment(item.next_due_date).format(
-                                      "DD/MM/YYYY",
-                                    )
-                                  : "-"}{" "}
-                              </p>
-                            </Col>
-                          </Row>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "100%" }}
+                          />
                         </Col>
                       </Row>
-                    </div>
+                    ))}
+                  </Col>
+                  <Col span={12}>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Row
+                        key={i}
+                        style={{ marginTop: i === 1 ? "0" : "12px" }}
+                      >
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "80%" }}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "100%" }}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                  </Col>
+                </Row>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="customer_statusupdate_drawer_profileContainer">
+              {customerDetails && customerDetails.profile_image ? (
+                <img
+                  src={customerDetails.profile_image}
+                  className="cutomer_profileimage"
+                />
+              ) : (
+                <FaRegUser size={50} color="#333" />
+              )}
 
-                    {item.payment_status == "Rejected" && (
-                      <>
-                        <Divider className="customer_statusupdate_divider" />
-                        <div style={{ padding: "0px 12px 6px 12px" }}>
-                          <Row>
-                            <Col span={24}>
+              <div>
+                <p className="customer_nametext">
+                  {" "}
+                  {customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"}
+                </p>
+                <p className="customer_coursenametext">
+                  {" "}
+                  {customerDetails && customerDetails.course_name
+                    ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </div>
+            </div>
+
+            <Row
+              gutter={16}
+              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+            >
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegCircleUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Name</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.name
+                          ? customerDetails.name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <MdOutlineEmail size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Email</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.email
+                          ? customerDetails.email
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoCallOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Mobile</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.phone
+                        ? customerDetails.phone
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaWhatsapp size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Whatsapp</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.whatsapp
+                        ? customerDetails.whatsapp
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      {customerDetails && customerDetails.gender === "Male" ? (
+                        <BsGenderMale size={15} color="gray" />
+                      ) : (
+                        <BsGenderFemale size={15} color="gray" />
+                      )}
+                      <p className="customerdetails_rowheading">Gender</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.gender
+                        ? customerDetails.gender
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoLocationOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Location</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.current_location
+                        ? customerDetails.current_location
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">
+                        Lead Executive
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {`${
+                        customerDetails && customerDetails.lead_assigned_to_id
+                          ? customerDetails.lead_assigned_to_id
+                          : "-"
+                      } (${
+                        customerDetails && customerDetails.lead_assigned_to_name
+                          ? customerDetails.lead_assigned_to_name
+                          : "-"
+                      })`}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.course_name
+                          ? customerDetails.course_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {/* {customerDetails && customerDetails.payment.total_amount
+                    ? "₹" + customerDetails.payment.total_amount
+                    : "-"} */}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Branch</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.branch_name
+                        ? customerDetails.branch_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Batch Track</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.batch_tracking
+                        ? customerDetails.batch_tracking
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Batch Type</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.batch_timing
+                        ? customerDetails.batch_timing
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <div style={{ padding: "0px 24px" }}>
+              <div className="customerdetails_coursecard">
+                <div className="customerdetails_coursecard_headercontainer">
+                  <p>Tax Details</p>
+                </div>
+
+                <div className="customerdetails_coursecard_contentcontainer">
+                  <Row>
+                    <Col span={12}>
+                      <Row>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Course Fees
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p
+                            className="customerdetails_text"
+                            style={{ fontWeight: 700 }}
+                          >
+                            {customerDetails && customerDetails.primary_fees
+                              ? "₹" + customerDetails.primary_fees
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
+
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Gst Amount
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p className="customerdetails_text">
+                            {paymentDetails?.gst_amount ? (
+                              <>
+                                ₹{paymentDetails.gst_amount}{" "}
+                                <span style={{ fontSize: "11px" }}>
+                                  ({paymentDetails.tax_type || "-"})
+                                </span>
+                              </>
+                            ) : (
+                              "-"
+                            )}
+                          </p>
+                        </Col>
+                      </Row>
+                    </Col>
+
+                    <Col span={12}>
+                      <Row>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Total Fees
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p
+                            className="customerdetails_text"
+                            style={{ fontWeight: 700 }}
+                          >
+                            {paymentDetails && paymentDetails.total_amount
+                              ? "₹" + paymentDetails.total_amount
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Balance Amount
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p
+                            className="customerdetails_text"
+                            style={{
+                              fontWeight: 700,
+                              color: "rgb(211, 47, 47)",
+                            }}
+                          >
+                            {customerDetails && customerDetails.balance_amount
+                              ? "₹" + customerDetails.balance_amount
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                </div>
+              </div>
+            </div>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            <p className="leadmanager_paymentdetails_drawer_heading">
+              Transaction History
+            </p>
+
+            <div style={{ padding: "0px 24px" }}>
+              {paymentDetails && paymentDetails.payment_trans.length >= 1 ? (
+                <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                  <Collapse
+                    activeKey={collapseDefaultKey}
+                    onChange={(keys) => setCollapseDefaultKey(keys)}
+                    className="customer_updatepayment_history_collapse"
+                  >
+                    {paymentDetails.payment_trans.map((item, index) => (
+                      <Collapse.Panel
+                        key={index + 1} // unique key
+                        header={
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              width: "100%",
+                              fontSize: "13px",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span>
+                              Transaction Date -{" "}
+                              <span style={{ fontWeight: "500" }}>
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </span>
+                            </span>
+                            {item.payment_status === "Verify Pending" ? (
+                              <div className="customer_trans_statustext_container">
+                                <PiClockCounterClockwiseBold
+                                  size={16}
+                                  color="gray"
+                                />
+                                <p style={{ color: "gray", fontWeight: 500 }}>
+                                  Waiting for Verify
+                                </p>
+                              </div>
+                            ) : item.payment_status === "Rejected" ? (
+                              <div className="customer_trans_statustext_container">
+                                <FaRegCircleXmark color="#d32f2f" />
+                                <p
+                                  style={{ color: "#d32f2f", fontWeight: 500 }}
+                                >
+                                  Rejected
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="customer_trans_statustext_container">
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p
+                                  style={{ color: "#3c9111", fontWeight: 500 }}
+                                >
+                                  Verified
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        }
+                      >
+                        <div style={{ padding: "0px 12px" }}>
+                          <Row
+                            gutter={16}
+                            style={{ marginTop: "6px", marginBottom: "8px" }}
+                          >
+                            <Col span={12}>
                               <Row>
-                                <Col span={6}>
+                                <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
-                                    <p
-                                      className="customerdetails_rowheading"
-                                      style={{ color: "#d32f2f" }}
-                                    >
-                                      Rejection Reason:
+                                    <p className="customerdetails_rowheading">
+                                      Invoice Date
                                     </p>
                                   </div>
                                 </Col>
-                                <Col span={18}>
+                                <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {item.reason}
+                                    {moment(item.invoice_date).format(
+                                      "DD/MM/YYYY",
+                                    )}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Invoice Number
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.invoice_number}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Payment Mode
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.payment_mode}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Payment Screenshot
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <button
+                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                    onClick={() => {
+                                      setIsOpenPaymentScreenshotModal(true);
+                                      setTransactionScreenshot(
+                                        item.payment_screenshot,
+                                      );
+                                    }}
+                                  >
+                                    <FaRegEye size={16} /> View screenshot
+                                  </button>
+                                </Col>
+                              </Row>
+                            </Col>
+
+                            <Col span={12}>
+                              <Row>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Base Amount
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {"₹" + item.amount}
+                                  </p>
+                                </Col>
+                              </Row>
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Convenience Fees
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {"₹" + item.convenience_fees}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Paid Amount{" "}
+                                      <span className="customerdetails_coursegst">{` (Total)`}</span>
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p
+                                    className="customerdetails_text"
+                                    style={{
+                                      color: "#3c9111",
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {"₹" + item.paid_amount}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Nxt Due Date
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.next_due_date
+                                      ? moment(item.next_due_date).format(
+                                          "DD/MM/YYYY",
+                                        )
+                                      : "-"}{" "}
                                   </p>
                                 </Col>
                               </Row>
                             </Col>
                           </Row>
                         </div>
-                      </>
-                    )}
-                  </Collapse.Panel>
-                ))}
-              </Collapse>
+
+                        {item.payment_status == "Rejected" && (
+                          <>
+                            <Divider className="customer_statusupdate_divider" />
+                            <div style={{ padding: "0px 12px 6px 12px" }}>
+                              <Row>
+                                <Col span={24}>
+                                  <Row>
+                                    <Col span={6}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p
+                                          className="customerdetails_rowheading"
+                                          style={{ color: "#d32f2f" }}
+                                        >
+                                          Rejection Reason:
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={18}>
+                                      <p className="customerdetails_text">
+                                        {item.reason}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            </div>
+                          </>
+                        )}
+                      </Collapse.Panel>
+                    ))}
+                  </Collapse>
+                </div>
+              ) : (
+                <p className="customer_trainerhistory_nodatatext">
+                  No Data found
+                </p>
+              )}
             </div>
-          ) : (
-            <p className="customer_trainerhistory_nodatatext">No Data found</p>
-          )}
-        </div>
 
-        <Divider className="customer_statusupdate_divider" />
+            <Divider className="customer_statusupdate_divider" />
 
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Payment Info
-        </p>
+            <p className="leadmanager_paymentdetails_drawer_heading">
+              Payment Info
+            </p>
 
-        <Row gutter={16} className="leadmanager_paymentdetails_drawer_rowdiv">
-          <Col span={8} style={{ marginTop: "16px" }}>
-            <CommonInputField
-              label="Pending Amount"
-              required={true}
-              value={pendingAmount}
-              disabled={true}
-            />
-          </Col>
-          <Col span={8} style={{ marginTop: "16px" }}>
-            <CommonInputField
-              label="Pay Amount"
-              required={true}
-              onChange={handlePaidNow}
-              value={payAmount}
-              error={payAmountError}
-              errorFontSize="10px"
-            />
-          </Col>
-          <Col span={8} style={{ marginTop: "16px" }}>
-            <CommonGroupedSelectField
-              label="Payment Mode"
-              onChange={handlePaymentMode}
-              value={paymentMode}
-              error={paymentModeError}
-            />
-          </Col>
+            <Row
+              gutter={16}
+              className="leadmanager_paymentdetails_drawer_rowdiv"
+            >
+              <Col span={8} style={{ marginTop: "16px" }}>
+                <CommonInputField
+                  label="Pending Amount"
+                  required={true}
+                  value={pendingAmount}
+                  disabled={true}
+                />
+              </Col>
+              <Col span={8} style={{ marginTop: "16px" }}>
+                <CommonInputField
+                  label="Pay Amount"
+                  required={true}
+                  onChange={handlePaidNow}
+                  value={payAmount}
+                  error={payAmountError}
+                  errorFontSize="10px"
+                />
+              </Col>
+              <Col span={8} style={{ marginTop: "16px" }}>
+                <CommonGroupedSelectField
+                  label="Payment Mode"
+                  onChange={handlePaymentMode}
+                  value={paymentMode}
+                  error={paymentModeError}
+                />
+              </Col>
 
-          <Col span={8} style={{ marginTop: "34px" }}>
-            <CommonInputField
-              label="Conv. Fee"
-              required={true}
-              value={convenienceFees}
-              type="number"
-              disabled={true}
-            />
-          </Col>
+              <Col span={8} style={{ marginTop: "34px" }}>
+                <CommonInputField
+                  label="Conv. Fee"
+                  required={true}
+                  value={convenienceFees}
+                  type="number"
+                  disabled={true}
+                />
+              </Col>
 
-          <Col span={8} style={{ marginTop: "34px" }}>
-            <CommonMuiDatePicker
-              label="Payment Date"
-              required={true}
-              onChange={(value) => {
-                setPaymentDate(value);
-                if (paymentValidationTrigger) {
-                  setPaymentDateError(selectValidator(value));
-                }
-              }}
-              value={paymentDate}
-              error={paymentDateError}
-            />
-          </Col>
+              <Col span={8} style={{ marginTop: "34px" }}>
+                <CommonMuiDatePicker
+                  label="Payment Date"
+                  required={true}
+                  onChange={(value) => {
+                    setPaymentDate(value);
+                    if (paymentValidationTrigger) {
+                      setPaymentDateError(selectValidator(value));
+                    }
+                  }}
+                  value={paymentDate}
+                  error={paymentDateError}
+                />
+              </Col>
 
-          {/* <Col span={8} style={{ marginTop: "34px" }}>
+              {/* <Col span={8} style={{ marginTop: "34px" }}>
             <ImageUploadCrop
               label="Payment Screenshot"
               aspect={1}
@@ -1062,113 +1235,118 @@ const InsertPendingFees = forwardRef(
               </p>
             )}
           </Col> */}
-          <Col span={8} style={{ marginTop: "34px" }}>
-            <CommonSelectField
-              label="Place of Payment"
-              required={true}
-              options={[
-                { id: "Tamil Nadu", name: "Tamil Nadu" },
-                { id: "Out of TN", name: "Out of TN" },
-                { id: "Out of IND", name: "Out of IND" },
-              ]}
-              onChange={(e) => {
-                setPlaceOfPayment(e.target.value);
-                if (paymentValidationTrigger) {
-                  setPlaceOfPaymentError(selectValidator(e.target.value));
-                }
-              }}
-              value={placeOfPayment}
-              error={placeOfPaymentError}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} className="leadmanager_paymentdetails_drawer_rowdiv">
-          <Col span={24} style={{ marginTop: "30px" }}>
-            <ImageUploadCrop
-              label="Payment Screenshot"
-              aspect={1}
-              maxSizeMB={1}
-              required={true}
-              value={paymentScreenShotBase64}
-              onChange={(base64) => setPaymentScreenShotBase64(base64)}
-              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-            />
-            {paymentScreenShotError && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d32f2f",
-                  marginTop: 4,
-                }}
-              >
-                {`Payment Screenshot ${paymentScreenShotError}`}
-              </p>
-            )}
-          </Col>
-        </Row>
-
-        <Divider className="leadmanger_paymentdrawer_divider" />
-
-        <p className="leadmanager_paymentdetails_drawer_heading">
-          Balance Amount Details
-        </p>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", marginBottom: "30px" }}
-          className="leadmanager_paymentdetails_drawer_rowdiv"
-        >
-          <Col span={8}>
-            <CommonInputField
-              label="Balance Amount"
-              required={true}
-              value={balanceAmount}
-              disabled={true}
-              type="number"
-            />
-          </Col>
-          {isShowDueDate ? (
-            <Col span={8}>
-              <CommonMuiDatePicker
-                label="Next Due Date"
-                required={true}
-                onChange={(value) => {
-                  setDueDate(value);
-                  setDueDateError(selectValidator(value));
-                }}
-                value={dueDate}
-                error={dueDateError}
-                disablePreviousDates={true}
-              />
-            </Col>
-          ) : (
-            ""
-          )}
-        </Row>
-
-        <Modal
-          title="Payment Screenshot"
-          open={isOpenPaymentScreenshotModal}
-          onCancel={() => setIsOpenPaymentScreenshotModal(false)}
-          footer={false}
-          width="32%"
-          className="customer_paymentscreenshot_modal"
-        >
-          <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
-            <PrismaZoom>
-              {transactionScreenshot ? (
-                <img
-                  src={`data:image/png;base64,${transactionScreenshot}`}
-                  alt="payment screenshot"
-                  className="customer_paymentscreenshot_image"
+              <Col span={8} style={{ marginTop: "34px" }}>
+                <CommonSelectField
+                  label="Place of Payment"
+                  required={true}
+                  options={[
+                    { id: "Tamil Nadu", name: "Tamil Nadu" },
+                    { id: "Out of TN", name: "Out of TN" },
+                    { id: "Out of IND", name: "Out of IND" },
+                  ]}
+                  onChange={(e) => {
+                    setPlaceOfPayment(e.target.value);
+                    if (paymentValidationTrigger) {
+                      setPlaceOfPaymentError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={placeOfPayment}
+                  error={placeOfPaymentError}
                 />
+              </Col>
+            </Row>
+
+            <Row
+              gutter={16}
+              className="leadmanager_paymentdetails_drawer_rowdiv"
+            >
+              <Col span={24} style={{ marginTop: "30px" }}>
+                <ImageUploadCrop
+                  label="Payment Screenshot"
+                  aspect={1}
+                  maxSizeMB={1}
+                  required={true}
+                  value={paymentScreenShotBase64}
+                  onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                  onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+                />
+                {paymentScreenShotError && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#d32f2f",
+                      marginTop: 4,
+                    }}
+                  >
+                    {`Payment Screenshot ${paymentScreenShotError}`}
+                  </p>
+                )}
+              </Col>
+            </Row>
+
+            <Divider className="leadmanger_paymentdrawer_divider" />
+
+            <p className="leadmanager_paymentdetails_drawer_heading">
+              Balance Amount Details
+            </p>
+
+            <Row
+              gutter={16}
+              style={{ marginTop: "20px", marginBottom: "30px" }}
+              className="leadmanager_paymentdetails_drawer_rowdiv"
+            >
+              <Col span={8}>
+                <CommonInputField
+                  label="Balance Amount"
+                  required={true}
+                  value={balanceAmount}
+                  disabled={true}
+                  type="number"
+                />
+              </Col>
+              {isShowDueDate ? (
+                <Col span={8}>
+                  <CommonMuiDatePicker
+                    label="Next Due Date"
+                    required={true}
+                    onChange={(value) => {
+                      setDueDate(value);
+                      setDueDateError(selectValidator(value));
+                    }}
+                    value={dueDate}
+                    error={dueDateError}
+                    disablePreviousDates={true}
+                  />
+                </Col>
               ) : (
-                "-"
+                ""
               )}
-            </PrismaZoom>
-          </div>
-        </Modal>
+            </Row>
+
+            <Modal
+              title="Payment Screenshot"
+              open={isOpenPaymentScreenshotModal}
+              onCancel={() => setIsOpenPaymentScreenshotModal(false)}
+              footer={false}
+              width="32%"
+              className="customer_paymentscreenshot_modal"
+            >
+              <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+                <PrismaZoom>
+                  {transactionScreenshot ? (
+                    <img
+                      src={`data:image/png;base64,${transactionScreenshot}`}
+                      alt="payment screenshot"
+                      className="customer_paymentscreenshot_image"
+                    />
+                  ) : (
+                    "-"
+                  )}
+                </PrismaZoom>
+              </div>
+            </Modal>
+          </>
+        )}
       </div>
     );
   },

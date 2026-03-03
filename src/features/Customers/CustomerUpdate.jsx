@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Upload, Modal, Tabs } from "antd";
+import { Row, Col, Upload, Modal, Tabs, Skeleton } from "antd";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -1111,8 +1111,40 @@ const CustomerUpdate = forwardRef(
     return (
       <>
         {loading ? (
-          <div className="customer_registration_loaderContainer">
-            <CommonSpinner color="#333" />
+          <div style={{ padding: "20px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "24px",
+              }}
+            >
+              <Skeleton.Avatar active size={100} shape="circle" />
+            </div>
+            <Row gutter={[16, 24]}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                <Col span={8} key={i}>
+                  <Skeleton.Input
+                    active
+                    block
+                    style={{ height: "40px", borderRadius: "10px" }}
+                  />
+                </Col>
+              ))}
+            </Row>
+            <div style={{ marginTop: "40px" }}>
+              <Row gutter={[16, 24]}>
+                {[1, 2, 3].map((i) => (
+                  <Col span={8} key={i}>
+                    <Skeleton.Input
+                      active
+                      block
+                      style={{ height: "40px", borderRadius: "10px" }}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            </div>
           </div>
         ) : (
           <Tabs

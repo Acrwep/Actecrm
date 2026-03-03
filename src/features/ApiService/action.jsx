@@ -757,7 +757,16 @@ export const getCustomers = async (payload) => {
 
 export const getPendingFeesCustomers = async (payload) => {
   try {
-    const response = await api.post("/api/pendingFeesList", payload);
+    const response = await api.post("/api/pendingFeesListV1", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCustomersPaymentHistory = async (lead_id) => {
+  try {
+    const response = await api.get(`/api/getPaymentHistory/${lead_id}`);
     return response;
   } catch (error) {
     throw error;

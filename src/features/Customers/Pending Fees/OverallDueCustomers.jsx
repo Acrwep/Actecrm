@@ -61,9 +61,6 @@ export default function OverallDueCustomers({
   const [loading, setLoading] = useState(true);
 
   //payment usestates
-  const [paymentHistory, setPaymentHistory] = useState([]);
-  const [pendingAmount, setPendingAmount] = useState();
-  const [balanceAmount, setBalanceAmount] = useState();
   const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -304,7 +301,7 @@ export default function OverallDueCustomers({
                 </Button>
 
                 <p className="customer_classgoing_percentage">{`${parseFloat(
-                  classPercent
+                  classPercent,
                 )}%`}</p>
               </div>
             ) : (
@@ -324,7 +321,7 @@ export default function OverallDueCustomers({
                     navigator.clipboard.writeText(
                       `${
                         import.meta.env.VITE_EMAIL_URL
-                      }/customer-registration/${record.id}`
+                      }/customer-registration/${record.id}`,
                     );
                     CommonMessage("success", "Link Copied");
                     console.log("Copied: eeee");
@@ -373,13 +370,6 @@ export default function OverallDueCustomers({
                   onClick={() => {
                     setIsOpenPaymentDrawer(true);
                     setCustomerDetails(record);
-                    setPendingAmount(parseFloat(record.balance_amount));
-                    setBalanceAmount(parseFloat(record.balance_amount));
-                    setPaymentHistory(
-                      record.payment && record.payment.payment_trans
-                        ? record.payment.payment_trans
-                        : []
-                    );
                   }}
                 />
               </Tooltip>
@@ -391,7 +381,7 @@ export default function OverallDueCustomers({
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true }))
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
@@ -441,7 +431,7 @@ export default function OverallDueCustomers({
         null,
         downliners_ids,
         1,
-        10
+        10,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -454,7 +444,7 @@ export default function OverallDueCustomers({
     searchvalue,
     downliners,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
 
@@ -467,12 +457,12 @@ export default function OverallDueCustomers({
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       user_ids: downliners,
       page: pageNumber,
       limit: limit,
@@ -731,7 +721,7 @@ export default function OverallDueCustomers({
                             </Button>
 
                             <p className="customer_classgoing_percentage">{`${parseFloat(
-                              classPercent
+                              classPercent,
                             )}%`}</p>
                           </div>
                         ) : (
@@ -751,7 +741,7 @@ export default function OverallDueCustomers({
                                 navigator.clipboard.writeText(
                                   `${
                                     import.meta.env.VITE_EMAIL_URL
-                                  }/customer-registration/${record.id}`
+                                  }/customer-registration/${record.id}`,
                                 );
                                 CommonMessage("success", "Link Copied");
                                 console.log("Copied: eeee");
@@ -797,17 +787,6 @@ export default function OverallDueCustomers({
                               onClick={() => {
                                 setIsOpenPaymentDrawer(true);
                                 setCustomerDetails(record);
-                                setPendingAmount(
-                                  parseFloat(record.balance_amount)
-                                );
-                                setBalanceAmount(
-                                  parseFloat(record.balance_amount)
-                                );
-                                setPaymentHistory(
-                                  record.payment && record.payment.payment_trans
-                                    ? record.payment.payment_trans
-                                    : []
-                                );
                               }}
                             />
                           </Tooltip>
@@ -826,7 +805,7 @@ export default function OverallDueCustomers({
 
       const allColumns = attachRenderFunctions(filterPage.column_names);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked)
+        filterPage.column_names.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -862,7 +841,7 @@ export default function OverallDueCustomers({
       searchValue,
       allDownliners,
       page,
-      limit
+      limit,
     );
   };
 
@@ -879,7 +858,7 @@ export default function OverallDueCustomers({
         e.target.value,
         allDownliners,
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -904,7 +883,7 @@ export default function OverallDueCustomers({
         searchValue,
         downliners_ids,
         1,
-        pagination.limit
+        pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -915,8 +894,6 @@ export default function OverallDueCustomers({
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
     setIsOpenPaymentDrawer(false);
-    setPendingAmount();
-    setBalanceAmount();
   };
 
   return (
@@ -932,12 +909,12 @@ export default function OverallDueCustomers({
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -957,7 +934,7 @@ export default function OverallDueCustomers({
                             null,
                             allDownliners,
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -1006,7 +983,7 @@ export default function OverallDueCustomers({
                                 null,
                                 allDownliners,
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -1067,7 +1044,7 @@ export default function OverallDueCustomers({
                       searchValue,
                       allDownliners,
                       1,
-                      pagination.limit
+                      pagination.limit,
                     );
                   }}
                 />
@@ -1104,7 +1081,7 @@ export default function OverallDueCustomers({
           scroll={{
             x: tableColumns.reduce(
               (total, col) => total + (col.width || 150),
-              0
+              0,
             ),
           }}
           columns={tableColumns}
@@ -1129,7 +1106,7 @@ export default function OverallDueCustomers({
         style={{ position: "relative" }}
       >
         {isOpenDetailsDrawer ? (
-          <ParticularCustomerDetails customerDetails={customerDetails} />
+          <ParticularCustomerDetails customerId={customerDetails?.id} />
         ) : (
           ""
         )}
@@ -1146,10 +1123,7 @@ export default function OverallDueCustomers({
         {isOpenPaymentDrawer ? (
           <InsertPendingFees
             ref={insertPendingFeesRef}
-            pending={pendingAmount}
-            bal={balanceAmount}
-            customerDetails={customerDetails}
-            paymentHistory={paymentHistory}
+            selectedCustomerDetails={customerDetails}
             setButtonLoading={setButtonLoading}
             callgetCustomersApi={() => {
               formReset();
@@ -1162,7 +1136,7 @@ export default function OverallDueCustomers({
                 searchValue,
                 allDownliners,
                 pagination.page,
-                pagination.limit
+                pagination.limit,
               );
             }}
           />

@@ -66,6 +66,10 @@ export default function CommonMuiDatePicker({
             disablePortal: false,
             sx: {
               zIndex: 999999999999999,
+              "& .MuiTypography-root": {
+                fontFamily: "Poppins, sans-serif !important",
+                fontSize: "13px",
+              },
               "& .MuiYearCalendar-button": {
                 fontSize: "13px !important", // desired font size
                 fontFamily: "Poppins, sans-serif", // desired font family
