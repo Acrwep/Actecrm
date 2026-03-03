@@ -298,3 +298,57 @@
 .courses_syllabus_a_tag {
   font-weight: 500 !important;
 }
+
+/* profile styles */
+.profilepage_personalinfo_profileupload_container {
+  display: flex;
+  gap: 20px;
+}
+.profilepage_personalinfo_profileimage_container {
+  background-color: rgba(128, 128, 128, 0.233);
+  padding: 12px;
+  border-radius: 50%;
+  width: 80px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333333c4;
+}
+.profilepage_personalinfo_dragger.ant-upload-wrapper .ant-upload-drag {
+  background-color: transparent !important;
+}
+.profilepage_personalinfo_dragger.ant-upload-wrapper .ant-upload-drag:hover {
+  border-color: #2160ad !important;
+}
+.profilepage_personalinfo_dragger_icon_container {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(128, 128, 128, 0.233);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333333c4;
+}
+.profilepage_personalinfo_dragger .ant-upload-text {
+  color: #2160ad !important;
+  font-size: 14px !important;
+  font-weight: 500;
+}
+.profilepage_personalinfo_dragger .ant-upload-hint {
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+
+.user_table_avatar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer;
+}
+
+.user_table_avatar:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #5b69ca !important;
+}
+

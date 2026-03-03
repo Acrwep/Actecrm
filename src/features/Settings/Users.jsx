@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Drawer, Flex, Tooltip, Button, Radio, Modal } from "antd";
+import {
+  Row,
+  Col,
+  Drawer,
+  Flex,
+  Tooltip,
+  Button,
+  Radio,
+  Modal,
+  Upload,
+  Avatar,
+} from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
@@ -14,6 +25,7 @@ import {
   confirmPasswordValidator,
   formatToBackendIST,
   getActiveTargetMonthRange,
+  mobileValidator,
   nameValidator,
   passwordValidator,
   selectValidator,
@@ -39,10 +51,16 @@ import {
 } from "../Redux/Slice";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
+import { LuCloudUpload } from "react-icons/lu";
+import { FaUserLarge } from "react-icons/fa6";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 import moment from "moment";
 import TargetMonthPicker from "./TargetMonthPicker";
 import CommonDeviceDetails from "../Common/CommonDeviceDetails";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import PrismaZoom from "react-prismazoom";
+
+const { Dragger } = Upload;
 
 export default function Users({
   setUsersCount,
@@ -72,6 +90,9 @@ export default function Users({
   const [passwordError, setPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [mobileError, setMobileError] = useState("");
   const [childUsers, setChildUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [userRolesError, setUserRolesError] = useState("");
@@ -86,7 +107,7 @@ export default function Users({
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
-
+  const [isOpenProfileModal, setIsOpenProfileModal] = useState("");
   //set target usestates
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -103,13 +124,71 @@ export default function Users({
   const [targetLoader, setTargetLoader] = useState(false);
 
   const columns = [
-    { title: "User Id", key: "user_id", dataIndex: "user_id" },
     {
-      title: "Profile Name",
-      key: "user_name",
-      dataIndex: "user_name",
-      width: 180,
+      title: "User",
+      key: "user",
+      width: 190,
+      render: (text, record) => {
+        return (
+          <Flex align="center" gap={12}>
+            <Avatar
+              src={record.profile_image}
+              icon={!record.profile_image && <FaUserLarge size={14} />}
+              size={40}
+              className={record.profile_image ? "user_table_avatar" : ""}
+              style={{
+                backgroundColor: record.profile_image
+                  ? "transparent"
+                  : "#f0f0f0",
+                color: "#bfbfbf",
+                border: "1px solid #f0f0f0",
+                flexShrink: 0,
+              }}
+              onClick={() => {
+                if (record.profile_image) {
+                  setIsOpenProfileModal(true);
+                  setProfileImage(record.profile_image);
+                }
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "2px",
+                minWidth: 0,
+                flex: 1,
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#262626",
+                  lineHeight: "1.2",
+                }}
+              >
+                <EllipsisTooltip text={record.user_name} />
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#8c8c8c",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  width: "100%",
+                }}
+                title={record.user_id}
+              >
+                {record.user_id}
+              </div>
+            </div>
+          </Flex>
+        );
+      },
     },
+    { title: "Mobile", key: "phone", dataIndex: "phone" },
     { title: "Password", key: "password", dataIndex: "password" },
     {
       title: "Assigned Users",
@@ -258,7 +337,7 @@ export default function Users({
       dataIndex: "action",
       width: 130,
       hidden: !["Update User", "Delete User"].some((p) =>
-        permissions.includes(p)
+        permissions.includes(p),
       ),
       render: (text, record) => {
         return (
@@ -311,8 +390,8 @@ export default function Users({
       ...(searchvalue && filterType == 1
         ? { user_id: searchvalue }
         : searchvalue && filterType == 2
-        ? { user_name: searchvalue }
-        : {}),
+          ? { user_name: searchvalue }
+          : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -356,6 +435,26 @@ export default function Users({
     }
   };
 
+  const handleProfileImageUpload = (file) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      CommonMessage("error", "You can only upload JPG/PNG file!");
+      return false;
+    }
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      CommonMessage("error", "Image must smaller than 5MB!");
+      return false;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      setProfileImage(reader.result);
+    };
+    return false;
+  };
+
   const handleEdit = (item) => {
     console.log("clicked user", item);
     setEditUserId(item.id);
@@ -363,6 +462,8 @@ export default function Users({
     setProfileName(item.user_name);
     setPassword(item.password);
     setConfirmPassword(item.password);
+    setProfileImage(item.profile_image || "");
+    setMobile(item.phone || "");
     const alterUserData = allUsersData.filter((f) => f.id != item.id);
     setAssignUsersData(alterUserData);
 
@@ -423,15 +524,17 @@ export default function Users({
     setValidationTrigger(true);
     const userIdValidate = addressValidator(userId);
     const profileNameValidate = nameValidator(profileName);
+    const mobileValidate = mobileValidator(mobile);
     const passwordValidate = passwordValidator(password);
     const confirmPasswordValidate = confirmPasswordValidator(
       password,
-      confirmPassword
+      confirmPassword,
     );
     const userRolesValidate = selectValidator(userRoles);
 
     setUserIdError(userIdValidate);
     setProfileNameError(profileNameValidate);
+    setMobileError(mobileValidate);
     setPasswordError(passwordValidate);
     setConfirmPasswordError(confirmPasswordValidate);
     setUserRolesError(userRolesValidate);
@@ -439,6 +542,7 @@ export default function Users({
     if (
       userIdValidate ||
       profileNameValidate ||
+      mobileValidate ||
       passwordValidate ||
       confirmPasswordValidate ||
       userRolesValidate
@@ -510,6 +614,8 @@ export default function Users({
       user_id: userId,
       user_name: profileName,
       password: password,
+      phone: mobile,
+      profile_image: profileImage,
       users: matchedUsers,
       roles: matchedRoles,
       target_start: targetMonthStartDate,
@@ -536,7 +642,7 @@ export default function Users({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     } else {
@@ -558,7 +664,7 @@ export default function Users({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -587,6 +693,9 @@ export default function Users({
     setTargetMonthStartDate(null);
     setTargetMonthEndDate(null);
     setTarget("");
+    setProfileImage("");
+    setMobile("");
+    setMobileError("");
   };
 
   const getUserDownlineData = async () => {
@@ -693,7 +802,7 @@ export default function Users({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -859,11 +968,65 @@ export default function Users({
         title="Add User"
         open={isOpenAddDrawer}
         onClose={formReset}
-        width="38%"
-        style={{ position: "relative" }}
+        width="45%"
+        style={{ position: "relative", paddingBottom: 65 }}
       >
-        <Row gutter={16}>
-          <Col span={12}>
+        <div
+          className="profilepage_personalinfo_profileupload_container"
+          id="profilepage_personalinfo_profileupload_container"
+        >
+          <div
+            className="profilepage_personalinfo_profileimage_container"
+            style={profileImage ? { padding: 0, overflow: "hidden" } : {}}
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <FaUserLarge size={23} />
+            )}
+          </div>
+
+          <div style={{ width: "100%" }}>
+            <Dragger
+              className="profilepage_personalinfo_dragger"
+              accept=".jpg,.jpeg,.png"
+              showUploadList={false}
+              beforeUpload={handleProfileImageUpload}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: "12px",
+                }}
+              >
+                <div className="profilepage_personalinfo_dragger_icon_container">
+                  <LuCloudUpload size={21} />
+                </div>
+              </div>
+              <p className="ant-upload-text">Upload your profile image</p>
+              <p className="ant-upload-hint">PNG or JPG (max. 5MB)</p>
+            </Dragger>
+          </div>
+        </div>
+
+        <Row
+          gutter={[
+            { xs: 24, sm: 24, md: 24, lg: 12 },
+            { xs: 30, sm: 30, md: 30, lg: 30 },
+          ]}
+          style={{ marginTop: "30px" }}
+        >
+          <Col span={8}>
             <CommonInputField
               label="User Id"
               required={true}
@@ -878,7 +1041,7 @@ export default function Users({
               disabled={editUserId ? true : false}
             />
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <CommonInputField
               label="Profile Name"
               required={true}
@@ -892,9 +1055,22 @@ export default function Users({
               error={profileNameError}
             />
           </Col>
-        </Row>
 
-        <Row gutter={16} style={{ marginTop: "30px" }}>
+          <Col span={8}>
+            <CommonInputField
+              label="Mobile"
+              required={true}
+              onChange={(e) => {
+                setMobile(e.target.value);
+                if (validationTrigger) {
+                  setMobileError(mobileValidator(e.target.value));
+                }
+              }}
+              value={mobile}
+              error={mobileError}
+            />
+          </Col>
+
           <Col span={12}>
             <CommonOutlinedInput
               label="Password"
@@ -924,7 +1100,7 @@ export default function Users({
                 if (validationTrigger) {
                   setPasswordError(passwordValidator(e.target.value));
                   setConfirmPasswordError(
-                    confirmPasswordValidator(e.target.value, confirmPassword)
+                    confirmPasswordValidator(e.target.value, confirmPassword),
                   );
                 }
               }}
@@ -933,7 +1109,10 @@ export default function Users({
               errorFontSize="10px"
               helperTextContainerStyle={{
                 position: "absolute",
-                bottom: "-18px",
+                bottom:
+                  passwordError === "" || passwordError.includes("8 characters")
+                    ? "0px"
+                    : "-18px",
                 width: "100%",
               }}
             />
@@ -971,7 +1150,7 @@ export default function Users({
                 setConfirmPassword(e.target.value);
                 if (validationTrigger) {
                   setConfirmPasswordError(
-                    confirmPasswordValidator(password, e.target.value)
+                    confirmPasswordValidator(password, e.target.value),
                   );
                 }
               }}
@@ -985,15 +1164,16 @@ export default function Users({
               }}
             />{" "}
           </Col>
-        </Row>
 
-        <Row
-          gutter={16}
-          style={{
-            marginTop: passwordError || confirmPasswordError ? "45px" : "30px",
-          }}
-        >
-          <Col span={12}>
+          <Col
+            span={12}
+            style={{
+              marginTop:
+                passwordError === "" || passwordError.includes("8 characters")
+                  ? "0px"
+                  : "24px",
+            }}
+          >
             <TargetMonthPicker
               label="Target Month"
               required={false}
@@ -1004,7 +1184,7 @@ export default function Users({
                   const [monthName, year] = value.split(" - ");
                   const selectedMonth = moment(
                     `${monthName} ${year}`,
-                    "MMMM YYYY"
+                    "MMMM YYYY",
                   );
 
                   // Start date: 26th of previous month
@@ -1031,7 +1211,15 @@ export default function Users({
               labelMarginTop="2px"
             />
           </Col>
-          <Col span={12}>
+          <Col
+            span={12}
+            style={{
+              marginTop:
+                passwordError === "" || passwordError.includes("8 characters")
+                  ? "0px"
+                  : "24px",
+            }}
+          >
             <CommonOutlinedInput
               label="Target"
               type="number"
@@ -1048,14 +1236,7 @@ export default function Users({
               icon={<LuIndianRupee size={16} />}
             />
           </Col>
-        </Row>
 
-        <Row
-          gutter={16}
-          style={{
-            marginTop: "25px",
-          }}
-        >
           <Col span={12}>
             <CommonAntdMultiSelect
               label="Roles"
@@ -1083,6 +1264,27 @@ export default function Users({
             />
           </Col>
         </Row>
+
+        {/* <Row gutter={16} style={{ marginTop: "30px" }}>
+        </Row> */}
+
+        {/* <Row
+          gutter={16}
+          style={{
+            marginTop: passwordError || confirmPasswordError ? "45px" : "30px",
+          }}
+        >
+        
+        </Row> */}
+
+        {/* <Row
+          gutter={16}
+          style={{
+            marginTop: "25px",
+          }}
+        >
+      
+        </Row> */}
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {buttonLoading ? (
@@ -1156,7 +1358,7 @@ export default function Users({
                 const [monthName, year] = value.split(" - ");
                 const selectedMonth = moment(
                   `${monthName} ${year}`,
-                  "MMMM YYYY"
+                  "MMMM YYYY",
                 );
 
                 // Start date: 26th of previous month
@@ -1200,6 +1402,33 @@ export default function Users({
             icon={<LuIndianRupee size={16} />}
             error={assignTargetValueError}
           />
+        </div>
+      </Modal>
+
+      {/* profile image modal */}
+      <Modal
+        title="Profile Image"
+        open={isOpenProfileModal}
+        onCancel={() => {
+          setIsOpenProfileModal(false);
+          setProfileImage("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {profileImage ? (
+              <img
+                src={`${profileImage}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
         </div>
       </Modal>
     </div>
