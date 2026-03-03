@@ -1472,9 +1472,7 @@ export default function Customers() {
       setCustomersData([]);
       console.log("get customers error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 
@@ -3755,10 +3753,7 @@ export default function Customers() {
         style={{ position: "relative" }}
       >
         {isOpenDetailsDrawer ? (
-          <ParticularCustomerDetails
-            customerDetails={customerDetails}
-            isCustomerPage={true}
-          />
+          <ParticularCustomerDetails customerId={customerDetails?.id} />
         ) : (
           ""
         )}

@@ -18,7 +18,6 @@ import {
 export default function ParticularCustomerDetails({
   // customerDetails,
   customerId,
-  isCustomerPage,
 }) {
   const [customerDetails, setCustomerDetails] = useState(null);
   const [profilePictureArray, setProfilePictureArray] = useState([]);
@@ -422,13 +421,9 @@ export default function ParticularCustomerDetails({
                         className="customerdetails_text"
                         style={{ fontWeight: 700 }}
                       >
-                        {isCustomerPage == true
-                          ? customerDetails && customerDetails.primary_fees
-                            ? "₹" + customerDetails.primary_fees
-                            : "-"
-                          : customerDetails && customerDetails.course_fees
-                            ? "₹" + customerDetails.course_fees
-                            : "-"}
+                        {customerDetails && customerDetails.primary_fees
+                          ? "₹" + customerDetails.primary_fees
+                          : "-"}
                       </p>
                     </Col>
                   </Row>
