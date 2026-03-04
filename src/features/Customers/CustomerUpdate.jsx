@@ -1062,6 +1062,7 @@ const CustomerUpdate = forwardRef(
                   onChange={handleSubTotal}
                   error={subTotalError}
                   required={true}
+                  type="number"
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
@@ -1087,6 +1088,7 @@ const CustomerUpdate = forwardRef(
                   required={true}
                   disabled
                   value={amount}
+                  type="number"
                 />
               </Col>
             </Row>

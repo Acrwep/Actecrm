@@ -1167,6 +1167,7 @@ const InsertPendingFees = forwardRef(
                   required={true}
                   value={pendingAmount}
                   disabled={true}
+                  type="number"
                 />
               </Col>
               <Col span={8} style={{ marginTop: "16px" }}>
@@ -1177,6 +1178,7 @@ const InsertPendingFees = forwardRef(
                   value={payAmount}
                   error={payAmountError}
                   errorFontSize="10px"
+                  type="number"
                 />
               </Col>
               <Col span={8} style={{ marginTop: "16px" }}>

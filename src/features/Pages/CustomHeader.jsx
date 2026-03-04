@@ -71,9 +71,6 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 export default function CustomHeader() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { notifications } = useContext(NotificationContext);
-
-  const unreadCount = notifications.filter((n) => n.is_read === 0).length;
 
   const [userName, setUserName] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -128,6 +125,9 @@ export default function CustomHeader() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
+  const { notifications, unreadCount, setUnreadCount, logout } =
+    useContext(NotificationContext);
+
   useEffect(() => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
@@ -139,7 +139,24 @@ export default function CustomHeader() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleNewSocketNotification = (event) => {
+      const newNotif = event.detail;
+      console.log("Adding new real-time notification to list:", newNotif);
+      setNotificationData((prev) => [newNotif, ...prev]);
+    };
+
+    window.addEventListener("socket_notification", handleNewSocketNotification);
+    return () => {
+      window.removeEventListener(
+        "socket_notification",
+        handleNewSocketNotification,
+      );
+    };
+  }, []);
+
   const handleLogout = () => {
+    logout(); // 🚀 Disconnect socket and clear state
     localStorage.removeItem("AccessToken");
     localStorage.removeItem("loginUserDetails");
     sessionStorage.clear();
@@ -417,6 +434,9 @@ export default function CustomHeader() {
     };
     try {
       await readNotification(payload);
+      if (item.is_read === 0) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
       setIsOpenNotificationsDrawer(false);
       setTimeout(() => {
         handleNotification(item);

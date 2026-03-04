@@ -495,18 +495,19 @@ export default function LiveLead({
       setLoginUserId(convertAsJson?.user_id);
     }, 300);
 
-    // Poll only when tab is visible
-    const isTabActive = () => document.visibilityState === "visible";
-
-    // Polling Interval (optimized)
-    const interval = setInterval(() => {
-      if (isTabActive()) {
+    // Listen for real-time lead updates via WebSockets
+    const handleSocketRefresh = () => {
+      if (document.visibilityState === "visible") {
         fetchAndUpdate();
       }
-    }, 600); // your interval
+    };
+
+    window.addEventListener("refreshLiveLeads", handleSocketRefresh);
 
     // Cleanup
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("refreshLiveLeads", handleSocketRefresh);
+    };
   }, [tabName]);
 
   // useEffect(() => {

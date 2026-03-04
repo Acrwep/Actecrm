@@ -1,83 +1,162 @@
 import { createContext, useEffect, useState, useRef } from "react";
-import axios from "axios";
+import { io } from "socket.io-client";
 import { getNotifications } from "../features/ApiService/action";
+import { CommonMessage } from "../features/Common/CommonMessage";
 
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const [prevLeadCount, setPrevLeadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-  const convertAsJson = JSON.parse(getLoginUserDetails);
-  const userId = convertAsJson?.user_id; // get logged-in user id
+  const [unreadCount, setUnreadCount] = useState(0);
   const leadCountRef = useRef(0);
+  const socketRef = useRef(null);
 
   const fetchNotifications = async (userId) => {
-    if (import.meta.env.PROD) {
-      const payload = {
-        user_id: userId,
-        page: 1,
-      };
-      try {
-        const res = await getNotifications(payload);
-        console.log("notification response", res);
-        setNotifications(res.data.data);
-        //live-lead count handling
-        const lead_count = res?.data?.lead_count || 0;
-        console.log("counttt", lead_count, leadCountRef.current);
+    const payload = {
+      user_id: userId,
+      page: 1,
+    };
+    try {
+      const res = await getNotifications(payload);
+      const data = res.data.data;
+      setNotifications(data);
 
-        // Play sound ONLY once when increased
-        if (lead_count > leadCountRef.current) {
-          playNotificationSound();
-        }
+      // Calculate initial unread count
+      const initialUnread = data.filter((n) => n.is_read === 0).length;
+      setUnreadCount(initialUnread);
 
-        // Update ref instantly (no re-render)
-        leadCountRef.current = lead_count;
-      } catch (err) {
-        console.error("Error fetching notifications:", err);
-      }
+      const lead_count = res?.data?.lead_count || 0;
+      leadCountRef.current = lead_count;
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
     }
   };
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const raw = localStorage.getItem("loginUserDetails");
-      const user = raw ? JSON.parse(raw) : null;
-
-      if (user?.user_id) {
-        fetchNotifications(user?.user_id);
-      }
-    };
-
-    // Run on mount
-    handleStorageChange();
-
-    // Listen for custom event fired after login
-    window.addEventListener("callGetNotificationApi", handleStorageChange);
-
-    // Polling every 5 seconds
-    const interval = setInterval(() => {
-      const raw = localStorage.getItem("loginUserDetails");
-      const user = raw ? JSON.parse(raw) : null;
-
-      if (user?.user_id) {
-        fetchNotifications(user?.user_id);
-      }
-    }, 2000);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("callGetNotificationApi", handleStorageChange);
-    };
-  }, []);
 
   const playNotificationSound = () => {
     const audio = new Audio("/notification.wav");
     audio.play().catch((error) => console.log("Audio play blocked:", error));
   };
 
+  const setupSocket = (userId) => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
+    const socket = io(import.meta.env.VITE_API_URL, {
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected to notification socket");
+      socket.emit("register", userId);
+    });
+
+    socket.on("notification", (newNotification) => {
+      console.log("Real-time notification received:", newNotification);
+
+      // Add 'is_read: 0' if not present for correct count
+      const notificationWithReadStatus = {
+        ...newNotification,
+        is_read: newNotification.is_read ?? 0,
+      };
+
+      setNotifications((prev) => [notificationWithReadStatus, ...prev]);
+
+      if (notificationWithReadStatus.is_read === 0) {
+        setUnreadCount((prev) => prev + 1);
+      }
+
+      // playNotificationSound();
+
+      // Notify components that something might need refreshing
+      window.dispatchEvent(
+        new CustomEvent("socket_notification", {
+          detail: notificationWithReadStatus,
+        }),
+      );
+    });
+
+    socket.on("lead_update", (data) => {
+      console.log("Lead update received:", data);
+      const newCount = data.lead_count;
+      if (newCount > leadCountRef.current) {
+        playNotificationSound();
+      }
+      leadCountRef.current = newCount;
+
+      // Specifically notify Lead components
+      window.dispatchEvent(
+        new CustomEvent("refreshLiveLeads", { detail: data }),
+      );
+    });
+
+    socket.on("force_logout", () => {
+      console.warn("Forced logout: session taken by another device.");
+      // alert(
+      //   "You have been logged out because a new login was detected on another system.",
+      // );
+      CommonMessage(
+        "warning",
+        "You have been logged out because a new login was detected on another system.",
+      );
+      setTimeout(() => {
+        localStorage.removeItem("AccessToken");
+        localStorage.removeItem("loginUserDetails");
+        sessionStorage.clear();
+        window.location.href = "/login";
+      }, 2000);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from notification socket");
+    });
+
+    socketRef.current = socket;
+  };
+
+  const logout = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    setNotifications([]);
+    setUnreadCount(0);
+  };
+
+  useEffect(() => {
+    const handleInit = () => {
+      const raw = localStorage.getItem("loginUserDetails");
+      const user = raw ? JSON.parse(raw) : null;
+
+      if (user?.user_id) {
+        fetchNotifications(user.user_id);
+        setupSocket(user.user_id);
+      }
+    };
+
+    handleInit();
+
+    window.addEventListener("callGetNotificationApi", handleInit);
+    window.addEventListener("manualLogout", logout);
+
+    return () => {
+      logout();
+      window.removeEventListener("callGetNotificationApi", handleInit);
+      window.removeEventListener("manualLogout", logout);
+    };
+  }, []);
+
   return (
-    <NotificationContext.Provider value={{ notifications, fetchNotifications }}>
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        unreadCount,
+        setUnreadCount,
+        fetchNotifications,
+        logout,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

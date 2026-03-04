@@ -119,22 +119,28 @@ export default function Login() {
       localStorage.setItem("AccessToken", response?.data?.token);
       localStorage.setItem(
         "loginUserDetails",
-        JSON.stringify(loginUserDetails)
+        JSON.stringify(loginUserDetails),
       );
-      setTimeout(async () => {
-        await registerFCMServiceWorker();
-        await requestForToken();
-        const event = new Event("callGetNotificationApi");
-        window.dispatchEvent(event);
-        getUserDownlineData(loginUserDetails?.user_id);
-      }, 300);
+
+      // 🔥 FIX: Don't block the login flow with FCM registration or downline fetching.
+      // These can happen in the background without keeping the user on the login page.
+      registerFCMServiceWorker().catch((err) =>
+        console.error("FCM SW error", err),
+      );
+      requestForToken().catch((err) => console.error("FCM Token error", err));
+
+      const event = new Event("callGetNotificationApi");
+      window.dispatchEvent(event);
+
+      // Start fetching data but don't strictly wait for everything to finish before showing dashboard
+      getUserDownlineData(loginUserDetails?.user_id);
     } catch (error) {
       console.log("login error");
       setLoading(false);
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -261,8 +267,8 @@ export default function Login() {
                     marginTop: passwordError.includes("special character")
                       ? "45px"
                       : passwordError
-                      ? "25px"
-                      : "8px",
+                        ? "25px"
+                        : "8px",
                   }}
                 >
                   <Checkbox

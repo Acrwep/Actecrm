@@ -27,10 +27,23 @@ export default function CommonInputField({
 
   const handleChange = (e) => {
     let rawValue = e.target.value.replace(/^\s+/, ""); // Removes leading spaces
-    const { selectionStart, selectionEnd } = e.target;
+    const isSelectionSupported = ![
+      "number",
+      "email",
+      "date",
+      "time",
+      "month",
+      "range",
+      "color",
+    ].includes(type);
+    const { selectionStart, selectionEnd } = isSelectionSupported
+      ? e.target
+      : { selectionStart: null, selectionEnd: null };
 
     // Store cursor position
-    cursorRef.current = { start: selectionStart, end: selectionEnd };
+    if (isSelectionSupported) {
+      cursorRef.current = { start: selectionStart, end: selectionEnd };
+    }
 
     if (
       label === "Email" ||
@@ -55,12 +68,18 @@ export default function CommonInputField({
   };
 
   useLayoutEffect(() => {
-    if (inputRef.current && cursorRef.current) {
+    if (
+      inputRef.current &&
+      cursorRef.current &&
+      !["number", "email", "date", "time", "month", "range", "color"].includes(
+        type,
+      )
+    ) {
       const { start, end } = cursorRef.current;
       inputRef.current.setSelectionRange(start, end);
       cursorRef.current = null;
     }
-  }, [value]);
+  }, [value, type]);
 
   return (
     <div>
