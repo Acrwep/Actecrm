@@ -8,6 +8,7 @@ export const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const leadCountRef = useRef(0);
   const socketRef = useRef(null);
 
@@ -34,8 +35,34 @@ export const NotificationProvider = ({ children }) => {
 
   const playNotificationSound = () => {
     const audio = new Audio("/notification.wav");
-    audio.play().catch((error) => console.log("Audio play blocked:", error));
+    audio.play().catch((error) => {
+      console.warn(
+        "Audio play blocked by browser. Click anywhere on the page to enable sounds.",
+      );
+      // Optionally show a message to the user
+    });
   };
+
+  // Logic to unlock audio on first user interaction
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (!isAudioUnlocked) {
+        const audio = new Audio("/notification.wav");
+        audio.muted = true;
+        audio
+          .play()
+          .then(() => {
+            setIsAudioUnlocked(true);
+            console.log("Audio sounds enabled for this session.");
+          })
+          .catch(() => {});
+        window.removeEventListener("click", unlockAudio);
+      }
+    };
+
+    window.addEventListener("click", unlockAudio);
+    return () => window.removeEventListener("click", unlockAudio);
+  }, [isAudioUnlocked]);
 
   const setupSocket = (userId) => {
     if (socketRef.current) {

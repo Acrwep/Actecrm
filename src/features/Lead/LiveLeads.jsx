@@ -466,21 +466,13 @@ export default function LiveLead({
 
     // Initial API call
     const fetchAndUpdate = async () => {
-      const res = await getLiveLeadsData(
+      await getLiveLeadsData(
         searchRef.current,
         datesRef.current[0],
         datesRef.current[1],
         paginationRef.current.page,
         paginationRef.current.limit,
       );
-
-      if (!res) return;
-
-      // Only update UI when data actually changes
-      if (JSON.stringify(prevDataRef.current) !== JSON.stringify(res)) {
-        setLeadData(res);
-        prevDataRef.current = res;
-      }
     };
 
     // Initial call

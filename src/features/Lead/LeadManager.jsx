@@ -152,6 +152,24 @@ export default function LeadManager() {
     }
   }, [childUsers, permissions]);
 
+  useEffect(() => {
+    const handleSocketRefresh = () => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      if (getLoginUserDetails) {
+        const convertAsJson = JSON.parse(getLoginUserDetails);
+        // getAllDownlineUsersData(convertAsJson?.user_id);
+      }
+    };
+
+    window.addEventListener("refreshLiveLeads", handleSocketRefresh);
+    window.addEventListener("socket_notification", handleSocketRefresh);
+
+    return () => {
+      window.removeEventListener("refreshLiveLeads", handleSocketRefresh);
+      window.removeEventListener("socket_notification", handleSocketRefresh);
+    };
+  }, []);
+
   const getAllDownlineUsersData = async (user_id) => {
     try {
       const response = await getAllDownlineUsers(user_id);

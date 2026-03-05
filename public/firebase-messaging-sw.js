@@ -98,6 +98,8 @@ messaging.onBackgroundMessage((payload) => {
           message.customer_phone ?? ""
         } | ` +
         `Course: ${message.customer_course ?? "-"}`;
+    } else if (title === "New Lead Available") {
+      return;
     } else {
       // Plain string message fallback
       body = typeof message === "string" ? message : raw;
@@ -118,29 +120,29 @@ self.addEventListener("notificationclick", (event) => {
   console.log("eventtttttttttt", event);
   const title = event?.notification?.title || "";
 
-  if (title == "New Lead Available") {
-    console.log("comesssssssss");
-    const targetUrl = "/lead-manager";
-    console.log("targetUrl", targetUrl);
+  // if (title == "New Lead Available") {
+  //   console.log("comesssssssss");
+  //   const targetUrl = "/lead-manager";
+  //   console.log("targetUrl", targetUrl);
 
-    event.waitUntil(
-      self.clients
-        .matchAll({ type: "window", includeUncontrolled: true })
-        .then((clientsArr) => {
-          for (const client of clientsArr) {
-            if (client.url.includes(self.origin)) {
-              client.focus();
-              client.postMessage({
-                type: "NAVIGATE",
-                url: targetUrl,
-              });
-              return;
-            }
-          }
-          return self.clients.openWindow(self.origin + targetUrl);
-        }),
-    );
-  }
+  //   event.waitUntil(
+  //     self.clients
+  //       .matchAll({ type: "window", includeUncontrolled: true })
+  //       .then((clientsArr) => {
+  //         for (const client of clientsArr) {
+  //           if (client.url.includes(self.origin)) {
+  //             client.focus();
+  //             client.postMessage({
+  //               type: "NAVIGATE",
+  //               url: targetUrl,
+  //             });
+  //             return;
+  //           }
+  //         }
+  //         return self.clients.openWindow(self.origin + targetUrl);
+  //       }),
+  //   );
+  // }
   event.notification.close();
   // const data = {
   //   title: event.notification.title,
