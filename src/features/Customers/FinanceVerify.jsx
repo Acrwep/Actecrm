@@ -7,6 +7,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
+  getCustomersPaymentHistory,
   inserCustomerTrack,
   rejectCustomerPayment,
   sendNotification,
@@ -36,6 +37,7 @@ const FinanceVerify = forwardRef(
   ({ customerDetails, drawerContentStatus, callgetCustomersApi }, ref) => {
     const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
       useState(false);
+    const [paymentFullDetails, setPaymentFullDetails] = useState(null);
     const [paymentHistory, setPaymentHistory] = useState([]);
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [transactionScreenshot, setTransactionScreenshot] = useState("");
@@ -51,7 +53,7 @@ const FinanceVerify = forwardRef(
     const [transactionDetails, setTransactionDetails] = useState(null);
     //update payment usestates
     const [updatePaymentTransId, setUpdatePaymentTransId] = useState(null);
-    const [subTotal, setSubTotal] = useState();
+    const [subTotal, setSubTotal] = useState("");
     const [pendingAmount, setPendingAmount] = useState();
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
@@ -61,7 +63,7 @@ const FinanceVerify = forwardRef(
     const [paymentModeError, setPaymentModeError] = useState(null);
     const [convenienceFees, setConvenienceFees] = useState("");
     const [taxType, setTaxType] = useState(null);
-    const [totalAmount, setTotalAmount] = useState();
+    const [totalAmount, setTotalAmount] = useState("");
     const [paidNow, setPaidNow] = useState("");
     const [paidNowError, setPaidNowError] = useState("");
     const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
@@ -75,91 +77,110 @@ const FinanceVerify = forwardRef(
     const [buttonLoading, setButtonLoading] = useState(false);
 
     useEffect(() => {
-      setPaymentHistory(
-        customerDetails.payments && customerDetails.payments
-          ? customerDetails.payments.payment_trans
-          : [],
-      );
-      if (drawerContentStatus == "Update Payment") {
-        setSubTotal(parseFloat(customerDetails.primary_fees).toFixed(2));
-        setPendingAmount(parseFloat(customerDetails.balance_amount));
-        setTaxType(
-          customerDetails.payments && customerDetails.payments.tax_type
-            ? customerDetails.payments.tax_type == "GST (18%)"
-              ? 1
-              : customerDetails.payments.tax_type == "SGST (18%)"
-                ? 2
-                : customerDetails.payments.tax_type == "IGST (18%)"
-                  ? 3
-                  : customerDetails.payments.tax_type == "VAT (18%)"
-                    ? 4
-                    : customerDetails.payments.tax_type == "No Tax"
-                      ? 5
-                      : 0
-            : 0,
-        );
-        setTotalAmount(
-          parseFloat(
-            customerDetails.payments && customerDetails.payments.total_amount
-              ? customerDetails.payments.total_amount
-              : 0,
-          ).toFixed(2),
-        );
-        //transaction handling
-        const rejectedItem = customerDetails?.payments?.payment_trans?.find(
-          (f) => f?.payment_status === "Rejected",
-        );
-        console.log("rejectedItem", rejectedItem);
-        setUpdatePaymentTransId(
-          rejectedItem && rejectedItem.id ? rejectedItem.id : null,
-        );
-        setPaidNow(
-          parseFloat(
-            rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0,
-          ).toFixed(2),
-        );
-        setPaymentMode(
-          rejectedItem && rejectedItem.paymode_id ? rejectedItem.paymode_id : 0,
-        );
-        setConvenienceFees(
-          parseFloat(
-            rejectedItem && rejectedItem.convenience_fees
-              ? rejectedItem.convenience_fees
-              : 0,
-          ).toFixed(2),
-        );
-        setPaymentDate(
-          rejectedItem && rejectedItem.paid_date
-            ? rejectedItem.paid_date
-            : null,
-        );
-        setPlaceOfPayment(
-          rejectedItem && rejectedItem.place_of_payment
-            ? rejectedItem.place_of_payment
-            : null,
-        );
-        setPaymentScreenShotBase64(
-          rejectedItem && rejectedItem.payment_screenshot
-            ? rejectedItem.payment_screenshot
-            : "",
-        );
-        const rej_balance_amount =
-          rejectedItem && rejectedItem.balance_amount
-            ? rejectedItem.balance_amount
-            : 0;
-        setBalanceAmount(rej_balance_amount);
-        if (rej_balance_amount == 0 || rej_balance_amount == "0.00") {
-          setIsShowDueDate(false);
-        } else {
-          setIsShowDueDate(true);
-        }
-        setDueDate(
-          rejectedItem && rejectedItem.next_due_date
-            ? rejectedItem.next_due_date
-            : null,
-        );
-      }
+      getPaymentHistoryData();
     }, []);
+
+    const getPaymentHistoryData = async () => {
+      try {
+        const response = await getCustomersPaymentHistory(
+          customerDetails?.lead_id,
+        );
+        console.log("particular customer payment history", response);
+        const payment_full_details = response?.data?.data || null;
+        const payment_history = response?.data?.data?.payment_trans || [];
+
+        setPaymentFullDetails(payment_full_details);
+        setPaymentHistory(payment_history);
+
+        //fetch payment details
+        if (drawerContentStatus == "Update Payment") {
+          console.log(
+            "totalllllllllll",
+            parseFloat(payment_full_details?.total_amount || 0).toFixed(2),
+          );
+
+          setSubTotal(parseFloat(customerDetails.primary_fees).toFixed(2));
+          setPendingAmount(parseFloat(customerDetails.balance_amount));
+          setTaxType(
+            payment_full_details && payment_full_details.tax_type
+              ? payment_full_details.tax_type == "GST (18%)"
+                ? 1
+                : payment_full_details.tax_type == "SGST (18%)"
+                  ? 2
+                  : payment_full_details.tax_type == "IGST (18%)"
+                    ? 3
+                    : payment_full_details.tax_type == "VAT (18%)"
+                      ? 4
+                      : payment_full_details.tax_type == "No Tax"
+                        ? 5
+                        : 0
+              : 0,
+          );
+          setTotalAmount(
+            parseFloat(payment_full_details?.total_amount || 0).toFixed(2),
+          );
+          //transaction handling
+          const rejectedItem = payment_history.find(
+            (f) => f?.payment_status === "Rejected",
+          );
+          console.log("rejectedItem", rejectedItem);
+          setUpdatePaymentTransId(
+            rejectedItem && rejectedItem.id ? rejectedItem.id : null,
+          );
+          setPaidNow(
+            parseFloat(
+              rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0,
+            ).toFixed(2),
+          );
+          setPaymentMode(
+            rejectedItem && rejectedItem.paymode_id
+              ? rejectedItem.paymode_id
+              : 0,
+          );
+          setConvenienceFees(
+            parseFloat(
+              rejectedItem && rejectedItem.convenience_fees
+                ? rejectedItem.convenience_fees
+                : 0,
+            ).toFixed(2),
+          );
+          setPaymentDate(
+            rejectedItem && rejectedItem.paid_date
+              ? rejectedItem.paid_date
+              : null,
+          );
+          setPlaceOfPayment(
+            rejectedItem && rejectedItem.place_of_payment
+              ? rejectedItem.place_of_payment
+              : null,
+          );
+          setPaymentScreenShotBase64(
+            rejectedItem && rejectedItem.payment_screenshot
+              ? rejectedItem.payment_screenshot
+              : "",
+          );
+          const rej_balance_amount =
+            rejectedItem && rejectedItem.balance_amount
+              ? rejectedItem.balance_amount
+              : 0;
+          setBalanceAmount(rej_balance_amount);
+          if (rej_balance_amount == 0 || rej_balance_amount == "0.00") {
+            setIsShowDueDate(false);
+          } else {
+            setIsShowDueDate(true);
+          }
+          setDueDate(
+            rejectedItem && rejectedItem.next_due_date
+              ? rejectedItem.next_due_date
+              : null,
+          );
+        }
+      } catch (error) {
+        setPaymentFullDetails(null);
+        setPaymentHistory([]);
+        console.log("particular customer payment history error", error);
+      }
+    };
 
     // onchange functions
     const handlePaidNow = (e) => {
@@ -349,11 +370,9 @@ const FinanceVerify = forwardRef(
         mobile:
           customerDetails && customerDetails.phone ? customerDetails.phone : "",
         convenience_fees: transactiondetails?.convenience_fees || "",
-        gst_amount: customerDetails?.payments?.gst_amount
-          ? customerDetails.payments.gst_amount
-          : "",
-        gst_percentage: customerDetails?.payments?.gst_percentage
-          ? parseFloat(customerDetails.payments.gst_percentage)
+        gst_amount: paymentFullDetails?.gst_amount ?? "",
+        gst_percentage: paymentFullDetails?.gst_percentage
+          ? parseFloat(paymentFullDetails.gst_percentage)
           : "",
         invoice_date: transactiondetails?.invoice_date
           ? moment(transactiondetails.invoice_date).format("DD-MM-YYYY")
@@ -361,8 +380,8 @@ const FinanceVerify = forwardRef(
         invoice_number: transactiondetails?.invoice_number || "",
         paid_amount: transactiondetails?.amount || "",
         payment_mode: transactiondetails?.payment_mode || "",
-        total_amount: customerDetails?.payments?.total_amount
-          ? customerDetails.payments.total_amount
+        total_amount: paymentFullDetails?.total_amount
+          ? paymentFullDetails.total_amount
           : "",
         balance_amount:
           transactiondetails.balance_amount != undefined ||
@@ -633,11 +652,11 @@ const FinanceVerify = forwardRef(
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {customerDetails?.payments?.gst_amount ? (
+                          {paymentFullDetails?.gst_amount ? (
                             <>
-                              ₹{customerDetails.payments.gst_amount}{" "}
+                              ₹{paymentFullDetails.gst_amount}{" "}
                               <span style={{ fontSize: "11px" }}>
-                                ({customerDetails.payments.tax_type || "-"})
+                                ({paymentFullDetails.tax_type || "-"})
                               </span>
                             </>
                           ) : (
@@ -662,9 +681,8 @@ const FinanceVerify = forwardRef(
                           className="customerdetails_text"
                           style={{ fontWeight: 700 }}
                         >
-                          {customerDetails &&
-                          customerDetails.payments.total_amount
-                            ? "₹" + customerDetails.payments.total_amount
+                          {paymentFullDetails && paymentFullDetails.total_amount
+                            ? "₹" + paymentFullDetails.total_amount
                             : "-"}
                         </p>
                       </Col>

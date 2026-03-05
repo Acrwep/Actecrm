@@ -36,7 +36,7 @@ export default function ParticularCustomerDetails({
       console.log("particular customer response", response);
       const customer_details = response?.data?.data;
       setCustomerDetails(customer_details);
-      if (customer_details.profile_image) {
+      if (customer_details?.profile_image) {
         setProfilePictureArray([
           {
             uid: "-1",
@@ -388,7 +388,7 @@ export default function ParticularCustomerDetails({
             </div>
 
             <div className="customerdetails_coursecard_contentcontainer">
-              <Row>
+              <Row gutter={16}>
                 <Col span={12}>
                   <Row>
                     <Col span={12}>
@@ -442,13 +442,9 @@ export default function ParticularCustomerDetails({
                         className="customerdetails_text"
                         style={{ fontWeight: 700 }}
                       >
-                        {/* {isCustomerPage == true
-                      ? customerDetails && customerDetails.payments.total_amount
-                        ? "₹" + customerDetails.payments.total_amount
-                        : "-"
-                      : customerDetails && customerDetails.payment.total_amount
-                        ? "₹" + customerDetails.payment.total_amount
-                        : "-"} */}
+                        {customerDetails && customerDetails.total_amount
+                          ? "₹" + customerDetails.total_amount
+                          : "-"}
                       </p>
                     </Col>
                   </Row>

@@ -976,6 +976,15 @@ export const generateCertForCustomer = async (payload) => {
   }
 };
 
+export const updateCertForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/updateCertificate", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const viewPreCertForCustomer = async (payload) => {
   try {
     const response = await api.post("/api/preCertificate", payload);

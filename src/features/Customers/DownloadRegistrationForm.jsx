@@ -44,7 +44,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     pdf.save(
       `${
         customerDetails && customerDetails.name ? customerDetails.name : "xyz"
-      }.pdf`
+      }.pdf`,
     );
 
     setLoading(false);
@@ -424,7 +424,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
                       ? customerDetails.phonecode
                       : "+" + customerDetails.phonecode
                   } ${customerDetails.phone}`
-                : customerDetails?.phonecode ?? customerDetails?.phone ?? "-"
+                : (customerDetails?.phonecode ?? customerDetails?.phone ?? "-")
             }
           </p>
         </div>
@@ -446,9 +446,9 @@ export default function DownloadRegistrationForm({ customerDetails }) {
                       ? customerDetails.whatsapp_phone_code
                       : "+" + customerDetails.whatsapp_phone_code
                   } ${customerDetails.whatsapp}`
-                : customerDetails?.whatsapp_phone_code ??
+                : (customerDetails?.whatsapp_phone_code ??
                   customerDetails?.whatsapp ??
-                  "-"
+                  "-")
             }
           </p>
         </div>
@@ -570,8 +570,8 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     <!-- SIGNATURE -->
     <div class="signature-area">
       <div>
-        <img src="${customerDetails.signature_image}" class="signature-img" />
-        <p class="signature-name">${customerDetails.name}</p>
+        <img src="${customerDetails?.signature_image}" class="signature-img" />
+        <p class="signature-name">${customerDetails?.name}</p>
       </div>
     </div>
 

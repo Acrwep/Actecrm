@@ -161,11 +161,7 @@ export default function UrgentDueCustomers({
       dataIndex: "trainer_mobile",
       width: 110,
       render: (text, record) => {
-        if (record.is_trainer_verified === 1) {
-          return <p>{text}</p>;
-        } else {
-          return <p>-</p>;
-        }
+        return <p>{text}</p>;
       },
     },
     {
@@ -583,11 +579,7 @@ export default function UrgentDueCustomers({
                   ...col,
                   width: 110,
                   render: (text, record) => {
-                    if (record.is_trainer_verified === 1) {
-                      return <p>{text}</p>;
-                    } else {
-                      return <p>-</p>;
-                    }
+                    return <p>{text}</p>;
                   },
                 };
               case "form_status":

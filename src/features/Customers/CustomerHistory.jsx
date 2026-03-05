@@ -46,7 +46,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
 
     const findTrans =
       customerDetails?.payments?.payment_trans?.find(
-        (f) => f.id === transactionId
+        (f) => f.id === transactionId,
       ) ?? null;
 
     console.log("findTrans", findTrans);
@@ -118,7 +118,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -139,7 +139,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -310,10 +310,10 @@ export default function CustomerHistory({ data = [], customerDetails }) {
                       className="customer_history_viewproofbutton"
                       onClick={() => {
                         getImageTypeFromBase64(
-                          item.details.proof_communication
+                          item.details.proof_communication,
                         );
                         setProofScreenshotBase64(
-                          item.details.proof_communication
+                          item.details.proof_communication,
                         );
                         setIsOpenProofViewModal(true);
                       }}
@@ -365,12 +365,14 @@ export default function CustomerHistory({ data = [], customerDetails }) {
                             ? item.details.trainer_commercial_percentage < 18
                               ? "#3c9111" // green
                               : item.details.trainer_commercial_percentage >
-                                  19 &&
-                                item.details.trainer_commercial_percentage <= 22
-                              ? "#ffa502" // orange
-                              : item.details.trainer_commercial_percentage > 22
-                              ? "#d32f2f" // red
-                              : "inherit"
+                                    19 &&
+                                  item.details.trainer_commercial_percentage <=
+                                    22
+                                ? "#ffa502" // orange
+                                : item.details.trainer_commercial_percentage >
+                                    22
+                                  ? "#d32f2f" // red
+                                  : "inherit"
                             : "inherit", // fallback color if null
                         fontWeight: 500,
                       }}
@@ -521,7 +523,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               <FaRegEye size={16} /> View Google Review
             </button>
           </div>
-        ) : item.status === "Certificate Generated" ? (
+        ) : item.status === "Certificate Generated" ||
+          item.status === "Certificate Updated" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -673,8 +676,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
             certificateName
               ? certificateName
               : customerDetails && customerDetails.name
-              ? customerDetails.name
-              : "-"
+                ? customerDetails.name
+                : "-"
           }
         />
       </Modal>

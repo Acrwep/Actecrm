@@ -267,6 +267,7 @@ export default function Settings() {
         "Class Schedule",
         "Update Class Going",
         "Passedout Process",
+        "Update Certificate Details",
         "Others Checkbox",
         "Download Customers Data",
       ];

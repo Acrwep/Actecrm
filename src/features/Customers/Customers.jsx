@@ -12,6 +12,7 @@ import {
   Checkbox,
   Modal,
   Upload,
+  Skeleton,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -24,6 +25,7 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import "./styles.css";
 import {
   getAllDownlineUsers,
+  getCustomerById,
   getCustomerFullHistory,
   getCustomers,
   getTableColumns,
@@ -119,6 +121,8 @@ export default function Customers() {
   const [updateButtonLoading, setUpdateButtonLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
+  const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
+    useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
   //profile image usestates
   const [profilePictureArray, setProfilePictureArray] = useState([]);
@@ -241,8 +245,8 @@ export default function Customers() {
     },
     {
       title: "Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
+      key: "total_amount",
+      dataIndex: "total_amount",
       width: 140,
       render: (text) => {
         return <p>{"₹" + text}</p>;
@@ -329,7 +333,7 @@ export default function Customers() {
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         setIsOpenFormModal(true);
-                        setCustomerDetails(record);
+                        getParticularCustomerDetails(record?.id);
                       }}
                     />
                   </Tooltip>
@@ -392,8 +396,7 @@ export default function Customers() {
                                 return;
                               }
                               setDrawerContentStatus("Update Payment");
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setCollapseDefaultKey(["1"]);
                               setIsStatusUpdateDrawer(true);
                             }}
@@ -419,8 +422,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Finance Verify");
                               setCollapseDefaultKey(["1"]);
                               setIsStatusUpdateDrawer(true);
@@ -471,8 +473,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Student Verify");
                               setIsStatusUpdateDrawer(true);
                             }
@@ -558,8 +559,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Assign Trainer");
                               setIsStatusUpdateDrawer(true);
                             } else {
@@ -658,8 +658,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Trainer Verify");
                               setIsStatusUpdateDrawer(true);
                             } else {
@@ -765,8 +764,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Class Schedule");
                               setIsStatusUpdateDrawer(true);
                             } else {
@@ -787,8 +785,7 @@ export default function Customers() {
                               CommonMessage("error", "Access Denied");
                               return;
                             }
-                            setCustomerId(record.id);
-                            setCustomerDetails(record);
+                            getParticularCustomerDetails(record?.id);
                             setDrawerContentStatus("Class Schedule");
                             setIsStatusUpdateDrawer(true);
                           }}
@@ -828,8 +825,7 @@ export default function Customers() {
                                   CommonMessage("error", "Access Denied");
                                   return;
                                 }
-                                setCustomerId(record.id);
-                                setCustomerDetails(record);
+                                getParticularCustomerDetails(record?.id);
                                 setDrawerContentStatus("Class Going");
                                 setIsStatusUpdateDrawer(true);
                               }}
@@ -864,8 +860,7 @@ export default function Customers() {
                                   CommonMessage("error", "Access Denied");
                                   return;
                                 }
-                                setCustomerId(record.id);
-                                setCustomerDetails(record);
+                                getParticularCustomerDetails(record?.id);
                                 setDrawerContentStatus("Add G-Review");
                                 setIsStatusUpdateDrawer(true);
                                 if (record.google_review === null) {
@@ -937,8 +932,7 @@ export default function Customers() {
                           <button
                             className="customers_reassigntrainer_button"
                             onClick={() => {
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Re-Assign Trainer");
                               setIsStatusUpdateDrawer(true);
                             }}
@@ -968,8 +962,7 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
-                              setCustomerId(record.id);
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Others");
                               setIsStatusUpdateDrawer(true);
                             }
@@ -1125,7 +1118,7 @@ export default function Customers() {
                   className="customers_formlink_copybutton"
                   style={{ cursor: "pointer", marginTop: "-2px" }}
                   onClick={() => {
-                    setCustomerDetails(record);
+                    getParticularCustomerDetails(record?.id);
                     setDrawerContentStatus("Pre Certificate");
                     setIsStatusUpdateDrawer(true);
                     return;
@@ -1166,7 +1159,7 @@ export default function Customers() {
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenDetailsDrawer(true);
-                  setCustomerDetails(record);
+                  setCustomerId(record?.id);
                 }}
               />
             </Tooltip>
@@ -1183,7 +1176,7 @@ export default function Customers() {
                   onClick={() => {
                     setIsOpenEmailTemplateDrawer(true);
                     setDrawerContentStatus("Send Email");
-                    setCustomerDetails(record);
+                    getParticularCustomerDetails(record?.id);
                   }}
                 />
               </Tooltip>
@@ -1198,7 +1191,7 @@ export default function Customers() {
                 size={15}
                 className="trainers_action_icons"
                 onClick={() => {
-                  setCustomerDetails(record);
+                  getParticularCustomerDetails(record?.id);
                   getCustomerHistoryData(record.id);
                   setTimeout(() => {
                     const container = document.getElementById(
@@ -1369,7 +1362,7 @@ export default function Customers() {
     );
   };
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     try {
@@ -1382,7 +1375,7 @@ export default function Customers() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      rerunCustomerFilters(location.state, downliners_ids);
+      rerunCustomerFilters(isRefresh ? null : location.state, downliners_ids);
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -1550,7 +1543,7 @@ export default function Customers() {
                   );
                 },
               };
-            case "primary_fees":
+            case "total_amount":
               return {
                 ...col,
                 width: 140,
@@ -1640,7 +1633,7 @@ export default function Customers() {
                                 style={{ cursor: "pointer" }}
                                 onClick={() => {
                                   setIsOpenFormModal(true);
-                                  setCustomerDetails(record);
+                                  getParticularCustomerDetails(record?.id);
                                 }}
                               />
                             </Tooltip>
@@ -1710,8 +1703,9 @@ export default function Customers() {
                                         setDrawerContentStatus(
                                           "Update Payment",
                                         );
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setCollapseDefaultKey(["1"]);
                                         setIsStatusUpdateDrawer(true);
                                       }}
@@ -1744,8 +1738,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Finance Verify",
                                         );
@@ -1812,8 +1807,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Student Verify",
                                         );
@@ -1910,8 +1906,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Assign Trainer",
                                         );
@@ -2022,8 +2019,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Trainer Verify",
                                         );
@@ -2141,8 +2139,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Class Schedule",
                                         );
@@ -2167,8 +2166,7 @@ export default function Customers() {
                                         CommonMessage("error", "Access Denied");
                                         return;
                                       }
-                                      setCustomerId(record.id);
-                                      setCustomerDetails(record);
+                                      getParticularCustomerDetails(record?.id);
                                       setDrawerContentStatus("Class Schedule");
                                       setIsStatusUpdateDrawer(true);
                                     }}
@@ -2213,8 +2211,9 @@ export default function Customers() {
                                             );
                                             return;
                                           }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
+                                          getParticularCustomerDetails(
+                                            record?.id,
+                                          );
                                           setDrawerContentStatus("Class Going");
                                           setIsStatusUpdateDrawer(true);
                                         }}
@@ -2254,8 +2253,9 @@ export default function Customers() {
                                             );
                                             return;
                                           }
-                                          setCustomerId(record.id);
-                                          setCustomerDetails(record);
+                                          getParticularCustomerDetails(
+                                            record?.id,
+                                          );
                                           setDrawerContentStatus(
                                             "Add G-Review",
                                           );
@@ -2331,8 +2331,9 @@ export default function Customers() {
                                     <button
                                       className="customers_reassigntrainer_button"
                                       onClick={() => {
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus(
                                           "Re-Assign Trainer",
                                         );
@@ -2373,8 +2374,9 @@ export default function Customers() {
                                           );
                                           return;
                                         }
-                                        setCustomerId(record.id);
-                                        setCustomerDetails(record);
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
                                         setDrawerContentStatus("Others");
                                         setIsStatusUpdateDrawer(true);
                                       }
@@ -2533,7 +2535,7 @@ export default function Customers() {
                             className="customers_formlink_copybutton"
                             style={{ cursor: "pointer", marginTop: "-2px" }}
                             onClick={() => {
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Pre Certificate");
                               setIsStatusUpdateDrawer(true);
                               return;
@@ -2571,7 +2573,7 @@ export default function Customers() {
                           className="trainers_action_icons"
                           onClick={() => {
                             setIsOpenDetailsDrawer(true);
-                            setCustomerDetails(record);
+                            setCustomerId(record?.id);
                           }}
                         />
                       </Tooltip>
@@ -2588,7 +2590,7 @@ export default function Customers() {
                             onClick={() => {
                               setIsOpenEmailTemplateDrawer(true);
                               setDrawerContentStatus("Send Email");
-                              setCustomerDetails(record);
+                              getParticularCustomerDetails(record?.id);
                             }}
                           />
                         </Tooltip>
@@ -2603,7 +2605,7 @@ export default function Customers() {
                           size={15}
                           className="trainers_action_icons"
                           onClick={() => {
-                            setCustomerDetails(record);
+                            getParticularCustomerDetails(record?.id);
                             getCustomerHistoryData(record.id);
                             setTimeout(() => {
                               const container = document.getElementById(
@@ -2657,6 +2659,22 @@ export default function Customers() {
       await updateTableColumns(payload);
     } catch (error) {
       console.log("update table columns error", error);
+    }
+  };
+
+  //get particular customer full details
+  const getParticularCustomerDetails = async (customer_Id) => {
+    setIsStatusUpdateDrawerLoading(true);
+    try {
+      const response = await getCustomerById(customer_Id);
+      console.log("particular customer response", response);
+      const customer_details = response?.data?.data;
+      setCustomerDetails(customer_details);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    } finally {
+      setIsStatusUpdateDrawerLoading(false);
     }
   };
 
@@ -2741,8 +2759,8 @@ export default function Customers() {
   };
 
   const handleEdit = (item) => {
-    setCustomerId(item.id);
-    setCustomerDetails(item);
+    setCustomerId(item?.id);
+    getParticularCustomerDetails(item?.id);
     setIsOpenEditDrawer(true);
   };
 
@@ -2761,7 +2779,7 @@ export default function Customers() {
     setPagination({
       page: 1,
     });
-    getAllDownlineUsersData(null);
+    getAllDownlineUsersData(null, true);
   };
 
   const handleViewCert = async (customer_id) => {
@@ -3748,12 +3766,15 @@ export default function Customers() {
       <Drawer
         title="Customer Details"
         open={isOpenDetailsDrawer}
-        onClose={formReset}
+        onClose={() => {
+          setIsOpenDetailsDrawer(false);
+          setCustomerId(null);
+        }}
         width="50%"
         style={{ position: "relative" }}
       >
         {isOpenDetailsDrawer ? (
-          <ParticularCustomerDetails customerId={customerDetails?.id} />
+          <ParticularCustomerDetails customerId={customerId} />
         ) : (
           ""
         )}
@@ -3778,11 +3799,6 @@ export default function Customers() {
           setUpdateDrawerTabKey={setUpdateDrawerTabKey}
           setUpdateButtonLoading={setUpdateButtonLoading}
           setIsOpenEditDrawer={setIsOpenEditDrawer}
-          paymentMasterDetails={
-            customerDetails && customerDetails.payments
-              ? customerDetails.payments
-              : null
-          }
           callgetCustomersApi={() => {
             setPagination({
               page: 1,
@@ -3848,522 +3864,654 @@ export default function Customers() {
         }}
         className="customer_statusupdate_drawer"
       >
-        <div className="customer_statusupdate_drawer_profileContainer">
-          {customerDetails && customerDetails.profile_image ? (
-            <Upload
-              listType="picture-circle"
-              fileList={[
-                {
-                  uid: "-1",
-                  name: "profile.jpg",
-                  status: "done",
-                  url: customerDetails.profile_image, // Base64 string directly usable
-                },
-              ]}
-              onPreview={handlePreview}
-              onRemove={false}
-              showUploadList={{
-                showRemoveIcon: false,
-              }}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              accept=".png,.jpg,.jpeg"
-            ></Upload>
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
+        {isStatusUpdateDrawerLoading ? (
+          <div style={{ padding: "24px" }}>
+            <div className="customer_profileContainer">
+              <Skeleton.Avatar active size={90} shape="circle" />
+              <div style={{ marginLeft: "20px", flex: 1 }}>
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2 }}
+                  title={{ width: 150 }}
+                />
+              </div>
+            </div>
 
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {customerDetails && customerDetails.course_name
-                ? customerDetails.course_name
-                : "-"}
-            </p>
+            <Row gutter={16} style={{ marginTop: "30px" }}>
+              <Col span={12}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </Col>
+              <Col span={12}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </Col>
+            </Row>
+
+            <div
+              className="customerdetails_coursecard"
+              style={{ marginTop: "30px" }}
+            >
+              <div className="customerdetails_coursecard_headercontainer">
+                <Skeleton.Input active size="small" style={{ width: 150 }} />
+              </div>
+              <div
+                className="customerdetails_coursecard_contentcontainer"
+                style={{ padding: "20px" }}
+              >
+                <Row gutter={16}>
+                  <Col span={12}>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Row
+                        key={i}
+                        style={{ marginTop: i === 1 ? "0" : "12px" }}
+                      >
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "80%" }}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "100%" }}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                  </Col>
+                  <Col span={12}>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Row
+                        key={i}
+                        style={{ marginTop: i === 1 ? "0" : "12px" }}
+                      >
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "80%" }}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "100%" }}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                  </Col>
+                </Row>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.name
-                      ? customerDetails.name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.email
-                      ? customerDetails.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.phone
-                    ? customerDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.whatsapp
-                    ? customerDetails.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  {customerDetails && customerDetails.gender === "Male" ? (
-                    <BsGenderMale size={15} color="gray" />
-                  ) : (
-                    <BsGenderFemale size={15} color="gray" />
-                  )}
-                  <p className="customerdetails_rowheading">Gender</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.gender
-                    ? customerDetails.gender
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={`${
-                    customerDetails && customerDetails.lead_assigned_to_id
-                      ? customerDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    customerDetails && customerDetails.lead_assigned_to_name
-                      ? customerDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.course_name
-                      ? customerDetails.course_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">
-                    Course Fees
-                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                  </p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.payments.total_amount
-                    ? "₹" + customerDetails.payments.total_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.branch_name
-                      ? customerDetails.branch_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Type</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_timing
-                    ? customerDetails.batch_timing
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Server</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails &&
-                  customerDetails.is_server_required !== undefined
-                    ? customerDetails.is_server_required === 1
-                      ? "Required"
-                      : "Not Required"
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        {drawerContentStatus === "Finance Verify" ||
-        drawerContentStatus === "Update Payment" ? (
-          <FinanceVerify
-            ref={financeVerifyRef}
-            customerDetails={customerDetails}
-            drawerContentStatus={drawerContentStatus}
-            callgetCustomersApi={() => {
-              updateStatusDrawerReset();
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                status,
-                allDownliners,
-                branchOptions,
-                pagination.page,
-                pagination.limit,
-              );
-            }}
-          />
-        ) : drawerContentStatus === "Student Verify" ? (
-          <>
-            <StudentVerify
-              ref={studentVerifyRef}
-              customerDetails={customerDetails}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus === "Assign Trainer" ||
-          drawerContentStatus === "Trainer Verify" ? (
-          <>
-            <AssignAndVerifyTrainer
-              ref={assignAndVerifyTrainerRef}
-              customerDetails={customerDetails}
-              drawerContentStatus={drawerContentStatus}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              setRejectButtonLoader={setRejectButtonLoader}
-              trainersData={trainersData}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus == "Re-Assign Trainer" ? (
-          <>
-            <ReAssignTrainer
-              ref={reAssignTrainerRef}
-              customerDetails={customerDetails}
-              drawerContentStatus={drawerContentStatus}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              trainersData={trainersData}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus === "Class Schedule" ||
-          drawerContentStatus === "Class Going" ? (
-          <>
-            <ClassSchedule
-              ref={classScheduleRef}
-              customerDetails={customerDetails}
-              drawerContentStatus={drawerContentStatus}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus === "Add G-Review" ? (
-          <>
-            <PassesOutProcess
-              ref={passedOutProcessRef}
-              customerDetails={customerDetails}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              stepIndex={stepIndex}
-              setStepIndex={setStepIndex}
-              isCertGenerated={isCertGenerated}
-              generateCertLoading={generateCertLoading}
-              setGenerateCertLoading={setGenerateCertLoading}
-              callgetCustomersApi={(reset = true, cert_gen = false) => {
-                console.log("resetttt", reset);
-                if (reset != false) {
-                  console.log("oooooooooooooooo", reset);
-                  updateStatusDrawerReset();
-                }
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                  cert_gen,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus === "Others" ? (
-          <>
-            <OthersHandling
-              ref={othersHandlingRef}
-              customerDetails={customerDetails}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-                setPagination({
-                  page: 1,
-                });
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  status,
-                  allDownliners,
-                  branchOptions,
-                  pagination.page,
-                  pagination.limit,
-                );
-              }}
-            />
-          </>
-        ) : drawerContentStatus === "Pre Certificate" ? (
-          <>
-            <PreCertificate
-              ref={preCertificateRef}
-              customerDetails={customerDetails}
-              setUpdateButtonLoading={setUpdateButtonLoading}
-              callgetCustomersApi={() => {
-                updateStatusDrawerReset();
-              }}
-            />
-          </>
         ) : (
-          ""
+          <>
+            <div className="customer_statusupdate_drawer_profileContainer">
+              {customerDetails && customerDetails.profile_image ? (
+                <Upload
+                  listType="picture-circle"
+                  fileList={[
+                    {
+                      uid: "-1",
+                      name: "profile.jpg",
+                      status: "done",
+                      url: customerDetails.profile_image, // Base64 string directly usable
+                    },
+                  ]}
+                  onPreview={handlePreview}
+                  onRemove={false}
+                  showUploadList={{
+                    showRemoveIcon: false,
+                  }}
+                  beforeUpload={() => false} // prevent auto upload
+                  style={{ width: 90, height: 90 }} // reduce size
+                  accept=".png,.jpg,.jpeg"
+                ></Upload>
+              ) : (
+                <FaRegUser size={50} color="#333" />
+              )}
+
+              <div>
+                <p className="customer_nametext">
+                  {" "}
+                  {customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"}
+                </p>
+                <p className="customer_coursenametext">
+                  {" "}
+                  {customerDetails && customerDetails.course_name
+                    ? customerDetails.course_name
+                    : "-"}
+                </p>
+              </div>
+            </div>
+
+            <Row
+              gutter={16}
+              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+            >
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegCircleUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Name</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.name
+                          ? customerDetails.name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <MdOutlineEmail size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Email</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.email
+                          ? customerDetails.email
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoCallOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Mobile</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.phone
+                        ? customerDetails.phone
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaWhatsapp size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Whatsapp</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.whatsapp
+                        ? customerDetails.whatsapp
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      {customerDetails && customerDetails.gender === "Male" ? (
+                        <BsGenderMale size={15} color="gray" />
+                      ) : (
+                        <BsGenderFemale size={15} color="gray" />
+                      )}
+                      <p className="customerdetails_rowheading">Gender</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.gender
+                        ? customerDetails.gender
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoLocationOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Location</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.current_location
+                        ? customerDetails.current_location
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">
+                        Lead Executive
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={`${
+                        customerDetails && customerDetails.lead_assigned_to_id
+                          ? customerDetails.lead_assigned_to_id
+                          : "-"
+                      } (${
+                        customerDetails && customerDetails.lead_assigned_to_name
+                          ? customerDetails.lead_assigned_to_name
+                          : "-"
+                      })`}
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.course_name
+                          ? customerDetails.course_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Branch</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.branch_name
+                          ? customerDetails.branch_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Batch Track</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.batch_tracking
+                        ? customerDetails.batch_tracking
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Batch Type</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.batch_timing
+                        ? customerDetails.batch_timing
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            <Divider className="customer_statusupdate_divider" />
+
+            {drawerContentStatus === "Finance Verify" ||
+            drawerContentStatus === "Update Payment" ? (
+              <FinanceVerify
+                ref={financeVerifyRef}
+                customerDetails={customerDetails}
+                drawerContentStatus={drawerContentStatus}
+                callgetCustomersApi={() => {
+                  updateStatusDrawerReset();
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    status,
+                    allDownliners,
+                    branchOptions,
+                    pagination.page,
+                    pagination.limit,
+                  );
+                }}
+              />
+            ) : drawerContentStatus === "Student Verify" ? (
+              <>
+                <StudentVerify
+                  ref={studentVerifyRef}
+                  customerDetails={customerDetails}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus === "Assign Trainer" ||
+              drawerContentStatus === "Trainer Verify" ? (
+              <>
+                <AssignAndVerifyTrainer
+                  ref={assignAndVerifyTrainerRef}
+                  customerDetails={customerDetails}
+                  drawerContentStatus={drawerContentStatus}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  setRejectButtonLoader={setRejectButtonLoader}
+                  trainersData={trainersData}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus == "Re-Assign Trainer" ? (
+              <>
+                <ReAssignTrainer
+                  ref={reAssignTrainerRef}
+                  customerDetails={customerDetails}
+                  drawerContentStatus={drawerContentStatus}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  trainersData={trainersData}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus === "Class Schedule" ||
+              drawerContentStatus === "Class Going" ? (
+              <>
+                <ClassSchedule
+                  ref={classScheduleRef}
+                  customerDetails={customerDetails}
+                  drawerContentStatus={drawerContentStatus}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus === "Add G-Review" ? (
+              <>
+                <PassesOutProcess
+                  ref={passedOutProcessRef}
+                  customerDetails={customerDetails}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  stepIndex={stepIndex}
+                  setStepIndex={setStepIndex}
+                  isCertGenerated={isCertGenerated}
+                  generateCertLoading={generateCertLoading}
+                  setGenerateCertLoading={setGenerateCertLoading}
+                  callgetCustomersApi={(reset = true, cert_gen = false) => {
+                    console.log("resetttt", reset);
+                    if (reset != false) {
+                      console.log("oooooooooooooooo", reset);
+                      updateStatusDrawerReset();
+                    }
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                      cert_gen,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus === "Others" ? (
+              <>
+                <OthersHandling
+                  ref={othersHandlingRef}
+                  customerDetails={customerDetails}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      status,
+                      allDownliners,
+                      branchOptions,
+                      pagination.page,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </>
+            ) : drawerContentStatus === "Pre Certificate" ? (
+              <>
+                <PreCertificate
+                  ref={preCertificateRef}
+                  customerDetails={customerDetails}
+                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
+                  }}
+                />
+              </>
+            ) : (
+              ""
+            )}
+          </>
         )}
 
         {/* footer */}
@@ -4918,8 +5066,8 @@ export default function Customers() {
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.payments.total_amount
-                    ? "₹" + customerDetails.payments.total_amount
+                  {customerDetails && customerDetails.total_amount
+                    ? "₹" + customerDetails.total_amount
                     : "-"}
                 </p>
               </Col>

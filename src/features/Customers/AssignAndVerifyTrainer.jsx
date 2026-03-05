@@ -4,7 +4,17 @@ import React, {
   useImperativeHandle,
   useEffect,
 } from "react";
-import { Row, Col, Button, Flex, Tooltip, Radio, Collapse, Modal } from "antd";
+import {
+  Row,
+  Col,
+  Button,
+  Flex,
+  Tooltip,
+  Radio,
+  Collapse,
+  Modal,
+  Divider,
+} from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -920,546 +930,567 @@ const AssignAndVerifyTrainer = forwardRef(
         </div>
 
         {drawerContentStatus == "Assign Trainer" ? (
-          <div className="customer_statusupdate_adddetailsContainer">
-            <p className="customer_statusupdate_adddetails_heading">
-              Assign New Trainer
-            </p>
+          <>
+            <Divider className="customer_statusupdate_divider" />
+            <div className="customer_statusupdate_adddetailsContainer">
+              <p className="customer_statusupdate_adddetails_heading">
+                Assign New Trainer
+              </p>
 
-            <Row gutter={16} style={{ marginTop: "14px" }}>
-              <Col span={12}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <CommonSelectField
-                      label="Trainer"
-                      required={true}
-                      options={trainersData}
-                      onChange={(e) => {
-                        setTrainerId(e.target.value);
-                        const clickedTrainer = trainersData.filter(
-                          (f) => f.id == e.target.value,
-                        );
-                        console.log("clickedTrainer", clickedTrainer);
-                        setTrainerType(
-                          clickedTrainer.length >= 1 &&
-                            clickedTrainer[0].trainer_type
-                            ? clickedTrainer[0].trainer_type
-                            : "",
-                        );
-                        setClickedTrainerDetails(clickedTrainer);
-                        setTrainerIdError(selectValidator(e.target.value));
-                        getCustomerByTrainerIdData(e.target.value, 0);
-                      }}
-                      value={trainerId}
-                      error={trainerIdError}
-                      onFocus={() => setIsTrainerSelectFocused(true)}
-                      onBlur={() => setIsTrainerSelectFocused(false)}
-                      borderRightNone={true}
-                      showLabelStatus={
-                        trainerFilterType == 1
-                          ? "Name"
-                          : trainerFilterType == 2
-                            ? "Trainer Id"
-                            : trainerFilterType == 3
-                              ? "Email"
-                              : "Mobile"
+              <Row gutter={16} style={{ marginTop: "14px" }}>
+                <Col span={12}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <CommonSelectField
+                        label="Trainer"
+                        required={true}
+                        options={trainersData}
+                        onChange={(e) => {
+                          setTrainerId(e.target.value);
+                          const clickedTrainer = trainersData.filter(
+                            (f) => f.id == e.target.value,
+                          );
+                          console.log("clickedTrainer", clickedTrainer);
+                          setTrainerType(
+                            clickedTrainer.length >= 1 &&
+                              clickedTrainer[0].trainer_type
+                              ? clickedTrainer[0].trainer_type
+                              : "",
+                          );
+                          setClickedTrainerDetails(clickedTrainer);
+                          setTrainerIdError(selectValidator(e.target.value));
+                          getCustomerByTrainerIdData(e.target.value, 0);
+                        }}
+                        value={trainerId}
+                        error={trainerIdError}
+                        onFocus={() => setIsTrainerSelectFocused(true)}
+                        onBlur={() => setIsTrainerSelectFocused(false)}
+                        borderRightNone={true}
+                        showLabelStatus={
+                          trainerFilterType == 1
+                            ? "Name"
+                            : trainerFilterType == 2
+                              ? "Trainer Id"
+                              : trainerFilterType == 3
+                                ? "Email"
+                                : "Mobile"
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <Flex
+                        justify="center"
+                        align="center"
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        <Tooltip
+                          placement="bottomLeft"
+                          color="#fff"
+                          title={
+                            <Radio.Group
+                              value={trainerFilterType}
+                              onChange={(e) => {
+                                console.log(e.target.value);
+                                setTrainerFilterType(e.target.value);
+                              }}
+                            >
+                              <Radio
+                                value={1}
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                Search by Name
+                              </Radio>
+                              <Radio value={2} style={{ marginBottom: "12px" }}>
+                                Search by Trainer Id
+                              </Radio>
+                              <Radio value={3} style={{ marginBottom: "12px" }}>
+                                Search by Email
+                              </Radio>
+                              <Radio value={4} style={{ marginBottom: "12px" }}>
+                                Search by Mobile
+                              </Radio>
+                            </Radio.Group>
+                          }
+                        >
+                          <Button
+                            className="customer_trainermappingfilter_container"
+                            style={{
+                              borderLeftColor:
+                                isTrainerSelectFocused && "#5b69ca",
+                            }}
+                          >
+                            <IoFilter size={16} />
+                          </Button>
+                        </Tooltip>
+                      </Flex>
+                    </div>
+                    {trainerId && (
+                      <Tooltip
+                        placement="top"
+                        title="View Trainer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={17}
+                          className="trainers_action_icons"
+                          onClick={() => setIsOpenTrainerDetailModal(true)}
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                </Col>
+
+                <Col span={12}>
+                  <CommonOutlinedInput
+                    label="Commercial"
+                    type="number"
+                    required={true}
+                    onChange={(e) => {
+                      setCommercial(e.target.value);
+                      setCommercialError(selectValidator(e.target.value));
+                    }}
+                    value={commercial}
+                    error={commercialError}
+                    onInput={(e) => {
+                      if (e.target.value.length > 10) {
+                        e.target.value = e.target.value.slice(0, 10);
                       }
+                    }}
+                    icon={<LuIndianRupee size={16} />}
+                  />
+                </Col>
+              </Row>
+
+              <Row gutter={16} style={{ marginTop: "30px" }}>
+                <Col span={12}>
+                  <CommonSelectField
+                    label="Mode Of Class"
+                    required={true}
+                    options={modeOfClassOptions}
+                    onChange={(e) => {
+                      setModeOfClass(e.target.value);
+                      setModeOfClassError(selectValidator(e.target.value));
+                    }}
+                    value={modeOfClass}
+                    error={modeOfClassError}
+                  />
+                </Col>
+                <Col span={12}>
+                  <CommonInputField
+                    label="Trainer Type"
+                    required={true}
+                    value={trainerType}
+                    disabled={true}
+                  />
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "28px" }}>
+                <Col span={24}>
+                  <div
+                    style={{
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <CommonTextArea
+                      label="Comments"
+                      required={true}
+                      onChange={(e) => {
+                        setAssignTrainerComments(e.target.value);
+                        setAssignTrainerCommentsError(
+                          addressValidator(e.target.value),
+                        );
+                      }}
+                      value={assignTrainerComments}
+                      error={assignTrainerCommentsError}
                     />
                   </div>
 
-                  <div>
-                    <Flex
-                      justify="center"
-                      align="center"
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      <Tooltip
-                        placement="bottomLeft"
-                        color="#fff"
-                        title={
-                          <Radio.Group
-                            value={trainerFilterType}
-                            onChange={(e) => {
-                              console.log(e.target.value);
-                              setTrainerFilterType(e.target.value);
-                            }}
-                          >
-                            <Radio
-                              value={1}
-                              style={{
-                                marginTop: "6px",
-                                marginBottom: "12px",
-                              }}
-                            >
-                              Search by Name
-                            </Radio>
-                            <Radio value={2} style={{ marginBottom: "12px" }}>
-                              Search by Trainer Id
-                            </Radio>
-                            <Radio value={3} style={{ marginBottom: "12px" }}>
-                              Search by Email
-                            </Radio>
-                            <Radio value={4} style={{ marginBottom: "12px" }}>
-                              Search by Mobile
-                            </Radio>
-                          </Radio.Group>
-                        }
+                  <div
+                    style={{
+                      position: "relative",
+                      marginTop: "40px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <ImageUploadCrop
+                      label="Proof Communication"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={assignTrainerProofBase64}
+                      onChange={(base64) => setAssignTrainerProofBase64(base64)}
+                      onErrorChange={setAssignTrainerProofError}
+                    />
+                    {assignTrainerProofError && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#d32f2f",
+                          marginTop: 4,
+                        }}
                       >
-                        <Button
-                          className="customer_trainermappingfilter_container"
-                          style={{
-                            borderLeftColor:
-                              isTrainerSelectFocused && "#5b69ca",
-                          }}
-                        >
-                          <IoFilter size={16} />
-                        </Button>
-                      </Tooltip>
-                    </Flex>
+                        {`Proof Screenshot ${assignTrainerProofError}`}
+                      </p>
+                    )}
                   </div>
-                  {trainerId && (
-                    <Tooltip
-                      placement="top"
-                      title="View Trainer Details"
-                      trigger={["hover", "click"]}
-                    >
-                      <FaRegEye
-                        size={17}
-                        className="trainers_action_icons"
-                        onClick={() => setIsOpenTrainerDetailModal(true)}
+                </Col>
+              </Row>
+            </div>
+          </>
+        ) : (
+          <>
+            <Divider className="customer_statusupdate_divider" />
+            <div
+              className="customer_statusupdate_adddetailsContainer"
+              style={{ marginBottom: "30px" }}
+            >
+              <p className="customer_statusupdate_adddetails_heading">
+                Trainer Details
+              </p>
+
+              <Row gutter={16}>
+                <Col span={13}>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">HR Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          assignTrainerData && assignTrainerData.hr_head
+                            ? assignTrainerData.hr_head
+                            : "-"
+                        }
+                        smallText={true}
                       />
-                    </Tooltip>
-                  )}
-                </div>
-              </Col>
+                    </Col>
+                  </Row>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Trainer Name
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          assignTrainerData && assignTrainerData.name
+                            ? `${assignTrainerData.name} (${
+                                assignTrainerData.trainer_code
+                                  ? assignTrainerData.trainer_code
+                                  : "-"
+                              })`
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
 
-              <Col span={12}>
-                <CommonOutlinedInput
-                  label="Commercial"
-                  type="number"
-                  required={true}
-                  onChange={(e) => {
-                    setCommercial(e.target.value);
-                    setCommercialError(selectValidator(e.target.value));
-                  }}
-                  value={commercial}
-                  error={commercialError}
-                  onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
-                    }
-                  }}
-                  icon={<LuIndianRupee size={16} />}
-                />
-              </Col>
-            </Row>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Trainer Email
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          assignTrainerData && assignTrainerData.email
+                            ? assignTrainerData.email
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
 
-            <Row gutter={16} style={{ marginTop: "30px" }}>
-              <Col span={12}>
-                <CommonSelectField
-                  label="Mode Of Class"
-                  required={true}
-                  options={modeOfClassOptions}
-                  onChange={(e) => {
-                    setModeOfClass(e.target.value);
-                    setModeOfClassError(selectValidator(e.target.value));
-                  }}
-                  value={modeOfClass}
-                  error={modeOfClassError}
-                />
-              </Col>
-              <Col span={12}>
-                <CommonInputField
-                  label="Trainer Type"
-                  required={true}
-                  value={trainerType}
-                  disabled={true}
-                />
-              </Col>
-            </Row>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Trainer Mobile
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {assignTrainerData && assignTrainerData.mobile
+                          ? assignTrainerData.mobile
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
 
-            <Row style={{ marginTop: "28px" }}>
-              <Col span={24}>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Mode Of Class
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails &&
+                        customerDetails.mode_of_class !== null
+                          ? customerDetails.mode_of_class
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Trainer Type
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails &&
+                        customerDetails.trainer_type !== null
+                          ? customerDetails.trainer_type
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={11}>
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Trainer Skills
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          assignTrainerData && assignTrainerData.skills
+                            ? assignTrainerData.skills
+                                .map((item) => item.name)
+                                .join(", ")
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Commercial</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {"₹" + customerDetails &&
+                        customerDetails.commercial !== null
+                          ? customerDetails.commercial
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Commercial%
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{
+                          fontWeight: 700,
+                          color:
+                            customerDetails &&
+                            customerDetails.commercial_percentage !== null
+                              ? customerDetails.commercial_percentage < 18
+                                ? "#3c9111" // green
+                                : customerDetails.commercial_percentage > 18 &&
+                                    customerDetails.commercial_percentage <= 22
+                                  ? "#ffa502" // orange
+                                  : customerDetails.commercial_percentage > 22
+                                    ? "#d32f2f" // red
+                                    : "inherit"
+                              : "inherit", // fallback color if null
+                        }}
+                      >
+                        {customerDetails &&
+                        customerDetails.commercial_percentage
+                          ? customerDetails.commercial_percentage + "%"
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Proof Screenshot
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <button
+                        className="pendingcustomer_paymentscreenshot_viewbutton"
+                        style={{ gap: "4px" }}
+                        onClick={() => {
+                          setIsProofScreenshotModal(true);
+                          setProofScreenshot(
+                            customerDetails &&
+                              customerDetails.proof_communication !== null
+                              ? customerDetails.proof_communication
+                              : "-",
+                          );
+                        }}
+                      >
+                        <FaRegEye size={16} /> View screenshot
+                      </button>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Class Taken
+                        </p>
+                      </div>
+                    </Col>
+                    <Col
+                      span={12}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <p className="customers_classtaken_customerscount">
+                        {customerDetails &&
+                        customerDetails.completed_student_count
+                          ? customerDetails.completed_student_count +
+                            " Customers"
+                          : "-"}
+                      </p>
+                      <Tooltip
+                        placement="top"
+                        title="View Customer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={12}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenTrainerCustomersModal(true);
+                            getCustomerByTrainerIdData(
+                              customerDetails && customerDetails.trainer_id
+                                ? customerDetails.trainer_id
+                                : null,
+                              1,
+                            );
+                          }}
+                        />
+                      </Tooltip>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Class Going
+                        </p>
+                      </div>
+                    </Col>
+                    <Col
+                      span={12}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <p className="customers_classtaken_customerscount">
+                        {customerDetails &&
+                        customerDetails.ongoing_student_count
+                          ? customerDetails.ongoing_student_count + " Customers"
+                          : "-"}
+                      </p>
+                      <Tooltip
+                        placement="top"
+                        title="View Customer Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={12}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenTrainerCustomersModal(true);
+                            getCustomerByTrainerIdData(
+                              customerDetails && customerDetails.trainer_id
+                                ? customerDetails.trainer_id
+                                : null,
+                              0,
+                            );
+                          }}
+                        />
+                      </Tooltip>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+
+              {isShowRejectTrainerCommentBox ? (
                 <div
-                  style={{
-                    marginBottom: "20px",
-                  }}
+                  style={{ marginTop: "12px", position: "relative" }}
+                  id="customer_trainerreject_commentContainer"
                 >
                   <CommonTextArea
-                    label="Comments"
+                    label="Comment"
                     required={true}
                     onChange={(e) => {
-                      setAssignTrainerComments(e.target.value);
-                      setAssignTrainerCommentsError(
+                      setRejectTrainerComments(e.target.value);
+                      setRejectTrainerCommentsError(
                         addressValidator(e.target.value),
                       );
                     }}
-                    value={assignTrainerComments}
-                    error={assignTrainerCommentsError}
+                    value={rejectTrainerComments}
+                    error={rejectTrainerCommentsError}
                   />
                 </div>
-
-                <div
-                  style={{
-                    position: "relative",
-                    marginTop: "40px",
-                    marginBottom: "20px",
-                  }}
-                >
-                  <ImageUploadCrop
-                    label="Proof Communication"
-                    aspect={1}
-                    maxSizeMB={1}
-                    required={true}
-                    value={assignTrainerProofBase64}
-                    onChange={(base64) => setAssignTrainerProofBase64(base64)}
-                    onErrorChange={setAssignTrainerProofError}
-                  />
-                  {assignTrainerProofError && (
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        color: "#d32f2f",
-                        marginTop: 4,
-                      }}
-                    >
-                      {`Proof Screenshot ${assignTrainerProofError}`}
-                    </p>
-                  )}
-                </div>
-              </Col>
-            </Row>
-          </div>
-        ) : (
-          <div
-            className="customer_statusupdate_adddetailsContainer"
-            style={{ marginBottom: "30px" }}
-          >
-            <p className="customer_statusupdate_adddetails_heading">
-              Trainer Details
-            </p>
-
-            <Row gutter={16}>
-              <Col span={13}>
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">HR Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        assignTrainerData && assignTrainerData.hr_head
-                          ? assignTrainerData.hr_head
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        assignTrainerData && assignTrainerData.name
-                          ? `${assignTrainerData.name} (${
-                              assignTrainerData.trainer_code
-                                ? assignTrainerData.trainer_code
-                                : "-"
-                            })`
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Trainer Email
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        assignTrainerData && assignTrainerData.email
-                          ? assignTrainerData.email
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Trainer Mobile
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {assignTrainerData && assignTrainerData.mobile
-                        ? assignTrainerData.mobile
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Mode Of Class
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.mode_of_class !== null
-                        ? customerDetails.mode_of_class
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Trainer Type</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.trainer_type !== null
-                        ? customerDetails.trainer_type
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={11}>
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Trainer Skills
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        assignTrainerData && assignTrainerData.skills
-                          ? assignTrainerData.skills
-                              .map((item) => item.name)
-                              .join(", ")
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {"₹" + customerDetails &&
-                      customerDetails.commercial !== null
-                        ? customerDetails.commercial
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Commercial%</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{
-                        fontWeight: 700,
-                        color:
-                          customerDetails &&
-                          customerDetails.commercial_percentage !== null
-                            ? customerDetails.commercial_percentage < 18
-                              ? "#3c9111" // green
-                              : customerDetails.commercial_percentage > 18 &&
-                                  customerDetails.commercial_percentage <= 22
-                                ? "#ffa502" // orange
-                                : customerDetails.commercial_percentage > 22
-                                  ? "#d32f2f" // red
-                                  : "inherit"
-                            : "inherit", // fallback color if null
-                      }}
-                    >
-                      {customerDetails && customerDetails.commercial_percentage
-                        ? customerDetails.commercial_percentage + "%"
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Proof Screenshot
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <button
-                      className="pendingcustomer_paymentscreenshot_viewbutton"
-                      style={{ gap: "4px" }}
-                      onClick={() => {
-                        setIsProofScreenshotModal(true);
-                        setProofScreenshot(
-                          customerDetails &&
-                            customerDetails.proof_communication !== null
-                            ? customerDetails.proof_communication
-                            : "-",
-                        );
-                      }}
-                    >
-                      <FaRegEye size={16} /> View screenshot
-                    </button>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Class Taken</p>
-                    </div>
-                  </Col>
-                  <Col
-                    span={12}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <p className="customers_classtaken_customerscount">
-                      {customerDetails &&
-                      customerDetails.completed_student_count
-                        ? customerDetails.completed_student_count + " Customers"
-                        : "-"}
-                    </p>
-                    <Tooltip
-                      placement="top"
-                      title="View Customer Details"
-                      trigger={["hover", "click"]}
-                    >
-                      <FaRegEye
-                        size={12}
-                        className="trainers_action_icons"
-                        onClick={() => {
-                          setIsOpenTrainerCustomersModal(true);
-                          getCustomerByTrainerIdData(
-                            customerDetails && customerDetails.trainer_id
-                              ? customerDetails.trainer_id
-                              : null,
-                            1,
-                          );
-                        }}
-                      />
-                    </Tooltip>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }} gutter={16}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Class Going</p>
-                    </div>
-                  </Col>
-                  <Col
-                    span={12}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <p className="customers_classtaken_customerscount">
-                      {customerDetails && customerDetails.ongoing_student_count
-                        ? customerDetails.ongoing_student_count + " Customers"
-                        : "-"}
-                    </p>
-                    <Tooltip
-                      placement="top"
-                      title="View Customer Details"
-                      trigger={["hover", "click"]}
-                    >
-                      <FaRegEye
-                        size={12}
-                        className="trainers_action_icons"
-                        onClick={() => {
-                          setIsOpenTrainerCustomersModal(true);
-                          getCustomerByTrainerIdData(
-                            customerDetails && customerDetails.trainer_id
-                              ? customerDetails.trainer_id
-                              : null,
-                            0,
-                          );
-                        }}
-                      />
-                    </Tooltip>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            {isShowRejectTrainerCommentBox ? (
-              <div
-                style={{ marginTop: "12px", position: "relative" }}
-                id="customer_trainerreject_commentContainer"
-              >
-                <CommonTextArea
-                  label="Comment"
-                  required={true}
-                  onChange={(e) => {
-                    setRejectTrainerComments(e.target.value);
-                    setRejectTrainerCommentsError(
-                      addressValidator(e.target.value),
-                    );
-                  }}
-                  value={rejectTrainerComments}
-                  error={rejectTrainerCommentsError}
-                />
-              </div>
-            ) : (
-              ""
-            )}
-          </div>
+              ) : (
+                ""
+              )}
+            </div>
+          </>
         )}
 
         {/* trainer fulldetails modal */}

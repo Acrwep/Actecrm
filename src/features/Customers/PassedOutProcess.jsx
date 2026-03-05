@@ -24,12 +24,14 @@ import {
   generateCertForCustomer,
   inserCustomerTrack,
   sendCustomerCertificate,
+  updateCertForCustomer,
   updateCustomerStatus,
   updatefeedbackForCustomer,
   viewCertForCustomer,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
+import { useSelector } from "react-redux";
 
 const { Step } = Steps;
 
@@ -48,7 +50,8 @@ const PassesOutProcess = forwardRef(
     },
     ref,
   ) => {
-    const [callCusTrack, setCallCusTrack] = useState(false);
+    const permissions = useSelector((state) => state.userpermissions);
+
     const [googleFeedbackBase64, setGoogleFeedbackBase64] = useState("");
     const [linkedinFeedbackBase64, setLinkedinFeedbackBase64] = useState("");
 
@@ -70,12 +73,16 @@ const PassesOutProcess = forwardRef(
     const [certHtmlContent, setCertHtmlContent] = useState("");
     const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
     const [certificateName, setCertificateName] = useState("");
+    const [updateCertLoading, setUpdateCertLoading] = useState(false);
 
     useEffect(() => {
       setCourseDuration(customerDetails.cer_course_duration);
       setCertMonth(customerDetails.cer_course_completion_month);
       if (customerDetails.google_review) {
         setGoogleFeedbackBase64(customerDetails.google_review);
+      }
+      if (customerDetails.linkedin_review) {
+        setLinkedinFeedbackBase64(customerDetails.google_review);
       }
       setCertName(
         customerDetails.cer_customer_name
@@ -128,10 +135,7 @@ const PassesOutProcess = forwardRef(
         try {
           await updatefeedbackForCustomer(payload);
           callgetCustomersApi(false, false);
-          if (callCusTrack) {
-            handleCustomerTrack("Google Review Added");
-            setCallCusTrack(false);
-          }
+          handleCustomerTrack("Google Review Added");
           // CommonMessage("success", "Updated Successfully");
           setStepIndex(1);
         } catch (error) {
@@ -180,35 +184,64 @@ const PassesOutProcess = forwardRef(
       )
         return;
 
+      const today = new Date();
       const payload = {
+        ...(customerDetails && customerDetails.is_certificate_generated == 1
+          ? { id: customerDetails?.certificate_id }
+          : {}),
+        ...(customerDetails && customerDetails.is_certificate_generated == 1
+          ? { certificate_number: customerDetails?.certificate_number }
+          : {}),
         customer_id: customerDetails.id,
         customer_name: certName,
         course_name: certCourseName,
         course_duration: courseDuration,
         course_completion_month: certMonth,
         current_location: certLocation,
+        updated_date: formatToBackendIST(today),
       };
 
-      setGenerateCertLoading(true);
+      if (customerDetails.is_certificate_generated == 1) {
+        setUpdateCertLoading(true);
+      } else {
+        setGenerateCertLoading(true);
+      }
       try {
-        const response = await generateCertForCustomer(payload);
-        console.log("cert response", response);
-        CommonMessage("success", "Certificate Generated Successfully");
+        const isUpdate = customerDetails?.is_certificate_generated === 1;
+
+        isUpdate
+          ? await updateCertForCustomer(payload)
+          : await generateCertForCustomer(payload);
+
+        CommonMessage(
+          "success",
+          isUpdate
+            ? "Certificate Updated Successfully"
+            : "Certificate Generated Successfully",
+        );
+
         setTimeout(() => {
-          handleCustomerTrack("Certificate Generated");
-          callgetCustomersApi(false, true);
+          handleCustomerTrack(
+            isUpdate ? "Certificate Updated" : "Certificate Generated",
+          );
+
+          if (!isUpdate) {
+            callgetCustomersApi(false, true);
+          }
         }, 300);
       } catch (error) {
-        setGenerateCertLoading(false);
         CommonMessage(
           "error",
           error?.response?.data?.details ||
             "Something went wrong. Try again later",
         );
+      } finally {
+        setGenerateCertLoading(false);
+        setUpdateCertLoading(false);
       }
     };
 
-    const handleViewCert = async (customer_id) => {
+    const handleViewCert = async () => {
       setGenerateCertLoading(true);
       const payload = {
         customer_id: customerDetails.id,
@@ -380,7 +413,8 @@ const PassesOutProcess = forwardRef(
         setTimeout(() => {
           if (
             updatestatus === "Google Review Added" ||
-            updatestatus === "Certificate Generated"
+            updatestatus === "Certificate Generated" ||
+            updatestatus === "Certificate Updated"
           ) {
             return;
           }
@@ -491,7 +525,10 @@ const PassesOutProcess = forwardRef(
                     }
                   }}
                   icon={<p style={{ fontSize: "11px" }}>Months</p>}
-                  disabled={customerDetails?.is_certificate_generated === 1}
+                  disabled={
+                    customerDetails?.is_certificate_generated === 1 &&
+                    !permissions.includes("Update Certificate Details")
+                  }
                 />
               </Col>
               <Col span={12}>
@@ -505,7 +542,10 @@ const PassesOutProcess = forwardRef(
                   }}
                   value={certMonth}
                   error={certMonthError}
-                  disabled={customerDetails?.is_certificate_generated === 1}
+                  disabled={
+                    customerDetails?.is_certificate_generated === 1 &&
+                    !permissions.includes("Update Certificate Details")
+                  }
                 />
               </Col>
             </Row>
@@ -521,7 +561,10 @@ const PassesOutProcess = forwardRef(
                   }}
                   value={certName}
                   error={certNameError}
-                  disabled={customerDetails?.is_certificate_generated === 1}
+                  disabled={
+                    customerDetails?.is_certificate_generated === 1 &&
+                    !permissions.includes("Update Certificate Details")
+                  }
                 />
               </Col>
               <Col span={12}>
@@ -534,7 +577,10 @@ const PassesOutProcess = forwardRef(
                   }}
                   value={certCourseName}
                   error={certCourseNameError}
-                  disabled={customerDetails?.is_certificate_generated === 1}
+                  disabled={
+                    customerDetails?.is_certificate_generated === 1 &&
+                    !permissions.includes("Update Certificate Details")
+                  }
                 />
               </Col>
             </Row>
@@ -554,7 +600,10 @@ const PassesOutProcess = forwardRef(
                   options={certLocationOptions}
                   value={certLocation}
                   error={certLocationError}
-                  disabled={customerDetails?.is_certificate_generated === 1}
+                  disabled={
+                    customerDetails?.is_certificate_generated === 1 &&
+                    !permissions.includes("Update Certificate Details")
+                  }
                 />
               </Col>
               <Col
@@ -581,7 +630,24 @@ const PassesOutProcess = forwardRef(
                     )}
                   </>
                 ) : (
-                  <>
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    {updateCertLoading ? (
+                      <Button className="customer_viewcert_loadingbutton">
+                        <CommonSpinner />
+                      </Button>
+                    ) : (
+                      <>
+                        {permissions.includes("Update Certificate Details") && (
+                          <Button
+                            className="customer_viewcert_button"
+                            onClick={handleGenerateCert}
+                          >
+                            Update Certificate
+                          </Button>
+                        )}
+                      </>
+                    )}
+
                     {generateCertLoading ? (
                       <Button className="customer_viewcert_loadingbutton">
                         <CommonSpinner />
@@ -589,12 +655,12 @@ const PassesOutProcess = forwardRef(
                     ) : (
                       <Button
                         className="customer_viewcert_button"
-                        onClick={() => handleViewCert(null)}
+                        onClick={handleViewCert}
                       >
                         View Certificate
                       </Button>
                     )}
-                  </>
+                  </div>
                 )}
               </Col>
             </Row>

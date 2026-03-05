@@ -27,6 +27,7 @@ import {
   getBatchTrack,
   getBranches,
   getCustomerById,
+  getCustomersPaymentHistory,
   getRegions,
   getTechnologies,
   getTrainingMode,
@@ -46,7 +47,6 @@ const CustomerUpdate = forwardRef(
       customerId,
       setUpdateButtonLoading,
       setIsOpenEditDrawer,
-      paymentMasterDetails,
     },
     ref,
   ) => {
@@ -113,6 +113,7 @@ const CustomerUpdate = forwardRef(
     const [callCustomerApi, setCallCustomerApi] = useState(false);
 
     //payment master usestaes
+    const [paymentFullDetails, setPaymentFullDetails] = useState(null);
     const [subTotal, setSubTotal] = useState();
     const [subTotalError, setSubTotalError] = useState("");
     const [taxType, setTaxType] = useState("");
@@ -295,30 +296,48 @@ const CustomerUpdate = forwardRef(
         setSignatureBase64(customerDetails.signature_image);
         setRegionId(customerDetails.region_id);
         getBranchesData(customerDetails, true);
-        console.log("paymentMasterDetails", paymentMasterDetails);
-        //payment usestaes
-        setSubTotal(parseFloat(customerDetails.primary_fees));
-        setTaxType(
-          paymentMasterDetails?.tax_type == "GST (18%)"
-            ? 1
-            : paymentMasterDetails?.tax_type == "SGST (18%)"
-              ? 2
-              : paymentMasterDetails?.tax_type == "IGST (18%)"
-                ? 3
-                : paymentMasterDetails?.tax_type == "VAT (18%)"
-                  ? 4
-                  : paymentMasterDetails?.tax_type == "No Tax"
-                    ? 5
-                    : "",
-        );
-        setAmount(parseFloat(paymentMasterDetails?.total_amount));
+        getPaymentHistoryData(customerDetails);
       } catch (error) {
         console.log("getcustomer by id error", error);
       } finally {
         setTimeout(() => {
-          setLoading(false);
+          // setLoading(false);
           setCallCustomerApi(true);
         }, 200);
+      }
+    };
+
+    const getPaymentHistoryData = async (customerDetails) => {
+      try {
+        const response = await getCustomersPaymentHistory(
+          customerDetails?.lead_id,
+        );
+        console.log("particular customer payment history", response);
+        const payment_full_details = response?.data?.data || null;
+        const payment_history = response?.data?.data?.payment_trans || [];
+
+        setPaymentFullDetails(payment_full_details);
+        //payment usestaes
+        setSubTotal(parseFloat(customerDetails.primary_fees));
+        setTaxType(
+          payment_full_details?.tax_type == "GST (18%)"
+            ? 1
+            : payment_full_details?.tax_type == "SGST (18%)"
+              ? 2
+              : payment_full_details?.tax_type == "IGST (18%)"
+                ? 3
+                : payment_full_details?.tax_type == "VAT (18%)"
+                  ? 4
+                  : payment_full_details?.tax_type == "No Tax"
+                    ? 5
+                    : "",
+        );
+        setAmount(parseFloat(payment_full_details?.total_amount));
+      } catch (error) {
+        setPaymentFullDetails(null);
+        console.log("particular customer payment history error", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -603,7 +622,7 @@ const CustomerUpdate = forwardRef(
       console.log("GST Amount:", gstAmount);
 
       const payload = {
-        payment_master_id: paymentMasterDetails?.id,
+        payment_master_id: paymentFullDetails?.id,
         tax_type:
           taxType == 1
             ? "GST (18%)"
