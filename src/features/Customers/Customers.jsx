@@ -29,7 +29,6 @@ import {
   getCustomerFullHistory,
   getCustomers,
   getTableColumns,
-  getTrainers,
   updateTableColumns,
   viewCertForCustomer,
 } from "../ApiService/action";
@@ -136,7 +135,6 @@ export default function Customers() {
   //student verify usestates
   //assign trainer usestates
   const [isAssignTrainerSwap, setIsAssignTrainerSwap] = useState(false);
-  const [trainersData, setTrainersData] = useState([]);
   const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
   //trainer verify usestates
   const [rejectbuttonLoader, setRejectButtonLoader] = useState(false);
@@ -149,6 +147,7 @@ export default function Customers() {
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [certificateName, setCertificateName] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
+  const [linkedinLoading, setLinkedinLoading] = useState(false);
 
   //customer history usestates
   const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
@@ -1240,7 +1239,7 @@ export default function Customers() {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-      getTrainersData();
+      getAllDownlineUsersData(null);
     }
   }, [childUsers]);
 
@@ -1271,26 +1270,6 @@ export default function Customers() {
     window.addEventListener("notificationFilter", handler);
     return () => window.removeEventListener("notificationFilter", handler);
   }, []);
-
-  const getTrainersData = async () => {
-    setLoading(true);
-    const payload = {
-      status: "Verified",
-      page: 1,
-      limit: 1000,
-    };
-    try {
-      const response = await getTrainers(payload);
-      setTrainersData(response?.data?.data?.trainers || []);
-    } catch (error) {
-      setTrainersData([]);
-      console.log(error);
-    } finally {
-      setTimeout(() => {
-        getAllDownlineUsersData(null);
-      }, 300);
-    }
-  };
 
   const rerunCustomerFilters = (stateData, downliners) => {
     console.log("location state dataaa", stateData);
@@ -4368,7 +4347,6 @@ export default function Customers() {
                   drawerContentStatus={drawerContentStatus}
                   setUpdateButtonLoading={setUpdateButtonLoading}
                   setRejectButtonLoader={setRejectButtonLoader}
-                  trainersData={trainersData}
                   callgetCustomersApi={() => {
                     updateStatusDrawerReset();
                     setPagination({
@@ -4394,7 +4372,6 @@ export default function Customers() {
                   customerDetails={customerDetails}
                   drawerContentStatus={drawerContentStatus}
                   setUpdateButtonLoading={setUpdateButtonLoading}
-                  trainersData={trainersData}
                   callgetCustomersApi={() => {
                     updateStatusDrawerReset();
                     setPagination({
@@ -4444,6 +4421,7 @@ export default function Customers() {
                 <PassesOutProcess
                   ref={passedOutProcessRef}
                   customerDetails={customerDetails}
+                  setLinkedinLoading={setLinkedinLoading}
                   setUpdateButtonLoading={setUpdateButtonLoading}
                   stepIndex={stepIndex}
                   setStepIndex={setStepIndex}
@@ -4570,6 +4548,24 @@ export default function Customers() {
                       Previous
                     </Button>
                   )}
+                  {stepIndex == 2 && (
+                    <>
+                      {linkedinLoading ? (
+                        <Button className="customer_loading_linkedin_update_button">
+                          <CommonSpinner />
+                        </Button>
+                      ) : (
+                        <Button
+                          className="customer_linkedin_update_button"
+                          onClick={() =>
+                            passedOutProcessRef.current?.handleLinkedinReview()
+                          }
+                        >
+                          Update Linkedin
+                        </Button>
+                      )}
+                    </>
+                  )}
                   {stepIndex < 3 && (
                     <>
                       {updateButtonLoading ? (
@@ -4602,7 +4598,7 @@ export default function Customers() {
                               : "customer_stepperbuttons"
                           }
                         >
-                          {stepIndex == 2 ? "Submit" : "Next"}
+                          {stepIndex == 2 ? "Move to Completed" : "Next"}
                         </Button>
                       )}
                     </>

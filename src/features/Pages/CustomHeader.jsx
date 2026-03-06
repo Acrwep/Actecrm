@@ -17,6 +17,7 @@ import {
   Divider,
   Upload,
   Modal,
+  Input,
 } from "antd";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -124,6 +125,12 @@ export default function CustomHeader() {
   //profile image usestates
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+
+  // Share Modal states
+  const [isOpenShareModal, setIsOpenShareModal] = useState(false);
+  const [shareTemplateText, setShareTemplateText] = useState("");
+  const [currentShareItem, setCurrentShareItem] = useState(null);
+  const [currentSharePlatform, setCurrentSharePlatform] = useState("");
 
   const { notifications, unreadCount, setUnreadCount, logout } =
     useContext(NotificationContext);
@@ -557,10 +564,63 @@ export default function CustomHeader() {
   };
 
   const buildShareText = (item) => {
+    const raw = localStorage.getItem("loginUserDetails");
+    const user = raw ? JSON.parse(raw) : null;
+
     const price = Number(item.price).toLocaleString("en-IN");
     const offer = Number(item.offer_price).toLocaleString("en-IN");
+    const total = (Number(item.offer_price) * 1.18).toLocaleString("en-IN");
+    const advisorName = user?.user_name || "[Advisor Name]";
+    const advisorPhone = user?.mobile || "[Advisor Phone Number]";
 
-    return `Course Name: ${item.name}\nPrice: ₹${price}\nOffer Price: ₹${offer}`;
+    return `Dear [Customer Name],
+
+Greetings from *ACTE Technologies!* 👋
+
+Thank you for showing interest in our *${item.name} Training Program*. Please find the key details of the training below.
+
+📘 *Course Fee*
+• Standard Fee: *₹${price} + 18% GST*
+• *Offer Fee:* ₹${offer} + 18% GST = *₹${total}* (Applicable for the upcoming batch)
+• *One-to-One / Fast Track Training:* + ₹2,000
+
+📅 *Batch Start Date*
+• Weekday Batch – [Date]
+• Weekend Batch – [Date]
+
+⏱ *Course Duration*
+• *30–45 Hours (Approx.)*
+• *Mode:* Live Instructor-Led Online Training
+
+🎓 *Training Benefits*
+• Experienced Corporate Trainers
+• Recorded Sessions & Study Materials
+• Lifetime Student Portal Access
+• Resume Preparation & Interview Assistance
+• Course Completion Certificate
+
+💳 *Enrollment Process*
+Kindly complete your enrollment using the *Razorpay payment link* and share the *payment screenshot* for confirmation.
+
+After payment completion:
+• Joining form will be sent to your email
+• Student ID will be created
+• Batch & trainer details will be shared by our scheduling team
+
+⚠ *Important Note:*
+Enrollment and class joining should not be on the same date. Kindly complete the enrollment *24–48 hours before the batch start date* so that we can arrange your session smoothly.
+
+If you have any questions regarding the *course syllabus, batch timings, or offers*, please feel free to contact us.
+
+📞 *Phone:* ${advisorPhone}
+📧 *Email:* contact@acte.in
+
+We look forward to supporting you in your *learning journey with ACTE Technologies.*
+
+Best Regards,
+*${advisorName}*
+Course Advisor
+*ACTE Technologies*`;
   };
 
   const copyCourseText = async (item) => {
@@ -576,9 +636,18 @@ export default function CustomHeader() {
   };
 
   const handleShare = async (item, sharePlatform) => {
-    console.log(item.brouchures, item.syllabus);
+    setCurrentShareItem(item);
+    setCurrentSharePlatform(sharePlatform);
+    setShareTemplateText(buildShareText(item));
+    setIsOpenShareModal(true);
+  };
+
+  const proceedWithShare = async () => {
+    const item = currentShareItem;
+    const sharePlatform = currentSharePlatform;
+    const shareText = shareTemplateText;
+
     if (sharePlatform === "whatsapp") {
-      const shareText = buildShareText(item);
       const itemId = item.id || item.name;
 
       // Proper URLs (use correct properties)
@@ -666,13 +735,14 @@ export default function CustomHeader() {
       window.open(`https://wa.me/?text=${text}`, "_blank");
     } else if (sharePlatform == "gmail") {
       const subject = encodeURIComponent(item.name);
-      const body = encodeURIComponent(buildShareText(item));
+      const body = encodeURIComponent(shareText);
 
       window.open(
         `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`,
         "_blank",
       );
     }
+    setIsOpenShareModal(false);
   };
 
   return (
@@ -849,6 +919,21 @@ export default function CustomHeader() {
                                       onClick={() =>
                                         handleShare(item, "whatsapp")
                                       }
+                                    />
+                                  </Tooltip>
+
+                                  <Tooltip
+                                    placement="bottom"
+                                    title="Share on Gmail"
+                                  >
+                                    <img
+                                      src={GmailIcon}
+                                      style={{
+                                        width: "14px",
+                                        height: "14px",
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() => handleShare(item, "gmail")}
                                     />
                                   </Tooltip>
                                 </div>
@@ -2080,6 +2165,29 @@ export default function CustomHeader() {
         onCancel={() => setPreviewOpen(false)}
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
+
+      {/* Share Template Modal */}
+      <Modal
+        title="Edit Share Template"
+        open={isOpenShareModal}
+        onCancel={() => setIsOpenShareModal(false)}
+        onOk={proceedWithShare}
+        okText={
+          currentSharePlatform == "whatsapp"
+            ? "Share to Whatsapp"
+            : "Share to Gmail"
+        }
+        cancelText="Cancel"
+        width="50%"
+      >
+        <Input.TextArea
+          rows={20}
+          value={shareTemplateText}
+          onChange={(e) => setShareTemplateText(e.target.value)}
+          style={{ fontFamily: "inherit", fontSize: "13px" }}
+          className="sharetemplate_textarea_input"
+        />
       </Modal>
     </div>
   );

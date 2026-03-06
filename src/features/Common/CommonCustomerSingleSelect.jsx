@@ -35,6 +35,7 @@ export default function CommonCustomerSingleSelectField({
   onDropdownScroll,
   onInputChange,
   loading,
+  renderOption,
 }) {
   /** 🔹 Resolve label */
   const getLabel = (option) => {
@@ -103,6 +104,7 @@ export default function CommonCustomerSingleSelectField({
             });
           }}
           onOpen={onDropdownOpen}
+          renderOption={renderOption}
           slotProps={{
             listbox: {
               onScroll: onDropdownScroll,

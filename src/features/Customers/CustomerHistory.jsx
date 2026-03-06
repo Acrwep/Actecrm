@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Col, Modal, Row, Timeline, Divider } from "antd";
 import moment from "moment";
 import { FaRegEye } from "react-icons/fa";
@@ -13,7 +13,11 @@ import { IoBan } from "react-icons/io5";
 import { RiRefund2Fill } from "react-icons/ri";
 import "./styles.css";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
-import { viewCertForCustomer, viewPaymentInvoice } from "../ApiService/action";
+import {
+  getCustomersPaymentHistory,
+  viewCertForCustomer,
+  viewPaymentInvoice,
+} from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
 
@@ -26,6 +30,31 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [certificateName, setCertificateName] = useState("");
   const [certHtmlContent, setCertHtmlContent] = useState("");
+  //patment usestates
+  const [paymentFullDetails, setPaymentFullDetails] = useState(null);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+
+  useEffect(() => {
+    getPaymentHistoryData();
+  }, []);
+
+  const getPaymentHistoryData = async () => {
+    try {
+      const response = await getCustomersPaymentHistory(
+        customerDetails?.lead_id,
+      );
+      console.log("particular customer payment history", response);
+      const payment_full_details = response?.data?.data || null;
+      const payment_history = response?.data?.data?.payment_trans || [];
+
+      setPaymentFullDetails(payment_full_details);
+      setPaymentHistory(payment_history);
+    } catch (error) {
+      setPaymentFullDetails(null);
+      setPaymentHistory([]);
+      console.log("particular customer payment history error", error);
+    }
+  };
 
   const getImageTypeFromBase64 = (base64) => {
     // remove data:image/...;base64, if exists
@@ -42,12 +71,10 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   };
 
   const handleViewIncoice = async (transactionId) => {
-    console.log(customerDetails?.payments?.payment_trans);
+    console.log(paymentFullDetails);
 
     const findTrans =
-      customerDetails?.payments?.payment_trans?.find(
-        (f) => f.id === transactionId,
-      ) ?? null;
+      paymentHistory?.find((f) => f.id === transactionId) ?? null;
 
     console.log("findTrans", findTrans);
 
@@ -58,11 +85,11 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       mobile:
         customerDetails && customerDetails.phone ? customerDetails.phone : "",
       convenience_fees: findTrans?.convenience_fees || "",
-      gst_amount: customerDetails?.payments?.gst_amount
-        ? customerDetails.payments.gst_amount
+      gst_amount: paymentFullDetails?.gst_amount
+        ? paymentFullDetails.gst_amount
         : "",
-      gst_percentage: customerDetails?.payments?.gst_percentage
-        ? parseFloat(customerDetails.payments.gst_percentage)
+      gst_percentage: paymentFullDetails?.gst_percentage
+        ? parseFloat(paymentFullDetails.gst_percentage)
         : "",
       invoice_date: findTrans?.invoice_date
         ? moment(findTrans.invoice_date).format("DD-MM-YYYY")
@@ -70,8 +97,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       invoice_number: findTrans?.invoice_number || "",
       paid_amount: findTrans?.amount || "",
       payment_mode: findTrans?.payment_mode || "",
-      total_amount: customerDetails?.payments?.total_amount
-        ? customerDetails.payments.total_amount
+      total_amount: paymentFullDetails?.total_amount
+        ? paymentFullDetails.total_amount
         : "",
       balance_amount:
         findTrans.balance_amount != undefined ||
@@ -107,7 +134,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
           ? customerDetails.invoice_type
           : "",
     };
-
+    console.log("payload", payload);
+    // return;
     try {
       const response = await viewPaymentInvoice(payload);
       console.log("view invoice response", response);

@@ -396,3 +396,7 @@
 .header_search_link_row a:hover {
   text-decoration: underline;
 }
+
+.sharetemplate_textarea_input:hover {
+  border-color: #5b69ca !important;
+}

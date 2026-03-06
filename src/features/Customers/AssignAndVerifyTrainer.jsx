@@ -3,6 +3,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useEffect,
+  useMemo,
 } from "react";
 import {
   Row,
@@ -37,6 +38,7 @@ import {
   getAssignTrainerHistoryForCustomer,
   getCustomerByTrainerId,
   getTrainerById,
+  getTrainers,
   inserCustomerTrack,
   rejectTrainerForCustomer,
   sendNotification,
@@ -53,22 +55,19 @@ import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 
 const AssignAndVerifyTrainer = forwardRef(
   (
     {
       customerDetails,
       drawerContentStatus,
-      trainersData,
       setUpdateButtonLoading,
       setRejectButtonLoader,
       callgetCustomersApi,
     },
     ref,
   ) => {
-    const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
-    const [trainerId, setTrainerId] = useState(null);
-    const [trainerIdError, setTrainerIdError] = useState("");
     const [commercial, setCommercial] = useState(null);
     const [commercialError, setCommercialError] = useState("");
     const modeOfClassOptions = [
@@ -91,7 +90,6 @@ const AssignAndVerifyTrainer = forwardRef(
     const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
       useState(false);
     const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
-    const [trainerFilterType, setTrainerFilterType] = useState(1);
     const [trainerClassTakenCount, setTrainerClassTakenCount] = useState(0);
     const [trainerClassGoingCount, setTrainerClassGoingCount] = useState(0);
     //trainer verify usestates
@@ -111,6 +109,18 @@ const AssignAndVerifyTrainer = forwardRef(
     const [customerByTrainerLoading, setCustomerByTrainerLoading] =
       useState(false);
     const [buttonLoading, setButtonLoading] = useState(false);
+
+    /* ---------------- Trainer STATES ---------------- */
+    const [trainersData, setTrainersData] = useState([]);
+    // ✅ IMPORTANT: keep IDs & Objects separately
+    const [selectedTrainerId, setSelectedTrainerId] = useState(null);
+    const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
+    const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
+    const [trainerSearchText, setTrainerSearchText] = useState("");
+    /* ---------------- PAGINATION ---------------- */
+    const [trainerPage, setTrainerPage] = useState(1);
+    const [trainerHasMore, setTrainerHasMore] = useState(true);
+    const [trainerSelectloading, setTrainerSelectloading] = useState(false);
 
     const customerByTrainerColumn = [
       {
@@ -237,6 +247,207 @@ const AssignAndVerifyTrainer = forwardRef(
       } catch (error) {
         setAssignTrainerData(null);
         console.log("get trainer by id error", error);
+      } finally {
+        getTrainersData();
+      }
+    };
+
+    // const getTrainersData = async () => {
+    //     setLoading(true);
+    //     const payload = {
+    //       status: "Verified",
+    //       page: 1,
+    //       limit: 1000,
+    //     };
+    //     try {
+    //       const response = await getTrainers(payload);
+    //       setTrainersData(response?.data?.data?.trainers || []);
+    //     } catch (error) {
+    //       setTrainersData([]);
+    //       console.log(error);
+    //     } finally {
+    //       setTimeout(() => {
+    //         getAllDownlineUsersData(null);
+    //       }, 300);
+    //     }
+    //   };
+
+    /* ---------------- FETCH CUSTOMERS ---------------- */
+    const buildCustomerSearchPayload = (value) => {
+      if (!value) return {};
+      const trimmed = value.trim();
+
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        return { email: trimmed };
+      }
+
+      if (/^\d{6,15}$/.test(trimmed)) {
+        return { mobile: trimmed };
+      }
+
+      return { name: trimmed };
+    };
+
+    const getTrainersData = async (searchvalue, pageNumber = 1) => {
+      setTrainerSelectloading(true);
+
+      const payload = {
+        ...buildCustomerSearchPayload(searchvalue),
+        page: pageNumber,
+        limit: 10,
+      };
+
+      try {
+        const response = await getTrainers(payload);
+
+        const trainers = response?.data?.data?.trainers || [];
+        const pagination = response?.data?.data?.pagination;
+
+        setTrainersData((prev) =>
+          pageNumber === 1 ? trainers : [...prev, ...trainers],
+        );
+
+        setTrainerHasMore(pageNumber < pagination.totalPages);
+        setTrainerPage(pageNumber);
+      } catch (error) {
+        console.log("get trainers error", error);
+      } finally {
+        setTrainerSelectloading(false);
+        // const test_customers = [{ id: 12, name: "Speed" }];
+        // setSelectedTrainerId(test_customers.map((c) => String(c.id)));
+        // setSelectedTrainerObject(test_customers);
+      }
+    };
+
+    /* ---------------- SEARCH HANDLER ---------------- */
+    const handleTrainerSearch = (value) => {
+      setTrainerSearchText(value);
+      setTrainerPage(1);
+      setTrainerHasMore(true);
+      setTrainersData([]);
+      getTrainersData(value, 1);
+    };
+
+    /* ---------------- SELECT HANDLER (KEY FIX) ---------------- */
+    const handleTrainerSelect = (event) => {
+      const selectedId = event.target.value;
+      const selectedObj = event.target.object; // ✅ DIRECT OBJECT
+      setSelectedTrainerId(selectedId);
+      setSelectedTrainerObject(selectedObj);
+      setTrainerType(selectedObj?.trainer_type || "");
+
+      setSelectedTrainerIdError(selectValidator(selectedId));
+      getCustomerByTrainerIdData(selectedId, 0);
+      // 👇 show selected label in input
+      setTrainerSearchText(selectedObj?.name || "");
+    };
+
+    const renderTrainerOption = (props, option) => {
+      const { key, ...optionProps } = props;
+      return (
+        <li
+          key={key}
+          {...optionProps}
+          style={{ padding: "8px 12px", borderBottom: "1px solid #f0f0f0" }}
+        >
+          <Flex vertical gap={4} style={{ width: "100%" }}>
+            <Flex
+              align="center"
+              justify="space-between"
+              style={{ width: "100%" }}
+            >
+              <Flex align="center" gap={8}>
+                <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
+                <span
+                  style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                >
+                  {option.name}
+                </span>
+              </Flex>
+              {option.trainer_type && (
+                <span
+                  style={{
+                    fontSize: "10px",
+                    background: "#e6f7ff",
+                    color: "#1890ff",
+                    padding: "1px 8px",
+                    borderRadius: "10px",
+                    border: "1px solid #91d5ff",
+                    fontWeight: 500,
+                  }}
+                >
+                  {option.trainer_type}
+                </span>
+              )}
+            </Flex>
+            <Flex gap={12} wrap="wrap">
+              {option.trainer_code && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#8c8c8c",
+                    fontWeight: 500,
+                  }}
+                >
+                  ID: {option.trainer_code}
+                </span>
+              )}
+              {option.email && (
+                <Flex
+                  align="center"
+                  gap={4}
+                  style={{ fontSize: "12px", color: "#666" }}
+                >
+                  <MdOutlineEmail size={13} style={{ color: "#8c8c8c" }} />
+                  <span>{option.email}</span>
+                </Flex>
+              )}
+              {option.mobile && (
+                <Flex
+                  align="center"
+                  gap={4}
+                  style={{ fontSize: "12px", color: "#666" }}
+                >
+                  <IoCallOutline size={13} style={{ color: "#8c8c8c" }} />
+                  <span>{option.mobile}</span>
+                </Flex>
+              )}
+            </Flex>
+          </Flex>
+        </li>
+      );
+    };
+
+    /* ---------------- MERGED OPTIONS (CRITICAL) ---------------- */
+    const mergedTrainers = useMemo(() => {
+      const map = new Map();
+
+      if (selectedTrainerObject) {
+        map.set(selectedTrainerObject.id, selectedTrainerObject);
+      }
+
+      trainersData.forEach((c) => map.set(c.id, c));
+
+      return Array.from(map.values());
+    }, [trainersData, selectedTrainerObject]);
+
+    /* ---------------- DROPDOWN OPEN ---------------- */
+    const handleTrainerDropdownOpen = () => {
+      if (trainersData.length === 0) {
+        getTrainersData(null, 1);
+      }
+    };
+
+    /* ---------------- INFINITE SCROLL ---------------- */
+    const handleTrainerScroll = (e) => {
+      const listbox = e.target;
+
+      if (
+        listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+        trainerHasMore &&
+        !trainerSelectloading
+      ) {
+        getTrainersData(trainerSearchText, trainerPage + 1);
       }
     };
 
@@ -271,7 +482,7 @@ const AssignAndVerifyTrainer = forwardRef(
     }));
 
     const handleAssignTrainer = async () => {
-      const trainerIdValidate = selectValidator(trainerId);
+      const trainerIdValidate = selectValidator(selectedTrainerId);
       const commercialValidate = selectValidator(commercial);
       const modeOfClassValidate = selectValidator(modeOfClass);
       const commentValidate = addressValidator(assignTrainerComments);
@@ -279,7 +490,7 @@ const AssignAndVerifyTrainer = forwardRef(
         assignTrainerProofBase64,
       );
 
-      setTrainerIdError(trainerIdValidate);
+      setSelectedTrainerIdError(trainerIdValidate);
       setCommercialError(commercialValidate);
       setModeOfClassError(modeOfClassValidate);
       setAssignTrainerProofError(assignTrainerProofValidate);
@@ -302,7 +513,7 @@ const AssignAndVerifyTrainer = forwardRef(
         customer_id: customerDetails.id,
         proof_communication: assignTrainerProofBase64,
         comments: assignTrainerComments,
-        trainer_id: trainerId,
+        trainer_id: selectedTrainerId,
         commercial: commercial,
         mode_of_class: modeOfClass,
         trainer_type: trainerType,
@@ -463,15 +674,9 @@ const AssignAndVerifyTrainer = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
-      let trainerName = "";
-      if (updatestatus === "Trainer Assigned") {
-        const findTrainer = trainersData.find((f) => f.id == trainerId);
-        trainerName = findTrainer ? findTrainer.name : "";
-      }
-
       const assignTrainerDetails = {
-        trainer_id: trainerId,
-        trainer_name: trainerName,
+        trainer_id: selectedTrainerId,
+        trainer_name: selectedTrainerObject?.name || "",
         commercial: commercial,
         mode_of_class: modeOfClass,
         trainer_type: trainerType,
@@ -946,7 +1151,7 @@ const AssignAndVerifyTrainer = forwardRef(
                       gap: "8px",
                     }}
                   >
-                    <div style={{ flex: 1 }}>
+                    {/* <div style={{ flex: 1 }}>
                       <CommonSelectField
                         label="Trainer"
                         required={true}
@@ -982,59 +1187,28 @@ const AssignAndVerifyTrainer = forwardRef(
                                 : "Mobile"
                         }
                       />
+                    </div> */}
+
+                    <div style={{ flex: 1 }}>
+                      <CommonCustomerSingleSelectField
+                        label="Trainer"
+                        required={true}
+                        options={mergedTrainers}
+                        value={selectedTrainerId}
+                        inputValue={trainerSearchText}
+                        onChange={handleTrainerSelect}
+                        onInputChange={handleTrainerSearch}
+                        onDropdownOpen={handleTrainerDropdownOpen}
+                        onDropdownScroll={handleTrainerScroll}
+                        loading={trainerSelectloading}
+                        renderOption={renderTrainerOption}
+                        error={selectedTrainerIdError}
+                        disableClearable={false}
+                        showLabelStatus="Name"
+                      />
                     </div>
 
-                    <div>
-                      <Flex
-                        justify="center"
-                        align="center"
-                        style={{ whiteSpace: "nowrap" }}
-                      >
-                        <Tooltip
-                          placement="bottomLeft"
-                          color="#fff"
-                          title={
-                            <Radio.Group
-                              value={trainerFilterType}
-                              onChange={(e) => {
-                                console.log(e.target.value);
-                                setTrainerFilterType(e.target.value);
-                              }}
-                            >
-                              <Radio
-                                value={1}
-                                style={{
-                                  marginTop: "6px",
-                                  marginBottom: "12px",
-                                }}
-                              >
-                                Search by Name
-                              </Radio>
-                              <Radio value={2} style={{ marginBottom: "12px" }}>
-                                Search by Trainer Id
-                              </Radio>
-                              <Radio value={3} style={{ marginBottom: "12px" }}>
-                                Search by Email
-                              </Radio>
-                              <Radio value={4} style={{ marginBottom: "12px" }}>
-                                Search by Mobile
-                              </Radio>
-                            </Radio.Group>
-                          }
-                        >
-                          <Button
-                            className="customer_trainermappingfilter_container"
-                            style={{
-                              borderLeftColor:
-                                isTrainerSelectFocused && "#5b69ca",
-                            }}
-                          >
-                            <IoFilter size={16} />
-                          </Button>
-                        </Tooltip>
-                      </Flex>
-                    </div>
-                    {trainerId && (
+                    {selectedTrainerId && (
                       <Tooltip
                         placement="top"
                         title="View Trainer Details"
@@ -1043,7 +1217,10 @@ const AssignAndVerifyTrainer = forwardRef(
                         <FaRegEye
                           size={17}
                           className="trainers_action_icons"
-                          onClick={() => setIsOpenTrainerDetailModal(true)}
+                          onClick={() => {
+                            setIsOpenTrainerDetailModal(true);
+                            setClickedTrainerDetails([selectedTrainerObject]);
+                          }}
                         />
                       </Tooltip>
                     )}

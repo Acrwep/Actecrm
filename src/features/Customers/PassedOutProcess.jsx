@@ -45,6 +45,7 @@ const PassesOutProcess = forwardRef(
       isCertGenerated,
       generateCertLoading,
       setGenerateCertLoading,
+      setLinkedinLoading,
       setUpdateButtonLoading,
       callgetCustomersApi,
     },
@@ -76,13 +77,13 @@ const PassesOutProcess = forwardRef(
     const [updateCertLoading, setUpdateCertLoading] = useState(false);
 
     useEffect(() => {
-      setCourseDuration(customerDetails.cer_course_duration);
-      setCertMonth(customerDetails.cer_course_completion_month);
+      setCourseDuration(customerDetails?.cer_course_duration);
+      setCertMonth(customerDetails?.cer_course_completion_month);
       if (customerDetails.google_review) {
         setGoogleFeedbackBase64(customerDetails.google_review);
       }
       if (customerDetails.linkedin_review) {
-        setLinkedinFeedbackBase64(customerDetails.google_review);
+        setLinkedinFeedbackBase64(customerDetails.linkedin_review);
       }
       setCertName(
         customerDetails.cer_customer_name
@@ -100,6 +101,7 @@ const PassesOutProcess = forwardRef(
     useImperativeHandle(ref, () => ({
       handleGoogleReview,
       handleCertificateDetails,
+      handleLinkedinReview,
       handleCompleteProcess,
     }));
 
@@ -134,7 +136,8 @@ const PassesOutProcess = forwardRef(
         const payload = { customers };
         try {
           await updatefeedbackForCustomer(payload);
-          callgetCustomersApi(false, false);
+          // callgetCustomersApi(false, false);
+          setIsGoogleReviewChange(false);
           handleCustomerTrack("Google Review Added");
           // CommonMessage("success", "Updated Successfully");
           setStepIndex(1);
@@ -265,12 +268,14 @@ const PassesOutProcess = forwardRef(
       }
     };
 
-    const handleCompleteProcess = async () => {
+    const handleLinkedinReview = async () => {
+      console.log("eeeeeeeeeeeeeeeeeeeeeeee");
+
       if (customerDetails.is_certificate_generated === 0) {
         CommonMessage("error", "Please Generate Certificate");
         return;
       }
-      setUpdateButtonLoading(true);
+      setLinkedinLoading(true);
 
       const today = new Date();
 
@@ -305,41 +310,50 @@ const PassesOutProcess = forwardRef(
         await updatefeedbackForCustomer(payload);
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
-          const customer_ids =
-            customerIdsFromBatch && customerIdsFromBatch.length > 0
-              ? customerIdsFromBatch.map((item) => ({
-                  customer_id: item.customer_id,
-                  status: "Completed",
-                }))
-              : [
-                  {
-                    customer_id: customerDetails.id,
-                    status: "Completed",
-                  },
-                ];
+          setLinkedinLoading(false);
+          handleCustomerTrack("Linkedin Review Added");
+        }, 300);
+      } catch (error) {
+        setLinkedinLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later",
+        );
+      }
+    };
 
-          const statusPayload = { customer_ids };
-          try {
-            await updateCustomerStatus(statusPayload);
-            handleCustomerTrack("Linkedin Review Added");
-            setTimeout(() => {
-              handleSecondCustomerTrack("Completed");
-              handleSendCertByEmail();
-            }, 300);
-          } catch (error) {
-            setUpdateButtonLoading(false);
-            CommonMessage(
-              "error",
-              error?.response?.data?.details ||
-                "Something went wrong. Try again later",
-            );
-          }
+    const handleCompleteProcess = async () => {
+      if (customerDetails.is_certificate_generated === 0) {
+        CommonMessage("error", "Please Generate Certificate");
+        return;
+      }
+      setUpdateButtonLoading(true);
+      const customer_ids =
+        customerIdsFromBatch && customerIdsFromBatch.length > 0
+          ? customerIdsFromBatch.map((item) => ({
+              customer_id: item.customer_id,
+              status: "Completed",
+            }))
+          : [
+              {
+                customer_id: customerDetails.id,
+                status: "Completed",
+              },
+            ];
+
+      const statusPayload = { customer_ids };
+      try {
+        await updateCustomerStatus(statusPayload);
+        handleCustomerTrack("Completed");
+        setTimeout(() => {
+          handleSendCertByEmail();
         }, 300);
       } catch (error) {
         setUpdateButtonLoading(false);
         CommonMessage(
           "error",
-          error?.response?.data?.message ||
+          error?.response?.data?.details ||
             "Something went wrong. Try again later",
         );
       }
@@ -413,6 +427,7 @@ const PassesOutProcess = forwardRef(
         setTimeout(() => {
           if (
             updatestatus === "Google Review Added" ||
+            updatestatus === "Linkedin Review Added" ||
             updatestatus === "Certificate Generated" ||
             updatestatus === "Certificate Updated"
           ) {
