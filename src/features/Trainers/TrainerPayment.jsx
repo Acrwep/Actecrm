@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Row,
@@ -31,7 +31,6 @@ import {
   createTrainerPaymentTransaction,
   deleteTrainerPaymentRequest,
   getAllBranches,
-  getCustomers,
   getTrainerPayments,
   getTrainers,
   rejectTrainerPayment,
@@ -64,6 +63,7 @@ import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { useSelector } from "react-redux";
 import CustomerEmailTemplate from "../Customers/CustomerEmailTemplate";
+import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 
 export default function TrainerPayment() {
   const location = useLocation();
@@ -78,10 +78,18 @@ export default function TrainerPayment() {
       behavior: "smooth",
     });
   };
-  //usestates
-  const [trainerFilterId, setTrainerFilterId] = useState(null);
-  const [trainerFilterType, setTrainerFilterType] = useState(1);
-  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+  /* ---------------- Trainer STATES ---------------- */
+  const [trainersDataList, setTrainersDataList] = useState([]);
+  // ✅ IMPORTANT: keep IDs & Objects separately
+  const [selectedTrainerId, setSelectedTrainerId] = useState(null);
+  const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
+  const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
+  const [trainerSearchText, setTrainerSearchText] = useState("");
+  /* ---------------- PAGINATION ---------------- */
+  const [trainerPage, setTrainerPage] = useState(1);
+  const [trainerHasMore, setTrainerHasMore] = useState(true);
+  const [trainerSelectloading, setTrainerSelectloading] = useState(false);
+
   const [dateFilterType, setDateFilterType] = useState("RaiseDate");
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
@@ -96,7 +104,6 @@ export default function TrainerPayment() {
   ];
   const [moveToId, setMoveToId] = useState(null);
   //select trainer usestates
-  const [trainersData, setTrainersData] = useState([]);
   const [isOpenAddRequestComponent, setIsOpenAddRequestComponent] =
     useState(false);
   //form usestates
@@ -539,7 +546,7 @@ export default function TrainerPayment() {
         navigate("/dashboard");
         return;
       }
-      getTrainersData();
+      rerunTrainerPaymentFilters(location.state);
     }
     // Set loading to false initially - will be true when fetching real data
     // setTimeout(() => {
@@ -547,22 +554,102 @@ export default function TrainerPayment() {
     // }, 300);
   }, [permissions]);
 
-  const getTrainersData = async () => {
+  /* ---------------- FETCH TRAINERS ---------------- */
+  const buildCustomerSearchPayload = (value) => {
+    if (!value) return {};
+    const trimmed = value.trim();
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return { email: trimmed };
+    }
+
+    if (/^\d{6,15}$/.test(trimmed)) {
+      return { mobile: trimmed };
+    }
+
+    return { name: trimmed };
+  };
+
+  const getTrainersData = async (searchvalue, pageNumber = 1) => {
+    setTrainerSelectloading(true);
     const payload = {
       status: "Verified",
-      page: 1,
-      limit: 1000,
+      ...buildCustomerSearchPayload(searchvalue),
+      page: pageNumber,
+      limit: 10,
     };
     try {
       const response = await getTrainers(payload);
-      setTrainersData(response?.data?.data?.trainers || []);
+      const trainers = response?.data?.data?.trainers || [];
+      const pagination = response?.data?.data?.pagination;
+
+      setTrainersDataList((prev) =>
+        pageNumber === 1 ? trainers : [...prev, ...trainers],
+      );
+      setTrainerHasMore(pageNumber < (pagination?.totalPages || 1));
+      setTrainerPage(pageNumber);
     } catch (error) {
-      setTrainersData([]);
+      setTrainersDataList([]);
       console.log(error);
     } finally {
-      setTimeout(() => {
-        getAllBranchesData();
-      }, 300);
+      setTrainerSelectloading(false);
+    }
+  };
+
+  /* ---------------- SEARCH HANDLER ---------------- */
+  const handleTrainerSearch = (value) => {
+    setTrainerSearchText(value);
+    setTrainerPage(1);
+    setTrainerHasMore(true);
+    setTrainersDataList([]);
+    getTrainersData(value, 1);
+  };
+
+  /* ---------------- SELECT HANDLER ---------------- */
+  const handleTrainerSelect = (event) => {
+    const selectedId = event.target.value;
+    const selectedObj = event.target.object;
+    setSelectedTrainerId(selectedId);
+    setSelectedTrainerObject(selectedObj);
+    setTrainerSearchText(selectedObj?.name || "");
+
+    getTrainerPaymentsData(
+      selectedId,
+      dateFilterType,
+      selectedDates[0],
+      selectedDates[1],
+      status || null,
+      1,
+      pagination.limit,
+    );
+  };
+
+  /* ---------------- MERGED OPTIONS ---------------- */
+  const mergedTrainersList = useMemo(() => {
+    const map = new Map();
+    if (selectedTrainerObject) {
+      map.set(selectedTrainerObject.id, selectedTrainerObject);
+    }
+    trainersDataList.forEach((c) => map.set(c.id, c));
+    return Array.from(map.values());
+  }, [trainersDataList, selectedTrainerObject]);
+
+  /* ---------------- DROPDOWN OPEN ---------------- */
+  const handleTrainerDropdownOpen = () => {
+    if (trainersDataList.length === 0) {
+      getTrainersData(null, 1);
+    }
+  };
+
+  /* ---------------- INFINITE SCROLL ---------------- */
+  const handleTrainerScroll = (e) => {
+    const listbox = e.target;
+    if (
+      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+      trainerHasMore &&
+      !trainerSelectloading
+    ) {
+      getTrainersData(trainerSearchText, trainerPage + 1);
     }
   };
 
@@ -575,9 +662,7 @@ export default function TrainerPayment() {
       setAllBranchesData([]);
       console.log(error);
     } finally {
-      setTimeout(() => {
-        rerunTrainerPaymentFilters(location.state);
-      }, 300);
+      getTrainersData(null, 1);
     }
   };
 
@@ -585,7 +670,7 @@ export default function TrainerPayment() {
     const handler = async (e) => {
       const data = e.detail;
       console.log("Received via event:", data);
-      setTrainerFilterId("");
+      setSelectedTrainerId("");
       // Re-run your existing logic
       rerunTrainerPaymentFilters(data);
     };
@@ -603,7 +688,7 @@ export default function TrainerPayment() {
       stateData?.bill_raisedate || null;
 
     if (receivedSearchValueFromNotification) {
-      setTrainerFilterId(receivedSearchValueFromNotification);
+      setSelectedTrainerId(receivedSearchValueFromNotification);
     }
 
     setStatus(
@@ -649,7 +734,7 @@ export default function TrainerPayment() {
     status,
     pageNumber,
     pageLimit,
-    callCustomerApi = false,
+    callGetBranchApi = false,
   ) => {
     setLoading(true);
     const payload = {
@@ -688,9 +773,10 @@ export default function TrainerPayment() {
       setLoading(false);
       console.log(error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
+      if (callGetBranchApi) {
+        getAllBranchesData();
+      }
     }
   };
 
@@ -768,7 +854,7 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -800,7 +886,7 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -859,7 +945,7 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -916,7 +1002,7 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -968,7 +1054,7 @@ export default function TrainerPayment() {
         paymentformReset();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -1047,7 +1133,7 @@ export default function TrainerPayment() {
         emailTemplateRef.current?.handleSendEmail();
         // Refresh the payment requests data
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -1074,7 +1160,7 @@ export default function TrainerPayment() {
         setIsOpenRequestDeleteModal(false);
         setButtonLoading(false);
         getTrainerPaymentsData(
-          trainerFilterId,
+          selectedTrainerId,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -1121,7 +1207,7 @@ export default function TrainerPayment() {
     setPagination({ ...pagination, page, limit });
     // Fetch data with new pagination
     getTrainerPaymentsData(
-      trainerFilterId,
+      selectedTrainerId,
       dateFilterType,
       selectedDates[0],
       selectedDates[1],
@@ -1137,8 +1223,7 @@ export default function TrainerPayment() {
     setSelectedRowKeys([]);
     setSelectedRows([]);
     setStatus("");
-    setTrainerFilterId(null);
-    setTrainerFilterType(1);
+    setSelectedTrainerId(null);
     setDateFilterType("RaiseDate");
     getTrainerPaymentsData(
       null,
@@ -1164,103 +1249,23 @@ export default function TrainerPayment() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={8}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <CommonSelectField
-                    label="Select Trainer"
-                    required={false}
-                    height="35px"
-                    labelMarginTop="0px"
-                    labelFontSize="13px"
-                    options={trainersData}
-                    onChange={(e) => {
-                      console.log("traineeeee", e.target.value);
-                      setTrainerFilterId(e.target.value);
-                      getTrainerPaymentsData(
-                        e.target.value,
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        status || null,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                    value={trainerFilterId}
-                    error={""}
-                    disableClearable={false}
-                    onFocus={() => setIsTrainerSelectFocused(true)}
-                    onBlur={() => setIsTrainerSelectFocused(false)}
-                    borderRightNone={true}
-                    showLabelStatus={
-                      trainerFilterType == 1
-                        ? "Name"
-                        : trainerFilterType == 2
-                          ? "Trainer Id"
-                          : trainerFilterType == 3
-                            ? "Email"
-                            : "Mobile"
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={trainerFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setTrainerFilterType(e.target.value);
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            Search by Name
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Trainer Id
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "12px" }}>
-                            Search by Mobile
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                          height: "35px",
-                        }}
-                      >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
-              </div>
+              <CommonCustomerSingleSelectField
+                label="Trainer"
+                height="32px"
+                labelMarginTop="-1px"
+                required={false}
+                options={mergedTrainersList}
+                value={selectedTrainerId}
+                inputValue={trainerSearchText}
+                onChange={handleTrainerSelect}
+                onInputChange={handleTrainerSearch}
+                onDropdownOpen={handleTrainerDropdownOpen}
+                onDropdownScroll={handleTrainerScroll}
+                loading={trainerSelectloading}
+                // renderOption={renderTrainerOption}
+                error={selectedTrainerIdError}
+                disableClearable={false}
+              />
             </Col>
             <Col span={10}>
               <div
@@ -1280,7 +1285,7 @@ export default function TrainerPayment() {
                         page: 1,
                       });
                       getTrainerPaymentsData(
-                        trainerFilterId,
+                        selectedTrainerId,
                         dateFilterType,
                         dates[0],
                         dates[1],
@@ -1308,7 +1313,7 @@ export default function TrainerPayment() {
                             console.log(e.target.value);
                             setDateFilterType(e.target.value);
                             getTrainerPaymentsData(
-                              trainerFilterId,
+                              selectedTrainerId,
                               e.target.value,
                               selectedDates[0],
                               selectedDates[1],
@@ -1409,7 +1414,7 @@ export default function TrainerPayment() {
                   setStatus("");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1443,7 +1448,7 @@ export default function TrainerPayment() {
                   setStatus("Requested");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1477,7 +1482,7 @@ export default function TrainerPayment() {
                   setStatus("Awaiting Approval");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1511,7 +1516,7 @@ export default function TrainerPayment() {
                   setStatus("Awaiting Finance");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1545,7 +1550,7 @@ export default function TrainerPayment() {
                   setStatus("Payment Rejected");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1579,7 +1584,7 @@ export default function TrainerPayment() {
                   setStatus("Paid");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1613,7 +1618,7 @@ export default function TrainerPayment() {
                   setStatus("Completed");
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
-                    trainerFilterId,
+                    selectedTrainerId,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -1720,7 +1725,6 @@ export default function TrainerPayment() {
         {isOpenAddRequestComponent && (
           <AddTrainerPaymentRequest
             ref={addTrainerPaymentRequestUseRef}
-            trainersData={trainersData}
             editRequestItem={editRequestItem}
             allBranchesData={allBranchesData}
             setButtonLoading={setButtonLoading}
@@ -1733,7 +1737,7 @@ export default function TrainerPayment() {
               });
               setButtonLoading(false);
               getTrainerPaymentsData(
-                trainerFilterId,
+                selectedTrainerId,
                 dateFilterType,
                 selectedDates[0],
                 selectedDates[1],
@@ -1778,7 +1782,6 @@ export default function TrainerPayment() {
           <>
             <ViewTrainerPaymentDetails
               selectedPaymentDetails={selectedPaymentDetails}
-              trainersData={trainersData}
               allBranchesData={allBranchesData}
               isShowPaymentDetails={false}
             />
@@ -2525,7 +2528,6 @@ export default function TrainerPayment() {
         {isOpenViewDrawer ? (
           <ViewTrainerPaymentDetails
             selectedPaymentDetails={selectedPaymentDetails}
-            trainersData={trainersData}
             allBranchesData={allBranchesData}
           />
         ) : (

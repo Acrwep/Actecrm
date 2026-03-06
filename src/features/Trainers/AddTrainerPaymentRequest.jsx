@@ -3,6 +3,7 @@ import React, {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import {
   Row,
@@ -34,13 +35,16 @@ import { CloseOutlined } from "@ant-design/icons";
 import "./styles.css";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
-  getCustomers,
+  getCustomerById,
   getCustomersByTrainerId,
+  getTrainerById,
+  getTrainers,
   insertTrainerPaymentRequest,
   updateTrainerPaymentRequest,
   viewCertForCustomer,
 } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
+import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import {
@@ -55,7 +59,6 @@ import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 const AddTrainerPaymentRequest = forwardRef(
   (
     {
-      trainersData,
       editRequestItem,
       allBranchesData,
       setButtonLoading,
@@ -67,7 +70,19 @@ const AddTrainerPaymentRequest = forwardRef(
     const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
     const [trainerFilterType, setTrainerFilterType] = useState(1);
     const [trainerId, setTrainerId] = useState(null);
-    const [trainerIdError, setTrainerIdError] = useState("");
+    /* ---------------- Trainer STATES ---------------- */
+    const [trainersDataList, setTrainersDataList] = useState([]);
+    // ✅ IMPORTANT: keep IDs & Objects separately
+    const [selectedTrainerId, setSelectedTrainerId] = useState(null);
+    const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
+    const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
+    const [trainerSearchText, setTrainerSearchText] = useState("");
+    /* ---------------- PAGINATION ---------------- */
+    const [trainerPage, setTrainerPage] = useState(1);
+    const [trainerHasMore, setTrainerHasMore] = useState(true);
+    const [trainerSelectloading, setTrainerSelectloading] = useState(false);
+
+    // const [trainerIdError, setTrainerIdError] = useState("");
     const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
     const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
       useState(false);
@@ -136,10 +151,11 @@ const AddTrainerPaymentRequest = forwardRef(
     const [generateCertLoading, setGenerateCertLoading] = useState(false);
 
     useEffect(() => {
+      getTrainersData(null, 1);
       if (editRequestItem) {
         console.log("editRequestItem", editRequestItem);
         setBillRaiseDate(editRequestItem.bill_raisedate);
-        setTrainerId(editRequestItem.trainer_id);
+        getTrainerByIdData(editRequestItem.trainer_id);
         const updateStudentsData = editRequestItem.students.map((item) => {
           return {
             ...item,
@@ -150,11 +166,7 @@ const AddTrainerPaymentRequest = forwardRef(
         console.log("updateStudentsData", updateStudentsData);
         setFormFields(updateStudentsData);
         getCustomerByTrainerIdData(editRequestItem.trainer_id);
-        const clickedTrainer = trainersData.filter(
-          (f) => f.id == editRequestItem.trainer_id,
-        );
-        console.log("clickedTrainer", clickedTrainer);
-        setClickedTrainerDetails(clickedTrainer);
+
         setDaysTakenToPay(editRequestItem.days_taken_topay);
         setDeadLineDate(editRequestItem.deadline_date);
       }
@@ -201,14 +213,11 @@ const AddTrainerPaymentRequest = forwardRef(
       return date;
     };
 
-    const getParticularCustomerDetails = async (customerEmail) => {
+    const getParticularCustomerDetails = async (customer_id) => {
       setCustomerDetailsLoading(true);
-      const payload = {
-        email: customerEmail,
-      };
       try {
-        const response = await getCustomers(payload);
-        const customer_details = response?.data?.data?.customers[0];
+        const response = await getCustomerById(customer_id);
+        const customer_details = response?.data?.data || null;
         console.log("customer full details", customer_details);
         setCustomerDetails(customer_details);
         setCustomerDetailsLoading(false);
@@ -220,18 +229,196 @@ const AddTrainerPaymentRequest = forwardRef(
       }
     };
 
-    const handleTrainerId = (e) => {
-      setTrainerId(e.target.value);
-      const clickedTrainer = trainersData.filter((f) => f.id == e.target.value);
-      console.log("clickedTrainer", clickedTrainer);
-      setClickedTrainerDetails(clickedTrainer);
-      setTrainerIdError(selectValidator(e.target.value));
-      getCustomerByTrainerIdData(e.target.value);
-      //formfields
+    /* ---------------- SEARCH PAYLOAD ---------------- */
+    const buildTrainerSearchPayload = (value) => {
+      if (!value) return {};
+      const trimmed = value.trim();
+
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        return { email: trimmed };
+      }
+
+      if (/^\d{6,15}$/.test(trimmed)) {
+        return { mobile: trimmed };
+      }
+
+      return { name: trimmed };
+    };
+
+    /* ---------------- FETCH TRAINER BY ID ---------------- */
+    const getTrainerByIdData = async (trainerId) => {
+      try {
+        const response = await getTrainerById(trainerId);
+        const trainerDetails = response?.data?.data;
+        setSelectedTrainerId(trainerId);
+        setSelectedTrainerObject(trainerDetails);
+        setClickedTrainerDetails([trainerDetails]);
+        setTrainerSearchText(trainerDetails.name);
+      } catch (error) {
+        setClickedTrainerDetails([]);
+        console.log("get trainer by id error", error);
+      }
+    };
+
+    /* ---------------- FETCH TRAINERS ---------------- */
+    const getTrainersData = async (searchvalue, pageNumber = 1) => {
+      setTrainerSelectloading(true);
+      const payload = {
+        status: "Verified",
+        ...buildTrainerSearchPayload(searchvalue),
+        page: pageNumber,
+        limit: 10,
+      };
+      try {
+        const response = await getTrainers(payload);
+        const trainers = response?.data?.data?.trainers || [];
+        const pagination = response?.data?.data?.pagination;
+
+        setTrainersDataList((prev) =>
+          pageNumber === 1 ? trainers : [...prev, ...trainers],
+        );
+        setTrainerHasMore(pageNumber < (pagination?.totalPages || 1));
+        setTrainerPage(pageNumber);
+      } catch (error) {
+        setTrainersDataList([]);
+        console.log(error);
+      } finally {
+        setTrainerSelectloading(false);
+      }
+    };
+
+    /* ---------------- TRAINER SEARCH HANDLER ---------------- */
+    const handleTrainerSearch = (value) => {
+      setTrainerSearchText(value);
+      setTrainerPage(1);
+      setTrainerHasMore(true);
+      setTrainersDataList([]);
+      getTrainersData(value, 1);
+    };
+
+    /* ---------------- TRAINER SELECT HANDLER ---------------- */
+    const handleTrainerSelect = (event) => {
+      const selectedId = event.target.value;
+      const selectedObj = event.target.object;
+      console.log("selectedObj", selectedObj);
+
+      setSelectedTrainerId(selectedId);
+      setSelectedTrainerObject(selectedObj);
+      setClickedTrainerDetails([selectedObj]);
+
+      setSelectedTrainerIdError(selectValidator(selectedId));
+      setTrainerSearchText(selectedObj?.name || "");
+
+      getCustomerByTrainerIdData(selectedId);
       const updateFormfields = formFields.map((item) => {
         return { ...item, customerId: "" };
       });
       setFormFields(updateFormfields);
+    };
+
+    /* ---------------- MERGED OPTIONS ---------------- */
+    const mergedTrainersList = useMemo(() => {
+      const map = new Map();
+      if (selectedTrainerObject) {
+        map.set(selectedTrainerObject.id, selectedTrainerObject);
+      }
+      trainersDataList.forEach((c) => map.set(c.id, c));
+      return Array.from(map.values());
+    }, [trainersDataList, selectedTrainerObject]);
+
+    /* ---------------- DROPDOWN OPEN ---------------- */
+    const handleTrainerDropdownOpen = () => {
+      if (trainersDataList.length === 0) {
+        getTrainersData(null, 1);
+      }
+    };
+
+    /* ---------------- INFINITE SCROLL ---------------- */
+    const handleTrainerScroll = (e) => {
+      const listbox = e.target;
+      if (
+        listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+        trainerHasMore &&
+        !trainerSelectloading
+      ) {
+        getTrainersData(trainerSearchText, trainerPage + 1);
+      }
+    };
+
+    const renderTrainerOption = (props, option) => {
+      const { key, ...optionProps } = props;
+      return (
+        <li
+          key={key}
+          {...optionProps}
+          style={{ padding: "8px 12px", borderBottom: "1px solid #f0f0f0" }}
+        >
+          <Flex vertical gap={4} style={{ width: "100%" }}>
+            <Flex
+              align="center"
+              justify="space-between"
+              style={{ width: "100%" }}
+            >
+              <Flex align="center" gap={8}>
+                <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
+                <span
+                  style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                >
+                  {option.name}
+                </span>
+              </Flex>
+              {option.trainer_type && (
+                <span
+                  style={{
+                    fontSize: "10px",
+                    background: "#e6f7ff",
+                    color: "#1890ff",
+                    padding: "1px 8px",
+                    borderRadius: "10px",
+                    border: "1px solid #91d5ff",
+                    fontWeight: 500,
+                  }}
+                >
+                  {option.trainer_type}
+                </span>
+              )}
+            </Flex>
+            <Flex gap={12} wrap="wrap">
+              {option.trainer_code && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#8c8c8c",
+                    fontWeight: 500,
+                  }}
+                >
+                  ID: {option.trainer_code}
+                </span>
+              )}
+              {option.email && (
+                <Flex
+                  align="center"
+                  gap={4}
+                  style={{ fontSize: "12px", color: "#666" }}
+                >
+                  <MdOutlineEmail size={13} style={{ color: "#8c8c8c" }} />
+                  <span>{option.email}</span>
+                </Flex>
+              )}
+              {option.mobile && (
+                <Flex
+                  align="center"
+                  gap={4}
+                  style={{ fontSize: "12px", color: "#666" }}
+                >
+                  <IoCallOutline size={13} style={{ color: "#8c8c8c" }} />
+                  <span>{option.mobile}</span>
+                </Flex>
+              )}
+            </Flex>
+          </Flex>
+        </li>
+      );
     };
 
     const getCustomerByTrainerIdData = async (trainer_id) => {
@@ -390,7 +577,7 @@ const AddTrainerPaymentRequest = forwardRef(
     const handleRequestSubmit = async () => {
       setValidationTrigger(true);
       const raiseDateValidate = selectValidator(billRaiseDate);
-      const trainerIdValidate = selectValidator(trainerId);
+      const trainerIdValidate = selectValidator(selectedTrainerId);
       let requestAmountValidate = "";
 
       if (isDisContinued) {
@@ -454,7 +641,7 @@ const AddTrainerPaymentRequest = forwardRef(
       }
 
       setBillRaiseDateError(raiseDateValidate);
-      setTrainerIdError(trainerIdValidate);
+      setSelectedTrainerIdError(trainerIdValidate);
       setRequestAmountError(requestAmountValidate);
 
       if (
@@ -477,7 +664,7 @@ const AddTrainerPaymentRequest = forwardRef(
 
       const payload = {
         bill_raisedate: moment(billRaiseDate).format("YYYY-MM-DD"),
-        trainer_id: trainerId,
+        trainer_id: selectedTrainerId,
         request_amount: isDisContinued ? requestAmount : request_amount,
         days_taken_topay: daysTakenToPay,
         deadline_date: moment(deadLineDate).format("YYYY-MM-DD"),
@@ -596,79 +783,24 @@ const AddTrainerPaymentRequest = forwardRef(
               }}
             >
               <div style={{ flex: 1 }}>
-                <CommonSelectField
+                <CommonCustomerSingleSelectField
                   label="Trainer"
                   required={true}
-                  options={trainersData}
-                  onChange={handleTrainerId}
-                  value={trainerId}
-                  error={trainerIdError}
-                  onFocus={() => setIsTrainerSelectFocused(true)}
-                  onBlur={() => setIsTrainerSelectFocused(false)}
-                  borderRightNone={true}
-                  showLabelStatus={
-                    trainerFilterType == 1
-                      ? "Name"
-                      : trainerFilterType == 2
-                        ? "Trainer Id"
-                        : trainerFilterType == 3
-                          ? "Email"
-                          : "Mobile"
-                  }
+                  options={mergedTrainersList}
+                  value={selectedTrainerId}
+                  inputValue={trainerSearchText}
+                  onChange={handleTrainerSelect}
+                  onInputChange={handleTrainerSearch}
+                  onDropdownOpen={handleTrainerDropdownOpen}
+                  onDropdownScroll={handleTrainerScroll}
+                  loading={trainerSelectloading}
+                  renderOption={renderTrainerOption}
+                  error={selectedTrainerIdError}
+                  disableClearable={false}
                   disabled={editRequestItem ? true : false}
                 />
               </div>
-
-              <div>
-                <Flex
-                  justify="center"
-                  align="center"
-                  style={{ whiteSpace: "nowrap" }}
-                >
-                  <Tooltip
-                    placement="bottomLeft"
-                    color="#fff"
-                    title={
-                      <Radio.Group
-                        value={trainerFilterType}
-                        onChange={(e) => {
-                          console.log(e.target.value);
-                          setTrainerFilterType(e.target.value);
-                        }}
-                      >
-                        <Radio
-                          value={1}
-                          style={{
-                            marginTop: "6px",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          Search by Name
-                        </Radio>
-                        <Radio value={2} style={{ marginBottom: "12px" }}>
-                          Search by Trainer Id
-                        </Radio>
-                        <Radio value={3} style={{ marginBottom: "12px" }}>
-                          Search by Email
-                        </Radio>
-                        <Radio value={4} style={{ marginBottom: "12px" }}>
-                          Search by Mobile
-                        </Radio>
-                      </Radio.Group>
-                    }
-                  >
-                    <Button
-                      className="customer_trainermappingfilter_container"
-                      style={{
-                        borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                      }}
-                    >
-                      <IoFilter size={16} />
-                    </Button>
-                  </Tooltip>
-                </Flex>
-              </div>
-              {trainerId && (
+              {selectedTrainerId && (
                 <Tooltip
                   placement="top"
                   title="View Trainer Details"
@@ -677,7 +809,10 @@ const AddTrainerPaymentRequest = forwardRef(
                   <FaRegEye
                     size={17}
                     className="trainers_action_icons"
-                    onClick={() => setIsOpenTrainerDetailModal(true)}
+                    onClick={() => {
+                      setClickedTrainerDetails([selectedTrainerObject]);
+                      setIsOpenTrainerDetailModal(true);
+                    }}
                   />
                 </Tooltip>
               )}
@@ -780,7 +915,7 @@ const AddTrainerPaymentRequest = forwardRef(
                             size={14}
                             className="trainers_action_icons"
                             onClick={() =>
-                              getParticularCustomerDetails(item.customer_email)
+                              getParticularCustomerDetails(item.customerId)
                             }
                           />
                         </Tooltip>
@@ -1342,7 +1477,7 @@ const AddTrainerPaymentRequest = forwardRef(
         >
           {isOpenCustomerDetailsDrawer ? (
             <ParticularCustomerDetails
-              customerDetails={customerDetails}
+              customerId={customerDetails?.id}
               isCustomerPage={true}
             />
           ) : (
@@ -1362,8 +1497,9 @@ const AddTrainerPaymentRequest = forwardRef(
           className="trainerpaymentrequest_trainerfulldetails_modal"
         >
           {clickedTrainerDetails.map((item, index) => {
+            if (!item) return null;
             return (
-              <>
+              <div key={index}>
                 <Row
                   gutter={16}
                   style={{ marginTop: "20px" }}
@@ -1379,7 +1515,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.hr_head ? item.hr_head : "-"}
+                          text={item?.hr_head ? item.hr_head : "-"}
                           smallText={true}
                         />
                       </Col>
@@ -1397,9 +1533,9 @@ const AddTrainerPaymentRequest = forwardRef(
                       <Col span={12}>
                         <EllipsisTooltip
                           text={
-                            item.name
-                              ? `${item.name} (${
-                                  item.trainer_code ? item.trainer_code : "-"
+                            item?.name
+                              ? `${item?.name} (${
+                                  item?.trainer_code ? item.trainer_code : "-"
                                 })`
                               : "-"
                           }
@@ -1416,7 +1552,7 @@ const AddTrainerPaymentRequest = forwardRef(
                         </div>
                       </Col>
                       <Col span={12}>
-                        <EllipsisTooltip text={item.email} smallText={true} />
+                        <EllipsisTooltip text={item?.email} smallText={true} />
                       </Col>
                     </Row>
 
@@ -1428,7 +1564,7 @@ const AddTrainerPaymentRequest = forwardRef(
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">{item.mobile}</p>
+                        <p className="customerdetails_text">{item?.mobile}</p>
                       </Col>
                     </Row>
 
@@ -1440,7 +1576,7 @@ const AddTrainerPaymentRequest = forwardRef(
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">{item.whatsapp}</p>
+                        <p className="customerdetails_text">{item?.whatsapp}</p>
                       </Col>
                     </Row>
 
@@ -1452,7 +1588,7 @@ const AddTrainerPaymentRequest = forwardRef(
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">{item.location}</p>
+                        <p className="customerdetails_text">{item?.location}</p>
                       </Col>
                     </Row>
                   </Col>
@@ -1468,7 +1604,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.technology}
+                          text={item?.technology}
                           smallText={true}
                         />
                       </Col>
@@ -1484,7 +1620,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {item.overall_exp_year + " Years"}
+                          {item?.overall_exp_year + " Years"}
                         </p>
                       </Col>
                     </Row>
@@ -1499,7 +1635,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {item.relavant_exp_year + " Years"}
+                          {item?.relavant_exp_year + " Years"}
                         </p>
                       </Col>
                     </Row>
@@ -1514,7 +1650,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {item.availability_time
+                          {item?.availability_time
                             ? moment(item.availability_time, "HH:mm:ss").format(
                                 "hh:mm A",
                               )
@@ -1533,7 +1669,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <p className="customerdetails_text">
-                          {item.secondary_time
+                          {item?.secondary_time
                             ? moment(item.secondary_time, "HH:mm:ss").format(
                                 "hh:mm A",
                               )
@@ -1550,7 +1686,11 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.skills.map((item) => item.name).join(", ")}
+                          text={
+                            item?.skills
+                              ? item.skills.map((s) => s.name).join(", ")
+                              : "-"
+                          }
                           smallText={true}
                         />
                       </Col>
@@ -1580,7 +1720,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       <Col span={12}>
                         <EllipsisTooltip
                           text={
-                            item.account_holder_name
+                            item?.account_holder_name
                               ? item.account_holder_name
                               : "-"
                           }
@@ -1599,7 +1739,9 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.account_number ? item.account_number : "-"}
+                          text={
+                            item?.account_number ? item.account_number : "-"
+                          }
                           smallText={true}
                         />
                       </Col>
@@ -1615,7 +1757,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.ifsc_code ? item.ifsc_code : "-"}
+                          text={item?.ifsc_code ? item.ifsc_code : "-"}
                           smallText={true}
                         />
                       </Col>
@@ -1633,7 +1775,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.bank_name ? item.bank_name : "-"}
+                          text={item?.bank_name ? item.bank_name : "-"}
                           smallText={true}
                         />
                       </Col>
@@ -1649,14 +1791,14 @@ const AddTrainerPaymentRequest = forwardRef(
                       </Col>
                       <Col span={12}>
                         <EllipsisTooltip
-                          text={item.branch_name ? item.branch_name : "-"}
+                          text={item?.branch_name ? item.branch_name : "-"}
                           smallText={true}
                         />
                       </Col>
                     </Row>
                   </Col>
                 </Row>
-              </>
+              </div>
             );
           })}
         </Modal>

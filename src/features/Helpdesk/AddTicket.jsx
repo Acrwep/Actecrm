@@ -22,9 +22,11 @@ import {
 import {
   checkTicketEmail,
   createTicket,
+  getCustomerById,
   getCustomers,
   getTicketCategories,
   getTicketSubCategories,
+  getTrainers,
 } from "../ApiService/action";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonInputField from "../Common/CommonInputField";
@@ -36,848 +38,927 @@ import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 
-const AddTicket = forwardRef(
-  ({ trainersData, setButtonLoading, callgetTicketApi }, ref) => {
-    const raisedByTypeOptions = [
-      { id: "Customer", name: "Customer" },
-      { id: "Trainer", name: "Trainer" },
-    ];
-    const [raisedByTypeId, setRaisedByTypeId] = useState("Customer");
-    const [raisedByTypeIdError, setRaisedByTypeIdError] = useState("");
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [title, setTitle] = useState("");
-    const [titleError, setTitleError] = useState("");
-    const [categoryOptions, setCategoryOptions] = useState([]);
-    const [categoryId, setCategoryId] = useState("");
-    const [categoryIdError, setCategoryIdError] = useState("");
-    const [subCategoryOptions, setSubCategoryOptions] = useState([]);
-    const [subCategoryId, setSubCategoryId] = useState("");
-    const [subCategoryIdError, setSubCategoryIdError] = useState("");
-    const typeOptions = [
-      { id: "Change", name: "Change" },
-      { id: "Issue", name: "Issue" },
-      { id: "Request", name: "Request" },
-      { id: "Complaint", name: "Complaint" },
-      { id: "Others", name: "Others" },
-    ];
-    const [typeId, setTypeId] = useState("");
-    const [typeIdError, setTypeIdError] = useState("");
-    const priorityOptions = [
-      { id: "High", name: "High" },
-      { id: "Medium", name: "Medium" },
-      { id: "Low", name: "Low" },
-    ];
-    const [priorityId, setPriorityId] = useState("");
-    const [priorityIdError, setPriorityIdError] = useState("");
-    const [description, setDescription] = useState("");
-    const [fileAttachmentBase64, setFileAttachmentBase64] = useState("");
-    const [validationTrigger, setValidationTrigger] = useState(false);
-    //trainer select usestates
-    const [trainerFilterType, setTrainerFilterType] = useState(1);
-    const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
-    const [trainerId, setTrainerId] = useState(null);
-    const [trainerIdError, setTrainerIdError] = useState("");
-    const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
-    const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
-      useState(false);
-    /* ---------------- CUSTOMER STATES ---------------- */
-    const [customersData, setCustomersData] = useState([]);
-    const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
-      useState(false);
-    const [customerDetails, setCustomerDetails] = useState(null);
-    const [customerDetailsLoading, setCustomerDetailsLoading] = useState(false);
-    // ✅ IMPORTANT: keep IDs & Objects separately
-    const [selectedCustomerId, setSelectedCustomerId] = useState(null);
-    const [selectedCustomerIdError, setSelectedCustomerIdError] =
-      useState(null);
-    const [selectedCustomerObject, setSelectedCustomerObject] = useState(null);
-    const [customerSearchText, setCustomerSearchText] = useState("");
-    /* ---------------- PAGINATION ---------------- */
-    const [customerPage, setCustomerPage] = useState(1);
-    const [customerHasMore, setCustomerHasMore] = useState(true);
-    const [customerSelectloading, setCustomerSelectloading] = useState(false);
+const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
+  const raisedByTypeOptions = [
+    { id: "Customer", name: "Customer" },
+    { id: "Trainer", name: "Trainer" },
+  ];
+  const [raisedByTypeId, setRaisedByTypeId] = useState("Customer");
+  const [raisedByTypeIdError, setRaisedByTypeIdError] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [title, setTitle] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryIdError, setCategoryIdError] = useState("");
+  const [subCategoryOptions, setSubCategoryOptions] = useState([]);
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [subCategoryIdError, setSubCategoryIdError] = useState("");
+  const typeOptions = [
+    { id: "Change", name: "Change" },
+    { id: "Issue", name: "Issue" },
+    { id: "Request", name: "Request" },
+    { id: "Complaint", name: "Complaint" },
+    { id: "Others", name: "Others" },
+  ];
+  const [typeId, setTypeId] = useState("");
+  const [typeIdError, setTypeIdError] = useState("");
+  const priorityOptions = [
+    { id: "High", name: "High" },
+    { id: "Medium", name: "Medium" },
+    { id: "Low", name: "Low" },
+  ];
+  const [priorityId, setPriorityId] = useState("");
+  const [priorityIdError, setPriorityIdError] = useState("");
+  const [description, setDescription] = useState("");
+  const [fileAttachmentBase64, setFileAttachmentBase64] = useState("");
+  const [validationTrigger, setValidationTrigger] = useState(false);
+  //trainer select usestates
+  const [trainerFilterType, setTrainerFilterType] = useState(1);
+  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+  const [trainerId, setTrainerId] = useState(null);
+  const [trainerIdError, setTrainerIdError] = useState("");
+  /* ---------------- Trainer STATES ---------------- */
+  const [trainersDataList, setTrainersDataList] = useState([]);
+  // ✅ IMPORTANT: keep IDs & Objects separately
+  const [selectedTrainerId, setSelectedTrainerId] = useState(null);
+  const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
+  const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
+  const [trainerSearchText, setTrainerSearchText] = useState("");
+  /* ---------------- PAGINATION ---------------- */
+  const [trainerPage, setTrainerPage] = useState(1);
+  const [trainerHasMore, setTrainerHasMore] = useState(true);
+  const [trainerSelectloading, setTrainerSelectloading] = useState(false);
 
-    useEffect(() => {
+  const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
+  const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
+    useState(false);
+  /* ---------------- CUSTOMER STATES ---------------- */
+  const [customersData, setCustomersData] = useState([]);
+  const [isOpenCustomerDetailsDrawer, setIsOpenCustomerDetailsDrawer] =
+    useState(false);
+  const [customerDetails, setCustomerDetails] = useState(null);
+  const [customerDetailsLoading, setCustomerDetailsLoading] = useState(false);
+  // ✅ IMPORTANT: keep IDs & Objects separately
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedCustomerIdError, setSelectedCustomerIdError] = useState(null);
+  const [selectedCustomerObject, setSelectedCustomerObject] = useState(null);
+  const [customerSearchText, setCustomerSearchText] = useState("");
+  /* ---------------- PAGINATION ---------------- */
+  const [customerPage, setCustomerPage] = useState(1);
+  const [customerHasMore, setCustomerHasMore] = useState(true);
+  const [customerSelectloading, setCustomerSelectloading] = useState(false);
+
+  useEffect(() => {
+    getTrainersData();
+  }, []);
+
+  const getCategoriesData = async () => {
+    try {
+      const response = await getTicketCategories();
+      setCategoryOptions(response?.data?.data || []);
+    } catch (error) {
+      setCategoryOptions([]);
+      console.log("categories error", error);
+    } finally {
+      setTimeout(() => {
+        getSubCategoriesData();
+      }, 300);
+    }
+  };
+
+  const getSubCategoriesData = async () => {
+    try {
+      const response = await getTicketSubCategories();
+      setSubCategoryOptions(response?.data?.data || []);
+    } catch (error) {
+      setSubCategoryOptions([]);
+      console.log("sub categories error", error);
+    } finally {
+      setTimeout(() => {
+        getCustomersData(null);
+      }, 300);
+    }
+  };
+
+  /* ---------------- FETCH TRAINERS ---------------- */
+  const buildTrainerSearchPayload = (value) => {
+    if (!value) return {};
+    const trimmed = value.trim();
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return { email: trimmed };
+    }
+
+    if (/^\d{6,15}$/.test(trimmed)) {
+      return { mobile: trimmed };
+    }
+
+    return { name: trimmed };
+  };
+
+  const getTrainersData = async (searchvalue, pageNumber = 1) => {
+    setTrainerSelectloading(true);
+    const payload = {
+      status: "Verified",
+      ...buildTrainerSearchPayload(searchvalue),
+      page: pageNumber,
+      limit: 10,
+    };
+    try {
+      const response = await getTrainers(payload);
+      const trainers = response?.data?.data?.trainers || [];
+      const pagination = response?.data?.data?.pagination;
+
+      setTrainersDataList((prev) =>
+        pageNumber === 1 ? trainers : [...prev, ...trainers],
+      );
+      setTrainerHasMore(pageNumber < (pagination?.totalPages || 1));
+      setTrainerPage(pageNumber);
+    } catch (error) {
+      setTrainersDataList([]);
+      console.log(error);
+    } finally {
+      setTrainerSelectloading(false);
       getCategoriesData();
-    }, []);
+    }
+  };
 
-    const getCategoriesData = async () => {
-      try {
-        const response = await getTicketCategories();
-        setCategoryOptions(response?.data?.data || []);
-      } catch (error) {
-        setCategoryOptions([]);
-        console.log("categories error", error);
-      } finally {
-        setTimeout(() => {
-          getSubCategoriesData();
-        }, 300);
-      }
+  /* ---------------- SEARCH PAYLOAD ---------------- */
+  const buildCustomerSearchPayload = (value) => {
+    if (!value) return {};
+    const trimmed = value.trim();
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return { email: trimmed };
+    }
+
+    if (/^\d{6,15}$/.test(trimmed)) {
+      return { mobile: trimmed };
+    }
+
+    return { name: trimmed };
+  };
+
+  /* ---------------- FETCH CUSTOMERS ---------------- */
+  const getCustomersData = async (searchvalue, pageNumber = 1) => {
+    setCustomerSelectloading(true);
+
+    const payload = {
+      ...buildCustomerSearchPayload(searchvalue),
+      page: pageNumber,
+      limit: 10,
     };
 
-    const getSubCategoriesData = async () => {
-      try {
-        const response = await getTicketSubCategories();
-        setSubCategoryOptions(response?.data?.data || []);
-      } catch (error) {
-        setSubCategoryOptions([]);
-        console.log("sub categories error", error);
-      } finally {
-        setTimeout(() => {
-          getCustomersData(null);
-        }, 300);
-      }
-    };
+    try {
+      const response = await getCustomers(payload);
 
-    /* ---------------- SEARCH PAYLOAD ---------------- */
-    const buildCustomerSearchPayload = (value) => {
-      if (!value) return {};
-      const trimmed = value.trim();
+      const customers = response?.data?.data?.customers || [];
+      const pagination = response?.data?.data?.pagination;
 
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-        return { email: trimmed };
-      }
+      setCustomersData((prev) =>
+        pageNumber === 1 ? customers : [...prev, ...customers],
+      );
 
-      if (/^\d{6,15}$/.test(trimmed)) {
-        return { mobile: trimmed };
-      }
+      setCustomerHasMore(pageNumber < pagination.totalPages);
+      setCustomerPage(pageNumber);
+    } catch (error) {
+      console.log("get customers error", error);
+    } finally {
+      setCustomerSelectloading(false);
+      // const test_customers = [{ id: 12, name: "Speed" }];
+      // setSelectedCustomerId(test_customers.map((c) => String(c.id)));
+      // setSelectedCustomerObject(test_customers);
+    }
+  };
 
-      return { name: trimmed };
-    };
+  /* ---------------- SEARCH HANDLER ---------------- */
+  const handleCustomerSearch = (value) => {
+    setCustomerSearchText(value);
+    setCustomerPage(1);
+    setCustomerHasMore(true);
+    setCustomersData([]);
+    getCustomersData(value, 1);
+  };
 
-    /* ---------------- FETCH CUSTOMERS ---------------- */
-    const getCustomersData = async (searchvalue, pageNumber = 1) => {
-      setCustomerSelectloading(true);
+  /* ---------------- SELECT HANDLER (KEY FIX) ---------------- */
+  const handleCustomerSelect = (event) => {
+    const selectedId = event.target.value;
+    const selectedObj = event.target.object; // ✅ DIRECT OBJECT
+    setSelectedCustomerId(selectedId);
+    setSelectedCustomerObject(selectedObj);
 
-      const payload = {
-        ...buildCustomerSearchPayload(searchvalue),
-        page: pageNumber,
-        limit: 10,
-      };
+    if (validationTrigger) {
+      setSelectedCustomerIdError(selectValidator(selectedId));
+    }
+    // 👇 show selected label in input
+    setCustomerSearchText(selectedObj?.name || "");
+  };
 
-      try {
-        const response = await getCustomers(payload);
+  /* ---------------- MERGED OPTIONS (CRITICAL) ---------------- */
+  const mergedCustomers = useMemo(() => {
+    const map = new Map();
 
-        const customers = response?.data?.data?.customers || [];
-        const pagination = response?.data?.data?.pagination;
+    if (selectedCustomerObject) {
+      map.set(selectedCustomerObject.id, selectedCustomerObject);
+    }
 
-        setCustomersData((prev) =>
-          pageNumber === 1 ? customers : [...prev, ...customers],
-        );
+    customersData.forEach((c) => map.set(c.id, c));
 
-        setCustomerHasMore(pageNumber < pagination.totalPages);
-        setCustomerPage(pageNumber);
-      } catch (error) {
-        console.log("get customers error", error);
-      } finally {
-        setCustomerSelectloading(false);
-        // const test_customers = [{ id: 12, name: "Speed" }];
-        // setSelectedCustomerId(test_customers.map((c) => String(c.id)));
-        // setSelectedCustomerObject(test_customers);
-      }
-    };
+    return Array.from(map.values());
+  }, [customersData, selectedCustomerObject]);
 
-    const handleTrainerId = (e) => {
-      setTrainerId(e.target.value);
-      const clickedTrainer = trainersData.filter((f) => f.id == e.target.value);
-      console.log("clickedTrainer", clickedTrainer);
-      setClickedTrainerDetails(clickedTrainer);
-      setTrainerIdError(selectValidator(e.target.value));
-    };
+  /* ---------------- DROPDOWN OPEN ---------------- */
+  const handleCustomerDropdownOpen = () => {
+    if (customersData.length === 0) {
+      getCustomersData(null, 1);
+    }
+  };
 
-    /* ---------------- SEARCH HANDLER ---------------- */
-    const handleCustomerSearch = (value) => {
-      setCustomerSearchText(value);
-      setCustomerPage(1);
-      setCustomerHasMore(true);
-      setCustomersData([]);
-      getCustomersData(value, 1);
-    };
+  /* ---------------- INFINITE SCROLL ---------------- */
+  const handleCustomerScroll = (e) => {
+    const listbox = e.target;
 
-    /* ---------------- SELECT HANDLER (KEY FIX) ---------------- */
-    const handleCustomerSelect = (event) => {
-      const selectedId = event.target.value;
-      const selectedObj = event.target.object; // ✅ DIRECT OBJECT
-      setSelectedCustomerId(selectedId);
-      setSelectedCustomerObject(selectedObj);
+    if (
+      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+      customerHasMore &&
+      !customerSelectloading
+    ) {
+      getCustomersData(customerSearchText, customerPage + 1);
+    }
+  };
 
-      if (validationTrigger) {
-        setSelectedCustomerIdError(selectValidator(selectedId));
-      }
-      // 👇 show selected label in input
-      setCustomerSearchText(selectedObj?.name || "");
-    };
+  /* ---------------- SEARCH HANDLER ---------------- */
+  const handleTrainerSearch = (value) => {
+    setTrainerSearchText(value);
+    setTrainerPage(1);
+    setTrainerHasMore(true);
+    setTrainersDataList([]);
+    getTrainersData(value, 1);
+  };
 
-    /* ---------------- MERGED OPTIONS (CRITICAL) ---------------- */
-    const mergedCustomers = useMemo(() => {
-      const map = new Map();
+  /* ---------------- SELECT HANDLER ---------------- */
+  const handleTrainerSelect = (event) => {
+    const selectedId = event.target.value;
+    const selectedObj = event.target.object;
+    setSelectedTrainerId(selectedId);
+    setSelectedTrainerObject(selectedObj);
+    setTrainerSearchText(selectedObj?.name || "");
+  };
 
-      if (selectedCustomerObject) {
-        map.set(selectedCustomerObject.id, selectedCustomerObject);
-      }
+  /* ---------------- MERGED OPTIONS ---------------- */
+  const mergedTrainersList = useMemo(() => {
+    const map = new Map();
+    if (selectedTrainerObject) {
+      map.set(selectedTrainerObject.id, selectedTrainerObject);
+    }
+    trainersDataList.forEach((c) => map.set(c.id, c));
+    return Array.from(map.values());
+  }, [trainersDataList, selectedTrainerObject]);
 
-      customersData.forEach((c) => map.set(c.id, c));
+  /* ---------------- DROPDOWN OPEN ---------------- */
+  const handleTrainerDropdownOpen = () => {
+    if (trainersDataList.length === 0) {
+      getTrainersData(null, 1);
+    }
+  };
 
-      return Array.from(map.values());
-    }, [customersData, selectedCustomerObject]);
+  /* ---------------- INFINITE SCROLL ---------------- */
+  const handleTrainerScroll = (e) => {
+    const listbox = e.target;
+    if (
+      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+      trainerHasMore &&
+      !trainerSelectloading
+    ) {
+      getTrainersData(trainerSearchText, trainerPage + 1);
+    }
+  };
 
-    /* ---------------- DROPDOWN OPEN ---------------- */
-    const handleCustomerDropdownOpen = () => {
-      if (customersData.length === 0) {
-        getCustomersData(null, 1);
-      }
-    };
-
-    /* ---------------- INFINITE SCROLL ---------------- */
-    const handleCustomerScroll = (e) => {
-      const listbox = e.target;
-
-      if (
-        listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
-        customerHasMore &&
-        !customerSelectloading
-      ) {
-        getCustomersData(customerSearchText, customerPage + 1);
-      }
-    };
-
-    const getParticularCustomerDetails = async (customerEmail) => {
-      setCustomerDetailsLoading(true);
-      const payload = {
-        email: customerEmail,
-      };
-      try {
-        const response = await getCustomers(payload);
-        const customer_details = response?.data?.data?.customers[0];
-        console.log("customer full details", customer_details);
-        setCustomerDetails(customer_details);
-        setCustomerDetailsLoading(false);
-        setIsOpenCustomerDetailsDrawer(true);
-      } catch (error) {
-        setCustomerDetailsLoading(false);
-        console.log("getcustomer by id error", error);
-        setCustomerDetails(null);
-      }
-    };
-
-    useImperativeHandle(ref, () => ({
-      handleSubmit,
-    }));
-
-    const handleSubmit = async () => {
-      setValidationTrigger(true);
-      const raisedByTypeValidate = selectValidator(raisedByTypeId);
-      const titleValidate = addressValidator(title);
-      const categoryIdValidate = selectValidator(categoryId);
-      const subCategoryIdValidate = selectValidator(subCategoryId);
-      const typeIdValidate = selectValidator(typeId);
-      const priorityIdValidate = selectValidator(priorityId);
-
-      let trainerIdValidate = "";
-      let customerIdValidate = "";
-
-      if (raisedByTypeId == "Trainer") {
-        trainerIdValidate = selectValidator(trainerId);
-      } else {
-        trainerIdValidate = "";
-      }
-
-      if (raisedByTypeId == "Customer") {
-        customerIdValidate = selectValidator(selectedCustomerId);
-      } else {
-        customerIdValidate = "";
-      }
-
-      setRaisedByTypeIdError(raisedByTypeValidate);
-      setTrainerIdError(trainerIdValidate);
-      setSelectedCustomerIdError(customerIdValidate);
-      setTitleError(titleValidate);
-      setCategoryIdError(categoryIdValidate);
-      setSubCategoryIdError(subCategoryIdValidate);
-      setTypeIdError(typeIdValidate);
-      setPriorityIdError(priorityIdValidate);
-
-      if (
-        raisedByTypeValidate ||
-        trainerIdValidate ||
-        customerIdValidate ||
-        titleValidate ||
-        categoryIdValidate ||
-        subCategoryIdValidate ||
-        typeIdValidate ||
-        priorityIdValidate
-      )
-        return;
-
-      setButtonLoading(true);
-      const today = new Date();
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-
-      const payload = {
-        title: title,
-        description: description,
-        category_id: categoryId,
-        sub_category_id: subCategoryId,
-        priority: priorityId,
-        type: typeId,
-        attachments: [
-          {
-            base64string: fileAttachmentBase64,
-          },
-        ],
-        raised_by_id:
-          raisedByTypeId == "Customer" ? selectedCustomerId : trainerId,
-        raised_by_role: raisedByTypeId,
-        assigned_to: convertAsJson?.user_id,
-        created_at: formatToBackendIST(today),
-      };
-      try {
-        await createTicket(payload);
-        setTimeout(() => {
-          callgetTicketApi();
-          CommonMessage("success", "Created");
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        console.log("ticket create error", error);
-      }
-    };
-
-    const formReset = () => {
-      setIsOpenAddDrawer(false);
-      setButtonLoading(false);
-      setValidationTrigger(false);
-      setTitle("");
-      setTitleError("");
-      setEmail("");
-      setEmailError("");
-      setCategoryId(null);
-      setCategoryIdError("");
-      setSubCategoryId(null);
-      setSubCategoryIdError("");
-      setTypeId("");
-      setTypeIdError("");
-      setDescription("");
-      setFileAttachmentBase64("");
-    };
-
+  const renderTrainerOption = (props, option) => {
+    const { key, ...optionProps } = props;
     return (
-      <div className="customer_statusupdate_adddetailsContainer">
-        <Row gutter={12}>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
-            <CommonSelectField
-              label="Raised By Type"
-              required={true}
-              options={raisedByTypeOptions}
-              onChange={(e) => {
-                setRaisedByTypeId(e.target.value);
-                if (validationTrigger) {
-                  setRaisedByTypeIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={raisedByTypeId}
-              error={raisedByTypeIdError}
-            />
-          </Col>
-
-          {raisedByTypeId == "Trainer" ? (
-            <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <CommonSelectField
-                    label="Trainer"
-                    required={true}
-                    options={trainersData}
-                    onChange={handleTrainerId}
-                    value={trainerId}
-                    error={trainerIdError}
-                    onFocus={() => setIsTrainerSelectFocused(true)}
-                    onBlur={() => setIsTrainerSelectFocused(false)}
-                    borderRightNone={true}
-                    showLabelStatus={
-                      trainerFilterType == 1
-                        ? "Name"
-                        : trainerFilterType == 2
-                          ? "Trainer Id"
-                          : trainerFilterType == 3
-                            ? "Email"
-                            : "Mobile"
-                    }
-                    disabled={false}
-                  />
-                </div>
-
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={trainerFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setTrainerFilterType(e.target.value);
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            Search by Name
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Trainer Id
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "12px" }}>
-                            Search by Mobile
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                        }}
-                      >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
-                {trainerId && (
-                  <Tooltip
-                    placement="top"
-                    title="View Trainer Details"
-                    trigger={["hover", "click"]}
-                  >
-                    <FaRegEye
-                      size={17}
-                      className="trainers_action_icons"
-                      onClick={() => setIsOpenTrainerDetailModal(true)}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            </Col>
-          ) : (
-            <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <CommonCustomerSingleSelectField
-                    label="Customer"
-                    required={true}
-                    options={mergedCustomers}
-                    value={selectedCustomerId}
-                    inputValue={customerSearchText}
-                    onChange={handleCustomerSelect}
-                    onInputChange={handleCustomerSearch}
-                    onDropdownOpen={handleCustomerDropdownOpen}
-                    onDropdownScroll={handleCustomerScroll}
-                    loading={customerSelectloading}
-                    showLabelStatus="Name"
-                    error={selectedCustomerIdError}
-                    disableClearable={false}
-                  />
-                </div>
-                {selectedCustomerId && (
-                  <>
-                    {customerDetailsLoading ? (
-                      <CommonSpinner color="#333" />
-                    ) : (
-                      <Tooltip
-                        placement="top"
-                        title="View Customer Details"
-                        trigger={["hover", "click"]}
-                      >
-                        <FaRegEye
-                          size={16}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            getParticularCustomerDetails(
-                              selectedCustomerObject.email,
-                            );
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  </>
-                )}
-              </div>
-            </Col>
-          )}
-
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
-            <CommonInputField
-              label="Title"
-              required={true}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (validationTrigger) {
-                  setTitleError(addressValidator(e.target.value));
-                }
-              }}
-              value={title}
-              error={titleError}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonSelectField
-              label="Category"
-              required={true}
-              options={categoryOptions}
-              onChange={(e) => {
-                setCategoryId(e.target.value);
-                if (validationTrigger) {
-                  setCategoryIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={categoryId}
-              error={categoryIdError}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonSelectField
-              label="Sub Category"
-              required={true}
-              options={subCategoryOptions}
-              onChange={(e) => {
-                setSubCategoryId(e.target.value);
-                if (validationTrigger) {
-                  setSubCategoryIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={subCategoryId}
-              error={subCategoryIdError}
-            />
-          </Col>
-
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonSelectField
-              label="Type"
-              required={true}
-              options={typeOptions}
-              onChange={(e) => {
-                setTypeId(e.target.value);
-                if (validationTrigger) {
-                  setTypeIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={typeId}
-              error={typeIdError}
-            />
-          </Col>
-
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonSelectField
-              label="Priority"
-              required={true}
-              options={priorityOptions}
-              onChange={(e) => {
-                setPriorityId(e.target.value);
-                if (validationTrigger) {
-                  setPriorityIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={priorityId}
-              error={priorityIdError}
-            />
-          </Col>
-
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonInputField
-              label="Description"
-              required={false}
-              multiline={true}
-              onChange={(e) => {
-                setDescription(e.target.value);
-              }}
-              value={description}
-            />
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={8}
-            style={{
-              marginTop: subCategoryIdError ? "40px" : "30px",
-              color: "rgba(0,0,0,0.88)",
-            }}
+      <li
+        key={key}
+        {...optionProps}
+        style={{ padding: "8px 12px", borderBottom: "1px solid #f0f0f0" }}
+      >
+        <Flex vertical gap={4} style={{ width: "100%" }}>
+          <Flex
+            align="center"
+            justify="space-between"
+            style={{ width: "100%" }}
           >
-            <ImageUploadCrop
-              label="File Attachment"
-              aspect={1}
-              maxSizeMB={1}
-              required={false}
-              value={fileAttachmentBase64}
-              onChange={(base64) => setFileAttachmentBase64(base64)}
-              onErrorChange={""} // ✅ pass setter directly
+            <Flex align="center" gap={8}>
+              <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
+              <span
+                style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+              >
+                {option.name}
+              </span>
+            </Flex>
+            {option.trainer_type && (
+              <span
+                style={{
+                  fontSize: "10px",
+                  background: "#e6f7ff",
+                  color: "#1890ff",
+                  padding: "1px 8px",
+                  borderRadius: "10px",
+                  border: "1px solid #91d5ff",
+                  fontWeight: 500,
+                }}
+              >
+                {option.trainer_type}
+              </span>
+            )}
+          </Flex>
+          <Flex gap={12} wrap="wrap">
+            {option.trainer_code && (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#8c8c8c",
+                  fontWeight: 500,
+                }}
+              >
+                ID: {option.trainer_code}
+              </span>
+            )}
+            {option.email && (
+              <Flex
+                align="center"
+                gap={4}
+                style={{ fontSize: "12px", color: "#666" }}
+              >
+                <MdOutlineEmail size={13} style={{ color: "#8c8c8c" }} />
+                <span>{option.email}</span>
+              </Flex>
+            )}
+            {option.mobile && (
+              <Flex
+                align="center"
+                gap={4}
+                style={{ fontSize: "12px", color: "#666" }}
+              >
+                <IoCallOutline size={13} style={{ color: "#8c8c8c" }} />
+                <span>{option.mobile}</span>
+              </Flex>
+            )}
+          </Flex>
+        </Flex>
+      </li>
+    );
+  };
+  const getParticularCustomerDetails = async (customer_id) => {
+    setCustomerDetailsLoading(true);
+    try {
+      const response = await getCustomerById(customer_id);
+      const customer_details = response?.data?.data;
+      console.log("customer full details", customer_details);
+      setCustomerDetails(customer_details);
+      setCustomerDetailsLoading(false);
+      setIsOpenCustomerDetailsDrawer(true);
+    } catch (error) {
+      setCustomerDetailsLoading(false);
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    handleSubmit,
+  }));
+
+  const handleSubmit = async () => {
+    setValidationTrigger(true);
+    const raisedByTypeValidate = selectValidator(raisedByTypeId);
+    const titleValidate = addressValidator(title);
+    const categoryIdValidate = selectValidator(categoryId);
+    const subCategoryIdValidate = selectValidator(subCategoryId);
+    const typeIdValidate = selectValidator(typeId);
+    const priorityIdValidate = selectValidator(priorityId);
+
+    let trainerIdValidate = "";
+    let customerIdValidate = "";
+
+    if (raisedByTypeId == "Trainer") {
+      trainerIdValidate = selectValidator(selectedTrainerId);
+    } else {
+      trainerIdValidate = "";
+    }
+
+    if (raisedByTypeId == "Customer") {
+      customerIdValidate = selectValidator(selectedCustomerId);
+    } else {
+      customerIdValidate = "";
+    }
+
+    setRaisedByTypeIdError(raisedByTypeValidate);
+    setTrainerIdError(trainerIdValidate);
+    setSelectedCustomerIdError(customerIdValidate);
+    setTitleError(titleValidate);
+    setCategoryIdError(categoryIdValidate);
+    setSubCategoryIdError(subCategoryIdValidate);
+    setTypeIdError(typeIdValidate);
+    setPriorityIdError(priorityIdValidate);
+
+    if (
+      raisedByTypeValidate ||
+      trainerIdValidate ||
+      customerIdValidate ||
+      titleValidate ||
+      categoryIdValidate ||
+      subCategoryIdValidate ||
+      typeIdValidate ||
+      priorityIdValidate
+    )
+      return;
+
+    setButtonLoading(true);
+    const today = new Date();
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      title: title,
+      description: description,
+      category_id: categoryId,
+      sub_category_id: subCategoryId,
+      priority: priorityId,
+      type: typeId,
+      attachments: [
+        {
+          base64string: fileAttachmentBase64,
+        },
+      ],
+      raised_by_id:
+        raisedByTypeId == "Customer" ? selectedCustomerId : selectedTrainerId,
+      raised_by_role: raisedByTypeId,
+      assigned_to: convertAsJson?.user_id,
+      created_at: formatToBackendIST(today),
+    };
+    try {
+      await createTicket(payload);
+      setTimeout(() => {
+        callgetTicketApi();
+        CommonMessage("success", "Created");
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      console.log("ticket create error", error);
+    }
+  };
+
+  const formReset = () => {
+    setIsOpenAddDrawer(false);
+    setButtonLoading(false);
+    setValidationTrigger(false);
+    setTitle("");
+    setTitleError("");
+    setEmail("");
+    setEmailError("");
+    setCategoryId(null);
+    setCategoryIdError("");
+    setSubCategoryId(null);
+    setSubCategoryIdError("");
+    setTypeId("");
+    setTypeIdError("");
+    setDescription("");
+    setFileAttachmentBase64("");
+  };
+
+  return (
+    <div className="customer_statusupdate_adddetailsContainer">
+      <Row gutter={12}>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+          <CommonSelectField
+            label="Raised By Type"
+            required={true}
+            options={raisedByTypeOptions}
+            onChange={(e) => {
+              setRaisedByTypeId(e.target.value);
+              if (validationTrigger) {
+                setRaisedByTypeIdError(selectValidator(e.target.value));
+              }
+            }}
+            value={raisedByTypeId}
+            error={raisedByTypeIdError}
+          />
+        </Col>
+
+        {raisedByTypeId == "Trainer" ? (
+          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+            <CommonCustomerSingleSelectField
+              label="Trainer"
+              labelMarginTop="1px"
+              required={true}
+              options={mergedTrainersList}
+              value={selectedTrainerId}
+              inputValue={trainerSearchText}
+              onChange={handleTrainerSelect}
+              onInputChange={handleTrainerSearch}
+              onDropdownOpen={handleTrainerDropdownOpen}
+              onDropdownScroll={handleTrainerScroll}
+              loading={trainerSelectloading}
+              error={selectedTrainerIdError}
+              renderOption={renderTrainerOption}
+              disableClearable={false}
             />
           </Col>
-        </Row>
+        ) : (
+          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <CommonCustomerSingleSelectField
+                  label="Customer"
+                  required={true}
+                  options={mergedCustomers}
+                  value={selectedCustomerId}
+                  inputValue={customerSearchText}
+                  onChange={handleCustomerSelect}
+                  onInputChange={handleCustomerSearch}
+                  onDropdownOpen={handleCustomerDropdownOpen}
+                  onDropdownScroll={handleCustomerScroll}
+                  loading={customerSelectloading}
+                  showLabelStatus="Name"
+                  error={selectedCustomerIdError}
+                  disableClearable={false}
+                />
+              </div>
+              {selectedCustomerId && (
+                <>
+                  {customerDetailsLoading ? (
+                    <CommonSpinner color="#333" />
+                  ) : (
+                    <Tooltip
+                      placement="top"
+                      title="View Customer Details"
+                      trigger={["hover", "click"]}
+                    >
+                      <FaRegEye
+                        size={16}
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          getParticularCustomerDetails(selectedCustomerId);
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </>
+              )}
+            </div>
+          </Col>
+        )}
 
-        {/* trainer fulldetails modal */}
-        <Modal
-          title={
-            <span style={{ padding: "0px 24px" }}>Trainer Full Details</span>
-          }
-          open={isOpenTrainerDetailModal}
-          onCancel={() => setIsOpenTrainerDetailModal(false)}
-          footer={false}
-          width="50%"
-          className="trainerpaymentrequest_trainerfulldetails_modal"
-        >
-          {clickedTrainerDetails.map((item, index) => {
-            return (
-              <>
-                <Row
-                  gutter={16}
-                  style={{ marginTop: "20px" }}
-                  className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
-                >
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <FaRegCircleUser size={15} color="gray" />
-                          <p className="customerdetails_rowheading">HR Name</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <EllipsisTooltip
-                          text={item.hr_head ? item.hr_head : "-"}
-                          smallText={true}
-                        />
-                      </Col>
-                    </Row>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+          <CommonInputField
+            label="Title"
+            required={true}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (validationTrigger) {
+                setTitleError(addressValidator(e.target.value));
+              }
+            }}
+            value={title}
+            error={titleError}
+          />
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <CommonSelectField
+            label="Category"
+            required={true}
+            options={categoryOptions}
+            onChange={(e) => {
+              setCategoryId(e.target.value);
+              if (validationTrigger) {
+                setCategoryIdError(selectValidator(e.target.value));
+              }
+            }}
+            value={categoryId}
+            error={categoryIdError}
+          />
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <CommonSelectField
+            label="Sub Category"
+            required={true}
+            options={subCategoryOptions}
+            onChange={(e) => {
+              setSubCategoryId(e.target.value);
+              if (validationTrigger) {
+                setSubCategoryIdError(selectValidator(e.target.value));
+              }
+            }}
+            value={subCategoryId}
+            error={subCategoryIdError}
+          />
+        </Col>
 
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <FaRegCircleUser size={15} color="gray" />
-                          <p className="customerdetails_rowheading">
-                            Trainer Name
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <EllipsisTooltip
-                          text={
-                            item.name
-                              ? `${item.name} (${
-                                  item.trainer_code ? item.trainer_code : "-"
-                                })`
-                              : "-"
-                          }
-                          smallText={true}
-                        />
-                      </Col>
-                    </Row>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <CommonSelectField
+            label="Type"
+            required={true}
+            options={typeOptions}
+            onChange={(e) => {
+              setTypeId(e.target.value);
+              if (validationTrigger) {
+                setTypeIdError(selectValidator(e.target.value));
+              }
+            }}
+            value={typeId}
+            error={typeIdError}
+          />
+        </Col>
 
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <MdOutlineEmail size={15} color="gray" />
-                          <p className="customerdetails_rowheading">Email</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <EllipsisTooltip text={item.email} smallText={true} />
-                      </Col>
-                    </Row>
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <CommonSelectField
+            label="Priority"
+            required={true}
+            options={priorityOptions}
+            onChange={(e) => {
+              setPriorityId(e.target.value);
+              if (validationTrigger) {
+                setPriorityIdError(selectValidator(e.target.value));
+              }
+            }}
+            value={priorityId}
+            error={priorityIdError}
+          />
+        </Col>
 
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <IoCallOutline size={15} color="gray" />
-                          <p className="customerdetails_rowheading">Mobile</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">{item.mobile}</p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <FaWhatsapp size={15} color="gray" />
-                          <p className="customerdetails_rowheading">Whatsapp</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">{item.whatsapp}</p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <IoLocationOutline size={15} color="gray" />
-                          <p className="customerdetails_rowheading">Location</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">{item.location}</p>
-                      </Col>
-                    </Row>
-                  </Col>
-
-                  <Col span={12}>
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Technology
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <EllipsisTooltip
-                          text={item.technology}
-                          smallText={true}
-                        />
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Experience
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.overall_exp_year + " Years"}
-                        </p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Relevent Experience
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.relavant_exp_year + " Years"}
-                        </p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Avaibility Timing
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.availability_time
-                            ? moment(item.availability_time, "HH:mm:ss").format(
-                                "hh:mm A",
-                              )
-                            : "-"}
-                        </p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Secondary Timing
-                          </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {item.secondary_time
-                            ? moment(item.secondary_time, "HH:mm:ss").format(
-                                "hh:mm A",
-                              )
-                            : "-"}
-                        </p>
-                      </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">Skills</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <EllipsisTooltip
-                          text={item.skills.map((item) => item.name).join(", ")}
-                          smallText={true}
-                        />
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-              </>
-            );
-          })}
-        </Modal>
-
-        {/* customer fulldetails drawer */}
-        <Drawer
-          title="Customer Details"
-          open={isOpenCustomerDetailsDrawer}
-          onClose={() => {
-            setIsOpenCustomerDetailsDrawer(false);
-            setCustomerDetails(null);
-            //   setPaymentValidationTrigger(false);
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <CommonInputField
+            label="Description"
+            required={false}
+            multiline={true}
+            onChange={(e) => {
+              setDescription(e.target.value);
+            }}
+            value={description}
+          />
+        </Col>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          style={{
+            marginTop: subCategoryIdError ? "40px" : "30px",
+            color: "rgba(0,0,0,0.88)",
           }}
-          width="50%"
-          style={{ position: "relative" }}
         >
-          {isOpenCustomerDetailsDrawer ? (
-            <ParticularCustomerDetails
-              customerDetails={customerDetails}
-              isCustomerPage={true}
-            />
-          ) : (
-            ""
-          )}
-        </Drawer>
-      </div>
-    );
-  },
-);
+          <ImageUploadCrop
+            label="File Attachment"
+            aspect={1}
+            maxSizeMB={1}
+            required={false}
+            value={fileAttachmentBase64}
+            onChange={(base64) => setFileAttachmentBase64(base64)}
+            onErrorChange={""} // ✅ pass setter directly
+          />
+        </Col>
+      </Row>
+
+      {/* trainer fulldetails modal */}
+      <Modal
+        title={
+          <span style={{ padding: "0px 24px" }}>Trainer Full Details</span>
+        }
+        open={isOpenTrainerDetailModal}
+        onCancel={() => setIsOpenTrainerDetailModal(false)}
+        footer={false}
+        width="50%"
+        className="trainerpaymentrequest_trainerfulldetails_modal"
+      >
+        {clickedTrainerDetails.map((item, index) => {
+          return (
+            <>
+              <Row
+                gutter={16}
+                style={{ marginTop: "20px" }}
+                className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+              >
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">HR Name</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.hr_head ? item.hr_head : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaRegCircleUser size={15} color="gray" />
+                        <p className="customerdetails_rowheading">
+                          Trainer Name
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={
+                          item.name
+                            ? `${item.name} (${
+                                item.trainer_code ? item.trainer_code : "-"
+                              })`
+                            : "-"
+                        }
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <MdOutlineEmail size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Email</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip text={item.email} smallText={true} />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoCallOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Mobile</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.mobile}</p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <FaWhatsapp size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Whatsapp</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.whatsapp}</p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <IoLocationOutline size={15} color="gray" />
+                        <p className="customerdetails_rowheading">Location</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">{item.location}</p>
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Technology</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.technology}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Experience</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.overall_exp_year + " Years"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Relevent Experience
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.relavant_exp_year + " Years"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Avaibility Timing
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.availability_time
+                          ? moment(item.availability_time, "HH:mm:ss").format(
+                              "hh:mm A",
+                            )
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
+                          Secondary Timing
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {item.secondary_time
+                          ? moment(item.secondary_time, "HH:mm:ss").format(
+                              "hh:mm A",
+                            )
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Skills</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.skills.map((item) => item.name).join(", ")}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </>
+          );
+        })}
+      </Modal>
+
+      {/* customer fulldetails drawer */}
+      <Drawer
+        title="Customer Details"
+        open={isOpenCustomerDetailsDrawer}
+        onClose={() => {
+          setIsOpenCustomerDetailsDrawer(false);
+          setCustomerDetails(null);
+          //   setPaymentValidationTrigger(false);
+        }}
+        width="50%"
+        style={{ position: "relative" }}
+      >
+        {isOpenCustomerDetailsDrawer ? (
+          <ParticularCustomerDetails
+            customerId={customerDetails?.id}
+            isCustomerPage={true}
+          />
+        ) : (
+          ""
+        )}
+      </Drawer>
+    </div>
+  );
+});
 
 export default AddTicket;

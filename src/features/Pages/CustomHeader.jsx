@@ -41,8 +41,6 @@ import {
   changePassword,
   getCustomerById,
   getCustomerFullHistory,
-  getCustomers,
-  getLeads,
   getNotifications,
   getTechnologies,
   globalFilter,
@@ -228,15 +226,12 @@ export default function CustomHeader() {
     }
   };
 
-  const getCustomerData = async (customer_email) => {
+  const getCustomerData = async (customer_id) => {
     setViewCustomerLoading(true);
-    const payload = {
-      email: customer_email,
-    };
     try {
-      const response = await getCustomers(payload);
+      const response = await getCustomerById(customer_id);
       console.log("customer response", response);
-      const customerDetails = response?.data?.data?.customers[0];
+      const customerDetails = response?.data?.data || null;
       setCustomerDetails(customerDetails);
       setTimeout(() => {
         setIsOpenLeadDetailsDrawer(false);
@@ -1488,8 +1483,8 @@ Course Advisor
                           style={{ marginTop: "2px", cursor: "pointer" }}
                           onClick={() => {
                             getCustomerData(
-                              leadDetails && leadDetails.email
-                                ? leadDetails.email
+                              leadDetails && leadDetails.customer_id
+                                ? leadDetails.customer_id
                                 : null,
                             );
                           }}

@@ -13,14 +13,17 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { CloseOutlined } from "@ant-design/icons";
 import PrismaZoom from "react-prismazoom";
-import { getCustomers, viewCertForCustomer } from "../ApiService/action";
+import {
+  getCustomerById,
+  getTrainerById,
+  viewCertForCustomer,
+} from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import CommonSpinner from "../Common/CommonSpinner";
 
 export default function ViewTrainerPaymentDetails({
   selectedPaymentDetails,
-  trainersData,
   allBranchesData,
   isShowPaymentDetails = true,
 }) {
@@ -50,13 +53,21 @@ export default function ViewTrainerPaymentDetails({
   const [certificateName, setCertificateName] = useState("");
   const [generateCertLoading, setGenerateCertLoading] = useState(false);
 
-  const getParticularCustomerDetails = async (customer_email) => {
-    const payload = {
-      email: customer_email,
-    };
+  const getTrainerByIdData = async (trainerId) => {
     try {
-      const response = await getCustomers(payload);
-      const customer_details = response?.data?.data?.customers[0];
+      const response = await getTrainerById(trainerId);
+      const trainerDetails = response?.data?.data;
+      setClickedTrainerDetails([trainerDetails]);
+    } catch (error) {
+      setClickedTrainerDetails([]);
+      console.log("get trainer by id error", error);
+    }
+  };
+
+  const getParticularCustomerDetails = async (customer_id) => {
+    try {
+      const response = await getCustomerById(customer_id);
+      const customer_details = response?.data?.data || null;
       console.log("customer full details", customer_details);
       setCustomerDetails(customer_details);
       setIsOpenCustomerDetailsDrawer(true);
@@ -143,12 +154,8 @@ export default function ViewTrainerPaymentDetails({
                   size={15}
                   className="trainers_action_icons"
                   onClick={() => {
-                    const clickedTrainer = trainersData.filter(
-                      (f) => f.id == selectedPaymentDetails.trainer_id,
-                    );
-                    console.log("clickedTrainer", clickedTrainer);
-                    setClickedTrainerDetails(clickedTrainer);
                     setIsOpenTrainerDetailModal(true);
+                    getTrainerByIdData(selectedPaymentDetails.trainer_id);
                   }}
                 />
               </div>
@@ -355,7 +362,7 @@ export default function ViewTrainerPaymentDetails({
                                       className="trainers_action_icons"
                                       onClick={() => {
                                         getParticularCustomerDetails(
-                                          item.customer_email,
+                                          item.customer_id,
                                         );
                                       }}
                                     />
@@ -445,7 +452,10 @@ export default function ViewTrainerPaymentDetails({
                                       <FaRegEye size={16} /> View screenshot
                                     </button>
                                   ) : (
-                                    ""
+                                    <EllipsisTooltip
+                                      text={item.attendance_sheetlink}
+                                      smallText={true}
+                                    />
                                   )}
                                 </Col>
                               </Row>
@@ -1382,7 +1392,7 @@ export default function ViewTrainerPaymentDetails({
       >
         {isOpenCustomerDetailsDrawer ? (
           <ParticularCustomerDetails
-            customerDetails={customerDetails}
+            customerId={customerDetails?.id}
             isCustomerPage={true}
           />
         ) : (

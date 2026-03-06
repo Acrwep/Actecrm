@@ -24,7 +24,6 @@ import {
   createBatch,
   getBatchStudents,
   getBranches,
-  getCustomers,
   getTrainerById,
   getTrainers,
   updateBatch,

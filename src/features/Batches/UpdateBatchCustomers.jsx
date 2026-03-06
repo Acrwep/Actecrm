@@ -12,7 +12,7 @@ import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import { FaRegEye } from "react-icons/fa";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
-import { getCustomers } from "../ApiService/action";
+import { getCustomerById } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonSelectField from "../Common/CommonSelectField";
 import { selectValidator } from "../Common/Validation";
@@ -229,7 +229,7 @@ const UpdateBatchCustomers = forwardRef(
         fixed: "right",
         width: 70,
         render: (text, record) => {
-          const isLoading = customerDetailsLoading === record.email;
+          const isLoading = customerDetailsLoading === record.id;
           return (
             <div className="trainers_actionbuttonContainer">
               {isLoading ? (
@@ -244,7 +244,7 @@ const UpdateBatchCustomers = forwardRef(
                     size={15}
                     className="trainers_action_icons"
                     onClick={() => {
-                      getParticularCustomerDetails(record.email);
+                      getParticularCustomerDetails(record.id);
                       //   setCustomerDetails(record);
                     }}
                   />
@@ -256,14 +256,11 @@ const UpdateBatchCustomers = forwardRef(
       },
     ];
 
-    const getParticularCustomerDetails = async (customerEmail) => {
-      setCustomerDetailsLoading(customerEmail);
-      const payload = {
-        email: customerEmail,
-      };
+    const getParticularCustomerDetails = async (customer_id) => {
+      setCustomerDetailsLoading(customer_id);
       try {
-        const response = await getCustomers(payload);
-        const customer_details = response?.data?.data?.customers[0];
+        const response = await getCustomerById(customer_id);
+        const customer_details = response?.data?.data || null;
         console.log("customer full details", customer_details);
         setCustomerDetails(customer_details);
         setCustomerDetailsLoading("");

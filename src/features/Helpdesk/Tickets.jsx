@@ -15,12 +15,11 @@ import { RedoOutlined } from "@ant-design/icons";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import {
-  checkTicketEmail,
   getAllDownlineUsers,
   getAllTickets,
-  getCustomers,
+  getCustomerById,
   getTicketTracks,
-  getTrainers,
+  getTrainerById,
   ticketTrack,
   updateTicketStatus,
 } from "../ApiService/action";
@@ -81,7 +80,6 @@ export default function Tickets() {
   const [loading, setLoading] = useState(true);
   //-------------form usestates-----------------------
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
-  const [trainersData, setTrainersData] = useState([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   //-------------drawer usestates---------------------
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
@@ -147,15 +145,11 @@ export default function Tickets() {
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         if (text == "Trainer") {
-                          const clickedTrainer = trainersData.filter(
-                            (f) => f.id == record.raised_by_id,
-                          );
-                          console.log("clickedTrainer", clickedTrainer);
-                          setClickedTrainerDetails(clickedTrainer);
+                          getTrainerByIdData(record.raised_by_id);
                           setIsOpenTrainerDetailModal(true);
                         } else {
                           setLoadingRowId(record.ticket_id);
-                          getParticularCustomerDetails(record.raised_by_email);
+                          getParticularCustomerDetails(record.raised_by_id);
                         }
                       }}
                     />
@@ -485,29 +479,9 @@ export default function Tickets() {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-      getTrainersData();
+      getAllDownlineUsersData(null);
     }
   }, [childUsers]);
-
-  const getTrainersData = async () => {
-    const payload = {
-      status: "Verified",
-      page: 1,
-      limit: 1000,
-    };
-    try {
-      const response = await getTrainers(payload);
-      setTrainersData(response?.data?.data?.trainers || []);
-    } catch (error) {
-      setTrainersData([]);
-      console.log(error);
-    } finally {
-      setTimeout(() => {
-        // getCategoriesData();
-        getAllDownlineUsersData(null);
-      }, 300);
-    }
-  };
 
   useEffect(() => {
     const handler = async (e) => {
@@ -643,38 +617,18 @@ export default function Tickets() {
       setTicketsData([]);
       console.log("get tickets error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 
-  const handleEmail = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-
-    if (validationTrigger) {
-      let emailValidate = emailValidator(value);
-      setEmailError(emailValidate);
-
-      if (emailValidate == "") {
-        const payload = {
-          email: value,
-        };
-        setTimeout(async () => {
-          try {
-            const response = await checkTicketEmail(payload);
-            console.log("email response", response);
-            setEmailError(
-              response?.data?.data?.status == false ? " is not valid" : "",
-            );
-            // setSubCategoryOptions(response?.data?.data || []);
-          } catch (error) {
-            // setSubCategoryOptions([]);
-            console.log("email error", error);
-          }
-        }, 300);
-      }
+  const getTrainerByIdData = async (trainerId) => {
+    try {
+      const response = await getTrainerById(trainerId);
+      const trainerDetails = response?.data?.data;
+      setClickedTrainerDetails([trainerDetails]);
+    } catch (error) {
+      setClickedTrainerDetails([]);
+      console.log("get trainer by id error", error);
     }
   };
 
@@ -805,14 +759,11 @@ export default function Tickets() {
     }
   };
 
-  const getParticularCustomerDetails = async (customerEmail) => {
+  const getParticularCustomerDetails = async (customer_id) => {
     setCustomerDetailsLoading(true);
-    const payload = {
-      email: customerEmail,
-    };
     try {
-      const response = await getCustomers(payload);
-      const customer_details = response?.data?.data?.customers[0];
+      const response = await getCustomerById(customer_id);
+      const customer_details = response?.data?.data || null;
       console.log("customer full details", customer_details);
       setCustomerDetails(customer_details);
       setLoadingRowId(null);
@@ -1212,7 +1163,6 @@ export default function Tickets() {
         {isOpenAddDrawer ? (
           <AddTicket
             ref={addTicketRef}
-            trainersData={trainersData}
             setButtonLoading={setButtonLoading}
             callgetTicketApi={() => {
               setIsOpenAddDrawer(false);
@@ -1584,7 +1534,7 @@ export default function Tickets() {
       >
         {isOpenCustomerDetailsDrawer ? (
           <ParticularCustomerDetails
-            customerDetails={customerDetails}
+            customerId={customerDetails?.id}
             isCustomerPage={true}
           />
         ) : (
