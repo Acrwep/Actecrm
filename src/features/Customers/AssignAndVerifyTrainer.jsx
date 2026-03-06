@@ -272,7 +272,7 @@ const AssignAndVerifyTrainer = forwardRef(
     //     }
     //   };
 
-    /* ---------------- FETCH CUSTOMERS ---------------- */
+    /* ---------------- FETCH TRAINERS ---------------- */
     const buildCustomerSearchPayload = (value) => {
       if (!value) return {};
       const trimmed = value.trim();

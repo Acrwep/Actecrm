@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Row,
   Col,
@@ -13,7 +13,9 @@ import {
 import { CiSearch } from "react-icons/ci";
 import { RedoOutlined } from "@ant-design/icons";
 import { AiOutlineEdit } from "react-icons/ai";
-import { IoFilter } from "react-icons/io5";
+import { IoFilter, IoCallOutline } from "react-icons/io5";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineEmail } from "react-icons/md";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -30,6 +32,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import UpdateBatchCustomers from "./UpdateBatchCustomers";
 import CommonSelectField from "../Common/CommonSelectField";
+import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 
 export default function Batches() {
   // ----------userefs----------------
@@ -46,10 +49,16 @@ export default function Batches() {
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   /* ---------------- Trainer STATES ---------------- */
-  const [trainersData, setTrainersData] = useState([]);
-  const [trainerFilterId, setTrainerFilterId] = useState(null);
-  const [trainerFilterType, setTrainerFilterType] = useState(1);
-  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
+  const [trainersDataList, setTrainersDataList] = useState([]);
+  // ✅ IMPORTANT: keep IDs & Objects separately
+  const [selectedTrainerId, setSelectedTrainerId] = useState(null);
+  const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
+  const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
+  const [trainerSearchText, setTrainerSearchText] = useState("");
+  /* ---------------- PAGINATION ---------------- */
+  const [trainerPage, setTrainerPage] = useState(1);
+  const [trainerHasMore, setTrainerHasMore] = useState(true);
+  const [trainerSelectloading, setTrainerSelectloading] = useState(false);
   //-----------batch details usestates-------------
   const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
     useState(false);
@@ -151,25 +160,50 @@ export default function Batches() {
   ];
 
   useEffect(() => {
-    getTrainersData();
+    // getTrainersData(null, 1, true);
+    getRegionData();
   }, []);
 
-  const getTrainersData = async () => {
+  /* ---------------- FETCH TRAINERS ---------------- */
+  const buildCustomerSearchPayload = (value) => {
+    if (!value) return {};
+    const trimmed = value.trim();
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return { email: trimmed };
+    }
+
+    if (/^\d{6,15}$/.test(trimmed)) {
+      return { mobile: trimmed };
+    }
+
+    return { name: trimmed };
+  };
+
+  const getTrainersData = async (searchvalue, pageNumber = 1) => {
+    setTrainerSelectloading(true);
     const payload = {
       status: "Verified",
-      page: 1,
-      limit: 1000,
+      ...buildCustomerSearchPayload(searchvalue),
+      page: pageNumber,
+      limit: 10,
     };
     try {
       const response = await getTrainers(payload);
-      setTrainersData(response?.data?.data?.trainers || []);
+      const trainers = response?.data?.data?.trainers || [];
+      const pagination = response?.data?.data?.pagination;
+
+      setTrainersDataList((prev) =>
+        pageNumber === 1 ? trainers : [...prev, ...trainers],
+      );
+      setTrainerHasMore(pageNumber < (pagination?.totalPages || 1));
+      setTrainerPage(pageNumber);
     } catch (error) {
-      setTrainersData([]);
+      setTrainersDataList([]);
       console.log(error);
     } finally {
-      setTimeout(() => {
-        getRegionData();
-      }, 300);
+      setTrainerSelectloading(false);
+      setLoading(false);
     }
   };
 
@@ -188,12 +222,18 @@ export default function Batches() {
           null,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
+          true,
         );
       }, 300);
     }
   };
 
-  const getBatchesData = async (trainerId, startDate, endDate) => {
+  const getBatchesData = async (
+    trainerId,
+    startDate,
+    endDate,
+    callTrainersApi = false,
+  ) => {
     setLoading(true);
     const payload = {
       trainer_id: trainerId,
@@ -204,16 +244,142 @@ export default function Batches() {
       const response = await getCustomerBatches(payload);
       console.log("get batches response", response);
       setBatchesData(response?.data?.data || []);
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       setBatchesData([]);
       console.log("get batches error", error);
     } finally {
+      if (callTrainersApi) {
+        getTrainersData(null, 1);
+      }
       // getCustomersData(null, 1);
     }
+  };
+
+  /* ---------------- SEARCH HANDLER ---------------- */
+  const handleTrainerSearch = (value) => {
+    setTrainerSearchText(value);
+    setTrainerPage(1);
+    setTrainerHasMore(true);
+    setTrainersDataList([]);
+    getTrainersData(value, 1);
+  };
+
+  /* ---------------- SELECT HANDLER ---------------- */
+  const handleTrainerSelect = (event) => {
+    const selectedId = event.target.value;
+    const selectedObj = event.target.object;
+    setSelectedTrainerId(selectedId);
+    setSelectedTrainerObject(selectedObj);
+    setTrainerSearchText(selectedObj?.name || "");
+
+    getBatchesData(selectedId, selectedDates[0], selectedDates[1]);
+  };
+
+  /* ---------------- MERGED OPTIONS ---------------- */
+  const mergedTrainersList = useMemo(() => {
+    const map = new Map();
+    if (selectedTrainerObject) {
+      map.set(selectedTrainerObject.id, selectedTrainerObject);
+    }
+    trainersDataList.forEach((c) => map.set(c.id, c));
+    return Array.from(map.values());
+  }, [trainersDataList, selectedTrainerObject]);
+
+  /* ---------------- DROPDOWN OPEN ---------------- */
+  const handleTrainerDropdownOpen = () => {
+    if (trainersDataList.length === 0) {
+      getTrainersData(null, 1);
+    }
+  };
+
+  /* ---------------- INFINITE SCROLL ---------------- */
+  const handleTrainerScroll = (e) => {
+    const listbox = e.target;
+    if (
+      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 5 &&
+      trainerHasMore &&
+      !trainerSelectloading
+    ) {
+      getTrainersData(trainerSearchText, trainerPage + 1);
+    }
+  };
+
+  const renderTrainerOption = (props, option) => {
+    const { key, ...optionProps } = props;
+    return (
+      <li
+        key={key}
+        {...optionProps}
+        style={{ padding: "8px 12px", borderBottom: "1px solid #f0f0f0" }}
+      >
+        <Flex vertical gap={4} style={{ width: "100%" }}>
+          <Flex
+            align="center"
+            justify="space-between"
+            style={{ width: "100%" }}
+          >
+            <Flex align="center" gap={8}>
+              <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
+              <span
+                style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+              >
+                {option.name}
+              </span>
+            </Flex>
+            {option.trainer_type && (
+              <span
+                style={{
+                  fontSize: "10px",
+                  background: "#e6f7ff",
+                  color: "#1890ff",
+                  padding: "1px 8px",
+                  borderRadius: "10px",
+                  border: "1px solid #91d5ff",
+                  fontWeight: 500,
+                }}
+              >
+                {option.trainer_type}
+              </span>
+            )}
+          </Flex>
+          <Flex gap={12} wrap="wrap">
+            {option.trainer_code && (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#8c8c8c",
+                  fontWeight: 500,
+                }}
+              >
+                ID: {option.trainer_code}
+              </span>
+            )}
+            {option.email && (
+              <Flex
+                align="center"
+                gap={4}
+                style={{ fontSize: "12px", color: "#666" }}
+              >
+                <MdOutlineEmail size={13} style={{ color: "#8c8c8c" }} />
+                <span>{option.email}</span>
+              </Flex>
+            )}
+            {option.mobile && (
+              <Flex
+                align="center"
+                gap={4}
+                style={{ fontSize: "12px", color: "#666" }}
+              >
+                <IoCallOutline size={13} style={{ color: "#8c8c8c" }} />
+                <span>{option.mobile}</span>
+              </Flex>
+            )}
+          </Flex>
+        </Flex>
+      </li>
+    );
   };
 
   const formReset = () => {
@@ -226,7 +392,9 @@ export default function Batches() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setTrainerFilterId(null);
+    setSelectedTrainerId(null);
+    setSelectedTrainerObject(null);
+    setTrainerSearchText("");
     getBatchesData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   };
 
@@ -236,99 +404,23 @@ export default function Batches() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={8}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <CommonSelectField
-                    label="Select Trainer"
-                    required={false}
-                    height="35px"
-                    labelMarginTop="0px"
-                    labelFontSize="13px"
-                    options={trainersData}
-                    onChange={(e) => {
-                      console.log("traineeeee", e.target.value);
-                      setTrainerFilterId(e.target.value);
-                      getBatchesData(
-                        e.target.value,
-                        selectedDates[0],
-                        selectedDates[1],
-                      );
-                    }}
-                    value={trainerFilterId}
-                    error={""}
-                    disableClearable={false}
-                    onFocus={() => setIsTrainerSelectFocused(true)}
-                    onBlur={() => setIsTrainerSelectFocused(false)}
-                    borderRightNone={true}
-                    showLabelStatus={
-                      trainerFilterType == 1
-                        ? "Name"
-                        : trainerFilterType == 2
-                          ? "Trainer Id"
-                          : trainerFilterType == 3
-                            ? "Email"
-                            : "Mobile"
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={trainerFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setTrainerFilterType(e.target.value);
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            Search by Name
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Trainer Id
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "12px" }}>
-                            Search by Mobile
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                          height: "35px",
-                        }}
-                      >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
-              </div>
+              <CommonCustomerSingleSelectField
+                label="Trainer"
+                height="32px"
+                labelMarginTop="-1px"
+                required={false}
+                options={mergedTrainersList}
+                value={selectedTrainerId}
+                inputValue={trainerSearchText}
+                onChange={handleTrainerSelect}
+                onInputChange={handleTrainerSearch}
+                onDropdownOpen={handleTrainerDropdownOpen}
+                onDropdownScroll={handleTrainerScroll}
+                loading={trainerSelectloading}
+                // renderOption={renderTrainerOption}
+                error={selectedTrainerIdError}
+                disableClearable={false}
+              />
             </Col>
             <Col span={10}>
               <CommonMuiCustomDatePicker
@@ -338,7 +430,7 @@ export default function Batches() {
                   // setPagination({
                   //   page: 1,
                   // });
-                  getBatchesData(trainerFilterId, dates[0], dates[1]);
+                  getBatchesData(selectedTrainerId, dates[0], dates[1]);
                 }}
               />
             </Col>
@@ -404,14 +496,13 @@ export default function Batches() {
         {isOpenAddBatchComponent ? (
           <AddBatch
             ref={addBatchRef}
-            trainersData={trainersData}
             regionOptions={regionOptions}
             editBatchItem={editBatchItem}
             setButtonLoading={setButtonLoading}
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
-                trainerFilterId,
+                selectedTrainerId,
                 selectedDates[0],
                 selectedDates[1],
               );
@@ -454,7 +545,7 @@ export default function Batches() {
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
-                trainerFilterId,
+                selectedTrainerId,
                 selectedDates[0],
                 selectedDates[1],
               );

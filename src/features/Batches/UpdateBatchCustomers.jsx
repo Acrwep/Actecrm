@@ -746,7 +746,7 @@ const UpdateBatchCustomers = forwardRef(
         >
           {isOpenDetailsDrawer ? (
             <ParticularCustomerDetails
-              customerDetails={customerDetails}
+              customerId={customerDetails?.id}
               isCustomerPage={true}
             />
           ) : (

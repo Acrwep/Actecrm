@@ -480,9 +480,7 @@ export default function LeadFollowUp({
       setFollowupCount(0);
       console.log("get followup error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

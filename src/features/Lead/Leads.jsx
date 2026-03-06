@@ -1065,9 +1065,7 @@ export default function Leads({
       setLeadCount(0);
       console.log("get leads error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

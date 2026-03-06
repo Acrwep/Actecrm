@@ -698,9 +698,9 @@ const InsertPendingFees = forwardRef(
                       className="customerdetails_text"
                       style={{ fontWeight: 700 }}
                     >
-                      {/* {customerDetails && customerDetails.payment.total_amount
-                    ? "₹" + customerDetails.payment.total_amount
-                    : "-"} */}
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
+                        : "-"}
                     </p>
                   </Col>
                 </Row>

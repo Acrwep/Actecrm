@@ -212,11 +212,26 @@ const ReAssignTrainer = forwardRef(
     };
 
     /* ---------------- FETCH TRAINERS ---------------- */
+    const buildCustomerSearchPayload = (value) => {
+      if (!value) return {};
+      const trimmed = value.trim();
+
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        return { email: trimmed };
+      }
+
+      if (/^\d{6,15}$/.test(trimmed)) {
+        return { mobile: trimmed };
+      }
+
+      return { name: trimmed };
+    };
+
     const getTrainersDataApi = async (searchvalue, pageNumber = 1) => {
       setTrainerSelectloading(true);
 
       const payload = {
-        name: searchvalue || "",
+        ...buildCustomerSearchPayload(searchvalue),
         page: pageNumber,
         limit: 10,
       };
