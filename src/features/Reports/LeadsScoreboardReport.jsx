@@ -133,7 +133,7 @@ export default function LeadsScoreboardReport() {
                               <span style={{ fontWeight: 600 }}>
                                 ₹
                                 {Number(item.collection).toLocaleString(
-                                  "en-IN"
+                                  "en-IN",
                                 )}
                               </span>
                             </p>
@@ -151,7 +151,7 @@ export default function LeadsScoreboardReport() {
                     const [monthName, year] = record.sale_month.split(" ");
                     const selectedMonth = moment(
                       `${monthName} ${year}`,
-                      "MMMM YYYY"
+                      "MMMM YYYY",
                     );
                     // Start date: 25th of previous month
                     const startDate = selectedMonth
@@ -255,7 +255,7 @@ export default function LeadsScoreboardReport() {
       getScoreBoardReportsData(
         customizeDate[0],
         customizeDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -279,9 +279,7 @@ export default function LeadsScoreboardReport() {
       setTotalCounts(null);
       console.log("get scoreboard report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 
@@ -296,9 +294,7 @@ export default function LeadsScoreboardReport() {
       const response = await getMonthwiseTotalCollectionReport(payload);
       console.log("collection report response", response);
       setCollectionHistory(response?.data?.data || []);
-      setTimeout(() => {
-        setCollectionLoading(false);
-      }, 300);
+      setCollectionLoading(false);
     } catch (error) {
       setCollectionLoading(false);
       setCollectionHistory([]);
@@ -330,7 +326,7 @@ export default function LeadsScoreboardReport() {
       getScoreBoardReportsData(
         startDateAndEndDate[0],
         startDateAndEndDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -380,7 +376,7 @@ export default function LeadsScoreboardReport() {
                   getScoreBoardReportsData(
                     customizeDate[0],
                     customizeDate[1],
-                    allDownliners
+                    allDownliners,
                   );
                 }}
               />
@@ -407,10 +403,10 @@ export default function LeadsScoreboardReport() {
                   reportData,
                   columns,
                   `${moment(startDateAndEndDate[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(startDateAndEndDate[1]).format(
-                    "DD MMMM YYYY"
-                  )} Scoreboar Report.csv`
+                    "DD MMMM YYYY",
+                  )} Scoreboar Report.csv`,
                 );
               }}
             >

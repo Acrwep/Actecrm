@@ -43,6 +43,7 @@ import {
   getCustomerFullHistory,
   getNotifications,
   getTechnologies,
+  getUsers,
   globalFilter,
   readNotification,
 } from "../ApiService/action";
@@ -129,6 +130,8 @@ export default function CustomHeader() {
   const [shareTemplateText, setShareTemplateText] = useState("");
   const [currentShareItem, setCurrentShareItem] = useState(null);
   const [currentSharePlatform, setCurrentSharePlatform] = useState("");
+  const [isOpenProfileDrawer, setIsOpenProfileDrawer] = useState(false);
+  const [loginUserDetails, setLoginUserDetails] = useState(null);
 
   const { notifications, unreadCount, setUnreadCount, logout } =
     useContext(NotificationContext);
@@ -160,6 +163,24 @@ export default function CustomHeader() {
     };
   }, []);
 
+  const getLoginUserDetailsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id || "",
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("login user details", response);
+      const profile_details = response?.data?.data?.data[0] || null;
+      setLoginUserDetails(profile_details);
+      setIsOpenProfileDrawer(true);
+    } catch (error) {
+      console.log("login user details error");
+    }
+  };
+
   const handleLogout = () => {
     logout(); // 🚀 Disconnect socket and clear state
     localStorage.removeItem("AccessToken");
@@ -170,6 +191,30 @@ export default function CustomHeader() {
   const items = [
     {
       key: "1",
+      label: (
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            fontSize: "13px",
+          }}
+          // onClick={() => {
+          //   const getLoginUserDetails =
+          //     localStorage.getItem("loginUserDetails");
+          //   const convertAsJson = JSON.parse(getLoginUserDetails);
+          //   setLoginUserDetails(convertAsJson);
+          //   setIsOpenProfileDrawer(true);
+          // }}
+          onClick={getLoginUserDetailsData}
+        >
+          <LuCircleUser size={14} />
+          <p>View Profile</p>
+        </div>
+      ),
+    },
+    {
+      key: "2",
       label: (
         <div
           style={{
@@ -192,7 +237,7 @@ export default function CustomHeader() {
       ),
     },
     {
-      key: "2",
+      key: "3",
       label: (
         <div
           style={{
@@ -2184,6 +2229,139 @@ Course Advisor
           className="sharetemplate_textarea_input"
         />
       </Modal>
+
+      <Drawer
+        title="Profile Details"
+        open={isOpenProfileDrawer}
+        onClose={() => setIsOpenProfileDrawer(false)}
+        width="35%"
+        className="profile_details_drawer"
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "20px 0",
+          }}
+        >
+          <div
+            style={{
+              width: "100px",
+              height: "100px",
+              borderRadius: "50%",
+              backgroundColor: "#f5f5f5",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: "16px",
+              border: "2px solid #5b69ca",
+              overflow: "hidden",
+            }}
+          >
+            {loginUserDetails?.profile_image ? (
+              <img
+                src={
+                  loginUserDetails.profile_image.startsWith("data:image") ||
+                  loginUserDetails.profile_image.startsWith("http")
+                    ? loginUserDetails.profile_image
+                    : `${import.meta.env.VITE_API_URL}/${
+                        loginUserDetails.profile_image
+                      }`
+                }
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <FcManager size={60} />
+            )}
+          </div>
+          <p style={{ fontSize: "18px", fontWeight: 700, margin: 0 }}>
+            {loginUserDetails?.user_name || "-"}
+          </p>
+          <p style={{ color: "gray", fontSize: "14px" }}>ACTE</p>
+        </div>
+
+        <Divider style={{ margin: "12px 0" }} />
+
+        <div style={{ padding: "0 10px" }}>
+          <Row style={{ marginBottom: "16px" }}>
+            <Col span={10}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <FaRegUser color="gray" size={14} />
+                <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
+                  User ID
+                </p>
+              </div>
+            </Col>
+            <Col span={14}>
+              <p style={{ margin: 0, fontWeight: 600 }}>
+                {loginUserDetails?.user_id || "-"}
+              </p>
+            </Col>
+          </Row>
+
+          <Row style={{ marginBottom: "16px" }}>
+            <Col span={10}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <IoCallOutline color="gray" size={16} />
+                <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
+                  Mobile
+                </p>
+              </div>
+            </Col>
+            <Col span={14}>
+              <p style={{ margin: 0, fontWeight: 600 }}>
+                {loginUserDetails?.phone || "-"}
+              </p>
+            </Col>
+          </Row>
+
+          {loginUserDetails?.branch_name && (
+            <Row style={{ marginBottom: "16px" }}>
+              <Col span={10}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <IoLocationOutline color="gray" size={16} />
+                  <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
+                    Branch
+                  </p>
+                </div>
+              </Col>
+              <Col span={14}>
+                <p style={{ margin: 0, fontWeight: 600 }}>
+                  {loginUserDetails.branch_name}
+                </p>
+              </Col>
+            </Row>
+          )}
+
+          {loginUserDetails?.region_name && (
+            <Row style={{ marginBottom: "16px" }}>
+              <Col span={10}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <IoLocationOutline color="gray" size={16} />
+                  <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
+                    Region
+                  </p>
+                </div>
+              </Col>
+              <Col span={14}>
+                <p style={{ margin: 0, fontWeight: 600 }}>
+                  {loginUserDetails.region_name}
+                </p>
+              </Col>
+            </Row>
+          )}
+        </div>
+      </Drawer>
     </div>
   );
 }

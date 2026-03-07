@@ -425,7 +425,7 @@ export default function Trainers() {
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
       setTableColumns(nonChangeColumns);
-      getTechnologiesData();
+      getTrainersData(null, null, null, 1, 10, true);
     }
   }, [permissions]);
 
@@ -433,70 +433,13 @@ export default function Trainers() {
   //   getTechnologiesData();
   // }, []);
 
-  const getTechnologiesData = async () => {
-    try {
-      const response = await getTechnologies();
-      console.log("technologies response", response);
-      setTechnologyOptions(response?.data?.data || []);
-    } catch (error) {
-      setTechnologyOptions([]);
-      console.log("technology error", error);
-    } finally {
-      getBatchData();
-    }
-  };
-
-  const getBatchData = async () => {
-    try {
-      const response = await getBatches();
-      console.log("batches response", response);
-      setBatchOptions(response?.data?.data || []);
-    } catch (error) {
-      setBatchOptions([]);
-      console.log("batch error", error);
-    } finally {
-      getExperienceData();
-    }
-  };
-
-  const getExperienceData = async () => {
-    try {
-      const response = await getExperience();
-      console.log("experience response", response);
-      setExperienceOptions(response?.data?.data || []);
-    } catch (error) {
-      setExperienceOptions([]);
-      console.log("experience error", error);
-    } finally {
-      setTimeout(() => {
-        getSkillsData(true);
-      }, 300);
-    }
-  };
-
-  const getSkillsData = async (call_api) => {
-    try {
-      const response = await getTrainerSkills();
-      console.log("skills response", response);
-      setSkillsOptions(response?.data?.data || []);
-    } catch (error) {
-      setSkillsOptions([]);
-      console.log("skills error", error);
-    } finally {
-      setTimeout(() => {
-        if (call_api == true) {
-          getTrainersData(null, null, null, 1, 10);
-        }
-      }, 300);
-    }
-  };
-
   const getTrainersData = async (
     searchvalue,
     trainerStatus,
     hr_id,
     pageNumber,
     limit,
+    callTechnologiesApi,
   ) => {
     setLoading(true);
     const payload = {
@@ -546,9 +489,62 @@ export default function Trainers() {
       setTrainersData([]);
       console.log("trainers error", error);
     } finally {
+      setLoading(false);
+      if (callTechnologiesApi) {
+        getTechnologiesData();
+      }
+    }
+  };
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      console.log("technologies response", response);
+      setTechnologyOptions(response?.data?.data || []);
+    } catch (error) {
+      setTechnologyOptions([]);
+      console.log("technology error", error);
+    } finally {
+      getBatchData();
+    }
+  };
+
+  const getBatchData = async () => {
+    try {
+      const response = await getBatches();
+      console.log("batches response", response);
+      setBatchOptions(response?.data?.data || []);
+    } catch (error) {
+      setBatchOptions([]);
+      console.log("batch error", error);
+    } finally {
+      getExperienceData();
+    }
+  };
+
+  const getExperienceData = async () => {
+    try {
+      const response = await getExperience();
+      console.log("experience response", response);
+      setExperienceOptions(response?.data?.data || []);
+    } catch (error) {
+      setExperienceOptions([]);
+      console.log("experience error", error);
+    } finally {
       setTimeout(() => {
-        setLoading(false);
+        getSkillsData(true);
       }, 300);
+    }
+  };
+
+  const getSkillsData = async () => {
+    try {
+      const response = await getTrainerSkills();
+      console.log("skills response", response);
+      setSkillsOptions(response?.data?.data || []);
+    } catch (error) {
+      setSkillsOptions([]);
+      console.log("skills error", error);
     }
   };
 
@@ -1067,7 +1063,7 @@ export default function Trainers() {
         setIsOpenAddSkillModal(false);
         setSkillName("");
         setSkillNameError("");
-        getSkillsData(false);
+        getSkillsData();
       }, 300);
     } catch (error) {
       setAddCourseLoading(false);

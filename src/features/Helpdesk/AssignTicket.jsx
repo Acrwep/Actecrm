@@ -11,7 +11,11 @@ import {
   updateTicketStatus,
 } from "../ApiService/action";
 import CommonSelectField from "../Common/CommonSelectField";
-import { formatToBackendIST, selectValidator } from "../Common/Validation";
+import {
+  addressValidator,
+  formatToBackendIST,
+  selectValidator,
+} from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import moment from "moment";
@@ -51,9 +55,13 @@ const AssignTicket = forwardRef(
     }));
 
     const handleTicketTrack = async () => {
-      const userIdValidate = selectValidator(userId);
+      const userIdValidate =
+        drawerStatus == "Close Request"
+          ? addressValidator(attachmentBase64)
+          : selectValidator(userId);
 
       setUserIdError(userIdValidate);
+      setAttachmentBase64Error(userIdValidate);
 
       if (userIdValidate) return;
 
@@ -69,7 +77,9 @@ const AssignTicket = forwardRef(
 
       const payload = {
         ticket_id: ticketDetails?.ticket_id ?? null,
-        assigned_to: userId,
+        ...(drawerStatus && drawerStatus == "Assign Ticket"
+          ? { assigned_to: userId }
+          : {}),
         status: drawerStatus == "Assign Ticket" ? "Assigned" : "Close Request",
         created_date: formatToBackendIST(today),
         details:

@@ -99,9 +99,7 @@ export default function ServerReport() {
       setReportData([]);
       console.log("server report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

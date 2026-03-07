@@ -55,8 +55,8 @@ export default function PaymentReport() {
             {text && text === "Total"
               ? "Total"
               : text
-              ? moment(text).format("DD/MM/YYYY")
-              : "-"}
+                ? moment(text).format("DD/MM/YYYY")
+                : "-"}
           </p>
         );
       },
@@ -132,8 +132,8 @@ export default function PaymentReport() {
             {text && text === "Total"
               ? "Total"
               : text
-              ? moment(text).format("DD/MM/YYYY")
-              : "-"}
+                ? moment(text).format("DD/MM/YYYY")
+                : "-"}
           </p>
         );
       },
@@ -288,8 +288,8 @@ export default function PaymentReport() {
             {text && text === "Total"
               ? "Total"
               : text
-              ? moment(text).format("DD/MM/YYYY")
-              : "-"}
+                ? moment(text).format("DD/MM/YYYY")
+                : "-"}
           </p>
         );
       },
@@ -499,7 +499,7 @@ export default function PaymentReport() {
       getPaymentReportData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        "Region"
+        "Region",
       );
     }
   }, [childUsers]);
@@ -581,9 +581,7 @@ export default function PaymentReport() {
       setTotalCounts(null);
       console.log("payment report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 
@@ -605,7 +603,7 @@ export default function PaymentReport() {
     getPaymentReportData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
-      "Region"
+      "Region",
     );
   };
 
@@ -626,7 +624,7 @@ export default function PaymentReport() {
                   getPaymentReportData(
                     selectedDates[0],
                     selectedDates[1],
-                    e.target.value
+                    e.target.value,
                   );
                 }}
                 value={typeId}
@@ -675,17 +673,17 @@ export default function PaymentReport() {
                   typeId == "Region"
                     ? columns
                     : typeId == "Branch"
-                    ? branchColumns
-                    : paymodeColumns,
+                      ? branchColumns
+                      : paymodeColumns,
                   `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
-                    selectedDates[1]
+                    selectedDates[1],
                   ).format("DD-MM-YYYY")} ${
                     typeId == "Region"
                       ? "Regionwise"
                       : typeId == "Branch"
-                      ? "Branchwise"
-                      : "Modewise"
-                  } Payment Report.csv`
+                        ? "Branchwise"
+                        : "Modewise"
+                  } Payment Report.csv`,
                 );
               }}
             >
@@ -711,8 +709,8 @@ export default function PaymentReport() {
             typeId == "Region"
               ? columns
               : typeId == "Branch"
-              ? branchColumns
-              : paymodeColumns
+                ? branchColumns
+                : paymodeColumns
           }
           dataSource={reportData}
           dataPerPage={10}

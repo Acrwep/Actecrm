@@ -400,3 +400,13 @@
 .sharetemplate_textarea_input:hover {
   border-color: #5b69ca !important;
 }
+
+/* Profile Drawer Styles */
+.profile_details_drawer .ant-drawer-title {
+  font-weight: 700 !important;
+  color: #333 !important;
+}
+
+.profile_details_drawer .ant-drawer-body {
+  padding: 24px !important;
+}

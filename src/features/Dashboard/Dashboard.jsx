@@ -85,7 +85,7 @@ export default function Dashboard() {
   const [userWiseLeadsSeries, setUserWiseLeadsSeries] = useState([]);
   const [userWiseLeadsConversion, setUserWiseLeadsConversion] = useState([]);
   const [userWiseLeadjoiningsCount, setUserWiseLeadsJoingingsCount] = useState(
-    []
+    [],
   );
   const [userWiseFollowUpHandled, setUserWiseFollowUpHandled] = useState([]);
   const [userWiseTotalFollowUp, setUserWiseTotalFollowUp] = useState([]);
@@ -95,11 +95,11 @@ export default function Dashboard() {
   //User-Wise Sales Analysis
   const [month, setMonth] = useState(moment().format("MMMM - YYYY"));
   const [userWiseStartDate, setUserWiseStartDate] = useState(
-    moment().subtract(1, "month").date(26).format("YYYY-MM-DD") // previous month 26
+    moment().subtract(1, "month").date(26).format("YYYY-MM-DD"), // previous month 26
   );
 
   const [userWiseEndDate, setUserWiseEndDate] = useState(
-    moment().date(25).format("YYYY-MM-DD") // current month 25
+    moment().date(25).format("YYYY-MM-DD"), // current month 25
   );
   const [userWiseType, setUserWiseType] = useState(1);
   const [userWiseXaxis, setUserWiseXaxis] = useState([]);
@@ -117,12 +117,12 @@ export default function Dashboard() {
   const [branchWiseLeadsXaxis, setBranchWiseLeadsXaxis] = useState([]);
   const [branchWiseLeadsSeries, setBranchWiseLeadsSeries] = useState([]);
   const [branchWiseLeadsConversion, setBranchWiseLeadsConversion] = useState(
-    []
+    [],
   );
   const [branchWiseLeadjoiningsCount, setBranchWiseLeadsJoingingsCount] =
     useState([]);
   const [branchWiseFollowUpHandled, setBranchWiseFollowUpHandled] = useState(
-    []
+    [],
   );
   const [branchWiseTotalFollowUp, setBranchWiseTotalFollowUp] = useState([]);
   const [branchWiseLeadsLoader, setBranchWiseLeadsLoader] = useState(true);
@@ -213,7 +213,7 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
-          true
+          true,
         );
       } else {
         getSaleDetailsData(
@@ -221,7 +221,7 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -234,14 +234,14 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
-    call_api
+    call_api,
   ) => {
     setScoreBoardLoader(true);
     //date handling
     let scoreboard_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       scoreboard_dates = dashboard_dates.find(
-        (f) => f.card_name == "Score Board"
+        (f) => f.card_name == "Score Board",
       );
       if (scoreboard_dates) {
         console.log("scoreboard_dates", scoreboard_dates);
@@ -255,7 +255,7 @@ export default function Dashboard() {
           scoreboard_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            scoreboard_dates.card_settings
+            scoreboard_dates.card_settings,
           );
           scoreboard_dates = getdates_bylabel;
           console.log("getdates_bylabel", getdates_bylabel);
@@ -288,19 +288,17 @@ export default function Dashboard() {
       setScoreCardDetails(null);
       console.log("scoreboard error", error);
     } finally {
-      setTimeout(() => {
-        setScoreBoardLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getSaleDetailsData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true
-          );
-        }
-      }, 300);
+      setScoreBoardLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getSaleDetailsData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+        );
+      }
     }
   };
 
@@ -309,7 +307,7 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
-    call_api
+    call_api,
   ) => {
     if (!permissions.includes("Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -318,7 +316,7 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
-        true
+        true,
       );
       return;
     }
@@ -328,7 +326,7 @@ export default function Dashboard() {
     let saleperformance_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       saleperformance_dates = dashboard_dates.find(
-        (f) => f.card_name == "Sale Performance"
+        (f) => f.card_name == "Sale Performance",
       );
       if (saleperformance_dates) {
         if (
@@ -341,7 +339,7 @@ export default function Dashboard() {
           saleperformance_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            saleperformance_dates.card_settings
+            saleperformance_dates.card_settings,
           );
           saleperformance_dates = getdates_bylabel;
           setSaleDetailsSelectedDates([
@@ -379,19 +377,17 @@ export default function Dashboard() {
       setSaleDetailsSeries([]);
       console.log("sale details error", error);
     } finally {
-      setTimeout(() => {
-        setSaleDetailsLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getPostSalePerformance(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true
-          );
-        }
-      }, 300);
+      setSaleDetailsLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getPostSalePerformance(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+        );
+      }
     }
   };
 
@@ -400,7 +396,7 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
-    call_api
+    call_api,
   ) => {
     if (!permissions.includes("Post Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -410,7 +406,7 @@ export default function Dashboard() {
         PreviousAndCurrentDate[1],
         downliners,
         true,
-        1
+        1,
       );
       return;
     }
@@ -420,7 +416,7 @@ export default function Dashboard() {
     let postsale_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       postsale_dates = dashboard_dates.find(
-        (f) => f.card_name == "Post Sale Performance"
+        (f) => f.card_name == "Post Sale Performance",
       );
       if (postsale_dates) {
         if (
@@ -433,7 +429,7 @@ export default function Dashboard() {
           postsale_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            postsale_dates.card_settings
+            postsale_dates.card_settings,
           );
           postsale_dates = getdates_bylabel;
           setPostSaleSelectedDates([
@@ -503,20 +499,18 @@ export default function Dashboard() {
       setPostSaleDownloadData([]);
       console.log("post sale error", error);
     } finally {
-      setTimeout(() => {
-        setPostSaleLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api === true) {
-          getUserWiseLeadCountsData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true,
-            1
-          );
-        }
-      }, 300);
+      setPostSaleLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api === true) {
+        getUserWiseLeadCountsData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+          1,
+        );
+      }
     }
   };
 
@@ -534,10 +528,10 @@ export default function Dashboard() {
         label === "Awaiting Student Verify"
           ? "Awaiting Verify"
           : label === "Rejected Trainers"
-          ? "Awaiting Trainer"
-          : label === "Class Completed"
-          ? "Completed"
-          : label,
+            ? "Awaiting Trainer"
+            : label === "Class Completed"
+              ? "Completed"
+              : label,
       startDate: postSaleSelectedDates[0],
       endDate: postSaleSelectedDates[1],
     };
@@ -550,7 +544,7 @@ export default function Dashboard() {
     endDate,
     downliners,
     call_api,
-    type
+    type,
   ) => {
     if (!permissions.includes("User-Wise Lead Analysis")) {
       const { month, startDate, endDate } = getActiveTargetMonthRange();
@@ -560,7 +554,7 @@ export default function Dashboard() {
         endDate,
         downliners,
         true,
-        1
+        1,
       );
       return;
     }
@@ -570,7 +564,7 @@ export default function Dashboard() {
     let userwiseleads_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       userwiseleads_dates = dashboard_dates.find(
-        (f) => f.card_name == "User-Wise Lead Analysis"
+        (f) => f.card_name == "User-Wise Lead Analysis",
       );
       if (userwiseleads_dates) {
         if (
@@ -583,7 +577,7 @@ export default function Dashboard() {
           userwiseleads_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            userwiseleads_dates.card_settings
+            userwiseleads_dates.card_settings,
           );
           userwiseleads_dates = getdates_bylabel;
           setUserWiseLeadsDates([
@@ -616,7 +610,7 @@ export default function Dashboard() {
       console.log(userwise_leads);
 
       const xaxis = userwise_leads.map(
-        (item) => `${item.user_id} (${item.user_name})`
+        (item) => `${item.user_id} (${item.user_name})`,
       );
 
       const series = userwise_leads.map((item) =>
@@ -624,9 +618,9 @@ export default function Dashboard() {
           type == 1
             ? item.total_leads
             : type == 2
-            ? item.followup_unhandled
-            : ""
-        )
+              ? item.followup_unhandled
+              : "",
+        ),
       );
 
       const percentage = userwise_leads.map((item) => Number(item.percentage));
@@ -635,7 +629,7 @@ export default function Dashboard() {
 
       if (type == 1) {
         const customers_count = userwise_leads.map((item) =>
-          Number(item.customer_count)
+          Number(item.customer_count),
         );
         setUserWiseLeadsJoingingsCount(customers_count);
       } else {
@@ -644,11 +638,11 @@ export default function Dashboard() {
 
       if (type == 2) {
         const total_followup = userwise_leads.map((item) =>
-          Number(item.lead_followup_count)
+          Number(item.lead_followup_count),
         );
 
         const followup_handled = userwise_leads.map((item) =>
-          Number(item.followup_handled)
+          Number(item.followup_handled),
         );
 
         setUserWiseTotalFollowUp(total_followup);
@@ -662,7 +656,7 @@ export default function Dashboard() {
 
       if (type == 3) {
         const customers_count = userwise_leads.map((item) =>
-          Number(item.customer_count)
+          Number(item.customer_count),
         );
         setUserWiseLeadsJoingingsCount(customers_count);
         setUserWiseLeadsSeries(customers_count);
@@ -678,20 +672,18 @@ export default function Dashboard() {
       setUserWiseFollowUpHandled([]);
       setUserWiseTotalFollowUp([]);
     } finally {
-      setTimeout(() => {
-        setUserWiseLeadsLoader(false);
-        const { month, startDate, endDate } = getActiveTargetMonthRange();
-        if (call_api == true) {
-          getUserWiseScoreBoardData(
-            dashboard_dates,
-            startDate,
-            endDate,
-            downliners,
-            true,
-            1
-          );
-        }
-      }, 300);
+      setUserWiseLeadsLoader(false);
+      const { month, startDate, endDate } = getActiveTargetMonthRange();
+      if (call_api == true) {
+        getUserWiseScoreBoardData(
+          dashboard_dates,
+          startDate,
+          endDate,
+          downliners,
+          true,
+          1,
+        );
+      }
     }
   };
 
@@ -701,7 +693,7 @@ export default function Dashboard() {
     endDate,
     downliners,
     call_api,
-    type
+    type,
   ) => {
     if (!permissions.includes("User-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -712,7 +704,7 @@ export default function Dashboard() {
         downliners,
         true,
         1,
-        1
+        1,
       );
       return;
     }
@@ -731,20 +723,20 @@ export default function Dashboard() {
       console.log(userwise_scorecard);
 
       const xaxis = userwise_scorecard.map(
-        (item) => `${item.user_id} (${item.user_name})`
+        (item) => `${item.user_id} (${item.user_name})`,
       );
       const series = userwise_scorecard.map((item) =>
         type == 1
           ? Number(item.sale_volume)
           : type == 2
-          ? Number(item.percentage)
-          : Number(item.pending)
+            ? Number(item.percentage)
+            : Number(item.pending),
       ); // for bar values
       const targets = userwise_scorecard.map((item) =>
-        Number(item.target_value)
+        Number(item.target_value),
       );
       const collections = userwise_scorecard.map((item) =>
-        Number(item.total_collection)
+        Number(item.total_collection),
       ); // for tooltip
 
       setUserWiseXaxis(xaxis);
@@ -764,21 +756,19 @@ export default function Dashboard() {
       setUserWiseCollection([]);
       console.log("userwise error", error);
     } finally {
-      setTimeout(() => {
-        setUserWiseLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getBranchWiseLeadsData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true,
-            1,
-            1
-          );
-        }
-      }, 300);
+      setUserWiseLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getBranchWiseLeadsData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+          1,
+          1,
+        );
+      }
     }
   };
 
@@ -789,7 +779,7 @@ export default function Dashboard() {
     downliners,
     call_api,
     type,
-    regionId
+    regionId,
   ) => {
     if (!permissions.includes("Branch-Wise Lead Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -800,7 +790,7 @@ export default function Dashboard() {
         downliners,
         true,
         1,
-        1
+        1,
       );
       return;
     }
@@ -810,7 +800,7 @@ export default function Dashboard() {
     let branchwiseleads_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       branchwiseleads_dates = dashboard_dates.find(
-        (f) => f.card_name == "Branch-Wise Lead Analysis"
+        (f) => f.card_name == "Branch-Wise Lead Analysis",
       );
       if (branchwiseleads_dates) {
         if (
@@ -823,7 +813,7 @@ export default function Dashboard() {
           branchwiseleads_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            branchwiseleads_dates.card_settings
+            branchwiseleads_dates.card_settings,
           );
           branchwiseleads_dates = getdates_bylabel;
           setBranchWiseLeadsDates([
@@ -861,19 +851,19 @@ export default function Dashboard() {
           type == 1
             ? item.total_leads
             : type == 2
-            ? item.followup_unhandled
-            : ""
-        )
+              ? item.followup_unhandled
+              : "",
+        ),
       );
       const percentage = branchwise_leads.map((item) =>
-        Number(item.percentage)
+        Number(item.percentage),
       );
 
       setBranchWiseLeadsConversion(percentage);
 
       if (type == 1) {
         const customers_count = branchwise_leads.map((item) =>
-          Number(item.customer_count)
+          Number(item.customer_count),
         );
         setBranchWiseLeadsJoingingsCount(customers_count);
       } else {
@@ -882,10 +872,10 @@ export default function Dashboard() {
 
       if (type == 2) {
         const total_followup = branchwise_leads.map((item) =>
-          Number(item.lead_followup_count)
+          Number(item.lead_followup_count),
         );
         const followup_handled = branchwise_leads.map((item) =>
-          Number(item.followup_handled)
+          Number(item.followup_handled),
         );
         setBranchWiseTotalFollowUp(total_followup);
         setBranchWiseFollowUpHandled(followup_handled);
@@ -898,7 +888,7 @@ export default function Dashboard() {
 
       if (type == 3) {
         const customers_count = branchwise_leads.map((item) =>
-          Number(item.customer_count)
+          Number(item.customer_count),
         );
         setBranchWiseLeadsJoingingsCount(customers_count);
         setBranchWiseLeadsSeries(customers_count);
@@ -914,21 +904,19 @@ export default function Dashboard() {
       setBranchWiseFollowUpHandled([]);
       setBranchWiseTotalFollowUp([]);
     } finally {
-      setTimeout(() => {
-        setBranchWiseLeadsLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getBranchWiseSalesData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true,
-            1,
-            1
-          );
-        }
-      }, 300);
+      setBranchWiseLeadsLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getBranchWiseSalesData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+          1,
+          1,
+        );
+      }
     }
   };
 
@@ -939,7 +927,7 @@ export default function Dashboard() {
     downliners,
     call_api,
     type,
-    regionId
+    regionId,
   ) => {
     if (!permissions.includes("Branch-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -949,7 +937,7 @@ export default function Dashboard() {
         PreviousAndCurrentDate[1],
         downliners,
         true,
-        1
+        1,
       );
       return;
     }
@@ -959,7 +947,7 @@ export default function Dashboard() {
     let branchwisesales_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       branchwisesales_dates = dashboard_dates.find(
-        (f) => f.card_name == "Branch-Wise Sale Analysis"
+        (f) => f.card_name == "Branch-Wise Sale Analysis",
       );
       if (branchwisesales_dates) {
         if (
@@ -972,7 +960,7 @@ export default function Dashboard() {
           branchwisesales_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            branchwisesales_dates.card_settings
+            branchwisesales_dates.card_settings,
           );
           branchwisesales_dates = getdates_bylabel;
           setBranchWiseSaleDates([
@@ -1011,8 +999,8 @@ export default function Dashboard() {
         type == 1
           ? Number(item.sale_volume)
           : type == 2
-          ? Number(item.total_collection)
-          : Number(item.pending)
+            ? Number(item.total_collection)
+            : Number(item.pending),
       ); // for bar values
 
       setBranchWiseSalesXaxis(xaxis);
@@ -1023,20 +1011,18 @@ export default function Dashboard() {
       setBranchWiseSalesSeries([]);
       console.log("branchwise sales error", error);
     } finally {
-      setTimeout(() => {
-        setBranchWiseSalesLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getRegionWiseLeadsData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true,
-            1
-          );
-        }
-      }, 300);
+      setBranchWiseSalesLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getRegionWiseLeadsData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+          1,
+        );
+      }
     }
   };
 
@@ -1046,7 +1032,7 @@ export default function Dashboard() {
     endDate,
     downliners,
     call_api,
-    type
+    type,
   ) => {
     if (!permissions.includes("Region-Wise Lead Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -1056,7 +1042,7 @@ export default function Dashboard() {
         PreviousAndCurrentDate[1],
         downliners,
         true,
-        1
+        1,
       );
       return;
     }
@@ -1066,7 +1052,7 @@ export default function Dashboard() {
     let regionwiseleads_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       regionwiseleads_dates = dashboard_dates.find(
-        (f) => f.card_name == "Region-Wise Lead Analysis"
+        (f) => f.card_name == "Region-Wise Lead Analysis",
       );
       if (regionwiseleads_dates) {
         if (
@@ -1079,7 +1065,7 @@ export default function Dashboard() {
           regionwiseleads_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            regionwiseleads_dates.card_settings
+            regionwiseleads_dates.card_settings,
           );
           regionwiseleads_dates = getdates_bylabel;
           setRegionWiseLeadsDates([
@@ -1181,20 +1167,18 @@ export default function Dashboard() {
       setRegionWiseLeadsXaxis([]);
       setRegionWiseLeadsSeries([]);
     } finally {
-      setTimeout(() => {
-        setRegionWiseLeadsLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getRegionWiseSalesData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true,
-            1
-          );
-        }
-      }, 300);
+      setRegionWiseLeadsLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getRegionWiseSalesData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+          1,
+        );
+      }
     }
   };
 
@@ -1204,7 +1188,7 @@ export default function Dashboard() {
     endDate,
     downliners,
     call_api,
-    type
+    type,
   ) => {
     if (!permissions.includes("Region-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -1213,7 +1197,7 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
-        true
+        true,
       );
       return;
     }
@@ -1223,7 +1207,7 @@ export default function Dashboard() {
     let branchwisesales_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       branchwisesales_dates = dashboard_dates.find(
-        (f) => f.card_name == "Region-Wise Sales Analysis"
+        (f) => f.card_name == "Region-Wise Sales Analysis",
       );
       if (branchwisesales_dates) {
         if (
@@ -1236,7 +1220,7 @@ export default function Dashboard() {
           branchwisesales_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            branchwisesales_dates.card_settings
+            branchwisesales_dates.card_settings,
           );
           branchwisesales_dates = getdates_bylabel;
           setRegionWiseSalesDates([
@@ -1308,19 +1292,17 @@ export default function Dashboard() {
       setRegionWiseSalesSeries([]);
       console.log("regionwise sales error", error);
     } finally {
-      setTimeout(() => {
-        setRegionWiseSalesLoader(false);
-        const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        if (call_api == true) {
-          getTopPerformanceData(
-            dashboard_dates,
-            PreviousAndCurrentDate[0],
-            PreviousAndCurrentDate[1],
-            downliners,
-            true
-          );
-        }
-      }, 300);
+      setRegionWiseSalesLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getTopPerformanceData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+        );
+      }
     }
   };
 
@@ -1329,7 +1311,7 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
-    call_api
+    call_api,
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
       return;
@@ -1340,7 +1322,7 @@ export default function Dashboard() {
     let topperformance_dates;
     if (dashboard_dates && dashboard_dates.length >= 1) {
       topperformance_dates = dashboard_dates.find(
-        (f) => f.card_name == "Top Performance"
+        (f) => f.card_name == "Top Performance",
       );
       if (topperformance_dates) {
         if (
@@ -1353,7 +1335,7 @@ export default function Dashboard() {
           topperformance_dates.card_settings == "90 Days"
         ) {
           const getdates_bylabel = getDatesFromRangeLabel(
-            topperformance_dates.card_settings
+            topperformance_dates.card_settings,
           );
           topperformance_dates = getdates_bylabel;
           setPerformingSelectedDates([
@@ -1386,9 +1368,7 @@ export default function Dashboard() {
       setPerformanceData([]);
       console.log("scoreboard error", error);
     } finally {
-      setTimeout(() => {
-        setPerformanceLoader(false);
-      }, 300);
+      setPerformanceLoader(false);
     }
   };
 
@@ -1442,7 +1422,7 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,
-          true
+          true,
         );
       } else {
         getSaleDetailsData(
@@ -1450,7 +1430,7 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,
-          true
+          true,
         );
       }
     } catch (error) {
@@ -1475,18 +1455,16 @@ export default function Dashboard() {
         data,
         columns,
         `${moment(userWiseLeadsDates[0]).format("DD-MM-YYYY")} to ${moment(
-          userWiseLeadsDates[1]
-        ).format("DD-MM-YYYY")} User-Wise Lead Analysis.csv`
+          userWiseLeadsDates[1],
+        ).format("DD-MM-YYYY")} User-Wise Lead Analysis.csv`,
       );
-      setTimeout(() => {
-        setUserWiseLeadDownloadLoader(false);
-      }, 300);
+      setUserWiseLeadDownloadLoader(false);
     } catch (error) {
       setUserWiseLeadDownloadLoader(false);
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1507,18 +1485,16 @@ export default function Dashboard() {
         data,
         columns,
         `${moment(userWiseStartDate).format("DD-MM-YYYY")} to ${moment(
-          userWiseEndDate
-        ).format("DD-MM-YYYY")} User-Wise Sales Analysis.csv`
+          userWiseEndDate,
+        ).format("DD-MM-YYYY")} User-Wise Sales Analysis.csv`,
       );
-      setTimeout(() => {
-        setUserWiseSalesDownloadLoader(false);
-      }, 300);
+      setUserWiseSalesDownloadLoader(false);
     } catch (error) {
       setUserWiseSalesDownloadLoader(false);
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1556,7 +1532,7 @@ export default function Dashboard() {
     let get_item;
     if (allDashboardCardsDates.length >= 1) {
       get_item = allDashboardCardsDates.find(
-        (f) => f.user_id == loginUserId && f.card_name == name
+        (f) => f.user_id == loginUserId && f.card_name == name,
       );
     } else {
       get_item = null;
@@ -1632,7 +1608,7 @@ export default function Dashboard() {
         formatter: function (val, { seriesIndex, dataPointIndex }) {
           // Show corresponding x-axis name and y value
           return `<span style="margin-left: -6px; font-family:Poppins, sans-serif;">${val.toLocaleString(
-            "en-IN"
+            "en-IN",
           )}</span>`;
         },
       },
@@ -1650,8 +1626,8 @@ export default function Dashboard() {
       regionWiseLeadsType == 1
         ? ["#5b69ca", "#258a25", "#607d8b"]
         : regionWiseLeadsType == 2
-        ? ["#5b69ca", "#258a25", "#d32f2fcc", "#607d8b"]
-        : ["#258a25"], // Different colors for the three series
+          ? ["#5b69ca", "#258a25", "#d32f2fcc", "#607d8b"]
+          : ["#258a25"], // Different colors for the three series
   };
 
   const regionWiseSalesLineChartOptions = {
@@ -1696,7 +1672,7 @@ export default function Dashboard() {
         formatter: function (val, { seriesIndex, dataPointIndex }) {
           // Show corresponding x-axis name and y value
           return `<span style="margin-left: -6px; font-family:Poppins, sans-serif;">${val.toLocaleString(
-            "en-IN"
+            "en-IN",
           )}</span>`;
         },
       },
@@ -1708,8 +1684,8 @@ export default function Dashboard() {
       regionWiseSalesType == 1
         ? ["#5b69ca"]
         : regionWiseSalesType == 2
-        ? ["#258a25"]
-        : ["#d32f2fcc"], // Different colors for the three series
+          ? ["#258a25"]
+          : ["#d32f2fcc"], // Different colors for the three series
   };
 
   return (
@@ -1763,9 +1739,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(scoreBoardSelectedDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(scoreBoardSelectedDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -1783,14 +1759,14 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Score Board",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getScoreBoardData(
                           null,
                           dates[0],
                           dates[1],
                           allDownliners,
-                          false
+                          false,
                         );
                       }}
                     />
@@ -1833,7 +1809,7 @@ export default function Dashboard() {
                             (scoreCardDetails.total_leads != undefined ||
                               scoreCardDetails.total_leads != null)
                               ? Number(
-                                  scoreCardDetails.total_leads
+                                  scoreCardDetails.total_leads,
                                 ).toLocaleString("en-IN")
                               : "-"}
                           </p>
@@ -1860,7 +1836,7 @@ export default function Dashboard() {
                             (scoreCardDetails.total_join != undefined ||
                               scoreCardDetails.total_join != null)
                               ? Number(
-                                  scoreCardDetails.total_join
+                                  scoreCardDetails.total_join,
                                 ).toLocaleString("en-IN")
                               : "-"}
                           </p>
@@ -1964,9 +1940,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(saleDetailsSelectedDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(saleDetailsSelectedDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -1984,14 +1960,14 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Sale Performance",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getSaleDetailsData(
                           null,
                           dates[0],
                           dates[1],
                           allDownliners,
-                          false
+                          false,
                         );
                       }}
                     />
@@ -2052,9 +2028,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(postSaleSelectedDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(postSaleSelectedDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -2072,14 +2048,14 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Post Sale Performance",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getPostSalePerformance(
                           null,
                           dates[0],
                           dates[1],
                           allDownliners,
-                          false
+                          false,
                         );
                       }}
                     />
@@ -2095,16 +2071,16 @@ export default function Dashboard() {
                         className="dashboard_download_button"
                         onClick={() => {
                           const columns = DashboardDownloadColumns(
-                            "Post Sale Performance"
+                            "Post Sale Performance",
                           );
                           DownloadTableAsCSV(
                             postSaleDownloadData,
                             columns,
                             `${moment(postSaleSelectedDates[0]).format(
-                              "DD-MM-YYYY"
+                              "DD-MM-YYYY",
                             )} to ${moment(postSaleSelectedDates[1]).format(
-                              "DD-MM-YYYY"
-                            )} RA Performance.csv`
+                              "DD-MM-YYYY",
+                            )} RA Performance.csv`,
                           );
                         }}
                       >
@@ -2166,9 +2142,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(userWiseLeadsDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(userWiseLeadsDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -2186,7 +2162,7 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "User-Wise Lead Analysis",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getUserWiseLeadCountsData(
                           null,
@@ -2194,7 +2170,7 @@ export default function Dashboard() {
                           dates[1],
                           allDownliners,
                           false,
-                          userWiseLeadsType
+                          userWiseLeadsType,
                         );
                       }}
                     />
@@ -2237,7 +2213,7 @@ export default function Dashboard() {
                         userWiseLeadsDates[1],
                         allDownliners,
                         false,
-                        value
+                        value,
                       );
                     }}
                     value={userWiseLeadsType}
@@ -2303,8 +2279,8 @@ export default function Dashboard() {
                             userWiseLeadsType == 1
                               ? "#009688"
                               : userWiseLeadsType == 2
-                              ? "#607D8B"
-                              : "#5b6aca",
+                                ? "#607D8B"
+                                : "#5b6aca",
                           ]}
                           height={
                             userWiseLeadsXaxis.length <= 5
@@ -2315,8 +2291,8 @@ export default function Dashboard() {
                             userWiseLeadsType == 1
                               ? "Leads"
                               : userWiseLeadsType == 2
-                              ? "Follow Up"
-                              : "Customer Join"
+                                ? "Follow Up"
+                                : "Customer Join"
                           }
                         />
                       ) : (
@@ -2352,7 +2328,7 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(userWiseStartDate).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(userWiseEndDate).format("DD MMM YYYY")})`}
                     </p>
                   </div>
@@ -2377,7 +2353,7 @@ export default function Dashboard() {
                           const [monthName, year] = value.split(" - ");
                           const selectedMonth = moment(
                             `${monthName} ${year}`,
-                            "MMMM YYYY"
+                            "MMMM YYYY",
                           );
 
                           // Start date: 26th of previous month
@@ -2403,7 +2379,7 @@ export default function Dashboard() {
                             endDate,
                             allDownliners,
                             false,
-                            userWiseType
+                            userWiseType,
                           );
                         }
                       }}
@@ -2448,7 +2424,7 @@ export default function Dashboard() {
                         userWiseEndDate,
                         allDownliners,
                         false,
-                        value
+                        value,
                       );
                     }}
                     value={userWiseType}
@@ -2511,15 +2487,15 @@ export default function Dashboard() {
                           userWiseType == 1
                             ? "#5b6aca"
                             : userWiseType == 2
-                            ? "#258a25"
-                            : "#b22021",
+                              ? "#258a25"
+                              : "#b22021",
                         ]}
                         type={
                           userWiseType == 1
                             ? "Sale"
                             : userWiseType == 2
-                            ? "Collection"
-                            : "Pending"
+                              ? "Collection"
+                              : "Pending"
                         }
                         height={
                           userWiseXaxis.length <= 5
@@ -2557,9 +2533,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(branchWiseLeadsDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(branchWiseLeadsDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -2577,7 +2553,7 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Branch-Wise Lead Analysis",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getBranchWiseLeadsData(
                           null,
@@ -2586,7 +2562,7 @@ export default function Dashboard() {
                           allDownliners,
                           false,
                           branchWiseLeadsType,
-                          branchWiseLeadsRegion
+                          branchWiseLeadsRegion,
                         );
                       }}
                     />
@@ -2630,7 +2606,7 @@ export default function Dashboard() {
                         allDownliners,
                         false,
                         branchWiseLeadsType,
-                        value
+                        value,
                       );
                     }}
                     value={branchWiseLeadsRegion}
@@ -2665,7 +2641,7 @@ export default function Dashboard() {
                         allDownliners,
                         false,
                         value,
-                        branchWiseLeadsRegion
+                        branchWiseLeadsRegion,
                       );
                     }}
                     value={branchWiseLeadsType}
@@ -2704,16 +2680,16 @@ export default function Dashboard() {
                             branchWiseLeadsType == 1
                               ? "#009688"
                               : branchWiseLeadsType == 2
-                              ? "#607D8B"
-                              : "#5b6aca",
+                                ? "#607D8B"
+                                : "#5b6aca",
                           ]}
                           height={320}
                           type={
                             branchWiseLeadsType == 1
                               ? "Leads"
                               : branchWiseLeadsType == 2
-                              ? "Follow Up"
-                              : "Customer Join"
+                                ? "Follow Up"
+                                : "Customer Join"
                           }
                         />
                       ) : (
@@ -2749,9 +2725,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(branchWiseSaleDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(branchWiseSaleDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -2769,7 +2745,7 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Branch-Wise Sale Analysis",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getBranchWiseSalesData(
                           null,
@@ -2778,7 +2754,7 @@ export default function Dashboard() {
                           allDownliners,
                           false,
                           branchWiseSaleType,
-                          branchWiseSaleRegion
+                          branchWiseSaleRegion,
                         );
                       }}
                     />
@@ -2822,7 +2798,7 @@ export default function Dashboard() {
                         allDownliners,
                         false,
                         branchWiseSaleType,
-                        value
+                        value,
                       );
                     }}
                     value={branchWiseSaleRegion}
@@ -2857,7 +2833,7 @@ export default function Dashboard() {
                         allDownliners,
                         false,
                         value,
-                        branchWiseSaleRegion
+                        branchWiseSaleRegion,
                       );
                     }}
                     value={branchWiseSaleType}
@@ -2890,15 +2866,15 @@ export default function Dashboard() {
                           branchWiseSaleType == 1
                             ? "#5b6aca"
                             : branchWiseSaleType == 2
-                            ? "#258a25"
-                            : "#b22021",
+                              ? "#258a25"
+                              : "#b22021",
                         ]}
                         type={
                           branchWiseSaleType == 1
                             ? "Sale"
                             : branchWiseSaleType == 2
-                            ? "Collection"
-                            : "Pending"
+                              ? "Collection"
+                              : "Pending"
                         }
                         height={320}
                       />
@@ -2932,9 +2908,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(regionWiseLeadsDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(regionWiseLeadsDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -2952,7 +2928,7 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Region-Wise Lead Analysis",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getRegionWiseLeadsData(
                           null,
@@ -2960,7 +2936,7 @@ export default function Dashboard() {
                           dates[1],
                           allDownliners,
                           false,
-                          regionWiseLeadsType
+                          regionWiseLeadsType,
                         );
                       }}
                     />
@@ -3003,7 +2979,7 @@ export default function Dashboard() {
                         regionWiseLeadsDates[1],
                         allDownliners,
                         false,
-                        value
+                        value,
                       );
                     }}
                     value={regionWiseLeadsType}
@@ -3070,9 +3046,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(regionWiseSalesDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(regionWiseSalesDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -3090,7 +3066,7 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Region-Wise Sales Analysis",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getRegionWiseSalesData(
                           null,
@@ -3098,7 +3074,7 @@ export default function Dashboard() {
                           dates[1],
                           allDownliners,
                           false,
-                          regionWiseSalesType
+                          regionWiseSalesType,
                         );
                       }}
                     />
@@ -3141,7 +3117,7 @@ export default function Dashboard() {
                         regionWiseSalesDates[1],
                         allDownliners,
                         false,
-                        value
+                        value,
                       );
                     }}
                     value={regionWiseSalesType}
@@ -3200,9 +3176,9 @@ export default function Dashboard() {
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>
                       {`(${moment(performingSelectedDates[0]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )} to ${moment(performingSelectedDates[1]).format(
-                        "DD MMM YYYY"
+                        "DD MMM YYYY",
                       )})`}
                     </p>
                   </div>
@@ -3220,14 +3196,14 @@ export default function Dashboard() {
                         updateDashboardCardDate(
                           "Top Performance",
                           dates[0],
-                          dates[1]
+                          dates[1],
                         );
                         getTopPerformanceData(
                           null,
                           dates[0],
                           dates[1],
                           allDownliners,
-                          false
+                          false,
                         );
                       }}
                     />

@@ -1,17 +1,60 @@
 import React, { useState, useRef, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Button } from "antd";
+import { Button, Modal, Row, Col } from "antd";
 import { LuDownload } from "react-icons/lu";
 import CommonSpinner from "../Common/CommonSpinner";
 import Logo from "../../assets/acte-logo.png";
 import DefaultProfileImage from "../../assets/customer_default_icon.png";
 import "./styles.css";
 import moment from "moment";
+import {
+  getCustomersPaymentHistory,
+  viewPaymentInvoice,
+} from "../ApiService/action";
+import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
+import { CommonMessage } from "../Common/CommonMessage";
+import { FaFileInvoiceDollar } from "react-icons/fa";
+import { HiDownload } from "react-icons/hi";
+import { IoReceiptOutline } from "react-icons/io5";
+import { Tooltip } from "antd";
+import { FaFileDownload } from "react-icons/fa";
 
 export default function DownloadRegistrationForm({ customerDetails }) {
   const certificateRef = useRef(null);
+  //patment usestates
+  const [paymentFullDetails, setPaymentFullDetails] = useState(null);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  //loading usestate
   const [loading, setLoading] = useState(false);
+  const [invoiceHtmlContent, setInvoiceHtmlContent] = useState("");
+  const [isOpenViewInvoiceModal, setIsOpenViewInvoiceModal] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [currentInvoiceName, setCurrentInvoiceName] = useState("");
+
+  useEffect(() => {
+    if (customerDetails?.lead_id) {
+      getPaymentHistoryData();
+    }
+  }, [customerDetails]);
+
+  const getPaymentHistoryData = async () => {
+    try {
+      const response = await getCustomersPaymentHistory(
+        customerDetails?.lead_id,
+      );
+      console.log("particular customer payment history", response);
+      const payment_full_details = response?.data?.data || null;
+      const payment_history = response?.data?.data?.payment_trans || [];
+
+      setPaymentFullDetails(payment_full_details);
+      setPaymentHistory(payment_history);
+    } catch (error) {
+      setPaymentFullDetails(null);
+      setPaymentHistory([]);
+      console.log("particular customer payment history error", error);
+    }
+  };
 
   const generatePDF = async () => {
     if (!certificateRef.current) return;
@@ -50,216 +93,86 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     setLoading(false);
   };
 
-  //   const htmlTemplate = `
-  //   <div>
-  //     <div style="padding: 34px 35px 0px 35px !important;">
-  //       <div class="trainer_registration_logoContainer">
-  //         <div style="height:100%;">
-  //           <img src="${Logo}" class="login_logo" />
-  //           <p class="trainer_registration_logotext" style="color:#1b538c;">
-  //             Technologies
-  //           </p>
-  //         </div>
-  //         <div>
-  //           <p class="trainer_registration_heading">
-  //             Customer Registration Form
-  //           </p>
-  //         </div>
-  //         ${
-  //           customerDetails && customerDetails.profile_image
-  //             ? `<img src="${customerDetails.profile_image}" class="customer_downloadform_profile_image" />`
-  //             : ` <img src="${DefaultProfileImage}" style="border-radius: 50%; width: 80px; height: 80px;" />`
-  //         }
-  //       </div>
+  const handleViewInvoice = async (transactionId) => {
+    const findTrans =
+      paymentHistory?.find((f) => f.id === transactionId) ?? null;
 
-  //       <div class="customer_downloadform_basicdetails_main_container">
-  //         <p class="customer_downloadform_basicdetails_heading">Basic Details</p>
+    if (!findTrans) return;
 
-  //         <div class="customer_downloadform_basicdetails_field_container">
-  //                 <!--------------- Basic Details First row -------------->
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Name</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.name
-  //                 ? customerDetails.name
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
+    const payload = {
+      email:
+        customerDetails && customerDetails.email ? customerDetails.email : "",
+      name: customerDetails && customerDetails.name ? customerDetails.name : "",
+      mobile:
+        customerDetails && customerDetails.phone ? customerDetails.phone : "",
+      convenience_fees: findTrans?.convenience_fees || "",
+      gst_amount: paymentFullDetails?.gst_amount
+        ? paymentFullDetails.gst_amount
+        : "",
+      gst_percentage: paymentFullDetails?.gst_percentage
+        ? parseFloat(paymentFullDetails.gst_percentage)
+        : "",
+      invoice_date: findTrans?.invoice_date
+        ? moment(findTrans.invoice_date).format("DD-MM-YYYY")
+        : "",
+      invoice_number: findTrans?.invoice_number || "",
+      paid_amount: findTrans?.amount || "",
+      payment_mode: findTrans?.payment_mode || "",
+      total_amount: paymentFullDetails?.total_amount
+        ? paymentFullDetails.total_amount
+        : "",
+      balance_amount:
+        findTrans.balance_amount != undefined ||
+        findTrans.balance_amount != null
+          ? parseFloat(findTrans?.balance_amount).toFixed(2)
+          : "",
+      course_name:
+        customerDetails && customerDetails.course_name
+          ? customerDetails.course_name
+          : "",
+      sub_total:
+        customerDetails && customerDetails.primary_fees
+          ? customerDetails.primary_fees
+          : "",
+      place_of_supply:
+        customerDetails && customerDetails.place_of_supply
+          ? customerDetails.place_of_supply
+          : "",
+      address:
+        customerDetails && customerDetails.address
+          ? customerDetails.address
+          : "",
+      state_code:
+        customerDetails && customerDetails.state_code
+          ? customerDetails.state_code
+          : "",
+      gst_number:
+        customerDetails && customerDetails.gst_number
+          ? customerDetails.gst_number
+          : "",
+      invoice_type:
+        customerDetails && customerDetails.invoice_type
+          ? customerDetails.invoice_type
+          : "",
+    };
 
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Email</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.email
-  //                 ? customerDetails.email
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Mobile</p>
-  //           <div class="customer_downloadform_input_field">
-  //           <p class="customer_downloadform_field_values">
-  //     ${
-  //       customerDetails?.phonecode && customerDetails?.phone
-  //         ? `${
-  //             customerDetails.phonecode.startsWith("+")
-  //               ? customerDetails.phonecode
-  //               : "+" + customerDetails.phonecode
-  //           } ${customerDetails.phone}`
-  //         : customerDetails?.phonecode
-  //         ? customerDetails.phonecode
-  //         : customerDetails?.phone ?? "-"
-  //     }
-
-  //         </p>
-  // </div>
-  //           </div>
-  //         </div>
-
-  //                 <!---------------- Basic Details Second row ---------------->
-  //              <div class="customer_downloadform_basicdetails_field_container">
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">WhatsApp</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">
-  //             ${
-  //               customerDetails?.whatsapp_phone_code && customerDetails?.whatsapp
-  //                 ? `${
-  //                     customerDetails.whatsapp_phone_code.startsWith("+")
-  //                       ? customerDetails.whatsapp_phone_code
-  //                       : "+" + customerDetails.whatsapp_phone_code
-  //                   } ${customerDetails.whatsapp}`
-  //                 : customerDetails?.whatsapp_phone_code
-  //                 ? customerDetails.whatsapp_phone_code
-  //                 : customerDetails?.whatsapp ?? "-"
-  //             }
-  //             </p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Date Of Birth</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.date_of_birth
-  //                 ? moment(customerDetails.date_of_birth).format("DD/MM/YYYY")
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Gender</p>
-  //             <div class="customer_downloadform_input_field">
-  //              <p class="customer_downloadform_field_values">${
-  //                customerDetails && customerDetails.gender
-  //                  ? customerDetails.gender
-  //                  : "-"
-  //              }</p></div>
-  //           </div>
-  //       </div>
-
-  //         <!-------------- Basic Details Thired row -------------->
-  //              <div class="customer_downloadform_basicdetails_field_container">
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Date Of Joining</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.date_of_joining
-  //                 ? moment(customerDetails.date_of_joining).format("DD/MM/YYYY")
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Area</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.current_location
-  //                 ? customerDetails.current_location
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div />
-  //       </div>
-  //         </div>
-
-  //         <!--------------------- Course Details ------------------------>
-  //          <div class="customer_downloadform_basicdetails_main_container">
-  //         <p class="customer_downloadform_basicdetails_heading">Course Details</p>
-
-  //         <div class="customer_downloadform_basicdetails_field_container">
-  //                 <!-------------- Course Details First row ------------->
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Enrolled Course</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.course_name
-  //                 ? customerDetails.course_name
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Batch Track</p>
-  //             <div class="customer_downloadform_input_field">
-  //             <p class="customer_downloadform_field_values">${
-  //               customerDetails && customerDetails.batch_tracking
-  //                 ? customerDetails.batch_tracking
-  //                 : "-"
-  //             }</p>
-  //             </div>
-  //           </div>
-
-  //           <div>
-  //             <p class="customer_downloadform_field_labels">Batch Type</p>
-  //           <div class="customer_downloadform_input_field">
-  //           <p class="customer_downloadform_field_values">
-  //         ${
-  //           customerDetails && customerDetails.batch_timing
-  //             ? customerDetails.batch_timing
-  //             : "-"
-  //         }
-  //         </p>
-  //         </div>
-  //         </div>
-  //         </div>
-  //         </div>
-
-  //         <!--------------------- Terms And Conditions ------------------------>
-  //           <div class="customer_downloadform_basicdetails_main_container">
-  //         <p class="customer_downloadform_basicdetails_heading">Terms and Conditions</p>
-  //         <ol>
-  //          <li>Acte Technologies has rights to postpone/cancel courses due to instructor illness or natural
-  //          calamities. No refund in this case.</li>
-  //          <li>The refund requisition will not be accepted</li>
-  //         </ol>
-  //         </div>
-
-  //         <!--------------------- Signature ------------------------>
-  //          <div class="customer_downloadform_signature_container">
-  //            <p style="margin-right:40px;">Signature</p>
-  //            <img
-  //               src="${customerDetails.signature_image}"
-  //               alt="Customer Signature"
-  //               class="customer_signature_image"
-  //             />
-  //             <p class="customer_downloadform_signature_name">
-  //            ${customerDetails.name}
-  //             </p>
-  //          </div>
-
-  //     </div>
-  //   </div>
-  // `;
+    setInvoiceLoading(true);
+    try {
+      const response = await viewPaymentInvoice(payload);
+      const htmlTemplate = response?.data?.data;
+      setInvoiceHtmlContent(htmlTemplate);
+      setCurrentInvoiceName(findTrans?.invoice_number || "Invoice");
+      setIsOpenViewInvoiceModal(true);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later",
+      );
+    } finally {
+      setInvoiceLoading(false);
+    }
+  };
 
   const htmlTemplate = `
   <style>
@@ -592,24 +505,130 @@ export default function DownloadRegistrationForm({ customerDetails }) {
         }}
       ></div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "16px",
-          marginRight: "20px",
-        }}
-      >
-        {loading ? (
-          <Button type="primary" style={{ width: 160, cursor: "default" }}>
-            <CommonSpinner />
-          </Button>
-        ) : (
-          <Button type="primary" style={{ width: 160 }} onClick={generatePDF}>
-            <LuDownload size={16} /> Download PDF
-          </Button>
-        )}
+      <div className="customer_registrationform_footer_container">
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <div className="customer_registrationform_invoice_icon_container">
+            <FaFileInvoiceDollar size={24} />
+          </div>
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "8px",
+              }}
+            >
+              <p className="customer_registrationform_invoice_heading">
+                Available Invoices
+              </p>
+              {paymentHistory && paymentHistory.length > 0 && (
+                <span className="customer_registrationform_invoice_count_batch">
+                  {paymentHistory.length}{" "}
+                  {paymentHistory.length === 1 ? "Invoice" : "Invoices"}
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
+            >
+              {paymentHistory && paymentHistory.length > 0 ? (
+                paymentHistory.map((item, index) => (
+                  <Tooltip
+                    key={index}
+                    title={
+                      <div style={{ padding: "4px" }}>
+                        <p style={{ margin: 0, fontWeight: 600 }}>
+                          Invoice: {item.invoice_number}
+                        </p>
+                        <p
+                          style={{ margin: 0, opacity: 0.8, fontSize: "12px" }}
+                        >
+                          Amount: ₹{item.amount}
+                        </p>
+                      </div>
+                    }
+                  >
+                    <Button
+                      onClick={() => handleViewInvoice(item.id)}
+                      loading={
+                        invoiceLoading &&
+                        currentInvoiceName === item.invoice_number
+                      }
+                      className="customer_registrationform_invoice_view_button"
+                    >
+                      <IoReceiptOutline
+                        size={18}
+                        style={{ color: "#5b69ca" }}
+                      />
+                      ₹{item.amount}
+                    </Button>
+                  </Tooltip>
+                ))
+              ) : (
+                <span
+                  style={{
+                    fontSize: "13px",
+                    color: "#d1d5db",
+                    fontStyle: "italic",
+                  }}
+                >
+                  No verified invoices found.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          {loading ? (
+            <Button
+              type="primary"
+              style={{
+                width: 250,
+                height: "50px",
+                borderRadius: "14px",
+                cursor: "default",
+                background: "#1b538c",
+              }}
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_registrationform_download_form_button"
+              onClick={generatePDF}
+            >
+              <FaFileDownload size={16} /> Download Registration Form
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* invoice view modal */}
+      <Modal
+        open={isOpenViewInvoiceModal}
+        onCancel={() => {
+          setIsOpenViewInvoiceModal(false);
+        }}
+        footer={false}
+        width="64%"
+        style={{ marginBottom: "20px" }}
+        zIndex={1100}
+        centered
+      >
+        <CommonInvoiceViewer
+          htmlTemplate={invoiceHtmlContent}
+          candidateName={
+            customerDetails && customerDetails.name ? customerDetails.name : "-"
+          }
+        />
+      </Modal>
     </div>
   );
 }

@@ -379,9 +379,7 @@ export default function UserwisePerformanceReport() {
       setTotalCounts(null);
       console.log("userwise leads report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

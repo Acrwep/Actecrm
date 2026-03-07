@@ -136,9 +136,7 @@ export default function UserwiseTransactionReport() {
       setTotalCounts(null);
       console.log("userwise transaction report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

@@ -117,11 +117,20 @@ export default function Courses() {
       width: 200,
       render: (text) => {
         if (text) {
+          const baseUrl = import.meta.env.VITE_API_URL || "";
+          const normalizedBaseUrl = baseUrl.endsWith("/")
+            ? baseUrl
+            : `${baseUrl}/`;
+          const normalizedPath = text.startsWith("/") ? text.slice(1) : text;
+          const fullUrl = text.startsWith("http")
+            ? text
+            : `${normalizedBaseUrl}${normalizedPath}`;
+
           return (
             <a
-              href={`${import.meta.env.VITE_API_URL}${text}`}
+              href={fullUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="courses_syllabus_a_tag"
             >
               Open Brouchure
@@ -139,11 +148,21 @@ export default function Courses() {
       width: 200,
       render: (text) => {
         if (text) {
+          const baseUrl = import.meta.env.VITE_API_URL || "";
+          const normalizedBaseUrl = baseUrl.endsWith("/")
+            ? baseUrl
+            : `${baseUrl}/`;
+          const normalizedPath = text.startsWith("/") ? text.slice(1) : text;
+          const fullUrl = text.startsWith("http")
+            ? text
+            : `${normalizedBaseUrl}${normalizedPath}`;
+
           return (
             <a
-              href={`${import.meta.env.VITE_API_URL}${text}`}
+              href={fullUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
+              download={`Syllabus_${text.split("/").pop()}`}
               className="courses_syllabus_a_tag"
             >
               Open Syllabus

@@ -427,9 +427,7 @@ export default function TransactionReport() {
       setTotalCounts(null);
       console.log("transaction report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

@@ -1068,9 +1068,10 @@ export default function Customers() {
                     {text}
                   </Button>
 
-                  <p className="customer_classgoing_percentage">{`${parseFloat(
-                    classPercent,
-                  )}%`}</p>
+                  <p
+                    className="customer_classgoing_percentage"
+                    style={{ flexShrink: 0 }}
+                  >{`${parseFloat(classPercent)}%`}</p>
                 </div>
               ) : (
                 <p style={{ marginLeft: "6px" }}>-</p>
@@ -1115,7 +1116,11 @@ export default function Customers() {
                   size={14}
                   color="#0a66c2"
                   className="customers_formlink_copybutton"
-                  style={{ cursor: "pointer", marginTop: "-2px" }}
+                  style={{
+                    cursor: "pointer",
+                    marginTop: "-2px",
+                    flexShrink: 0,
+                  }}
                   onClick={() => {
                     getParticularCustomerDetails(record?.id);
                     setDrawerContentStatus("Pre Certificate");
@@ -2465,9 +2470,10 @@ export default function Customers() {
                               {text}
                             </Button>
 
-                            <p className="customer_classgoing_percentage">{`${parseFloat(
-                              classPercent,
-                            )}%`}</p>
+                            <p
+                              className="customer_classgoing_percentage"
+                              style={{ flexShrink: 0 }}
+                            >{`${parseFloat(classPercent)}%`}</p>
                           </div>
                         ) : (
                           <p style={{ marginLeft: "6px" }}>-</p>
@@ -2512,7 +2518,11 @@ export default function Customers() {
                             size={14}
                             color="#0a66c2"
                             className="customers_formlink_copybutton"
-                            style={{ cursor: "pointer", marginTop: "-2px" }}
+                            style={{
+                              cursor: "pointer",
+                              marginTop: "-2px",
+                              flexShrink: 0,
+                            }}
                             onClick={() => {
                               getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Pre Certificate");

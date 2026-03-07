@@ -30,7 +30,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [certificateName, setCertificateName] = useState("");
   const [certHtmlContent, setCertHtmlContent] = useState("");
-  //patment usestates
+  //payment usestates
   const [paymentFullDetails, setPaymentFullDetails] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
 

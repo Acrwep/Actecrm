@@ -334,9 +334,7 @@ export default function BranchPerformanceReport() {
       setReportData([]);
       console.log("branchwise leads report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 

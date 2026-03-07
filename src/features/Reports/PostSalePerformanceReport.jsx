@@ -205,7 +205,7 @@ export default function PostSalePerformanceReport() {
       getPostSalePerformanceData(
         customizeDate[0],
         customizeDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -229,9 +229,7 @@ export default function PostSalePerformanceReport() {
       setTotalCounts(null);
       console.log("pose sale performance report error", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     }
   };
 
@@ -259,7 +257,7 @@ export default function PostSalePerformanceReport() {
       getPostSalePerformanceData(
         startDateAndEndDate[0],
         startDateAndEndDate[1],
-        downliners_ids
+        downliners_ids,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -309,7 +307,7 @@ export default function PostSalePerformanceReport() {
                   getPostSalePerformanceData(
                     customizeDate[0],
                     customizeDate[1],
-                    allDownliners
+                    allDownliners,
                   );
                 }}
               />
@@ -336,10 +334,10 @@ export default function PostSalePerformanceReport() {
                   reportData,
                   columns,
                   `${moment(startDateAndEndDate[0]).format(
-                    "DD MMMM YYYY"
+                    "DD MMMM YYYY",
                   )} to ${moment(startDateAndEndDate[1]).format(
-                    "DD MMMM YYYY"
-                  )} Post Sale Performance Report.csv`
+                    "DD MMMM YYYY",
+                  )} Post Sale Performance Report.csv`,
                 );
               }}
             >

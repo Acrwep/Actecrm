@@ -101,7 +101,7 @@ const UpdateBatchCustomers = forwardRef(
         key: "status",
         dataIndex: "status",
         fixed: "right",
-        width: 140,
+        width: 160,
         render: (text, record) => {
           let classPercent = 0;
 
@@ -194,16 +194,21 @@ const UpdateBatchCustomers = forwardRef(
                     {text}
                   </Button>
 
-                  <p className="customer_classgoing_percentage">{`${parseFloat(
-                    classPercent,
-                  )}%`}</p>
+                  <p
+                    className="customer_classgoing_percentage"
+                    style={{ flexShrink: 0 }}
+                  >{`${parseFloat(classPercent)}%`}</p>
 
                   <Tooltip placement="top" title="Linkedin CheckIn">
                     <FaLinkedinIn
                       size={14}
                       color="#0a66c2"
                       className="customers_formlink_copybutton"
-                      style={{ cursor: "pointer", marginTop: "-2px" }}
+                      style={{
+                        cursor: "pointer",
+                        marginTop: "-2px",
+                        flexShrink: 0,
+                      }}
                       onClick={() => {
                         setCustomerDetails(record);
                         setIsCertificate(!isCertificate);

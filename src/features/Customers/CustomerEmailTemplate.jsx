@@ -555,9 +555,8 @@ const CustomerEmailTemplate = forwardRef(
                         className="customerdetails_text"
                         style={{ fontWeight: 700 }}
                       >
-                        {customerDetails &&
-                        customerDetails.payments.total_amount
-                          ? "₹" + customerDetails.payments.total_amount
+                        {customerDetails && customerDetails.total_amount
+                          ? "₹" + customerDetails.total_amount
                           : "-"}
                       </p>
                     </Col>

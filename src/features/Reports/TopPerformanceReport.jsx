@@ -243,9 +243,7 @@ export default function TopPerformanceReport() {
         total_result = null;
       }
       setTotalSourceCounts(total_result);
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       setReportData([]);
