@@ -198,10 +198,6 @@ export default function LeadFollowUp({
                   ...item,
                   date: item.updated_date,
                 })),
-                ...record.quality_history.map((item) => ({
-                  ...item,
-                  date: item.created_date,
-                })),
               ];
 
               // Sort latest first
@@ -212,7 +208,7 @@ export default function LeadFollowUp({
           >
             <p>{moment(text).format("DD/MM/YYYY")}</p>
             <div className="leadfollowup_tablecommentContainer">
-              <p>{record.histories.length + record.quality_history.length}</p>
+              <p>{record.histories.length}</p>
             </div>
           </div>
         );
@@ -269,7 +265,9 @@ export default function LeadFollowUp({
                 ? "leadmanager_leadstatus_high_container"
                 : text == "Medium"
                   ? "leadmanager_leadstatus_medium_container"
-                  : "leadmanager_leadstatus_low_container"
+                  : text == "Low"
+                    ? "leadmanager_leadstatus_low_container"
+                    : "leadmanager_leadstatus_junk_container"
             }
           >
             <p>{text}</p>
@@ -468,10 +466,6 @@ export default function LeadFollowUp({
             ...item,
             date: item.updated_date,
           })),
-          ...record.quality_history.map((item) => ({
-            ...item,
-            date: item.created_date,
-          })),
         ];
 
         // Sort latest first
@@ -580,10 +574,6 @@ export default function LeadFollowUp({
                             ...item,
                             date: item.updated_date,
                           })),
-                          ...record.quality_history.map((item) => ({
-                            ...item,
-                            date: item.created_date,
-                          })),
                         ];
 
                         // Sort latest first
@@ -597,10 +587,7 @@ export default function LeadFollowUp({
                     >
                       <p>{moment(text).format("DD/MM/YYYY")}</p>
                       <div className="leadfollowup_tablecommentContainer">
-                        <p>
-                          {record.histories.length +
-                            record.quality_history.length}
-                        </p>
+                        <p>{record.histories.length}</p>
                       </div>
                     </div>
                   );
@@ -627,7 +614,9 @@ export default function LeadFollowUp({
                           ? "leadmanager_leadstatus_high_container"
                           : text == "Medium"
                             ? "leadmanager_leadstatus_medium_container"
-                            : "leadmanager_leadstatus_low_container"
+                            : text == "Low"
+                              ? "leadmanager_leadstatus_low_container"
+                              : "leadmanager_leadstatus_junk_container"
                       }
                     >
                       <p>{text}</p>
@@ -802,10 +791,6 @@ export default function LeadFollowUp({
       ...record.histories.map((item) => ({
         ...item,
         date: item.updated_date,
-      })),
-      ...record.quality_history.map((item) => ({
-        ...item,
-        date: item.created_date,
       })),
     ];
 
