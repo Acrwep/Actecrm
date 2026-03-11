@@ -228,7 +228,14 @@ export default function Leads({
   };
 
   const nonChangeColumns = [
-    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
+    {
+      title: "Sl. No",
+      key: "serial_num",
+      dataIndex: "serial_num",
+      width: 60,
+      render: (text, record, index) =>
+        (pagination.page - 1) * pagination.limit + index + 1,
+    },
     {
       title: "Lead Executive",
       key: "lead_assigned_to_name",
@@ -649,10 +656,12 @@ export default function Leads({
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
           switch (col.key) {
-            case "row_num":
+            case "serial_num":
               return {
                 ...col,
                 width: 60,
+                render: (text, record, index) =>
+                  (pagination.page - 1) * pagination.limit + index + 1,
               };
             case "lead_assigned_to_name":
               return {
