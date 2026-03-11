@@ -157,11 +157,9 @@ export default function LeadFollowUp({
   const nonChangeColumns = [
     {
       title: "Sl. No",
-      key: "serial_num",
-      dataIndex: "serial_num",
+      key: "row_num",
+      dataIndex: "row_num",
       width: 60,
-      render: (text, record, index) =>
-        (pagination.page - 1) * pagination.limit + index + 1,
     },
     {
       title: "Lead Executive",
@@ -437,7 +435,13 @@ export default function LeadFollowUp({
       const followup_data = response?.data?.data?.data || [];
       const pagination = response?.data?.data?.pagination;
 
-      setFollowUpData(followup_data);
+      // ✅ Add serial number here
+      const updatedData = followup_data.map((item, index) => ({
+        ...item,
+        row_num: (pageNumber - 1) * limit + index + 1,
+      }));
+
+      setFollowUpData(updatedData);
       setFollowupCount(pagination.total);
       setPagination({
         page: pagination.page,
@@ -505,12 +509,10 @@ export default function LeadFollowUp({
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
           switch (col.key) {
-            case "serial_num":
+            case "row_num":
               return {
                 ...col,
                 width: 60,
-                render: (text, record, index) =>
-                  (pagination.page - 1) * pagination.limit + index + 1,
               };
             case "lead_assigned_to_name":
               return {

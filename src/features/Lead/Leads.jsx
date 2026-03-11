@@ -230,11 +230,9 @@ export default function Leads({
   const nonChangeColumns = [
     {
       title: "Sl. No",
-      key: "serial_num",
-      dataIndex: "serial_num",
+      key: "row_num",
+      dataIndex: "row_num",
       width: 60,
-      render: (text, record, index) =>
-        (pagination.page - 1) * pagination.limit + index + 1,
     },
     {
       title: "Lead Executive",
@@ -656,12 +654,10 @@ export default function Leads({
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
           switch (col.key) {
-            case "serial_num":
+            case "row_num":
               return {
                 ...col,
                 width: 60,
-                render: (text, record, index) =>
-                  (pagination.page - 1) * pagination.limit + index + 1,
               };
             case "lead_assigned_to_name":
               return {
@@ -1037,22 +1033,29 @@ export default function Leads({
     };
     try {
       const response = await getLeads(payload);
-      console.log("lead response", response);
-      const paginations = response?.data?.data?.pagination;
 
-      setLeadData(response?.data?.data?.data || []);
-      setLeadCount(paginations.total || 0);
+      const paginations = response?.data?.data?.pagination;
+      const apiData = response?.data?.data?.data || [];
+
+      // ✅ Add serial number here
+      const updatedData = apiData.map((item, index) => ({
+        ...item,
+        row_num: (pageNumber - 1) * limit + index + 1,
+      }));
+
+      setLeadData(updatedData);
 
       setPagination({
-        page: paginations.page,
-        limit: paginations.limit,
+        page: pageNumber,
+        limit: limit,
         total: paginations.total,
         totalPages: paginations.totalPages,
       });
+
       dispatch(
         storeLeadFilterValues({
-          pageNumber: paginations.page,
-          pageLimit: paginations.limit,
+          pageNumber: pageNumber,
+          pageLimit: limit,
         }),
       );
       setLeadCountLoading(false);
