@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import ReactApexChart from "react-apexcharts";
 
-export default function BranchwiseLeadChart({
+export default function BranchwisePerformanceChart({
   height = 280,
   xaxis,
   series,
@@ -26,11 +26,16 @@ export default function BranchwiseLeadChart({
   const getBarColors = () => {
     if (type == "Leads" || type == "Follow Up") {
       return conversion.map((val) => {
-        if (val <= 25) return "#E53935"; // red
-        else if (val <= 50) return "#FB8C00"; // orange
-        else if (val <= 75) return "#00ACC1"; // teal green
-        else if (val <= 99) return "#A2C148"; // lime-green
-        else if (val <= 125) return "#2E7D32"; // dark green
+        if (val <= 25)
+          return "#E53935"; // red
+        else if (val <= 50)
+          return "#FB8C00"; // orange
+        else if (val <= 75)
+          return "#00ACC1"; // teal green
+        else if (val <= 99)
+          return "#A2C148"; // lime-green
+        else if (val <= 125)
+          return "#2E7D32"; // dark green
         else return "#ffbf00"; // gold
       });
     } else {
@@ -64,7 +69,10 @@ export default function BranchwiseLeadChart({
       },
       dataLabels: {
         enabled: true,
-        formatter: (val) => val,
+        formatter: (val) =>
+          type == "Sale" || type == "Collection" || type == "Pending"
+            ? ""
+            : val,
         style: {
           fontSize: "12px",
           fontWeight: 500,
@@ -166,7 +174,7 @@ export default function BranchwiseLeadChart({
           </span>
         </div>
       `;
-            } else {
+            } else if (type == "Customer Join") {
               return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <span 
             style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
@@ -180,6 +188,28 @@ export default function BranchwiseLeadChart({
           </span>
         </div>
       `;
+            } else {
+              return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+          <span 
+            style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
+          </span>
+          <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
+        </div>
+         <div style="font-weight:400; font-family:Poppins, sans-serif">
+          ${
+            type === "Sale"
+              ? "Sale Volume"
+              : type == "Collection"
+                ? "Collection"
+                : "Pending"
+          }: 
+          <span style="font-weight:600;">
+            ₹${Number(value).toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>`;
             }
           },
           title: { formatter: () => "" },

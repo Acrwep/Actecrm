@@ -1306,6 +1306,15 @@ export const downloadUserWiseLeadCounts = async (payload) => {
   }
 };
 
+export const getBranchWisePerformance = async (payload) => {
+  try {
+    const response = await api.post(`/api/getBranchWiseAnalysis`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBranchWiseLeadCounts = async (payload) => {
   try {
     const response = await api.post(`/api/getBranchWiseLeadCounts`, payload);
@@ -1318,6 +1327,15 @@ export const getBranchWiseLeadCounts = async (payload) => {
 export const getBranchWiseScoreBoard = async (payload) => {
   try {
     const response = await api.post(`/api/getBranchWiseScoreBoard`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRegionWisePerformance = async (payload) => {
+  try {
+    const response = await api.post(`/api/getRegionWiseAnalysis`, payload);
     return response;
   } catch (error) {
     throw error;

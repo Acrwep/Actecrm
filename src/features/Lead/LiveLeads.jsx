@@ -489,16 +489,22 @@ export default function LiveLead({
 
     // Listen for real-time lead updates via WebSockets
     const handleSocketRefresh = () => {
+      fetchAndUpdate();
+    };
+
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         fetchAndUpdate();
       }
     };
 
     window.addEventListener("refreshLiveLeads", handleSocketRefresh);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Cleanup
     return () => {
       window.removeEventListener("refreshLiveLeads", handleSocketRefresh);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [tabName]);
 

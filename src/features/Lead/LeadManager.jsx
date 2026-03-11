@@ -157,7 +157,7 @@ export default function LeadManager() {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       if (getLoginUserDetails) {
         const convertAsJson = JSON.parse(getLoginUserDetails);
-        // getAllDownlineUsersData(convertAsJson?.user_id);
+        getAllDownlineUsersData(convertAsJson?.user_id);
       }
     };
 

@@ -826,9 +826,9 @@ const AddLead = forwardRef(
         //---------------lead re-assign--------------
         const today = new Date();
         const reEntryPayload = {
-          lead_id: updateLeadItem?.id,
+          lead_ids: [updateLeadItem?.id],
           assign_date: formatToBackendIST(today),
-          next_follow_up_date: formatToBackendIST(today),
+          next_follow_up_date: formatToBackendIST(nxtFollowupDate),
           assigned_to: assignLeadId,
           updated_by: convertAsJson?.user_id,
         };
@@ -1565,7 +1565,7 @@ const AddLead = forwardRef(
                   value={nxtFollowupDate}
                   disablePreviousDates={true}
                   error={nxtFollowupDateError}
-                  disabled={updateLeadItem ? true : false}
+                  disabled={isReEntry ? false : updateLeadItem ? true : false}
                 />
               </Col>
               <Col span={8}>

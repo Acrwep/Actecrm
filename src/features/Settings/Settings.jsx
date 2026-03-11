@@ -187,14 +187,12 @@ export default function Settings() {
       const dashboardCustomOrder = [
         "Score Board",
         "Sale Performance",
+        "Post Sale Performance",
         "User-Wise Lead Analysis",
         "User-Wise Sales Analysis",
-        "Branch-Wise Lead Analysis",
-        "Branch-Wise Sales Analysis",
-        "Region-Wise Lead Analysis",
-        "Region-Wise Sales Analysis",
+        "Branch-Wise Performance",
+        "Region-Wise Performance",
         "Top Performing Channels",
-        "Post Sale Performance",
         "Download Dashboard Data",
       ];
 

@@ -19,7 +19,6 @@ import CommonInputField from "../Common/CommonInputField";
 import {
   addressValidator,
   calculateAmount,
-  formatAddress,
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
@@ -33,7 +32,6 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered } from "react-icons/md";
-import CommonTextArea from "../Common/CommonTextArea";
 import CommonTable from "../Common/CommonTable";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -49,7 +47,6 @@ import CommonDnd from "../Common/CommonDnd";
 import { Country, State } from "country-state-city";
 import { IoFilter } from "react-icons/io5";
 import {
-  assignLead,
   downloadLeads,
   getAllDownlineUsers,
   getLeads,
@@ -60,9 +57,8 @@ import {
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
   sendCustomerWelcomeEmail,
-  addQualityComments,
   updateTableColumns,
-  updateQualityComments,
+  leadReEntry,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -74,13 +70,11 @@ import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useDispatch, useSelector } from "react-redux";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
-import QualityIcon from "../../assets/q.png";
 import AddLead from "./AddLead";
-import { FormControl, TextField } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import { storeLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -189,6 +183,7 @@ export default function Leads({
   const [allUsersList, setAllUsersList] = useState([]);
   const [assignId, setAssignId] = useState(null);
   const [assignIdError, setAssignIdError] = useState("");
+  const [reEntryNxtFollowUpDate, setReEntryNxtFollowUpDate] = useState(null);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -202,14 +197,6 @@ export default function Leads({
   const [allDownliners, setAllDownliners] = useState([]);
   //lead source filter
   const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
-  //quality comment usestates
-  const [qualityComments, setQualityComments] = useState("");
-  const [qualityCommentsError, setQualityCommentsError] = useState("");
-  const [qualityStatus, setQualityStatus] = useState(null);
-  const [qualityStatusError, setQualityStatusError] = useState(null);
-  const [cnaDate, setCnaDate] = useState(null);
-  const [cnaDateError, setCnaDateError] = useState("");
-  const [isQualityCommentUpdate, setIsQualityCommentUpdate] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -1397,24 +1384,9 @@ export default function Leads({
     }
   };
 
-  const qualityFormReset = () => {
-    setIsOpenPaymentDrawer(false);
-    setIsQualityCommentSection(false);
-    setQualityComments("");
-    setQualityCommentsError("");
-    setQualityStatus(null);
-    setQualityStatusError("");
-    setCnaDate(null);
-    setCnaDateError("");
-    setIsQualityCommentUpdate(false);
-  };
-
   const formReset = () => {
-    setIsQualityCommentSection(false);
     setIsOpenFilterDrawer(false);
     setIsOpenAssignModal(false);
-    setAssignId(null);
-    setAssignIdError("");
     //add lead drawer usestaes
     setLeadId(null);
     //payment drawer usestates
@@ -1452,8 +1424,6 @@ export default function Leads({
     setPlacementSupport("");
     setPlacementSupportError("");
     setServerRequired(false);
-    //quality
-    qualityFormReset();
   };
 
   const getCountryName = (countryCode) => {
@@ -1525,6 +1495,15 @@ export default function Leads({
     }
   };
 
+  const handleAssignLeadCancel = () => {
+    setIsOpenAssignModal(false);
+    setAddCourseLoading(false);
+    setAssignId(null);
+    setAssignIdError("");
+    setReEntryNxtFollowUpDate(null);
+    setAddCourseLoading(false);
+  };
+
   const handleAssignLead = async () => {
     console.log(selectedRows);
     const assignIdValidate = selectValidator(assignId);
@@ -1533,17 +1512,25 @@ export default function Leads({
 
     if (assignIdValidate) return;
 
+    const today = new Date();
+
     if (selectedRows.length >= 1) {
       //multi assign
-      const updateLeadItems = selectedRows.map((item) => {
-        return { assigned_to: assignId, id: item?.id };
+      const updateSelectedRows = selectedRows.map((item) => {
+        return item.id;
       });
       setAddCourseLoading(true);
       const payload = {
-        leads: updateLeadItems,
+        lead_ids: updateSelectedRows,
+        assign_date: formatToBackendIST(today),
+        next_follow_up_date: formatToBackendIST(reEntryNxtFollowUpDate),
+        assigned_to: assignId,
+        updated_by: loginUserId,
       };
+      console.log("payload", payload);
+
       try {
-        await assignLead(payload);
+        await leadReEntry(payload);
         setTimeout(() => {
           getAllLeadData(
             searchValue,
@@ -1554,8 +1541,7 @@ export default function Leads({
             pagination.page,
             pagination.limit,
           );
-          formReset();
-          setAddCourseLoading(false);
+          handleAssignLeadCancel();
           setIsShowEdit(true);
           setSelectedRowKeys([]);
           setSelectedRows([]);
@@ -2009,7 +1995,8 @@ export default function Leads({
               ""
             )}
 
-            {permissions.includes("Download Leads") && (
+            {permissions.includes("Download Leads") &&
+            selectedRowKeys.length == 0 ? (
               <Tooltip placement="top" title="Download">
                 <Button
                   className={
@@ -2031,18 +2018,21 @@ export default function Leads({
                   )}
                 </Button>
               </Tooltip>
+            ) : (
+              ""
             )}
 
-            {/* {permissions.includes("Assign Lead") && isShowEdit === false && (
+            {permissions.includes("Assign Lead") && isShowEdit === false && (
               <button
                 className="leadmanager_addleadbutton"
                 onClick={() => {
                   setIsOpenAssignModal(true);
+                  setReEntryNxtFollowUpDate(new Date());
                 }}
               >
                 Assign Lead
               </button>
-            )} */}
+            )}
 
             <FiFilter
               size={20}
@@ -2069,7 +2059,7 @@ export default function Leads({
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
-          checkBox={"false"}
+          checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
           size="small"
           className="questionupload_table"
           selectedDatas={handleSelectedRow}
@@ -2251,7 +2241,7 @@ export default function Leads({
       </Drawer>
 
       <Drawer
-        title={isQualityCommentSection ? "Add Comment" : "Make as Customer"}
+        title={"Make as Customer"}
         open={isOpenPaymentDrawer}
         onClose={formReset}
         width="54%"
@@ -2472,406 +2462,336 @@ export default function Leads({
 
         <Divider className="leadmanger_paymentdrawer_divider" />
 
-        {isQualityCommentSection ? (
-          <>
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-            >
-              <Col span={24}>
-                <CommonTextArea
-                  label="Comments"
-                  required={true}
-                  onChange={(e) => {
-                    setQualityComments(e.target.value);
-                    setQualityCommentsError(addressValidator(e.target.value));
-                  }}
-                  value={qualityComments}
-                  error={qualityCommentsError}
-                />
-              </Col>
-            </Row>
+        <>
+          <p
+            className="leadmanager_paymentdetails_drawer_heading"
+            id="leadmanager_paymentdetails_heading"
+          >
+            Payment Details
+          </p>
+          <Row
+            gutter={16}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+            style={{ marginTop: "20px", marginBottom: "30px" }}
+          >
+            <Col span={8}>
+              <CommonInputField
+                label="Fees"
+                required={true}
+                type="number"
+                value={subTotal}
+                disabled={true}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonSelectField
+                label="Tax Type"
+                required={true}
+                options={[
+                  { id: 1, name: "GST (18%)" },
+                  { id: 2, name: "SGST (18%)" },
+                  { id: 3, name: "IGST (18%)" },
+                  { id: 4, name: "VAT (18%)" },
+                  { id: 5, name: "No Tax" },
+                ]}
+                onChange={handleTaxType}
+                value={taxType}
+                error={taxTypeError}
+                height="41px"
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Total Amount"
+                required={true}
+                disabled
+                value={amount}
+              />
+            </Col>
+          </Row>
 
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-            >
-              <Col span={8}>
-                <CommonSelectField
-                  label="Status"
-                  required={true}
-                  options={[
-                    { id: 1, name: "Details Shared" },
-                    { id: 2, name: "Details Not Shared" },
-                    { id: 3, name: "CNA" },
-                  ]}
-                  onChange={(e) => {
-                    setQualityStatus(e.target.value);
-                    setCnaDate(null);
-                    setCnaDateError("");
-                    setQualityStatusError(selectValidator(e.target.value));
-                  }}
-                  value={qualityStatus}
-                  error={qualityStatusError}
-                />
-              </Col>
+          <Divider className="leadmanger_paymentdrawer_divider" />
 
-              {qualityStatus == 3 ? (
-                <Col span={8}>
-                  <CommonMuiDatePicker
-                    label="Date"
-                    required={true}
-                    onChange={(value) => {
-                      setCnaDate(value);
-                      setCnaDateError(selectValidator(value));
-                    }}
-                    value={cnaDate}
-                    error={cnaDateError}
-                    disablePreviousDates={true}
-                  />
-                </Col>
-              ) : (
-                ""
+          <p
+            className="leadmanager_paymentdetails_drawer_heading"
+            id="leadmanager_paymentdetails_paymentinfo_heading"
+          >
+            Payment Info
+          </p>
+
+          <Row
+            gutter={16}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+            style={{ marginTop: "20px" }}
+          >
+            <Col span={8}>
+              <CommonInputField
+                label="Pay Amount"
+                required={true}
+                onChange={handlePaidNow}
+                value={paidNow}
+                error={paidNowError}
+                errorFontSize="10px"
+              />
+            </Col>
+            <Col span={8}>
+              <CommonGroupedSelectField
+                label="Payment Mode"
+                onChange={handlePaymentMode}
+                value={paymentMode}
+                error={paymentModeError}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Convenience fees"
+                required={true}
+                value={convenienceFees}
+                disabled={true}
+                type="number"
+              />
+            </Col>
+          </Row>
+
+          <Row
+            gutter={16}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+            style={{ marginTop: "40px" }}
+          >
+            <Col span={8}>
+              <CommonMuiDatePicker
+                label="Payment Date"
+                required={true}
+                onChange={(value) => {
+                  setPaymentDate(value);
+                  if (paymentValidationTrigger) {
+                    setPaymentDateError(selectValidator(value));
+                  }
+                }}
+                value={paymentDate}
+                error={paymentDateError}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonSelectField
+                label="Place of Payment"
+                required={true}
+                options={[
+                  { id: "Tamil Nadu", name: "Tamil Nadu" },
+                  { id: "Out of TN", name: "Out of TN" },
+                  { id: "Out of IND", name: "Out of IND" },
+                ]}
+                onChange={(e) => {
+                  setPlaceOfPayment(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setPlaceOfPaymentError(selectValidator(e.target.value));
+                  }
+                }}
+                value={placeOfPayment}
+                error={placeOfPaymentError}
+              />
+            </Col>
+            <Col span={8}>
+              <ImageUploadCrop
+                label="Payment Screenshot"
+                aspect={1}
+                maxSizeMB={1}
+                required={true}
+                value={paymentScreenShotBase64}
+                onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+              />
+              {paymentScreenShotError && (
+                <p style={{ fontSize: "12px", color: "#d32f2f", marginTop: 4 }}>
+                  {`Payment Screenshot ${paymentScreenShotError}`}
+                </p>
               )}
-            </Row>
-          </>
-        ) : (
-          <>
-            <p
-              className="leadmanager_paymentdetails_drawer_heading"
-              id="leadmanager_paymentdetails_heading"
-            >
-              Payment Details
-            </p>
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-            >
-              <Col span={8}>
-                <CommonInputField
-                  label="Fees"
-                  required={true}
-                  type="number"
-                  value={subTotal}
-                  disabled={true}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonSelectField
-                  label="Tax Type"
-                  required={true}
-                  options={[
-                    { id: 1, name: "GST (18%)" },
-                    { id: 2, name: "SGST (18%)" },
-                    { id: 3, name: "IGST (18%)" },
-                    { id: 4, name: "VAT (18%)" },
-                    { id: 5, name: "No Tax" },
-                  ]}
-                  onChange={handleTaxType}
-                  value={taxType}
-                  error={taxTypeError}
-                  height="41px"
-                />
-              </Col>
-              <Col span={8}>
-                <CommonInputField
-                  label="Total Amount"
-                  required={true}
-                  disabled
-                  value={amount}
-                />
-              </Col>
-            </Row>
+            </Col>
+          </Row>
 
-            <Divider className="leadmanger_paymentdrawer_divider" />
+          <Divider className="leadmanger_paymentdrawer_divider" />
 
-            <p
-              className="leadmanager_paymentdetails_drawer_heading"
-              id="leadmanager_paymentdetails_paymentinfo_heading"
-            >
-              Payment Info
-            </p>
+          <p className="leadmanager_paymentdetails_drawer_heading">
+            Balance Amount Details
+          </p>
 
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-              style={{ marginTop: "20px" }}
-            >
-              <Col span={8}>
-                <CommonInputField
-                  label="Pay Amount"
-                  required={true}
-                  onChange={handlePaidNow}
-                  value={paidNow}
-                  error={paidNowError}
-                  errorFontSize="10px"
-                />
-              </Col>
-              <Col span={8}>
-                <CommonGroupedSelectField
-                  label="Payment Mode"
-                  onChange={handlePaymentMode}
-                  value={paymentMode}
-                  error={paymentModeError}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonInputField
-                  label="Convenience fees"
-                  required={true}
-                  value={convenienceFees}
-                  disabled={true}
-                  type="number"
-                />
-              </Col>
-            </Row>
-
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-              style={{ marginTop: "40px" }}
-            >
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px", marginBottom: "30px" }}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+          >
+            <Col span={8}>
+              <CommonInputField
+                label="Balance Amount"
+                required={true}
+                value={balanceAmount}
+                disabled={true}
+                type="number"
+              />
+            </Col>
+            {isShowDueDate ? (
               <Col span={8}>
                 <CommonMuiDatePicker
-                  label="Payment Date"
+                  label="Next Due Date"
                   required={true}
                   onChange={(value) => {
-                    setPaymentDate(value);
-                    if (paymentValidationTrigger) {
-                      setPaymentDateError(selectValidator(value));
-                    }
+                    setDueDate(value);
+                    setDueDateError(selectValidator(value));
                   }}
-                  value={paymentDate}
-                  error={paymentDateError}
+                  value={dueDate}
+                  error={dueDateError}
+                  disablePreviousDates={true}
                 />
               </Col>
-              <Col span={8}>
-                <CommonSelectField
-                  label="Place of Payment"
-                  required={true}
-                  options={[
-                    { id: "Tamil Nadu", name: "Tamil Nadu" },
-                    { id: "Out of TN", name: "Out of TN" },
-                    { id: "Out of IND", name: "Out of IND" },
-                  ]}
-                  onChange={(e) => {
-                    setPlaceOfPayment(e.target.value);
-                    if (paymentValidationTrigger) {
-                      setPlaceOfPaymentError(selectValidator(e.target.value));
-                    }
+            ) : (
+              ""
+            )}
+          </Row>
+
+          <Divider className="leadmanger_paymentdrawer_divider" />
+
+          <p className="leadmanager_paymentdetails_drawer_heading">
+            Add Customer Details
+          </p>
+
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px", marginBottom: "30px" }}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+          >
+            <Col span={8}>
+              <CommonSelectField
+                label="Course"
+                required={true}
+                options={courseOptions}
+                value={customerCourseId}
+                disabled={true}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonSelectField
+                label="Batch Track"
+                required={true}
+                options={batchTrackOptions}
+                value={customerBatchTrackId}
+                disabled={true}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonSelectField
+                label="Batch Type"
+                required={true}
+                options={batchTimingOptions}
+                onChange={(e) => {
+                  setCustomerBatchTimingId(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setCustomerBatchTimingIdError(
+                      selectValidator(e.target.value),
+                    );
+                  }
+                }}
+                value={customerBatchTimingId}
+                error={customerBatchTimingIdError}
+              />
+            </Col>
+          </Row>
+
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px", marginBottom: "30px" }}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+          >
+            <Col span={8}>
+              <CommonInputField
+                label="Customer Current State"
+                required={true}
+                onChange={(e) => {
+                  setCurrentLocation(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setCurrentLocationError(addressValidator(e.target.value));
+                  }
+                }}
+                value={currentLocation}
+                error={currentLocationError}
+                errorFontSize="9px"
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Address"
+                required={true}
+                multiline={true}
+                // rows={1}
+                onChange={(e) => {
+                  const formatted = e.target.value;
+                  setCustomerAddress(formatted);
+
+                  if (paymentValidationTrigger) {
+                    setCustomerAddressError(addressValidator(formatted));
+                  }
+                }}
+                value={customerAddress}
+                error={customerAddressError}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="GST No"
+                required={false}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase();
+                  setGstNumber(value);
+                }}
+                value={gstNumber}
+              />{" "}
+            </Col>
+          </Row>
+
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px", marginBottom: "50px" }}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+          >
+            <Col span={8}>
+              <CommonSelectField
+                label="Placement Support"
+                required={true}
+                options={[
+                  { id: "Need", name: "Need" },
+                  { id: "Not Need", name: "Not Need" },
+                ]}
+                onChange={(e) => {
+                  setPlacementSupport(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setPlacementSupportError(selectValidator(e.target.value));
+                  }
+                }}
+                value={placementSupport}
+                error={placementSupportError}
+              />
+            </Col>
+            <Col span={8}>
+              <div
+                style={{
+                  marginTop: "10px",
+                  display: "flex",
+                  gap: "6px",
+                  alignItems: "center",
+                }}
+              >
+                <p className="leads_serverrequired_label">Server Required</p>
+                <Switch
+                  style={{ color: "#333" }}
+                  checked={serverRequired}
+                  onChange={(checked) => {
+                    setServerRequired(checked);
                   }}
-                  value={placeOfPayment}
-                  error={placeOfPaymentError}
+                  className="leads_serverrequired_switch"
                 />
-              </Col>
-              <Col span={8}>
-                <ImageUploadCrop
-                  label="Payment Screenshot"
-                  aspect={1}
-                  maxSizeMB={1}
-                  required={true}
-                  value={paymentScreenShotBase64}
-                  onChange={(base64) => setPaymentScreenShotBase64(base64)}
-                  onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-                />
-                {paymentScreenShotError && (
-                  <p
-                    style={{ fontSize: "12px", color: "#d32f2f", marginTop: 4 }}
-                  >
-                    {`Payment Screenshot ${paymentScreenShotError}`}
-                  </p>
-                )}
-              </Col>
-            </Row>
-
-            <Divider className="leadmanger_paymentdrawer_divider" />
-
-            <p className="leadmanager_paymentdetails_drawer_heading">
-              Balance Amount Details
-            </p>
-
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8}>
-                <CommonInputField
-                  label="Balance Amount"
-                  required={true}
-                  value={balanceAmount}
-                  disabled={true}
-                  type="number"
-                />
-              </Col>
-              {isShowDueDate ? (
-                <Col span={8}>
-                  <CommonMuiDatePicker
-                    label="Next Due Date"
-                    required={true}
-                    onChange={(value) => {
-                      setDueDate(value);
-                      setDueDateError(selectValidator(value));
-                    }}
-                    value={dueDate}
-                    error={dueDateError}
-                    disablePreviousDates={true}
-                  />
-                </Col>
-              ) : (
-                ""
-              )}
-            </Row>
-
-            <Divider className="leadmanger_paymentdrawer_divider" />
-
-            <p className="leadmanager_paymentdetails_drawer_heading">
-              Add Customer Details
-            </p>
-
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8}>
-                <CommonSelectField
-                  label="Course"
-                  required={true}
-                  options={courseOptions}
-                  value={customerCourseId}
-                  disabled={true}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonSelectField
-                  label="Batch Track"
-                  required={true}
-                  options={batchTrackOptions}
-                  value={customerBatchTrackId}
-                  disabled={true}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonSelectField
-                  label="Batch Type"
-                  required={true}
-                  options={batchTimingOptions}
-                  onChange={(e) => {
-                    setCustomerBatchTimingId(e.target.value);
-                    if (paymentValidationTrigger) {
-                      setCustomerBatchTimingIdError(
-                        selectValidator(e.target.value),
-                      );
-                    }
-                  }}
-                  value={customerBatchTimingId}
-                  error={customerBatchTimingIdError}
-                />
-              </Col>
-            </Row>
-
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8}>
-                <CommonInputField
-                  label="Customer Current State"
-                  required={true}
-                  onChange={(e) => {
-                    setCurrentLocation(e.target.value);
-                    if (paymentValidationTrigger) {
-                      setCurrentLocationError(addressValidator(e.target.value));
-                    }
-                  }}
-                  value={currentLocation}
-                  error={currentLocationError}
-                  errorFontSize="9px"
-                />
-              </Col>
-              <Col span={8}>
-                <CommonInputField
-                  label="Address"
-                  required={true}
-                  multiline={true}
-                  // rows={1}
-                  onChange={(e) => {
-                    const formatted = e.target.value;
-                    setCustomerAddress(formatted);
-
-                    if (paymentValidationTrigger) {
-                      setCustomerAddressError(addressValidator(formatted));
-                    }
-                  }}
-                  value={customerAddress}
-                  error={customerAddressError}
-                />
-              </Col>
-              <Col span={8}>
-                <CommonInputField
-                  label="GST No"
-                  required={false}
-                  onChange={(e) => {
-                    const value = e.target.value.toUpperCase();
-                    setGstNumber(value);
-                  }}
-                  value={gstNumber}
-                />{" "}
-              </Col>
-            </Row>
-
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", marginBottom: "50px" }}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8}>
-                <CommonSelectField
-                  label="Placement Support"
-                  required={true}
-                  options={[
-                    { id: "Need", name: "Need" },
-                    { id: "Not Need", name: "Not Need" },
-                  ]}
-                  onChange={(e) => {
-                    setPlacementSupport(e.target.value);
-                    if (paymentValidationTrigger) {
-                      setPlacementSupportError(selectValidator(e.target.value));
-                    }
-                  }}
-                  value={placementSupport}
-                  error={placementSupportError}
-                />
-              </Col>
-              <Col span={8}>
-                <div
-                  style={{
-                    marginTop: "10px",
-                    display: "flex",
-                    gap: "6px",
-                    alignItems: "center",
-                  }}
-                >
-                  <p className="leads_serverrequired_label">Server Required</p>
-                  <Switch
-                    style={{ color: "#333" }}
-                    checked={serverRequired}
-                    onChange={(checked) => {
-                      setServerRequired(checked);
-                    }}
-                    className="leads_serverrequired_switch"
-                  />
-                </div>
-              </Col>
-            </Row>
-          </>
-        )}
-
+              </div>
+            </Col>
+          </Row>
+        </>
         <div className="leadmanager_tablefiler_footer">
           <div
             className="leadmanager_submitlead_buttoncontainer"
@@ -2897,19 +2817,11 @@ export default function Leads({
       <Modal
         title="Assign Leads"
         open={isOpenAssignModal}
-        onCancel={() => {
-          setIsOpenAssignModal(false);
-          setAssignId(null);
-          setAssignIdError("");
-        }}
+        onCancel={handleAssignLeadCancel}
         footer={[
           <Button
             key="cancel"
-            onClick={() => {
-              setIsOpenAssignModal(false);
-              setAssignId(null);
-              setAssignIdError("");
-            }}
+            onClick={handleAssignLeadCancel}
             className="leads_coursemodal_cancelbutton"
           >
             Cancel
@@ -2939,6 +2851,7 @@ export default function Leads({
         <div style={{ marginTop: "20px", marginBottom: "20px" }}>
           <CommonSelectField
             label="Lead Executive"
+            required={true}
             options={allUsersList}
             onChange={(e) => {
               setAssignId(e.target.value);
@@ -2946,6 +2859,18 @@ export default function Leads({
             }}
             value={assignId}
             error={assignIdError}
+          />
+        </div>
+        <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+          <CommonNxtFollowupDatePicker
+            label="Next Follow-Up Date"
+            required={true}
+            onChange={(value) => {
+              setReEntryNxtFollowUpDate(value);
+            }}
+            value={reEntryNxtFollowUpDate}
+            disablePreviousDates={true}
+            error={""}
           />
         </div>
       </Modal>
