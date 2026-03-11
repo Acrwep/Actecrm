@@ -1303,6 +1303,7 @@ export default function Customers() {
       scroll(600);
     }
     if (
+      receivedValueFromDashboard == "Passedout process" ||
       receivedValueFromDashboard == "Escalated" ||
       receivedValueFromDashboard == "Others" ||
       receivedValueFromDashboard == "Completed"

@@ -15,6 +15,7 @@ export default function PostSalePerformanceChart({ chartData, clickedBar }) {
     "Class Scheduled",
     "Class Going",
     "Google Reviews",
+    "Certificate Generated",
     "LinkedIn Reviews",
     "Class Completed",
     "Others",
@@ -35,6 +36,7 @@ export default function PostSalePerformanceChart({ chartData, clickedBar }) {
     "#a29bfec7",
     "#00cecbd0",
     "#a1c60c",
+    "#fd79a8",
     "rgb(10,102,194)",
     "#258a25",
     "#d32f2fcc",
@@ -52,7 +54,7 @@ export default function PostSalePerformanceChart({ chartData, clickedBar }) {
           const index = config.seriesIndex;
 
           const legends = document.querySelectorAll(
-            `#${chartId.current} .apexcharts-legend-series`
+            `#${chartId.current} .apexcharts-legend-series`,
           );
 
           legends.forEach((el, i) => {
@@ -68,7 +70,7 @@ export default function PostSalePerformanceChart({ chartData, clickedBar }) {
 
         dataPointMouseLeave: function () {
           const legends = document.querySelectorAll(
-            `#${chartId.current} .apexcharts-legend-series`
+            `#${chartId.current} .apexcharts-legend-series`,
           );
 
           legends.forEach((el) => {
