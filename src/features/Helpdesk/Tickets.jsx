@@ -190,25 +190,13 @@ export default function Tickets() {
       },
     },
     {
-      title: "RA",
+      title: "Sub User",
       key: "ra_name",
       dataIndex: "ra_name",
       width: 120,
       render: (text, record) => {
         const lead_executive = record.ra_user_id
           ? `${record.ra_user_id} - ${text}`
-          : "-";
-        return <EllipsisTooltip text={lead_executive} />;
-      },
-    },
-    {
-      title: "HR",
-      key: "hr_name",
-      dataIndex: "hr_name",
-      width: 120,
-      render: (text, record) => {
-        const lead_executive = record.hr_user_id
-          ? `${record.hr_user_id} - ${text}`
           : "-";
         return <EllipsisTooltip text={lead_executive} />;
       },
@@ -320,7 +308,7 @@ export default function Tickets() {
                             }
                           }}
                         >
-                          Assign RA & HR
+                          Assign Sub User
                         </Checkbox>
                       </Col>
                     ) : (
@@ -349,7 +337,7 @@ export default function Tickets() {
                               }
                             }}
                           >
-                            Re-Assign RA & HR
+                            Re-Assign Subuser
                           </button>
                         </div>
                       </Col>
@@ -439,7 +427,7 @@ export default function Tickets() {
             >
               {text === "Awaiting Employee" ? (
                 <Button className="customers_status_classscheduled_button">
-                  Awaiting RA & HR
+                  Awaiting Sub User
                 </Button>
               ) : text === "Assigned" ? (
                 <Button className="customers_status_awaittrainer_button">
@@ -572,6 +560,7 @@ export default function Tickets() {
     status,
     pageNumber,
     limit,
+    isSearch = false,
   ) => {
     setLoading(true);
     const payload = {
@@ -579,7 +568,11 @@ export default function Tickets() {
       end_date: endDate,
       user_id: user_id ? user_id : loginUserId,
       status: status,
-      show_all: permissions.includes("Show All Tickets") ? true : false,
+      show_all: isSearch
+        ? false
+        : permissions.includes("Show All Tickets")
+          ? true
+          : false,
       page: pageNumber,
       limit: limit,
     };
@@ -733,6 +726,7 @@ export default function Tickets() {
       status,
       1,
       pagination.limit,
+      value ? true : false,
     );
   };
 
@@ -899,7 +893,7 @@ export default function Tickets() {
                 }}
               >
                 <p>
-                  Awaiting RA & HR{" "}
+                  Awaiting Sub User{" "}
                   {`(  ${
                     statusCounts &&
                     statusCounts.awaiting_employee !== undefined &&

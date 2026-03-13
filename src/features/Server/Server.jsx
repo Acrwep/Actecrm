@@ -158,9 +158,13 @@ export default function Server() {
       title: "Raise Date",
       key: "server_raise_date",
       dataIndex: "server_raise_date",
-      width: 110,
+      width: 140,
       render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+        return (
+          <EllipsisTooltip
+            text={text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}
+          />
+        );
       },
     },
     {
@@ -179,7 +183,7 @@ export default function Server() {
       title: "Name",
       key: "name",
       dataIndex: "name",
-      width: 180,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -198,7 +202,7 @@ export default function Server() {
       title: "Server Name",
       key: "server_name",
       dataIndex: "server_name",
-      width: 180,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -787,10 +791,14 @@ export default function Server() {
               return {
                 ...col,
                 title: "Raise Date",
-                width: 110,
+                width: 140,
                 render: (text) => {
                   return (
-                    <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                    <EllipsisTooltip
+                      text={
+                        text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"
+                      }
+                    />
                   );
                 },
               };
@@ -808,7 +816,7 @@ export default function Server() {
             case "name":
               return {
                 ...col,
-                width: 180,
+                width: 150,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
@@ -829,7 +837,7 @@ export default function Server() {
             case "server_name":
               return {
                 ...col,
-                width: 180,
+                width: 150,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },
@@ -1377,6 +1385,9 @@ export default function Server() {
                 ? serverDetails.server_raise_date
                 : null,
           }),
+      ...(updateStatus == "Server Raised"
+        ? { requested_duration: requestServerDuration }
+        : {}),
       server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
       status: updateStatus,
     };
@@ -1523,6 +1534,8 @@ export default function Server() {
     setIsOpenDetailsDrawer(false);
     setIsOpenHoldModal(false);
     setIsOpenRaiseModal(false);
+    setRequestServerDuration("");
+    setRequestServerDurationError("");
     setIsOpenViewDrawer(false);
     setIsOpenSupportModal(false);
     setSupportComment("");
@@ -3057,16 +3070,20 @@ export default function Server() {
       </Drawer>
       {/* server raise confirm modal */}
       <Modal
-        title={"Raise Server"}
+        title={"Server Raise"}
         open={isOpenRaiseModal}
         onCancel={() => {
           setIsOpenRaiseModal(false);
+          setRequestServerDuration("");
+          setRequestServerDurationError("");
         }}
         footer={[
           <Button
             key="cancel"
             onClick={() => {
               setIsOpenRaiseModal(false);
+              setRequestServerDuration("");
+              setRequestServerDurationError("");
             }}
             className="leads_coursemodal_cancelbutton"
           >
@@ -3086,6 +3103,11 @@ export default function Server() {
               key="create"
               type="primary"
               onClick={() => {
+                const durationValidate = selectValidator(requestServerDuration);
+
+                setRequestServerDurationError(durationValidate);
+
+                if (durationValidate) return;
                 handleServerStatus("Server Raised");
               }}
               className="leads_coursemodal_createbutton"

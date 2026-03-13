@@ -29,9 +29,6 @@ const AssignTicket = forwardRef(
     const [raId, setRaId] = useState("");
     const [raIdError, setRaIdError] = useState("");
     const [raItem, setRaItem] = useState("");
-    const [hrId, setHrId] = useState("");
-    const [hrIdError, setHrIdError] = useState("");
-    const [hrItem, setHrItem] = useState("");
     const [attachmentBase64, setAttachmentBase64] = useState("");
     const [attachmentBase64Error, setAttachmentBase64Error] = useState("");
 
@@ -64,15 +61,9 @@ const AssignTicket = forwardRef(
           ? addressValidator(attachmentBase64)
           : selectValidator(raId);
 
-      const hrIdValidate =
-        drawerStatus == "Close Request"
-          ? addressValidator(attachmentBase64)
-          : selectValidator(hrId);
-
       setRaIdError(raIdValidate);
-      setHrIdError(hrIdValidate);
 
-      if (raIdValidate || hrIdValidate) return;
+      if (raIdValidate) return;
 
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
@@ -87,16 +78,13 @@ const AssignTicket = forwardRef(
       const payload = {
         ticket_id: ticketDetails?.ticket_id ?? null,
         ...(drawerStatus && drawerStatus == "Assign Ticket"
-          ? { ra_id: raId }
-          : {}),
-        ...(drawerStatus && drawerStatus == "Assign Ticket"
-          ? { hr_id: hrId }
+          ? { assigned_to: raId }
           : {}),
         status: drawerStatus == "Assign Ticket" ? "Assigned" : "Close Request",
         created_date: formatToBackendIST(today),
         details:
           drawerStatus == "Assign Ticket"
-            ? `Ticket Assigned to RA (${raItem?.user_id || ""}-${raItem?.user_name ?? ""}) and HR (${hrItem?.user_id || ""}-${hrItem?.user_name ?? ""})`
+            ? `Ticket Assigned to ${raItem?.user_id || ""}-${raItem?.user_name ?? ""}`
             : attachmentBase64,
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
@@ -127,9 +115,6 @@ const AssignTicket = forwardRef(
         ...(drawerStatus && drawerStatus == "Assign Ticket"
           ? { ra_id: raId }
           : {}),
-        ...(drawerStatus && drawerStatus == "Assign Ticket"
-          ? { hr_id: hrId }
-          : {}),
         status: drawerStatus == "Assign Ticket" ? "Assigned" : "Close Request",
         updated_at: formatToBackendIST(today),
       };
@@ -147,7 +132,7 @@ const AssignTicket = forwardRef(
     const handleSendNotification = async () => {
       const today = new Date();
       const payload = {
-        user_ids: [raId, hrId],
+        user_ids: [raId],
         title: "Ticket Assigned",
         message: {
           title:
@@ -182,7 +167,7 @@ const AssignTicket = forwardRef(
           <>
             <div style={{ marginTop: "20px" }}>
               <CommonSelectField
-                label="Select RA"
+                label="Select User"
                 required={true}
                 options={allUsersList}
                 onChange={(e) => {
@@ -192,21 +177,6 @@ const AssignTicket = forwardRef(
                 }}
                 value={raId}
                 error={raIdError}
-              />
-            </div>
-
-            <div style={{ marginTop: "30px" }}>
-              <CommonSelectField
-                label="Select HR"
-                required={true}
-                options={allUsersList}
-                onChange={(e) => {
-                  setHrId(e.target.value);
-                  setHrItem(e.target.option);
-                  setHrIdError(selectValidator(e.target.value));
-                }}
-                value={hrId}
-                error={hrIdError}
               />
             </div>
           </>

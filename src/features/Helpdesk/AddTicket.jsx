@@ -39,12 +39,12 @@ import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelec
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
+import CommonTextArea from "../Common/CommonTextArea";
 
 const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const raisedByTypeOptions = [
     { id: "Customer", name: "Customer" },
     { id: "Trainer", name: "Trainer" },
-    { id: "Others", name: "Others" },
   ];
   const [raisedByTypeId, setRaisedByTypeId] = useState("Customer");
   const [raisedByTypeIdError, setRaisedByTypeIdError] = useState("");
@@ -64,7 +64,6 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const [managerItem, setManagerItem] = useState("");
   const [managerIdError, setManagerIdError] = useState("");
   const [raId, setRaId] = useState("");
-  const [hrId, setHrId] = useState("");
   /* ---------------- Trainer STATES ---------------- */
   const [trainersDataList, setTrainersDataList] = useState([]);
   // ✅ IMPORTANT: keep IDs & Objects separately
@@ -420,49 +419,15 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
 
   const handleSubmit = async () => {
     setValidationTrigger(true);
-    const raisedByTypeValidate =
-      raisedByTypeId == "Others" ? "" : selectValidator(raisedByTypeId);
     const titleValidate = addressValidator(title);
     const categoryIdValidate = selectValidator(categoryId);
     const managerIdValidate = selectValidator(managerId);
 
-    let trainerIdValidate = "";
-    let customerIdValidate = "";
-    let RaAndHrValidate = "";
-
-    if (raisedByTypeId == "Trainer") {
-      trainerIdValidate = selectValidator(selectedTrainerId);
-    } else {
-      trainerIdValidate = "";
-    }
-
-    if (raisedByTypeId == "Customer") {
-      customerIdValidate = selectValidator(selectedCustomerId);
-    } else {
-      customerIdValidate = "";
-    }
-
-    setRaisedByTypeIdError(raisedByTypeValidate);
-    setSelectedTrainerIdError(trainerIdValidate);
-    setSelectedCustomerIdError(customerIdValidate);
     setTitleError(titleValidate);
     setCategoryIdError(categoryIdValidate);
     setManagerIdError(managerIdValidate);
 
-    if (
-      raisedByTypeValidate ||
-      trainerIdValidate ||
-      customerIdValidate ||
-      titleValidate ||
-      categoryIdValidate ||
-      managerIdValidate
-    )
-      return;
-
-    if ((raId && !hrId) || (hrId && !raId)) {
-      CommonMessage("error", "Either select both RA and HR or unselect both.");
-      return;
-    }
+    if (titleValidate || categoryIdValidate || managerIdValidate) return;
 
     setButtonLoading(true);
     const today = new Date();
@@ -488,7 +453,6 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
       raised_by_role: raisedByTypeId,
       manager_id: managerId,
       ra_id: raId,
-      hr_id: hrId,
       assigned_to: convertAsJson?.user_id,
       created_at: formatToBackendIST(today),
     };
@@ -508,7 +472,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const handleSendNotification = async () => {
     const findCategory = categoryOptions.find((f) => f.id == categoryId);
     const today = new Date();
-    const notifyIds = [managerId, raId, hrId];
+    const notifyIds = [managerId, raId];
     const payload = {
       user_ids: notifyIds.filter((f) => f != ""),
       title: "Ticket Assigned",
@@ -553,12 +517,6 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             options={raisedByTypeOptions}
             onChange={(e) => {
               setRaisedByTypeId(e.target.value);
-              if (e.target.value == "Others") {
-                setSelectedCustomerId(null);
-                setSelectedCustomerIdError("");
-                setSelectedTrainerId(null);
-                setSelectedTrainerIdError("");
-              }
               if (validationTrigger) {
                 setRaisedByTypeIdError(selectValidator(e.target.value));
               }
@@ -573,7 +531,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             <CommonCustomerSingleSelectField
               label="Trainer"
               labelMarginTop="1px"
-              required={true}
+              required={false}
               options={mergedTrainersList}
               value={selectedTrainerId}
               inputValue={trainerSearchText}
@@ -584,7 +542,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
               loading={trainerSelectloading}
               error={selectedTrainerIdError}
               renderOption={renderTrainerOption}
-              disableClearable={false}
+              disableClearable={true}
             />
           </Col>
         ) : raisedByTypeId == "Customer" ? (
@@ -599,7 +557,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
               <div style={{ flex: 1 }}>
                 <CommonCustomerSingleSelectField
                   label="Customer"
-                  required={true}
+                  required={false}
                   options={mergedCustomers}
                   value={selectedCustomerId}
                   inputValue={customerSearchText}
@@ -610,7 +568,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
                   loading={customerSelectloading}
                   showLabelStatus="Name"
                   error={selectedCustomerIdError}
-                  disableClearable={false}
+                  disableClearable={true}
                 />
               </div>
               {selectedCustomerId && (
@@ -654,13 +612,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             error={titleError}
           />
         </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={8}
-          style={{ marginTop: raisedByTypeId == "Others" ? "20px" : "30px" }}
-        >
+        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
           <CommonSelectField
             label="Category"
             required={true}
@@ -693,7 +645,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
 
         <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
           <CommonSelectField
-            label="RA"
+            label="Select Sub User"
             required={false}
             options={allUsersList}
             onChange={(e) => {
@@ -705,22 +657,8 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
           />
         </Col>
 
-        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-          <CommonSelectField
-            label="HR"
-            required={false}
-            options={allUsersList}
-            onChange={(e) => {
-              setHrId(e.target.value);
-            }}
-            value={hrId}
-            error={""}
-            disableClearable={false}
-          />
-        </Col>
-
-        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-          <CommonInputField
+        <Col xs={24} sm={24} md={24} lg={16} style={{ marginTop: "30px" }}>
+          <CommonTextArea
             label="Description"
             required={false}
             multiline={true}
@@ -741,15 +679,17 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             color: "rgba(0,0,0,0.88)",
           }}
         >
-          <ImageUploadCrop
-            label="File Attachment"
-            aspect={1}
-            maxSizeMB={1}
-            required={false}
-            value={fileAttachmentBase64}
-            onChange={(base64) => setFileAttachmentBase64(base64)}
-            onErrorChange={""} // ✅ pass setter directly
-          />
+          <div style={{ marginTop: "20px" }}>
+            <ImageUploadCrop
+              label="File Attachment"
+              aspect={1}
+              maxSizeMB={1}
+              required={false}
+              value={fileAttachmentBase64}
+              onChange={(base64) => setFileAttachmentBase64(base64)}
+              onErrorChange={""} // ✅ pass setter directly
+            />
+          </div>
         </Col>
       </Row>
 
