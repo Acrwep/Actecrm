@@ -26,8 +26,12 @@ const AssignTicket = forwardRef(
     ref,
   ) => {
     const [allUsersList, setAllUsersList] = useState([]);
-    const [userId, setUserId] = useState("");
-    const [userIdError, setUserIdError] = useState("");
+    const [raId, setRaId] = useState("");
+    const [raIdError, setRaIdError] = useState("");
+    const [raItem, setRaItem] = useState("");
+    const [hrId, setHrId] = useState("");
+    const [hrIdError, setHrIdError] = useState("");
+    const [hrItem, setHrItem] = useState("");
     const [attachmentBase64, setAttachmentBase64] = useState("");
     const [attachmentBase64Error, setAttachmentBase64Error] = useState("");
 
@@ -55,22 +59,27 @@ const AssignTicket = forwardRef(
     }));
 
     const handleTicketTrack = async () => {
-      const userIdValidate =
+      const raIdValidate =
         drawerStatus == "Close Request"
           ? addressValidator(attachmentBase64)
-          : selectValidator(userId);
+          : selectValidator(raId);
 
-      setUserIdError(userIdValidate);
-      setAttachmentBase64Error(userIdValidate);
+      const hrIdValidate =
+        drawerStatus == "Close Request"
+          ? addressValidator(attachmentBase64)
+          : selectValidator(hrId);
 
-      if (userIdValidate) return;
+      setRaIdError(raIdValidate);
+      setHrIdError(hrIdValidate);
+
+      if (raIdValidate || hrIdValidate) return;
 
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
-      const findUser = allUsersList.find((f) => f.user_id == userId);
+      const findUser = allUsersList.find((f) => f.user_id == raId);
       console.log("findUser", findUser);
 
       setButtonLoading(true);
@@ -78,13 +87,16 @@ const AssignTicket = forwardRef(
       const payload = {
         ticket_id: ticketDetails?.ticket_id ?? null,
         ...(drawerStatus && drawerStatus == "Assign Ticket"
-          ? { assigned_to: userId }
+          ? { ra_id: raId }
+          : {}),
+        ...(drawerStatus && drawerStatus == "Assign Ticket"
+          ? { hr_id: hrId }
           : {}),
         status: drawerStatus == "Assign Ticket" ? "Assigned" : "Close Request",
         created_date: formatToBackendIST(today),
         details:
           drawerStatus == "Assign Ticket"
-            ? `Ticket Assigned to ${userId} (${findUser?.user_name ?? ""})`
+            ? `Ticket Assigned to RA (${raItem?.user_id || ""}-${raItem?.user_name ?? ""}) and HR (${hrItem?.user_id || ""}-${hrItem?.user_name ?? ""})`
             : attachmentBase64,
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
@@ -112,6 +124,12 @@ const AssignTicket = forwardRef(
 
       const payload = {
         ticket_id: ticketDetails?.ticket_id ?? null,
+        ...(drawerStatus && drawerStatus == "Assign Ticket"
+          ? { ra_id: raId }
+          : {}),
+        ...(drawerStatus && drawerStatus == "Assign Ticket"
+          ? { hr_id: hrId }
+          : {}),
         status: drawerStatus == "Assign Ticket" ? "Assigned" : "Close Request",
         updated_at: formatToBackendIST(today),
       };
@@ -129,7 +147,7 @@ const AssignTicket = forwardRef(
     const handleSendNotification = async () => {
       const today = new Date();
       const payload = {
-        user_ids: [userId],
+        user_ids: [raId, hrId],
         title: "Ticket Assigned",
         message: {
           title:
@@ -161,19 +179,37 @@ const AssignTicket = forwardRef(
         <p className="customer_statusupdate_adddetails_heading">Add Details</p>
 
         {drawerStatus == "Assign Ticket" ? (
-          <div style={{ marginTop: "20px" }}>
-            <CommonSelectField
-              label="Select User"
-              required={true}
-              options={allUsersList}
-              onChange={(e) => {
-                setUserId(e.target.value);
-                setUserIdError(selectValidator(e.target.value));
-              }}
-              value={userId}
-              error={userIdError}
-            />
-          </div>
+          <>
+            <div style={{ marginTop: "20px" }}>
+              <CommonSelectField
+                label="Select RA"
+                required={true}
+                options={allUsersList}
+                onChange={(e) => {
+                  setRaId(e.target.value);
+                  setRaItem(e.target.option);
+                  setRaIdError(selectValidator(e.target.value));
+                }}
+                value={raId}
+                error={raIdError}
+              />
+            </div>
+
+            <div style={{ marginTop: "30px" }}>
+              <CommonSelectField
+                label="Select HR"
+                required={true}
+                options={allUsersList}
+                onChange={(e) => {
+                  setHrId(e.target.value);
+                  setHrItem(e.target.option);
+                  setHrIdError(selectValidator(e.target.value));
+                }}
+                value={hrId}
+                error={hrIdError}
+              />
+            </div>
+          </>
         ) : (
           <div style={{ marginTop: "30px" }}>
             <ImageUploadCrop

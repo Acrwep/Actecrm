@@ -67,21 +67,21 @@ export default function CommonSelectField({
           options={options}
           value={
             options.find(
-              (opt) => String(opt.user_id ?? opt.id) === String(value)
+              (opt) => String(opt.user_id ?? opt.id) === String(value),
             ) || null
           }
           getOptionLabel={(option) =>
             showLabelStatus === "Name"
               ? option?.name
               : showLabelStatus === "Email"
-              ? option?.email
-              : showLabelStatus === "Mobile"
-              ? option?.mobile
-              : showLabelStatus === "Trainer Id"
-              ? option?.trainer_code
-              : option?.user_name
-              ? `${option.user_id} - ${option.user_name} `
-              : option?.exp_range || option?.name || ""
+                ? option?.email
+                : showLabelStatus === "Mobile"
+                  ? option?.mobile
+                  : showLabelStatus === "Trainer Id"
+                    ? option?.trainer_code
+                    : option?.user_name
+                      ? `${option.user_id} - ${option.user_name} `
+                      : option?.exp_range || option?.name || ""
           }
           onChange={(event, newValue) =>
             onChange({
@@ -89,6 +89,7 @@ export default function CommonSelectField({
                 value: newValue
                   ? String(newValue.user_id ?? newValue.id ?? "")
                   : "",
+                option: newValue || null,
               },
             })
           }

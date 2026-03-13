@@ -5,8 +5,11 @@ import { FaRegCircleXmark } from "react-icons/fa6";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { IoIosGitPullRequest } from "react-icons/io";
 import moment from "moment";
+import { useSelector } from "react-redux";
 
 export default function ServerHistory({ data = [] }) {
+  const permissions = useSelector((state) => state.userpermissions);
+
   const items = data.map((item) => ({
     key: item.id,
     dot:
@@ -52,56 +55,75 @@ export default function ServerHistory({ data = [] }) {
                     </p>
                   </Col>
                 </Row>
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Vendor Name
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.vendor_name
-                        ? item.details.vendor_name
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+                {permissions.includes("Show Server Cost & Vendor") ? (
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Vendor Name
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.vendor_name
+                          ? item.details.vendor_name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+                ) : (
+                  <Row gutter={4} style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Server Duration
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.server_duration
+                          ? item.details.server_duration + " Days"
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+                )}
               </Col>
 
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Server Cost
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customer_history_details_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {item.details.server_cost
-                        ? "₹" + item.details.server_cost
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+              {permissions.includes("Show Server Cost & Vendor") && (
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Server Cost
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customer_history_details_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {item.details.server_cost
+                          ? "₹" + item.details.server_cost
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
 
-                <Row gutter={4} style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Server Duration
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.server_duration
-                        ? item.details.server_duration + " Days"
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
+                  <Row gutter={4} style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Server Duration
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.server_duration
+                          ? item.details.server_duration + " Days"
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+              )}
             </Row>
           </div>
         ) : item.status === "Verification Rejected" ||

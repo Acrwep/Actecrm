@@ -106,7 +106,29 @@ const AddLead = forwardRef(
     const [secondaryFees, setSecondaryFees] = useState("");
     const [leadType, setLeadType] = useState(null);
     const [leadTypeError, setLeadTypeError] = useState("");
-    const leadStatusOptions = [
+    // const leadStatusOptions = [
+    //   {
+    //     id: 1,
+    //     name: "High",
+    //   },
+    //   {
+    //     id: 2,
+    //     name: "Medium",
+    //   },
+    //   {
+    //     id: 3,
+    //     name: "Low",
+    //   },
+    //   {
+    //     id: 4,
+    //     name: "Junk",
+    //   },
+    //   {
+    //     id: 5,
+    //     name: "Not Interested",
+    //   },
+    // ];
+    const [leadStatusOptions, setLeadStatusOptions] = useState([
       {
         id: 1,
         name: "High",
@@ -127,7 +149,7 @@ const AddLead = forwardRef(
         id: 5,
         name: "Not Interested",
       },
-    ];
+    ]);
     const [leadStatus, setLeadStatus] = useState(null);
     const [leadStatusError, setLeadStatusError] = useState("");
     const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
@@ -171,6 +193,20 @@ const AddLead = forwardRef(
     //assign lead
     const [assignLeadId, setAssignLeadId] = useState("");
     const [assignLeadIdError, setAssignLeadIdError] = useState("");
+    //junk handle
+    const [isPreviousJunk, setIsPreviousJunk] = useState(false);
+
+    useEffect(() => {
+      const updatedOptions = leadStatusOptions.map((item) => ({
+        ...item,
+        is_active:
+          (item.id == 4 || item.id == 5) && updateLeadItem
+            ? false
+            : item.is_active,
+      }));
+
+      setLeadStatusOptions(updatedOptions);
+    }, [updateLeadItem, isPreviousJunk]);
 
     useEffect(() => {
       const countries = Country.getAllCountries();
@@ -278,6 +314,14 @@ const AddLead = forwardRef(
         setSecondaryFees(updateLeadItem.secondary_fees);
         setLeadType(updateLeadItem.lead_type_id);
         setLeadStatus(updateLeadItem.lead_status_id);
+        if (
+          updateLeadItem.lead_status_id == 4 ||
+          updateLeadItem.lead_status_id == 5
+        ) {
+          setIsPreviousJunk(true);
+        } else {
+          setIsPreviousJunk(false);
+        }
         if (isReEntry) {
           setAssignLeadId(updateLeadItem.lead_assigned_to_id);
           const today = new Date();
@@ -285,7 +329,14 @@ const AddLead = forwardRef(
           setNxtFollowupDateError("");
         } else {
           setAssignLeadId("");
-          setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+          if (
+            updateLeadItem.lead_status_id == 4 ||
+            updateLeadItem.lead_status_id == 5
+          ) {
+            setNxtFollowupDate(null);
+          } else {
+            setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+          }
         }
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
@@ -783,6 +834,10 @@ const AddLead = forwardRef(
         secondary_fees: secondaryFees ? secondaryFees : 0,
         lead_type_id: leadType,
         lead_status_id: leadStatus,
+        ...(updateLeadItem && {
+          is_previous_junk:
+            isPreviousJunk && leadStatus != 4 && leadStatus != 5,
+        }),
         next_follow_up_date: nxtFollowupDate
           ? formatToBackendIST(nxtFollowupDate)
           : null,
@@ -1543,7 +1598,7 @@ const AddLead = forwardRef(
               }}
               value={leadStatus}
               error={leadStatusError}
-              disabled={updateLeadItem ? true : false}
+              disabled={isReEntry}
             />
           </Col>
 
@@ -1565,7 +1620,13 @@ const AddLead = forwardRef(
                   value={nxtFollowupDate}
                   disablePreviousDates={true}
                   error={nxtFollowupDateError}
-                  disabled={isReEntry ? false : updateLeadItem ? true : false}
+                  disabled={
+                    isReEntry
+                      ? false
+                      : isPreviousJunk == false && updateLeadItem
+                        ? true
+                        : false
+                  }
                 />
               </Col>
               <Col span={8}>

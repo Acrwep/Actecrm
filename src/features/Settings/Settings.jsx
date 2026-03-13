@@ -315,6 +315,7 @@ export default function Settings() {
         "Server Details Update",
         "Server Verify",
         "Server Approve",
+        "Show Server Cost & Vendor",
         "Server Issue",
       ];
 

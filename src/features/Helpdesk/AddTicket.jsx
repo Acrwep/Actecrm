@@ -27,6 +27,8 @@ import {
   getTicketCategories,
   getTicketSubCategories,
   getTrainers,
+  getUsers,
+  sendNotification,
 } from "../ApiService/action";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonInputField from "../Common/CommonInputField";
@@ -42,6 +44,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const raisedByTypeOptions = [
     { id: "Customer", name: "Customer" },
     { id: "Trainer", name: "Trainer" },
+    { id: "Others", name: "Others" },
   ];
   const [raisedByTypeId, setRaisedByTypeId] = useState("Customer");
   const [raisedByTypeIdError, setRaisedByTypeIdError] = useState("");
@@ -52,33 +55,16 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [categoryId, setCategoryId] = useState("");
   const [categoryIdError, setCategoryIdError] = useState("");
-  const [subCategoryOptions, setSubCategoryOptions] = useState([]);
-  const [subCategoryId, setSubCategoryId] = useState("");
-  const [subCategoryIdError, setSubCategoryIdError] = useState("");
-  const typeOptions = [
-    { id: "Change", name: "Change" },
-    { id: "Issue", name: "Issue" },
-    { id: "Request", name: "Request" },
-    { id: "Complaint", name: "Complaint" },
-    { id: "Others", name: "Others" },
-  ];
-  const [typeId, setTypeId] = useState("");
-  const [typeIdError, setTypeIdError] = useState("");
-  const priorityOptions = [
-    { id: "High", name: "High" },
-    { id: "Medium", name: "Medium" },
-    { id: "Low", name: "Low" },
-  ];
-  const [priorityId, setPriorityId] = useState("");
-  const [priorityIdError, setPriorityIdError] = useState("");
   const [description, setDescription] = useState("");
   const [fileAttachmentBase64, setFileAttachmentBase64] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
-  //trainer select usestates
-  const [trainerFilterType, setTrainerFilterType] = useState(1);
-  const [isTrainerSelectFocused, setIsTrainerSelectFocused] = useState(false);
-  const [trainerId, setTrainerId] = useState(null);
-  const [trainerIdError, setTrainerIdError] = useState("");
+  //manager, ra, and hr usestates
+  const [allUsersList, setAllUsersList] = useState([]);
+  const [managerId, setManagerId] = useState("");
+  const [managerItem, setManagerItem] = useState("");
+  const [managerIdError, setManagerIdError] = useState("");
+  const [raId, setRaId] = useState("");
+  const [hrId, setHrId] = useState("");
   /* ---------------- Trainer STATES ---------------- */
   const [trainersDataList, setTrainersDataList] = useState([]);
   // ✅ IMPORTANT: keep IDs & Objects separately
@@ -122,23 +108,24 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
       setCategoryOptions([]);
       console.log("categories error", error);
     } finally {
-      setTimeout(() => {
-        getSubCategoriesData();
-      }, 300);
+      getUsersData();
     }
   };
 
-  const getSubCategoriesData = async () => {
+  const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
     try {
-      const response = await getTicketSubCategories();
-      setSubCategoryOptions(response?.data?.data || []);
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data?.data || []);
     } catch (error) {
-      setSubCategoryOptions([]);
-      console.log("sub categories error", error);
+      setAllUsersList([]);
+      console.log("get all users error", error);
     } finally {
-      setTimeout(() => {
-        getCustomersData(null);
-      }, 300);
+      getCustomersData(null);
     }
   };
 
@@ -433,15 +420,15 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
 
   const handleSubmit = async () => {
     setValidationTrigger(true);
-    const raisedByTypeValidate = selectValidator(raisedByTypeId);
+    const raisedByTypeValidate =
+      raisedByTypeId == "Others" ? "" : selectValidator(raisedByTypeId);
     const titleValidate = addressValidator(title);
     const categoryIdValidate = selectValidator(categoryId);
-    const subCategoryIdValidate = selectValidator(subCategoryId);
-    const typeIdValidate = selectValidator(typeId);
-    const priorityIdValidate = selectValidator(priorityId);
+    const managerIdValidate = selectValidator(managerId);
 
     let trainerIdValidate = "";
     let customerIdValidate = "";
+    let RaAndHrValidate = "";
 
     if (raisedByTypeId == "Trainer") {
       trainerIdValidate = selectValidator(selectedTrainerId);
@@ -456,13 +443,11 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
     }
 
     setRaisedByTypeIdError(raisedByTypeValidate);
-    setTrainerIdError(trainerIdValidate);
+    setSelectedTrainerIdError(trainerIdValidate);
     setSelectedCustomerIdError(customerIdValidate);
     setTitleError(titleValidate);
     setCategoryIdError(categoryIdValidate);
-    setSubCategoryIdError(subCategoryIdValidate);
-    setTypeIdError(typeIdValidate);
-    setPriorityIdError(priorityIdValidate);
+    setManagerIdError(managerIdValidate);
 
     if (
       raisedByTypeValidate ||
@@ -470,11 +455,14 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
       customerIdValidate ||
       titleValidate ||
       categoryIdValidate ||
-      subCategoryIdValidate ||
-      typeIdValidate ||
-      priorityIdValidate
+      managerIdValidate
     )
       return;
+
+    if ((raId && !hrId) || (hrId && !raId)) {
+      CommonMessage("error", "Either select both RA and HR or unselect both.");
+      return;
+    }
 
     setButtonLoading(true);
     const today = new Date();
@@ -485,29 +473,59 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
       title: title,
       description: description,
       category_id: categoryId,
-      sub_category_id: subCategoryId,
-      priority: priorityId,
-      type: typeId,
+      priority: "High",
       attachments: [
         {
           base64string: fileAttachmentBase64,
         },
       ],
       raised_by_id:
-        raisedByTypeId == "Customer" ? selectedCustomerId : selectedTrainerId,
+        raisedByTypeId == "Customer"
+          ? selectedCustomerId
+          : raisedByTypeId == "Trainer"
+            ? selectedTrainerId
+            : "",
       raised_by_role: raisedByTypeId,
+      manager_id: managerId,
+      ra_id: raId,
+      hr_id: hrId,
       assigned_to: convertAsJson?.user_id,
       created_at: formatToBackendIST(today),
     };
     try {
       await createTicket(payload);
       setTimeout(() => {
+        handleSendNotification();
         callgetTicketApi();
         CommonMessage("success", "Created");
       }, 300);
     } catch (error) {
       setButtonLoading(false);
       console.log("ticket create error", error);
+    }
+  };
+
+  const handleSendNotification = async () => {
+    const findCategory = categoryOptions.find((f) => f.id == categoryId);
+    const today = new Date();
+    const notifyIds = [managerId, raId, hrId];
+    const payload = {
+      user_ids: notifyIds.filter((f) => f != ""),
+      title: "Ticket Assigned",
+      message: {
+        title: title,
+        category_name: findCategory?.name || "",
+        priority: "High",
+        ticket_created_date: formatToBackendIST(today),
+      },
+      created_at: formatToBackendIST(today),
+    };
+    console.log("notification payload", payload);
+
+    try {
+      await sendNotification(payload);
+    } catch (error) {
+      console.log("send notification error", error);
     }
   };
 
@@ -521,10 +539,6 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
     setEmailError("");
     setCategoryId(null);
     setCategoryIdError("");
-    setSubCategoryId(null);
-    setSubCategoryIdError("");
-    setTypeId("");
-    setTypeIdError("");
     setDescription("");
     setFileAttachmentBase64("");
   };
@@ -539,6 +553,12 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             options={raisedByTypeOptions}
             onChange={(e) => {
               setRaisedByTypeId(e.target.value);
+              if (e.target.value == "Others") {
+                setSelectedCustomerId(null);
+                setSelectedCustomerIdError("");
+                setSelectedTrainerId(null);
+                setSelectedTrainerIdError("");
+              }
               if (validationTrigger) {
                 setRaisedByTypeIdError(selectValidator(e.target.value));
               }
@@ -567,7 +587,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
               disableClearable={false}
             />
           </Col>
-        ) : (
+        ) : raisedByTypeId == "Customer" ? (
           <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
             <div
               style={{
@@ -616,6 +636,8 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
               )}
             </div>
           </Col>
+        ) : (
+          ""
         )}
 
         <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
@@ -632,7 +654,13 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             error={titleError}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          style={{ marginTop: raisedByTypeId == "Others" ? "20px" : "30px" }}
+        >
           <CommonSelectField
             label="Category"
             required={true}
@@ -647,51 +675,47 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             error={categoryIdError}
           />
         </Col>
+
         <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
           <CommonSelectField
-            label="Sub Category"
+            label="Manager"
             required={true}
-            options={subCategoryOptions}
+            options={allUsersList}
             onChange={(e) => {
-              setSubCategoryId(e.target.value);
-              if (validationTrigger) {
-                setSubCategoryIdError(selectValidator(e.target.value));
-              }
+              setManagerId(e.target.value);
+              setManagerItem(e.target.option);
+              setManagerIdError(selectValidator(e.target.value));
             }}
-            value={subCategoryId}
-            error={subCategoryIdError}
+            value={managerId}
+            error={managerIdError}
           />
         </Col>
 
         <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
           <CommonSelectField
-            label="Type"
-            required={true}
-            options={typeOptions}
+            label="RA"
+            required={false}
+            options={allUsersList}
             onChange={(e) => {
-              setTypeId(e.target.value);
-              if (validationTrigger) {
-                setTypeIdError(selectValidator(e.target.value));
-              }
+              setRaId(e.target.value);
             }}
-            value={typeId}
-            error={typeIdError}
+            value={raId}
+            error={""}
+            disableClearable={false}
           />
         </Col>
 
         <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
           <CommonSelectField
-            label="Priority"
-            required={true}
-            options={priorityOptions}
+            label="HR"
+            required={false}
+            options={allUsersList}
             onChange={(e) => {
-              setPriorityId(e.target.value);
-              if (validationTrigger) {
-                setPriorityIdError(selectValidator(e.target.value));
-              }
+              setHrId(e.target.value);
             }}
-            value={priorityId}
-            error={priorityIdError}
+            value={hrId}
+            error={""}
+            disableClearable={false}
           />
         </Col>
 
@@ -706,13 +730,14 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             value={description}
           />
         </Col>
+
         <Col
           xs={24}
           sm={24}
           md={24}
           lg={8}
           style={{
-            marginTop: subCategoryIdError ? "40px" : "30px",
+            marginTop: "30px",
             color: "rgba(0,0,0,0.88)",
           }}
         >

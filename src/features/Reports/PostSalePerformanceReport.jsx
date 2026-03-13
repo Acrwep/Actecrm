@@ -135,6 +135,15 @@ export default function PostSalePerformanceReport() {
       },
     },
     {
+      title: "Cert Generated",
+      key: "certificate_generated",
+      dataIndex: "certificate_generated",
+      width: 100,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
       title: "Linkedin Review",
       key: "linkedin_review_count",
       dataIndex: "linkedin_review_count",
@@ -358,7 +367,7 @@ export default function PostSalePerformanceReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: 2000 }}
+          scroll={{ x: 2100 }}
           columns={columns}
           dataSource={reportData}
           dataPerPage={10}

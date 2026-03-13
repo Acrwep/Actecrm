@@ -69,7 +69,6 @@ export default function Tickets() {
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [allDownliners, setAllDownliners] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
   const [statusCounts, setStatusCounts] = useState(null);
@@ -135,25 +134,31 @@ export default function Tickets() {
                 {loadingRowId == record.ticket_id ? (
                   <CommonSpinner color="#333" />
                 ) : (
-                  <Tooltip
-                    placement="top"
-                    title="View Details"
-                    trigger={["hover", "click"]}
-                  >
-                    <FaRegEye
-                      size={14}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        if (text == "Trainer") {
-                          getTrainerByIdData(record.raised_by_id);
-                          setIsOpenTrainerDetailModal(true);
-                        } else {
-                          setLoadingRowId(record.ticket_id);
-                          getParticularCustomerDetails(record.raised_by_id);
-                        }
-                      }}
-                    />
-                  </Tooltip>
+                  <>
+                    {text == "Others" ? (
+                      ""
+                    ) : (
+                      <Tooltip
+                        placement="top"
+                        title="View Details"
+                        trigger={["hover", "click"]}
+                      >
+                        <FaRegEye
+                          size={14}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            if (text == "Trainer") {
+                              getTrainerByIdData(record.raised_by_id);
+                              setIsOpenTrainerDetailModal(true);
+                            } else {
+                              setLoadingRowId(record.ticket_id);
+                              getParticularCustomerDetails(record.raised_by_id);
+                            }
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </>
                 )}
               </>
             </div>
@@ -161,18 +166,6 @@ export default function Tickets() {
         } else {
           return <p>-</p>;
         }
-      },
-    },
-    {
-      title: "Ticket Handler",
-      key: "assigned_to_name",
-      dataIndex: "assigned_to_name",
-      width: 150,
-      render: (text, record) => {
-        const lead_executive = record.assigned_to
-          ? `${record.assigned_to} - ${text}`
-          : "-";
-        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
@@ -185,18 +178,45 @@ export default function Tickets() {
       },
     },
     {
-      title: "Category",
-      key: "category_name",
-      dataIndex: "category_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
+      title: "Manager",
+      key: "manager_name",
+      dataIndex: "manager_name",
+      width: 150,
+      render: (text, record) => {
+        const lead_executive = record.manager_user_id
+          ? `${record.manager_user_id} - ${text}`
+          : "-";
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
-      title: "Sub Category",
-      key: "sub_category_name",
-      dataIndex: "sub_category_name",
+      title: "RA",
+      key: "ra_name",
+      dataIndex: "ra_name",
+      width: 120,
+      render: (text, record) => {
+        const lead_executive = record.ra_user_id
+          ? `${record.ra_user_id} - ${text}`
+          : "-";
+        return <EllipsisTooltip text={lead_executive} />;
+      },
+    },
+    {
+      title: "HR",
+      key: "hr_name",
+      dataIndex: "hr_name",
+      width: 120,
+      render: (text, record) => {
+        const lead_executive = record.hr_user_id
+          ? `${record.hr_user_id} - ${text}`
+          : "-";
+        return <EllipsisTooltip text={lead_executive} />;
+      },
+    },
+    {
+      title: "Category",
+      key: "category_name",
+      dataIndex: "category_name",
       width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text || "-"} />;
@@ -227,15 +247,6 @@ export default function Tickets() {
         } else {
           <p>-</p>;
         }
-      },
-    },
-    {
-      title: "Type",
-      key: "type",
-      dataIndex: "type",
-      width: 100,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
       },
     },
     {
@@ -281,12 +292,12 @@ export default function Tickets() {
         return (
           <>
             <Tooltip
-              placement="bottomLeft"
+              placement="bottomRight"
               className="customers_statustooltip"
               color="#fff"
               styles={{
                 body: {
-                  width: "260px",
+                  width: "290px",
                   maxWidth: "none",
                   whiteSpace: "normal",
                 },
@@ -294,7 +305,7 @@ export default function Tickets() {
               title={
                 <>
                   <Row>
-                    {record.status != "Closed" ? (
+                    {record.status == "Awaiting Employee" ? (
                       <Col span={12} style={{ marginBottom: "8px" }}>
                         <Checkbox
                           className="server_statuscheckbox"
@@ -309,21 +320,42 @@ export default function Tickets() {
                             }
                           }}
                         >
-                          Assigned to
+                          Assign RA & HR
                         </Checkbox>
                       </Col>
                     ) : (
                       <Col span={12} style={{ marginBottom: "8px" }}>
-                        <div className="customers_classcompleted_container">
+                        {/* <div className="customers_classcompleted_container">
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
-                            Assigned
+                            RA & HR Assigned
                           </p>
+                        </div> */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <button
+                            className="customers_reassigntrainer_button"
+                            onClick={() => {
+                              if (permissions.includes("Assign Ticket")) {
+                                setIsOpenDetailsDrawer(true);
+                                setTicketDetails(record);
+                                setDrawerStatus("Assign Ticket");
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
+                            }}
+                          >
+                            Re-Assign RA & HR
+                          </button>
                         </div>
                       </Col>
                     )}
 
-                    {record.status == "Assign" || record.status === "Hold" ? (
+                    {record.status == "Assigned" ? (
                       <Col span={12} style={{ marginBottom: "8px" }}>
                         <Checkbox
                           className="server_statuscheckbox"
@@ -340,7 +372,7 @@ export default function Tickets() {
                       ""
                     )}
 
-                    {record.status == "Open" ||
+                    {record.status == "Awaiting Employee" ||
                     record.status == "Assigned" ||
                     record.status == "Hold" ? (
                       <Col span={12} style={{ marginBottom: "8px" }}>
@@ -405,9 +437,9 @@ export default function Tickets() {
                 </>
               }
             >
-              {text === "Open" ? (
+              {text === "Awaiting Employee" ? (
                 <Button className="customers_status_classscheduled_button">
-                  Open
+                  Awaiting RA & HR
                 </Button>
               ) : text === "Assigned" ? (
                 <Button className="customers_status_awaittrainer_button">
@@ -478,32 +510,25 @@ export default function Tickets() {
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      setLoginUserId(convertAsJson?.user_id);
       setSubUsers(downlineUsers);
-      getAllDownlineUsersData(null);
+      rerunTicketsFilters(null, convertAsJson?.user_id);
     }
   }, [childUsers]);
 
   useEffect(() => {
     const handler = async (e) => {
       const data = e.detail;
-      console.log("Received via event:", data, allDownliners);
+      console.log("Received via event:", data);
       setSelectedUserId(null);
-
-      // Re-run your existing logic
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-      try {
-        const response = await getAllDownlineUsers(convertAsJson.user_id);
-        console.log("all downlines response", response);
-        const downliners = response?.data?.data || [];
-        const downliners_ids = downliners.map((u) => {
-          return u.user_id;
-        });
-        setAllDownliners(downliners_ids);
-        rerunTicketsFilters(data, downliners_ids);
-      } catch (error) {
-        console.log("all downlines error", error);
-      }
+
+      // Re-run your existing logic
+      rerunTicketsFilters(data, convertAsJson?.user_id);
     };
 
     window.addEventListener("serverNotificationFilter", handler);
@@ -511,42 +536,7 @@ export default function Tickets() {
       window.removeEventListener("serverNotificationFilter", handler);
   }, []);
 
-  const getAllDownlineUsersData = async (user_id) => {
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    setLoginUserId(convertAsJson.user_id);
-
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
-    try {
-      const response = await getAllDownlineUsers(
-        user_id ? user_id : convertAsJson.user_id,
-      );
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-
-      setTimeout(() => {
-        // getTicketsData(
-        //   PreviousAndCurrentDate[0],
-        //   PreviousAndCurrentDate[1],
-        //   downliners_ids,
-        //   "",
-        //   1,
-        //   10,
-        // );
-        rerunTicketsFilters(location.state, downliners_ids);
-      }, 300);
-    } catch (error) {
-      setTicketsData([]);
-      console.log("all downlines error", error);
-    }
-  };
-
-  const rerunTicketsFilters = (stateData, downliners) => {
+  const rerunTicketsFilters = (stateData, userId) => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
     const receivedStartDateFromNotification = stateData?.startDate || null;
@@ -568,8 +558,8 @@ export default function Tickets() {
       receivedEndDateFromNotification
         ? receivedEndDateFromNotification
         : PreviousAndCurrentDate[1],
-      downliners,
-      null,
+      userId,
+      "",
       1,
       10,
     );
@@ -578,7 +568,7 @@ export default function Tickets() {
   const getTicketsData = async (
     startDate,
     endDate,
-    downliners,
+    user_id,
     status,
     pageNumber,
     limit,
@@ -587,8 +577,9 @@ export default function Tickets() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      user_id: user_id ? user_id : loginUserId,
       status: status,
+      show_all: permissions.includes("Show All Tickets") ? true : false,
       page: pageNumber,
       limit: limit,
     };
@@ -640,7 +631,7 @@ export default function Tickets() {
     getTicketsData(
       selectedDates[0],
       selectedDates[1],
-      allDownliners,
+      loginUserId,
       status,
       page,
       limit,
@@ -685,7 +676,7 @@ export default function Tickets() {
         getTicketsData(
           selectedDates[0],
           selectedDates[1],
-          allDownliners,
+          loginUserId,
           status,
           pagination.page,
           pagination.limit,
@@ -735,28 +726,14 @@ export default function Tickets() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      setPagination({
-        page: 1,
-      });
-      getTicketsData(
-        selectedDates[0],
-        selectedDates[1],
-        downliners_ids,
-        status,
-        1,
-        pagination.limit,
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
+    getTicketsData(
+      selectedDates[0],
+      selectedDates[1],
+      value,
+      status,
+      1,
+      pagination.limit,
+    );
   };
 
   const getParticularCustomerDetails = async (customer_id) => {
@@ -789,7 +766,7 @@ export default function Tickets() {
     getTicketsData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
-      allDownliners,
+      loginUserId,
       "",
       1,
       10,
@@ -822,7 +799,7 @@ export default function Tickets() {
                   getTicketsData(
                     dates[0],
                     dates[1],
-                    allDownliners,
+                    loginUserId,
                     status,
                     1,
                     pagination.limit,
@@ -881,7 +858,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "",
                     1,
                     pagination.limit,
@@ -901,33 +878,33 @@ export default function Tickets() {
               </div>
               <div
                 className={
-                  status === "Open"
+                  status === "Awaiting Employee"
                     ? "customers_active_classschedule_container"
                     : "customers_classschedule_container"
                 }
                 onClick={() => {
-                  if (status === "Open") {
+                  if (status === "Awaiting Employee") {
                     return;
                   }
-                  setStatus("Open");
+                  setStatus("Awaiting Employee");
                   setPagination({ ...pagination, page: 1 });
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
-                    "Open",
+                    loginUserId,
+                    "Awaiting Employee",
                     1,
                     pagination.limit,
                   );
                 }}
               >
                 <p>
-                  Open{" "}
+                  Awaiting RA & HR{" "}
                   {`(  ${
                     statusCounts &&
-                    statusCounts.open !== undefined &&
-                    statusCounts.open !== null
-                      ? statusCounts.open
+                    statusCounts.awaiting_employee !== undefined &&
+                    statusCounts.awaiting_employee !== null
+                      ? statusCounts.awaiting_employee
                       : "-"
                   }
  )`}
@@ -948,7 +925,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "Assigned",
                     1,
                     pagination.limit,
@@ -982,7 +959,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "Hold",
                     1,
                     pagination.limit,
@@ -1015,7 +992,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "Close Request",
                     1,
                     pagination.limit,
@@ -1048,7 +1025,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "Overdue",
                     1,
                     pagination.limit,
@@ -1081,7 +1058,7 @@ export default function Tickets() {
                   getTicketsData(
                     selectedDates[0],
                     selectedDates[1],
-                    allDownliners,
+                    loginUserId,
                     "Closed",
                     1,
                     pagination.limit,
@@ -1170,7 +1147,7 @@ export default function Tickets() {
               getTicketsData(
                 selectedDates[0],
                 selectedDates[1],
-                allDownliners,
+                loginUserId,
                 status,
                 pagination.page,
                 pagination.limit,
@@ -1261,6 +1238,26 @@ export default function Tickets() {
               <Row style={{ marginTop: "12px" }}>
                 <Col span={12}>
                   <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Manager</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <EllipsisTooltip
+                    text={
+                      ticketDetails && ticketDetails.manager_user_id
+                        ? `${ticketDetails.manager_user_id} - ${ticketDetails?.manager_name}`
+                        : "-"
+                    }
+                    smallText={true}
+                  />
+                </Col>
+              </Row>
+            </Col>
+
+            <Col span={12}>
+              <Row>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
                     <p className="customerdetails_rowheading">Category</p>
                   </div>
                 </Col>
@@ -1279,23 +1276,6 @@ export default function Tickets() {
               <Row style={{ marginTop: "12px" }}>
                 <Col span={12}>
                   <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Sub Category</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {ticketDetails && ticketDetails.sub_category_name
-                      ? ticketDetails.sub_category_name
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-            </Col>
-
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
                     <p className="customerdetails_rowheading">Priority</p>
                   </div>
                 </Col>
@@ -1305,24 +1285,6 @@ export default function Tickets() {
                       ? ticketDetails.priority
                       : "-"}
                   </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <p className="customerdetails_rowheading">Type</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <EllipsisTooltip
-                    text={
-                      ticketDetails && ticketDetails.type
-                        ? ticketDetails.type
-                        : "-"
-                    }
-                    smallText={true}
-                  />
                 </Col>
               </Row>
 
@@ -1360,7 +1322,7 @@ export default function Tickets() {
                 getTicketsData(
                   selectedDates[0],
                   selectedDates[1],
-                  allDownliners,
+                  loginUserId,
                   status,
                   1,
                   pagination.limit,

@@ -104,6 +104,9 @@ export default function Server() {
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   //raise usestates
   const [isOpenRaiseModal, setIsOpenRaiseModal] = useState(false);
+  const [requestServerDuration, setRequestServerDuration] = useState("");
+  const [requestServerDurationError, setRequestServerDurationError] =
+    useState("");
   //support usestates
   const [isOpenSupportModal, setIsOpenSupportModal] = useState(false);
   const [supportComment, setSupportComment] = useState("");
@@ -216,6 +219,15 @@ export default function Server() {
       width: 120,
       render: (text) => {
         return <p>{text ? `${text} Days` : "-"}</p>;
+      },
+    },
+    {
+      title: "Vendor",
+      key: "vendor_id",
+      dataIndex: "vendor_id",
+      width: 130,
+      render: (text) => {
+        return <p>{text ? `${text}` : "-"}</p>;
       },
     },
     {
@@ -825,8 +837,8 @@ export default function Server() {
             case "server_cost":
               return {
                 ...col,
-                hidden: true,
                 width: 130,
+                hidden: !permissions.includes("Show Server Cost & Vendor"),
                 render: (text) => {
                   return <p>{text ? `₹${text}` : "-"}</p>;
                 },
@@ -837,6 +849,15 @@ export default function Server() {
                 width: 120,
                 render: (text) => {
                   return <p>{text ? `${text} Days` : "-"}</p>;
+                },
+              };
+            case "vendor_id":
+              return {
+                ...col,
+                width: 130,
+                hidden: !permissions.includes("Show Server Cost & Vendor"),
+                render: (text) => {
+                  return <p>{text ? `${text}` : "-"}</p>;
                 },
               };
             case "status":
@@ -2932,6 +2953,25 @@ export default function Server() {
                     </Col>
                   </Row>
 
+                  {permissions.includes("Show Server Cost & Vendor") && (
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Server Cost
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {serverDetails && serverDetails.server_cost
+                            ? `₹${serverDetails.server_cost}`
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+                  )}
+
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
@@ -2951,7 +2991,32 @@ export default function Server() {
                 </Col>
 
                 <Col span={12}>
-                  <Row>
+                  {permissions.includes("Show Server Cost & Vendor") && (
+                    <Row>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">Vendor</p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p className="customerdetails_text">
+                          {serverDetails && serverDetails.vendor_id
+                            ? serverDetails.vendor_id
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+                  )}
+
+                  <Row
+                    style={{
+                      marginTop: permissions.includes(
+                        "Show Server Cost & Vendor",
+                      )
+                        ? "12px"
+                        : "0px",
+                    }}
+                  >
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">Start Date</p>
@@ -2992,49 +3057,70 @@ export default function Server() {
       </Drawer>
       {/* server raise confirm modal */}
       <Modal
+        title={"Raise Server"}
         open={isOpenRaiseModal}
         onCancel={() => {
           setIsOpenRaiseModal(false);
         }}
-        footer={false}
-        width="30%"
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenRaiseModal(false);
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          verifyButtonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={() => {
+                handleServerStatus("Server Raised");
+              }}
+              className="leads_coursemodal_createbutton"
+            >
+              Submit
+            </Button>
+          ),
+        ]}
+        width="32%"
         zIndex={1100}
       >
-        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+        {/* <p className="customer_classcompletemodal_heading">Are you sure?</p>
 
         <p className="customer_classcompletemodal_text">
           You Want To Raise The Server for{" "}
           <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
             {serverDetails && serverDetails.name ? serverDetails.name : ""}
           </span>{" "}
-        </p>
-        <div className="customer_classcompletemodal_button_container">
-          <Button
-            className="customer_classcompletemodal_cancelbutton"
-            onClick={() => {
-              setIsOpenRaiseModal(false);
+        </p> */}
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <CommonSelectField
+            required={true}
+            label="Request Server Duration"
+            options={[
+              { id: 30, name: "30 Days" },
+              { id: 60, name: "60 Days" },
+              { id: 90, name: "90 Days" },
+            ]}
+            onChange={(e) => {
+              setRequestServerDuration(e.target.value);
+              setRequestServerDurationError(selectValidator(e.target.value));
             }}
-          >
-            No
-          </Button>
-          {verifyButtonLoading ? (
-            <Button
-              type="primary"
-              className="customer_classcompletemodal_loading_okbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              className="customer_classcompletemodal_okbutton"
-              onClick={() => {
-                handleServerStatus("Server Raised");
-              }}
-            >
-              Yes
-            </Button>
-          )}
+            value={requestServerDuration}
+            error={requestServerDurationError}
+          />
         </div>
       </Modal>
 

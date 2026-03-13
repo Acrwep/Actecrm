@@ -544,8 +544,8 @@ export default function CustomHeader() {
       console.log("ticketss notifyyyyy", message);
 
       const ticketFilterData = {
-        startDate: message.ticket_created_date,
-        endDate: message.ticket_created_date,
+        startDate: moment(message.ticket_created_date).format("YYYY-MM-DD"),
+        endDate: moment(message.ticket_created_date).format("YYYY-MM-DD"),
       };
 
       if (location.pathname === "/tickets") {

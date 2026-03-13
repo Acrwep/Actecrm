@@ -522,7 +522,9 @@ export default function Leads({
               ""
             )}
 
-            {permissions.includes("Assign Lead") ? (
+            {permissions.includes("Assign Lead") &&
+            record.lead_status_id != 4 &&
+            record.lead_status_id != 5 ? (
               <Tooltip
                 placement="bottom"
                 title="Re-Assign this lead to another user"
@@ -905,7 +907,9 @@ export default function Leads({
                         ""
                       )}
 
-                      {permissions.includes("Assign Lead") ? (
+                      {permissions.includes("Assign Lead") &&
+                      record.lead_status_id != 4 &&
+                      record.lead_status_id != 5 ? (
                         <Tooltip
                           placement="bottom"
                           title="Re-Assign this lead to another user"
@@ -1036,6 +1040,7 @@ export default function Leads({
 
       const paginations = response?.data?.data?.pagination;
       const apiData = response?.data?.data?.data || [];
+      console.log("leads data", apiData);
 
       // ✅ Add serial number here
       const updatedData = apiData.map((item, index) => ({
@@ -1044,7 +1049,7 @@ export default function Leads({
       }));
 
       setLeadData(updatedData);
-
+      setLeadCount(paginations.total || 0);
       setPagination({
         page: pageNumber,
         limit: limit,
@@ -2038,6 +2043,13 @@ export default function Leads({
               <button
                 className="leadmanager_addleadbutton"
                 onClick={() => {
+                  const findJunks = selectedRows.find(
+                    (f) => f.lead_status_id == 4 || f.lead_status_id == 5,
+                  );
+                  if (findJunks) {
+                    CommonMessage("error", "Unable to assign junk leads");
+                    return;
+                  }
                   setIsOpenAssignModal(true);
                   setReEntryNxtFollowUpDate(new Date());
                 }}
@@ -2071,7 +2083,8 @@ export default function Leads({
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
-          checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
+          // checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
+          checkBox={"false"}
           size="small"
           className="questionupload_table"
           selectedDatas={handleSelectedRow}

@@ -1340,7 +1340,7 @@ export default function Users({
               onClick={handleSetTarget}
               className="leads_coursemodal_createbutton"
             >
-              Create
+              Set
             </Button>
           ),
         ]}
