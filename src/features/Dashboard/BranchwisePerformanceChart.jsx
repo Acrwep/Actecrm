@@ -82,6 +82,8 @@ export default function BranchwisePerformanceChart({
       xaxis: {
         categories: xaxis,
         labels: {
+          rotate: -45, // rotate labels
+          rotateAlways: true, // always apply rotation
           style: {
             fontSize: fontSize || "12px",
             fontFamily: "Poppins, sans-serif",

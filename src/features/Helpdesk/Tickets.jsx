@@ -135,9 +135,7 @@ export default function Tickets() {
                   <CommonSpinner color="#333" />
                 ) : (
                   <>
-                    {text == "Others" ? (
-                      ""
-                    ) : (
+                    {record.raised_by_id ? (
                       <Tooltip
                         placement="top"
                         title="View Details"
@@ -157,6 +155,8 @@ export default function Tickets() {
                           }}
                         />
                       </Tooltip>
+                    ) : (
+                      ""
                     )}
                   </>
                 )}

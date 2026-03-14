@@ -293,6 +293,18 @@ const ServerUpdateDetails = forwardRef(
             </Col>
             <Col span={8}>
               <CommonInputField
+                label="Request Duration"
+                required={true}
+                disabled={true}
+                value={
+                  serverDetails && serverDetails.requested_duration
+                    ? serverDetails.requested_duration + " Days"
+                    : "-"
+                }
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
                 label="Vendor"
                 required={true}
                 onChange={(e) => {
@@ -305,6 +317,15 @@ const ServerUpdateDetails = forwardRef(
                 error={vendorNameError}
               />
             </Col>
+          </Row>
+
+          <Row
+            gutter={16}
+            style={{
+              marginTop: "22px",
+              marginBottom: "40px",
+            }}
+          >
             <Col span={8}>
               <CommonOutlinedInput
                 label="Server Cost"
@@ -326,15 +347,7 @@ const ServerUpdateDetails = forwardRef(
                 icon={<LuIndianRupee size={16} />}
               />{" "}
             </Col>
-          </Row>
 
-          <Row
-            gutter={16}
-            style={{
-              marginTop: "22px",
-              marginBottom: "40px",
-            }}
-          >
             <Col span={8}>
               <CommonSelectField
                 required={true}

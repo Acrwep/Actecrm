@@ -43,10 +43,10 @@ import CommonTextArea from "../Common/CommonTextArea";
 
 const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
   const raisedByTypeOptions = [
-    { id: "Customer", name: "Customer" },
+    { id: "Student", name: "Student" },
     { id: "Trainer", name: "Trainer" },
   ];
-  const [raisedByTypeId, setRaisedByTypeId] = useState("Customer");
+  const [raisedByTypeId, setRaisedByTypeId] = useState("Student");
   const [raisedByTypeIdError, setRaisedByTypeIdError] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -445,7 +445,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
         },
       ],
       raised_by_id:
-        raisedByTypeId == "Customer"
+        raisedByTypeId == "Student"
           ? selectedCustomerId
           : raisedByTypeId == "Trainer"
             ? selectedTrainerId
@@ -545,7 +545,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
               disableClearable={true}
             />
           </Col>
-        ) : raisedByTypeId == "Customer" ? (
+        ) : raisedByTypeId == "Student" ? (
           <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
             <div
               style={{
@@ -556,7 +556,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
             >
               <div style={{ flex: 1 }}>
                 <CommonCustomerSingleSelectField
-                  label="Customer"
+                  label="Student"
                   required={false}
                   options={mergedCustomers}
                   value={selectedCustomerId}
@@ -578,7 +578,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
                   ) : (
                     <Tooltip
                       placement="top"
-                      title="View Customer Details"
+                      title="View Student Details"
                       trigger={["hover", "click"]}
                     >
                       <FaRegEye
@@ -903,7 +903,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
 
       {/* customer fulldetails drawer */}
       <Drawer
-        title="Customer Details"
+        title="Student Details"
         open={isOpenCustomerDetailsDrawer}
         onClose={() => {
           setIsOpenCustomerDetailsDrawer(false);

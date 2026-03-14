@@ -97,6 +97,8 @@ export default function Server() {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [serverData, setServerData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [statusCount, setStatusCount] = useState(null);
   const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -1547,6 +1549,13 @@ export default function Server() {
     setCustomerDetails(null);
   };
 
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandLast90Date();
     setSelectedDates(PreviousAndCurrentDate);
@@ -2171,26 +2180,56 @@ export default function Server() {
         </button>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <CommonTable
-          // scroll={{ x: 1200 }}
-          scroll={{
-            x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
-              0,
-            ),
-          }}
-          columns={tableColumns}
-          dataSource={serverData}
-          loading={loading}
-          checkBox="false"
-          size="small"
-          className="questionupload_table"
-          onPaginationChange={handlePaginationChange} // callback to fetch new data
-          limit={pagination.limit} // page size
-          page_number={pagination.page} // current page
-          totalPageNumber={pagination.total} // total rows
-        />
+      <div style={{ marginTop: "20px", position: "relative" }}>
+        <div
+          className={
+            selectedRowKeys.length >= 1
+              ? "show_server_total_container"
+              : "server_total_container"
+          }
+        >
+          <div className="server_total_card">
+            <p className="server_total_label">
+              Selected Total
+              {selectedRows.length > 0 && (
+                <span className="server_total_selected_badge">
+                  {selectedRows.length}
+                </span>
+              )}
+              :
+            </p>
+            <p className="server_total_value">
+              {"₹" +
+                selectedRows
+                  .reduce((acc, row) => acc + (Number(row.server_cost) || 0), 0)
+                  .toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "42px" }}>
+          <CommonTable
+            // scroll={{ x: 1200 }}
+            scroll={{
+              x: tableColumns.reduce(
+                (total, col) => total + (col.width || 150),
+                0,
+              ),
+            }}
+            columns={tableColumns}
+            dataSource={serverData}
+            loading={loading}
+            checkBox={"true"}
+            size="small"
+            className="questionupload_table"
+            onPaginationChange={handlePaginationChange} // callback to fetch new data
+            selectedDatas={handleSelectedRow}
+            selectedRowKeys={selectedRowKeys}
+            limit={pagination.limit} // page size
+            page_number={pagination.page} // current page
+            totalPageNumber={pagination.total} // total rows
+          />
+        </div>
       </div>
 
       {/* update drawer */}
