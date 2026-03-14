@@ -540,7 +540,10 @@ export default function CustomHeader() {
       return;
     }
 
-    if (item.title == "Ticket Assigned") {
+    if (
+      item.title == "Ticket Assigned" ||
+      item.title == "New comment added to the ticket"
+    ) {
       console.log("ticketss notifyyyyy", message);
 
       const ticketFilterData = {
@@ -2108,12 +2111,14 @@ Course Advisor
                       <div
                         className={
                           item.title == "Ticket Assigned" ||
+                          item.title == "New comment added to the ticket" ||
                           item.title == "Server Raised"
                             ? "header_notification_popup_list_ticket_icon_container"
                             : "header_notification_popup_list_icon_container"
                         }
                       >
-                        {item.title == "Ticket Assigned" ? (
+                        {item.title == "Ticket Assigned" ||
+                        item.title == "New comment added to the ticket" ? (
                           <IoTicketOutline color="#5b69ca" size={22} />
                         ) : (
                           <RiErrorWarningFill color="#d32f2f" size={24} />
@@ -2162,6 +2167,13 @@ Course Advisor
                           {`Title: ${message.title ?? "-"} | 
      Category: ${message.category_name ?? ""}${message.category_name ?? ""} | 
      Priority: ${message.priority ?? "-"}`}
+                        </p>
+                      ) : item.title === "New comment added to the ticket" &&
+                        typeof message === "object" ? (
+                        <p className="header_notification_drawer_list_message">
+                          {`Title: ${message.title ?? "-"} | 
+     Category: ${message.category_name ?? ""}${message.category_name ?? ""} | 
+     Comment: ${message.comment ?? "-"}`}
                         </p>
                       ) : item.title === "Trainer Payment Rejected" &&
                         typeof message === "object" ? (

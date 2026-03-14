@@ -8,6 +8,7 @@ import { IoIosGitPullRequest } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
 import moment from "moment";
 import PrismaZoom from "react-prismazoom";
+import { BiCommentDetail } from "react-icons/bi";
 
 export default function TicketHistory({ data = [] }) {
   const [isOpenAttachmentModal, setIsOpenAttachmentModal] = useState(false);
@@ -23,6 +24,8 @@ export default function TicketHistory({ data = [] }) {
         <LuCircleCheck size={16} style={{ color: "green" }} />
       ) : item.status == "Hold" ? (
         <BsStopCircle size={16} style={{ color: "#ffa502" }} />
+      ) : item.status == "Comment Added" ? (
+        <BiCommentDetail size={16} style={{ color: "#5b69ca" }} />
       ) : item.status == "Close Request" ? (
         <IoIosGitPullRequest color="#1e90ff" />
       ) : item.status.includes("Awaiting") ||
@@ -50,7 +53,7 @@ export default function TicketHistory({ data = [] }) {
 
             <p className="customer_history_comments">{item.details}</p>
           </>
-        ) : item.status === "Hold" ? (
+        ) : item.status === "Hold" || item.status === "Comment Added" ? (
           <>
             <div>
               <p className="customer_history_updateddate">

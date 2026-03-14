@@ -454,6 +454,7 @@ const AddTicket = forwardRef(({ setButtonLoading, callgetTicketApi }, ref) => {
       manager_id: managerId,
       ra_id: raId,
       assigned_to: convertAsJson?.user_id,
+      created_by: convertAsJson?.user_id,
       created_at: formatToBackendIST(today),
     };
     try {

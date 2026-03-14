@@ -20,6 +20,7 @@ import {
   getCustomerById,
   getTicketTracks,
   getTrainerById,
+  sendNotification,
   ticketTrack,
   updateTicketStatus,
 } from "../ApiService/action";
@@ -90,6 +91,7 @@ export default function Tickets() {
   const [isOpenHoldModal, setIsOpenHoldModal] = useState(false);
   const [holdComment, setHoldComment] = useState("");
   const [holdCommentError, setHoldCommentError] = useState("");
+  const [isNormalComment, setIsNormalComment] = useState(false);
   //trainer details modal
   const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
     useState(false);
@@ -313,12 +315,6 @@ export default function Tickets() {
                       </Col>
                     ) : (
                       <Col span={12} style={{ marginBottom: "8px" }}>
-                        {/* <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            RA & HR Assigned
-                          </p>
-                        </div> */}
                         <div
                           style={{
                             display: "flex",
@@ -341,6 +337,30 @@ export default function Tickets() {
                           </button>
                         </div>
                       </Col>
+                    )}
+
+                    {record.status != "Closed" ? (
+                      <Col span={12} style={{ marginBottom: "8px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <button
+                            className="customers_reassigntrainer_button"
+                            onClick={() => {
+                              setTicketDetails(record);
+                              setIsOpenHoldModal(true);
+                              setIsNormalComment(true);
+                            }}
+                          >
+                            Add Comment
+                          </button>
+                        </div>
+                      </Col>
+                    ) : (
+                      ""
                     )}
 
                     {record.status == "Assigned" ? (
@@ -705,6 +725,75 @@ export default function Tickets() {
     }
   };
 
+  const handleAddComment = async () => {
+    const commentValidate = addressValidator(holdComment);
+
+    setHoldCommentError(commentValidate);
+
+    if (commentValidate) return;
+
+    setButtonLoading(true);
+    const today = new Date();
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log("getloginUserDetails", converAsJson);
+
+    const payload = {
+      ticket_id: ticketDetails?.ticket_id ?? null,
+      assigned_to: "",
+      status: "Comment Added",
+      created_date: formatToBackendIST(today),
+      details: holdComment,
+      updated_by:
+        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+    };
+    console.log("payloaddd", payload);
+
+    try {
+      await ticketTrack(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Comment Added");
+        setButtonLoading(false);
+        handleSendNotification();
+        drawerReset();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      console.log("ticket track error", error);
+    }
+  };
+
+  const handleSendNotification = async () => {
+    const today = new Date();
+    const notifyIds = [
+      ticketDetails?.created_by,
+      ticketDetails?.manager_user_id,
+      ticketDetails?.ra_user_id,
+    ];
+    const payload = {
+      user_ids: notifyIds.filter((f) => f != ""),
+      title: "New comment added to the ticket",
+      message: {
+        title: ticketDetails && ticketDetails.title ? ticketDetails.title : "-",
+        category_name:
+          ticketDetails && ticketDetails.category_name
+            ? ticketDetails.category_name
+            : "-",
+        comment: holdComment,
+        ticket_created_date:
+          ticketDetails && ticketDetails.created_at
+            ? moment(ticketDetails.created_at).format("YYYY-MM-DD")
+            : "-",
+      },
+      created_at: formatToBackendIST(today),
+    };
+    try {
+      await sendNotification(payload);
+    } catch (error) {
+      console.log("send notification error", error);
+    }
+  };
+
   const drawerReset = () => {
     setButtonLoading(false);
     setIsOpenDetailsDrawer(false);
@@ -713,6 +802,7 @@ export default function Tickets() {
     setIsOpenHoldModal(false);
     setHoldComment("");
     setHoldCommentError("");
+    setIsNormalComment(false);
     setIsOpenCloseModal(false);
   };
 
@@ -1418,7 +1508,18 @@ export default function Tickets() {
             <Button
               type="primary"
               className="customer_classcompletemodal_okbutton"
-              onClick={() => handleTicketStatus("Hold")}
+              onClick={() => {
+                if (isNormalComment) {
+                  handleAddComment();
+                } else {
+                  const commentValidate = addressValidator(holdComment);
+
+                  setHoldCommentError(commentValidate);
+
+                  if (commentValidate) return;
+                  handleTicketStatus("Hold");
+                }
+              }}
             >
               Submit
             </Button>
