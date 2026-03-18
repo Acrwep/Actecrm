@@ -100,11 +100,11 @@ export default function LeadFollowUp({
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
   const actionOptions = [
     { id: 1, name: "Follow Up" },
-    { id: 2, name: "Joined Other (Junk)" },
-    { id: 3, name: "Fees High (Junk)" },
-    { id: 4, name: "Negative Review (Junk)" },
-    { id: 5, name: "Not interested Now (Junk)" },
-    { id: 6, name: "Others (Junk)" },
+    { id: 2, name: "Joined Other" },
+    { id: 3, name: "Fees High" },
+    { id: 4, name: "Negative Review" },
+    { id: 5, name: "Not interested Now" },
+    { id: 6, name: "Others" },
   ];
   const [actionId, setActionId] = useState(null);
   const [actionIdError, setActionIdError] = useState(null);
@@ -1951,10 +1951,16 @@ export default function LeadFollowUp({
                     setNxtFollowupDateError("");
                   } else {
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0); // optional: reset time
+                    today.setHours(0, 0, 0, 0);
 
-                    const nextDay = new Date(today);
-                    nextDay.setDate(today.getDate() + 2);
+                    let nextDay = new Date(today);
+                    nextDay.setDate(today.getDate() + 1);
+
+                    // 🔥 If Sunday → move to Monday
+                    if (nextDay.getDay() === 0) {
+                      nextDay.setDate(nextDay.getDate() + 1);
+                    }
+
                     setNxtFollowupDate(nextDay);
                     setNxtFollowupDateError("");
                   }

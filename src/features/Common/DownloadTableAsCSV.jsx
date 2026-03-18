@@ -118,7 +118,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           const countries = Country.getAllCountries();
 
           const findCountry = countries.find(
-            (f) => f.isoCode == row[column.dataIndex]
+            (f) => f.isoCode == row[column.dataIndex],
           );
 
           if (findCountry) {
@@ -138,7 +138,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           let stateName = "";
 
           const findState = updateSates.find(
-            (f) => f.id == row[column.dataIndex]
+            (f) => f.id == row[column.dataIndex],
           );
           if (findState) {
             stateName = findState.name;
@@ -151,6 +151,11 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
         if (column.dataIndex === "lead_assigned_to_name") {
           return row[column.dataIndex]
             ? `${row.lead_assigned_to_id} - ${row[column.dataIndex]}`
+            : "-";
+        }
+        if (column.dataIndex === "user_name") {
+          return row[column.dataIndex]
+            ? `${row.user_id} - ${row[column.dataIndex]}`
             : "-";
         }
         if (column.dataIndex === "is_customer_updated") {
@@ -166,7 +171,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
         }
 
         return row[column.dataIndex]; // other fields
-      })
+      }),
     ), // data rows
   ];
 

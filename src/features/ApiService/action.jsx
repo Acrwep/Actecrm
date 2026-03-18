@@ -1663,6 +1663,15 @@ export const serverReport = async (payload) => {
   }
 };
 
+export const ticketsReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTicketReport`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const qualityReport = async (payload) => {
   try {
     const response = await api.post(`/api/reportUserWiseQuality`, payload);
@@ -1768,6 +1777,15 @@ export const getTicketSubCategories = async (payload) => {
 export const createTicket = async (payload) => {
   try {
     const response = await api.post(`/api/createTicket`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateTicket = async (payload) => {
+  try {
+    const response = await api.put(`/api/updateTicket`, payload);
     return response;
   } catch (error) {
     throw error;

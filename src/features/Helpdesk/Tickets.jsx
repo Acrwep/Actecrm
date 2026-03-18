@@ -44,6 +44,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
 import { FaRegEye } from "react-icons/fa";
+import { AiOutlineEdit } from "react-icons/ai";
 import TrainerFullDetailsModal from "../Trainers/TrainerFullDetailsModal";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 
@@ -111,15 +112,116 @@ export default function Tickets() {
     total: 0,
     totalPages: 0,
   });
+  //non crm user modal
+  const [isOpenDetailsModal, setIsOpenDetailsModal] = useState(false);
+  const [nonCrmUserDetails, setNonCrmUserDetails] = useState(null);
+
+  const formatDuration = (startDate, closedDate) => {
+    const createdTime = new Date(startDate);
+
+    // ✅ If closed → stop timer, else keep running
+    const endTime = closedDate ? new Date(closedDate) : new Date();
+
+    const diffMs = endTime - createdTime;
+
+    if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const totalHours = totalSeconds / 3600;
+
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let text = "";
+
+    if (days === 0) {
+      const hh = pad(Math.floor(totalSeconds / 3600));
+      text = `${hh}h:${pad(minutes)}m`;
+    } else {
+      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+    }
+
+    return { text, hours: totalHours };
+  };
+
+  // ✅ Color function
+  const getColor = (hours) => {
+    if (hours <= 24) {
+      return {
+        bg: "rgba(0, 128, 0, 0.12)",
+        color: "#0f8a0f",
+      };
+    } else if (hours <= 48) {
+      return {
+        bg: "rgba(255, 165, 0, 0.15)",
+        color: "#d27a00",
+      };
+    } else {
+      return {
+        bg: "rgba(255, 0, 0, 0.13)",
+        color: "#c80000",
+      };
+    }
+  };
+
+  const [refresh, setRefresh] = useState(0);
+
+  // ✅ Auto refresh every 1 min (live timer)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefresh((prev) => prev + 1);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const columns = [
     {
-      title: "Created At",
+      title: "Created Before",
       key: "created_at",
       dataIndex: "created_at",
-      width: 110,
-      render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      width: 130,
+      // render: (text) => {
+      //   return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      // },
+      render: (_, record) => {
+        refresh; // 👈 IMPORTANT (this triggers re-render)
+
+        const { text: durationText, hours } = formatDuration(
+          record.created_at,
+          record.closed_at,
+        );
+
+        const { bg, color } = getColor(hours);
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                background: bg,
+                color: color,
+                padding: "3px 8px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 600,
+                display: "inline-block",
+                minWidth: "75px",
+                textAlign: "center",
+              }}
+            >
+              {durationText}
+            </span>
+          </div>
+        );
       },
     },
     {
@@ -137,16 +239,16 @@ export default function Tickets() {
                   <CommonSpinner color="#333" />
                 ) : (
                   <>
-                    {record.raised_by_id ? (
-                      <Tooltip
-                        placement="top"
-                        title="View Details"
-                        trigger={["hover", "click"]}
-                      >
-                        <FaRegEye
-                          size={14}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => {
+                    <Tooltip
+                      placement="top"
+                      title="View Details"
+                      trigger={["hover", "click"]}
+                    >
+                      <FaRegEye
+                        size={14}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          if (record.raised_by_id) {
                             if (text == "Trainer") {
                               getTrainerByIdData(record.raised_by_id);
                               setIsOpenTrainerDetailModal(true);
@@ -154,12 +256,18 @@ export default function Tickets() {
                               setLoadingRowId(record.ticket_id);
                               getParticularCustomerDetails(record.raised_by_id);
                             }
-                          }}
-                        />
-                      </Tooltip>
-                    ) : (
-                      ""
-                    )}
+                          } else {
+                            setNonCrmUserDetails({
+                              name: record?.raised_name,
+                              mobile: record?.raised_mobile,
+                              email: record?.raised_email,
+                              course: record?.raised_course,
+                            });
+                            setIsOpenDetailsModal(true);
+                          }
+                        }}
+                      />
+                    </Tooltip>
                   </>
                 )}
               </>
@@ -483,33 +591,43 @@ export default function Tickets() {
       fixed: "right",
       render: (text, record) => {
         return (
-          <Tooltip
-            placement="top"
-            title="View Ticket History"
-            trigger={["hover", "click"]}
-          >
-            <LuFileClock
-              size={15}
+          <>
+            <AiOutlineEdit
+              size={18}
               className="trainers_action_icons"
+              style={{ marginRight: "12px" }}
               onClick={() => {
-                setTicketDetails(record);
-                setIsOpenDetailsDrawer(true);
-                setDrawerStatus("Ticket History");
-                getTicketTrackData(record.ticket_id);
-                // setCustomerDetails(record);
-                // getCustomerHistoryData(record.id);
-                // setTimeout(() => {
-                //   const container = document.getElementById(
-                //     "customer_history_profilecontainer",
-                //   );
-                //   container.scrollIntoView({
-                //     behavior: "smooth",
-                //     block: "start",
-                //   });
-                // }, 300);
+                handleEdit(record);
               }}
             />
-          </Tooltip>
+            <Tooltip
+              placement="top"
+              title="View Ticket History"
+              trigger={["hover", "click"]}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setTicketDetails(record);
+                  setIsOpenDetailsDrawer(true);
+                  setDrawerStatus("Ticket History");
+                  getTicketTrackData(record.ticket_id);
+                  // setCustomerDetails(record);
+                  // getCustomerHistoryData(record.id);
+                  // setTimeout(() => {
+                  //   const container = document.getElementById(
+                  //     "customer_history_profilecontainer",
+                  //   );
+                  //   container.scrollIntoView({
+                  //     behavior: "smooth",
+                  //     block: "start",
+                  //   });
+                  // }, 300);
+                }}
+              />
+            </Tooltip>
+          </>
         );
       },
     },
@@ -523,7 +641,7 @@ export default function Tickets() {
 
       setLoginUserId(convertAsJson?.user_id);
       setSubUsers(downlineUsers);
-      rerunTicketsFilters(null, convertAsJson?.user_id);
+      rerunTicketsFilters(location.state, convertAsJson?.user_id);
     }
   }, [childUsers]);
 
@@ -677,6 +795,9 @@ export default function Tickets() {
     const payload = {
       ticket_id: ticketDetails?.ticket_id ?? null,
       status: updateStatus,
+      ...(updateStatus && updateStatus == "Closed"
+        ? { closed_at: formatToBackendIST(today) }
+        : {}),
       updated_at: formatToBackendIST(today),
     };
 
@@ -794,6 +915,11 @@ export default function Tickets() {
     }
   };
 
+  const handleEdit = (item) => {
+    setIsOpenAddDrawer(true);
+    setTicketDetails(item);
+  };
+
   const drawerReset = () => {
     setButtonLoading(false);
     setIsOpenDetailsDrawer(false);
@@ -841,6 +967,7 @@ export default function Tickets() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    setStatus("");
     setPagination({
       page: 1,
       limit: 10,
@@ -1193,6 +1320,7 @@ export default function Tickets() {
 
       <div style={{ marginTop: "12px" }}>
         <CommonTable
+          key={refresh}
           scroll={{
             x: columns.reduce((total, col) => total + (col.width || 150), 0),
           }}
@@ -1215,6 +1343,7 @@ export default function Tickets() {
         open={isOpenAddDrawer}
         onClose={() => {
           setIsOpenAddDrawer(false);
+          setTicketDetails(null);
           setButtonLoading(false);
         }}
         width="50%"
@@ -1225,6 +1354,7 @@ export default function Tickets() {
           <AddTicket
             ref={addTicketRef}
             setButtonLoading={setButtonLoading}
+            updateTicketItem={ticketDetails}
             callgetTicketApi={() => {
               setIsOpenAddDrawer(false);
               setButtonLoading(false);
@@ -1252,7 +1382,7 @@ export default function Tickets() {
                 className="users_adddrawer_createbutton"
                 onClick={() => addTicketRef.current.handleSubmit()}
               >
-                {"Submit"}
+                {ticketDetails ? "Update" : "Submit"}
               </button>
             )}
           </div>
@@ -1598,6 +1728,88 @@ export default function Tickets() {
           ""
         )}
       </Drawer>
+
+      {/* trainer fulldetails modal */}
+      <Modal
+        title={<span style={{ padding: "0px 24px" }}>User Details</span>}
+        open={isOpenDetailsModal}
+        onCancel={() => setIsOpenDetailsModal(false)}
+        footer={false}
+        width="50%"
+        className="trainerpaymentrequest_trainerfulldetails_modal"
+      >
+        <div>
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px" }}
+            className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
+          >
+            <Col span={12}>
+              <Row>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Name</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <EllipsisTooltip
+                    text={(nonCrmUserDetails && nonCrmUserDetails?.name) || ""}
+                    smallText={true}
+                  />
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Mobile</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <EllipsisTooltip
+                    text={
+                      (nonCrmUserDetails && nonCrmUserDetails?.mobile) || ""
+                    }
+                    smallText={true}
+                  />
+                </Col>
+              </Row>
+            </Col>
+
+            <Col span={12}>
+              <Row>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Email</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <EllipsisTooltip
+                    text={(nonCrmUserDetails && nonCrmUserDetails?.email) || ""}
+                    smallText={true}
+                  />
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Course</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <EllipsisTooltip
+                    text={
+                      (nonCrmUserDetails && nonCrmUserDetails?.course) || ""
+                    }
+                    smallText={true}
+                  />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </div>
+      </Modal>
     </div>
   );
 }

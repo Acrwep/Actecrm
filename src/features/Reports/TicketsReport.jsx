@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Tooltip, Button } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
@@ -6,12 +6,19 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
-import { serverReport } from "../ApiService/action";
+import { getUsers, serverReport, ticketsReport } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import CommonSelectField from "../Common/CommonSelectField";
+import { useSelector } from "react-redux";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
-export default function ServerReport() {
+export default function TicketsReport() {
+  const mounted = useRef(false);
+  //permissions
+  const childUsers = useSelector((state) => state.childusers);
   // ------------------BASIC USESTATES-----------------
+  const [usersData, setUsersData] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
   const [reportData, setReportData] = useState([]);
   const typeOptions = [
@@ -19,7 +26,6 @@ export default function ServerReport() {
     { id: "Course", name: "Course" },
   ];
   const [typeId, setTypeId] = useState("Server");
-
   const [loading, setLoading] = useState(true);
   //--------------PAGINATION--------------------
   const [pagination, setPagination] = useState({
@@ -28,32 +34,23 @@ export default function ServerReport() {
     total: 0,
     totalPages: 0,
   });
-  //-------------TABLE COLUMN--------------------
-  const firstColumn =
-    typeId == "Course"
-      ? {
-          title: "Course Name",
-          key: "course_name",
-          dataIndex: "course_name",
-          width: 120,
-          fixed: "left",
-          render: (text) => <p>{text}</p>,
-        }
-      : {
-          title: "Server Date",
-          key: "server_date",
-          dataIndex: "server_date",
-          width: 120,
-          fixed: "left",
-          render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
-        };
 
+  //-------------COLUMN--------------------
   const columns = [
-    firstColumn,
     {
-      title: "Total Server Count",
-      key: "total",
-      dataIndex: "total",
+      title: "User",
+      key: "user_name",
+      dataIndex: "user_name",
+      width: 115,
+      render: (text, record) => {
+        const lead_executive = `${record.user_id} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
+      },
+    },
+    {
+      title: "Total Tickets",
+      key: "total_tickets",
+      dataIndex: "total_tickets",
       width: 120,
       fixed: "left",
       render: (text) => {
@@ -61,46 +58,118 @@ export default function ServerReport() {
       },
     },
     {
-      title: "Total Amount",
-      key: "total_amount",
-      dataIndex: "total_amount",
-      width: 115,
+      title: "Open Tickets",
+      key: "open_count",
+      dataIndex: "open_count",
+      width: 120,
+      fixed: "left",
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Pending Tickets",
+      key: "pending_count",
+      dataIndex: "pending_count",
+      width: 120,
+      fixed: "left",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Overdue Tickets",
+      key: "overdue_count",
+      dataIndex: "overdue_count",
+      width: 120,
+      fixed: "left",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Closed Tickets",
+      key: "closed_count",
+      dataIndex: "closed_count",
+      width: 120,
+      fixed: "left",
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
+      title: "Average Time to Close",
+      key: "avg_time",
+      dataIndex: "avg_time",
+      width: 120,
+      fixed: "left",
+      render: (text) => {
+        return <p>{text ? text : "-"}</p>;
       },
     },
   ];
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    if (childUsers.length > 0 && !mounted.current) {
+      mounted.current = true;
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setSelectedDates(PreviousAndCurrentDate);
 
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    getServerReportData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null,
-    );
-  }, []);
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      getAllUsersData();
+    }
+  }, [childUsers]);
 
-  const getServerReportData = async (startDate, endDate, type) => {
+  const getAllUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      const users_data = response?.data?.data?.data || [];
+      setUsersData(users_data);
+    } catch (error) {
+      setUsersData([]);
+      console.log(error);
+    } finally {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getTicketsReportData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null,
+      );
+    }
+  };
+
+  const getTicketsReportData = async (startDate, endDate, user_id) => {
     setLoading(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      type: type == "Course" ? "Course" : null,
+      user_id: user_id,
     };
     try {
-      const response = await serverReport(payload);
-      console.log("server report response", response);
+      const response = await ticketsReport(payload);
+      console.log("tickets report response", response);
       setReportData(response?.data?.data || []);
     } catch (error) {
       setReportData([]);
-      console.log("server report error", error);
+      console.log("tickets report error", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectUser = (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
+    setPagination({
+      page: 1,
+      limit: pagination.limit,
+    });
+    getTicketsReportData(selectedDates[0], selectedDates[1], value);
   };
 
   const handlePaginationChange = ({ page, limit }) => {
@@ -113,12 +182,11 @@ export default function ServerReport() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setTypeId("Server");
     setPagination({
       page: 1,
       limit: 100,
     });
-    getServerReportData(
+    getTicketsReportData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
@@ -133,20 +201,13 @@ export default function ServerReport() {
             <Col span={7}>
               <CommonSelectField
                 height="35px"
-                label="Select Type"
+                label="Select User"
                 labelMarginTop="0px"
                 labelFontSize="13px"
-                options={typeOptions}
-                onChange={(e) => {
-                  setTypeId(e.target.value);
-                  getServerReportData(
-                    selectedDates[0],
-                    selectedDates[0],
-                    e.target.value,
-                  );
-                }}
-                value={typeId}
-                disableClearable={true}
+                options={usersData}
+                onChange={handleSelectUser}
+                value={selectedUserId}
+                disableClearable={false}
               />
             </Col>
             <Col span={16}>
@@ -158,8 +219,7 @@ export default function ServerReport() {
                     page: 1,
                     limit: pagination.limit,
                   });
-                  getServerReportData(dates[0], dates[1], typeId);
-                  //   getTransactionReportData(dates[0], dates[1]);
+                  getTicketsReportData(dates[0], dates[1], selectedUserId);
                 }}
               />
             </Col>
@@ -188,7 +248,7 @@ export default function ServerReport() {
                     "DD MMMM YYYY",
                   )} to ${moment(selectedDates[1]).format(
                     "DD MMMM YYYY",
-                  )} Server Report.csv`,
+                  )} Tickets Report.csv`,
                 );
               }}
             >

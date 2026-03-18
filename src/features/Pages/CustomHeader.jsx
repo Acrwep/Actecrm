@@ -1289,7 +1289,9 @@ Course Advisor
               <Col span={12}>
                 <p className="customerdetails_text">
                   {leadDetails && leadDetails.created_date
-                    ? moment(leadDetails.created_date).format("DD/MM/YYYY")
+                    ? moment(leadDetails.created_date).format(
+                        "DD/MM/YYYY - HH:mm:ss",
+                      )
                     : "-"}
                 </p>
               </Col>
@@ -1307,7 +1309,7 @@ Course Advisor
                   <p className="customerdetails_text">
                     {leadDetails && leadDetails.re_assigned_date
                       ? moment(leadDetails.re_assigned_date).format(
-                          "DD/MM/YYYY",
+                          "DD/MM/YYYY - HH:mm:ss",
                         )
                       : "-"}
                   </p>

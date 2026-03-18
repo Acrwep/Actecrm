@@ -146,8 +146,9 @@ const AddLead = forwardRef(
         name: "Junk",
       },
       {
-        id: 5,
-        name: "Not Interested",
+        id: 6,
+        name: "Followup Stopped",
+        is_active: 0,
       },
     ]);
     const [leadStatus, setLeadStatus] = useState(null);
@@ -200,9 +201,11 @@ const AddLead = forwardRef(
       const updatedOptions = leadStatusOptions.map((item) => ({
         ...item,
         is_active:
-          (item.id == 4 || item.id == 5) && updateLeadItem
+          item.id == 6
             ? false
-            : item.is_active,
+            : (item.id == 4 || item.id == 5) && updateLeadItem
+              ? false
+              : item.is_active,
       }));
 
       setLeadStatusOptions(updatedOptions);

@@ -260,17 +260,23 @@ export default function Leads({
             {record.re_assigned_date ? (
               <Badge
                 size="small"
-                count={moment(record.re_assigned_date).format("DD/MM/YYYY")}
+                count={moment(record.re_assigned_date).format(
+                  "DD/MM/YYYY HH:mm:ss",
+                )}
                 offset={[0, 0]}
                 color="#1e90ff"
                 style={{ fontSize: "10px" }}
               >
-                <p style={{ fontSize: "12px", marginTop: "9px" }}>
-                  {moment(text).format("DD/MM/YYYY")}
-                </p>
+                <div style={{ fontSize: "12px", marginTop: "9px" }}>
+                  <EllipsisTooltip
+                    text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+                  />
+                </div>
               </Badge>
             ) : (
-              <p>{moment(text).format("DD/MM/YYYY")}</p>
+              <EllipsisTooltip
+                text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+              />
             )}
           </>
         );
@@ -421,7 +427,7 @@ export default function Leads({
       key: "lead_status",
       dataIndex: "lead_status",
       fixed: "right",
-      width: 130,
+      width: 140,
       sorter: (a, b) =>
         (a.lead_status || "").localeCompare(b.lead_status || ""),
       sortDirections: ["ascend", "descend"],
@@ -435,10 +441,12 @@ export default function Leads({
                   ? "leadmanager_leadstatus_medium_container"
                   : text == "Low"
                     ? "leadmanager_leadstatus_low_container"
-                    : "leadmanager_leadstatus_junk_container"
+                    : text == "Follow-Up Stoped"
+                      ? "leadmanager_leadstatus_followup_stopped_container"
+                      : "leadmanager_leadstatus_junk_container"
             }
           >
-            <p>{text}</p>
+            <p>{text == "Follow-Up Stoped" ? "Followup Stopped" : text}</p>
           </div>
         );
       },
@@ -693,25 +701,51 @@ export default function Leads({
             case "created_date":
               return {
                 ...col,
+                width: 150,
                 render: (text, record) => {
                   return (
                     <>
                       {record.re_assigned_date ? (
-                        <Badge
-                          size="small"
-                          count={moment(record.re_assigned_date).format(
-                            "DD/MM/YYYY",
-                          )}
-                          offset={[0, 0]}
-                          color="#1e90ff"
-                          style={{ fontSize: "10px" }}
+                        <div
+                          style={{
+                            display: "flex",
+                            // alignItems: "center",
+                            flexDirection: "column",
+                            position: "relative",
+                          }}
                         >
-                          <p style={{ fontSize: "12px", marginTop: "9px" }}>
-                            {moment(text).format("DD/MM/YYYY")}
-                          </p>
-                        </Badge>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "-10px",
+                              left: "12px",
+                            }}
+                          >
+                            <Badge
+                              size="small"
+                              count={moment(record.re_assigned_date).format(
+                                "DD/MM/YYYY - HH:mm:ss",
+                              )}
+                              offset={[0, 0]}
+                              color="#1e90ff"
+                              style={{ fontSize: "10px" }}
+                            ></Badge>
+                          </div>
+                          {/* <p style={{ fontSize: "12px", marginTop: "9px" }}>
+                            {moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+                          </p> */}
+                          <div style={{ fontSize: "12px", marginTop: "9px" }}>
+                            <EllipsisTooltip
+                              text={moment(text).format(
+                                "DD/MM/YYYY - HH:mm:ss",
+                              )}
+                            />
+                          </div>
+                        </div>
                       ) : (
-                        <p>{moment(text).format("DD/MM/YYYY")}</p>
+                        <EllipsisTooltip
+                          text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+                        />
                       )}
                     </>
                   );
@@ -798,7 +832,7 @@ export default function Leads({
                   (a.lead_status || "").localeCompare(b.lead_status || ""),
                 sortDirections: ["ascend", "descend"],
                 title: "Lead Priority",
-                width: 130,
+                width: 140,
                 render: (text) => {
                   return (
                     <div
@@ -809,10 +843,14 @@ export default function Leads({
                             ? "leadmanager_leadstatus_medium_container"
                             : text == "Low"
                               ? "leadmanager_leadstatus_low_container"
-                              : "leadmanager_leadstatus_junk_container"
+                              : text == "Follow-Up Stoped"
+                                ? "leadmanager_leadstatus_followup_stopped_container"
+                                : "leadmanager_leadstatus_junk_container"
                       }
                     >
-                      <p>{text}</p>
+                      <p>
+                        {text == "Follow-Up Stoped" ? "Followup Stopped" : text}
+                      </p>
                     </div>
                   );
                 },

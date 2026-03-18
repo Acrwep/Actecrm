@@ -40,6 +40,10 @@ export default function LeadManager() {
   const location = useLocation();
   const dispatch = useDispatch();
   const childUsers = useSelector((state) => state.childusers);
+  const liveLeadSelecteDates = useSelector(
+    (state) => state.liveleadselecteddates,
+  );
+  const tabName = useSelector((state) => state.leadmanageractivepage);
 
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
@@ -152,13 +156,21 @@ export default function LeadManager() {
     }
   }, [childUsers, permissions]);
 
+  const isFetchingLiveLead = useRef(false);
+  const liveLeadTimeout = useRef(null);
+
   useEffect(() => {
     const handleSocketRefresh = () => {
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      if (getLoginUserDetails) {
-        const convertAsJson = JSON.parse(getLoginUserDetails);
-        getAllDownlineUsersData(convertAsJson?.user_id);
+      // debounce logic
+      if (activePage === "live_leads") return;
+
+      if (liveLeadTimeout.current) {
+        clearTimeout(liveLeadTimeout.current);
       }
+
+      liveLeadTimeout.current = setTimeout(() => {
+        getLiveLeadCountData();
+      }, 500); // adjust delay if needed
     };
 
     window.addEventListener("refreshLiveLeads", handleSocketRefresh);
@@ -167,8 +179,12 @@ export default function LeadManager() {
     return () => {
       window.removeEventListener("refreshLiveLeads", handleSocketRefresh);
       window.removeEventListener("socket_notification", handleSocketRefresh);
+
+      if (liveLeadTimeout.current) {
+        clearTimeout(liveLeadTimeout.current);
+      }
     };
-  }, []);
+  }, [activePage]); // 👈 important dependency
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -213,6 +229,34 @@ export default function LeadManager() {
         // setUserTableLoading(false);
         getLeadTypeData();
       }, 300);
+    }
+  };
+
+  const getLiveLeadCountData = async () => {
+    // prevent multiple parallel API calls
+    if (isFetchingLiveLead.current) return;
+
+    isFetchingLiveLead.current = true;
+
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      const payload = {
+        user_ids: null,
+        start_date: moment(liveLeadSelecteDates[0]).format("YYYY-MM-DD"),
+        end_date: moment(liveLeadSelecteDates[1]).format("YYYY-MM-DD"),
+        login_by: convertAsJson?.user_id,
+      };
+
+      const response = await getLeadAndFollowupCount(payload);
+
+      const countDetails = response?.data?.data;
+      setLiveLeadCount(countDetails?.web_lead_count || 0);
+    } catch (error) {
+      console.log("live lead count error", error);
+    } finally {
+      isFetchingLiveLead.current = false;
     }
   };
 

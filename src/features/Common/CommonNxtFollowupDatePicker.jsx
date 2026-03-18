@@ -40,17 +40,25 @@ export default function CommonNxtFollowupDatePicker({
 
           const today = dayjs().startOf("day");
 
-          // Only allow today + 2, 4, 6
-          const allowedDates = [
+          // base allowed dates
+          let allowedDates = [
             today,
-            today.add(2, "day"),
-            today.add(4, "day"),
-            today.add(6, "day"),
+            today.add(1, "day"),
+            today.add(3, "day"),
+            today.add(5, "day"),
           ];
+
+          // 🔥 replace Sunday with Monday
+          allowedDates = allowedDates.map((d) => {
+            if (d.day() === 0) {
+              // Sunday = 0
+              return d.add(1, "day"); // move to Monday
+            }
+            return d;
+          });
 
           const isAllowed = allowedDates.some((d) => date.isSame(d, "day"));
 
-          // disable everything except allowed
           return !isAllowed;
         }}
         slotProps={{

@@ -12,6 +12,7 @@ import PaymentReport from "./PaymentReport";
 import TransactionReport from "./TransactionReport";
 import UserwiseTransactionReport from "./UserwiseTransactionReport";
 import ServerReport from "./ServerReport";
+import TicketsReport from "./TicketsReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -77,6 +78,11 @@ export default function Reports() {
             label: "Server Report",
             key: "9",
             children: <ServerReport />,
+          },
+          {
+            label: "Tickets Report",
+            key: "10",
+            children: <TicketsReport />,
           },
           // {
           //   label: "RA Performance",
