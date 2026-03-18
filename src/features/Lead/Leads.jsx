@@ -731,9 +731,7 @@ export default function Leads({
                               style={{ fontSize: "10px" }}
                             ></Badge>
                           </div>
-                          {/* <p style={{ fontSize: "12px", marginTop: "9px" }}>
-                            {moment(text).format("DD/MM/YYYY - HH:mm:ss")}
-                          </p> */}
+
                           <div style={{ fontSize: "12px", marginTop: "9px" }}>
                             <EllipsisTooltip
                               text={moment(text).format(

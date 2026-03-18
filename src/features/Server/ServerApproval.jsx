@@ -102,6 +102,10 @@ const ServerApproval = forwardRef(
           serverDetails && serverDetails.server_raise_date
             ? serverDetails.server_raise_date
             : null,
+        server_trans_id:
+          serverDetails && serverDetails.server_trans_id
+            ? serverDetails.server_trans_id
+            : null,
         status: "Approved",
       };
       try {

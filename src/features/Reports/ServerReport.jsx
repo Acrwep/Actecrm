@@ -40,7 +40,7 @@ export default function ServerReport() {
           render: (text) => <p>{text}</p>,
         }
       : {
-          title: "Server Date",
+          title: "Server Raise Date",
           key: "server_date",
           dataIndex: "server_date",
           width: 120,
@@ -141,7 +141,7 @@ export default function ServerReport() {
                   setTypeId(e.target.value);
                   getServerReportData(
                     selectedDates[0],
-                    selectedDates[0],
+                    selectedDates[1],
                     e.target.value,
                   );
                 }}

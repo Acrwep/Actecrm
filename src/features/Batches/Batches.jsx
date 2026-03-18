@@ -88,27 +88,6 @@ export default function Batches() {
       },
     },
     {
-      title: "Customers",
-      key: "customers",
-      dataIndex: "customers",
-      width: 110,
-      render: (text, record) => {
-        return (
-          <div
-            className="leadfollowup_tabledateContainer"
-            style={{ fontWeight: 500 }}
-            onClick={() => {
-              setEditBatchItem(record);
-              setIsOpenAddBatchComponent(true);
-              setIsOpenBatchDetailsDrawer(true);
-            }}
-          >
-            {text.length + " Customers"}
-          </div>
-        );
-      },
-    },
-    {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
@@ -127,12 +106,59 @@ export default function Batches() {
       },
     },
     {
+      title: "Customers",
+      key: "customers",
+      dataIndex: "customers",
+      width: 130,
+      render: (text, record) => {
+        return (
+          <div
+            className="leadfollowup_tabledateContainer"
+            style={{ fontWeight: 500 }}
+            onClick={() => {
+              setEditBatchItem(record);
+              setIsOpenAddBatchComponent(true);
+              setIsOpenBatchDetailsDrawer(true);
+            }}
+          >
+            {text.length + " Customers"}
+          </div>
+        );
+      },
+    },
+    {
       title: "Trainer",
       key: "trainer_name",
       dataIndex: "trainer_name",
       width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Google Review",
+      key: "google_review",
+      dataIndex: "google_review",
+      width: 120,
+      render: (text) => {
+        return (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <p>{text}</p>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Linkedin Review",
+      key: "linkedin_review",
+      dataIndex: "linkedin_review",
+      width: 130,
+      render: (text) => {
+        return (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <p>{text}</p>
+          </div>
+        );
       },
     },
     {

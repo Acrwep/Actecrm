@@ -602,9 +602,21 @@ const AddTicket = forwardRef(
               required={true}
               options={raisedByTypeOptions}
               onChange={(e) => {
-                setRaisedByTypeId(e.target.value);
+                const value = e.target.value;
+                setRaisedByTypeId(value);
+                if (value == "Trainer") {
+                  setSelectedCustomerId(null);
+                  setSelectedCustomerObject(null);
+                  setCustomerSearchText("");
+                  setSelectedCustomerIdError("");
+                } else if (value == "Student") {
+                  setSelectedTrainerId(null);
+                  setSelectedTrainerObject(null);
+                  setTrainerSearchText("");
+                  setSelectedTrainerIdError("");
+                }
                 if (validationTrigger) {
-                  setRaisedByTypeIdError(selectValidator(e.target.value));
+                  setRaisedByTypeIdError(selectValidator(value));
                 }
               }}
               value={raisedByTypeId}
@@ -628,7 +640,7 @@ const AddTicket = forwardRef(
                 loading={trainerSelectloading}
                 error={selectedTrainerIdError}
                 renderOption={renderTrainerOption}
-                disableClearable={true}
+                disableClearable={false}
               />
             </Col>
           ) : raisedByTypeId == "Student" ? (
@@ -654,7 +666,7 @@ const AddTicket = forwardRef(
                     loading={customerSelectloading}
                     showLabelStatus="Name"
                     error={selectedCustomerIdError}
-                    disableClearable={true}
+                    disableClearable={false}
                   />
                 </div>
                 {selectedCustomerId && (
@@ -684,53 +696,68 @@ const AddTicket = forwardRef(
             ""
           )}
 
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
-            <CommonInputField
-              label="Name"
-              required={false}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-              value={name}
-              error={""}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonInputField
-              label="Mobile"
-              required={false}
-              onChange={(e) => {
-                setMobile(e.target.value);
-              }}
-              value={mobile}
-              error={""}
-              type={"number"}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonInputField
-              label="Email"
-              required={false}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
-              value={email}
-              error={""}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
-            <CommonInputField
-              label="Course"
-              required={false}
-              onChange={(e) => {
-                setCourse(e.target.value);
-              }}
-              value={course}
-              error={""}
-            />
-          </Col>
+          {selectedCustomerId || selectedTrainerId ? (
+            ""
+          ) : (
+            <>
+              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+                <CommonInputField
+                  label="Name"
+                  required={false}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
+                  value={name}
+                  error={""}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+                <CommonInputField
+                  label="Mobile"
+                  required={false}
+                  onChange={(e) => {
+                    setMobile(e.target.value);
+                  }}
+                  value={mobile}
+                  error={""}
+                  type={"number"}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+                <CommonInputField
+                  label="Email"
+                  required={false}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  value={email}
+                  error={""}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+                <CommonInputField
+                  label="Course"
+                  required={false}
+                  onChange={(e) => {
+                    setCourse(e.target.value);
+                  }}
+                  value={course}
+                  error={""}
+                />
+              </Col>
+            </>
+          )}
 
-          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={8}
+            style={{
+              marginTop:
+                selectedCustomerId || selectedTrainerId ? "20px" : "30px",
+            }}
+          >
             <CommonInputField
               label="Title"
               required={true}
@@ -792,7 +819,7 @@ const AddTicket = forwardRef(
             xs={24}
             sm={24}
             md={24}
-            lg={16}
+            lg={selectedCustomerId || selectedTrainerId ? 12 : 16}
             style={{
               marginTop: "30px",
               color: "rgba(0,0,0,0.88)",
@@ -815,7 +842,7 @@ const AddTicket = forwardRef(
             xs={24}
             sm={24}
             md={24}
-            lg={24}
+            lg={selectedCustomerId || selectedTrainerId ? 12 : 24}
             style={{ marginTop: "30px", marginBottom: "40px" }}
           >
             <CommonTextArea

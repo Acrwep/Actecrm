@@ -6,6 +6,7 @@ import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { IoIosGitPullRequest } from "react-icons/io";
 import moment from "moment";
 import { useSelector } from "react-redux";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function ServerHistory({ data = [] }) {
   const permissions = useSelector((state) => state.userpermissions);
@@ -39,7 +40,7 @@ export default function ServerHistory({ data = [] }) {
               Updated By:{" "}
               <span style={{ color: "gray" }}>{item.updated_by}</span>
             </p>
-            <Row style={{ marginTop: "12px" }}>
+            <Row gutter={12} style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <Row>
                   <Col span={12}>
@@ -48,11 +49,14 @@ export default function ServerHistory({ data = [] }) {
                     </p>
                   </Col>
                   <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.server_name
-                        ? item.details.server_name
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        item.details.server_name
+                          ? item.details.server_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
                 {permissions.includes("Show Server Cost & Vendor") ? (

@@ -225,7 +225,22 @@ export default function Tickets() {
       },
     },
     {
-      title: "Raised By",
+      title: "Created By",
+      key: "created_by_name",
+      dataIndex: "created_by_name",
+      width: 120,
+      // render: (text) => {
+      //   return <EllipsisTooltip text={text || "-"} />;
+      // },
+      render: (text, record) => {
+        const lead_executive = record.created_by
+          ? `${record.created_by} - ${text}`
+          : "-";
+        return <EllipsisTooltip text={lead_executive} />;
+      },
+    },
+    {
+      title: "Complaint By",
       key: "raised_by_role",
       dataIndex: "raised_by_role",
       width: 130,
@@ -1358,6 +1373,7 @@ export default function Tickets() {
             callgetTicketApi={() => {
               setIsOpenAddDrawer(false);
               setButtonLoading(false);
+              setTicketDetails(null);
               getTicketsData(
                 selectedDates[0],
                 selectedDates[1],
