@@ -607,14 +607,16 @@ export default function Tickets() {
       render: (text, record) => {
         return (
           <>
-            <AiOutlineEdit
-              size={18}
-              className="trainers_action_icons"
-              style={{ marginRight: "12px" }}
-              onClick={() => {
-                handleEdit(record);
-              }}
-            />
+            {permissions.includes("Edit Ticket") && (
+              <AiOutlineEdit
+                size={18}
+                className="trainers_action_icons"
+                style={{ marginRight: "12px" }}
+                onClick={() => {
+                  handleEdit(record);
+                }}
+              />
+            )}
             <Tooltip
               placement="top"
               title="View Ticket History"

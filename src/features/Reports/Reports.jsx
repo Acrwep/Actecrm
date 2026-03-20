@@ -28,73 +28,66 @@ export default function Reports() {
     }
   }, [permissions]);
 
+  // ✅ Tabs with condition
+  const tabItems = [
+    permissions.includes("Scorecard Report") && {
+      label: "Scoreboard",
+      key: "1",
+      children: <LeadsScoreboardReport />,
+    },
+    permissions.includes("Userwise Performance Report") && {
+      label: "Userwise Performance",
+      key: "2",
+      children: <UserwisePerformanceReport />,
+    },
+    permissions.includes("Userwise Transaction Analysis Report") && {
+      label: "Userwise Transaction Analysis",
+      key: "3",
+      children: <UserwiseTransactionReport />,
+    },
+    permissions.includes("Branchwise Performance Report") && {
+      label: "Branchwise Performance",
+      key: "4",
+      children: <BranchPerformanceReport />,
+    },
+    permissions.includes("Top Performance Channel Report") && {
+      label: "Top Performance Channel",
+      key: "5",
+      children: <TopPerformanceReport />,
+    },
+    permissions.includes("Post Sale Performance Report") && {
+      label: "Post Sale Performance",
+      key: "6",
+      children: <PostSalePerformanceReport />,
+    },
+    permissions.includes("Payment Report") && {
+      label: "Payment Report",
+      key: "7",
+      children: <PaymentReport />,
+    },
+    permissions.includes("Transaction Report") && {
+      label: "Transaction Report",
+      key: "8",
+      children: <TransactionReport />,
+    },
+    permissions.includes("Server Report") && {
+      label: "Server Report",
+      key: "9",
+      children: <ServerReport />,
+    },
+    permissions.includes("Tickets Report") && {
+      label: "Tickets Report",
+      key: "10",
+      children: <TicketsReport />,
+    },
+  ].filter(Boolean); // ✅ removes false/null items
+
   return (
     <div>
       <Tabs
         className="report_tabs"
-        defaultActiveKey="1"
-        items={[
-          {
-            label: "Scoreboard",
-            key: "1",
-            children: <LeadsScoreboardReport />,
-          },
-          {
-            label: "Userwise Performance",
-            key: "2",
-            children: <UserwisePerformanceReport />,
-          },
-          {
-            label: "Userwise Transaction Analysis",
-            key: "3",
-            children: <UserwiseTransactionReport />,
-          },
-          {
-            label: "Branchwise Performance",
-            key: "4",
-            children: <BranchPerformanceReport />,
-          },
-          {
-            label: "Top Performance Channel",
-            key: "5",
-            children: <TopPerformanceReport />,
-          },
-          {
-            label: "Post Sale Performance",
-            key: "6",
-            children: <PostSalePerformanceReport />,
-          },
-          {
-            label: "Payment Report",
-            key: "7",
-            children: <PaymentReport />,
-          },
-          {
-            label: "Transaction Report",
-            key: "8",
-            children: <TransactionReport />,
-          },
-          {
-            label: "Server Report",
-            key: "9",
-            children: <ServerReport />,
-          },
-          {
-            label: "Tickets Report",
-            key: "10",
-            children: <TicketsReport />,
-          },
-          // {
-          //   label: "RA Performance",
-          //   key: "7",
-          //   children: <RaPerformanceReport />,
-          // },
-          // {
-          //   label: "Quality Performance",
-          //   key: "8",
-          //   children: <QualityReport />,
-          // },
-        ]}
+        defaultActiveKey={tabItems[0]?.key} // ✅ auto select first visible tab
+        items={tabItems}
       />
     </div>
   );

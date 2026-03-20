@@ -608,20 +608,36 @@ export default function TrainerPayment() {
   /* ---------------- SELECT HANDLER ---------------- */
   const handleTrainerSelect = (event) => {
     const selectedId = event.target.value;
-    const selectedObj = event.target.object;
-    setSelectedTrainerId(selectedId);
-    setSelectedTrainerObject(selectedObj);
-    setTrainerSearchText(selectedObj?.name || "");
+    if (selectedId) {
+      const selectedObj = event.target.object;
+      setSelectedTrainerId(selectedId);
+      setSelectedTrainerObject(selectedObj);
+      setTrainerSearchText(selectedObj?.name || "");
 
-    getTrainerPaymentsData(
-      selectedId,
-      dateFilterType,
-      selectedDates[0],
-      selectedDates[1],
-      status || null,
-      1,
-      pagination.limit,
-    );
+      getTrainerPaymentsData(
+        selectedId,
+        dateFilterType,
+        selectedDates[0],
+        selectedDates[1],
+        status || null,
+        1,
+        pagination.limit,
+      );
+    } else {
+      setSelectedTrainerId(null);
+      setSelectedTrainerObject(null);
+      setTrainerSearchText("");
+      getTrainersData(null, 1);
+      getTrainerPaymentsData(
+        null,
+        dateFilterType,
+        selectedDates[0],
+        selectedDates[1],
+        status || null,
+        1,
+        pagination.limit,
+      );
+    }
   };
 
   /* ---------------- MERGED OPTIONS ---------------- */
@@ -1225,6 +1241,10 @@ export default function TrainerPayment() {
     setStatus("");
     setSelectedTrainerId(null);
     setDateFilterType("RaiseDate");
+    setSelectedTrainerId(null);
+    setSelectedTrainerObject(null);
+    setTrainerSearchText("");
+    getTrainersData(null, 1);
     getTrainerPaymentsData(
       null,
       "RaiseDate",

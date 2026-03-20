@@ -671,16 +671,18 @@ const ReAssignTrainer = forwardRef(
                                   </div>
                                 </Col>
                                 <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.trainer_hr_name
-                                      ? item.trainer_hr_name
-                                      : "-"}
-                                  </p>
+                                  <EllipsisTooltip
+                                    text={
+                                      item.trainer_hr_name
+                                        ? item.trainer_hr_name
+                                        : "-"
+                                    }
+                                    smallText={true}
+                                  />
                                 </Col>
                               </Row>
-                            </Col>
-                            <Col span={12}>
-                              <Row>
+
+                              <Row style={{ marginTop: "12px" }}>
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
@@ -690,33 +692,32 @@ const ReAssignTrainer = forwardRef(
                                 </Col>
                                 <Col span={12}>
                                   <EllipsisTooltip
-                                    text={item.trainer_name}
+                                    text={
+                                      item.trainer_name
+                                        ? item.trainer_name
+                                        : "-"
+                                    }
                                     smallText={true}
                                   />
                                 </Col>
                               </Row>
-                            </Col>
-                            {/* <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Commercial
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {"₹" + item.commercial}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              </Col> */}
-                          </Row>
 
-                          <Row gutter={16} style={{ marginTop: "16px" }}>
-                            <Col span={12}>
-                              <Row>
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Trainer Type
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <p className="customerdetails_text">
+                                    {item.trainer_type}
+                                  </p>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
@@ -731,25 +732,7 @@ const ReAssignTrainer = forwardRef(
                                 </Col>
                               </Row>
                             </Col>
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Trainer Type
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.trainer_type}
-                                  </p>
-                                </Col>
-                              </Row>
-                            </Col>
-                          </Row>
 
-                          <Row gutter={16} style={{ marginTop: "16px" }}>
                             <Col span={12}>
                               <Row>
                                 <Col span={12}>
@@ -765,9 +748,8 @@ const ReAssignTrainer = forwardRef(
                                   </p>
                                 </Col>
                               </Row>
-                            </Col>
-                            <Col span={12}>
-                              <Row>
+
+                              <Row style={{ marginTop: "12px" }}>
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
@@ -783,9 +765,53 @@ const ReAssignTrainer = forwardRef(
                                   </p>
                                 </Col>
                               </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Proof Screenshot
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <button
+                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                    style={{ gap: "4px" }}
+                                    onClick={() => {
+                                      setIsProofScreenshotModal(true);
+                                      setProofScreenshot(
+                                        item &&
+                                          item.proof_communication !== null
+                                          ? item.proof_communication
+                                          : "-",
+                                      );
+                                    }}
+                                  >
+                                    <FaRegEye size={16} /> View screenshot
+                                  </button>
+                                </Col>
+                              </Row>
+
+                              <Row style={{ marginTop: "12px" }}>
+                                <Col span={12}>
+                                  <div className="customerdetails_rowheadingContainer">
+                                    <p className="customerdetails_rowheading">
+                                      Comments
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <EllipsisTooltip
+                                    text={item.comments ? item.comments : "-"}
+                                    smallText={true}
+                                  />
+                                </Col>
+                              </Row>
                             </Col>
                           </Row>
 
+                          {/* rejected comment section */}
                           <Row
                             gutter={16}
                             style={{
@@ -835,24 +861,27 @@ const ReAssignTrainer = forwardRef(
                                 </Col>
                               </>
                             ) : item.verified_date ? (
-                              <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Verified Date
+                              <>
+                                <Col span={12}></Col>
+                                <Col span={12}>
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Verified Date
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <p className="customerdetails_text">
+                                        {moment(item.verified_date).format(
+                                          "DD/MM/YYYY",
+                                        )}
                                       </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {moment(item.verified_date).format(
-                                        "DD/MM/YYYY",
-                                      )}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              </Col>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </>
                             ) : (
                               ""
                             )}

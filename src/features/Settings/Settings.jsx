@@ -365,7 +365,26 @@ export default function Settings() {
       const reportsModule = allPermissions.filter(
         (f) => f.section === "Reports Module",
       );
-      const updateReportsModule = reportsModule.map((u) => {
+      const reportsCustomOrder = [
+        "Reports Page",
+        "Scorecard Report",
+        "Userwise Performance Report",
+        "Userwise Transaction Analysis Report",
+        "Branchwise Performance Report",
+        "Top Performance Channel Report",
+        "Post Sale Performance Report",
+        "Payment Report",
+        "Transaction Report",
+        "Server Report",
+        "Tickets Report",
+      ];
+
+      const reportsSortedArray = reportsModule.sort(
+        (a, b) =>
+          reportsCustomOrder.indexOf(a.permission_name) -
+          reportsCustomOrder.indexOf(b.permission_name),
+      );
+      const updateReportsModule = reportsSortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeReportsModulePermissionList(updateReportsModule));
@@ -374,7 +393,21 @@ export default function Settings() {
       const ticketsModule = allPermissions.filter(
         (f) => f.section === "Tickets Module",
       );
-      const updateTicketsModule = ticketsModule.map((u) => {
+      const ticketsCustomOrder = [
+        "Add Ticket",
+        "Edit Ticket",
+        "Assign Ticket",
+        "Close Ticket",
+        "Show All Tickets",
+      ];
+
+      const ticketsSortedArray = ticketsModule.sort(
+        (a, b) =>
+          ticketsCustomOrder.indexOf(a.permission_name) -
+          ticketsCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateTicketsModule = ticketsSortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeTicketsModulePermissionList(updateTicketsModule));

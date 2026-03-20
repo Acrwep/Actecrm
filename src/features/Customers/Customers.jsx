@@ -848,46 +848,37 @@ export default function Customers() {
                     {record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <>
-                        <Col span={12}>
-                          {record.status === "Passedout process" ? (
-                            <button
-                              className="customers_addfeedbackbutton"
-                              onClick={() => {
-                                if (
-                                  !permissions.includes("Passedout Process")
-                                ) {
-                                  CommonMessage("error", "Access Denied");
-                                  return;
-                                }
-                                getParticularCustomerDetails(record?.id);
-                                setDrawerContentStatus("Add G-Review");
-                                setIsStatusUpdateDrawer(true);
-                                if (record.google_review === null) {
-                                  setStepIndex(0);
-                                } else if (
-                                  record.is_certificate_generated === 0
-                                ) {
-                                  setStepIndex(1);
-                                } else {
-                                  setStepIndex(2);
-                                }
-                                setIsCertGenerated(
-                                  record.is_certificate_generated === 1
-                                    ? true
-                                    : false,
-                                );
-                              }}
-                            >
-                              Passedout process
-                            </button>
-                          ) : (
-                            <div className="customers_classcompleted_container">
-                              <BsPatchCheckFill color="#3c9111" />
-                              <p className="customers_classgoing_completedtext">
-                                PO Process Completed
-                              </p>
-                            </div>
-                          )}
+                        <Col span={12} style={{ marginBottom: "6px" }}>
+                          <button
+                            className="customers_addfeedbackbutton"
+                            onClick={() => {
+                              if (!permissions.includes("Passedout Process")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              getParticularCustomerDetails(record?.id);
+                              setDrawerContentStatus("Add G-Review");
+                              setIsStatusUpdateDrawer(true);
+                              if (record.google_review === null) {
+                                setStepIndex(0);
+                              } else if (
+                                record.is_certificate_generated === 0
+                              ) {
+                                setStepIndex(1);
+                              } else {
+                                setStepIndex(2);
+                              }
+                              setIsCertGenerated(
+                                record.is_certificate_generated === 1
+                                  ? true
+                                  : false,
+                              );
+                            }}
+                          >
+                            {record.status === "Completed"
+                              ? "Update PP"
+                              : "Passedout process"}
+                          </button>
                         </Col>
 
                         {record.status === "Completed" ? (
@@ -2222,57 +2213,49 @@ export default function Customers() {
                               {record.status === "Passedout process" ||
                               record.status === "Completed" ? (
                                 <>
-                                  <Col span={12}>
-                                    {record.status === "Passedout process" ? (
-                                      <button
-                                        className="customers_addfeedbackbutton"
-                                        onClick={() => {
-                                          if (
-                                            !permissions.includes(
-                                              "Passedout Process",
-                                            )
-                                          ) {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied",
-                                            );
-                                            return;
-                                          }
-                                          getParticularCustomerDetails(
-                                            record?.id,
+                                  <Col
+                                    span={12}
+                                    style={{ marginBottom: "6px" }}
+                                  >
+                                    <button
+                                      className="customers_addfeedbackbutton"
+                                      onClick={() => {
+                                        if (
+                                          !permissions.includes(
+                                            "Passedout Process",
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied",
                                           );
-                                          setDrawerContentStatus(
-                                            "Add G-Review",
-                                          );
-                                          setIsStatusUpdateDrawer(true);
-                                          if (record.google_review === null) {
-                                            setStepIndex(0);
-                                          } else if (
-                                            record.is_certificate_generated ===
-                                            0
-                                          ) {
-                                            setStepIndex(1);
-                                          } else {
-                                            setStepIndex(2);
-                                          }
-                                          setIsCertGenerated(
-                                            record.is_certificate_generated ===
-                                              1
-                                              ? true
-                                              : false,
-                                          );
-                                        }}
-                                      >
-                                        Passedout process
-                                      </button>
-                                    ) : (
-                                      <div className="customers_classcompleted_container">
-                                        <BsPatchCheckFill color="#3c9111" />
-                                        <p className="customers_classgoing_completedtext">
-                                          PO Process Completed
-                                        </p>
-                                      </div>
-                                    )}
+                                          return;
+                                        }
+                                        getParticularCustomerDetails(
+                                          record?.id,
+                                        );
+                                        setDrawerContentStatus("Add G-Review");
+                                        setIsStatusUpdateDrawer(true);
+                                        if (record.google_review === null) {
+                                          setStepIndex(0);
+                                        } else if (
+                                          record.is_certificate_generated === 0
+                                        ) {
+                                          setStepIndex(1);
+                                        } else {
+                                          setStepIndex(2);
+                                        }
+                                        setIsCertGenerated(
+                                          record.is_certificate_generated === 1
+                                            ? true
+                                            : false,
+                                        );
+                                      }}
+                                    >
+                                      {record.status === "Completed"
+                                        ? "Update PP"
+                                        : "Passedout process"}
+                                    </button>
                                   </Col>
 
                                   {record.status === "Completed" ? (

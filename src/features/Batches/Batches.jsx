@@ -295,12 +295,20 @@ export default function Batches() {
   /* ---------------- SELECT HANDLER ---------------- */
   const handleTrainerSelect = (event) => {
     const selectedId = event.target.value;
-    const selectedObj = event.target.object;
-    setSelectedTrainerId(selectedId);
-    setSelectedTrainerObject(selectedObj);
-    setTrainerSearchText(selectedObj?.name || "");
+    if (selectedId) {
+      const selectedObj = event.target.object;
+      setSelectedTrainerId(selectedId);
+      setSelectedTrainerObject(selectedObj);
+      setTrainerSearchText(selectedObj?.name || "");
 
-    getBatchesData(selectedId, selectedDates[0], selectedDates[1]);
+      getBatchesData(selectedId, selectedDates[0], selectedDates[1]);
+    } else {
+      setSelectedTrainerId(null);
+      setSelectedTrainerObject(null);
+      setTrainerSearchText("");
+      getTrainersData(null, 1);
+      getBatchesData(null, selectedDates[0], selectedDates[1]);
+    }
   };
 
   /* ---------------- MERGED OPTIONS ---------------- */
@@ -345,6 +353,7 @@ export default function Batches() {
     setSelectedTrainerId(null);
     setSelectedTrainerObject(null);
     setTrainerSearchText("");
+    getTrainersData(null, 1);
     getBatchesData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
   };
 

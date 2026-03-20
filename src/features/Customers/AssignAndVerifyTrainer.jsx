@@ -933,9 +933,8 @@ const AssignAndVerifyTrainer = forwardRef(
                                     />
                                   </Col>
                                 </Row>
-                              </Col>
-                              <Col span={12}>
-                                <Row>
+
+                                <Row style={{ marginTop: "12px" }}>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
@@ -954,28 +953,23 @@ const AssignAndVerifyTrainer = forwardRef(
                                     />
                                   </Col>
                                 </Row>
-                              </Col>
-                              {/* <Col span={12}>
-                                <Row>
+
+                                <Row style={{ marginTop: "12px" }}>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
-                                        Commercial
+                                        Trainer Type
                                       </p>
                                     </div>
                                   </Col>
                                   <Col span={12}>
                                     <p className="customerdetails_text">
-                                      {"₹" + item.commercial}
+                                      {item.trainer_type}
                                     </p>
                                   </Col>
                                 </Row>
-                              </Col> */}
-                            </Row>
 
-                            <Row gutter={16} style={{ marginTop: "16px" }}>
-                              <Col span={12}>
-                                <Row>
+                                <Row style={{ marginTop: "12px" }}>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
@@ -990,25 +984,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                   </Col>
                                 </Row>
                               </Col>
-                              <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Trainer Type
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.trainer_type}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              </Col>
-                            </Row>
 
-                            <Row gutter={16} style={{ marginTop: "16px" }}>
                               <Col span={12}>
                                 <Row>
                                   <Col span={12}>
@@ -1024,9 +1000,8 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </p>
                                   </Col>
                                 </Row>
-                              </Col>
-                              <Col span={12}>
-                                <Row>
+
+                                <Row style={{ marginTop: "12px" }}>
                                   <Col span={12}>
                                     <div className="customerdetails_rowheadingContainer">
                                       <p className="customerdetails_rowheading">
@@ -1042,9 +1017,53 @@ const AssignAndVerifyTrainer = forwardRef(
                                     </p>
                                   </Col>
                                 </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Proof Screenshot
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <button
+                                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                                      style={{ gap: "4px" }}
+                                      onClick={() => {
+                                        setIsProofScreenshotModal(true);
+                                        setProofScreenshot(
+                                          item &&
+                                            item.proof_communication !== null
+                                            ? item.proof_communication
+                                            : "-",
+                                        );
+                                      }}
+                                    >
+                                      <FaRegEye size={16} /> View screenshot
+                                    </button>
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Comments
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={item.comments ? item.comments : "-"}
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
                               </Col>
                             </Row>
 
+                            {/* rejected comment section */}
                             <Row
                               gutter={16}
                               style={{
@@ -1457,36 +1476,13 @@ const AssignAndVerifyTrainer = forwardRef(
                   <Row style={{ marginTop: "12px" }} gutter={16}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Trainer Skills
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={
-                          assignTrainerData && assignTrainerData.skills
-                            ? assignTrainerData.skills
-                                .map((item) => item.name)
-                                .join(", ")
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }} gutter={16}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">Commercial</p>
                       </div>
                     </Col>
                     <Col span={12}>
                       <p className="customerdetails_text">
-                        {"₹" + customerDetails &&
-                        customerDetails.commercial !== null
-                          ? customerDetails.commercial
+                        {customerDetails && customerDetails.commercial !== null
+                          ? "₹" + customerDetails.commercial
                           : "-"}
                       </p>
                     </Col>
@@ -1522,6 +1518,21 @@ const AssignAndVerifyTrainer = forwardRef(
                         {customerDetails &&
                         customerDetails.commercial_percentage
                           ? customerDetails.commercial_percentage + "%"
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }} gutter={16}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">Comments</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customerdetails_text">
+                        {customerDetails && customerDetails.comments !== null
+                          ? customerDetails.comments
                           : "-"}
                       </p>
                     </Col>
