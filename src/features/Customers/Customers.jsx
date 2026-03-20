@@ -856,6 +856,15 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
+                              if (
+                                record.status === "Completed" &&
+                                !permissions.includes(
+                                  "Update Passedout Process",
+                                )
+                              ) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
                               getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Add G-Review");
                               setIsStatusUpdateDrawer(true);
@@ -2223,6 +2232,18 @@ export default function Customers() {
                                         if (
                                           !permissions.includes(
                                             "Passedout Process",
+                                          )
+                                        ) {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied",
+                                          );
+                                          return;
+                                        }
+                                        if (
+                                          record.status === "Completed" &&
+                                          !permissions.includes(
+                                            "Update Passedout Process",
                                           )
                                         ) {
                                           CommonMessage(
