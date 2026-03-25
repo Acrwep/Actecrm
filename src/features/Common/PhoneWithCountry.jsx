@@ -81,29 +81,21 @@ export default function PhoneWithCountry({
       return;
     }
 
-    // Extract after code part
-    let afterCode = userInput.slice(dialCode.length).replace(/\D/g, "");
-
-    // ❌ Prevent number starting with 0
-    if (afterCode.length === 1 && afterCode.startsWith("0")) {
-      // Don't update value if first number is 0
-      setInternalValue(dialCode);
-      e.target.value = dialCode;
-      onChange?.("");
-      setTimeout(() => (typingRef.current = false), 0);
-      return;
-    }
+    // Extract after code part and remove any leading zeros
+    let afterCode = userInput.slice(dialCode.length).replace(/\D/g, "").replace(/^0+/, "");
 
     // ✅ If it already starts with the dial code, just clean after part
     if (userInput.startsWith(dialCode)) {
-      setInternalValue(dialCode + afterCode);
-      e.target.value = dialCode + afterCode;
+      const valueToSet = dialCode + afterCode;
+      setInternalValue(valueToSet);
+      e.target.value = valueToSet;
       onChange?.(afterCode);
     } else {
-      // If user tries to delete dial code, re-add it only once
-      const onlyDigits = userInput.replace(/\D/g, "");
-      setInternalValue(dialCode + onlyDigits);
-      e.target.value = dialCode + onlyDigits;
+      // If user tries to delete dial code or modify it, re-add it and clean the rest
+      const onlyDigits = userInput.replace(/\D/g, "").replace(/^0+/, "");
+      const valueToSet = dialCode + onlyDigits;
+      setInternalValue(valueToSet);
+      e.target.value = valueToSet;
       onChange?.(onlyDigits);
     }
 

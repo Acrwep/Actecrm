@@ -29,6 +29,7 @@ export default function CommonGroupedSelectField({
     { id: 3, name: "SBI", category: "Bank" },
     { id: 7, name: "AXIS", category: "Bank" },
     { id: 8, name: "HDFC", category: "Bank" },
+    { id: 11, name: "KOTAK", category: "Bank" },
     { id: 2, name: "SBI POS", category: "POS" },
     { id: 10, name: "Razorpay POS", category: "POS" },
   ];
