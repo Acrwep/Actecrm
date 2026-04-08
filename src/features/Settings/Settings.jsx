@@ -398,6 +398,7 @@ export default function Settings() {
         "Add Ticket",
         "Edit Ticket",
         "Assign Ticket",
+        "Add Ticket Comment",
         "Close Ticket",
         "Show All Tickets",
       ];

@@ -19,6 +19,7 @@ import {
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import moment from "moment";
+import CommonTextArea from "../Common/CommonTextArea";
 
 const AssignTicket = forwardRef(
   (
@@ -31,6 +32,8 @@ const AssignTicket = forwardRef(
     const [raItem, setRaItem] = useState("");
     const [attachmentBase64, setAttachmentBase64] = useState("");
     const [attachmentBase64Error, setAttachmentBase64Error] = useState("");
+    const [comments, setComments] = useState("");
+    const [commentsError, setCommentsError] = useState("");
 
     useEffect(() => {
       getUsersData();
@@ -60,10 +63,13 @@ const AssignTicket = forwardRef(
         drawerStatus == "Close Request"
           ? addressValidator(attachmentBase64)
           : selectValidator(raId);
+      const commentsValidate =
+        drawerStatus == "Close Request" ? addressValidator(comments) : "";
 
       setRaIdError(raIdValidate);
+      setCommentsError(commentsValidate);
 
-      if (raIdValidate) return;
+      if (raIdValidate || commentsValidate) return;
 
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
@@ -86,6 +92,9 @@ const AssignTicket = forwardRef(
           drawerStatus == "Assign Ticket"
             ? `Ticket Assigned to ${raItem?.user_id || ""}-${raItem?.user_name ?? ""}`
             : attachmentBase64,
+        ...(drawerStatus && drawerStatus == "Close Request"
+          ? { comments: comments }
+          : {}),
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       };
@@ -181,29 +190,44 @@ const AssignTicket = forwardRef(
             </div>
           </>
         ) : (
-          <div style={{ marginTop: "30px" }}>
-            <ImageUploadCrop
-              label="Attachment"
-              aspect={1}
-              maxSizeMB={1}
-              required={true}
-              value={attachmentBase64}
-              onChange={(base64) => setAttachmentBase64(base64)}
-              onErrorChange={setAttachmentBase64Error}
-            />
+          <>
+            <div style={{ marginTop: "30px" }}>
+              <ImageUploadCrop
+                label="Attachment"
+                aspect={1}
+                maxSizeMB={1}
+                required={true}
+                value={attachmentBase64}
+                onChange={(base64) => setAttachmentBase64(base64)}
+                onErrorChange={setAttachmentBase64Error}
+              />
 
-            {attachmentBase64Error && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d32f2f",
-                  marginTop: 4,
+              {attachmentBase64Error && (
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#d32f2f",
+                    marginTop: 4,
+                  }}
+                >
+                  {`Attachment ${attachmentBase64Error}`}
+                </p>
+              )}
+            </div>
+
+            <div style={{ marginTop: "20px" }}>
+              <CommonTextArea
+                required={true}
+                label="Comments"
+                onChange={(e) => {
+                  setComments(e.target.value);
+                  setCommentsError(addressValidator(e.target.value));
                 }}
-              >
-                {`Attachment ${attachmentBase64Error}`}
-              </p>
-            )}
-          </div>
+                value={comments}
+                error={commentsError}
+              />
+            </div>
+          </>
         )}
       </div>
     );

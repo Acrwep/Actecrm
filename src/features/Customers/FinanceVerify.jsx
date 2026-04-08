@@ -10,6 +10,7 @@ import {
   getCustomersPaymentHistory,
   inserCustomerTrack,
   rejectCustomerPayment,
+  sendLoginLink,
   sendNotification,
   sendPaymentInvoiceByEmail,
   updateCustomerPaymentTransaction,
@@ -32,6 +33,7 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import moment from "moment";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
+import axios from "axios";
 
 const FinanceVerify = forwardRef(
   ({ customerDetails, drawerContentStatus, callgetCustomersApi }, ref) => {
@@ -260,13 +262,19 @@ const FinanceVerify = forwardRef(
     const handleFinanceVerify = async () => {
       setButtonLoading(true);
       const today = new Date();
-      const payload = {
+      const payment_payload = {
         payment_trans_id: transactionDetails?.id || "",
         verified_date: formatToBackendIST(today),
       };
       try {
-        await verifyCustomerPayment(payload);
+        const verifyResponse = await verifyCustomerPayment(payment_payload);
         CommonMessage("success", "Updated Successfully");
+        console.log("verifyResponse", verifyResponse);
+        const isFullyPaid = verifyResponse?.data?.data?.is_fully_paid === true;
+        if (isFullyPaid) {
+          console.log("success");
+          addUserInLMS();
+        }
         setTimeout(async () => {
           const payload = {
             customer_ids: [
@@ -608,6 +616,43 @@ const FinanceVerify = forwardRef(
         await sendNotification(payload);
       } catch (error) {
         console.log("send notification error", error);
+      }
+    };
+
+    //lms
+    const addUserInLMS = async () => {
+      if (!customerDetails) {
+        console.error("Customer details missing");
+        return;
+      }
+
+      const payload = {
+        branch_id: customerDetails?.branch_id,
+        user_name: customerDetails?.name,
+        email: customerDetails?.email,
+      };
+
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_LMS_API_URL}/api/addUser`,
+          payload,
+        );
+      } catch (err) {
+        console.error("API Error:", err?.response?.data || err.message);
+      } finally {
+        sendLmsDetailsMail();
+      }
+    };
+
+    const sendLmsDetailsMail = async () => {
+      const payload = {
+        email: customerDetails?.email,
+        name: customerDetails?.name,
+      };
+      try {
+        await sendLoginLink(payload);
+      } catch (error) {
+        console.log("sendLmsDetailsMail error", error);
       }
     };
 

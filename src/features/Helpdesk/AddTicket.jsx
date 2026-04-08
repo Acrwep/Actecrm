@@ -42,6 +42,8 @@ import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonTextArea from "../Common/CommonTextArea";
+import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
+import CommonMuiDateTimePicker from "../Common/CommonMuiDateTimePicker";
 
 const AddTicket = forwardRef(
   ({ updateTicketItem, setButtonLoading, callgetTicketApi }, ref) => {
@@ -56,6 +58,8 @@ const AddTicket = forwardRef(
       { id: "Non-CRM", name: "Non-CRM" },
     ];
     const [crmStatusId, setCrmStatusId] = useState("CRM");
+    const [createdAt, setCreatedAt] = useState(null);
+    const [createdAtError, setCreatedAtError] = useState(null);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [mobile, setMobile] = useState("");
@@ -129,7 +133,9 @@ const AddTicket = forwardRef(
         setManagerId(updateTicketItem?.manager_user_id ?? "");
         setRaId(updateTicketItem?.ra_user_id ?? "");
         setDescription(updateTicketItem?.description ?? "");
-        setFileAttachmentBase64(updateTicketItem?.attachments[0].base64string);
+        setFileAttachmentBase64(
+          updateTicketItem?.attachments?.[0]?.base64string || "",
+        );
       }
     }, [updateTicketItem]);
 
@@ -480,6 +486,7 @@ const AddTicket = forwardRef(
 
     const handleSubmit = async () => {
       setValidationTrigger(true);
+      const createdAtValidate = selectValidator(createdAt);
       const titleValidate = addressValidator(title);
       const categoryIdValidate = selectValidator(categoryId);
       const managerIdValidate = selectValidator(managerId);
@@ -487,8 +494,15 @@ const AddTicket = forwardRef(
       setTitleError(titleValidate);
       setCategoryIdError(categoryIdValidate);
       setManagerIdError(managerIdValidate);
+      setCreatedAtError(createdAtValidate);
 
-      if (titleValidate || categoryIdValidate || managerIdValidate) return;
+      if (
+        titleValidate ||
+        categoryIdValidate ||
+        managerIdValidate ||
+        createdAtValidate
+      )
+        return;
 
       setButtonLoading(true);
       const today = new Date();
@@ -529,7 +543,7 @@ const AddTicket = forwardRef(
         created_by: convertAsJson?.user_id,
         ...(updateTicketItem
           ? { updated_at: formatToBackendIST(today) }
-          : { created_at: formatToBackendIST(today) }),
+          : { created_at: formatToBackendIST(createdAt) }),
       };
       try {
         if (updateTicketItem) {
@@ -596,6 +610,21 @@ const AddTicket = forwardRef(
     return (
       <div className="customer_statusupdate_adddetailsContainer">
         <Row gutter={12}>
+          <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+            <CommonMuiDateTimePicker
+              required={true}
+              label={"Created At"}
+              onChange={(value) => {
+                setCreatedAt(value);
+                if (validationTrigger) {
+                  setCreatedAtError(selectValidator(value));
+                }
+              }}
+              value={createdAt}
+              error={createdAtError}
+            />
+          </Col>
+
           <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
             <CommonSelectField
               label="Raised By Type"
@@ -700,7 +729,7 @@ const AddTicket = forwardRef(
             ""
           ) : (
             <>
-              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
+              <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "30px" }}>
                 <CommonInputField
                   label="Name"
                   required={false}
@@ -754,8 +783,7 @@ const AddTicket = forwardRef(
             md={24}
             lg={8}
             style={{
-              marginTop:
-                selectedCustomerId || selectedTrainerId ? "20px" : "30px",
+              marginTop: "30px",
             }}
           >
             <CommonInputField
@@ -819,9 +847,10 @@ const AddTicket = forwardRef(
             xs={24}
             sm={24}
             md={24}
-            lg={selectedCustomerId || selectedTrainerId ? 12 : 16}
+            lg={selectedCustomerId || selectedTrainerId ? 12 : 8}
             style={{
-              marginTop: "30px",
+              marginTop:
+                selectedCustomerId || selectedTrainerId ? "20px" : "30px",
               color: "rgba(0,0,0,0.88)",
             }}
           >
@@ -842,8 +871,8 @@ const AddTicket = forwardRef(
             xs={24}
             sm={24}
             md={24}
-            lg={selectedCustomerId || selectedTrainerId ? 12 : 24}
-            style={{ marginTop: "30px", marginBottom: "40px" }}
+            lg={selectedCustomerId || selectedTrainerId ? 24 : 24}
+            style={{ marginTop: "20px", marginBottom: "40px" }}
           >
             <CommonTextArea
               label="Description"

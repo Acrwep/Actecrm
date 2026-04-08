@@ -1829,3 +1829,12 @@ export const getTicketTracks = async (ticket_id) => {
     throw error;
   }
 };
+// lms email api'
+export const sendLoginLink = async (payload) => {
+  try {
+    const response = await api.post(`/api/sendLoginLink`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

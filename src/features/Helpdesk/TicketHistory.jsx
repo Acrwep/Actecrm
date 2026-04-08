@@ -9,6 +9,7 @@ import { FaRegEye } from "react-icons/fa";
 import moment from "moment";
 import PrismaZoom from "react-prismazoom";
 import { BiCommentDetail } from "react-icons/bi";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function TicketHistory({ data = [] }) {
   const [isOpenAttachmentModal, setIsOpenAttachmentModal] = useState(false);
@@ -81,15 +82,30 @@ export default function TicketHistory({ data = [] }) {
               </p>
             </div>
 
-            <button
-              className="customer_history_viewproofbutton"
-              onClick={() => {
-                setAttachmentScreenshotBase64(item.details);
-                setIsOpenAttachmentModal(true);
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <p style={{ fontSize: "13px" }}>Attachment:</p>
+              <button
+                className="customer_history_viewproofbutton"
+                onClick={() => {
+                  setAttachmentScreenshotBase64(item.details);
+                  setIsOpenAttachmentModal(true);
+                }}
+              >
+                <FaRegEye size={16} /> View Attachment
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "15px",
+                alignItems: "center",
+                marginTop: "6px",
               }}
             >
-              <FaRegEye size={16} /> View Attachment
-            </button>
+              <p style={{ fontSize: "13px" }}>Comments:</p>
+              <EllipsisTooltip text={item.comments} smallText={true} />
+            </div>
           </>
         ) : (
           <div>

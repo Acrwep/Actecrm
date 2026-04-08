@@ -225,19 +225,19 @@ export default function Tickets() {
       },
     },
     {
+      title: "Created At",
+      key: "created_at",
+      dataIndex: "created_at",
+      width: 110,
+      render: (text, record) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
+    },
+    {
       title: "Created By",
       key: "created_by_name",
       dataIndex: "created_by_name",
       width: 120,
-      // render: (text) => {
-      //   return <EllipsisTooltip text={text || "-"} />;
-      // },
-      render: (text, record) => {
-        const lead_executive = record.created_by
-          ? `${record.created_by} - ${text}`
-          : "-";
-        return <EllipsisTooltip text={lead_executive} />;
-      },
     },
     {
       title: "Complaint By",
@@ -473,9 +473,13 @@ export default function Tickets() {
                           <button
                             className="customers_reassigntrainer_button"
                             onClick={() => {
-                              setTicketDetails(record);
-                              setIsOpenHoldModal(true);
-                              setIsNormalComment(true);
+                              if (permissions.includes("Add Ticket Comment")) {
+                                setTicketDetails(record);
+                                setIsOpenHoldModal(true);
+                                setIsNormalComment(true);
+                              } else {
+                                CommonMessage("error", "Access Denied");
+                              }
                             }}
                           >
                             Add Comment
@@ -651,7 +655,7 @@ export default function Tickets() {
   ];
 
   useEffect(() => {
-    if (childUsers.length > 0 && !mounted.current) {
+    if (permissions.length > 0 && !mounted.current) {
       mounted.current = true;
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -660,7 +664,7 @@ export default function Tickets() {
       setSubUsers(downlineUsers);
       rerunTicketsFilters(location.state, convertAsJson?.user_id);
     }
-  }, [childUsers]);
+  }, [permissions]);
 
   useEffect(() => {
     const handler = async (e) => {
