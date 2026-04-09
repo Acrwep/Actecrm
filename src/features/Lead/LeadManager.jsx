@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
-import { Button, Tooltip } from "antd";
+import { Button, Tooltip, Dropdown } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import { FaCaretDown } from "react-icons/fa";
 import {
@@ -13,6 +13,7 @@ import {
   getLeadType,
   getRegions,
   getTechnologies,
+  getLeadStatus,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
@@ -43,7 +44,13 @@ export default function LeadManager() {
   const liveLeadSelecteDates = useSelector(
     (state) => state.liveleadselecteddates,
   );
+  const followup_status_counts = useSelector(
+    (state) => state.followupstatuscounts,
+  );
   const tabName = useSelector((state) => state.leadmanageractivepage);
+  const filterValuesFromRedux = useSelector(
+    (state) => state.followupfiltervalues,
+  );
 
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
@@ -62,6 +69,7 @@ export default function LeadManager() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
+  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   //quality tab section
   const [refreshToggle, setRefreshToggle] = useState(false);
   //permissions
@@ -311,6 +319,23 @@ export default function LeadManager() {
     } catch (error) {
       dispatch(storeAreaList([]));
       console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getLeadStatusData();
+      }, 300);
+    }
+  };
+
+  const getLeadStatusData = async () => {
+    try {
+      const response = await getLeadStatus();
+      console.log("lead status response", response);
+      setLeadStatusOptions(
+        response?.data?.data || response?.data?.result || [],
+      );
+    } catch (error) {
+      setLeadStatusOptions([]);
+      console.log("lead status error", error);
     }
   };
 
@@ -360,16 +385,93 @@ export default function LeadManager() {
     <div>
       <div className="settings_tabbutton_maincontainer">
         <div style={{ display: "flex", gap: "18px" }}>
-          <button
-            className={
-              activePage === "followup"
-                ? "settings_tab_activebutton"
-                : "settings_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("followup")}
+          <Dropdown
+            trigger={["hover"]}
+            placement="bottomLeft"
+            menu={{
+              items: [
+                {
+                  key: "clear",
+                  label: (
+                    <div
+                      style={{
+                        padding: "2px 12px",
+                        height: "25px",
+                        fontSize: "13px",
+                        color: "#d32f2f",
+                      }}
+                    >
+                      Clear Status Filter
+                    </div>
+                  ),
+                  onClick: () => {
+                    dispatch(
+                      storeFollowUpFilterValues({
+                        status_id: null,
+                        status_name: null,
+                        pageNumber: 1,
+                      }),
+                    );
+                    handleRefresh();
+                    handleTabClick("followup");
+                  },
+                },
+                ...followup_status_counts.map((item, index) => ({
+                  key: item.id || item.status_id || index,
+                  label: (
+                    <div
+                      style={{
+                        padding: "2px 12px",
+                        height: "25px",
+                        fontSize: "13px",
+                      }}
+                    >
+                      {`${item.name} ( ${item.count} )`}
+                    </div>
+                  ),
+                  onClick: () => {
+                    dispatch(
+                      storeFollowUpFilterValues({
+                        status_id:
+                          item.name == "High"
+                            ? 1
+                            : item.name == "Medium"
+                              ? 2
+                              : item.name == "Low"
+                                ? 3
+                                : item.name == "Junk"
+                                  ? 4
+                                  : item.name == "Not Interested"
+                                    ? 5
+                                    : item.name == "Follow-Up Stoped"
+                                      ? 6
+                                      : null,
+                        status_name: item.name,
+                        pageNumber: 1,
+                      }),
+                    );
+                    handleRefresh();
+                    handleTabClick("followup");
+                  },
+                })),
+              ],
+            }}
           >
-            Lead Followup ( {followupCount} )
-          </button>
+            <button
+              className={
+                activePage === "followup"
+                  ? "settings_tab_activebutton"
+                  : "settings_tab_inactivebutton"
+              }
+              onClick={() => handleTabClick("followup")}
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              Lead Followup ( {followupCount} ){" "}
+              {filterValuesFromRedux.status_name &&
+                ` - ${filterValuesFromRedux.status_name}`}{" "}
+              <FaCaretDown />
+            </button>
+          </Dropdown>
           <button
             className={
               activePage === "leads"

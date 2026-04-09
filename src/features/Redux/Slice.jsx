@@ -318,6 +318,8 @@ const followUpFilterValues = {
   start_date: null,
   end_date: null,
   user_id: null,
+  status_id: null,
+  status_name: null,
   pageNumber: 1,
   pageLimit: 10,
 };
@@ -334,6 +336,18 @@ const followUpFilterValuesSlice = createSlice({
     },
     resetFollowUpFilterValues() {
       return followUpFilterValues;
+    },
+  },
+});
+
+const followup_status_counts = null;
+const followupStatusCountsSlice = createSlice({
+  name: "followupstatuscounts",
+  initialState,
+  reducers: {
+    storeFollowupStatusCounts(state, action) {
+      state = action.payload;
+      return state;
     },
   },
 });
@@ -507,6 +521,7 @@ export const { storeLiveLeadSelectedDates } =
 //followup
 export const { storeFollowUpFilterValues, resetFollowUpFilterValues } =
   followUpFilterValuesSlice.actions;
+export const { storeFollowupStatusCounts } = followupStatusCountsSlice.actions;
 //main lead
 export const { storeLeadFilterValues } = leadFilterValuesSlice.actions;
 export const { storeJunkLeadFilterValues } = junkLeadFilterValuesSlice.actions;
@@ -559,6 +574,7 @@ export const liveLeadSearchValueReducer = liveLeadSearchValueSlice.reducer;
 export const liveLeadFilterTypeReducer = liveLeadFilterTypeSlice.reducer;
 export const liveLeadSelectedDatesReducer = liveLeadSelectedDatesSlice.reducer;
 export const followUpFilterValuesReducer = followUpFilterValuesSlice.reducer;
+export const followupStatusCountsReducer = followupStatusCountsSlice.reducer;
 export const LeadFilterValuesReducer = leadFilterValuesSlice.reducer;
 export const junkLeadFilterValuesReducer = junkLeadFilterValuesSlice.reducer;
 export const assignLeadFilterValuesReducer =

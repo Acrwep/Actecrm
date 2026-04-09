@@ -165,7 +165,7 @@ const CommonTable = ({
       size={size}
       className={className}
       rowClassName={rowClassName}
-      rowKey={(record) => record.id || record.question_id}
+      rowKey={(record) => record.row_num || record.id || record.question_id}
     />
   );
 };

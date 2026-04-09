@@ -62,7 +62,10 @@ import { useDispatch, useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
-import { storeFollowUpFilterValues } from "../Redux/Slice";
+import {
+  storeFollowUpFilterValues,
+  storeFollowupStatusCounts,
+} from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 
@@ -327,51 +330,73 @@ export default function LeadFollowUp({
         return;
       }
 
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      setTimeout(() => {
-        getTableColumnsData(convertAsJson?.user_id);
-      }, 300);
       if (childUsers.length > 0 && !mounted.current) {
-        setSubUsers(downlineUsers);
-        mounted.current = true;
-        // ---------------------
-        const today = new Date();
-        setSelectedDates([
-          filterValuesFromRedux.start_date
-            ? filterValuesFromRedux.start_date
-            : moment(today).format("YYYY-MM-DD"),
-          filterValuesFromRedux.end_date
-            ? filterValuesFromRedux.end_date
-            : moment(today).format("YYYY-MM-DD"),
-        ]);
-        setFilterType(filterValuesFromRedux.filterType);
-        setSearchValue(filterValuesFromRedux.searchValue);
-        setSelectedUserId(filterValuesFromRedux.user_id);
-        setPagination({
-          page: filterValuesFromRedux.pageNumber,
-          limit: filterValuesFromRedux.pageLimit,
-        });
-        // ---------------------
-        setLoginUserId(convertAsJson?.user_id);
-        getAllDownlineUsersData(
-          filterValuesFromRedux.user_id
-            ? filterValuesFromRedux.user_id
-            : convertAsJson?.user_id,
-        );
-        // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-        // getLeadFollowUpsData(
-        //   null,
-        //   PreviousAndCurrentDate[0],
-        //   PreviousAndCurrentDate[1],
-        //   false,
-        //   null,
-        //   1,
-        //   10
-        // );
+        const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+        const convertAsJson = JSON.parse(getLoginUserDetails);
+        setTimeout(() => {
+          getTableColumnsData(convertAsJson?.user_id);
+        }, 300);
+        if (childUsers.length > 0 && !mounted.current) {
+          setSubUsers(downlineUsers);
+          mounted.current = true;
+          // ---------------------
+          const today = new Date();
+          setSelectedDates([
+            filterValuesFromRedux.start_date
+              ? filterValuesFromRedux.start_date
+              : moment(today).format("YYYY-MM-DD"),
+            filterValuesFromRedux.end_date
+              ? filterValuesFromRedux.end_date
+              : moment(today).format("YYYY-MM-DD"),
+          ]);
+          setFilterType(filterValuesFromRedux.filterType);
+          setSearchValue(filterValuesFromRedux.searchValue);
+          setSelectedUserId(filterValuesFromRedux.user_id);
+          setPagination({
+            page: filterValuesFromRedux.pageNumber,
+            limit: filterValuesFromRedux.pageLimit,
+          });
+          // ---------------------
+          setLoginUserId(convertAsJson?.user_id);
+          getAllDownlineUsersData(
+            filterValuesFromRedux.user_id
+              ? filterValuesFromRedux.user_id
+              : convertAsJson?.user_id,
+          );
+          // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+          // getLeadFollowUpsData(
+          //   null,
+          //   PreviousAndCurrentDate[0],
+          //   PreviousAndCurrentDate[1],
+          //   false,
+          //   null,
+          //   1,
+          //   10
+          // );
+        }
       }
     }
-  }, [childUsers, permissions]);
+  }, [childUsers, permissions, filterValuesFromRedux.status_id]);
+
+  useEffect(() => {
+    if (mounted.current && allDownliners.length > 0) {
+      const today = new Date();
+      getLeadFollowUpsData(
+        filterValuesFromRedux.searchValue,
+        filterValuesFromRedux.start_date
+          ? filterValuesFromRedux.start_date
+          : moment(today).format("YYYY-MM-DD"),
+        filterValuesFromRedux.end_date
+          ? filterValuesFromRedux.end_date
+          : moment(today).format("YYYY-MM-DD"),
+        false,
+        allDownliners,
+        filterValuesFromRedux.pageNumber,
+        filterValuesFromRedux.pageLimit,
+        filterValuesFromRedux.status_id,
+      );
+    }
+  }, [filterValuesFromRedux.status_id]);
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -397,6 +422,7 @@ export default function LeadFollowUp({
         downliners_ids,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
+        filterValuesFromRedux.status_id,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -411,8 +437,10 @@ export default function LeadFollowUp({
     downliners,
     pageNumber,
     limit,
+    statusId,
   ) => {
     setLoading(true);
+    setFollowUpData([]);
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
@@ -428,18 +456,29 @@ export default function LeadFollowUp({
       user_ids: downliners,
       page: pageNumber,
       limit: limit,
+      lead_status_id: statusId,
     };
     try {
       const response = await getLeadFollowUps(payload);
       console.log("follow up response", response);
       const followup_data = response?.data?.data?.data || [];
       const pagination = response?.data?.data?.pagination;
+      const statusCounts = response?.data?.data?.statusCounts || {};
 
+      dispatch(
+        storeFollowupStatusCounts(
+          Object.entries(statusCounts).map(([name, count]) => ({
+            name,
+            count,
+          })),
+        ),
+      );
       // ✅ Add serial number here
       const updatedData = followup_data.map((item, index) => ({
         ...item,
         row_num: (pageNumber - 1) * limit + index + 1,
       }));
+      console.log("updateDataaa", updatedData);
 
       setFollowUpData(updatedData);
       setFollowupCount(pagination.total);
@@ -683,6 +722,7 @@ export default function LeadFollowUp({
       allDownliners,
       page,
       limit,
+      filterValuesFromRedux.status_id,
     );
   };
 
@@ -735,6 +775,7 @@ export default function LeadFollowUp({
           allDownliners,
           pagination.page,
           pagination.limit,
+          filterValuesFromRedux.status_id,
         );
         refreshLeads();
         setNewComment("");
@@ -779,6 +820,7 @@ export default function LeadFollowUp({
         allDownliners,
         1,
         pagination.limit,
+        filterValuesFromRedux.status_id,
       );
     }, 300);
   };
@@ -883,6 +925,7 @@ export default function LeadFollowUp({
         downliners_ids,
         1,
         10,
+        filterValuesFromRedux.status_id,
       );
     } catch (error) {
       console.log("all downlines error", error);
