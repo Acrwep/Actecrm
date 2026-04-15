@@ -19,12 +19,18 @@ import { HiDownload } from "react-icons/hi";
 import { IoReceiptOutline } from "react-icons/io5";
 import { Tooltip } from "antd";
 import { FaFileDownload } from "react-icons/fa";
+import { IoImageOutline } from "react-icons/io5";
+import { Image } from "antd";
+import PrismaZoom from "react-prismazoom";
 
 export default function DownloadRegistrationForm({ customerDetails }) {
   const certificateRef = useRef(null);
   //patment usestates
   const [paymentFullDetails, setPaymentFullDetails] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
+    useState(false);
+  const [transactionScreenshot, setTransactionScreenshot] = useState("");
   //loading usestate
   const [loading, setLoading] = useState(false);
   const [invoiceHtmlContent, setInvoiceHtmlContent] = useState("");
@@ -172,6 +178,15 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     } finally {
       setInvoiceLoading(false);
     }
+  };
+
+  const handleDownloadScreenshot = (base64Data, invoiceNumber) => {
+    const link = document.createElement("a");
+    link.href = `data:image/png;base64,${base64Data}`;
+    link.download = `Invoice_${invoiceNumber || "Payment"}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const htmlTemplate = `
@@ -505,6 +520,75 @@ export default function DownloadRegistrationForm({ customerDetails }) {
         }}
       ></div>
 
+      {/* Payment Screenshots Section */}
+      {paymentHistory?.some((s) => s.payment_screenshot) && (
+        <div className="customer_registrationform_screenshots_main_container">
+          <div className="customer_registrationform_screenshots_header">
+            <div className="customer_registrationform_screenshots_icon_container">
+              <IoImageOutline size={22} />
+            </div>
+            <div>
+              <p className="customer_registrationform_screenshots_heading">
+                Payment Proofs
+              </p>
+              <span className="customer_registrationform_screenshot_count_batch">
+                {paymentHistory.filter((s) => s.payment_screenshot).length}{" "}
+                {paymentHistory.filter((s) => s.payment_screenshot).length === 1
+                  ? "Attachment"
+                  : "Attachments"}
+              </span>
+            </div>
+          </div>
+          <div className="customer_registrationform_screenshots_grid">
+            {paymentHistory
+              .filter((s) => s.payment_screenshot)
+              .map((item, idx) => (
+                <div
+                  key={idx}
+                  className="customer_registrationform_screenshot_card"
+                  onClick={() => {
+                    setIsOpenPaymentScreenshotModal(true);
+                    setTransactionScreenshot(item.payment_screenshot);
+                  }}
+                >
+                  <Tooltip title="Download Screenshot">
+                    <div
+                      className="customer_registrationform_screenshot_download_icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadScreenshot(
+                          item.payment_screenshot,
+                          item.invoice_number,
+                        );
+                      }}
+                    >
+                      <HiDownload size={16} />
+                    </div>
+                  </Tooltip>
+                  <div className="customer_registrationform_screenshot_wrapper">
+                    <img
+                      src={`data:image/png;base64,${item.payment_screenshot}`}
+                      alt={`Payment Proof ${idx + 1}`}
+                      className="customer_registrationform_screenshot_image"
+                    />
+                  </div>
+                  <div className="customer_registrationform_screenshot_info">
+                    <p className="screenshot_info_invoice">
+                      {item.invoice_number || "Payment Proof"}
+                    </p>
+                    <p className="screenshot_info_amount">₹{item.amount}</p>
+                    <p className="screenshot_info_date">
+                      {item.invoice_date
+                        ? moment(item.invoice_date).format("DD MMM YYYY")
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       <div className="customer_registrationform_footer_container">
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <div className="customer_registrationform_invoice_icon_container">
@@ -609,6 +693,33 @@ export default function DownloadRegistrationForm({ customerDetails }) {
           )}
         </div>
       </div>
+
+      {/* payment screenshot modal */}
+      <Modal
+        title="Payment Screenshot"
+        open={isOpenPaymentScreenshotModal}
+        onCancel={() => {
+          setIsOpenPaymentScreenshotModal(false);
+          setTransactionScreenshot("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {transactionScreenshot ? (
+              <img
+                src={`data:image/png;base64,${transactionScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
+      </Modal>
 
       {/* invoice view modal */}
       <Modal

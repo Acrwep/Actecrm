@@ -222,6 +222,7 @@ export default function Settings() {
         "Lead Re-Entry",
         "Lead Executive Filter",
         "Add Quality Comment",
+        "Whatsapp Lead Source",
         "Junk Leads Tab",
         "Show Origin in Live Leads",
         "Revert to Live Leads",

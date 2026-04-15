@@ -1814,3 +1814,141 @@
   color: #5b69ca !important;
   margin-top: 5px;
 }
+
+/* Payment Screenshot Gallery Styles */
+.customer_registrationform_screenshots_main_container {
+  margin: 16px 0px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
+.customer_registrationform_screenshots_header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.customer_registrationform_screenshots_icon_container {
+  width: 44px;
+  height: 44px;
+  background-color: #f0f5ff;
+  border-radius: 12px;
+  color: #1b538c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer_registrationform_screenshots_heading {
+  margin: 0;
+  font-size: 11px;
+  color: #a0aec0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.customer_registrationform_screenshot_count_batch {
+  padding: 2px 10px;
+  background-color: #f0f7ff;
+  color: #1b538c;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid #e1effe;
+}
+
+.customer_registrationform_screenshots_grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.customer_registrationform_screenshot_card {
+  position: relative;
+  min-width: 150px;
+  max-width: 150px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.customer_registrationform_screenshot_card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  border-color: #1b538c44;
+}
+
+.customer_registrationform_screenshot_wrapper {
+  height: 110px;
+  width: 100%;
+  overflow: hidden;
+  background: #f7fafc;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.customer_registrationform_screenshot_image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.customer_registrationform_screenshot_info {
+  padding: 10px;
+}
+
+.screenshot_info_invoice {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.screenshot_info_amount {
+  margin: 2px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b538c;
+}
+
+.screenshot_info_date {
+  margin: 0;
+  font-size: 10px;
+  color: #a0aec0;
+}
+
+.customer_registrationform_screenshot_download_icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1b538c;
+  z-index: 50;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #edf2f7;
+}
+
+.customer_registrationform_screenshot_download_icon:hover {
+  background: #1b538c;
+  color: #fff;
+  transform: scale(1.1);
+  border-color: #1b538c;
+}

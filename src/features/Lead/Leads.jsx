@@ -1360,9 +1360,9 @@ export default function Leads({
           pagination.limit,
         );
         refreshLeadFollowUp();
-        if (import.meta.env.PROD) {
-          handleSendCustomerFormLink(createdCustomerDetails);
-        }
+        // if (import.meta.env.PROD) {
+        handleSendCustomerFormLink(createdCustomerDetails);
+        // }
       }, 300);
     } catch (error) {
       setButtonLoading(false);
