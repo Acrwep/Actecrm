@@ -19,6 +19,7 @@ import {
   getAllDownlineUsers,
   getBranchWisePerformance,
   getDashboardDates,
+  getFollowUpActionDashboard,
   getPostSaleDashboard,
   getRegionWisePerformance,
   getScoreBoard,
@@ -61,6 +62,11 @@ export default function Dashboard() {
   const [performingSelectedDates, setPerformingSelectedDates] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const [performanceLoader, setPerformanceLoader] = useState(true);
+  //followup actions
+  const [followupActionsSelectedDates, setFollowupActionsSelectedDates] =
+    useState([]);
+  const [followupActionsDates, setFollowupActionsDates] = useState([]);
+  const [followupActionsLoader, setFollowupActionsLoader] = useState([]);
   //sale details
   const [saleDetailsSelectedDates, setSaleDetailsSelectedDates] = useState([]);
   const [saleDetailsSeries, setSaleDetailsSeries] = useState([]);
@@ -1103,6 +1109,7 @@ export default function Dashboard() {
     call_api,
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
+      getFollowUpActionData();
       return;
     }
     setPerformanceLoader(true);
@@ -1158,6 +1165,82 @@ export default function Dashboard() {
       console.log("scoreboard error", error);
     } finally {
       setPerformanceLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getFollowUpActionData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+          downliners,
+          true,
+        );
+      }
+    }
+  };
+
+  const getFollowUpActionData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    call_api,
+  ) => {
+    // if (!permissions.includes("Followup Action Dashboard")) {
+    //   return;
+    // }
+    setFollowupActionsLoader(true);
+
+    //date handling
+    let followup_action_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      followup_action_dates = dashboard_dates.find(
+        (f) => f.card_name == "Followup Action",
+      );
+      if (followup_action_dates) {
+        if (
+          followup_action_dates.card_settings == "Today" ||
+          followup_action_dates.card_settings == "Yesterday" ||
+          followup_action_dates.card_settings == "7 Days" ||
+          followup_action_dates.card_settings == "15 Days" ||
+          followup_action_dates.card_settings == "30 Days" ||
+          followup_action_dates.card_settings == "60 Days" ||
+          followup_action_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            followup_action_dates.card_settings,
+          );
+          followup_action_dates = getdates_bylabel;
+          setPerformingSelectedDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setPerformingSelectedDates([
+            followup_action_dates.card_settings.start_date,
+            followup_action_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: followup_action_dates
+        ? followup_action_dates.card_settings.start_date
+        : startDate,
+      end_date: followup_action_dates
+        ? followup_action_dates.card_settings.end_date
+        : endDate,
+      user_ids: downliners,
+    };
+    try {
+      const response = await getFollowUpActionDashboard(payload);
+      console.log("followup actions response", response);
+      setFollowupActionsDates(response?.data?.data || []);
+    } catch (error) {
+      setFollowupActionsDates([]);
+      console.log("scoreboard error", error);
+    } finally {
+      setFollowupActionsLoader(false);
     }
   };
 
@@ -2566,6 +2649,135 @@ export default function Dashboard() {
             </div>
           </Col>
         )}
+
+        {/* followup action dashboard */}
+        <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>
+          <div className="dashboard_leadcount_card">
+            <Row className="dashboard_leadcount_header_container">
+              <Col span={18}>
+                <div style={{ padding: "12px 12px 8px 12px" }}>
+                  <p className="dashboard_scrorecard_heading">
+                    Followup Actions
+                  </p>
+                  <p className="dashboard_daterange_text">
+                    <span style={{ fontWeight: "500" }}>Date Range: </span>
+                    {`(${moment(followupActionsDates[0]).format(
+                      "DD MMM YYYY",
+                    )} to ${moment(followupActionsDates[1]).format(
+                      "DD MMM YYYY",
+                    )})`}
+                  </p>
+                </div>
+              </Col>
+              <Col
+                span={6}
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <div>
+                  <CommonMuiCustomDatePicker
+                    isDashboard={true}
+                    value={followupActionsDates}
+                    onDateChange={(dates) => {
+                      setFollowupActionsDates(dates);
+                      updateDashboardCardDate(
+                        "Followup Action",
+                        dates[0],
+                        dates[1],
+                      );
+                      getTopPerformanceData(
+                        null,
+                        dates[0],
+                        dates[1],
+                        allDownliners,
+                        false,
+                      );
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            {followupActionsLoader ? (
+              <div className="dashboard_skeleton_container">
+                <Skeleton
+                  active
+                  style={{ height: "40vh" }}
+                  title={{ width: 140 }}
+                  paragraph={{
+                    rows: 0,
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <Row className="dashboard_performchannel_headingContainer">
+                  <Col
+                    span={6}
+                    className="dashboard_performchannel_heading_col"
+                  >
+                    <p>Status</p>
+                  </Col>
+                  <Col
+                    span={6}
+                    className="dashboard_performchannel_heading_col"
+                  >
+                    <p>Total</p>
+                  </Col>
+                  <Col
+                    span={6}
+                    className="dashboard_performchannel_heading_col"
+                  >
+                    <p>Handled</p>
+                  </Col>
+                  <Col
+                    span={6}
+                    className="dashboard_performchannel_heading_col"
+                  >
+                    <p>Un-Handled</p>
+                  </Col>
+                </Row>
+
+                {followupActionsDates.map((item, index) => {
+                  return (
+                    <React.Fragment key={index}>
+                      <Row
+                        style={{
+                          padding: "9px 12px",
+                          borderBottom: "1px solid rgb(5 5 5 / 14%)",
+                        }}
+                      >
+                        <Col
+                          span={6}
+                          className="dashboard_performchannel_data_col"
+                        >
+                          <p>{item.action_name}</p>
+                        </Col>
+                        <Col
+                          span={6}
+                          className="dashboard_performchannel_data_col"
+                        >
+                          <p>{item.total}</p>
+                        </Col>
+                        <Col
+                          span={6}
+                          className="dashboard_performchannel_data_col"
+                        >
+                          <p>{item.handled_follow_up}</p>
+                        </Col>
+                        <Col
+                          span={6}
+                          className="dashboard_performchannel_data_col"
+                        >
+                          <p>{item.unhandled_follow_up}</p>
+                        </Col>
+                      </Row>
+                    </React.Fragment>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </Col>
       </Row>
     </div>
   );
