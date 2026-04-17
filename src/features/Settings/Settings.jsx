@@ -193,6 +193,7 @@ export default function Settings() {
         "Branch-Wise Performance",
         "Region-Wise Performance",
         "Top Performing Channels",
+        "Followup Actions",
         "Download Dashboard Data",
       ];
 

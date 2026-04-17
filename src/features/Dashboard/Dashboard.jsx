@@ -1186,9 +1186,9 @@ export default function Dashboard() {
     downliners,
     call_api,
   ) => {
-    // if (!permissions.includes("Followup Action Dashboard")) {
-    //   return;
-    // }
+    if (!permissions.includes("Followup Actions")) {
+      return;
+    }
     setFollowupActionsLoader(true);
 
     //date handling
@@ -2671,133 +2671,135 @@ export default function Dashboard() {
         )}
 
         {/* followup action dashboard */}
-        <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>
-          <div className="dashboard_leadcount_card">
-            <Row className="dashboard_leadcount_header_container">
-              <Col span={18}>
-                <div style={{ padding: "12px 12px 8px 12px" }}>
-                  <p className="dashboard_scrorecard_heading">
-                    Followup Actions
-                  </p>
-                  <p className="dashboard_daterange_text">
-                    <span style={{ fontWeight: "500" }}>Date Range: </span>
-                    {`(${moment(followupActionsSelectedDates[0]).format(
-                      "DD MMM YYYY",
-                    )} to ${moment(followupActionsSelectedDates[1]).format(
-                      "DD MMM YYYY",
-                    )})`}
-                  </p>
-                </div>
-              </Col>
-              <Col
-                span={6}
-                style={{ display: "flex", justifyContent: "flex-end" }}
-              >
-                <div>
-                  <CommonMuiCustomDatePicker
-                    isDashboard={true}
-                    value={followupActionsSelectedDates}
-                    onDateChange={(dates) => {
-                      setFollowupActionsSelectedDates(dates);
-                      updateDashboardCardDate(
-                        "Followup Action",
-                        dates[0],
-                        dates[1],
-                      );
-                      getFollowUpActionData(
-                        null,
-                        dates[0],
-                        dates[1],
-                        allDownliners,
-                        false,
-                      );
+        {permissions.includes("Followup Actions") && (
+          <Col xs={24} sm={24} md={24} lg={12} style={{ marginTop: "30px" }}>
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Followup Actions
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(followupActionsSelectedDates[0]).format(
+                        "DD MMM YYYY",
+                      )} to ${moment(followupActionsSelectedDates[1]).format(
+                        "DD MMM YYYY",
+                      )})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={followupActionsSelectedDates}
+                      onDateChange={(dates) => {
+                        setFollowupActionsSelectedDates(dates);
+                        updateDashboardCardDate(
+                          "Followup Action",
+                          dates[0],
+                          dates[1],
+                        );
+                        getFollowUpActionData(
+                          null,
+                          dates[0],
+                          dates[1],
+                          allDownliners,
+                          false,
+                        );
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              {followupActionsLoader ? (
+                <div className="dashboard_skeleton_container">
+                  <Skeleton
+                    active
+                    style={{ height: "40vh" }}
+                    title={{ width: 140 }}
+                    paragraph={{
+                      rows: 0,
                     }}
                   />
                 </div>
-              </Col>
-            </Row>
+              ) : (
+                <>
+                  <Row className="dashboard_performchannel_headingContainer">
+                    <Col
+                      span={6}
+                      className="dashboard_performchannel_heading_col"
+                    >
+                      <p>Status</p>
+                    </Col>
+                    <Col
+                      span={6}
+                      className="dashboard_performchannel_heading_col"
+                    >
+                      <p>Total</p>
+                    </Col>
+                    <Col
+                      span={6}
+                      className="dashboard_performchannel_heading_col"
+                    >
+                      <p>Handled</p>
+                    </Col>
+                    <Col
+                      span={6}
+                      className="dashboard_performchannel_heading_col"
+                    >
+                      <p>Un-Handled</p>
+                    </Col>
+                  </Row>
 
-            {followupActionsLoader ? (
-              <div className="dashboard_skeleton_container">
-                <Skeleton
-                  active
-                  style={{ height: "40vh" }}
-                  title={{ width: 140 }}
-                  paragraph={{
-                    rows: 0,
-                  }}
-                />
-              </div>
-            ) : (
-              <>
-                <Row className="dashboard_performchannel_headingContainer">
-                  <Col
-                    span={6}
-                    className="dashboard_performchannel_heading_col"
-                  >
-                    <p>Status</p>
-                  </Col>
-                  <Col
-                    span={6}
-                    className="dashboard_performchannel_heading_col"
-                  >
-                    <p>Total</p>
-                  </Col>
-                  <Col
-                    span={6}
-                    className="dashboard_performchannel_heading_col"
-                  >
-                    <p>Handled</p>
-                  </Col>
-                  <Col
-                    span={6}
-                    className="dashboard_performchannel_heading_col"
-                  >
-                    <p>Un-Handled</p>
-                  </Col>
-                </Row>
-
-                {followupActionsDatas.map((item, index) => {
-                  return (
-                    <React.Fragment key={index}>
-                      <Row
-                        style={{
-                          padding: "9px 12px",
-                          borderBottom: "1px solid rgb(5 5 5 / 14%)",
-                        }}
-                      >
-                        <Col
-                          span={6}
-                          className="dashboard_performchannel_data_col"
+                  {followupActionsDatas.map((item, index) => {
+                    return (
+                      <React.Fragment key={index}>
+                        <Row
+                          style={{
+                            padding: "9px 12px",
+                            borderBottom: "1px solid rgb(5 5 5 / 14%)",
+                          }}
                         >
-                          <p>{item.action_name}</p>
-                        </Col>
-                        <Col
-                          span={6}
-                          className="dashboard_performchannel_data_col"
-                        >
-                          <p>{item.total}</p>
-                        </Col>
-                        <Col
-                          span={6}
-                          className="dashboard_performchannel_data_col"
-                        >
-                          <p>{item.handled_follow_up}</p>
-                        </Col>
-                        <Col
-                          span={6}
-                          className="dashboard_performchannel_data_col"
-                        >
-                          <p>{item.unhandled_follow_up}</p>
-                        </Col>
-                      </Row>
-                    </React.Fragment>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        </Col>
+                          <Col
+                            span={6}
+                            className="dashboard_performchannel_data_col"
+                          >
+                            <p>{item.action_name}</p>
+                          </Col>
+                          <Col
+                            span={6}
+                            className="dashboard_performchannel_data_col"
+                          >
+                            <p>{item.total}</p>
+                          </Col>
+                          <Col
+                            span={6}
+                            className="dashboard_performchannel_data_col"
+                          >
+                            <p>{item.handled_follow_up}</p>
+                          </Col>
+                          <Col
+                            span={6}
+                            className="dashboard_performchannel_data_col"
+                          >
+                            <p>{item.unhandled_follow_up}</p>
+                          </Col>
+                        </Row>
+                      </React.Fragment>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          </Col>
+        )}
       </Row>
     </div>
   );
