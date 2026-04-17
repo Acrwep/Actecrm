@@ -102,11 +102,12 @@ export default function LeadFollowUp({
   const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
   const actionOptions = [
-    { id: 1, name: "Follow Up" },
-    { id: 2, name: "Joined Other" },
-    { id: 3, name: "Fees High" },
-    { id: 4, name: "Negative Review" },
-    { id: 5, name: "Not interested Now" },
+    { id: 1, name: "Hot Follow Up" },
+    { id: 7, name: "Cold Follow Up" },
+    { id: 8, name: "Interested" },
+    { id: 9, name: "Only Enquiry" },
+    { id: 10, name: "Hold" },
+    { id: 11, name: "No Response" },
     { id: 6, name: "Others" },
   ];
   const [actionId, setActionId] = useState(null);
@@ -253,22 +254,22 @@ export default function LeadFollowUp({
       },
     },
     {
-      title: "Lead Priority",
-      key: "lead_status",
-      dataIndex: "lead_status",
+      title: "Followup Status",
+      key: "action_name",
+      dataIndex: "action_name",
       fixed: "right",
       width: 140,
       render: (text) => {
         return (
           <div
             className={
-              text == "High"
-                ? "leadmanager_leadstatus_high_container"
-                : text == "Medium"
+              text == "Hot Follow Up" ||
+              text == "Cold Follow Up" ||
+              text == "Interested"
+                ? "leadmanager_followupstatus_hotfollowup_container"
+                : text == "Only Enquiry" || text == "Hold"
                   ? "leadmanager_leadstatus_medium_container"
-                  : text == "Low"
-                    ? "leadmanager_leadstatus_low_container"
-                    : "leadmanager_leadstatus_junk_container"
+                  : "leadmanager_leadstatus_junk_container"
             }
           >
             <p>{text}</p>
@@ -456,7 +457,7 @@ export default function LeadFollowUp({
       user_ids: downliners,
       page: pageNumber,
       limit: limit,
-      lead_status_id: statusId,
+      lead_action_id: statusId,
     };
     try {
       const response = await getLeadFollowUps(payload);
@@ -464,15 +465,23 @@ export default function LeadFollowUp({
       const followup_data = response?.data?.data?.data || [];
       const pagination = response?.data?.data?.pagination;
       const statusCounts = response?.data?.data?.statusCounts || {};
+      console.log("statusCounts", statusCounts);
 
-      dispatch(
-        storeFollowupStatusCounts(
-          Object.entries(statusCounts).map(([name, count]) => ({
-            name,
-            count,
-          })),
-        ),
-      );
+      const requiredOrder = [
+        "Hot Follow Up",
+        "Cold Follow Up",
+        "Interested",
+        "Only Enquiry",
+        "Hold",
+        "No Response",
+      ];
+
+      const formattedData = requiredOrder.map((key) => ({
+        name: key,
+        count: statusCounts[key] || 0,
+      }));
+
+      dispatch(storeFollowupStatusCounts(formattedData));
       // ✅ Add serial number here
       const updatedData = followup_data.map((item, index) => ({
         ...item,
@@ -642,22 +651,22 @@ export default function LeadFollowUp({
                   return <p>{"₹" + text}</p>;
                 },
               };
-            case "lead_status":
+            case "action_name":
               return {
                 ...col,
-                title: "Lead Priority",
+                title: "Followup Status",
                 width: 140,
                 render: (text) => {
                   return (
                     <div
                       className={
-                        text == "High"
-                          ? "leadmanager_leadstatus_high_container"
-                          : text == "Medium"
+                        text == "Hot Follow Up" ||
+                        text == "Cold Follow Up" ||
+                        text == "Interested"
+                          ? "leadmanager_followupstatus_hotfollowup_container"
+                          : text == "Only Enquiry" || text == "Hold"
                             ? "leadmanager_leadstatus_medium_container"
-                            : text == "Low"
-                              ? "leadmanager_leadstatus_low_container"
-                              : "leadmanager_leadstatus_junk_container"
+                            : "leadmanager_leadstatus_junk_container"
                       }
                     >
                       <p>{text}</p>
@@ -733,10 +742,10 @@ export default function LeadFollowUp({
 
     let nxtFollowdateValidate = "";
 
-    if (actionId == 1) {
-      nxtFollowdateValidate = selectValidator(nxtFollowupDate);
-    } else {
+    if (actionId == 6) {
       nxtFollowdateValidate = "";
+    } else {
+      nxtFollowdateValidate = selectValidator(nxtFollowupDate);
     }
 
     setActionIdError(actionValidate);
@@ -1448,119 +1457,6 @@ export default function LeadFollowUp({
         </div>
       </Drawer>
 
-      <Modal
-        title="Update Followup"
-        open={isOpenCommentModal}
-        onCancel={formReset}
-        footer={false}
-        width="35%"
-        className="leadfollowup_actionmodal"
-      >
-        <div className="leadfollowup_actionfield_mainContainer">
-          <Row gutter={12} className="leadfollowup_actionfield_rowdiv">
-            <Col span={12}>
-              <CommonSelectField
-                label="Action"
-                options={actionOptions}
-                height="34px"
-                labelMarginTop="-2px"
-                value={actionId}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setActionId(value);
-                  if (value != 1) {
-                    setNxtFollowupDate(null);
-                    setNxtFollowupDateError("");
-                  }
-                  setActionIdError(selectValidator(value));
-                }}
-                error={actionIdError}
-              />
-            </Col>
-
-            {actionId == 1 && (
-              <Col span={12}>
-                <CommonDatePicker
-                  placeholder="Next Followup Date"
-                  height="35px"
-                  onChange={(value) => {
-                    console.log("nxtttttt", value);
-                    setNxtFollowupDate(value);
-                    setNxtFollowupDateError(selectValidator(value));
-                  }}
-                  value={nxtFollowupDate}
-                  error={nxtFollowupDateError}
-                  disablePreviousDates={true}
-                />
-              </Col>
-            )}
-          </Row>
-
-          <p className="leadmanager_commentbox_heading">Comments</p>
-          {commentsHistory.length >= 1 ? (
-            <>
-              {commentsHistory.map((item) => {
-                return (
-                  <>
-                    <div className="leadmanager_comments_namecontainer">
-                      <div className="leadfollowup_chatbox_initialContainer">
-                        <p>BA</p>
-                      </div>
-                      <p className="leadfollowup_comment_username">
-                        Balaji{" "}
-                        <span className="leadfollowup_comment_time">
-                          {shortRelativeTime(item.updated_date)}
-                        </span>
-                      </p>
-                    </div>
-                    <p className="leadfollowup_comments_text">
-                      {item.comments}
-                    </p>
-                  </>
-                );
-              })}
-            </>
-          ) : (
-            <p className="leadfollowup_comment_nodatafound">
-              No comments found
-            </p>
-          )}
-
-          <div style={{ position: "relative" }}>
-            <TextArea
-              placeholder="Add Comment..."
-              className="leadmanager_commentbox_input"
-              onChange={(e) => {
-                setNewComment(e.target.value);
-                setNewCommentError(addressValidator(e.target.value));
-              }}
-              value={newComment}
-            />
-            {buttonLoading ? (
-              <div
-                className="leadmanager_comment_senddiv"
-                style={{ opacity: 0.7 }}
-              >
-                <IoMdSend size={18} />
-              </div>
-            ) : (
-              <div
-                className="leadmanager_comment_senddiv"
-                onClick={handleUpdateFollowUp}
-              >
-                <IoMdSend size={18} />
-              </div>
-            )}
-          </div>
-
-          {newCommentError && (
-            <p className="leadfollowup_newcommenterror">
-              {"Comments" + newCommentError}
-            </p>
-          )}
-        </div>
-      </Modal>
-
       <div
         className="leadfollowup_chatbox_container"
         style={{ display: isOpenChat ? "block" : "none" }}
@@ -1984,6 +1880,7 @@ export default function LeadFollowUp({
             <Col span={12}>
               <CommonSelectField
                 label="Action"
+                required={true}
                 options={actionOptions}
                 value={actionId}
                 onChange={(e) => {
@@ -2013,7 +1910,9 @@ export default function LeadFollowUp({
               />{" "}
             </Col>
 
-            {actionId == 1 || actionId == null ? (
+            {actionId == 6 ? (
+              ""
+            ) : (
               <Col span={12}>
                 <CommonNxtFollowupDatePicker
                   label="Next Followup Date"
@@ -2027,8 +1926,6 @@ export default function LeadFollowUp({
                   // disabled={true}
                 />
               </Col>
-            ) : (
-              ""
             )}
           </Row>
         </div>

@@ -52,7 +52,7 @@ export default function CommonCertificateViewer({
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "px",
-      format: [794, 1123],
+      format: [780, 1220],
       compress: true, // ✅ Enable PDF compression
       hotfixes: ["px_scaling"],
     });

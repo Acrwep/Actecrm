@@ -446,18 +446,18 @@ export default function LeadManager() {
                     dispatch(
                       storeFollowUpFilterValues({
                         status_id:
-                          item.name == "High"
+                          item.name == "Hot Follow Up"
                             ? 1
-                            : item.name == "Medium"
-                              ? 2
-                              : item.name == "Low"
-                                ? 3
-                                : item.name == "Junk"
-                                  ? 4
-                                  : item.name == "Not Interested"
-                                    ? 5
-                                    : item.name == "Follow-Up Stoped"
-                                      ? 6
+                            : item.name == "Cold Follow Up"
+                              ? 7
+                              : item.name == "Interested"
+                                ? 8
+                                : item.name == "Only Enquiry"
+                                  ? 9
+                                  : item.name == "Hold"
+                                    ? 10
+                                    : item.name == "No Response"
+                                      ? 11
                                       : null,
                         status_name: item.name,
                         pageNumber: 1,

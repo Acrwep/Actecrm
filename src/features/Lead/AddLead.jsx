@@ -155,6 +155,17 @@ const AddLead = forwardRef(
     const [leadStatusError, setLeadStatusError] = useState("");
     const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
     const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
+    const followUpStatusOptions = [
+      { id: 1, name: "Hot Follow Up" },
+      { id: 7, name: "Cold Follow Up" },
+      { id: 8, name: "Interested" },
+      { id: 9, name: "Only Enquiry" },
+      { id: 10, name: "Hold" },
+      { id: 11, name: "No Response" },
+      { id: 6, name: "Others" },
+    ];
+    const [followUpStatusId, setFollowUpStatusId] = useState("");
+    const [followUpStatusIdError, setFollowUpStatusIdError] = useState(null);
     const [expectDateJoin, setExpectDateJoin] = useState(null);
 
     const [regionId, setRegionId] = useState(null);
@@ -341,6 +352,7 @@ const AddLead = forwardRef(
             setNxtFollowupDate(updateLeadItem.next_follow_up_date);
           }
         }
+        setFollowUpStatusId(updateLeadItem?.lead_action_id);
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
         getBranchesData(updateLeadItem.region_id);
@@ -723,13 +735,23 @@ const AddLead = forwardRef(
       setValidationTrigger(true);
 
       let nxtFollowupDateValidate;
+      let followUpStatusIdValidate;
 
       if (leadStatus == 4 || leadStatus == 5) {
         nxtFollowupDateValidate = "";
+        followUpStatusIdValidate = "";
       } else {
         nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
+        followUpStatusIdValidate = selectValidator(followUpStatusId);
       }
 
+      if (
+        (leadStatus == 1 || leadStatus == 2 || leadStatus == 3) &&
+        followUpStatusId == 6
+      ) {
+        followUpStatusIdValidate =
+          " cannot be Others when lead status is High, Medium, or Low";
+      }
       const nameValidate = nameValidator(name);
       let emailValidate = emailValidator(email);
       let mobileValidate = mobileValidator(mobile);
@@ -782,6 +804,7 @@ const AddLead = forwardRef(
       setLeadTypeError(leadTypeValidate);
       setLeadStatusError(leadStatusValidate);
       setNxtFollowupDateError(nxtFollowupDateValidate);
+      setFollowUpStatusIdError(followUpStatusIdValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
       setBatchTrackError(batchTrackValidate);
@@ -800,6 +823,7 @@ const AddLead = forwardRef(
         leadTypeValidate ||
         leadStatusValidate ||
         nxtFollowupDateValidate ||
+        followUpStatusIdValidate ||
         regionIdValidate ||
         branchValidate ||
         batchTrackValidate ||
@@ -837,6 +861,7 @@ const AddLead = forwardRef(
         secondary_fees: secondaryFees ? secondaryFees : 0,
         lead_type_id: leadType,
         lead_status_id: leadStatus,
+        lead_action_id: followUpStatusId,
         ...(updateLeadItem && {
           is_previous_junk:
             isPreviousJunk && leadStatus != 4 && leadStatus != 5,
@@ -1632,7 +1657,27 @@ const AddLead = forwardRef(
                   }
                 />
               </Col>
+
               <Col span={8}>
+                <CommonSelectField
+                  label="Followup Status"
+                  required={true}
+                  options={followUpStatusOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    console.log("value", value);
+                    setFollowUpStatusId(value);
+                    if (validationTrigger) {
+                      setFollowUpStatusIdError(selectValidator(value));
+                    }
+                  }}
+                  value={followUpStatusId}
+                  error={followUpStatusIdError}
+                  disabled={leadStatus == 6}
+                />
+              </Col>
+
+              <Col span={8} style={{ marginTop: "30px" }}>
                 <CommonMuiDatePicker
                   label="Expected Date Join"
                   required={false}

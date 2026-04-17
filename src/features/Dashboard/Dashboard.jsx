@@ -65,7 +65,7 @@ export default function Dashboard() {
   //followup actions
   const [followupActionsSelectedDates, setFollowupActionsSelectedDates] =
     useState([]);
-  const [followupActionsDates, setFollowupActionsDates] = useState([]);
+  const [followupActionsDatas, setFollowupActionsDatas] = useState([]);
   const [followupActionsLoader, setFollowupActionsLoader] = useState([]);
   //sale details
   const [saleDetailsSelectedDates, setSaleDetailsSelectedDates] = useState([]);
@@ -192,6 +192,7 @@ export default function Dashboard() {
       setScoreBoardSelectedDates(PreviousAndCurrentDate);
       setSaleDetailsSelectedDates(PreviousAndCurrentDate);
       setPerformingSelectedDates(PreviousAndCurrentDate);
+      setFollowupActionsSelectedDates(PreviousAndCurrentDate);
       setPostSaleSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseDates(PreviousAndCurrentDate);
@@ -1210,12 +1211,12 @@ export default function Dashboard() {
             followup_action_dates.card_settings,
           );
           followup_action_dates = getdates_bylabel;
-          setPerformingSelectedDates([
+          setFollowupActionsSelectedDates([
             getdates_bylabel.card_settings.start_date,
             getdates_bylabel.card_settings.end_date,
           ]);
         } else {
-          setPerformingSelectedDates([
+          setFollowupActionsSelectedDates([
             followup_action_dates.card_settings.start_date,
             followup_action_dates.card_settings.end_date,
           ]);
@@ -1235,9 +1236,25 @@ export default function Dashboard() {
     try {
       const response = await getFollowUpActionDashboard(payload);
       console.log("followup actions response", response);
-      setFollowupActionsDates(response?.data?.data || []);
+      const data = response?.data?.data || [];
+      if (data.length >= 1) {
+        const order = [
+          "Hot Follow Up",
+          "Cold Follow Up",
+          "Interested",
+          "Only Enquiry",
+          "Hold",
+          "No Response",
+        ];
+        const sortedData = order
+          .map((name) => data.find((item) => item.action_name === name))
+          .filter(Boolean);
+        setFollowupActionsDatas(sortedData);
+      } else {
+        setFollowupActionsDatas([]);
+      }
     } catch (error) {
-      setFollowupActionsDates([]);
+      setFollowupActionsDatas([]);
       console.log("scoreboard error", error);
     } finally {
       setFollowupActionsLoader(false);
@@ -1280,6 +1297,7 @@ export default function Dashboard() {
       setUserWiseLoader(true);
       setBranchWiseLoader(true);
       setPerformanceLoader(true);
+      setFollowupActionsLoader(true);
       setPostSaleLoader(true);
       setUserWiseLeadsType(1);
       setUserWiseType(1);
@@ -1373,6 +1391,7 @@ export default function Dashboard() {
     setScoreBoardSelectedDates(PreviousAndCurrentDate);
     setSaleDetailsSelectedDates(PreviousAndCurrentDate);
     setPerformingSelectedDates(PreviousAndCurrentDate);
+    setFollowupActionsSelectedDates(PreviousAndCurrentDate);
     setPostSaleSelectedDates(PreviousAndCurrentDate);
     setUserWiseLeadsDates(PreviousAndCurrentDate);
 
@@ -1393,6 +1412,7 @@ export default function Dashboard() {
     setSaleDetailsLoader(true);
     setPerformanceLoader(true);
     setPostSaleLoader(true);
+    setFollowupActionsLoader(true);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -1474,7 +1494,7 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      <Row gutter={16}>
+      <Row gutter={16} style={{ marginBottom: "60px" }}>
         {permissions.includes("Score Board") && (
           <Col span={12} style={{ marginTop: "30px" }}>
             <div className="dashboard_leadcount_card">
@@ -2661,9 +2681,9 @@ export default function Dashboard() {
                   </p>
                   <p className="dashboard_daterange_text">
                     <span style={{ fontWeight: "500" }}>Date Range: </span>
-                    {`(${moment(followupActionsDates[0]).format(
+                    {`(${moment(followupActionsSelectedDates[0]).format(
                       "DD MMM YYYY",
-                    )} to ${moment(followupActionsDates[1]).format(
+                    )} to ${moment(followupActionsSelectedDates[1]).format(
                       "DD MMM YYYY",
                     )})`}
                   </p>
@@ -2676,15 +2696,15 @@ export default function Dashboard() {
                 <div>
                   <CommonMuiCustomDatePicker
                     isDashboard={true}
-                    value={followupActionsDates}
+                    value={followupActionsSelectedDates}
                     onDateChange={(dates) => {
-                      setFollowupActionsDates(dates);
+                      setFollowupActionsSelectedDates(dates);
                       updateDashboardCardDate(
                         "Followup Action",
                         dates[0],
                         dates[1],
                       );
-                      getTopPerformanceData(
+                      getFollowUpActionData(
                         null,
                         dates[0],
                         dates[1],
@@ -2737,7 +2757,7 @@ export default function Dashboard() {
                   </Col>
                 </Row>
 
-                {followupActionsDates.map((item, index) => {
+                {followupActionsDatas.map((item, index) => {
                   return (
                     <React.Fragment key={index}>
                       <Row

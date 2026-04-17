@@ -94,6 +94,20 @@
   border: none;
   height: 0px !important;
 }
+.leadmanager_followupstatus_hotfollowup_container {
+  background: #5b6aca13;
+  color: #5b69ca;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
 .leadmanager_cnafollowup_activebutton {
   padding: 6px 8px;
   font-size: 13px;
@@ -658,7 +672,7 @@
 .leadfollowup_comment_time {
   color: gray;
   font-size: 10px;
-  font-weight: 400;
+  font-weight: 500;
   margin-left: 6px;
 }
 .leadfollowup_comments_text {
