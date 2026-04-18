@@ -46,6 +46,7 @@ export default function CommonNxtFollowupDatePicker({
             today.add(1, "day"),
             today.add(3, "day"),
             today.add(5, "day"),
+            today.add(7, "day"),
           ];
 
           // 🔥 replace Sunday with Monday
