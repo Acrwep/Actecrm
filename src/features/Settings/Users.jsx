@@ -319,10 +319,25 @@ export default function Users({
       },
     },
     {
+      title: "Last Login At",
+      key: "last_login_date",
+      dataIndex: "last_login_date",
+      width: 140,
+      render: (text, record) => {
+        return (
+          <div>
+            <EllipsisTooltip
+              text={text ? moment(text).format("DD/MM/YYYY - HH:mm:ss") : "-"}
+            />
+          </div>
+        );
+      },
+    },
+    {
       title: "Status",
       key: "is_active",
       dataIndex: "is_active",
-      width: 140,
+      width: 100,
       render: (text, record) => {
         return (
           <div>
@@ -335,7 +350,7 @@ export default function Users({
       title: "Action",
       key: "action",
       dataIndex: "action",
-      width: 130,
+      width: 120,
       hidden: !["Update User", "Delete User"].some((p) =>
         permissions.includes(p),
       ),
@@ -348,10 +363,6 @@ export default function Users({
                 className="trainers_action_icons"
                 onClick={() => handleEdit(record)}
               />
-            )}
-
-            {permissions.includes("Delete User") && (
-              <RiDeleteBinLine color="#d32f2f" size={19} />
             )}
           </div>
         );
@@ -947,7 +958,7 @@ export default function Users({
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1000 }}
+          scroll={{ x: 1200 }}
           columns={columns}
           dataSource={usersData}
           dataPerPage={10}

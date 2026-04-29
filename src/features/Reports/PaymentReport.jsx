@@ -282,6 +282,7 @@ export default function PaymentReport() {
       key: "date",
       dataIndex: "date",
       fixed: "left",
+      width: 110,
       render: (text) => {
         return (
           <p>
@@ -299,6 +300,7 @@ export default function PaymentReport() {
       key: "cash",
       dataIndex: "cash",
       align: "right",
+      width: 90,
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -333,6 +335,7 @@ export default function PaymentReport() {
       key: "razorpay",
       dataIndex: "razorpay",
       align: "right",
+      width: 100,
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -350,7 +353,7 @@ export default function PaymentReport() {
       key: "razorpay_upi",
       dataIndex: "razorpay_upi",
       align: "right",
-      width: 110,
+      width: 120,
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -402,6 +405,7 @@ export default function PaymentReport() {
       key: "axis_bank",
       dataIndex: "axis_bank",
       align: "right",
+      width: 100,
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -420,6 +424,24 @@ export default function PaymentReport() {
       dataIndex: "hdfc_bank",
       align: "right",
       width: 90,
+      render: (text, record) => {
+        return (
+          <EllipsisTooltip
+            text={
+              record.date == "Total"
+                ? `₹${Number(text).toLocaleString("en-IN")}`
+                : Number(text).toLocaleString("en-IN")
+            }
+          />
+        );
+      },
+    },
+    {
+      title: "Kotak Bank",
+      key: "kotak",
+      dataIndex: "kotak",
+      align: "right",
+      width: 100,
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -472,6 +494,7 @@ export default function PaymentReport() {
       key: "total",
       dataIndex: "total",
       align: "right",
+      fixed: "right",
       render: (text, record) => {
         return (
           <EllipsisTooltip
@@ -546,6 +569,7 @@ export default function PaymentReport() {
         sbi_bank: Number(overall.sbi_bank_total || 0),
         axis_bank: Number(overall.axis_bank_total || 0),
         hdfc_bank: Number(overall.hdfc_bank_total || 0),
+        kotak: Number(overall.kotak_total || 0),
         sbi_pos: Number(overall.sbi_pos_total || 0),
         razorpay_pos: Number(overall.razorpay_pos_total || 0),
         total: Number(overall.over_all_total || 0),
@@ -704,7 +728,7 @@ export default function PaymentReport() {
 
       <div style={{ marginTop: "30px" }}>
         <CommonTable
-          scroll={{ x: typeId == "Paymode" ? 600 : 600 }}
+          scroll={{ x: typeId == "Paymode" ? 1200 : 600 }}
           columns={
             typeId == "Region"
               ? columns

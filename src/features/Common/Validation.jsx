@@ -470,6 +470,19 @@ export const getDatesFromRangeLabel = (label) => {
       end_date = today.subtract(1, "day");
       break;
 
+    case "one month": {
+      const todayDate = today.date();
+
+      if (todayDate <= 25) {
+        start_date = today.subtract(1, "month").date(26);
+        end_date = today.date(25);
+      } else {
+        start_date = today.date(26);
+        end_date = today.add(1, "month").date(25);
+      }
+      break;
+    }
+
     case "7 days":
     case "last7days":
       start_date = today.subtract(6, "day");

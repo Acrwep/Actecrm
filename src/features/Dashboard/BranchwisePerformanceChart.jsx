@@ -190,6 +190,20 @@ export default function BranchwisePerformanceChart({
           </span>
         </div>
       `;
+            } else if (type == "Site") {
+              return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+          <span 
+            style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};">
+          </span>
+          <span style="font-weight:600; font-family:Poppins, sans-serif;">${userName}</span>
+        </div>
+         <div style="font-weight:400; font-family:Poppins, sans-serif">
+          Total Joinings: 
+          <span style="font-weight:600;">
+            ${value}
+          </span>
+        </div>
+      `;
             } else {
               return ` <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
           <span 

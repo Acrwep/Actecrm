@@ -44,6 +44,25 @@ export default function CommonMuiCustomDatePicker({
           endDay.isSame(today.subtract(1, "day"), "day")
         ) {
           setOption("yesterday");
+        } else if (startDay && endDay) {
+          const todayDate = today.date();
+
+          let expectedStart, expectedEnd;
+
+          if (todayDate <= 25) {
+            expectedStart = today.subtract(1, "month").date(26);
+            expectedEnd = today.date(25);
+          } else {
+            expectedStart = today.date(26);
+            expectedEnd = today.add(1, "month").date(25);
+          }
+
+          if (
+            startDay.isSame(expectedStart, "day") &&
+            endDay.isSame(expectedEnd, "day")
+          ) {
+            setOption("thisMonth");
+          }
         } else if (
           startDay.isSame(today.subtract(6, "day"), "day") &&
           endDay.isSame(today, "day")
@@ -101,6 +120,20 @@ export default function CommonMuiCustomDatePicker({
         newStart = today.subtract(1, "day");
         newEnd = today.subtract(1, "day");
         break;
+      case "thisMonth": {
+        const todayDate = today.date(); // current day (1–31)
+
+        if (todayDate <= 25) {
+          // 1 → 25 → previous month 26 to current month 25
+          newStart = today.subtract(1, "month").date(26);
+          newEnd = today.date(25);
+        } else {
+          // 26 → 31 → current month 26 to next month 25
+          newStart = today.date(26);
+          newEnd = today.add(1, "month").date(25);
+        }
+        break;
+      }
       case "last7days":
         newStart = today.subtract(6, "day");
         newEnd = today;
@@ -226,6 +259,9 @@ export default function CommonMuiCustomDatePicker({
                 </MenuItem>
                 <MenuItem value="yesterday" sx={{ fontSize: "12px" }}>
                   Yesterday
+                </MenuItem>
+                <MenuItem value="thisMonth" sx={{ fontSize: "12px" }}>
+                  This Month
                 </MenuItem>
                 <MenuItem value="last7days" sx={{ fontSize: "12px" }}>
                   Last 7 Days

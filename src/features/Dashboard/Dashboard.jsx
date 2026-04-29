@@ -26,6 +26,7 @@ import {
   getTopPerformance,
   getUserWiseLeadCounts,
   getUserWiseScoreBoard,
+  getWebsiteDashboard,
   updateDashboardDates,
 } from "../ApiService/action";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -43,6 +44,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import PostSalePerformanceChart from "./PostSalePerformanceChart";
 import BranchwisePerformanceChart from "./BranchwisePerformanceChart";
 import RegionwisePerformanceChart from "./RegionwisePerformanceChart";
+import SiteDashboardChart from "./SiteDashboardChart";
 
 export default function Dashboard() {
   const mounted = useRef(false);
@@ -176,8 +178,16 @@ export default function Dashboard() {
   //lead executive
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
+  const [defaultSubUsers, setDefaultSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [allDownliners, setAllDownliners] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+
+  //site dashboard
+  const [siteDates, setSitesDates] = useState([]);
+  const [siteDashboardXaxis, setSiteDashboardXaxis] = useState([]);
+  const [siteDashboardSeries, setSiteDashboardSeries] = useState([]);
+  const [siteLoader, setSiteLoader] = useState(true);
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -196,8 +206,10 @@ export default function Dashboard() {
       setPostSaleSelectedDates(PreviousAndCurrentDate);
       setUserWiseLeadsDates(PreviousAndCurrentDate);
       setBranchWiseDates(PreviousAndCurrentDate);
+      setSitesDates(PreviousAndCurrentDate);
       setRegionWiseDates(PreviousAndCurrentDate);
       setSubUsers(downlineUsers);
+      setDefaultSubUsers(downlineUsers);
       mounted.current = true;
       setLoginUserId(convertAsJson?.user_id);
       getAllDownlineUsersData(convertAsJson?.user_id);
@@ -235,6 +247,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          null,
+          null,
           true,
         );
       } else {
@@ -243,6 +257,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          null,
+          null,
           true,
         );
       }
@@ -256,8 +272,20 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
   ) => {
+    console.log(
+      dashboard_dates,
+      startDate,
+      endDate,
+      downliners,
+      region_id,
+      selected_user_id,
+      call_api,
+    );
+
     setScoreBoardLoader(true);
     //date handling
     let scoreboard_dates;
@@ -270,6 +298,7 @@ export default function Dashboard() {
         if (
           scoreboard_dates.card_settings == "Today" ||
           scoreboard_dates.card_settings == "Yesterday" ||
+          scoreboard_dates.card_settings == "One Month" ||
           scoreboard_dates.card_settings == "7 Days" ||
           scoreboard_dates.card_settings == "15 Days" ||
           scoreboard_dates.card_settings == "30 Days" ||
@@ -300,7 +329,8 @@ export default function Dashboard() {
       end_date: scoreboard_dates
         ? scoreboard_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
     };
     try {
       const response = await getScoreBoard(payload);
@@ -318,6 +348,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
         );
       }
@@ -329,6 +361,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
   ) => {
     if (!permissions.includes("Sale Performance")) {
@@ -338,6 +372,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
+        region_id,
+        selected_user_id,
         true,
       );
       return;
@@ -354,6 +390,7 @@ export default function Dashboard() {
         if (
           saleperformance_dates.card_settings == "Today" ||
           saleperformance_dates.card_settings == "Yesterday" ||
+          saleperformance_dates.card_settings == "One Month" ||
           saleperformance_dates.card_settings == "7 Days" ||
           saleperformance_dates.card_settings == "15 Days" ||
           saleperformance_dates.card_settings == "30 Days" ||
@@ -383,7 +420,8 @@ export default function Dashboard() {
       end_date: saleperformance_dates
         ? saleperformance_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
     };
     try {
       const response = await getScoreBoard(payload);
@@ -407,6 +445,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
         );
       }
@@ -418,6 +458,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
   ) => {
     if (!permissions.includes("Post Sale Performance")) {
@@ -427,6 +469,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
+        region_id,
+        selected_user_id,
         true,
         1,
       );
@@ -444,6 +488,7 @@ export default function Dashboard() {
         if (
           postsale_dates.card_settings == "Today" ||
           postsale_dates.card_settings == "Yesterday" ||
+          postsale_dates.card_settings == "One Month" ||
           postsale_dates.card_settings == "7 Days" ||
           postsale_dates.card_settings == "15 Days" ||
           postsale_dates.card_settings == "30 Days" ||
@@ -474,7 +519,8 @@ export default function Dashboard() {
       end_date: postsale_dates
         ? postsale_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
     };
     try {
       const response = await getPostSaleDashboard(payload);
@@ -531,6 +577,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
           1,
         );
@@ -569,6 +617,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
     type,
   ) => {
@@ -579,6 +629,8 @@ export default function Dashboard() {
         startDate,
         endDate,
         downliners,
+        region_id,
+        selected_user_id,
         true,
         1,
       );
@@ -596,6 +648,7 @@ export default function Dashboard() {
         if (
           userwiseleads_dates.card_settings == "Today" ||
           userwiseleads_dates.card_settings == "Yesterday" ||
+          userwiseleads_dates.card_settings == "One Month" ||
           userwiseleads_dates.card_settings == "7 Days" ||
           userwiseleads_dates.card_settings == "15 Days" ||
           userwiseleads_dates.card_settings == "30 Days" ||
@@ -625,7 +678,8 @@ export default function Dashboard() {
       end_date: userwiseleads_dates
         ? userwiseleads_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
       type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
 
@@ -706,6 +760,8 @@ export default function Dashboard() {
           startDate,
           endDate,
           downliners,
+          region_id,
+          selected_user_id,
           true,
           1,
         );
@@ -718,6 +774,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
     type,
   ) => {
@@ -728,6 +786,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
+        region_id,
+        selected_user_id,
         true,
         "Leads",
         1,
@@ -739,7 +799,8 @@ export default function Dashboard() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
       type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
     };
     try {
@@ -790,6 +851,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
           "Leads",
           1,
@@ -803,6 +866,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
     type,
     regionId,
@@ -814,6 +879,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
+        region_id,
+        selected_user_id,
         true,
         1,
       );
@@ -831,6 +898,7 @@ export default function Dashboard() {
         if (
           branchwise_performance_dates.card_settings == "Today" ||
           branchwise_performance_dates.card_settings == "Yesterday" ||
+          branchwise_performance_dates.card_settings == "One Month" ||
           branchwise_performance_dates.card_settings == "7 Days" ||
           branchwise_performance_dates.card_settings == "15 Days" ||
           branchwise_performance_dates.card_settings == "30 Days" ||
@@ -943,6 +1011,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
           "Leads",
         );
@@ -955,6 +1025,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
     type,
   ) => {
@@ -965,6 +1037,8 @@ export default function Dashboard() {
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
         downliners,
+        region_id,
+        selected_user_id,
         true,
       );
       return;
@@ -981,6 +1055,7 @@ export default function Dashboard() {
         if (
           regionwiseleads_dates.card_settings == "Today" ||
           regionwiseleads_dates.card_settings == "Yesterday" ||
+          regionwiseleads_dates.card_settings == "One Month" ||
           regionwiseleads_dates.card_settings == "7 Days" ||
           regionwiseleads_dates.card_settings == "15 Days" ||
           regionwiseleads_dates.card_settings == "30 Days" ||
@@ -1096,6 +1171,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
         );
       }
@@ -1107,10 +1184,20 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
   ) => {
     if (!permissions.includes("Top Performing Channels")) {
-      getFollowUpActionData();
+      getFollowUpActionData(
+        dashboard_dates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        downliners,
+        region_id,
+        selected_user_id,
+        true,
+      );
       return;
     }
     setPerformanceLoader(true);
@@ -1125,6 +1212,7 @@ export default function Dashboard() {
         if (
           topperformance_dates.card_settings == "Today" ||
           topperformance_dates.card_settings == "Yesterday" ||
+          topperformance_dates.card_settings == "One Month" ||
           topperformance_dates.card_settings == "7 Days" ||
           topperformance_dates.card_settings == "15 Days" ||
           topperformance_dates.card_settings == "30 Days" ||
@@ -1155,7 +1243,8 @@ export default function Dashboard() {
       end_date: topperformance_dates
         ? topperformance_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
     };
     try {
       const response = await getTopPerformance(payload);
@@ -1173,6 +1262,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners,
+          region_id,
+          selected_user_id,
           true,
         );
       }
@@ -1184,6 +1275,8 @@ export default function Dashboard() {
     startDate,
     endDate,
     downliners,
+    region_id,
+    selected_user_id,
     call_api,
   ) => {
     if (!permissions.includes("Followup Actions")) {
@@ -1201,6 +1294,7 @@ export default function Dashboard() {
         if (
           followup_action_dates.card_settings == "Today" ||
           followup_action_dates.card_settings == "Yesterday" ||
+          followup_action_dates.card_settings == "One Month" ||
           followup_action_dates.card_settings == "7 Days" ||
           followup_action_dates.card_settings == "15 Days" ||
           followup_action_dates.card_settings == "30 Days" ||
@@ -1231,7 +1325,8 @@ export default function Dashboard() {
       end_date: followup_action_dates
         ? followup_action_dates.card_settings.end_date
         : endDate,
-      user_ids: downliners,
+      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
+      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
     };
     try {
       const response = await getFollowUpActionDashboard(payload);
@@ -1258,6 +1353,132 @@ export default function Dashboard() {
       console.log("scoreboard error", error);
     } finally {
       setFollowupActionsLoader(false);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      if (call_api == true) {
+        getSiteDashboardData(
+          dashboard_dates,
+          PreviousAndCurrentDate[0],
+          PreviousAndCurrentDate[1],
+        );
+      }
+    }
+  };
+
+  const getSiteDashboardData = async (
+    dashboard_dates,
+    startDate,
+    endDate,
+    downliners,
+    region_id,
+    selected_user_id,
+    call_api,
+  ) => {
+    // if (!permissions.includes("Followup Actions")) {
+    //   return;
+    // }
+    setSiteLoader(true);
+
+    //date handling
+    let site_dates;
+    if (dashboard_dates && dashboard_dates.length >= 1) {
+      site_dates = dashboard_dates.find((f) => f.card_name == "Site Dashboard");
+      if (site_dates) {
+        if (
+          site_dates.card_settings == "Today" ||
+          site_dates.card_settings == "Yesterday" ||
+          site_dates.card_settings == "One Month" ||
+          site_dates.card_settings == "7 Days" ||
+          site_dates.card_settings == "15 Days" ||
+          site_dates.card_settings == "30 Days" ||
+          site_dates.card_settings == "60 Days" ||
+          site_dates.card_settings == "90 Days"
+        ) {
+          const getdates_bylabel = getDatesFromRangeLabel(
+            site_dates.card_settings,
+          );
+          site_dates = getdates_bylabel;
+          setSitesDates([
+            getdates_bylabel.card_settings.start_date,
+            getdates_bylabel.card_settings.end_date,
+          ]);
+        } else {
+          setSitesDates([
+            site_dates.card_settings.start_date,
+            site_dates.card_settings.end_date,
+          ]);
+        }
+      }
+    }
+
+    const payload = {
+      start_date: site_dates ? site_dates.card_settings.start_date : startDate,
+      end_date: site_dates ? site_dates.card_settings.end_date : endDate,
+    };
+    try {
+      const response = await getWebsiteDashboard(payload);
+      console.log("site dashboard response", response);
+      const site_data = response?.data?.data || [];
+      const xaxis = site_data.map((item) => item.domain_origin);
+      const series = site_data.map((item) => Number(item?.lead_count || 0));
+      setSiteDashboardXaxis(xaxis);
+      setSiteDashboardSeries(series);
+    } catch (error) {
+      setSiteDashboardXaxis([]);
+      setSiteDashboardSeries([]);
+      console.log("site dashboard error", error);
+    } finally {
+      setSiteLoader(false);
+    }
+  };
+
+  const handleSelectRegionId = (e) => {
+    const regionId = e.target.value;
+    setSelectedRegionId(regionId);
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+
+    let filteredDownliners = defaultSubUsers;
+
+    if (regionId == 1) {
+      filteredDownliners = defaultSubUsers.filter((item) =>
+        item.user_id.startsWith("CHN"),
+      );
+      setSelectedUserId(null);
+    } else if (regionId == 2) {
+      filteredDownliners = defaultSubUsers.filter((item) =>
+        item.user_id.startsWith("BNG"),
+      );
+      setSelectedUserId(null);
+    } else if (regionId == 3) {
+      filteredDownliners = defaultSubUsers.filter((item) =>
+        item.user_id.startsWith("HUB"),
+      );
+      setSelectedUserId(null);
+    }
+
+    console.log("filteredDownliners", filteredDownliners);
+
+    setSubUsers(filteredDownliners);
+
+    if (permissions.includes("Score Board")) {
+      getScoreBoardData(
+        allDashboardCardsDates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        allDownliners,
+        regionId,
+        null,
+        true,
+      );
+    } else {
+      getSaleDetailsData(
+        allDashboardCardsDates,
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        allDownliners,
+        regionId,
+        null,
+        true,
+      );
     }
   };
 
@@ -1309,6 +1530,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,
+          selectedRegionId,
+          value,
           true,
         );
       } else {
@@ -1317,6 +1540,8 @@ export default function Dashboard() {
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           downliners_ids,
+          selectedRegionId,
+          value,
           true,
         );
       }
@@ -1398,6 +1623,7 @@ export default function Dashboard() {
     setUserWiseLeadsType(1);
     setUserWiseType(1);
     setBranchWiseDates(PreviousAndCurrentDate);
+    setSitesDates(PreviousAndCurrentDate);
     setBranchWiseRegionId(1);
     setBranchWiseTypeId("Leads");
     setRegionWiseDates(PreviousAndCurrentDate);
@@ -1461,26 +1687,50 @@ export default function Dashboard() {
       }}
     >
       <Row>
-        <Col span={12}>
-          {permissions.includes("Lead Executive Filter") && (
-            <div className="overallduecustomers_filterContainer">
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  width="40%"
-                  height="35px"
-                  label="Select User"
-                  labelMarginTop="0px"
-                  labelFontSize="12px"
-                  options={subUsers}
-                  onChange={handleSelectUser}
-                  value={selectedUserId}
-                  disableClearable={false}
-                />
-              </div>
-            </div>
-          )}
+        <Col span={10}>
+          <Row>
+            {permissions.includes("Region-wise Filter") && (
+              <Col flex="50%">
+                <div className="overallduecustomers_filterContainer">
+                  <div style={{ flex: 1 }}>
+                    <CommonSelectField
+                      width="90%"
+                      height="35px"
+                      label="Select Region"
+                      labelMarginTop="0px"
+                      labelFontSize="12px"
+                      options={branchWiseRegionOptions}
+                      onChange={handleSelectRegionId}
+                      value={selectedRegionId}
+                      disableClearable={false}
+                    />
+                  </div>
+                </div>
+              </Col>
+            )}
+
+            <Col flex="50%">
+              {permissions.includes("Lead Executive Filter") && (
+                <div className="overallduecustomers_filterContainer">
+                  <div style={{ flex: 1 }}>
+                    <CommonSelectField
+                      width="90%"
+                      height="35px"
+                      label="Select User"
+                      labelMarginTop="0px"
+                      labelFontSize="12px"
+                      options={subUsers}
+                      onChange={handleSelectUser}
+                      value={selectedUserId}
+                      disableClearable={false}
+                    />
+                  </div>
+                </div>
+              )}
+            </Col>
+          </Row>
         </Col>
-        <Col span={12}>
+        <Col span={14}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Tooltip placement="top" title="Refresh">
               <Button
@@ -1532,6 +1782,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                         );
                       }}
@@ -1688,6 +1940,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                         );
                       }}
@@ -1776,6 +2030,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                         );
                       }}
@@ -1890,6 +2146,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                           userWiseLeadsType,
                         );
@@ -1933,6 +2191,8 @@ export default function Dashboard() {
                         userWiseLeadsDates[0],
                         userWiseLeadsDates[1],
                         allDownliners,
+                        selectedRegionId,
+                        selectedUserId,
                         false,
                         value,
                       );
@@ -2099,6 +2359,8 @@ export default function Dashboard() {
                             startDate,
                             endDate,
                             allDownliners,
+                            selectedRegionId,
+                            selectedUserId,
                             false,
                             userWiseType,
                           );
@@ -2144,6 +2406,8 @@ export default function Dashboard() {
                         userWiseStartDate,
                         userWiseEndDate,
                         allDownliners,
+                        selectedRegionId,
+                        selectedUserId,
                         false,
                         value,
                       );
@@ -2281,6 +2545,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                           branchWiseTypeId,
                           branchWiseRegionId,
@@ -2312,6 +2578,8 @@ export default function Dashboard() {
                         branchWiseDates[0],
                         branchWiseDates[1],
                         allDownliners,
+                        selectedRegionId,
+                        selectedUserId,
                         false,
                         branchWiseTypeId,
                         value,
@@ -2334,6 +2602,8 @@ export default function Dashboard() {
                         branchWiseDates[0],
                         branchWiseDates[1],
                         allDownliners,
+                        selectedRegionId,
+                        selectedUserId,
                         false,
                         value,
                         branchWiseRegionId,
@@ -2446,6 +2716,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                           regionWiseType,
                         );
@@ -2476,6 +2748,8 @@ export default function Dashboard() {
                         regionWiseDates[0],
                         regionWiseDates[1],
                         allDownliners,
+                        selectedRegionId,
+                        selectedUserId,
                         false,
                         value,
                       );
@@ -2579,6 +2853,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                         );
                       }}
@@ -2710,6 +2986,8 @@ export default function Dashboard() {
                           dates[0],
                           dates[1],
                           allDownliners,
+                          selectedRegionId,
+                          selectedUserId,
                           false,
                         );
                       }}
@@ -2797,6 +3075,94 @@ export default function Dashboard() {
                   })}
                 </>
               )}
+            </div>
+          </Col>
+        )}
+
+        {/* site dashboard */}
+        {permissions.includes("Branch-Wise Performance") && (
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            <div className="dashboard_leadcount_card">
+              <Row className="dashboard_leadcount_header_container">
+                <Col span={18}>
+                  <div style={{ padding: "12px 12px 8px 12px" }}>
+                    <p className="dashboard_scrorecard_heading">
+                      Site Performance
+                    </p>
+                    <p className="dashboard_daterange_text">
+                      <span style={{ fontWeight: "500" }}>Date Range: </span>
+                      {`(${moment(siteDates[0]).format(
+                        "DD MMM YYYY",
+                      )} to ${moment(siteDates[1]).format("DD MMM YYYY")})`}
+                    </p>
+                  </div>
+                </Col>
+                <Col
+                  span={6}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div>
+                    <CommonMuiCustomDatePicker
+                      isDashboard={true}
+                      value={siteDates}
+                      onDateChange={(dates) => {
+                        setSitesDates(dates);
+                        updateDashboardCardDate(
+                          "Site Dashboard",
+                          dates[0],
+                          dates[1],
+                        );
+                        getSiteDashboardData(null, dates[0], dates[1]);
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <div
+                style={{
+                  padding: "0px 12px 12px 12px",
+                }}
+              >
+                <div className="dadhboard_chartsContainer">
+                  {siteLoader ? (
+                    <div className="dashboard_skeleton_container">
+                      <Skeleton
+                        active
+                        style={{ height: "40vh" }}
+                        title={{ width: 140 }}
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      {siteDashboardSeries.length >= 1 ? (
+                        <SiteDashboardChart
+                          xaxis={siteDashboardXaxis}
+                          series={siteDashboardSeries}
+                          colors={["#009688"]}
+                          height={320}
+                          type={"Site"}
+                        />
+                      ) : (
+                        <div className="dashboard_chart_nodata_conatiner">
+                          <p>No data found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </Col>
         )}

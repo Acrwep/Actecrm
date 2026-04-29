@@ -4,7 +4,11 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Logo from "../../assets/acte-logo.png";
-import { passwordValidator, addressValidator } from "../Common/Validation";
+import {
+  passwordValidator,
+  addressValidator,
+  formatToBackendIST,
+} from "../Common/Validation";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -111,6 +115,7 @@ export default function Login() {
     const payload = {
       user_id: userId,
       password: password,
+      last_login_date: formatToBackendIST(new Date()),
     };
     try {
       const response = await LoginApi(payload);
