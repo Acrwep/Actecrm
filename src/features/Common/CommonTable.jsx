@@ -21,6 +21,7 @@ const CommonTable = ({
   page_number,
   totalPageNumber,
   onPaginationChange,
+  sticky = { offsetHeader: 64 },
 }) => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -165,6 +166,7 @@ const CommonTable = ({
       size={size}
       className={className}
       rowClassName={rowClassName}
+      sticky={sticky}
       rowKey={(record) => record.row_num || record.id || record.question_id}
     />
   );

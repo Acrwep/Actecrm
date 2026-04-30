@@ -128,13 +128,23 @@
   color: #5b69ca !important;
 }
 /* branchwise table style */
-/* apply background only to real cells */
-.branch-even > td:not([rowspan="0"]) {
-  background-color: #5b6aca25 !important;
+.branch-even > td {
+  background-color: #edeffa !important;
 }
 
-.branch-odd > td:not([rowspan="0"]) {
-  background-color: #fff !important;
+.branch-odd > td {
+  background-color: #ffffff !important;
+}
+
+/* Ensure fixed columns also get the background color */
+.branch-even > .ant-table-cell-fix-left,
+.branch-even > .ant-table-cell-fix-right {
+  background-color: #edeffa !important;
+}
+
+.branch-odd > .ant-table-cell-fix-left,
+.branch-odd > .ant-table-cell-fix-right {
+  background-color: #ffffff !important;
 }
 
 /* Fix overlapping text */
@@ -145,6 +155,7 @@
 /* Header untouched */
 .ant-table-thead > tr > th {
   background-color: #fafafa;
+  box-shadow: 0 -50px 0 0 #fff; /* Fills the sticky gap above the header */
 }
 
 /* payment table styles */
@@ -167,6 +178,7 @@
   font-size: 12px !important;
   font-weight: 600;
   background: #fafafa;
+  white-space: nowrap;
 }
 
 /* ===============================

@@ -41,7 +41,7 @@
 
 /* header styles */
 .header_maincontainer {
-  padding: 24px;
+  padding: 24px 24px 0px 24px;
   width: 100%;
 }
 .header_innercontainer {

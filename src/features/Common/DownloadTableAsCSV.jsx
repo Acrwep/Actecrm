@@ -13,6 +13,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
       columns.map((column) => {
         // Handle nested in/out times
         const columnData = column.dataIndex;
+        console.log(columnData, "columnData");
         if (Array.isArray(columnData)) {
           const dateKey = columnData[0];
           const timeType = columnData[1];
@@ -149,14 +150,17 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
         }
         //customers table handling
         if (column.dataIndex === "lead_assigned_to_name") {
-          return row[column.dataIndex]
-            ? `${row.lead_assigned_to_id} - ${row[column.dataIndex]}`
-            : "-";
+          const lName = row[column.dataIndex];
+          if (!lName) return "-";
+          return row.lead_assigned_to_id
+            ? `${row.lead_assigned_to_id} - ${lName}`
+            : lName;
         }
         if (column.dataIndex === "user_name") {
-          return row[column.dataIndex]
-            ? `${row.user_id} - ${row[column.dataIndex]}`
-            : "-";
+          const uName = row[column.dataIndex];
+          if (!uName) return "-";
+          if (uName === "Total" || uName === "total") return "Total";
+          return row.user_id ? `${row.user_id} - ${uName}` : uName;
         }
         if (column.dataIndex === "is_customer_updated") {
           if (row[column.dataIndex] == 1) {

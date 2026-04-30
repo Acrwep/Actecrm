@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Tooltip, Button, Spin } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
-import { DownloadOutlined } from "@ant-design/icons";
-import { RedoOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  RedoOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
@@ -91,10 +94,28 @@ export default function UserwisePerformanceReport() {
       },
     },
     {
-      title: "Converted Customers",
+      title: (
+        <Tooltip
+          title="Leads that became customers (conversion can happen anytime)."
+          placement="bottom"
+          getPopupContainer={() => document.body}
+        >
+          <span
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            Converted Customers
+            <InfoCircleOutlined style={{ fontSize: "12px", color: "#666" }} />
+          </span>
+        </Tooltip>
+      ),
       key: "customer_count",
       dataIndex: "customer_count",
-      width: 170,
+      width: 190,
       render: (text) => {
         return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
@@ -109,7 +130,25 @@ export default function UserwisePerformanceReport() {
       },
     },
     {
-      title: "Joined Customers",
+      title: (
+        <Tooltip
+          title="Customers who joined during this month."
+          placement="bottom"
+          getPopupContainer={() => document.body}
+        >
+          <span
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            Joined Customers
+            <InfoCircleOutlined style={{ fontSize: "12px", color: "#666" }} />
+          </span>
+        </Tooltip>
+      ),
       key: "joined_customers",
       dataIndex: "joined_customers",
       width: 160,
@@ -178,6 +217,7 @@ export default function UserwisePerformanceReport() {
                 placement="bottomLeft"
                 color="#fff"
                 trigger={["click"]}
+                getPopupContainer={() => document.body}
                 title={
                   <>
                     {collectionLoading ? (
@@ -281,6 +321,10 @@ export default function UserwisePerformanceReport() {
       },
     },
   ];
+
+  const getRowClassName = (record) => {
+    return record.groupIndex % 2 === 0 ? "branch-even" : "branch-odd";
+  };
 
   const prepareTableData = (data) => {
     const branchCount = {};
@@ -548,6 +592,7 @@ export default function UserwisePerformanceReport() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          rowClassName={getRowClassName}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page

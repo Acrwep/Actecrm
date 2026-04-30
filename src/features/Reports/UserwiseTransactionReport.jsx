@@ -88,8 +88,13 @@ export default function UserwiseTransactionReport() {
         dataIndex: "user_name",
         key: "user_name",
         fixed: "left",
+        width: 180,
         render: (text) => {
-          return <p>{text === "total" ? "Total" : text}</p>;
+          return (
+            <p style={{ whiteSpace: "nowrap" }}>
+              {text === "total" ? "Total" : text}
+            </p>
+          );
         },
       },
       ...Object.keys(firstRow)
@@ -98,15 +103,27 @@ export default function UserwiseTransactionReport() {
           title: date == "total" ? "Total" : date,
           dataIndex: date,
           key: date,
+          width: date === "total" ? 140 : 110,
           fixed: date == "total" && "right",
+          align: "right",
           render: (value, record) => {
             const amount = Number(value || 0).toLocaleString("en-IN");
 
             // 🔥 Add ₹ only for TOTAL row
             return record.user_name === "total" ? (
-              <p style={{ fontWeight: 600 }}>{"₹" + amount}</p>
+              <p
+                style={{
+                  fontWeight: 600,
+                  textAlign: "right",
+                  paddingRight: "4px",
+                }}
+              >
+                {"₹" + amount}
+              </p>
             ) : (
-              <p>{amount}</p>
+              <p style={{ textAlign: "right", paddingRight: "4px" }}>
+                {amount}
+              </p>
             );
           },
         })),
