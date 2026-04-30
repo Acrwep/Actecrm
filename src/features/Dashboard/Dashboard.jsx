@@ -1373,9 +1373,9 @@ export default function Dashboard() {
     selected_user_id,
     call_api,
   ) => {
-    // if (!permissions.includes("Followup Actions")) {
-    //   return;
-    // }
+    if (!permissions.includes("Site Lead Performance")) {
+      return;
+    }
     setSiteLoader(true);
 
     //date handling
@@ -1634,11 +1634,14 @@ export default function Dashboard() {
     setRegionWiseTotalFollowUp([]);
 
     setSelectedUserId(null);
+    setSelectedRegionId(null);
+    setSubUsers(defaultSubUsers);
     setScoreBoardLoader(true);
     setSaleDetailsLoader(true);
     setPerformanceLoader(true);
     setPostSaleLoader(true);
     setFollowupActionsLoader(true);
+    setSiteLoader(true);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -3080,7 +3083,7 @@ export default function Dashboard() {
         )}
 
         {/* site dashboard */}
-        {permissions.includes("Branch-Wise Performance") && (
+        {permissions.includes("Site Lead Performance") && (
           <Col
             xs={24}
             sm={24}
@@ -3095,7 +3098,7 @@ export default function Dashboard() {
                 <Col span={18}>
                   <div style={{ padding: "12px 12px 8px 12px" }}>
                     <p className="dashboard_scrorecard_heading">
-                      Site Performance
+                      Site Lead Performance
                     </p>
                     <p className="dashboard_daterange_text">
                       <span style={{ fontWeight: "500" }}>Date Range: </span>

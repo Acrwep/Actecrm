@@ -411,10 +411,9 @@ export default function LeadManager() {
                         padding: "2px 12px",
                         height: "25px",
                         fontSize: "13px",
-                        color: "#d32f2f",
                       }}
                     >
-                      Clear Status Filter
+                      All
                     </div>
                   ),
                   onClick: () => {

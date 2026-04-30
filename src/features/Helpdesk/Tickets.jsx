@@ -8,6 +8,7 @@ import {
   Checkbox,
   Modal,
   Divider,
+  Dropdown,
 } from "antd";
 import { useLocation } from "react-router-dom";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
@@ -45,6 +46,7 @@ import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
 import { FaRegEye } from "react-icons/fa";
 import { AiOutlineEdit } from "react-icons/ai";
+import { FaCaretDown } from "react-icons/fa";
 import TrainerFullDetailsModal from "../Trainers/TrainerFullDetailsModal";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 
@@ -68,6 +70,8 @@ export default function Tickets() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   // ----------usestates----------------
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
   const [loginUserId, setLoginUserId] = useState("");
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -707,6 +711,7 @@ export default function Tickets() {
         : PreviousAndCurrentDate[1],
       userId,
       "",
+      null,
       1,
       10,
     );
@@ -717,6 +722,7 @@ export default function Tickets() {
     endDate,
     user_id,
     status,
+    categoryId,
     pageNumber,
     limit,
     isSearch = false,
@@ -732,6 +738,7 @@ export default function Tickets() {
         : permissions.includes("Show All Tickets")
           ? true
           : false,
+      category_id: categoryId,
       page: pageNumber,
       limit: limit,
     };
@@ -756,6 +763,15 @@ export default function Tickets() {
 
       // Update status counts
       setStatusCounts(statusCountsData);
+
+      // Update category options from response
+      const categoryCountData = response?.data?.data?.categoryCount || [];
+      const normalizedCategories = categoryCountData.map((cat) => ({
+        id: cat.category_id,
+        name: cat.category_name,
+        count: cat.ticket_count,
+      }));
+      setCategoryOptions(normalizedCategories);
     } catch (error) {
       setTicketsData([]);
       console.log("get tickets error", error);
@@ -785,6 +801,7 @@ export default function Tickets() {
       selectedDates[1],
       loginUserId,
       status,
+      categoryId,
       page,
       limit,
     );
@@ -833,6 +850,7 @@ export default function Tickets() {
           selectedDates[1],
           loginUserId,
           status,
+          categoryId,
           pagination.page,
           pagination.limit,
         );
@@ -961,6 +979,7 @@ export default function Tickets() {
       selectedDates[1],
       value,
       status,
+      categoryId,
       1,
       pagination.limit,
       value ? true : false,
@@ -1000,6 +1019,7 @@ export default function Tickets() {
       PreviousAndCurrentDate[1],
       loginUserId,
       "",
+      null,
       1,
       10,
     );
@@ -1033,6 +1053,7 @@ export default function Tickets() {
                     dates[1],
                     loginUserId,
                     status,
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1075,7 +1096,7 @@ export default function Tickets() {
             </button>
             <div className="customers_status_mainContainer" ref={scrollRef}>
               {" "}
-              <div
+              {/* <div
                 className={
                   status === ""
                     ? "trainers_active_all_container"
@@ -1107,7 +1128,113 @@ export default function Tickets() {
                       : "-"
                   } )`}
                 </p>
-              </div>
+              </div> */}
+              <Dropdown
+                trigger={["hover"]}
+                placement="bottomLeft"
+                menu={{
+                  items: [
+                    {
+                      key: "clear",
+                      label: (
+                        <div
+                          style={{
+                            padding: "2px 12px",
+                            height: "25px",
+                            fontSize: "13px",
+                          }}
+                        >
+                          All
+                        </div>
+                      ),
+                      onClick: () => {
+                        setStatus("");
+                        setCategoryId(null);
+                        setPagination({ ...pagination, page: 1 });
+                        getTicketsData(
+                          selectedDates[0],
+                          selectedDates[1],
+                          loginUserId,
+                          "",
+                          null,
+                          1,
+                          pagination.limit,
+                        );
+                      },
+                    },
+                    ...categoryOptions.map((item, index) => ({
+                      key: item.id || index,
+                      label: (
+                        <div
+                          style={{
+                            padding: "2px 12px",
+                            height: "25px",
+                            fontSize: "13px",
+                          }}
+                        >
+                          {`${item.name} ( ${item.count || 0} )`}
+                        </div>
+                      ),
+                      onClick: () => {
+                        setCategoryId(item.id);
+                        setStatus("");
+                        setPagination({ ...pagination, page: 1 });
+                        getTicketsData(
+                          selectedDates[0],
+                          selectedDates[1],
+                          loginUserId,
+                          "",
+                          item.id,
+                          1,
+                          pagination.limit,
+                        );
+                      },
+                    })),
+                  ],
+                }}
+              >
+                <button
+                  className={
+                    status === ""
+                      ? "trainers_active_all_container"
+                      : "trainers_all_container"
+                  }
+                  onClick={() => {
+                    setStatus("");
+                    setPagination({ ...pagination, page: 1 });
+                    getTicketsData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      loginUserId,
+                      "",
+                      categoryId,
+                      1,
+                      pagination.limit,
+                    );
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <p
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    All{" "}
+                    {`( ${
+                      statusCounts &&
+                      statusCounts.total !== undefined &&
+                      statusCounts.total !== null
+                        ? statusCounts.total
+                        : "-"
+                    } )`}{" "}
+                    {categoryId &&
+                      ` - ${categoryOptions.find((c) => c.id == categoryId)?.name}`}{" "}
+                    <FaCaretDown />
+                  </p>
+                </button>
+              </Dropdown>
               <div
                 className={
                   status === "Awaiting Employee"
@@ -1125,6 +1252,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Awaiting Employee",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1159,6 +1287,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Assigned",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1193,6 +1322,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Hold",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1226,6 +1356,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Close Request",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1259,6 +1390,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Overdue",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1292,6 +1424,7 @@ export default function Tickets() {
                     selectedDates[1],
                     loginUserId,
                     "Closed",
+                    categoryId,
                     1,
                     pagination.limit,
                   );
@@ -1376,6 +1509,7 @@ export default function Tickets() {
             ref={addTicketRef}
             setButtonLoading={setButtonLoading}
             updateTicketItem={ticketDetails}
+            categoryOptions={categoryOptions}
             callgetTicketApi={() => {
               setIsOpenAddDrawer(false);
               setButtonLoading(false);
@@ -1385,6 +1519,7 @@ export default function Tickets() {
                 selectedDates[1],
                 loginUserId,
                 status,
+                categoryId,
                 pagination.page,
                 pagination.limit,
               );
@@ -1560,6 +1695,7 @@ export default function Tickets() {
                   selectedDates[1],
                   loginUserId,
                   status,
+                  categoryId,
                   1,
                   pagination.limit,
                 );

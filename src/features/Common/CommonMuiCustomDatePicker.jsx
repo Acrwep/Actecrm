@@ -37,6 +37,17 @@ export default function CommonMuiCustomDatePicker({
       const endDay = end ? dayjs(end) : null;
 
       if (startDay && endDay) {
+        const todayDate = today.date();
+        let expectedStart, expectedEnd;
+
+        if (todayDate <= 25) {
+          expectedStart = today.subtract(1, "month").date(26);
+          expectedEnd = today.date(25);
+        } else {
+          expectedStart = today.date(26);
+          expectedEnd = today.add(1, "month").date(25);
+        }
+
         if (startDay.isSame(today, "day") && endDay.isSame(today, "day")) {
           setOption("today");
         } else if (
@@ -44,25 +55,11 @@ export default function CommonMuiCustomDatePicker({
           endDay.isSame(today.subtract(1, "day"), "day")
         ) {
           setOption("yesterday");
-        } else if (startDay && endDay) {
-          const todayDate = today.date();
-
-          let expectedStart, expectedEnd;
-
-          if (todayDate <= 25) {
-            expectedStart = today.subtract(1, "month").date(26);
-            expectedEnd = today.date(25);
-          } else {
-            expectedStart = today.date(26);
-            expectedEnd = today.add(1, "month").date(25);
-          }
-
-          if (
-            startDay.isSame(expectedStart, "day") &&
-            endDay.isSame(expectedEnd, "day")
-          ) {
-            setOption("thisMonth");
-          }
+        } else if (
+          startDay.isSame(expectedStart, "day") &&
+          endDay.isSame(expectedEnd, "day")
+        ) {
+          setOption("thisMonth");
         } else if (
           startDay.isSame(today.subtract(6, "day"), "day") &&
           endDay.isSame(today, "day")

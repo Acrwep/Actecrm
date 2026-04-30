@@ -194,6 +194,7 @@ export default function Settings() {
         "Region-Wise Performance",
         "Top Performing Channels",
         "Followup Actions",
+        "Site Lead Performance",
         "Region-wise Filter",
         "Download Dashboard Data",
       ];
