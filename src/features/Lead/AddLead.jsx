@@ -859,6 +859,12 @@ const AddLead = forwardRef(
         price_category: priceCategory(primaryFees),
         secondary_course_id: secondaryCourse,
         secondary_fees: secondaryFees ? secondaryFees : 0,
+        domain_origin:
+          updateLeadItem && updateLeadItem.domain_origin
+            ? updateLeadItem.domain_origin
+            : liveLeadItem && liveLeadItem.domain_origin
+              ? liveLeadItem.domain_origin
+              : "Direct",
         lead_type_id: leadType,
         lead_status_id: leadStatus,
         lead_action_id: followUpStatusId,

@@ -340,6 +340,15 @@ export default function Leads({
       sortDirections: ["ascend", "descend"],
     },
     {
+      title: "Orgin",
+      key: "domain_origin",
+      dataIndex: "domain_origin",
+      width: 140,
+      sorter: (a, b) =>
+        (a.domain_origin || "").localeCompare(b.domain_origin || ""),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
       title: "Lead Source",
       key: "lead_type",
       dataIndex: "lead_type",
@@ -701,7 +710,7 @@ export default function Leads({
             case "created_date":
               return {
                 ...col,
-                width: 150,
+                width: 170,
                 render: (text, record) => {
                   return (
                     <>
@@ -815,6 +824,17 @@ export default function Leads({
               return {
                 ...col,
                 width: 180,
+              };
+            case "domain_origin":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.domain_origin || "").localeCompare(b.domain_origin || ""),
+                sortDirections: ["ascend", "descend"],
+                width: 150,
+                render: (text) => {
+                  return <EllipsisTooltip text={text ? text : "-"} />;
+                },
               };
             case "lead_type":
               return {

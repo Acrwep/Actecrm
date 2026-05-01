@@ -47,6 +47,7 @@ export default function CommonInputField({
 
     if (
       label === "Email" ||
+      label === "Profile Name" ||
       label === "Trainer Email" ||
       label === "User Id" ||
       label === "Role Name" ||

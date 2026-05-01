@@ -36,6 +36,7 @@ import {
 } from "../Redux/Slice";
 import { useSelector } from "react-redux";
 import Courses from "./Courses";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -161,8 +162,15 @@ export default function Settings() {
   };
 
   const getCourseData = async () => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const payload = {
+      name: "",
+      start_date: PreviousAndCurrentDate[0],
+      end_date: PreviousAndCurrentDate[1],
+      region_id: null,
+    };
     try {
-      const response = await getTechnologies();
+      const response = await getTechnologies(payload);
       dispatch(storeSettingsCourseList(response?.data?.data || []));
     } catch (error) {
       dispatch(storeSettingsCourseList([]));

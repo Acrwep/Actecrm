@@ -954,6 +954,7 @@ export default function LiveLead({
         name: item.name,
         email: item.email,
         phone: item.phone,
+        domain_origin: item.domain_origin ? item.domain_origin : "",
         location: item.location ? item.location : "",
         course: item.course ? item.course : "",
         training: item.training ? item.training : "",

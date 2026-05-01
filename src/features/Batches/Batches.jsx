@@ -62,6 +62,13 @@ export default function Batches() {
   //-----------batch details usestates-------------
   const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
     useState(false);
+  //pagination
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
   const columns = [
     {
       title: "Created At",
@@ -300,13 +307,18 @@ export default function Batches() {
       setSelectedTrainerId(selectedId);
       setSelectedTrainerObject(selectedObj);
       setTrainerSearchText(selectedObj?.name || "");
-
+      setPagination({
+        page: 1,
+      });
       getBatchesData(selectedId, selectedDates[0], selectedDates[1]);
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
       setTrainerSearchText("");
       getTrainersData(null, 1);
+      setPagination({
+        page: 1,
+      });
       getBatchesData(null, selectedDates[0], selectedDates[1]);
     }
   };
@@ -345,6 +357,13 @@ export default function Batches() {
     setIsOpenAddBatchComponent(false);
     setEditBatchItem(null);
     setIsOpenBatchDetailsDrawer(false);
+  };
+
+  const handlePaginationChange = ({ page, limit }) => {
+    setPagination({
+      page: page,
+      limit: limit,
+    });
   };
 
   const handleRefresh = () => {
@@ -386,9 +405,9 @@ export default function Batches() {
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  // setPagination({
-                  //   page: 1,
-                  // });
+                  setPagination({
+                    page: 1,
+                  });
                   getBatchesData(selectedTrainerId, dates[0], dates[1]);
                 }}
               />
@@ -441,6 +460,10 @@ export default function Batches() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
         />
       </div>
 

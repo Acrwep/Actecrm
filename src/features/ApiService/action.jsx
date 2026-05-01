@@ -93,9 +93,10 @@ export const createTechnology = async (payload) => {
 
 export const getTechnologies = async (payload) => {
   try {
-    const response = await api.get("/api/getTechnologies", {
-      params: payload,
-    });
+    const response = await api.post(
+      "/api/getTechnologies",
+      payload ? payload : {},
+    );
     return response;
   } catch (error) {
     throw error;

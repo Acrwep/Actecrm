@@ -20,7 +20,11 @@ import { useDispatch, useSelector } from "react-redux";
 import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
-import { addressValidator, selectValidator } from "../Common/Validation";
+import {
+  addressValidator,
+  getCurrentandPreviousweekDate,
+  selectValidator,
+} from "../Common/Validation";
 import {
   createTechnology,
   deleteTechnology,
@@ -37,6 +41,8 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { insertCourse, updateCourse } from "../ApiService/MultiPartApi";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import CommonSelectField from "../Common/CommonSelectField";
 
 const { Dragger } = Upload;
 
@@ -45,6 +51,8 @@ export default function Courses() {
   const courseData = useSelector((state) => state.settingscourselist);
 
   const [searchValue, setSearchValue] = useState("");
+  const [selectedDates, setSelectedDates] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   //add course modal
@@ -81,12 +89,32 @@ export default function Courses() {
   });
 
   const columns = [
-    { title: "Name", key: "name", dataIndex: "name", width: 200 },
+    {
+      title: "Name",
+      key: "name",
+      dataIndex: "name",
+      width: 200,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
+      title: "Total Leads",
+      key: "total_leads",
+      dataIndex: "total_leads",
+      width: 110,
+    },
+    {
+      title: "Joined Customers",
+      key: "total_customer",
+      dataIndex: "total_customer",
+      width: 150,
+    },
     {
       title: "Price",
       key: "price",
       dataIndex: "price",
-      width: 160,
+      width: 120,
       render: (text) => {
         return (
           <p>{`${Number(text).toLocaleString("en-IN", {
@@ -100,7 +128,7 @@ export default function Courses() {
       title: "Offer Price",
       key: "offer_price",
       dataIndex: "offer_price",
-      width: 160,
+      width: 120,
       render: (text) => {
         return (
           <p>{`${Number(text).toLocaleString("en-IN", {
@@ -114,7 +142,7 @@ export default function Courses() {
       title: "Brouchures",
       key: "brouchures",
       dataIndex: "brouchures",
-      width: 200,
+      width: 140,
       render: (text) => {
         if (text) {
           const baseUrl = import.meta.env.VITE_API_URL || "";
@@ -145,7 +173,7 @@ export default function Courses() {
       title: "Syllabus",
       key: "syllabus",
       dataIndex: "syllabus",
-      width: 200,
+      width: 140,
       render: (text) => {
         if (text) {
           const baseUrl = import.meta.env.VITE_API_URL || "";
@@ -177,7 +205,8 @@ export default function Courses() {
       title: "Action",
       key: "action",
       dataIndex: "action",
-      width: 130,
+      // fixed: "right",
+      width: 120,
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
@@ -202,11 +231,23 @@ export default function Courses() {
     },
   ];
 
+  useEffect(() => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    console.log("PreviousAndCurrentDate", PreviousAndCurrentDate);
+
+    setSelectedDates([PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]]);
+  }, []);
+
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
     setTimeout(() => {
-      getCourseData(e.target.value);
+      getCourseData(
+        e.target.value,
+        selectedRegionId,
+        selectedDates[0],
+        selectedDates[1],
+      );
     }, 300);
   };
 
@@ -217,11 +258,15 @@ export default function Courses() {
     });
   };
 
-  const getCourseData = async (searchvalue) => {
+  const getCourseData = async (searchvalue, regionId, startDate, endDate) => {
     setLoading(true);
     const payload = {
-      ...(searchvalue && { name: searchvalue }),
+      name: searchvalue,
+      region_id: regionId,
+      start_date: startDate,
+      end_date: endDate,
     };
+
     try {
       const response = await getTechnologies(payload);
       dispatch(storeSettingsCourseList(response?.data?.data || []));
@@ -378,7 +423,12 @@ export default function Courses() {
       setTimeout(() => {
         setButtonLoading(false);
         formReset();
-        getCourseData(searchValue);
+        getCourseData(
+          searchValue,
+          selectedRegionId,
+          selectedDates[0],
+          selectedDates[1],
+        );
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -433,7 +483,12 @@ export default function Courses() {
       setTimeout(() => {
         setButtonLoading(false);
         formReset();
-        getCourseData(searchValue);
+        getCourseData(
+          searchValue,
+          selectedRegionId,
+          selectedDates[0],
+          selectedDates[1],
+        );
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -651,7 +706,12 @@ export default function Courses() {
         setButtonLoading(false);
         setIsOpenUpdateModal(false);
         formReset();
-        getCourseData(searchValue);
+        getCourseData(
+          searchValue,
+          selectedRegionId,
+          selectedDates[0],
+          selectedDates[1],
+        );
       }, 300);
     } catch (err) {
       setButtonLoading(false);
@@ -720,48 +780,109 @@ export default function Courses() {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <div
-            className="leadmanager_filterContainer"
-            style={{ position: "relative" }}
-          >
-            <CommonOutlinedInput
-              label={"Search By Name"}
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCourseData(null);
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-              }}
-              onChange={handleSearch}
-              value={searchValue}
-            />
-          </div>
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={7}>
+              <div className="overallduecustomers_filterContainer">
+                <CommonOutlinedInput
+                  label={"Search By Name"}
+                  width="100%"
+                  height="33px"
+                  labelFontSize="12px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
+                          getCourseData(
+                            null,
+                            selectedRegionId,
+                            selectedDates[0],
+                            selectedDates[1],
+                          );
+                        }}
+                      >
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="-1px"
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+              </div>
+            </Col>
+
+            <Col span={7}>
+              <CommonSelectField
+                height="35px"
+                label="Select Region"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={[
+                  {
+                    id: 1,
+                    name: "Chennai",
+                  },
+                  {
+                    id: 2,
+                    name: "Bangalore",
+                  },
+                  {
+                    id: 3,
+                    name: "Hub",
+                  },
+                ]}
+                onChange={(e) => {
+                  setSelectedRegionId(e.target.value);
+                  getCourseData(
+                    searchValue,
+                    e.target.value,
+                    selectedDates[0],
+                    selectedDates[1],
+                  );
+                }}
+                value={selectedRegionId}
+                disableClearable={false}
+              />
+            </Col>
+
+            <Col span={10}>
+              <CommonMuiCustomDatePicker
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
+                  getCourseData(
+                    searchValue,
+                    selectedRegionId,
+                    dates[0],
+                    dates[1],
+                  );
+                }}
+              />
+            </Col>
+          </Row>
         </Col>
+
         <Col
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={7}
           style={{
             display: "flex",
             justifyContent: "flex-end",

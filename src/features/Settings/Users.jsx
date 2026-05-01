@@ -534,7 +534,7 @@ export default function Users({
   const handleSubmit = async () => {
     setValidationTrigger(true);
     const userIdValidate = addressValidator(userId);
-    const profileNameValidate = nameValidator(profileName);
+    const profileNameValidate = selectValidator(profileName);
     const mobileValidate = mobileValidator(mobile);
     const passwordValidate = passwordValidator(password);
     const confirmPasswordValidate = confirmPasswordValidator(
@@ -1059,7 +1059,7 @@ export default function Users({
               onChange={(e) => {
                 setProfileName(e.target.value);
                 if (validationTrigger) {
-                  setProfileNameError(nameValidator(e.target.value));
+                  setProfileNameError(selectValidator(e.target.value));
                 }
               }}
               value={profileName}
