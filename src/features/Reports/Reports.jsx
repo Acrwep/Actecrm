@@ -71,7 +71,7 @@ export default function Reports() {
       key: "8",
       children: <TransactionReport />,
     },
-    {
+    permissions.includes("Customer Fees History Report") && {
       label: "Customer Fees History Report",
       key: "9",
       children: <CustomerFeesHistoryReport />,
