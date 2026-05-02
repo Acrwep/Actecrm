@@ -1,0 +1,85 @@
+/* Premium HTML Table Styling for Fees History Report */
+.custom-html-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  margin-top: 20px;
+}
+
+.custom-html-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 2500px; /* Force scroll */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Header Styling */
+.custom-html-table thead tr:first-child th {
+  padding: 15px 10px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #333;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.custom-html-table thead tr:second-child th {
+  padding: 10px 8px;
+  font-weight: 600;
+  font-size: 12px;
+  background-color: #f1f3f5;
+  border: 1px solid #e9ecef;
+}
+
+/* Installment Specific Colors */
+.header-1st { background-color: #ff9800 !important; color: #fff !important; }
+.header-2nd { background-color: #2196f3 !important; color: #fff !important; }
+.header-3rd { background-color: #4caf50 !important; color: #fff !important; }
+.header-4th { background-color: #9c27b0 !important; color: #fff !important; }
+.header-5th { background-color: #f44336 !important; color: #fff !important; }
+
+.sub-1st { background-color: #ffb74d !important; color: #fff !important; }
+.sub-2nd { background-color: #64b5f6 !important; color: #fff !important; }
+.sub-3rd { background-color: #81c784 !important; color: #fff !important; }
+.sub-4th { background-color: #ba68c8 !important; color: #fff !important; }
+.sub-5th { background-color: #e57373 !important; color: #fff !important; }
+
+/* Body Styling */
+.custom-html-table tbody td {
+  padding: 12px 10px;
+  border: 1px solid #f1f3f5;
+  font-size: 13px;
+  color: #495057;
+  text-align: center;
+}
+
+.custom-html-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Sticky Columns */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: #fff !important;
+}
+
+.sticky-col-2 {
+  position: sticky;
+  left: 70px;
+  z-index: 10;
+  background-color: #fff !important;
+}
+
+/* Pagination Footer */
+.custom-table-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+}

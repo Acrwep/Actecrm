@@ -329,3 +329,150 @@
 .total-row-bg.ant-table-cell {
   padding: 12px !important;
 }
+
+.installment_cell p {
+  margin-bottom: 2px !important;
+  font-size: 11px;
+}
+
+.installment_cell b {
+  color: #666;
+  font-weight: 600;
+}
+
+.status_tag {
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* ID-based High Priority Styles for Parent Installment Headers */
+.fees-history-table .ant-table.ant-table-small .ant-table-thead > tr > th {
+  padding: 2px 11px !important;
+}
+#installment-header-1,
+#installment-header-1 * {
+  background-color: #ff9800 !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-1,
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-1 > div,
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th.installment-sub-header-1::before {
+  background-color: #ffb74d !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+
+#installment-header-2,
+#installment-header-2 * {
+  background-color: #2196f3 !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-2,
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-2 > div,
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th.installment-sub-header-2::before {
+  background-color: #64b5f6 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+
+#installment-header-3,
+#installment-header-3 * {
+  background-color: #4caf50 !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-3,
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-3 > div,
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th.installment-sub-header-3::before {
+  background-color: #81c784 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+
+#installment-header-4,
+#installment-header-4 * {
+  background-color: #9c27b0 !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-4,
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-4 > div,
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th.installment-sub-header-4::before {
+  background-color: #ba68c8 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+
+#installment-header-5,
+#installment-header-5 * {
+  background-color: #f44336 !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-5,
+.fees-history-table .ant-table-thead > tr > th.installment-sub-header-5 > div,
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th.installment-sub-header-5::before {
+  background-color: #e57373 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+
+/* Ensure white text for all installment headers including their inner spans */
+.fees-history-table .ant-table-thead th[class*="installment-"] *,
+.fees-history-table
+  .ant-table-thead
+  th[class*="installment-"]
+  .ant-table-column-title {
+  color: #fff !important;
+}
+
+/* Fix for thin parent headers */
+.fees-history-table .ant-table-thead > tr > th[class*="installment-header-"] {
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+.fees-history-table
+  .ant-table-thead
+  > tr
+  > th[class*="installment-header-"]
+  > div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove blue focus border */
+.report-container:focus,
+.report-container:focus-visible,
+.fees-history-table:focus,
+.fees-history-table:focus-within,
+.fees-history-table .ant-table-wrapper:focus,
+.fees-history-table .ant-table-wrapper *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

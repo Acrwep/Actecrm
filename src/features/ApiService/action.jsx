@@ -1597,6 +1597,15 @@ export const transactionReport = async (payload) => {
   }
 };
 
+export const getCustomerFeesHistoryReport = async (payload) => {
+  try {
+    const response = await api.post(`/api/candidateFeesHistory`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const userwiseTransactionReport = async (payload) => {
   try {
     const response = await api.post(`/api/getUserwiseTransaction`, payload);

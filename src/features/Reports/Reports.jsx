@@ -13,6 +13,7 @@ import TransactionReport from "./TransactionReport";
 import UserwiseTransactionReport from "./UserwiseTransactionReport";
 import ServerReport from "./ServerReport";
 import TicketsReport from "./TicketsReport";
+import CustomerFeesHistoryReport from "./CustomerFeesHistoryReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -70,14 +71,19 @@ export default function Reports() {
       key: "8",
       children: <TransactionReport />,
     },
+    {
+      label: "Customer Fees History Report",
+      key: "9",
+      children: <CustomerFeesHistoryReport />,
+    },
     permissions.includes("Server Report") && {
       label: "Server Report",
-      key: "9",
+      key: "10",
       children: <ServerReport />,
     },
     permissions.includes("Tickets Report") && {
       label: "Tickets Report",
-      key: "10",
+      key: "11",
       children: <TicketsReport />,
     },
   ].filter(Boolean); // ✅ removes false/null items

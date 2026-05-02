@@ -66,6 +66,10 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "collection" ||
           column.dataIndex === "pending_payment" ||
           column.dataIndex === "primary_fees" ||
+          column.dataIndex === "total_amount" ||
+          column.dataIndex === "gst_amount" ||
+          column.dataIndex === "paid_amount" ||
+          column.dataIndex === "pending_fees" ||
           column.dataIndex === "secondary_fees" ||
           column.dataIndex === "chennai" ||
           column.dataIndex === "bangalore" ||

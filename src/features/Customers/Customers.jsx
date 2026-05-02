@@ -3059,13 +3059,13 @@ export default function Customers() {
                     selectedDates[1],
                   );
                   console.log("isWithIn30days", isWithIn30days);
-                  if (isWithIn30days == false) {
-                    CommonMessage(
-                      "error",
-                      "Please choose a date range within 30 days.",
-                    );
-                    return;
-                  }
+                  // if (isWithIn30days == false) {
+                  //   CommonMessage(
+                  //     "error",
+                  //     "Please choose a date range within 30 days.",
+                  //   );
+                  //   return;
+                  // }
                   const alterColumns = columns.filter(
                     (f) => f.title != "Action",
                   );
