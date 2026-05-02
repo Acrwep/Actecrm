@@ -41,6 +41,19 @@ export default function CustomerFeesHistoryReport() {
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [selectedDates, setSelectedDates] = useState([]);
+  const STATUS_LIST = [
+    { id: "Form Pending", name: "Form Pending" },
+    { id: "Awaiting Finance", name: "Awaiting Finance" },
+    { id: "Awaiting Verify", name: "Awaiting Verify" },
+    { id: "Awaiting Trainer", name: "Awaiting Trainer" },
+    { id: "Awaiting Trainer Verify", name: "Awaiting Trainer Verify" },
+    { id: "Awaiting Class", name: "Awaiting Class" },
+    { id: "Class Scheduled", name: "Class Scheduled" },
+    { id: "Passedout process", name: "Passedout process" },
+    { id: "Completed", name: "Completed" },
+    { id: "Class Going", name: "Class Going" },
+  ];
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
@@ -523,6 +536,7 @@ export default function CustomerFeesHistoryReport() {
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
+      "",
     );
   }, []);
 
@@ -530,6 +544,7 @@ export default function CustomerFeesHistoryReport() {
     startDate,
     endDate,
     searchvalue,
+    Status,
   ) => {
     setLoading(true);
     const payload = {
@@ -540,6 +555,7 @@ export default function CustomerFeesHistoryReport() {
         : searchvalue && filterType == 2
           ? { name: searchvalue }
           : {}),
+      status: Status,
     };
     try {
       const response = await getCustomerFeesHistoryReport(payload);
@@ -618,6 +634,7 @@ export default function CustomerFeesHistoryReport() {
         selectedDates[0],
         selectedDates[1],
         e.target.value,
+        selectedStatus,
       );
     }, 300);
   };
@@ -634,6 +651,7 @@ export default function CustomerFeesHistoryReport() {
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
+      "",
     );
   };
 
@@ -665,7 +683,12 @@ export default function CustomerFeesHistoryReport() {
                           setPagination({
                             page: 1,
                           });
-                          getCustomerFeesHistoryData(dates[0], dates[1], null);
+                          getCustomerFeesHistoryData(
+                            selectedDates[0],
+                            selectedDates[1],
+                            null,
+                            selectedStatus,
+                          );
                         }}
                       >
                         <IoIosClose size={11} />
@@ -711,6 +734,7 @@ export default function CustomerFeesHistoryReport() {
                                 selectedDates[0],
                                 selectedDates[1],
                                 null,
+                                selectedStatus,
                               );
                             }
                           }}
@@ -735,13 +759,39 @@ export default function CustomerFeesHistoryReport() {
                 </div>
               </div>
             </Col>
-            <Col span={16}>
+
+            <Col span={7}>
+              <CommonSelectField
+                height="35px"
+                label="Select Status"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={STATUS_LIST}
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value);
+                  getCustomerFeesHistoryData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    e.target.value,
+                  );
+                }}
+                value={selectedStatus}
+                disableClearable={false}
+              />
+            </Col>
+            <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates, strings) => {
                   setSelectedDates([dates[0], dates[1]]);
                   setStartDateAndEndDate([dates[0], dates[1]]);
-                  getCustomerFeesHistoryData(dates[0], dates[1], searchValue);
+                  getCustomerFeesHistoryData(
+                    dates[0],
+                    dates[1],
+                    searchValue,
+                    selectedStatus,
+                  );
                 }}
               />
             </Col>
