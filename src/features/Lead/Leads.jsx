@@ -27,6 +27,7 @@ import {
   priceValidator,
   selectValidator,
 } from "../Common/Validation";
+import { PiShareFatBold } from "react-icons/pi";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -546,7 +547,7 @@ export default function Leads({
                 placement="bottom"
                 title="Re-Assign this lead to another user"
               >
-                <MdAutorenew
+                <PiShareFatBold
                   size={20}
                   color="#5b69ca"
                   className="trainers_action_icons"
@@ -970,7 +971,7 @@ export default function Leads({
                           placement="bottom"
                           title="Re-Assign this lead to another user"
                         >
-                          <MdAutorenew
+                          <PiShareFatBold
                             size={20}
                             color="#5b69ca"
                             className="trainers_action_icons"

@@ -24,12 +24,15 @@ import {
   getAllDownlineUsers,
   getLeadAndFollowupCount,
   getManualAssignLeads,
+  getUsers,
   liveLeadManualAssign,
   moveLiveLeadToJunk,
 } from "../ApiService/action";
 import {
   addressValidator,
+  formatToBackendIST,
   getCurrentandPreviousweekDate,
+  selectValidator,
 } from "../Common/Validation";
 import CommonTable from "../Common/CommonTable";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,7 +60,7 @@ export default function AssignLeads({
   const permissions = useSelector((state) => state.userpermissions);
   //usestates
   const filterValuesFromRedux = useSelector(
-    (state) => state.assignleadfiltervalues
+    (state) => state.assignleadfiltervalues,
   );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -73,6 +76,11 @@ export default function AssignLeads({
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   //move modal
   const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
+  //assign lead
+  const [isOpenAssignModal, setIsOpenAssignModal] = useState(false);
+  const [allUsersList, setAllUsersList] = useState([]);
+  const [assignId, setAssignId] = useState(null);
+  const [assignIdError, setAssignIdError] = useState("");
   //loading
   const [loading, setLoading] = useState(true);
   //pagination
@@ -86,16 +94,16 @@ export default function AssignLeads({
   const columns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
-      title: "Assined At",
+      title: "Assigned At",
       key: "assigned_date_ist",
       dataIndex: "assigned_date_ist",
-      width: 100,
+      width: 110,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
-      title: "Assin By",
+      title: "Assign By",
       key: "assigned_by_user",
       dataIndex: "assigned_by_user",
       width: 130,
@@ -105,7 +113,7 @@ export default function AssignLeads({
       },
     },
     {
-      title: "Assin To",
+      title: "Assign To",
       key: "assigned_to_user",
       dataIndex: "assigned_to_user",
       width: 130,
@@ -316,7 +324,7 @@ export default function AssignLeads({
           ? filterValuesFromRedux.end_date
           : PreviousAndCurrentDate[1],
         filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit
+        filterValuesFromRedux.pageLimit,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -328,7 +336,7 @@ export default function AssignLeads({
     startDate,
     endDate,
     pageNumber,
-    limit
+    limit,
   ) => {
     setLoading(true);
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -338,12 +346,12 @@ export default function AssignLeads({
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       start_date: startDate,
       end_date: endDate,
       user_id: convertAsJson?.user_id,
@@ -367,7 +375,7 @@ export default function AssignLeads({
         storeAssignLeadFilterValues({
           pageNumber: pagination.page,
           pageLimit: pagination.limit,
-        })
+        }),
       );
     } catch (error) {
       setLeadData([]);
@@ -425,7 +433,7 @@ export default function AssignLeads({
           selectedDates[0],
           selectedDates[1],
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -433,7 +441,7 @@ export default function AssignLeads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -443,14 +451,14 @@ export default function AssignLeads({
       storeAssignLeadFilterValues({
         pageNumber: page,
         pageLimit: limit,
-      })
+      }),
     );
     getManualAssignLeadsData(
       searchValue,
       selectedDates[0],
       selectedDates[1],
       page,
-      limit
+      limit,
     );
   };
 
@@ -462,7 +470,7 @@ export default function AssignLeads({
         searchValue: e.target.value,
         pageNumber: 1,
         pageLimit: pagination.limit,
-      })
+      }),
     );
     setTimeout(() => {
       setPagination({
@@ -473,9 +481,74 @@ export default function AssignLeads({
         selectedDates[0],
         selectedDates[1],
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
+  };
+
+  const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data?.data || []);
+    } catch (error) {
+      setAllUsersList([]);
+      console.log("get all users error", error);
+    }
+  };
+
+  const handleAssignLead = async () => {
+    console.log("selectedRowKeys", selectedRowKeys);
+    const userValidate = selectValidator(assignId);
+
+    setAssignIdError(userValidate);
+
+    if (userValidate) return;
+
+    setButtonLoading(true);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const today = new Date();
+
+    const payload = {
+      user_id: assignId,
+      assigned_by: convertAsJson?.id,
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      is_assigned: true,
+      is_reassigned: false,
+      assigned_date: formatToBackendIST(today),
+    };
+
+    try {
+      await liveLeadManualAssign(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenAssignModal(false);
+        setAssignId(null);
+        setAssignIdError("");
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        getManualAssignLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
   };
 
   return (
@@ -490,12 +563,12 @@ export default function AssignLeads({
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -514,14 +587,14 @@ export default function AssignLeads({
                               searchValue: null,
                               pageNumber: 1,
                               pageLimit: pagination.limit,
-                            })
+                            }),
                           );
                           getManualAssignLeadsData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -560,7 +633,7 @@ export default function AssignLeads({
                             dispatch(
                               storeAssignLeadFilterValues({
                                 filterType: e.target.value,
-                              })
+                              }),
                             );
                             if (searchValue == "") {
                               return;
@@ -571,7 +644,7 @@ export default function AssignLeads({
                                   searchValue: "",
                                   pageNumber: 1,
                                   pageLimit: pagination.limit,
-                                })
+                                }),
                               );
                               setPagination({
                                 page: 1,
@@ -581,7 +654,7 @@ export default function AssignLeads({
                                 selectedDates[0],
                                 selectedDates[1],
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -623,7 +696,7 @@ export default function AssignLeads({
                       end_date: dates[1],
                       pageNumber: 1,
                       pageLimit: pagination.limit,
-                    })
+                    }),
                   );
                   setPagination({
                     page: 1,
@@ -633,7 +706,7 @@ export default function AssignLeads({
                     dates[0],
                     dates[1],
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />
@@ -641,14 +714,30 @@ export default function AssignLeads({
           </Row>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              gap: "12px",
-            }}
-          ></div>
+          <div className="livelead_junkbutton_container">
+            {selectedRows.length >= 1 &&
+              permissions.includes("Assign Lead") && (
+                <>
+                  <button
+                    className="leadmanager_addleadbutton"
+                    onClick={() => {
+                      setIsOpenAssignModal(true);
+                      getUsersData();
+                    }}
+                  >
+                    Assign Lead
+                  </button>
+                  {/* <Button
+                          className="livelead_junkbutton"
+                          onClick={() => {
+                            setIsOpenJunkModal(true);
+                          }}
+                        >
+                          Move to Junk
+                        </Button> */}
+                </>
+              )}
+          </div>
         </Col>
       </Row>
 
@@ -658,7 +747,7 @@ export default function AssignLeads({
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}
-          checkBox="true"
+          checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
           loading={loading}
           size="small"
           className="questionupload_table"
@@ -706,7 +795,7 @@ export default function AssignLeads({
               selectedDates[0],
               selectedDates[1],
               pagination.page,
-              pagination.limit
+              pagination.limit,
             );
             refreshLeadFollowUp();
             refreshLeads();
@@ -786,6 +875,63 @@ export default function AssignLeads({
               </Button>
             )}
           </div>
+        </div>
+      </Modal>
+
+      {/* assign lead modal */}
+      <Modal
+        title="Assign Leads"
+        open={isOpenAssignModal}
+        onCancel={() => {
+          setIsOpenAssignModal(false);
+          setAssignId(null);
+          setAssignIdError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenAssignModal(false);
+              setAssignId(null);
+              setAssignIdError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleAssignLead}
+              className="leads_coursemodal_createbutton"
+            >
+              Assign
+            </Button>
+          ),
+        ]}
+        width="35%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonSelectField
+            label="Assign To"
+            options={allUsersList}
+            onChange={(e) => {
+              setAssignId(e.target.value);
+              setAssignIdError(selectValidator(e.target.value));
+            }}
+            value={assignId}
+            error={assignIdError}
+          />
         </div>
       </Modal>
     </div>

@@ -346,7 +346,9 @@ export default function CustomerFeesHistoryReport() {
           onHeaderCell: () => ({
             className: "installment-sub-header-1",
           }),
-          render: (text) => text || "-",
+          render: (text) => {
+            return <EllipsisTooltip text={text ? text : "-"} />;
+          },
         },
       ],
     },
@@ -390,7 +392,9 @@ export default function CustomerFeesHistoryReport() {
           onHeaderCell: () => ({
             className: "installment-sub-header-2",
           }),
-          render: (text) => text || "-",
+          render: (text) => {
+            return <EllipsisTooltip text={text ? text : "-"} />;
+          },
         },
       ],
     },
@@ -434,7 +438,9 @@ export default function CustomerFeesHistoryReport() {
           onHeaderCell: () => ({
             className: "installment-sub-header-3",
           }),
-          render: (text) => text || "-",
+          render: (text) => {
+            return <EllipsisTooltip text={text ? text : "-"} />;
+          },
         },
       ],
     },
@@ -478,7 +484,9 @@ export default function CustomerFeesHistoryReport() {
           onHeaderCell: () => ({
             className: "installment-sub-header-4",
           }),
-          render: (text) => text || "-",
+          render: (text) => {
+            return <EllipsisTooltip text={text ? text : "-"} />;
+          },
         },
       ],
     },
@@ -522,7 +530,9 @@ export default function CustomerFeesHistoryReport() {
           onHeaderCell: () => ({
             className: "installment-sub-header-5",
           }),
-          render: (text) => text || "-",
+          render: (text) => {
+            return <EllipsisTooltip text={text ? text : "-"} />;
+          },
         },
       ],
     },

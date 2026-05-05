@@ -388,6 +388,7 @@ export default function Settings() {
         "Post Sale Performance Report",
         "Payment Report",
         "Transaction Report",
+        "Customer Fees History Report",
         "Server Report",
         "Tickets Report",
       ];

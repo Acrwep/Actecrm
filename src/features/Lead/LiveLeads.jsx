@@ -582,8 +582,8 @@ export default function LiveLead({
             : searchvalue && filterTypeRef.current == 4
               ? { course: searchvalue }
               : {}),
-      start_date: startDate,
-      end_date: endDate,
+      // start_date: startDate,
+      // end_date: endDate,
       page: pageNumber,
       limit: limit,
     };
@@ -1212,7 +1212,7 @@ export default function LiveLead({
               </div>
             </Col>
             <Col span={10}>
-              <CommonMuiCustomDatePicker
+              {/* <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
@@ -1230,7 +1230,7 @@ export default function LiveLead({
                     pagination.limit,
                   );
                 }}
-              />
+              /> */}
             </Col>
           </Row>
         </Col>
@@ -1238,15 +1238,18 @@ export default function LiveLead({
           <div className="livelead_junkbutton_container">
             {selectedRows.length >= 1 && (
               <>
-                <button
-                  className="leadmanager_addleadbutton"
-                  onClick={() => {
-                    setIsOpenAssignModal(true);
-                    getUsersData();
-                  }}
-                >
-                  Assign Lead
-                </button>
+                {permissions.includes("Assign Lead") && (
+                  <button
+                    className="leadmanager_addleadbutton"
+                    onClick={() => {
+                      setIsOpenAssignModal(true);
+                      getUsersData();
+                    }}
+                  >
+                    Assign Lead
+                  </button>
+                )}
+
                 <Button
                   className="livelead_junkbutton"
                   onClick={() => {
