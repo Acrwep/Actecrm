@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button } from "antd";
+import { Row, Col, Tooltip, Button, Table } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
@@ -142,11 +142,15 @@ export default function UserwiseTransactionReport() {
       console.log("userwise transaction report response", response);
       const apiRows = response?.data?.data || []; // 🔥 IMPORTANT FIX
 
-      const formatted = apiRows.map((row, index) => ({
-        key: index,
-        ...row,
-      }));
+      const formatted = apiRows
+        .filter((row) => row.user_name !== "total")
+        .map((row, index) => ({
+          key: index,
+          ...row,
+        }));
 
+      const totalRow = apiRows.find((row) => row.user_name === "total");
+      setTotalCounts(totalRow);
       setReportData(formatted);
     } catch (error) {
       setReportData([]);
@@ -187,6 +191,43 @@ export default function UserwiseTransactionReport() {
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       null,
+    );
+  };
+
+  const renderSummary = () => {
+    if (!totalCounts) return null;
+
+    return (
+      <Table.Summary fixed="top">
+        <Table.Summary.Row className="total-row-bg sticky-header">
+          <Table.Summary.Cell index={0} fixed="left">
+            <p style={{ fontWeight: 600, paddingLeft: "8px" }}>Total</p>
+          </Table.Summary.Cell>
+          {columns.slice(1).map((col, index) => {
+            const value = totalCounts[col.key] || 0;
+            const amount = Number(value).toLocaleString("en-IN");
+            return (
+              <Table.Summary.Cell
+                key={col.key}
+                index={index + 1}
+                align="right"
+                fixed={col.fixed}
+              >
+                <p
+                  style={{
+                    fontWeight: 600,
+                    textAlign: "right",
+                    paddingRight: "4px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {"₹" + amount}
+                </p>
+              </Table.Summary.Cell>
+            );
+          })}
+        </Table.Summary.Row>
+      </Table.Summary>
     );
   };
 
@@ -238,11 +279,13 @@ export default function UserwiseTransactionReport() {
             <Button
               className="reports_download_button"
               onClick={() => {
-                const formattedData = reportData.map((row) => ({
-                  ...row,
-                  user_name:
-                    row.user_name === "total" ? "Total" : row.user_name, // Excel-safe
-                }));
+                const formattedData = [...reportData, totalCounts]
+                  .filter(Boolean)
+                  .map((row) => ({
+                    ...row,
+                    user_name:
+                      row.user_name === "total" ? "Total" : row.user_name, // Excel-safe
+                  }));
                 DownloadTableAsCSV(
                   formattedData,
                   columns,
@@ -284,6 +327,7 @@ export default function UserwiseTransactionReport() {
           rowClassName={(record, index) =>
             record.user_name === "total" ? "total-row-bg" : ""
           }
+          summary={renderSummary}
         />
       </div>
     </div>

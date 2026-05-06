@@ -1276,51 +1276,64 @@ export default function LiveLead({
         </Col>
       </Row>
 
-      <div className="customer_trainer_badge_mainconatiner">
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div className="customer_trainer_onboardcount_badge" />
-          <p className="customer_trainer_onboardcount_badgecount">
+      <div className="livelead_today_summary_container">
+        <p className="livelead_today_label">Today</p>
+
+        <div className="livelead_badge_item online">
+          <div
+            className="livelead_badge_dot"
+            style={{ backgroundColor: "#3c9111" }}
+          />
+          <p className="livelead_badge_text">
             Online{" "}
-            <span style={{ fontWeight: 600, fontSize: "12px" }}>
-              {liveLeadAllCounts && liveLeadAllCounts.online_count
-                ? liveLeadAllCounts.online_count
-                : "-"}
+            <span className="livelead_badge_count">
+              {liveLeadAllCounts?.online_count ?? "-"}
             </span>
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div className="livelead_badge_item classroom">
           <div
-            className="customer_trainer_goingcount_badge"
+            className="livelead_badge_dot"
             style={{ backgroundColor: "#1e90ff" }}
           />
-          <p className="customer_trainer_onboardcount_badgecount">
+          <p className="livelead_badge_text">
             Classroom{" "}
-            <span style={{ fontWeight: 600, fontSize: "12px" }}>
-              {" "}
-              {liveLeadAllCounts && liveLeadAllCounts.classroom_count
-                ? liveLeadAllCounts.classroom_count
-                : "-"}
+            <span className="livelead_badge_count">
+              {liveLeadAllCounts?.classroom_count ?? "-"}
             </span>
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div className="livelead_badge_item corporate">
           <div
-            className="customer_trainer_goingcount_badge"
+            className="livelead_badge_dot"
             style={{ backgroundColor: "#607d8b" }}
           />
-          <p className="customer_trainer_onboardcount_badgecount">
+          <p className="livelead_badge_text">
             Corporate{" "}
-            <span style={{ fontWeight: 600, fontSize: "12px" }}>
-              {" "}
-              {liveLeadAllCounts && liveLeadAllCounts.corporate_count
-                ? liveLeadAllCounts.corporate_count
-                : "-"}
+            <span className="livelead_badge_count">
+              {liveLeadAllCounts?.corporate_count ?? "-"}
+            </span>
+          </p>
+        </div>
+
+        <div className="livelead_badge_item total">
+          <div
+            className="livelead_badge_dot"
+            style={{ backgroundColor: "#5b69ca" }}
+          />
+          <p className="livelead_badge_text">
+            Total{" "}
+            <span className="livelead_badge_count">
+              {Number(liveLeadAllCounts?.online_count || 0) +
+                Number(liveLeadAllCounts?.classroom_count || 0) +
+                Number(liveLeadAllCounts?.corporate_count || 0)}
             </span>
           </p>
         </div>
       </div>
+
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable

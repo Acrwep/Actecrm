@@ -16,6 +16,7 @@ import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function TransactionReport() {
   const mounted = useRef(false);
@@ -68,30 +69,7 @@ export default function TransactionReport() {
       dataIndex: "branch_name",
       width: 140,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 20 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 19) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -100,30 +78,7 @@ export default function TransactionReport() {
       dataIndex: "closed_by",
       width: 130,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 16 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 15) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -165,30 +120,7 @@ export default function TransactionReport() {
       dataIndex: "cus_name",
       width: 130,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 16 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 15) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -196,6 +128,9 @@ export default function TransactionReport() {
       key: "cus_phone",
       dataIndex: "cus_phone",
       width: 100,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
     },
     {
       title: "Course",
@@ -203,30 +138,7 @@ export default function TransactionReport() {
       dataIndex: "course_name",
       width: 130,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 16 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 15) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -353,30 +265,7 @@ export default function TransactionReport() {
       dataIndex: "collected_by",
       width: 110,
       render: (text) => {
-        return (
-          <>
-            {text && text.length > 16 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "13px",
-                  },
-                }}
-              >
-                <p style={{ cursor: "pointer" }}>{text.slice(0, 15) + "..."}</p>
-              </Tooltip>
-            ) : (
-              <p>{text ? text : "-"}</p>
-            )}
-          </>
-        );
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {

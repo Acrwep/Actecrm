@@ -1316,31 +1316,57 @@
   border-color: rgba(128, 128, 128, 0.432) !important;
   color: #333 !important;
 }
-.customer_trainer_badge_mainconatiner {
+
+.livelead_today_label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b69ca;
+  padding-right: 12px;
+  border-right: 1.5px solid #e2e8f0;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.livelead_badge_item {
   display: flex;
-  border-radius: 4px;
-  border: 1px solid rgba(128, 128, 128, 0.363);
-  padding: 4px 12px;
-  margin-top: 16px;
-  width: max-content;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: default;
 }
-.customer_trainer_onboardcount_badge {
+
+.livelead_badge_item.online {
+  background: rgba(60, 145, 17, 0.06);
+}
+.livelead_badge_item.classroom {
+  background: rgba(30, 144, 255, 0.06);
+}
+.livelead_badge_item.corporate {
+  background: rgba(96, 125, 139, 0.06);
+}
+
+.livelead_badge_dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  width: 4px;
-  height: 4px;
-  background-color: #3c9111;
 }
-.customer_trainer_goingcount_badge {
-  border-radius: 50%;
-  width: 4px;
-  height: 4px;
-  background-color: #ffa502;
+
+.livelead_badge_text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0;
 }
-.customer_trainer_onboardcount_badgecount {
-  font-size: 11px;
-  color: #333;
+
+.livelead_badge_count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-left: 2px;
 }
+
 .customer_certificate_viewmodal .ant-modal-content {
   background-color: transparent !important;
   box-shadow: none !important;

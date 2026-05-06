@@ -861,3 +861,70 @@
   justify-content: center;
   background-color: #5b6aca1c;
 }
+
+.livelead_today_summary_container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); */
+  margin-top: 16px;
+  width: max-content;
+  transition: all 0.3s ease;
+}
+
+.livelead_today_label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b69ca;
+  padding-right: 12px;
+  border-right: 1.5px solid #e2e8f0;
+  margin: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.livelead_badge_item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: default;
+}
+
+.livelead_badge_item.online {
+  background: rgba(60, 145, 17, 0.06);
+}
+.livelead_badge_item.classroom {
+  background: rgba(30, 144, 255, 0.06);
+}
+.livelead_badge_item.corporate {
+  background: rgba(96, 125, 139, 0.06);
+}
+.livelead_badge_item.total {
+  background: rgba(91, 105, 202, 0.06);
+}
+
+.livelead_badge_dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.livelead_badge_text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 !important;
+}
+
+.livelead_badge_count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-left: 2px;
+}

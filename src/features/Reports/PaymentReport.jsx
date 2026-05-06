@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Button, Flex } from "antd";
+import { Row, Col, Tooltip, Button, Flex, Table } from "antd";
 import CommonSelectField from "../Common/CommonSelectField";
 import { DownloadOutlined } from "@ant-design/icons";
 import { RedoOutlined } from "@ant-design/icons";
@@ -583,7 +583,7 @@ export default function PaymentReport() {
       isTotalRow: false,
     }));
 
-    return [totalRow, ...dayRows];
+    return { dayRows, totalRow };
   };
 
   const getPaymentReportData = async (startDate, endDate, typeName) => {
@@ -596,10 +596,10 @@ export default function PaymentReport() {
     try {
       const response = await paymentReport(payload);
       console.log("payment report response", response);
-      const formatData = preparePaymodeData(response, typeName);
-      console.log("formatData 🙌", formatData);
-      setReportData(formatData);
-      setTotalCounts(response?.data?.data?.over_all || null);
+      const { dayRows, totalRow } = preparePaymodeData(response, typeName);
+      console.log("dayRows 🙌", dayRows);
+      setReportData(dayRows);
+      setTotalCounts(totalRow);
     } catch (error) {
       setReportData([]);
       setTotalCounts(null);
@@ -628,6 +628,54 @@ export default function PaymentReport() {
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
       "Region",
+    );
+  };
+
+  const renderSummary = () => {
+    if (!totalCounts) return null;
+
+    const currentColumns =
+      typeId === "Region"
+        ? columns
+        : typeId === "Branch"
+          ? branchColumns
+          : paymodeColumns;
+
+    return (
+      <Table.Summary fixed="top">
+        <Table.Summary.Row className="total-row-bg sticky-header">
+          <Table.Summary.Cell index={0} fixed="left">
+            <p
+              style={{ fontWeight: 600, paddingLeft: "8px", fontSize: "14px" }}
+            >
+              Total
+            </p>
+          </Table.Summary.Cell>
+          {currentColumns.slice(1).map((col, index) => {
+            const value = totalCounts[col.dataIndex] || 0;
+            const amount = Number(value).toLocaleString("en-IN");
+            return (
+              <Table.Summary.Cell
+                key={col.key}
+                index={index + 1}
+                align={col.align || "left"}
+                fixed={col.fixed}
+              >
+                <p
+                  style={{
+                    fontWeight: 600,
+                    textAlign: col.align || "left",
+                    paddingRight: "4px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {"₹" + amount}
+                </p>
+              </Table.Summary.Cell>
+            );
+          })}
+        </Table.Summary.Row>
+      </Table.Summary>
     );
   };
 
@@ -686,10 +734,12 @@ export default function PaymentReport() {
             <Button
               className="reports_download_button"
               onClick={() => {
-                const formattedData = reportData.map((row) => ({
-                  ...row,
-                  date: row.date === "Total" ? "Total" : row.date, // Excel-safe
-                }));
+                const formattedData = [...reportData, totalCounts]
+                  .filter(Boolean)
+                  .map((row) => ({
+                    ...row,
+                    date: row.date === "Total" ? "Total" : row.date, // Excel-safe
+                  }));
                 console.log("formattedData", formattedData);
                 // return;
                 DownloadTableAsCSV(
@@ -749,6 +799,7 @@ export default function PaymentReport() {
           rowClassName={(record, index) =>
             record.date === "Total" ? "total-row-bg" : ""
           }
+          summary={renderSummary}
           // totals={
           //   typeId == "Region"
           //     ? regionTotals
