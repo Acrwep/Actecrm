@@ -102,13 +102,19 @@ export default function Courses() {
       title: "Total Leads",
       key: "total_leads",
       dataIndex: "total_leads",
-      width: 110,
+      width: 120,
+      sorter: (a, b) =>
+        (a.total_leads || "").localeCompare(b.total_leads || ""),
+      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Joined Customers",
       key: "total_customer",
       dataIndex: "total_customer",
-      width: 150,
+      width: 160,
+      sorter: (a, b) =>
+        (a.total_customer || "").localeCompare(b.total_customer || ""),
+      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Price",

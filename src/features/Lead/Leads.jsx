@@ -829,12 +829,17 @@ export default function Leads({
             case "domain_origin":
               return {
                 ...col,
+                title: "Origin",
                 sorter: (a, b) =>
                   (a.domain_origin || "").localeCompare(b.domain_origin || ""),
                 sortDirections: ["ascend", "descend"],
                 width: 150,
                 render: (text) => {
-                  return <EllipsisTooltip text={text ? text : "-"} />;
+                  return (
+                    <EllipsisTooltip
+                      text={text ? (text == "Direct" ? "-" : text) : "-"}
+                    />
+                  );
                 },
               };
             case "lead_type":

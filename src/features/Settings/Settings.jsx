@@ -237,6 +237,7 @@ export default function Settings() {
         "Junk Leads Tab",
         "Show Origin in Live Leads",
         "Revert to Live Leads",
+        "View All Assigned Leads",
         "Download Leads",
       ];
 

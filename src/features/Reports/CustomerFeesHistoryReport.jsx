@@ -170,6 +170,20 @@ export default function CustomerFeesHistoryReport() {
       render: (text) => <span>{Number(text).toLocaleString("en-IN")}</span>,
     },
     {
+      title: "Conv. Fees",
+      key: "convenience_fees_amount",
+      dataIndex: "convenience_fees_amount",
+      width: 100,
+      render: (text) => <span>{Number(text).toLocaleString("en-IN")}</span>,
+    },
+    {
+      title: "Total Paid Amount",
+      key: "total_paid_amount",
+      dataIndex: "total_paid_amount",
+      width: 150,
+      render: (text) => <span>{Number(text).toLocaleString("en-IN")}</span>,
+    },
+    {
       title: "Balance Fees",
       key: "pending_fees",
       dataIndex: "pending_fees",
@@ -314,17 +328,6 @@ export default function CustomerFeesHistoryReport() {
       }),
       children: [
         {
-          title: "Amount",
-          dataIndex: ["1st_installment", "amount"],
-          key: "1st_amount",
-          width: 100,
-          className: "installment-sub-header-1",
-          onHeaderCell: () => ({
-            className: "installment-sub-header-1",
-          }),
-          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
-        },
-        {
           title: "Date",
           dataIndex: ["1st_installment", "date"],
           key: "1st_date",
@@ -350,6 +353,28 @@ export default function CustomerFeesHistoryReport() {
             return <EllipsisTooltip text={text ? text : "-"} />;
           },
         },
+        {
+          title: "Conv.Fees",
+          dataIndex: ["1st_installment", "convenience_fees"],
+          key: "1st_conv_fees",
+          width: 100,
+          className: "installment-sub-header-1",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-1",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
+        {
+          title: "Amount",
+          dataIndex: ["1st_installment", "amount"],
+          key: "1st_amount",
+          width: 100,
+          className: "installment-sub-header-1",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-1",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
       ],
     },
     {
@@ -359,17 +384,6 @@ export default function CustomerFeesHistoryReport() {
         id: "installment-header-2",
       }),
       children: [
-        {
-          title: "Amount",
-          dataIndex: ["2nd_installment", "amount"],
-          key: "2nd_amount",
-          width: 100,
-          className: "installment-sub-header-2",
-          onHeaderCell: () => ({
-            className: "installment-sub-header-2",
-          }),
-          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
-        },
         {
           title: "Date",
           dataIndex: ["2nd_installment", "date"],
@@ -396,6 +410,28 @@ export default function CustomerFeesHistoryReport() {
             return <EllipsisTooltip text={text ? text : "-"} />;
           },
         },
+        {
+          title: "Conv.Fees",
+          dataIndex: ["2nd_installment", "convenience_fees"],
+          key: "2nd_conv_fees",
+          width: 100,
+          className: "installment-sub-header-2",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-2",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
+        {
+          title: "Amount",
+          dataIndex: ["2nd_installment", "amount"],
+          key: "2nd_amount",
+          width: 100,
+          className: "installment-sub-header-2",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-2",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
       ],
     },
     {
@@ -405,17 +441,6 @@ export default function CustomerFeesHistoryReport() {
         id: "installment-header-3",
       }),
       children: [
-        {
-          title: "Amount",
-          dataIndex: ["3rd_installment", "amount"],
-          key: "3rd_amount",
-          width: 100,
-          className: "installment-sub-header-3",
-          onHeaderCell: () => ({
-            className: "installment-sub-header-3",
-          }),
-          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
-        },
         {
           title: "Date",
           dataIndex: ["3rd_installment", "date"],
@@ -442,6 +467,28 @@ export default function CustomerFeesHistoryReport() {
             return <EllipsisTooltip text={text ? text : "-"} />;
           },
         },
+        {
+          title: "Conv.Fees",
+          dataIndex: ["3rd_installment", "convenience_fees"],
+          key: "3rd_conv_fees",
+          width: 100,
+          className: "installment-sub-header-3",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-3",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
+        {
+          title: "Amount",
+          dataIndex: ["3rd_installment", "amount"],
+          key: "3rd_amount",
+          width: 100,
+          className: "installment-sub-header-3",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-3",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
       ],
     },
     {
@@ -451,17 +498,6 @@ export default function CustomerFeesHistoryReport() {
         id: "installment-header-4",
       }),
       children: [
-        {
-          title: "Amount",
-          dataIndex: ["4th_installment", "amount"],
-          key: "4th_amount",
-          width: 100,
-          className: "installment-sub-header-4",
-          onHeaderCell: () => ({
-            className: "installment-sub-header-4",
-          }),
-          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
-        },
         {
           title: "Date",
           dataIndex: ["4th_installment", "date"],
@@ -488,6 +524,28 @@ export default function CustomerFeesHistoryReport() {
             return <EllipsisTooltip text={text ? text : "-"} />;
           },
         },
+        {
+          title: "Conv.Fees",
+          dataIndex: ["4th_installment", "convenience_fees"],
+          key: "4th_conv_fees",
+          width: 100,
+          className: "installment-sub-header-4",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-4",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
+        {
+          title: "Amount",
+          dataIndex: ["4th_installment", "amount"],
+          key: "4th_amount",
+          width: 100,
+          className: "installment-sub-header-4",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-4",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
       ],
     },
     {
@@ -497,17 +555,6 @@ export default function CustomerFeesHistoryReport() {
         id: "installment-header-5",
       }),
       children: [
-        {
-          title: "Amount",
-          dataIndex: ["5th_installment", "amount"],
-          key: "5th_amount",
-          width: 100,
-          className: "installment-sub-header-5",
-          onHeaderCell: () => ({
-            className: "installment-sub-header-5",
-          }),
-          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
-        },
         {
           title: "Date",
           dataIndex: ["5th_installment", "date"],
@@ -533,6 +580,28 @@ export default function CustomerFeesHistoryReport() {
           render: (text) => {
             return <EllipsisTooltip text={text ? text : "-"} />;
           },
+        },
+        {
+          title: "Conv.Fees",
+          dataIndex: ["5th_installment", "convenience_fees"],
+          key: "5th_conv_fees",
+          width: 100,
+          className: "installment-sub-header-5",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-5",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
+        },
+        {
+          title: "Amount",
+          dataIndex: ["5th_installment", "amount"],
+          key: "5th_amount",
+          width: 100,
+          className: "installment-sub-header-5",
+          onHeaderCell: () => ({
+            className: "installment-sub-header-5",
+          }),
+          render: (text) => (text ? Number(text).toLocaleString("en-IN") : "-"),
         },
       ],
     },

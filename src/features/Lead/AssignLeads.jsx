@@ -81,6 +81,11 @@ export default function AssignLeads({
   const [allUsersList, setAllUsersList] = useState([]);
   const [assignId, setAssignId] = useState(null);
   const [assignIdError, setAssignIdError] = useState("");
+  //junk usestates
+  const [isOpenJunkModal, setIsOpenJunkModal] = useState(false);
+  const [junkComments, setJunkComments] = useState("");
+  const [junkCommentsError, setJunkCommentsError] = useState("");
+  const [liveLeadId, setLiveLeadId] = useState(null);
   //loading
   const [loading, setLoading] = useState(true);
   //pagination
@@ -208,6 +213,13 @@ export default function AssignLeads({
       dataIndex: "domain_origin",
       width: 90,
       hidden: permissions.includes("Show Origin in Live Leads") ? false : true,
+      render: (text) => {
+        return (
+          <EllipsisTooltip
+            text={text ? (text == "Direct" ? "-" : text) : "-"}
+          />
+        );
+      },
     },
     {
       title: "Training Mode",
@@ -277,6 +289,18 @@ export default function AssignLeads({
                 className="trainers_action_icons"
                 onClick={() => {
                   handlePick(record);
+                }}
+              />
+            </Tooltip>
+
+            <Tooltip placement="bottom" title="Move to Junk">
+              <MdOutlinePlaylistRemove
+                color="#d32f2f"
+                size={20}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setLiveLeadId(record.id);
+                  setIsOpenJunkModal(true);
                 }}
               />
             </Tooltip>
@@ -354,7 +378,9 @@ export default function AssignLeads({
               : {}),
       start_date: startDate,
       end_date: endDate,
-      user_id: convertAsJson?.user_id,
+      ...(!permissions.includes("View All Assigned Leads")
+        ? { user_id: convertAsJson?.user_id }
+        : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -551,6 +577,49 @@ export default function AssignLeads({
     }
   };
 
+  const handleMoveToJunk = async () => {
+    console.log("selectedRowKeys", selectedRowKeys);
+    const commentsValidate = addressValidator(junkComments);
+
+    setJunkCommentsError(commentsValidate);
+
+    if (commentsValidate) return;
+
+    setButtonLoading(true);
+    const payload = {
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      is_junk: true,
+      reason: junkComments,
+    };
+    try {
+      await moveLiveLeadToJunk(payload);
+      CommonMessage("success", "Updated");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenJunkModal(false);
+        setLiveLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        setJunkComments("");
+        getManualAssignLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit,
+        );
+        refreshJunkLeads();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
   return (
     <div>
       <Row>
@@ -715,9 +784,9 @@ export default function AssignLeads({
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>
           <div className="livelead_junkbutton_container">
-            {selectedRows.length >= 1 &&
-              permissions.includes("Assign Lead") && (
-                <>
+            {selectedRows.length >= 1 && (
+              <>
+                {permissions.includes("Assign Lead") && (
                   <button
                     className="leadmanager_addleadbutton"
                     onClick={() => {
@@ -727,16 +796,18 @@ export default function AssignLeads({
                   >
                     Assign Lead
                   </button>
-                  {/* <Button
-                          className="livelead_junkbutton"
-                          onClick={() => {
-                            setIsOpenJunkModal(true);
-                          }}
-                        >
-                          Move to Junk
-                        </Button> */}
-                </>
-              )}
+                )}
+
+                <Button
+                  className="livelead_junkbutton"
+                  onClick={() => {
+                    setIsOpenJunkModal(true);
+                  }}
+                >
+                  Move to Junk
+                </Button>
+              </>
+            )}
           </div>
         </Col>
       </Row>
@@ -931,6 +1002,63 @@ export default function AssignLeads({
             }}
             value={assignId}
             error={assignIdError}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        title="Move to Junk"
+        open={isOpenJunkModal}
+        onCancel={() => {
+          setIsOpenJunkModal(false);
+          setLiveLeadId(null);
+          setJunkComments("");
+          setJunkCommentsError("");
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenJunkModal(false);
+              setLiveLeadId(null);
+              setJunkComments("");
+              setJunkCommentsError("");
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              style={{ width: "120px", opacity: 0.7 }}
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleMoveToJunk}
+              style={{ width: "120px" }}
+            >
+              Move to Junk
+            </Button>
+          ),
+        ]}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <CommonTextArea
+            label="Comments"
+            required={false}
+            onChange={(e) => {
+              setJunkComments(e.target.value);
+              setJunkCommentsError(addressValidator(e.target.value));
+            }}
+            value={junkComments}
+            error={junkCommentsError}
           />
         </div>
       </Modal>

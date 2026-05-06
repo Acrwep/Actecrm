@@ -217,7 +217,9 @@ export default function LeadManager() {
       user_ids: downliners,
       start_date: moment(today).format("YYYY-MM-DD"),
       end_date: moment(today).format("YYYY-MM-DD"),
-      login_by: convertAsJson?.user_id,
+      ...(!permissions.includes("View All Assigned Leads")
+        ? { login_by: convertAsJson?.user_id }
+        : {}),
     };
     try {
       const response = await getLeadAndFollowupCount(payload);

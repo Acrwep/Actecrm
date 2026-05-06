@@ -44,7 +44,6 @@ import { CommonMessage } from "../Common/CommonMessage";
 import PostSalePerformanceChart from "./PostSalePerformanceChart";
 import BranchwisePerformanceChart from "./BranchwisePerformanceChart";
 import RegionwisePerformanceChart from "./RegionwisePerformanceChart";
-import SiteDashboardChart from "./SiteDashboardChart";
 
 export default function Dashboard() {
   const mounted = useRef(false);
@@ -181,7 +180,7 @@ export default function Dashboard() {
   const [defaultSubUsers, setDefaultSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [allDownliners, setAllDownliners] = useState([]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState("All");
 
   //site dashboard
   const [siteDates, setSitesDates] = useState([]);
@@ -1432,7 +1431,7 @@ export default function Dashboard() {
   };
 
   const handleSelectRegionId = (e) => {
-    const regionId = e.target.value;
+    const regionId = e.target.value == "All" ? null : e.target.value;
     setSelectedRegionId(regionId);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
@@ -1634,7 +1633,7 @@ export default function Dashboard() {
     setRegionWiseTotalFollowUp([]);
 
     setSelectedUserId(null);
-    setSelectedRegionId(null);
+    setSelectedRegionId("All");
     setSubUsers(defaultSubUsers);
     setScoreBoardLoader(true);
     setSaleDetailsLoader(true);
@@ -1702,10 +1701,27 @@ export default function Dashboard() {
                       label="Select Region"
                       labelMarginTop="0px"
                       labelFontSize="12px"
-                      options={branchWiseRegionOptions}
+                      options={[
+                        {
+                          id: "All",
+                          name: "All",
+                        },
+                        {
+                          id: 1,
+                          name: "Chennai",
+                        },
+                        {
+                          id: 2,
+                          name: "Bangalore",
+                        },
+                        {
+                          id: 3,
+                          name: "Hub",
+                        },
+                      ]}
                       onChange={handleSelectRegionId}
                       value={selectedRegionId}
-                      disableClearable={false}
+                      disableClearable={true}
                     />
                   </div>
                 </div>
@@ -3150,12 +3166,27 @@ export default function Dashboard() {
                   ) : (
                     <div>
                       {siteDashboardSeries.length >= 1 ? (
-                        <SiteDashboardChart
-                          xaxis={siteDashboardXaxis}
+                        <CommonDonutChart
+                          labels={siteDashboardXaxis}
                           series={siteDashboardSeries}
-                          colors={["#009688"]}
-                          height={320}
-                          type={"Site"}
+                          colors={[
+                            "#258a25",
+                            "#f58223",
+                            "#5b6aca",
+                            "#009688",
+                            "#607D8B",
+                            "#b22021",
+                            "#E91E63",
+                            "#9C27B0",
+                          ]}
+                          height={260}
+                          showTotal={true}
+                          efficientValue={siteDashboardSeries.reduce(
+                            (a, b) => a + b,
+                            0,
+                          )}
+                          totalLabel="Total Leads"
+                          suffix=""
                         />
                       ) : (
                         <div className="dashboard_chart_nodata_conatiner">

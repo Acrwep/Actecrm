@@ -15,6 +15,8 @@ export default function CommonDonutChart({
   showTotal,
   efficientValue,
   legendFontSize,
+  totalLabel,
+  suffix = "%",
 }) {
   const [mobileView, setMobileView] = useState(false);
   const chartId = useRef(`chart-${Math.random().toString(36).substring(2, 9)}`);
@@ -290,14 +292,14 @@ export default function CommonDonutChart({
             show: showTotal ? showTotal : false,
             total: {
               showAlways: false,
-              label: "Efficiency",
+              label: totalLabel ? totalLabel : "Efficiency",
               show: true,
               color: "#2d2d2d",
               fontWeight: 600,
               fontSize: mobileView ? "12px" : labelsfontSize, // Dynamically adjust font size
               fontFamily: "Poppins, sans-serif", // Change font family of y-axis labels
               formatter: function (w) {
-                return efficientValue ? efficientValue + "%" : "0%"; // ✅ show efficient prop value in center
+                return efficientValue ? efficientValue + suffix : "0" + suffix; // ✅ show efficient prop value in center
               },
             },
             value: {
