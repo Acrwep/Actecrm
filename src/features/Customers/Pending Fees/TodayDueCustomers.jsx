@@ -100,7 +100,15 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 110 },
+    {
+      title: "Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 110,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
     {
       title: "Course ",
       key: "course_name",
@@ -514,8 +522,8 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 return {
                   ...col,
                   width: 110,
-                  render: (text, record) => {
-                    return <p>{text}</p>;
+                  render: (text) => {
+                    return <EllipsisTooltip text={text ? text : "-"} />;
                   },
                 };
               case "course_name":
