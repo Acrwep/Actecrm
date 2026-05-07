@@ -263,6 +263,9 @@ const ClassSchedule = forwardRef(
 
     const handleCompleteClass = async () => {
       setClassCompleteLoading(true);
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const customers =
         customerIdsFromBatch && customerIdsFromBatch.length > 0
           ? customerIdsFromBatch.map((item) => ({
@@ -294,11 +297,15 @@ const ClassSchedule = forwardRef(
               ? customerIdsFromBatch.map((item) => ({
                   customer_id: item.customer_id,
                   status: "Passedout process",
+                  updated_at: formatToBackendIST(new Date()),
+                  updated_by: converAsJson?.user_id || "",
                 }))
               : [
                   {
                     customer_id: customerDetails.id,
                     status: "Passedout process",
+                    updated_at: formatToBackendIST(new Date()),
+                    updated_by: converAsJson?.user_id || "",
                   },
                 ];
 
@@ -330,16 +337,23 @@ const ClassSchedule = forwardRef(
     };
 
     const handleCustomerStatus = async (updatestatus) => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const customer_ids =
         customerIdsFromBatch && customerIdsFromBatch.length > 0
           ? customerIdsFromBatch.map((item) => ({
               customer_id: item.customer_id,
               status: updatestatus,
+              updated_at: formatToBackendIST(new Date()),
+              updated_by: converAsJson?.user_id || "",
             }))
           : [
               {
                 customer_id: customerDetails.id,
                 status: updatestatus,
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ];
 

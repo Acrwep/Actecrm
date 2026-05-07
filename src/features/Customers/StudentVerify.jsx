@@ -55,11 +55,16 @@ const StudentVerify = forwardRef(
         await verifyCustomer(payload);
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
+          const getloginUserDetails = localStorage.getItem("loginUserDetails");
+          const converAsJson = JSON.parse(getloginUserDetails);
+
           const payload = {
             customer_ids: [
               {
                 customer_id: customerDetails.id,
                 status: "Awaiting Trainer",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };

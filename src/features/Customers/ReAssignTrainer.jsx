@@ -460,6 +460,8 @@ const ReAssignTrainer = forwardRef(
 
     const handleAssignTrainer = async () => {
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
 
       setUpdateButtonLoading(true);
 
@@ -483,6 +485,8 @@ const ReAssignTrainer = forwardRef(
               {
                 customer_id: customerDetails.id,
                 status: "Awaiting Trainer Verify",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };

@@ -506,6 +506,8 @@ const AssignAndVerifyTrainer = forwardRef(
         return;
 
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
 
       setUpdateButtonLoading(true);
 
@@ -529,6 +531,8 @@ const AssignAndVerifyTrainer = forwardRef(
               {
                 customer_id: customerDetails.id,
                 status: "Awaiting Trainer Verify",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };
@@ -561,6 +565,8 @@ const AssignAndVerifyTrainer = forwardRef(
     };
 
     const handleVerifyTrainer = async () => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
       const today = new Date();
 
       setButtonLoading(true);
@@ -580,6 +586,8 @@ const AssignAndVerifyTrainer = forwardRef(
               {
                 customer_id: customerDetails.id,
                 status: "Awaiting Class",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };
@@ -623,6 +631,8 @@ const AssignAndVerifyTrainer = forwardRef(
       if (commentValidate) return;
 
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
 
       setRejectButtonLoader(true);
 
@@ -641,6 +651,8 @@ const AssignAndVerifyTrainer = forwardRef(
               {
                 customer_id: customerDetails.id,
                 status: "Trainer Rejected",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };

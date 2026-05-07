@@ -640,10 +640,6 @@ export default function CustomerFeesHistoryReport() {
       const response = await getCustomerFeesHistoryReport(payload);
       console.log("get customer fees report response", response);
       setReportData(response?.data?.data || []);
-      setPagination((prev) => ({
-        ...prev,
-        total: response?.data?.data?.length || 0,
-      }));
     } catch (error) {
       setReportData([]);
       console.log("get customer fees report error", error);
@@ -653,11 +649,10 @@ export default function CustomerFeesHistoryReport() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    setPagination((prev) => ({
-      ...prev,
+    setPagination({
       page: page,
       limit: limit,
-    }));
+    });
   };
 
   const handleDownload = () => {
@@ -704,10 +699,9 @@ export default function CustomerFeesHistoryReport() {
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
-    setPagination((prev) => ({
-      ...prev,
+    setPagination({
       page: 1,
-    }));
+    });
     setTimeout(() => {
       getCustomerFeesHistoryData(
         selectedDates[0],
@@ -848,6 +842,9 @@ export default function CustomerFeesHistoryReport() {
                 options={STATUS_LIST}
                 onChange={(e) => {
                   setSelectedStatus(e.target.value);
+                  setPagination({
+                    page: 1,
+                  });
                   getCustomerFeesHistoryData(
                     selectedDates[0],
                     selectedDates[1],
@@ -865,6 +862,9 @@ export default function CustomerFeesHistoryReport() {
                 onDateChange={(dates, strings) => {
                   setSelectedDates([dates[0], dates[1]]);
                   setStartDateAndEndDate([dates[0], dates[1]]);
+                  setPagination({
+                    page: 1,
+                  });
                   getCustomerFeesHistoryData(
                     dates[0],
                     dates[1],
@@ -915,12 +915,10 @@ export default function CustomerFeesHistoryReport() {
           scroll={{ x: 3200 }}
           // bordered="true"
           loading={loading}
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit}
           page_number={pagination.page}
           totalPageNumber={pagination.total}
-          onPaginationChange={(page, limit) =>
-            handlePaginationChange({ page, limit })
-          }
           className="fees-history-table"
           checkBox={"false"}
           size={"small"}

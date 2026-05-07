@@ -329,16 +329,23 @@ const PassesOutProcess = forwardRef(
         return;
       }
       setUpdateButtonLoading(true);
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const customer_ids =
         customerIdsFromBatch && customerIdsFromBatch.length > 0
           ? customerIdsFromBatch.map((item) => ({
               customer_id: item.customer_id,
               status: "Completed",
+              updated_at: formatToBackendIST(new Date()),
+              updated_by: converAsJson?.user_id || "",
             }))
           : [
               {
                 customer_id: customerDetails.id,
                 status: "Completed",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ];
 

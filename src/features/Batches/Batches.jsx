@@ -40,6 +40,7 @@ export default function Batches() {
   const addBatchRef = useRef();
   const updateBatchCustomersRef = useRef();
   // ----------usestates----------------
+  const [selectedRegionId, setSelectedRegionId] = useState("All");
   const [selectedDates, setSelectedDates] = useState([]);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenAddBatchComponent, setIsOpenAddBatchComponent] = useState(false);
@@ -253,6 +254,7 @@ export default function Batches() {
       setTimeout(() => {
         getBatchesData(
           null,
+          null,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           true,
@@ -263,6 +265,7 @@ export default function Batches() {
 
   const getBatchesData = async (
     trainerId,
+    regionId,
     startDate,
     endDate,
     callTrainersApi = false,
@@ -270,6 +273,7 @@ export default function Batches() {
     setLoading(true);
     const payload = {
       trainer_id: trainerId,
+      ...(regionId && regionId != "All" && { region_id: regionId }),
       start_date: startDate,
       end_date: endDate,
     };
@@ -310,7 +314,12 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
-      getBatchesData(selectedId, selectedDates[0], selectedDates[1]);
+      getBatchesData(
+        selectedId,
+        selectedRegionId,
+        selectedDates[0],
+        selectedDates[1],
+      );
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
@@ -319,7 +328,12 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
-      getBatchesData(null, selectedDates[0], selectedDates[1]);
+      getBatchesData(
+        null,
+        selectedRegionId,
+        selectedDates[0],
+        selectedDates[1],
+      );
     }
   };
 
@@ -366,14 +380,32 @@ export default function Batches() {
     });
   };
 
+  const handleSelectRegionId = (e) => {
+    const regionId = e.target.value == "All" ? null : e.target.value;
+    setSelectedRegionId(regionId ? regionId : "All");
+
+    getBatchesData(
+      selectedTrainerId,
+      regionId,
+      selectedDates[0],
+      selectedDates[1],
+    );
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setSelectedTrainerId(null);
     setSelectedTrainerObject(null);
     setTrainerSearchText("");
+    setSelectedRegionId("All");
     getTrainersData(null, 1);
-    getBatchesData(null, PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]);
+    getBatchesData(
+      null,
+      null,
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+    );
   };
 
   return (
@@ -381,7 +413,7 @@ export default function Batches() {
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={7}>
               <CommonCustomerSingleSelectField
                 label="Trainer"
                 height="32px"
@@ -400,6 +432,36 @@ export default function Batches() {
                 disableClearable={false}
               />
             </Col>
+            <Col span={7}>
+              <CommonSelectField
+                width="100%"
+                height="35px"
+                label="Select Region"
+                labelMarginTop="0px"
+                labelFontSize="12px"
+                options={[
+                  {
+                    id: "All",
+                    name: "All",
+                  },
+                  {
+                    id: 1,
+                    name: "Chennai",
+                  },
+                  {
+                    id: 2,
+                    name: "Bangalore",
+                  },
+                  {
+                    id: 3,
+                    name: "Hub",
+                  },
+                ]}
+                onChange={handleSelectRegionId}
+                value={selectedRegionId}
+                disableClearable={true}
+              />
+            </Col>
             <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
@@ -408,7 +470,12 @@ export default function Batches() {
                   setPagination({
                     page: 1,
                   });
-                  getBatchesData(selectedTrainerId, dates[0], dates[1]);
+                  getBatchesData(
+                    selectedTrainerId,
+                    selectedRegionId,
+                    dates[0],
+                    dates[1],
+                  );
                 }}
               />
             </Col>
@@ -485,6 +552,7 @@ export default function Batches() {
               formReset();
               getBatchesData(
                 selectedTrainerId,
+                selectedRegionId,
                 selectedDates[0],
                 selectedDates[1],
               );
@@ -528,6 +596,7 @@ export default function Batches() {
               formReset();
               getBatchesData(
                 selectedTrainerId,
+                selectedRegionId,
                 selectedDates[0],
                 selectedDates[1],
               );

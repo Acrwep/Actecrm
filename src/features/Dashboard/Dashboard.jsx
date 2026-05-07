@@ -1432,7 +1432,7 @@ export default function Dashboard() {
 
   const handleSelectRegionId = (e) => {
     const regionId = e.target.value == "All" ? null : e.target.value;
-    setSelectedRegionId(regionId);
+    setSelectedRegionId(regionId ? regionId : "All");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
     let filteredDownliners = defaultSubUsers;

@@ -505,8 +505,18 @@ export default function CustomerRegistration() {
   };
 
   const handleCustomerStatus = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
     const payload = {
-      customer_ids: [{ customer_id: customer_id, status: "Awaiting Finance" }],
+      customer_ids: [
+        {
+          customer_id: customer_id,
+          status: "Awaiting Finance",
+          updated_at: formatToBackendIST(new Date()),
+          updated_by: converAsJson?.user_id || "",
+        },
+      ],
     };
     try {
       await updateCustomerStatus(payload);

@@ -276,6 +276,8 @@ const FinanceVerify = forwardRef(
           addUserInLMS();
         }
         setTimeout(async () => {
+          const getloginUserDetails = localStorage.getItem("loginUserDetails");
+          const converAsJson = JSON.parse(getloginUserDetails);
           const payload = {
             customer_ids: [
               {
@@ -284,6 +286,8 @@ const FinanceVerify = forwardRef(
                   customerDetails?.is_second_due === 1
                     ? (customerDetails?.status ?? "Unknown")
                     : "Awaiting Verify",
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };
@@ -331,6 +335,9 @@ const FinanceVerify = forwardRef(
 
       setRejectLoading(true);
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const payload = {
         payment_trans_id: rejectTransItem?.id || "",
         reason: financeRejectComment,
@@ -338,7 +345,12 @@ const FinanceVerify = forwardRef(
       };
       const statusPayload = {
         customer_ids: [
-          { customer_id: customerDetails.id, status: "Payment Rejected" },
+          {
+            customer_id: customerDetails.id,
+            status: "Payment Rejected",
+            updated_at: formatToBackendIST(new Date()),
+            updated_by: converAsJson?.user_id || "",
+          },
         ],
       };
       try {
@@ -452,6 +464,9 @@ const FinanceVerify = forwardRef(
 
       setButtonLoading(true);
       const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const payload = {
         invoice_date: formatToBackendIST(paymentDate),
         amount: paidNow,
@@ -479,6 +494,8 @@ const FinanceVerify = forwardRef(
                   customerDetails.status == "Payment Rejected"
                     ? "Awaiting Finance"
                     : customerDetails.status,
+                updated_at: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
               },
             ],
           };
@@ -994,6 +1011,38 @@ const FinanceVerify = forwardRef(
                               </Row>
                             </Col>
                           </Row>
+
+                          {item.payment_status === "Verify Pending" &&
+                          item.reason ? (
+                            <>
+                              <Divider className="customer_statusupdate_divider" />
+                              <div style={{ padding: "0px 12px 6px 0px" }}>
+                                <Row>
+                                  <Col span={24}>
+                                    <Row>
+                                      <Col span={8}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p
+                                            className="customerdetails_rowheading"
+                                            style={{ color: "#d32f2f" }}
+                                          >
+                                            Previous Rejection Reason:
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={16}>
+                                        <p className="customerdetails_text">
+                                          {item.reason}
+                                        </p>
+                                      </Col>
+                                    </Row>
+                                  </Col>
+                                </Row>
+                              </div>
+                            </>
+                          ) : (
+                            ""
+                          )}
                         </div>
                       </Collapse.Panel>
                     ))}
