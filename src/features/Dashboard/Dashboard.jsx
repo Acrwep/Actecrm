@@ -215,7 +215,7 @@ export default function Dashboard() {
     }
   }, [childUsers, permissions]);
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -224,13 +224,13 @@ export default function Dashboard() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      getDashboardDatesData(downliners_ids);
+      getDashboardDatesData(downliners_ids, isRefresh);
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
-  const getDashboardDatesData = async (downliners) => {
+  const getDashboardDatesData = async (downliners, isRefresh) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -249,6 +249,7 @@ export default function Dashboard() {
           null,
           null,
           true,
+          isRefresh,
         );
       } else {
         getSaleDetailsData(
@@ -259,6 +260,7 @@ export default function Dashboard() {
           null,
           null,
           true,
+          isRefresh,
         );
       }
     } catch (error) {
@@ -274,6 +276,7 @@ export default function Dashboard() {
     region_id,
     selected_user_id,
     call_api,
+    isRefresh,
   ) => {
     console.log(
       dashboard_dates,
@@ -350,6 +353,7 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
+          isRefresh,
         );
       }
     }
@@ -363,6 +367,7 @@ export default function Dashboard() {
     region_id,
     selected_user_id,
     call_api,
+    isRefresh,
   ) => {
     if (!permissions.includes("Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -374,6 +379,7 @@ export default function Dashboard() {
         region_id,
         selected_user_id,
         true,
+        isRefresh,
       );
       return;
     }
@@ -447,6 +453,7 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
+          isRefresh,
         );
       }
     }
@@ -460,6 +467,7 @@ export default function Dashboard() {
     region_id,
     selected_user_id,
     call_api,
+    isRefresh,
   ) => {
     if (!permissions.includes("Post Sale Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -471,7 +479,8 @@ export default function Dashboard() {
         region_id,
         selected_user_id,
         true,
-        1,
+        isRefresh ? 1 : userWiseLeadsType,
+        isRefresh,
       );
       return;
     }
@@ -579,7 +588,8 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
-          1,
+          isRefresh ? 1 : userWiseLeadsType,
+          isRefresh,
         );
       }
     }
@@ -620,6 +630,7 @@ export default function Dashboard() {
     selected_user_id,
     call_api,
     type,
+    isRefresh,
   ) => {
     if (!permissions.includes("User-Wise Lead Analysis")) {
       const { month, startDate, endDate } = getActiveTargetMonthRange();
@@ -631,7 +642,8 @@ export default function Dashboard() {
         region_id,
         selected_user_id,
         true,
-        1,
+        isRefresh ? 1 : userWiseType,
+        isRefresh,
       );
       return;
     }
@@ -762,7 +774,8 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
-          1,
+          isRefresh ? 1 : userWiseType,
+          isRefresh,
         );
       }
     }
@@ -777,6 +790,7 @@ export default function Dashboard() {
     selected_user_id,
     call_api,
     type,
+    isRefresh,
   ) => {
     if (!permissions.includes("User-Wise Sales Analysis")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -788,8 +802,9 @@ export default function Dashboard() {
         region_id,
         selected_user_id,
         true,
-        "Leads",
-        1,
+        isRefresh ? "Leads" : branchWiseTypeId,
+        isRefresh ? 1 : branchWiseRegionId,
+        isRefresh,
       );
       return;
     }
@@ -853,8 +868,9 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
-          "Leads",
-          1,
+          isRefresh ? "Leads" : branchWiseTypeId,
+          isRefresh ? 1 : branchWiseRegionId,
+          isRefresh,
         );
       }
     }
@@ -870,6 +886,7 @@ export default function Dashboard() {
     call_api,
     type,
     regionId,
+    isRefresh,
   ) => {
     if (!permissions.includes("Branch-Wise Performance")) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -881,7 +898,8 @@ export default function Dashboard() {
         region_id,
         selected_user_id,
         true,
-        1,
+        isRefresh ? "Leads" : regionWiseType,
+        isRefresh,
       );
       return;
     }
@@ -1013,7 +1031,8 @@ export default function Dashboard() {
           region_id,
           selected_user_id,
           true,
-          "Leads",
+          isRefresh ? "Leads" : regionWiseType,
+          isRefresh,
         );
       }
     }
@@ -1457,7 +1476,18 @@ export default function Dashboard() {
     console.log("filteredDownliners", filteredDownliners);
 
     setSubUsers(filteredDownliners);
-
+    setScoreBoardLoader(true);
+    setSaleDetailsLoader(true);
+    setUserWiseLeadsLoader(true);
+    setUserWiseLoader(true);
+    setBranchWiseLoader(true);
+    setPerformanceLoader(true);
+    setFollowupActionsLoader(true);
+    setPostSaleLoader(true);
+    // setUserWiseLeadsType(1);
+    // setUserWiseType(1);
+    // setBranchWiseRegionId(1);
+    // setBranchWiseTypeId("Leads");
     if (permissions.includes("Score Board")) {
       getScoreBoardData(
         allDashboardCardsDates,
@@ -1519,10 +1549,10 @@ export default function Dashboard() {
       setPerformanceLoader(true);
       setFollowupActionsLoader(true);
       setPostSaleLoader(true);
-      setUserWiseLeadsType(1);
-      setUserWiseType(1);
-      setBranchWiseRegionId(1);
-      setBranchWiseTypeId("Leads");
+      // setUserWiseLeadsType(1);
+      // setUserWiseType(1);
+      // setBranchWiseRegionId(1);
+      // setBranchWiseTypeId("Leads");
       if (permissions.includes("Score Board")) {
         getScoreBoardData(
           allDashboardCardsDates,
@@ -1641,7 +1671,7 @@ export default function Dashboard() {
     setPostSaleLoader(true);
     setFollowupActionsLoader(true);
     setSiteLoader(true);
-    getAllDownlineUsersData(loginUserId);
+    getAllDownlineUsersData(loginUserId, true);
   };
 
   const updateDashboardCardDate = async (name, startDate, endDate) => {
