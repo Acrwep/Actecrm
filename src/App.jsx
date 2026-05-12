@@ -7,6 +7,7 @@ import { reduxStore } from "./features/Redux/Store";
 import { requestForToken, onMessageListener } from "./firebase";
 import { NotificationProvider } from "./Context/NotificationContext";
 import { CommonMessage } from "./features/Common/CommonMessage";
+import VersionCheckerManual from "./features/Common/VersionCheckerManual";
 
 function App() {
   const [permission, setPermission] = useState(
@@ -94,6 +95,7 @@ function App() {
               </div>
             )} */}
 
+            <VersionCheckerManual />
             <Pages />
           </BrowserRouter>
         </NotificationProvider>

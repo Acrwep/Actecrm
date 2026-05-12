@@ -20,6 +20,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import {
+  getBranches,
   getCustomerBatches,
   getRegions,
   getTrainers,
@@ -40,7 +41,9 @@ export default function Batches() {
   const addBatchRef = useRef();
   const updateBatchCustomersRef = useRef();
   // ----------usestates----------------
-  const [selectedRegionId, setSelectedRegionId] = useState("All");
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenAddBatchComponent, setIsOpenAddBatchComponent] = useState(false);
@@ -263,17 +266,11 @@ export default function Batches() {
     }
   };
 
-  const getBatchesData = async (
-    trainerId,
-    regionId,
-    startDate,
-    endDate,
-    callTrainersApi = false,
-  ) => {
+  const getBatchesData = async (regionId, branchId, startDate, endDate) => {
     setLoading(true);
     const payload = {
-      trainer_id: trainerId,
-      ...(regionId && regionId != "All" && { region_id: regionId }),
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       start_date: startDate,
       end_date: endDate,
     };
@@ -287,9 +284,7 @@ export default function Batches() {
       setBatchesData([]);
       console.log("get batches error", error);
     } finally {
-      if (callTrainersApi) {
-        getTrainersData(null, 1);
-      }
+      setLoading(false);
       // getCustomersData(null, 1);
     }
   };
@@ -314,12 +309,6 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
-      getBatchesData(
-        selectedId,
-        selectedRegionId,
-        selectedDates[0],
-        selectedDates[1],
-      );
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
@@ -328,12 +317,6 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
-      getBatchesData(
-        null,
-        selectedRegionId,
-        selectedDates[0],
-        selectedDates[1],
-      );
     }
   };
 
@@ -381,15 +364,41 @@ export default function Batches() {
   };
 
   const handleSelectRegionId = (e) => {
-    const regionId = e.target.value == "All" ? null : e.target.value;
-    setSelectedRegionId(regionId ? regionId : "All");
+    const regionId = e.target.value;
+    setSelectedRegionId(regionId);
+    getBranchesData(regionId);
+    getBatchesData(regionId, null, selectedDates[0], selectedDates[1]);
+  };
 
-    getBatchesData(
-      selectedTrainerId,
-      regionId,
-      selectedDates[0],
-      selectedDates[1],
-    );
+  const getBranchesData = async (regionid) => {
+    console.log("regionid", regionid);
+    if (!regionid) {
+      setSelectedBranchId(null);
+      setBranchOptions([]);
+      return;
+    }
+    try {
+      const response = await getBranches({ region_id: regionid });
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((b) => b.name !== "Online"),
+            ...branch_data.filter((b) => b.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions([]);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("branch error", error);
+    }
   };
 
   const handleRefresh = () => {
@@ -398,7 +407,8 @@ export default function Batches() {
     setSelectedTrainerId(null);
     setSelectedTrainerObject(null);
     setTrainerSearchText("");
-    setSelectedRegionId("All");
+    setSelectedRegionId(null);
+    setSelectedBranchId(null);
     getTrainersData(null, 1);
     getBatchesData(
       null,
@@ -414,7 +424,7 @@ export default function Batches() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={7}>
-              <CommonCustomerSingleSelectField
+              {/*  <CommonCustomerSingleSelectField
                 label="Trainer"
                 height="32px"
                 labelMarginTop="-1px"
@@ -431,35 +441,39 @@ export default function Batches() {
                 error={selectedTrainerIdError}
                 disableClearable={false}
               />
-            </Col>
-            <Col span={7}>
+            */}
               <CommonSelectField
                 width="100%"
                 height="35px"
                 label="Select Region"
                 labelMarginTop="0px"
                 labelFontSize="12px"
-                options={[
-                  {
-                    id: "All",
-                    name: "All",
-                  },
-                  {
-                    id: 1,
-                    name: "Chennai",
-                  },
-                  {
-                    id: 2,
-                    name: "Bangalore",
-                  },
-                  {
-                    id: 3,
-                    name: "Hub",
-                  },
-                ]}
+                options={regionOptions}
                 onChange={handleSelectRegionId}
                 value={selectedRegionId}
-                disableClearable={true}
+                disableClearable={false}
+              />
+            </Col>
+            <Col span={7}>
+              <CommonSelectField
+                label="Branch"
+                height="35px"
+                labelMarginTop="0px"
+                labelFontSize="12px"
+                options={branchOptions}
+                value={selectedBranchId}
+                onChange={(e) => {
+                  setSelectedBranchId(e.target.value);
+                  getBatchesData(
+                    selectedRegionId,
+                    e.target.value,
+                    selectedDates[0],
+                    selectedDates[1],
+                  );
+                }}
+                error={""}
+                disableClearable={false}
+                disabled={!selectedRegionId || selectedRegionId == 3}
               />
             </Col>
             <Col span={10}>
@@ -471,8 +485,8 @@ export default function Batches() {
                     page: 1,
                   });
                   getBatchesData(
-                    selectedTrainerId,
                     selectedRegionId,
+                    selectedBranchId,
                     dates[0],
                     dates[1],
                   );
@@ -551,8 +565,8 @@ export default function Batches() {
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
-                selectedTrainerId,
                 selectedRegionId,
+                selectedBranchId,
                 selectedDates[0],
                 selectedDates[1],
               );
@@ -595,8 +609,8 @@ export default function Batches() {
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
-                selectedTrainerId,
                 selectedRegionId,
+                selectedBranchId,
                 selectedDates[0],
                 selectedDates[1],
               );
