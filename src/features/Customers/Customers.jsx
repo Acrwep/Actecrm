@@ -978,14 +978,14 @@ export default function Customers() {
               {record.is_second_due === 1 && status == "Awaiting Finance" ? (
                 <div>
                   <Button className="customers_status_awaitfinance_button">
-                    Awaiting Finance
+                    Payment Verify
                   </Button>
                 </div>
               ) : record.is_second_due === 1 &&
                 permissions.includes("Finance Verify") ? (
                 <div>
                   <Button className="customers_status_awaitfinance_button">
-                    Awaiting Finance
+                    Payment Verify
                   </Button>
                 </div>
               ) : text === "Form Pending" ? (
@@ -1005,7 +1005,7 @@ export default function Customers() {
               ) : text === "Awaiting Finance" ? (
                 <div>
                   <Button className="customers_status_awaitfinance_button">
-                    {text}
+                    Payment Verify
                   </Button>
                 </div>
               ) : text === "Awaiting Verify" ? (
@@ -2383,14 +2383,14 @@ export default function Customers() {
                         status == "Awaiting Finance" ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
-                              Awaiting Finance
+                              Payment Verify
                             </Button>
                           </div>
                         ) : record.is_second_due === 1 &&
                           permissions.includes("Finance Verify") ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
-                              Awaiting Finance
+                              Payment Verify
                             </Button>
                           </div>
                         ) : text === "Form Pending" ? (
@@ -2410,7 +2410,7 @@ export default function Customers() {
                         ) : text === "Awaiting Finance" ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
-                              {text}
+                              Payment Verify
                             </Button>
                           </div>
                         ) : text === "Awaiting Verify" ? (
@@ -3234,7 +3234,7 @@ export default function Customers() {
                 </p>
               ) : (
                 <p>
-                  Awaiting Finance{" "}
+                  Payment Verify{" "}
                   {`(  ${
                     customerStatusCount &&
                     customerStatusCount.awaiting_finance !== undefined &&

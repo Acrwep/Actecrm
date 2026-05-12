@@ -186,7 +186,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       render: (text, record) => {
         return (
           <>
-            <p>{moment(text).format("DD/MM/YYYY")}</p>
+            <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
           </>
         );
       },
@@ -212,7 +212,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             {record.is_second_due === 1 ? (
               <div>
                 <Button className="customers_status_awaitfinance_button">
-                  Awaiting Finance
+                  Payment Verify{" "}
                 </Button>
               </div>
             ) : text === "Form Pending" ? (
@@ -230,7 +230,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             ) : text === "Awaiting Finance" ? (
               <div>
                 <Button className="customers_status_awaitfinance_button">
-                  {text}
+                  Payment Verify
                 </Button>
               </div>
             ) : text === "Awaiting Verify" ? (
@@ -586,7 +586,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   render: (text, record) => {
                     return (
                       <>
-                        <p>{moment(text).format("DD/MM/YYYY")}</p>
+                        <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
                       </>
                     );
                   },
@@ -616,7 +616,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                         {record.is_second_due === 1 ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
-                              Awaiting Finance
+                              Payment Verify
                             </Button>
                           </div>
                         ) : text === "Form Pending" ? (
@@ -634,7 +634,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                         ) : text === "Awaiting Finance" ? (
                           <div>
                             <Button className="customers_status_awaitfinance_button">
-                              {text}
+                              Payment Verify
                             </Button>
                           </div>
                         ) : text === "Awaiting Verify" ? (

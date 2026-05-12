@@ -71,7 +71,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   };
 
   const handleViewIncoice = async (transactionId) => {
-    console.log(paymentFullDetails);
+    console.log(paymentFullDetails, transactionId);
 
     const findTrans =
       paymentHistory?.find((f) => f.id === transactionId) ?? null;

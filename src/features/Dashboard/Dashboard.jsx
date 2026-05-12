@@ -3066,22 +3066,28 @@ export default function Dashboard() {
                       <p>Status</p>
                     </Col>
                     <Col
-                      span={6}
+                      span={4}
                       className="dashboard_performchannel_heading_col"
                     >
                       <p>Total</p>
                     </Col>
                     <Col
-                      span={6}
+                      span={4}
                       className="dashboard_performchannel_heading_col"
                     >
                       <p>Handled</p>
                     </Col>
                     <Col
-                      span={6}
+                      span={5}
                       className="dashboard_performchannel_heading_col"
                     >
                       <p>Un-Handled</p>
+                    </Col>
+                    <Col
+                      span={3}
+                      className="dashboard_performchannel_heading_col"
+                    >
+                      <p>Efficiency</p>
                     </Col>
                   </Row>
 
@@ -3101,22 +3107,28 @@ export default function Dashboard() {
                             <p>{item.action_name}</p>
                           </Col>
                           <Col
-                            span={6}
+                            span={4}
                             className="dashboard_performchannel_data_col"
                           >
                             <p>{item.total}</p>
                           </Col>
                           <Col
-                            span={6}
+                            span={4}
                             className="dashboard_performchannel_data_col"
                           >
                             <p>{item.handled_follow_up}</p>
                           </Col>
                           <Col
-                            span={6}
+                            span={5}
                             className="dashboard_performchannel_data_col"
                           >
                             <p>{item.unhandled_follow_up}</p>
+                          </Col>
+                          <Col
+                            span={3}
+                            className="dashboard_performchannel_data_col"
+                          >
+                            <p>{item.percentage + "%"}</p>
                           </Col>
                         </Row>
                       </React.Fragment>

@@ -129,7 +129,7 @@ const UpdateBatchCustomers = forwardRef(
               ) : text === "Awaiting Finance" ? (
                 <div>
                   <Button className="customers_status_awaitfinance_button">
-                    {text}
+                    Payment Verify
                   </Button>
                 </div>
               ) : text === "Awaiting Verify" ? (
