@@ -60,6 +60,7 @@ import {
   sendCustomerWelcomeEmail,
   updateTableColumns,
   leadReEntry,
+  getUsersByRole,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -129,6 +130,7 @@ export default function Leads({
   const [isQualityCommentSection, setIsQualityCommentSection] = useState(false);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
+  const [raUsers, setRaUsers] = useState([]);
   const [selectedRA, setSelectedRA] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
   const [paymentDateError, setPaymentDateError] = useState("");
@@ -498,6 +500,9 @@ export default function Leads({
                   className="trainers_action_icons"
                   onClick={() => {
                     if (permissions.includes("Edit Lead Button")) {
+                      if (filterValuesFromRedux.call_getraapi) {
+                        getRaUsers();
+                      }
                       setIsOpenPaymentDrawer(true);
                       setSubTotal(parseFloat(record.primary_fees));
                       setAmount(parseFloat(record.primary_fees));
@@ -925,6 +930,9 @@ export default function Leads({
                             className="trainers_action_icons"
                             onClick={() => {
                               if (permissions.includes("Edit Lead Button")) {
+                                if (filterValuesFromRedux.call_getraapi) {
+                                  getRaUsers();
+                                }
                                 setIsOpenPaymentDrawer(true);
                                 setSubTotal(parseFloat(record.primary_fees));
                                 setAmount(parseFloat(record.primary_fees));
@@ -1025,6 +1033,12 @@ export default function Leads({
       console.error("get table columns error", error);
     }
   };
+
+  useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    getTableColumnsData(convertAsJson?.user_id);
+  }, [filterValuesFromRedux.call_getraapi]);
 
   const updateTableColumnsData = async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -1136,6 +1150,25 @@ export default function Leads({
     }
   };
 
+  const getRaUsers = async () => {
+    const payload = {
+      role: "RA",
+    };
+    try {
+      const response = await getUsersByRole(payload);
+      console.log("get hr users response", response);
+      setRaUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setRaUsers([]);
+      console.log("get hr users error", error);
+    } finally {
+      dispatch(
+        storeLeadFilterValues({
+          call_getraapi: false,
+        }),
+      );
+    }
+  };
   //onchange functions
   const handlePaidNow = (e) => {
     const input = e.target.value;
@@ -2760,7 +2793,7 @@ export default function Leads({
               <CommonSelectField
                 width="100%"
                 label="Select RA"
-                options={subUsers}
+                options={raUsers}
                 onChange={handleSelectRA}
                 value={selectedRA}
                 disableClearable={false}

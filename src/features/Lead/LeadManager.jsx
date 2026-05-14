@@ -135,6 +135,7 @@ export default function LeadManager() {
           end_date: moment(today).format("YYYY-MM-DD"),
           user_id: null,
           lead_source: null,
+          call_getraapi: true,
           pageNumber: 1,
           pageLimit: 10,
         }),

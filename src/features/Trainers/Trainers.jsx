@@ -13,13 +13,20 @@ import {
   Upload,
   Select,
   Checkbox,
+  Popover,
+  Avatar,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
-import { AiOutlineEdit } from "react-icons/ai";
-import { RedoOutlined } from "@ant-design/icons";
-import { PlusOutlined } from "@ant-design/icons";
+import { AiOutlineEdit, AiOutlineInfoCircle } from "react-icons/ai";
+import {
+  RedoOutlined,
+  PlusOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
 import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -45,6 +52,7 @@ import {
   getTrainers,
   getTrainerSkills,
   getUsersByRole,
+  getCustomerByTrainerId,
   sendTrainerFormEmail,
   trainerStatusUpdate,
   updateTableColumns,
@@ -63,6 +71,95 @@ import { FaRegCopy } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+
+const CustomerList = ({ trainerId, isClassTaken }) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const payload = {
+          trainer_id: trainerId,
+          is_class_taken: isClassTaken,
+        };
+        const response = await getCustomerByTrainerId(payload);
+        setData(response?.data?.data?.students || []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [trainerId, isClassTaken]);
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getRandomColor = (index) => {
+    const colors = ["#1890ff", "#52c41a", "#722ed1", "#fa8c16", "#eb2f96"];
+    return colors[index % colors.length];
+  };
+
+  return (
+    <div
+      className="customer-popover-container"
+      style={{
+        minWidth: "280px",
+        maxWidth: "350px",
+        maxHeight: "240px",
+        overflowY: "auto",
+        padding: "16px",
+      }}
+    >
+      <div className="customer-popover-header">
+        <span>Customers List</span>
+        {data.length > 0 && (
+          <span style={{ fontSize: "12px", color: "#8c8c8c", fontWeight: 400 }}>
+            {data.length} Total
+          </span>
+        )}
+      </div>
+      {loading ? (
+        <div style={{ padding: "40px 0", textAlign: "center" }}>
+          <CommonSpinner />
+        </div>
+      ) : data.length > 0 ? (
+        data.map((item, index) => (
+          <div key={index} className="customer-item-wrapper">
+            <div className="customer-info-content">
+              <span className="customer-info-name">{item.cus_name || "-"}</span>
+              <div className="customer-info-detail">
+                <MailOutlined style={{ fontSize: "11px", color: "#1890ff" }} />
+                <span>{item.cus_email || "-"}</span>
+              </div>
+              <div className="customer-info-detail">
+                <PhoneOutlined style={{ fontSize: "11px", color: "#52c41a" }} />
+                <span>
+                  {item.cus_phonecode} {item.cus_phone}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div style={{ padding: "0px", textAlign: "center" }}>
+          <p style={{ color: "#bfbfbf", margin: 0, fontSize: "14px" }}>
+            No records found
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function Trainers() {
   const scrollRef = useRef();
@@ -197,8 +294,22 @@ export default function Trainers() {
       key: "on_boarding_count",
       dataIndex: "on_boarding_count",
       width: 150,
-      render: (text) => {
-        return <p>{text + " Customers"}</p>;
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <p style={{ margin: 0 }}>{text + " Customers"}</p>
+            <Popover
+              placement="right"
+              content={<CustomerList trainerId={record.id} isClassTaken={1} />}
+              trigger="click"
+            >
+              <AiOutlineInfoCircle
+                size={14}
+                style={{ color: "#1890ff", cursor: "pointer" }}
+              />
+            </Popover>
+          </div>
+        );
       },
     },
     {
@@ -206,8 +317,22 @@ export default function Trainers() {
       key: "on_going_count",
       dataIndex: "on_going_count",
       width: 150,
-      render: (text) => {
-        return <p>{text + " Customers"}</p>;
+      render: (text, record) => {
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <p style={{ margin: 0 }}>{text + " Customers"}</p>
+            <Popover
+              placement="bottom"
+              content={<CustomerList trainerId={record.id} isClassTaken={0} />}
+              trigger="click"
+            >
+              <AiOutlineInfoCircle
+                size={14}
+                style={{ color: "#5b69ca", cursor: "pointer" }}
+              />
+            </Popover>
+          </div>
+        );
       },
     },
     {
@@ -629,18 +754,68 @@ export default function Trainers() {
             case "on_boarding_count": {
               return {
                 ...col,
-                width: 120,
-                render: (text) => {
-                  return <p>{text + " Customers"}</p>;
+                width: 150,
+                render: (text, record) => {
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <p style={{ margin: 0 }}>{text + " Customers"}</p>
+                      <Popover
+                        placement="bottom"
+                        content={
+                          <CustomerList
+                            trainerId={record.id}
+                            isClassTaken={1}
+                          />
+                        }
+                        trigger="click"
+                      >
+                        <AiOutlineInfoCircle
+                          size={14}
+                          style={{ color: "#5b69ca", cursor: "pointer" }}
+                        />
+                      </Popover>
+                    </div>
+                  );
                 },
               };
             }
             case "on_going_count": {
               return {
                 ...col,
-                width: 120,
-                render: (text) => {
-                  return <p>{text + " Customers"}</p>;
+                width: 150,
+                render: (text, record) => {
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <p style={{ margin: 0 }}>{text + " Customers"}</p>
+                      <Popover
+                        placement="bottom"
+                        content={
+                          <CustomerList
+                            trainerId={record.id}
+                            isClassTaken={0}
+                          />
+                        }
+                        trigger="click"
+                      >
+                        <AiOutlineInfoCircle
+                          size={14}
+                          style={{ color: "#5b69ca", cursor: "pointer" }}
+                        />
+                      </Popover>
+                    </div>
+                  );
                 },
               };
             }
