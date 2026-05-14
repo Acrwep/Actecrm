@@ -42,6 +42,7 @@ import PhoneWithCountry from "../Common/PhoneWithCountry";
 const CustomerUpdate = forwardRef(
   (
     {
+      subUsers,
       callgetCustomersApi,
       setUpdateDrawerTabKey,
       customerId,
@@ -58,6 +59,8 @@ const CustomerUpdate = forwardRef(
     const [profilePictureBase64, setProfilePictureBase64] = useState("");
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState("");
+    const [selectedRA, setSelectedRA] = useState(null);
+    const [leadId, setLeadId] = useState(null);
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [email, setEmail] = useState("");
@@ -213,6 +216,8 @@ const CustomerUpdate = forwardRef(
         const response = await getCustomerById(customerId);
         console.log("customer response", response);
         const customerDetails = response?.data?.data;
+        setSelectedRA(customerDetails?.ra_id);
+        setLeadId(customerDetails?.lead_id);
         setName(customerDetails.name);
         setEmail(customerDetails.email);
         //mobile fetch
@@ -552,6 +557,8 @@ const CustomerUpdate = forwardRef(
 
       const payload = {
         id: customerId,
+        ra_id: selectedRA,
+        lead_id: leadId,
         name: name,
         email: email,
         phonecode: mobileCountryCode,
@@ -666,6 +673,8 @@ const CustomerUpdate = forwardRef(
     const formReset = () => {
       setProfilePictureArray([]);
       setProfilePictureBase64("");
+      setSelectedRA(null);
+      setLeadId(null);
       setName("");
       setNameError("");
       setEmail("");
@@ -735,10 +744,23 @@ const CustomerUpdate = forwardRef(
               </Upload>
             </div>
 
-            <Row gutter={12} style={{ marginTop: "8px" }}>
+            <Row gutter={[12, 30]} style={{ marginTop: "8px" }}>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  width="100%"
+                  label="Select RA"
+                  options={subUsers}
+                  onChange={(e) => {
+                    setSelectedRA(e.target.value);
+                  }}
+                  value={selectedRA}
+                  disableClearable={false}
+                />
+              </Col>
+
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonInputField
-                  label="Name"
+                  label="Candidate Name"
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
@@ -750,6 +772,7 @@ const CustomerUpdate = forwardRef(
                   required={true}
                 />
               </Col>
+
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonInputField
                   label="Email"
@@ -785,9 +808,7 @@ const CustomerUpdate = forwardRef(
                   error={mobileError}
                 />
               </Col>
-            </Row>
 
-            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <PhoneWithCountry
                   label="WhatsApp Number"
@@ -837,9 +858,7 @@ const CustomerUpdate = forwardRef(
                   error={""}
                 />
               </Col>
-            </Row>
 
-            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonMuiDatePicker
                   label="Date Of Joining"
@@ -879,9 +898,7 @@ const CustomerUpdate = forwardRef(
                   error={stateIdError}
                 />
               </Col>
-            </Row>
 
-            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Area"
@@ -922,9 +939,7 @@ const CustomerUpdate = forwardRef(
                   error={""}
                 />
               </Col>
-            </Row>
 
-            <Row gutter={12} style={{ marginTop: "30px" }}>
               <Col xs={24} sm={24} md={24} lg={14}>
                 <CommonInputField
                   label="Address"

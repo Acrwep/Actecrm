@@ -1175,6 +1175,14 @@ export const getAllDownlineUsers = async (user_id) => {
   }
 };
 
+export const getUsersByRole = async (payload) => {
+  try {
+    const response = await api.post(`/api/getHRUsers`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //dashboard api's
 export const updateDashboardDates = async (payload) => {
   try {

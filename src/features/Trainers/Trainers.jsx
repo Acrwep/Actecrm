@@ -44,6 +44,7 @@ import {
   getTechnologies,
   getTrainers,
   getTrainerSkills,
+  getUsersByRole,
   sendTrainerFormEmail,
   trainerStatusUpdate,
   updateTableColumns,
@@ -153,6 +154,7 @@ export default function Trainers() {
   const [skillName, setSkillName] = useState("");
   const [skillNameError, setSkillNameError] = useState("");
   //hr filter
+  const [hrUsers, setHrUsers] = useState([]);
   const [hrId, setHrId] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
@@ -188,6 +190,24 @@ export default function Trainers() {
       fixed: "left",
       render: (text) => {
         return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Class Taken",
+      key: "on_boarding_count",
+      dataIndex: "on_boarding_count",
+      width: 150,
+      render: (text) => {
+        return <p>{text + " Customers"}</p>;
+      },
+    },
+    {
+      title: "Class Going",
+      key: "on_going_count",
+      dataIndex: "on_going_count",
+      width: 150,
+      render: (text) => {
+        return <p>{text + " Customers"}</p>;
       },
     },
     {
@@ -425,13 +445,29 @@ export default function Trainers() {
         getTableColumnsData(convertAsJson?.user_id);
       }, 300);
       setTableColumns(nonChangeColumns);
-      getTrainersData(null, null, null, 1, 10, true);
+      getHrUsers();
     }
   }, [permissions]);
 
   // useEffect(() => {
   //   getTechnologiesData();
   // }, []);
+
+  const getHrUsers = async () => {
+    const payload = {
+      role: "HR",
+    };
+    try {
+      const response = await getUsersByRole(payload);
+      console.log("get hr users response", response);
+      setHrUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setHrUsers([]);
+      console.log("get hr users error", error);
+    } finally {
+      getTrainersData(null, null, null, 1, 10, true);
+    }
+  };
 
   const getTrainersData = async (
     searchvalue,
@@ -454,7 +490,7 @@ export default function Trainers() {
         ? { is_form_sent: 1 }
         : trainerStatus == "Onboarded"
           ? { is_onboarding: 1 }
-          : trainerStatus == "Ongoing"
+          : trainerStatus == "Ongoing" || trainerStatus == "OnGoing"
             ? { ongoing: "Ongoing" }
             : trainerStatus && { status: trainerStatus }),
       ...(hr_id && { created_by: hr_id }),
@@ -587,6 +623,24 @@ export default function Trainers() {
                 fixed: "left",
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
+                },
+              };
+            }
+            case "on_boarding_count": {
+              return {
+                ...col,
+                width: 120,
+                render: (text) => {
+                  return <p>{text + " Customers"}</p>;
+                },
+              };
+            }
+            case "on_going_count": {
+              return {
+                ...col,
+                width: 120,
+                render: (text) => {
+                  return <p>{text + " Customers"}</p>;
                 },
               };
             }
@@ -1878,7 +1932,7 @@ export default function Trainers() {
               <div className="overallduecustomers_filterContainer">
                 <CommonSelectField
                   label="HR"
-                  options={downlineUsers}
+                  options={hrUsers}
                   width="100%"
                   height="35px"
                   labelMarginTop="-2px"

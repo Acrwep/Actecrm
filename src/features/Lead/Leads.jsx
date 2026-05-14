@@ -129,6 +129,7 @@ export default function Leads({
   const [isQualityCommentSection, setIsQualityCommentSection] = useState(false);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
+  const [selectedRA, setSelectedRA] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
   const [paymentDateError, setPaymentDateError] = useState("");
   const [placeOfPayment, setPlaceOfPayment] = useState(null);
@@ -1349,6 +1350,7 @@ export default function Leads({
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
       next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
+      ra_id: selectedRA,
       created_date: formatToBackendIST(today),
       paid_date: formatToBackendIST(paymentDate),
       place_of_payment: placeOfPayment,
@@ -1491,6 +1493,7 @@ export default function Leads({
     setBalanceAmount();
     setDueDate(null);
     setDueDateError("");
+    setSelectedRA(null);
     setCustomerCourseId(null);
     setCustomerBatchTrackId(null);
     setCustomerBatchTimingId(null);
@@ -1762,6 +1765,13 @@ export default function Leads({
           "Something went wrong. Try again later",
       );
     }
+  };
+
+  const handleSelectRA = async (e) => {
+    const value = e.target.value;
+    console.log("selected raaa", value);
+
+    setSelectedRA(value);
   };
 
   return (
@@ -2742,10 +2752,21 @@ export default function Leads({
           </p>
 
           <Row
-            gutter={16}
-            style={{ marginTop: "20px", marginBottom: "30px" }}
+            gutter={[16, 30]}
+            style={{ marginTop: "20px", marginBottom: "50px" }}
             className="leadmanager_paymentdetails_drawer_rowdiv"
           >
+            <Col span={8}>
+              <CommonSelectField
+                width="100%"
+                label="Select RA"
+                options={subUsers}
+                onChange={handleSelectRA}
+                value={selectedRA}
+                disableClearable={false}
+              />
+            </Col>
+
             <Col span={8}>
               <CommonSelectField
                 label="Course"
@@ -2781,13 +2802,7 @@ export default function Leads({
                 error={customerBatchTimingIdError}
               />
             </Col>
-          </Row>
 
-          <Row
-            gutter={16}
-            style={{ marginTop: "20px", marginBottom: "30px" }}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-          >
             <Col span={8}>
               <CommonInputField
                 label="Customer Current State"
@@ -2832,13 +2847,7 @@ export default function Leads({
                 value={gstNumber}
               />{" "}
             </Col>
-          </Row>
 
-          <Row
-            gutter={16}
-            style={{ marginTop: "20px", marginBottom: "50px" }}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-          >
             <Col span={8}>
               <CommonSelectField
                 label="Placement Support"
@@ -2857,6 +2866,7 @@ export default function Leads({
                 error={placementSupportError}
               />
             </Col>
+
             <Col span={8}>
               <div
                 style={{
