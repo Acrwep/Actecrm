@@ -280,6 +280,20 @@ export default function Trainers() {
       },
     },
     {
+      title: "Created At",
+      key: "created_date",
+      dataIndex: "created_date",
+      width: 100,
+      fixed: "left",
+      render: (text) => {
+        return (
+          <EllipsisTooltip
+            text={text ? moment(text).format("DD/MM/YYYY") : ""}
+          />
+        );
+      },
+    },
+    {
       title: "Trainer Id",
       key: "trainer_code",
       dataIndex: "trainer_code",
@@ -741,6 +755,20 @@ export default function Trainers() {
                   return <EllipsisTooltip text={lead_executive} />;
                 },
               };
+            case "created_date": {
+              return {
+                ...col,
+                width: 100,
+                fixed: "left",
+                render: (text) => {
+                  return (
+                    <EllipsisTooltip
+                      text={text ? moment(text).format("DD/MM/YYYY") : ""}
+                    />
+                  );
+                },
+              };
+            }
             case "trainer_code": {
               return {
                 ...col,

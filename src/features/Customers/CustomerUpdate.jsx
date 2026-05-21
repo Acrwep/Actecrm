@@ -31,6 +31,7 @@ import {
   getRegions,
   getTechnologies,
   getTrainingMode,
+  getUsersByRole,
   paymentMasterUpdate,
   updateCustomer,
 } from "../ApiService/action";
@@ -42,7 +43,6 @@ import PhoneWithCountry from "../Common/PhoneWithCountry";
 const CustomerUpdate = forwardRef(
   (
     {
-      subUsers,
       callgetCustomersApi,
       setUpdateDrawerTabKey,
       customerId,
@@ -59,6 +59,7 @@ const CustomerUpdate = forwardRef(
     const [profilePictureBase64, setProfilePictureBase64] = useState("");
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState("");
+    const [raUsers, setRaUsers] = useState([]);
     const [selectedRA, setSelectedRA] = useState(null);
     const [leadId, setLeadId] = useState(null);
     const [name, setName] = useState("");
@@ -206,8 +207,24 @@ const CustomerUpdate = forwardRef(
         console.log("response status error", error);
       } finally {
         setTimeout(() => {
-          getCustomerData();
+          getRaUsers();
         }, 300);
+      }
+    };
+
+    const getRaUsers = async () => {
+      const payload = {
+        role: "RA",
+      };
+      try {
+        const response = await getUsersByRole(payload);
+        console.log("get ra users response", response);
+        setRaUsers(response?.data?.data?.data || []);
+      } catch (error) {
+        setRaUsers([]);
+        console.log("get hr users error", error);
+      } finally {
+        getCustomerData();
       }
     };
 
@@ -557,7 +574,7 @@ const CustomerUpdate = forwardRef(
 
       const payload = {
         id: customerId,
-        ra_id: selectedRA,
+        ra_id: selectedRA ? selectedRA : null,
         lead_id: leadId,
         name: name,
         email: email,
@@ -749,7 +766,7 @@ const CustomerUpdate = forwardRef(
                 <CommonSelectField
                   width="100%"
                   label="Select RA"
-                  options={subUsers}
+                  options={raUsers}
                   onChange={(e) => {
                     setSelectedRA(e.target.value);
                   }}

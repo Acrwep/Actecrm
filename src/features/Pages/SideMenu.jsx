@@ -16,11 +16,13 @@ import {
   getTableColumns,
   getUserDownline,
   getUserPermissions,
+  getUsers,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import {
   storeChildUsers,
   storeDownlineUsers,
+  storeloginUserProfileBase64,
   storeUserPermissions,
 } from "../Redux/Slice";
 
@@ -194,83 +196,87 @@ export default function SideMenu() {
   }, [location.pathname]);
 
   useEffect(() => {
-    getUserDownlineData();
+    getUserData();
   }, []);
 
-  const getUserDownlineData = async () => {
+  const getUserData = async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
-    let child_users;
-    let downline_users;
-    let user_roles;
+
     try {
-      const response = await getUserDownline(convertAsJson?.user_id);
-      console.log("user downline response", response);
-      child_users = response?.data?.data?.child_users || [];
-      downline_users = response?.data?.data?.downline_users || [];
-      user_roles = response?.data?.data?.roles || [];
+      // First API
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      const firstPayload = {
+        user_id: convertAsJson?.user_id,
+      };
+      const loginUserResponse = await getUsers(firstPayload);
+      console.log("loginUserResponse", loginUserResponse);
+      const loginUserData = loginUserResponse?.data?.data?.data[0] || null;
+      dispatch(storeloginUserProfileBase64(loginUserData?.profile_image));
+      // Second API
+      const downlineResponse = await getUserDownline(convertAsJson?.user_id);
+
+      console.log("user downline response", downlineResponse);
+
+      const child_users = downlineResponse?.data?.data?.child_users || [];
+
+      const downline_users = downlineResponse?.data?.data?.downline_users || [];
+
+      const user_roles = downlineResponse?.data?.data?.roles || [];
+
       dispatch(storeChildUsers(child_users));
       dispatch(storeDownlineUsers(downline_users));
+
+      // Third API
+      const permissionPayload = {
+        role_ids: user_roles,
+      };
+
+      const permissionResponse = await getUserPermissions(permissionPayload);
+
+      console.log("user permissions response", permissionResponse);
+
+      const permission = permissionResponse?.data?.data || [];
+
+      const updateData = permission.map((item) => item.permission_name);
+
+      dispatch(storeUserPermissions(updateData));
+
+      let updatedMenu = { ...nonChangeMenuOptions };
+
+      if (!updateData.includes("Lead Manager Page")) {
+        delete updatedMenu[2];
+      }
+
+      if (!updateData.includes("Trainers Page")) {
+        delete updatedMenu[7];
+      }
+
+      if (!updateData.includes("Trainer Payment Page")) {
+        delete updatedMenu[8];
+      }
+
+      if (!updateData.includes("Bulk Search Page")) {
+        delete updatedMenu[9];
+      }
+
+      if (!updateData.includes("Reports Page")) {
+        delete updatedMenu[10];
+      }
+
+      if (!updateData.includes("Settings Page")) {
+        delete updatedMenu[12];
+      }
+
+      setSideMenuOptions(updatedMenu);
     } catch (error) {
-      user_roles = [];
-      child_users = [];
       dispatch(storeChildUsers([]));
       dispatch(storeDownlineUsers([]));
-      console.log("user downline error", error);
-    } finally {
-      setTimeout(() => {
-        getPermissionsData(user_roles);
-      }, 300);
-    }
-  };
+      dispatch(storeUserPermissions([]));
 
-  const getPermissionsData = async (user_roles) => {
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-
-    const payload = {
-      role_ids: user_roles,
-    };
-    try {
-      const response = await getUserPermissions(payload);
-      console.log("user permissions response", response);
-      const permission = response?.data?.data;
-      if (permission.length >= 1) {
-        const updateData = permission.map((item) => {
-          return item.permission_name;
-        });
-        console.log("permissions", updateData);
-        dispatch(storeUserPermissions(updateData));
-        let updatedMenu = { ...nonChangeMenuOptions };
-
-        if (!permissions.includes("Lead Manager Page")) {
-          delete updatedMenu[2];
-        }
-
-        if (!updateData.includes("Trainers Page")) {
-          delete updatedMenu[7];
-        }
-
-        if (!permissions.includes("Trainer Payment Page")) {
-          delete updatedMenu[8];
-        }
-
-        if (!permissions.includes("Bulk Search Page")) {
-          delete updatedMenu[9];
-        }
-
-        if (!permissions.includes("Reports Page")) {
-          delete updatedMenu[10];
-        }
-
-        if (!updateData.includes("Settings Page")) {
-          delete updatedMenu[12];
-        }
-
-        setSideMenuOptions(updatedMenu);
-      }
-    } catch (error) {
-      console.log("user permissions error", error);
+      console.log("user data error", error);
     }
   };
 

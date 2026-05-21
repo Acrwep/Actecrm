@@ -67,10 +67,14 @@ import { CommonMessage } from "../Common/CommonMessage";
 import NotificationImage from "../../assets/bell-colored.svg";
 import { NotificationContext } from "../../Context/NotificationContext";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import { useSelector } from "react-redux";
 
 export default function CustomHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const loginUserProfileImage = useSelector(
+    (state) => state.loginuserprofilebase64,
+  );
 
   const [userName, setUserName] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -1603,7 +1607,7 @@ Course Advisor
           className="customer_statusupdate_drawer_profileContainer"
           id="customer_history_profilecontainer"
         >
-          {customerDetails && customerDetails.profile_image ? (
+          {loginUserProfileImage ? (
             // <img
             //   src={customerDetails.profile_image}
             //   className="cutomer_profileimage"
@@ -1615,7 +1619,7 @@ Course Advisor
                   uid: "-1",
                   name: "profile.jpg",
                   status: "done",
-                  url: customerDetails.profile_image, // Base64 string directly usable
+                  url: loginUserProfileImage, // Base64 string directly usable
                 },
               ]}
               onPreview={handlePreview}
@@ -2273,15 +2277,13 @@ Course Advisor
               overflow: "hidden",
             }}
           >
-            {loginUserDetails?.profile_image ? (
+            {loginUserProfileImage ? (
               <img
                 src={
-                  loginUserDetails.profile_image.startsWith("data:image") ||
-                  loginUserDetails.profile_image.startsWith("http")
-                    ? loginUserDetails.profile_image
-                    : `${import.meta.env.VITE_API_URL}/${
-                        loginUserDetails.profile_image
-                      }`
+                  loginUserProfileImage.startsWith("data:image") ||
+                  loginUserProfileImage.startsWith("http")
+                    ? loginUserProfileImage
+                    : `${import.meta.env.VITE_API_URL}/${loginUserProfileImage}`
                 }
                 alt="Profile"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}

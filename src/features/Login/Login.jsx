@@ -24,6 +24,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import {
   storeChildUsers,
   storeDownlineUsers,
+  storeloginUserProfileBase64,
   storeUserPermissions,
 } from "../Redux/Slice";
 import { useDispatch } from "react-redux";
@@ -121,11 +122,20 @@ export default function Login() {
       const response = await LoginApi(payload);
       console.log("login response", response);
       const loginUserDetails = response?.data?.data;
+      const filteredUserDetails = {
+        id: loginUserDetails?.id,
+        user_id: loginUserDetails?.user_id,
+        user_name: loginUserDetails?.user_name,
+        child_users: loginUserDetails?.child_users,
+        roles: loginUserDetails?.roles,
+        phone: loginUserDetails?.phone,
+      };
       localStorage.setItem("AccessToken", response?.data?.token);
       localStorage.setItem(
         "loginUserDetails",
-        JSON.stringify(loginUserDetails),
+        JSON.stringify(filteredUserDetails),
       );
+      dispatch(storeloginUserProfileBase64(loginUserDetails?.profile_image));
 
       // 🔥 FIX: Don't block the login flow with FCM registration or downline fetching.
       // These can happen in the background without keeping the user on the login page.
@@ -140,7 +150,7 @@ export default function Login() {
       // Start fetching data but don't strictly wait for everything to finish before showing dashboard
       getUserDownlineData(loginUserDetails?.user_id);
     } catch (error) {
-      console.log("login error");
+      console.log("login error", error);
       setLoading(false);
       CommonMessage(
         "error",

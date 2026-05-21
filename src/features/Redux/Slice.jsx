@@ -2,6 +2,18 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = [];
 
+const loginUserProfileBase64 = null;
+const loginUserProfileBase64Slice = createSlice({
+  name: "loginuserprofilebase64",
+  initialState: loginUserProfileBase64,
+  reducers: {
+    storeloginUserProfileBase64(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 let activepage = "";
 const leadManagerActivePageSlice = createSlice({
   name: "leadmanageractivepage",
@@ -472,6 +484,8 @@ const liveLeadSelectedDatesSlice = createSlice({
 });
 
 //define slice
+export const { storeloginUserProfileBase64 } =
+  loginUserProfileBase64Slice.actions;
 export const { storeLeadManagerActivePage } =
   leadManagerActivePageSlice.actions;
 export const { storeCourseList } = courseListSlice.actions;
@@ -529,6 +543,8 @@ export const { storeJunkLeadFilterValues } = junkLeadFilterValuesSlice.actions;
 export const { storeAssignLeadFilterValues } =
   assignLeadFilterValuesSlice.actions;
 //create reducer
+export const loginUserProfileBase64Reducer =
+  loginUserProfileBase64Slice.reducer;
 export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
 export const areaListReducer = areaListSlice.reducer;
