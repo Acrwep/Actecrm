@@ -535,7 +535,7 @@ export default function Users({
     setValidationTrigger(true);
     const userIdValidate = addressValidator(userId);
     const profileNameValidate = selectValidator(profileName);
-    const mobileValidate = mobileValidator(mobile);
+    const mobileValidate = mobileValidator(mobile, "in");
     const passwordValidate = passwordValidator(password);
     const confirmPasswordValidate = confirmPasswordValidator(
       password,
@@ -1074,7 +1074,7 @@ export default function Users({
               onChange={(e) => {
                 setMobile(e.target.value);
                 if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
+                  setMobileError(mobileValidator(e.target.value, "in"));
                 }
               }}
               value={mobile}

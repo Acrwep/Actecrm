@@ -24,10 +24,10 @@
 }
 .common_inputfield .MuiFormHelperText-root.Mui-error {
   position: absolute;
-  bottom: -24px;
+  top: 100%;
   font-family: "Poppins", sans-serif !important;
-  line-height: 1.9 !important;
-  /* font-size: 11px !important; */
+  line-height: 1.2 !important;
+  margin: 3px 14px 0 14px !important;
 }
 
 /* mui select field styles */
@@ -75,10 +75,11 @@
 }
 .common_selectfield .MuiFormHelperText-root.Mui-error {
   position: absolute;
-  bottom: -20px;
+  top: 100%;
   font-family: "Poppins", sans-serif !important;
-  line-height: 1.9 !important;
+  line-height: 1.2 !important;
   font-size: 11px !important;
+  margin: 3px 14px 0 14px !important;
 }
 
 /* antd datepicker styles */

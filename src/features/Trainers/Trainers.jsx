@@ -1386,8 +1386,8 @@ export default function Trainers() {
     setValidationTrigger(true);
     const nameValidate = nameValidator(name);
     const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile);
-    const whatsAppValidate = mobileValidator(whatsApp);
+    const mobileValidate = mobileValidator(mobile, selectedCountry);
+    const whatsAppValidate = mobileValidator(whatsApp, whatsAppCountry);
     const technologyValidate = selectValidator(technology);
     const experienceValidate = selectValidator(experience);
     const relevantExperienceValidate = selectValidator(relevantExperience);
@@ -1637,11 +1637,12 @@ export default function Trainers() {
           <Col span={8}>
             <PhoneWithCountry
               label="Mobile Number"
-              onChange={(value) => {
+              onChange={(value, countryIso2) => {
                 console.log("mobbbb", value);
                 setMobile(value);
+                const activeCountry = countryIso2 || selectedCountry;
                 if (validationTrigger) {
-                  setMobileError(mobileValidator(value));
+                  setMobileError(mobileValidator(value, activeCountry));
                 }
               }}
               selectedCountry={selectedCountry}
@@ -1649,6 +1650,7 @@ export default function Trainers() {
                 setMobileCountryCode(code);
               }}
               error={mobileError}
+              errorFontSize={mobileError.length >= 10 ? "9.5px" : "13px"}
               onCountryChange={(iso2) => {
                 setSelectedCountry(iso2);
                 setWhatsAppCountry(iso2);
@@ -1662,10 +1664,11 @@ export default function Trainers() {
           <Col span={8}>
             <PhoneWithCountry
               label="WhatsApp Number"
-              onChange={(value) => {
+              onChange={(value, countryIso2) => {
                 setWhatsApp(value);
+                const activeCountry = countryIso2 || whatsAppCountry;
                 if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(value));
+                  setWhatsAppError(mobileValidator(value, activeCountry));
                 }
               }}
               countryCode={(code) => {
@@ -1674,7 +1677,7 @@ export default function Trainers() {
               selectedCountry={whatsAppCountry}
               value={whatsApp}
               error={whatsAppError}
-              errorFontSize="10px"
+              errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
               onCountryChange={(iso2) => {
                 setWhatsAppCountry(iso2);
               }}

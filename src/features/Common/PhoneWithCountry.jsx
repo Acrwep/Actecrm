@@ -76,7 +76,7 @@ export default function PhoneWithCountry({
     // If user deletes everything, ensure we keep only dial code
     if (userInput.length <= dialCode.length) {
       setInternalValue(dialCode);
-      onChange?.("");
+      onChange?.("", country.iso2);
       setTimeout(() => (typingRef.current = false), 0);
       return;
     }
@@ -89,14 +89,14 @@ export default function PhoneWithCountry({
       const valueToSet = dialCode + afterCode;
       setInternalValue(valueToSet);
       e.target.value = valueToSet;
-      onChange?.(afterCode);
+      onChange?.(afterCode, country.iso2);
     } else {
       // If user tries to delete dial code or modify it, re-add it and clean the rest
       const onlyDigits = userInput.replace(/\D/g, "").replace(/^0+/, "");
       const valueToSet = dialCode + onlyDigits;
       setInternalValue(valueToSet);
       e.target.value = valueToSet;
-      onChange?.(onlyDigits);
+      onChange?.(onlyDigits, country.iso2);
     }
 
     setTimeout(() => {
@@ -121,7 +121,7 @@ export default function PhoneWithCountry({
     setInternalValue(newInternalValue);
 
     prevDialCodeRef.current = newDialCode;
-    onChange?.(rawNumber || "");
+    onChange?.(rawNumber || "", newCountryIso2);
     countryCode?.(newDialCode);
   };
 

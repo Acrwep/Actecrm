@@ -807,10 +807,11 @@ const CustomerUpdate = forwardRef(
               <Col xs={24} sm={24} md={24} lg={8}>
                 <PhoneWithCountry
                   label="Mobile Number"
-                  onChange={(value) => {
+                  onChange={(value, countryIso2) => {
                     setMobile(value);
+                    const activeCountry = countryIso2 || mobileCountry;
                     if (validationTrigger) {
-                      setMobileError(mobileValidator(value));
+                      setMobileError(mobileValidator(value, activeCountry));
                     }
                   }}
                   selectedCountry={mobileCountry}
@@ -823,16 +824,18 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={mobile}
                   error={mobileError}
+                  errorFontSize={mobileError.length >= 10 ? "9.5px" : "13px"}
                 />
               </Col>
 
               <Col xs={24} sm={24} md={24} lg={8}>
                 <PhoneWithCountry
                   label="WhatsApp Number"
-                  onChange={(value) => {
+                  onChange={(value, countryIso2) => {
                     setWhatsApp(value);
+                    const activeCountry = countryIso2 || whatsAppCountry;
                     if (validationTrigger) {
-                      setWhatsAppError(mobileValidator(value));
+                      setWhatsAppError(mobileValidator(value, activeCountry));
                     }
                   }}
                   countryCode={(code) => {

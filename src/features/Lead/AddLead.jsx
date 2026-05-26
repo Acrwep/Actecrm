@@ -565,11 +565,12 @@ const AddLead = forwardRef(
       }
     };
 
-    const handleMobileNumber = async (value) => {
+    const handleMobileNumber = async (value, countryIso2) => {
       const cleanedMobile = value;
       console.log("cleanedMobile", cleanedMobile);
       setMobile(cleanedMobile);
-      const mobileValidate = mobileValidator(cleanedMobile);
+      const activeCountry = countryIso2 || mobileCountry;
+      const mobileValidate = mobileValidator(cleanedMobile, activeCountry);
 
       setMobileError(mobileValidate);
 
@@ -612,10 +613,11 @@ const AddLead = forwardRef(
       }
     };
 
-    const handleWhatsAppNumber = async (value) => {
+    const handleWhatsAppNumber = async (value, countryIso2) => {
       const cleanedMobile = value;
       setWhatsApp(cleanedMobile);
-      const whatsAppValidate = mobileValidator(cleanedMobile);
+      const activeCountry = countryIso2 || whatsAppCountry;
+      const whatsAppValidate = mobileValidator(cleanedMobile, activeCountry);
 
       setWhatsAppError(whatsAppValidate);
       if (
@@ -754,8 +756,8 @@ const AddLead = forwardRef(
       }
       const nameValidate = nameValidator(name);
       let emailValidate = emailValidator(email);
-      let mobileValidate = mobileValidator(mobile);
-      let whatsAppValidate = mobileValidator(whatsApp);
+      let mobileValidate = mobileValidator(mobile, mobileCountry);
+      let whatsAppValidate = mobileValidator(whatsApp, whatsAppCountry);
       const countryValidate = selectValidator(countryId);
       const stateValidate = selectValidator(stateId);
       const cityValidate = selectValidator(areaId);
@@ -768,13 +770,13 @@ const AddLead = forwardRef(
       const batchTrackValidate = selectValidator(batchTrack);
       const commentsValidate = addressValidator(comments);
 
-      if (emailAndMobileValidation.email == 0) {
+      if (email && emailAndMobileValidation.email == 0) {
         emailValidate = " is already exist";
       }
-      if (emailAndMobileValidation.mobile == 0) {
+      if (mobile && emailAndMobileValidation.mobile == 0) {
         mobileValidate = " is already exist";
       }
-      if (emailAndMobileValidation.whatsApp == 0) {
+      if (whatsApp && emailAndMobileValidation.whatsApp == 0) {
         whatsAppValidate = " is already exist";
       }
       console.log("emailValidate", emailValidate);
@@ -1299,6 +1301,12 @@ const AddLead = forwardRef(
                 onCountryChange={(iso2) => {
                   setMobileCountry(iso2);
                   setWhatsAppCountry(iso2);
+                  if (mobile) {
+                    setMobileError(mobileValidator(mobile, iso2));
+                  }
+                  if (whatsApp) {
+                    setWhatsAppError(mobileValidator(whatsApp, iso2));
+                  }
                 }}
                 value={mobile}
                 error={mobileError}
@@ -1334,6 +1342,9 @@ const AddLead = forwardRef(
               error={whatsAppError}
               onCountryChange={(iso2) => {
                 setWhatsAppCountry(iso2);
+                if (whatsApp) {
+                  setWhatsAppError(mobileValidator(whatsApp, iso2));
+                }
               }}
               errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
               disabled={isReEntry}
