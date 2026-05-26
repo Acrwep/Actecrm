@@ -331,8 +331,13 @@ export default function Dashboard() {
       end_date: scoreboard_dates
         ? scoreboard_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
     };
     try {
       const response = await getScoreBoard(payload);
@@ -425,8 +430,13 @@ export default function Dashboard() {
       end_date: saleperformance_dates
         ? saleperformance_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
     };
     try {
       const response = await getScoreBoard(payload);
@@ -527,8 +537,13 @@ export default function Dashboard() {
       end_date: postsale_dates
         ? postsale_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
     };
     try {
       const response = await getPostSaleDashboard(payload);
@@ -689,8 +704,13 @@ export default function Dashboard() {
       end_date: userwiseleads_dates
         ? userwiseleads_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
       type: type == 1 ? "Leads" : type == 2 ? "Follow Up" : "Customer Join",
     };
 
@@ -813,8 +833,13 @@ export default function Dashboard() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
       type: type == 1 ? "Sale" : type == 2 ? "Collection" : "Pending",
     };
     try {
@@ -1261,8 +1286,13 @@ export default function Dashboard() {
       end_date: topperformance_dates
         ? topperformance_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
     };
     try {
       const response = await getTopPerformance(payload);
@@ -1343,8 +1373,13 @@ export default function Dashboard() {
       end_date: followup_action_dates
         ? followup_action_dates.card_settings.end_date
         : endDate,
-      ...(!selected_user_id && region_id ? { region_id: region_id } : {}),
-      ...(region_id && !selected_user_id ? {} : { user_ids: downliners }),
+      ...(!selected_user_id && region_id && region_id != "All"
+        ? {
+            region_id: region_id,
+          }
+        : {
+            user_ids: downliners,
+          }),
     };
     try {
       const response = await getFollowUpActionDashboard(payload);

@@ -117,6 +117,7 @@ export default function Login() {
       user_id: userId,
       password: password,
       last_login_date: formatToBackendIST(new Date()),
+      platform: "web",
     };
     try {
       const response = await LoginApi(payload);

@@ -1607,7 +1607,7 @@ Course Advisor
           className="customer_statusupdate_drawer_profileContainer"
           id="customer_history_profilecontainer"
         >
-          {loginUserProfileImage ? (
+          {customerDetails && customerDetails.profile_image ? (
             // <img
             //   src={customerDetails.profile_image}
             //   className="cutomer_profileimage"
@@ -1619,7 +1619,7 @@ Course Advisor
                   uid: "-1",
                   name: "profile.jpg",
                   status: "done",
-                  url: loginUserProfileImage, // Base64 string directly usable
+                  url: customerDetails && customerDetails.profile_image, // Base64 string directly usable
                 },
               ]}
               onPreview={handlePreview}

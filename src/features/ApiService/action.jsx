@@ -12,6 +12,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const AccessToken = localStorage.getItem("AccessToken");
+    // const AccessToken =
+    //   "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImF6aGFyQGV4YW1wbGUuY29tIiwidXNlcklkIjoxMDA0LCJyb2xlIjoiQURNSU4iLCJzdWIiOjEwMDQsIm5iZiI6MTcyMjIzMzE1MS4wLCJpYXQiOjE3MjIyMzMxNTEuMCwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo0NDMwMC8iLCJhdWQiOiJzZWN1cmVhcGl1c2VyIiwiZXhwIjoxNzIyMzE5NTUxLjB9.hlN8tu-TXh2lqS9PpMrhyKB0pHVZwV7cjK61hJq_JFE";
     if (AccessToken) {
       const expired = isTokenExpired(AccessToken);
       if (expired === true) {
@@ -773,7 +775,7 @@ export const updateCustomerStatus = async (payload) => {
 
 export const inserCustomerTrack = async (payload) => {
   try {
-    const response = await api.post("/api/insertCusTrack", payload);
+    const response = await api.post("/api/inserCustomerTrack", payload);
     return response;
   } catch (error) {
     throw error;

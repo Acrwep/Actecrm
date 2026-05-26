@@ -76,7 +76,10 @@ export const NotificationProvider = ({ children }) => {
 
     socket.on("connect", () => {
       console.log("Connected to notification socket");
-      socket.emit("register", userId);
+      socket.emit("register", {
+        userId,
+        platform: "web",
+      });
     });
 
     socket.on("notification", (newNotification) => {
