@@ -1326,14 +1326,11 @@ export default function LiveLead({
           <p className="livelead_badge_text">
             Total{" "}
             <span className="livelead_badge_count">
-              {Number(liveLeadAllCounts?.online_count || 0) +
-                Number(liveLeadAllCounts?.classroom_count || 0) +
-                Number(liveLeadAllCounts?.corporate_count || 0)}
+              {liveLeadAllCounts?.total_count || 0}
             </span>
           </p>
         </div>
       </div>
-
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
