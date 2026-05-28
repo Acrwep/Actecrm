@@ -11,6 +11,7 @@ import {
   Checkbox,
 } from "antd";
 import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
+import { DownloadOutlined } from "@ant-design/icons";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
@@ -39,6 +40,7 @@ import { useSelector } from "react-redux";
 import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
+import DownloadTableAsCSV from "../../Common/DownloadTableAsCSV";
 
 export default function UrgentDueCustomers({
   setUrgentDueCount,
@@ -1064,8 +1066,27 @@ export default function UrgentDueCustomers({
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "16px",
           }}
         >
+          <Tooltip placement="top" title="Download">
+            <Button
+              className="reports_download_button"
+              onClick={() => {
+                const alterColumns = columns.filter((f) => f.title != "Action");
+
+                DownloadTableAsCSV(
+                  customersData,
+                  alterColumns,
+                  `Urgent Pending Fees Customers.csv`,
+                );
+              }}
+              disabled={customersData.length <= 0 ? true : false}
+            >
+              <DownloadOutlined size={10} className="download_icon" />
+            </Button>
+          </Tooltip>
+
           <FiFilter
             size={20}
             color="#5b69ca"

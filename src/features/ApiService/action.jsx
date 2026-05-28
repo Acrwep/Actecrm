@@ -775,7 +775,7 @@ export const updateCustomerStatus = async (payload) => {
 
 export const inserCustomerTrack = async (payload) => {
   try {
-    const response = await api.post("/api/inserCustomerTrack", payload);
+    const response = await api.post("/api/insertCusTrack", payload);
     return response;
   } catch (error) {
     throw error;
@@ -1168,9 +1168,12 @@ export const getUserDownline = async (user_id) => {
   }
 };
 
-export const getAllDownlineUsers = async (user_id) => {
+export const getAllDownlineUsers = async (user_ids) => {
+  const payload = {
+    user_ids: Array.isArray(user_ids) ? user_ids : [user_ids],
+  };
   try {
-    const response = await api.get(`/api/getAllDownlines?user_id=${user_id}`);
+    const response = await api.post(`/api/getMultiUsers`, payload);
     return response;
   } catch (error) {
     throw error;

@@ -11,6 +11,7 @@ import {
   Checkbox,
 } from "antd";
 import CommonOutlinedInput from "../../Common/CommonOutlinedInput";
+import { DownloadOutlined } from "@ant-design/icons";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
@@ -29,7 +30,7 @@ import CommonDnd from "../../Common/CommonDnd";
 import { FaRegEye } from "react-icons/fa";
 import { GiReceiveMoney } from "react-icons/gi";
 import moment from "moment";
-import CommonSelectField from "../../Common/CommonSelectField";
+import CommonMultiSelectField from "../../Common/CommonMultiSelectField";
 import CommonSpinner from "../../Common/CommonSpinner";
 import { CommonMessage } from "../../Common/CommonMessage";
 import { FaRegCopy } from "react-icons/fa6";
@@ -39,6 +40,7 @@ import { useSelector } from "react-redux";
 import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
+import DownloadTableAsCSV from "../../Common/DownloadTableAsCSV";
 
 export default function OverallDueCustomers({
   setOverAllDueCount,
@@ -64,7 +66,7 @@ export default function OverallDueCustomers({
   const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
@@ -866,8 +868,11 @@ export default function OverallDueCustomers({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1016,7 +1021,7 @@ export default function OverallDueCustomers({
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
-                <CommonSelectField
+                <CommonMultiSelectField
                   height="35px"
                   label="Select User"
                   labelMarginTop="0px"
@@ -1024,7 +1029,6 @@ export default function OverallDueCustomers({
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}
-                  disableClearable={false}
                 />
               </Col>
             )}
@@ -1061,8 +1065,27 @@ export default function OverallDueCustomers({
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "16px",
           }}
         >
+          <Tooltip placement="top" title="Download">
+            <Button
+              className="reports_download_button"
+              onClick={() => {
+                const alterColumns = columns.filter((f) => f.title != "Action");
+
+                DownloadTableAsCSV(
+                  customersData,
+                  alterColumns,
+                  `Overall Pending Fees Customers.csv`,
+                );
+              }}
+              disabled={customersData.length <= 0 ? true : false}
+            >
+              <DownloadOutlined size={10} className="download_icon" />
+            </Button>
+          </Tooltip>
+
           <FiFilter
             size={20}
             color="#5b69ca"

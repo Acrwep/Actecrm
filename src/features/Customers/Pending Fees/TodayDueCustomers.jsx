@@ -20,6 +20,7 @@ import {
   getTableColumns,
   updateTableColumns,
 } from "../../ApiService/action";
+import { DownloadOutlined } from "@ant-design/icons";
 import { formatToBackendIST } from "../../Common/Validation";
 import CommonTable from "../../Common/CommonTable";
 import { FaRegEye } from "react-icons/fa";
@@ -35,6 +36,7 @@ import CommonDnd from "../../Common/CommonDnd";
 import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
+import DownloadTableAsCSV from "../../Common/DownloadTableAsCSV";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
   const mounted = useRef(false);
@@ -999,8 +1001,28 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: "16px",
           }}
         >
+          <Tooltip placement="top" title="Download">
+            <Button
+              className="reports_download_button"
+              onClick={() => {
+                const alterColumns = columns.filter((f) => f.title != "Action");
+
+                DownloadTableAsCSV(
+                  customersData,
+                  alterColumns,
+                  `${moment(new Date()).format(
+                    "DD-MM-YYYY",
+                  )} to ${moment(new Date()).format("DD-MM-YYYY")} Pending Fees Customers.csv`,
+                );
+              }}
+              disabled={customersData.length <= 0 ? true : false}
+            >
+              <DownloadOutlined size={10} className="download_icon" />
+            </Button>
+          </Tooltip>
           <FiFilter
             size={20}
             color="#5b69ca"
