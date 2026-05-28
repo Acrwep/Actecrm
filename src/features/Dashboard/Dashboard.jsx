@@ -44,6 +44,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import PostSalePerformanceChart from "./PostSalePerformanceChart";
 import BranchwisePerformanceChart from "./BranchwisePerformanceChart";
 import RegionwisePerformanceChart from "./RegionwisePerformanceChart";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function Dashboard() {
   const mounted = useRef(false);
@@ -1755,7 +1756,7 @@ export default function Dashboard() {
     >
       <Row>
         <Col span={10}>
-          <Row>
+          <Row gutter={16}>
             {permissions.includes("Region-wise Filter") && (
               <Col flex="50%">
                 <div className="overallduecustomers_filterContainer">
@@ -1797,7 +1798,7 @@ export default function Dashboard() {
               {permissions.includes("Lead Executive Filter") && (
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
-                    <CommonSelectField
+                    {/* <CommonSelectField
                       width="90%"
                       height="35px"
                       label="Select User"
@@ -1807,6 +1808,15 @@ export default function Dashboard() {
                       onChange={handleSelectUser}
                       value={selectedUserId}
                       disableClearable={false}
+                    /> */}
+                    <CommonMultiSelectField
+                      height="35px"
+                      label="Select User"
+                      labelMarginTop="0px"
+                      labelFontSize="13px"
+                      options={subUsers}
+                      onChange={handleSelectUser}
+                      value={selectedUserId}
                     />
                   </div>
                 </div>

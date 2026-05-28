@@ -82,7 +82,10 @@ export default function PhoneWithCountry({
     }
 
     // Extract after code part and remove any leading zeros
-    let afterCode = userInput.slice(dialCode.length).replace(/\D/g, "").replace(/^0+/, "");
+    let afterCode = userInput
+      .slice(dialCode.length)
+      .replace(/\D/g, "")
+      .replace(/^0+/, "");
 
     // ✅ If it already starts with the dial code, just clean after part
     if (userInput.startsWith(dialCode)) {
@@ -111,7 +114,7 @@ export default function PhoneWithCountry({
     onCountryChange?.(newCountryIso2);
 
     const countryObj = defaultCountries.find(
-      (c) => parseCountry(c).iso2 === newCountryIso2
+      (c) => parseCountry(c).iso2 === newCountryIso2,
     );
     if (!countryObj) return;
 

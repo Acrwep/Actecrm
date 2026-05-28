@@ -545,6 +545,9 @@
     transform 0.4s ease-in-out,
     opacity 0.4s ease-in-out;
 }
+.customer_trainer_onboardcount_badgecount {
+  font-size: 12px !important;
+}
 .trainerpaymentrequest_balanceamount_badge {
   border-radius: 50%;
   width: 4px;

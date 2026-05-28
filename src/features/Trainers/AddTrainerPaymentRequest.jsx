@@ -1027,7 +1027,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       : "trainerpaymentrequest_addrequest_badge_sub_hide_cotainer"
                   }
                 >
-                  <Row gutter={12}>
+                  <Row gutter={12} style={{ fontSize: "12px" }}>
                     <Col flex="20%">
                       <div
                         style={{
@@ -1247,7 +1247,7 @@ const AddTrainerPaymentRequest = forwardRef(
               <Row
                 gutter={16}
                 className="trainerpaymentrequest_addrequestdrawer_rowcontainer"
-                style={{ marginTop: "30px" }}
+                style={{ marginTop: item.customerId ? "110px" : "30px" }}
               >
                 <Col span={8}>
                   <CommonSelectField

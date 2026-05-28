@@ -310,14 +310,20 @@ export const mobileValidator = (mobile, countryCode) => {
   if (!mobile || mobile.length <= 0) error = " is required";
   else if (!mobileRegex.test(mobile)) error = " is not valid";
   else if (countryCode) {
+    const iso = countryCode.toLowerCase();
     const expectedLength = getExpectedPhoneLength(countryCode, mobile);
-    if (expectedLength !== null) {
-      if (Array.isArray(expectedLength)) {
-        if (!expectedLength.includes(mobile.length)) {
-          error = ` must be ${expectedLength.join(" or ")} digits`;
-        }
-      } else if (mobile.length !== expectedLength) {
-        error = ` must be ${expectedLength} digits`;
+    const fallback = countryLengthFallback[iso];
+    // Determine the set of valid lengths: prioritize array fallback if available
+    const validLengths = Array.isArray(expectedLength)
+      ? expectedLength
+      : Array.isArray(fallback)
+        ? fallback
+        : expectedLength !== null
+          ? [expectedLength]
+          : null;
+    if (validLengths) {
+      if (!validLengths.includes(mobile.length)) {
+        error = ` must be ${validLengths.join(" or ")} digits`;
       }
     } else if (mobile.length < 8) {
       error = " is not valid";

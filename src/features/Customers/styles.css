@@ -1467,6 +1467,28 @@
   gap: 0px;
   width: 100%;
 }
+.overallduecustomers_filterContainer > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.overallduecustomers_filterContainer .MuiFormControl-root {
+  width: 100%;
+  min-width: 0;
+}
+
+.overallduecustomers_filterContainer .MuiAutocomplete-root {
+  width: 100%;
+  min-width: 0;
+}
+
+.overallduecustomers_filterContainer .MuiOutlinedInput-root {
+  overflow: hidden;
+}
+
+.overallduecustomers_filterContainer .MuiChip-root {
+  max-width: 100%;
+}
 /* customer registration form styles */
 .customerregistration_mainContainer {
   display: flex;

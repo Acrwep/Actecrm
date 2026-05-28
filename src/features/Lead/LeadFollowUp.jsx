@@ -68,6 +68,7 @@ import {
 } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 const { TextArea } = Input;
 
@@ -1015,7 +1016,7 @@ export default function LeadFollowUp({
   return (
     <div style={{ position: "relative" }}>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
+        <Col xs={24} sm={24} md={24} lg={18}>
           <Row gutter={16}>
             <Col span={7}>
               <div className="overallduecustomers_filterContainer">
@@ -1151,11 +1152,10 @@ export default function LeadFollowUp({
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={7}>
+              <Col span={8}>
                 <div className="overallduecustomers_filterContainer">
-                  <div style={{ flex: 1 }}>
-                    <CommonSelectField
-                      width="100%"
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <CommonMultiSelectField
                       height="35px"
                       label="Select User"
                       labelMarginTop="0px"
@@ -1163,7 +1163,6 @@ export default function LeadFollowUp({
                       options={subUsers}
                       onChange={handleSelectUser}
                       value={selectedUserId}
-                      disableClearable={false}
                       borderRightNone={true}
                     />
                   </div>
@@ -1174,6 +1173,7 @@ export default function LeadFollowUp({
                       }
                       handleLeadCountByExecutive();
                     }}
+                    style={{ marginLeft: "-2px" }}
                   >
                     <Flex
                       justify="center"
@@ -1228,7 +1228,7 @@ export default function LeadFollowUp({
                 </div>
               </Col>
             )}
-            <Col span={10}>
+            <Col span={9}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -1258,7 +1258,7 @@ export default function LeadFollowUp({
             </Col>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7}>
+        <Col xs={24} sm={24} md={24} lg={6}>
           <div
             style={{
               display: "flex",

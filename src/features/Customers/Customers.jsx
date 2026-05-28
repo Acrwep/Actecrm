@@ -80,6 +80,7 @@ import OthersHandling from "./OthersHandling";
 import ReAssignTrainer from "./ReAssignTrainer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PreCertificate from "./PreCertificate";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -2992,7 +2993,7 @@ export default function Customers() {
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
-                <CommonSelectField
+                <CommonMultiSelectField
                   height="35px"
                   label="Select User"
                   labelMarginTop="0px"
@@ -3000,7 +3001,6 @@ export default function Customers() {
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}
-                  disableClearable={false}
                 />
               </Col>
             )}

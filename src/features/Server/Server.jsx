@@ -70,6 +70,7 @@ import ServerIssue from "./ServerIssue";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonDnd from "../Common/CommonDnd";
 import CommonTextArea from "../Common/CommonTextArea";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -1680,8 +1681,7 @@ export default function Server() {
               <Col span={7}>
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
-                    <CommonSelectField
-                      width="100%"
+                    <CommonMultiSelectField
                       height="35px"
                       label="Select User"
                       labelMarginTop="0px"
@@ -1689,7 +1689,6 @@ export default function Server() {
                       options={subUsers}
                       onChange={handleSelectUser}
                       value={selectedUserId}
-                      disableClearable={false}
                     />
                   </div>
                 </div>

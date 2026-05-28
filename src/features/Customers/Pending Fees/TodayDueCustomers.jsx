@@ -37,6 +37,7 @@ import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
 import DownloadTableAsCSV from "../../Common/DownloadTableAsCSV";
+import CommonMultiSelectField from "../../Common/CommonMultiSelectField";
 
 export default function TodayDueCustomers({ setTodayDueCount }) {
   const mounted = useRef(false);
@@ -981,7 +982,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={12}>
-                <CommonSelectField
+                <CommonMultiSelectField
                   height="35px"
                   label="Select User"
                   labelMarginTop="0px"
@@ -989,7 +990,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}
-                  disableClearable={false}
                 />
               </Col>
             )}

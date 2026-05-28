@@ -41,6 +41,7 @@ import InsertPendingFees from "./InsertPendingFees";
 import ParticularCustomerDetails from "../ParticularCustomerDetails";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
 import DownloadTableAsCSV from "../../Common/DownloadTableAsCSV";
+import CommonMultiSelectField from "../../Common/CommonMultiSelectField";
 
 export default function UrgentDueCustomers({
   setUrgentDueCount,
@@ -1021,7 +1022,7 @@ export default function UrgentDueCustomers({
             </Col>
             {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
-                <CommonSelectField
+                <CommonMultiSelectField
                   height="35px"
                   label="Select User"
                   labelMarginTop="0px"
@@ -1029,7 +1030,6 @@ export default function UrgentDueCustomers({
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}
-                  disableClearable={false}
                 />
               </Col>
             )}
