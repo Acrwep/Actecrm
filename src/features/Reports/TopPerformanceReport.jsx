@@ -21,6 +21,7 @@ import CommonTable from "../Common/CommonTable";
 import moment from "moment";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function TopPerformanceReport() {
   const mounted = useRef(false);
@@ -291,7 +292,7 @@ export default function TopPerformanceReport() {
 
     try {
       const response = await getAllDownlineUsers(
-        value.length >= 1 ? value : [loginUserId],
+        value.length >= 1 ? value : loginUserId,
       );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
@@ -343,7 +344,7 @@ export default function TopPerformanceReport() {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={20}>
+        <Col xs={24} sm={24} md={24} lg={21}>
           <Row gutter={10}>
             <Col flex="6">
               {/* Search Input */}
@@ -405,14 +406,14 @@ export default function TopPerformanceReport() {
               />
             </Col>
             <Col flex="6">
-              <CommonMultiSelect
-                height="20px"
+              <CommonMultiSelectField
+                height="35px"
                 label="Select User"
+                labelMarginTop="0px"
                 labelFontSize="13px"
                 options={subUsers}
                 onChange={handleSelectUser}
                 value={selectedUserId}
-                disableClearable={false}
               />
             </Col>
             <Col flex="6">
@@ -442,7 +443,7 @@ export default function TopPerformanceReport() {
           xs={24}
           sm={24}
           md={24}
-          lg={4}
+          lg={3}
           style={{
             display: "flex",
             justifyContent: "flex-end",

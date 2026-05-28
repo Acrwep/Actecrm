@@ -16,6 +16,7 @@ import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function UserwiseTransactionReport() {
   const mounted = useRef(false);
@@ -135,7 +136,7 @@ export default function UserwiseTransactionReport() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: user_id ? [user_id] : null,
+      user_ids: user_id,
     };
     try {
       const response = await userwiseTransactionReport(payload);
@@ -237,7 +238,7 @@ export default function UserwiseTransactionReport() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={7}>
-              <CommonSelectField
+              <CommonMultiSelectField
                 height="35px"
                 label="Select User"
                 labelMarginTop="0px"
@@ -245,7 +246,6 @@ export default function UserwiseTransactionReport() {
                 options={saleUsersData}
                 onChange={handleSelectUser}
                 value={selectedUserId}
-                disableClearable={false}
               />
             </Col>
             <Col span={16}>

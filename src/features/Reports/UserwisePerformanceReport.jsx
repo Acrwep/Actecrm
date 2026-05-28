@@ -22,6 +22,7 @@ import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 export default function UserwisePerformanceReport() {
   const mounted = useRef(false);
@@ -503,7 +504,7 @@ export default function UserwisePerformanceReport() {
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
             <Col span={7}>
-              <CommonSelectField
+              <CommonMultiSelectField
                 height="35px"
                 label="Select User"
                 labelMarginTop="0px"
@@ -511,7 +512,6 @@ export default function UserwisePerformanceReport() {
                 options={subUsers}
                 onChange={handleSelectUser}
                 value={selectedUserId}
-                disableClearable={false}
               />
             </Col>
             <Col span={16}>

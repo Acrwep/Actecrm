@@ -168,6 +168,9 @@ export default function CommonMultiSelectField({
                       color: "#5b69ca",
                       padding: "4px",
                       marginRight: "6px",
+                      "& .MuiSvgIcon-root": {
+                        fontSize: 18,
+                      },
                       "&.Mui-checked": {
                         color: "#5b69ca",
                       },
