@@ -105,216 +105,251 @@ export const selectValidator = (name) => {
 };
 
 const countryLengthFallback = {
-  // GCC / Middle East
-  kw: 8, // Kuwait
-  sa: 9, // Saudi Arabia
-  ae: 9, // UAE
-  qa: 8, // Qatar
-  bh: 8, // Bahrain
-  om: 8, // Oman
-  eg: 10, // Egypt
-  ye: 9, // Yemen
-  jo: 9, // Jordan
-  lb: [7, 8], // Lebanon
-  iq: 10, // Iraq
-  sy: 9, // Syria
-  ps: 9, // Palestine
-
-  // South / Southeast Asia
+  ac: 5, // Ascension Island
+  ad: [6, 9], // Andorra
+  ae: 9, // United Arab Emirates
+  af: 9, // Afghanistan
+  ag: 10, // Antigua & Barbuda
+  ai: 10, // Anguilla
+  al: 9, // Albania
+  am: 8, // Armenia
+  ao: 9, // Angola
+  ar: [10, 11], // Argentina
+  as: 10, // American Samoa
+  at: [7, 8, 9, 10, 11, 12, 13], // Austria
+  au: 9, // Australia
+  aw: 7, // Aruba
+  ax: [6, 7, 8, 9, 10], // Åland Islands
+  az: 9, // Azerbaijan
+  ba: [8, 9], // Bosnia & Herzegovina
+  bb: 10, // Barbados
   bd: 10, // Bangladesh
-  np: 10, // Nepal
-  lk: 9, // Sri Lanka
-  mv: 7, // Maldives
-  pk: 10, // Pakistan
-  my: [9, 10], // Malaysia
-  sg: 8, // Singapore
-  id: [9, 10, 11, 12], // Indonesia
-  th: 9, // Thailand
-  vn: 9, // Vietnam
-  kh: [8, 9], // Cambodia
-  mm: 9, // Myanmar
-  la: [8, 9], // Laos
-  bn: 7, // Brunei
-  ph: 10, // Philippines
-
-  // Europe (commonly missing)
-  at: [10, 11], // Austria
+  be: 9, // Belgium
+  bf: 8, // Burkina Faso
   bg: [8, 9], // Bulgaria
+  bh: 8, // Bahrain
+  bi: 8, // Burundi
+  bj: 10, // Benin
+  bl: 9, // St. Barthélemy
+  bm: 10, // Bermuda
+  bn: 7, // Brunei
+  bo: 8, // Bolivia
+  bq: 7, // Caribbean Netherlands
+  br: [10, 11], // Brazil
+  bs: 10, // Bahamas
+  bt: 8, // Bhutan
+  bw: 8, // Botswana
+  by: 9, // Belarus
+  bz: 7, // Belize
+  ca: 10, // Canada
+  cc: 9, // Cocos (Keeling) Islands
+  cd: [7, 9], // Congo - Kinshasa
+  cf: 8, // Central African Republic
+  cg: 9, // Congo - Brazzaville
+  ch: 9, // Switzerland
+  ci: 10, // Côte d'Ivoire
+  ck: 5, // Cook Islands
+  cl: 9, // Chile
+  cm: 9, // Cameroon
+  cn: 11, // China
+  co: 10, // Colombia
+  cr: 8, // Costa Rica
+  cu: 8, // Cuba
+  cv: 7, // Cape Verde
+  cw: [7, 8], // Curaçao
+  cx: 9, // Christmas Island
+  cy: 8, // Cyprus
+  cz: 9, // Czechia
   de: [10, 11], // Germany
-  hr: 9, // Croatia
+  dj: 8, // Djibouti
+  dk: 8, // Denmark
+  dm: 10, // Dominica
+  do: 10, // Dominican Republic
+  dz: 9, // Algeria
+  ec: 9, // Ecuador
+  ee: [7, 8], // Estonia
+  eg: 10, // Egypt
+  eh: 9, // Western Sahara
+  er: 7, // Eritrea
+  es: 9, // Spain
+  et: 9, // Ethiopia
+  fi: [6, 7, 8, 9, 10], // Finland
+  fj: 7, // Fiji
+  fk: 5, // Falkland Islands
+  fm: 7, // Micronesia
+  fo: 6, // Faroe Islands
+  fr: 9, // France
+  ga: [7, 8], // Gabon
+  gb: 10, // United Kingdom
+  gd: 10, // Grenada
+  ge: 9, // Georgia
+  gf: 9, // French Guiana
+  gg: 10, // Guernsey
+  gh: 9, // Ghana
+  gi: 8, // Gibraltar
+  gl: 6, // Greenland
+  gm: 7, // Gambia
+  gn: 9, // Guinea
+  gp: 9, // Guadeloupe
+  gq: 9, // Equatorial Guinea
+  gr: 10, // Greece
+  gt: 8, // Guatemala
+  gu: 10, // Guam
+  gw: 9, // Guinea-Bissau
+  gy: 7, // Guyana
+  hk: 8, // Hong Kong SAR China
+  hn: 8, // Honduras
+  hr: [8, 9], // Croatia
+  ht: 8, // Haiti
   hu: 9, // Hungary
+  id: [9, 10, 11, 12], // Indonesia
+  ie: 9, // Ireland
+  il: 9, // Israel
+  im: 10, // Isle of Man
+  in: 10, // India
+  io: 7, // British Indian Ocean Territory
+  iq: 10, // Iraq
+  ir: 10, // Iran
+  is: [7, 9], // Iceland
+  it: [9, 10], // Italy
+  je: 10, // Jersey
+  jm: 10, // Jamaica
+  jo: 9, // Jordan
+  jp: 10, // Japan
+  ke: 9, // Kenya
+  kg: 9, // Kyrgyzstan
+  kh: [8, 9], // Cambodia
+  ki: 8, // Kiribati
+  km: 7, // Comoros
+  kn: 10, // St. Kitts & Nevis
+  kp: 10, // North Korea
+  kr: [9, 10], // South Korea
+  kw: 8, // Kuwait
+  ky: 10, // Cayman Islands
+  kz: 10, // Kazakhstan
+  la: [9, 10], // Laos
+  lb: [7, 8], // Lebanon
+  lc: 10, // St. Lucia
+  li: [7, 9], // Liechtenstein
+  lk: 9, // Sri Lanka
+  lr: [7, 9], // Liberia
+  ls: 8, // Lesotho
   lt: 8, // Lithuania
   lu: 9, // Luxembourg
-  mc: [8, 9], // Monaco
-  me: 8, // Montenegro
-  pt: 9, // Portugal
-  ro: 9, // Romania
-  sm: [8, 9, 10], // San Marino
-  rs: 9, // Serbia
-  sk: 9, // Slovakia
-  si: 8, // Slovenia
-
-  // Americas (commonly missing)
-  cl: 9, // Chile
-  ec: 9, // Ecuador
-  ve: 10, // Venezuela
-  py: 9, // Paraguay
-  pe: 9, // Peru
-  uy: 8, // Uruguay
-  ni: 8, // Nicaragua
-  pa: 8, // Panama
-  hn: 8, // Honduras
-  jm: 7, // Jamaica
-  bs: 7, // Bahamas
-  bb: 7, // Barbados
-  bz: 7, // Belize
-  dm: 7, // Dominica
-  gd: 7, // Grenada
-  kn: 7, // Saint Kitts
-  lc: 7, // Saint Lucia
-  vc: 7, // Saint Vincent
-  tt: 7, // Trinidad
-  ag: 7, // Antigua
-  aw: 7, // Aruba
-  cw: 7, // Curacao
-  bq: 7, // Caribbean Netherlands
-
-  // Africa (commonly missing)
-  dz: 9, // Algeria
-  ao: 9, // Angola
-  bj: 8, // Benin
-  bw: [7, 8], // Botswana
-  bf: 8, // Burkina Faso
-  bi: 8, // Burundi
-  cm: 9, // Cameroon
-  cv: 7, // Cape Verde
-  cf: 8, // Central African Rep
-  td: 8, // Chad
-  km: 7, // Comoros
-  cd: 9, // Dem. Rep. Congo
-  cg: 9, // Rep. Congo
-  gq: 9, // Equatorial Guinea
-  er: 7, // Eritrea
-  ga: 8, // Gabon
-  gm: 7, // Gambia
-  gh: 9, // Ghana
-  gn: 9, // Guinea
-  gw: 7, // Guinea-Bissau
-  ke: 9, // Kenya
-  ls: 8, // Lesotho
-  lr: [7, 8], // Liberia
+  lv: 8, // Latvia
   ly: 9, // Libya
+  ma: 9, // Morocco
+  mc: [8, 9], // Monaco
+  md: 8, // Moldova
+  me: 8, // Montenegro
+  mf: 9, // St. Martin
   mg: 9, // Madagascar
-  mw: 9, // Malawi
+  mh: 7, // Marshall Islands
+  mk: 8, // North Macedonia
   ml: 8, // Mali
+  mm: [7, 8, 9, 10], // Myanmar (Burma)
+  mn: 8, // Mongolia
+  mo: 8, // Macao SAR China
+  mp: 10, // Northern Mariana Islands
+  mq: 9, // Martinique
   mr: 8, // Mauritania
-  mu: [7, 8], // Mauritius
+  ms: 10, // Montserrat
+  mt: 8, // Malta
+  mu: 8, // Mauritius
+  mv: 7, // Maldives
+  mw: 9, // Malawi
+  mx: 10, // Mexico
+  my: [9, 10], // Malaysia
   mz: 9, // Mozambique
   na: 9, // Namibia
+  nc: 6, // New Caledonia
   ne: 8, // Niger
+  nf: 6, // Norfolk Island
   ng: 10, // Nigeria
+  ni: 8, // Nicaragua
+  nl: [9, 11], // Netherlands
+  no: 8, // Norway
+  np: 10, // Nepal
+  nr: 7, // Nauru
+  nu: [4, 7], // Niue
+  nz: [8, 9, 10], // New Zealand
+  om: 8, // Oman
+  pa: [7, 8], // Panama
+  pe: 9, // Peru
+  pf: 8, // French Polynesia
+  pg: 8, // Papua New Guinea
+  ph: 10, // Philippines
+  pk: 10, // Pakistan
+  pl: 9, // Poland
+  pm: [6, 9], // St. Pierre & Miquelon
+  pr: 10, // Puerto Rico
+  ps: 9, // Palestinian Territories
+  pt: 9, // Portugal
+  pw: 7, // Palau
+  py: 9, // Paraguay
+  qa: 8, // Qatar
+  re: 9, // Réunion
+  ro: 9, // Romania
+  rs: [8, 9, 10], // Serbia
+  ru: 10, // Russia
   rw: 9, // Rwanda
-  sn: 9, // Senegal
+  sa: 9, // Saudi Arabia
+  sb: [5, 7], // Solomon Islands
   sc: 7, // Seychelles
-  sl: 8, // Sierra Leone
-  so: [8, 9], // Somalia
-  za: 9, // South Africa
-  ss: 9, // South Sudan
   sd: 9, // Sudan
-  sz: 8, // Swaziland
+  se: 9, // Sweden
+  sg: 8, // Singapore
+  sh: 5, // St. Helena
+  si: 8, // Slovenia
+  sj: 8, // Svalbard & Jan Mayen
+  sk: 9, // Slovakia
+  sl: 8, // Sierra Leone
+  sm: 8, // San Marino
+  sn: 9, // Senegal
+  so: [7, 8, 9], // Somalia
+  sr: 7, // Suriname
+  ss: 9, // South Sudan
+  st: 7, // São Tomé & Príncipe
+  sv: 8, // El Salvador
+  sx: 10, // Sint Maarten
+  sy: 9, // Syria
+  sz: 8, // Eswatini
+  ta: 4, // Tristan da Cunha
+  tc: 10, // Turks & Caicos Islands
+  td: 8, // Chad
   tg: 8, // Togo
+  th: 9, // Thailand
+  tj: 9, // Tajikistan
+  tk: [4, 5, 6, 7], // Tokelau
+  tl: 8, // Timor-Leste
+  tm: 8, // Turkmenistan
   tn: 8, // Tunisia
+  to: 7, // Tonga
+  tr: 10, // Türkiye
+  tt: 10, // Trinidad & Tobago
+  tv: [6, 7], // Tuvalu
+  tw: 9, // Taiwan
+  tz: 9, // Tanzania
+  ua: 9, // Ukraine
   ug: 9, // Uganda
+  us: 10, // United States
+  uy: 8, // Uruguay
+  uz: 9, // Uzbekistan
+  va: [9, 10], // Vatican City
+  vc: 10, // St. Vincent & Grenadines
+  ve: 10, // Venezuela
+  vg: 10, // British Virgin Islands
+  vi: 10, // U.S. Virgin Islands
+  vn: 9, // Vietnam
+  vu: 7, // Vanuatu
+  wf: 6, // Wallis & Futuna
+  ws: [7, 10], // Samoa
+  xk: 8, // Kosovo
+  ye: 9, // Yemen
+  yt: 9, // Mayotte
+  za: [5, 6, 7, 8, 9], // South Africa
   zm: 9, // Zambia
   zw: 9, // Zimbabwe
-
-  // Oceania (commonly missing)
-  fj: 7, // Fiji
-  ki: 8, // Kiribati
-  mh: 7, // Marshall Islands
-  fm: 7, // Micronesia
-  nr: 7, // Nauru
-  nc: 6, // New Caledonia
-  pw: 7, // Palau
-  pg: 8, // Papua New Guinea
-  ws: 7, // Samoa
-  sb: 7, // Solomon Islands
-  to: 7, // Tonga
-  tv: [5, 6], // Tuvalu
-  vu: 7, // Vanuatu
-
-  // Others
-  af: 9, // Afghanistan
-  al: 9, // Albania
-  ad: 6, // Andorra
-  bt: 8, // Bhutan
-  bo: 8, // Bolivia
-  ba: 8, // Bosnia
-  bn: 7, // Brunei
-  cu: 8, // Cuba
-  ge: 9, // Georgia
-  xk: 8, // Kosovo
-  mo: 8, // Macau
-  mk: 8, // Macedonia
-  mn: 8, // Mongolia
-  tj: 9, // Tajikistan
-  tm: 8, // Turkmenistan,
-
-  // North America
-  us: 10, // United States
-  ca: 10, // Canada
-  mx: 10, // Mexico
-  pr: 10, // Puerto Rico
-  do: 10, // Dominican Republic
-
-  // South America (additional)
-  br: [10, 11], // Brazil
-  ar: 10, // Argentina
-  co: 10, // Colombia
-
-  // Europe (additional)
-  gb: 10, // United Kingdom
-  fr: 9, // France
-  it: [9, 10], // Italy
-  es: 9, // Spain
-  nl: 9, // Netherlands
-  se: 9, // Sweden
-  ch: 9, // Switzerland
-  pl: 9, // Poland
-  gr: 10, // Greece
-  fi: [9, 10], // Finland
-  no: 8, // Norway
-  dk: 8, // Denmark
-  ie: 9, // Ireland
-  cz: 9, // Czech Republic
-  be: 9, // Belgium
-  mt: 8, // Malta
-  li: [7, 9], // Liechtenstein
-
-  // Asia (additional)
-  in: 10, // India
-  cn: 11, // China
-  jp: 10, // Japan
-  kr: [9, 10], // South Korea
-  tr: 10, // Turkey
-  tw: 9, // Taiwan
-  kp: [8, 10], // North Korea
-  tl: 8, // Timor-Leste
-
-  // Oceania (additional)
-  au: 9, // Australia
-  nz: 9, // New Zealand
-  gu: 10, // Guam
-  io: 7, // British Indian Ocean Territory
-
-  // Africa (additional)
-  ma: 9, // Morocco
-  tz: 9, // Tanzania
-  st: 7, // Sao Tome & Principe
-
-  // South America & Caribbean (additional)
-  gy: 7, // Guyana
-  sr: 7, // Suriname
 };
 
 export const getExpectedPhoneLength = (countryCode, mobileNumber = "") => {
@@ -372,7 +407,7 @@ export const mobileValidator = (mobile, countryCode) => {
     const iso = countryCode.toLowerCase();
     const expectedLength = getExpectedPhoneLength(countryCode, mobile);
     const fallback = countryLengthFallback[iso];
-    
+
     let validLengths = null;
     if (fallback !== undefined) {
       validLengths = Array.isArray(fallback) ? fallback : [fallback];
