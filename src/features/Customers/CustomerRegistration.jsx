@@ -33,6 +33,8 @@ import {
   inserCustomerTrack,
   updateCustomer,
   updateCustomerStatus,
+  sendOtpToCustomer,
+  verifyCustomerOtp,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
@@ -42,6 +44,60 @@ export default function CustomerRegistration() {
   const navigate = useNavigate();
   const { customer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
+
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [otpEmail, setOtpEmail] = useState("");
+  const [otpEmailError, setOtpEmailError] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+
+  const handleSendOtp = async () => {
+    if (!otpEmail) {
+      setOtpEmailError(" is required");
+      return;
+    }
+    const err = emailValidator(otpEmail);
+    if (err) {
+      setOtpEmailError(err);
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await sendOtpToCustomer({ email: otpEmail });
+      CommonMessage("success", "OTP sent successfully");
+      setIsOtpSent(true);
+    } catch (error) {
+      console.log("send OTP error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message || "Failed to send OTP",
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) {
+      CommonMessage("error", "Please enter OTP");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await verifyCustomerOtp({ email: otpEmail, otp: otpCode });
+      CommonMessage("success", "OTP verified successfully");
+      setIsOtpVerified(true);
+    } catch (error) {
+      console.log("verify OTP error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message || "Invalid OTP",
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const [customerFullDetails, setCustomerFullDetails] = useState(null);
   const [name, setName] = useState("");
@@ -890,7 +946,99 @@ export default function CustomerRegistration() {
 
   return (
     <div className="customerregistration_mainContainer">
-      <div className="customerregistration_card">
+      {!isOtpVerified ? (
+        <div 
+          className="customerregistration_card" 
+          style={{ 
+            maxWidth: "450px", 
+            margin: "12vh auto", 
+            padding: "40px 30px",
+            borderRadius: "12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            backgroundColor: "#fff"
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
+            <img 
+              src={Logo} 
+              alt="ACTE Logo" 
+              style={{ width: "120px", marginBottom: "12px", objectFit: "contain" }} 
+            />
+            <h2 style={{ 
+              color: "#1b538c", 
+              fontSize: "22px", 
+              fontWeight: "600",
+              margin: "0 0 8px 0"
+            }}>
+              Customer Verification
+            </h2>
+            <p style={{ 
+              color: "#6c757d", 
+              fontSize: "14px", 
+              margin: 0,
+              textAlign: "center"
+            }}>
+              Please verify your email address to proceed with the registration.
+            </p>
+          </div>
+            
+          <div style={{ marginBottom: isOtpSent ? "20px" : "30px" }}>
+            <CommonInputField
+              label="Email Address"
+              value={otpEmail}
+              onChange={(e) => {
+                setOtpEmail(e.target.value);
+                setOtpEmailError(emailValidator(e.target.value));
+              }}
+              error={otpEmailError}
+              disabled={isOtpSent}
+              required={true}
+            />
+          </div>
+
+          {isOtpSent && (
+            <div style={{ marginBottom: "30px" }}>
+              <CommonInputField
+                label="Enter OTP"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                required={true}
+                maxLength={6}
+              />
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {otpLoading ? (
+              <button 
+                className="trainer_registration_loadingsubmitbutton" 
+                style={{ width: "100%", borderRadius: "6px", padding: "10px 0" }} 
+                disabled
+              >
+                <CommonSpinner />
+              </button>
+            ) : isOtpSent ? (
+              <button 
+                className="trainer_registration_submitbutton" 
+                style={{ width: "100%", borderRadius: "6px", padding: "10px 0", fontSize: "16px" }} 
+                onClick={handleVerifyOtp}
+              >
+                Verify OTP
+              </button>
+            ) : (
+              <button 
+                className="trainer_registration_submitbutton" 
+                style={{ width: "100%", borderRadius: "6px", padding: "10px 0", fontSize: "16px" }} 
+                onClick={handleSendOtp}
+              >
+                Send OTP
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="customerregistration_card">
         <div className="customerregistration_innerContainer">
           <Row style={{ display: "flex" }}>
             <Col xs={24} sm={24} md={8} lg={8}>
@@ -1453,6 +1601,8 @@ export default function CustomerRegistration() {
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
+      </>
+      )}
     </div>
   );
 }

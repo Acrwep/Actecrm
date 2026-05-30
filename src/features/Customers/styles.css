@@ -112,7 +112,7 @@
   display: none; /* Chrome, Safari */
 }
 .customers_formpending_container {
-  border: 1px solid #ff6b6b;
+  border: 1px solid #ff6b6b82;
   background-color: #ff6b6b11;
   color: #ff6b6b;
 }
@@ -134,8 +134,8 @@
   gap: 4px;
 }
 .customers_awaitfinance_container {
-  border: 1px solid #ffbf00;
-  background-color: #ffbf0018;
+  border: 1px solid #ffbf008a;
+  background-color: #ffbf000d;
   color: #ffbf00;
   gap: 4px;
 }
@@ -146,7 +146,7 @@
   gap: 4px;
 }
 .customers_studentvefity_container {
-  border: 1px solid #ffa502;
+  border: 1px solid #ffa50278;
   background-color: #ffa6020e;
   color: #ffa502;
 }
@@ -156,7 +156,7 @@
   color: #fff;
 }
 .customers_assigntrainers_container {
-  border: 1px solid #2ed573;
+  border: 1px solid #2ed57366;
   background-color: #2ed5740e;
   color: #2ed573;
 }
@@ -166,7 +166,7 @@
   color: #fff;
 }
 .customers_verifytrainers_container {
-  border: 1px solid #1e90ff;
+  border: 1px solid #1e90ff61;
   background-color: #1e8fff11;
   color: #1e90ff;
 }
@@ -176,7 +176,7 @@
   color: #fff;
 }
 .customers_awaitingclass_container {
-  border: 1px solid #607d8b;
+  border: 1px solid #607d8b85;
   background-color: #607d8b11;
   color: #607d8b;
 }
@@ -186,7 +186,7 @@
   color: #fff;
 }
 .customers_classschedule_container {
-  border: 1px solid #a29bfe;
+  border: 1px solid #a29bfe82;
   background-color: #a29bfe15;
   color: #a29bfe;
 }
@@ -196,7 +196,7 @@
   color: #fff;
 }
 .customers_classgoing_container {
-  border: 1px solid #00cec9;
+  border: 1px solid #00cec97a;
   background-color: #00cecb10;
   color: #00cec9;
 }
@@ -216,7 +216,7 @@
   color: #fff;
 }
 .customers_escalated_container {
-  border: 1px solid #d32f2f;
+  border: 1px solid #d32f2f7a;
   background-color: #d32f2f13;
   color: #d32f2f;
 }
@@ -226,7 +226,7 @@
   color: #fff;
 }
 .customers_feedback_container {
-  border: 1px solid #fd79a8;
+  border: 1px solid #fd79a880;
   background-color: #fd79a711;
   color: #fd79a8;
 }
@@ -236,7 +236,7 @@
   color: #fff;
 }
 .customers_completed_container {
-  border: 1px solid #3c9111;
+  border: 1px solid #3c911175;
   background-color: #3c911111;
   color: #3c9111;
 }
@@ -246,7 +246,7 @@
   color: #fff;
 }
 .customers_others_container {
-  border: 1px solid #0984e3;
+  border: 1px solid #0984e37a;
   background-color: #0985e30e;
   color: #0984e3;
 }

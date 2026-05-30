@@ -656,17 +656,11 @@ export default function LeadFollowUp({
                 title: "Followup Status",
                 width: 140,
                 render: (text) => {
+                  const statusClass = text?.toLowerCase().replace(/\s+/g, "_");
+
                   return (
                     <div
-                      className={
-                        text == "Hot Follow Up" ||
-                        text == "Cold Follow Up" ||
-                        text == "Interested"
-                          ? "leadmanager_followupstatus_hotfollowup_container"
-                          : text == "Only Enquiry" || text == "Hold"
-                            ? "leadmanager_leadstatus_medium_container"
-                            : "leadmanager_leadstatus_junk_container"
-                      }
+                      className={`leadfollwup_table_status_container ${statusClass}`}
                     >
                       <p>{text}</p>
                     </div>

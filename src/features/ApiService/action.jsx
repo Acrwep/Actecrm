@@ -755,6 +755,24 @@ export const getCustomerById = async (customer_id) => {
   }
 };
 
+export const sendOtpToCustomer = async (payload) => {
+  try {
+    const response = await api.post("/api/otpSend", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyCustomerOtp = async (payload) => {
+  try {
+    const response = await api.post("/api/verifyOTP", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateCustomer = async (payload) => {
   try {
     const response = await api.put("/api/updateCustomer", payload);

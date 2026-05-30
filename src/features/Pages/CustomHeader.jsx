@@ -1223,7 +1223,9 @@ Course Advisor
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.phone ? leadDetails.phone : "-"}
+                  {leadDetails?.phone
+                    ? `${leadDetails?.phone_code ? `+${leadDetails.phone_code} ` : ""}${leadDetails.phone}`
+                    : "-"}
                 </p>
               </Col>
             </Row>
@@ -1237,8 +1239,8 @@ Course Advisor
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.whatsapp
-                    ? leadDetails.whatsapp
+                  {leadDetails?.whatsapp
+                    ? `${leadDetails?.whatsapp_phone_code ? `+${leadDetails.whatsapp_phone_code} ` : ""}${leadDetails.whatsapp}`
                     : "-"}
                 </p>
               </Col>
