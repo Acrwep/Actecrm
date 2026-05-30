@@ -160,7 +160,7 @@ const countryLengthFallback = {
   cx: 9, // Christmas Island
   cy: 8, // Cyprus
   cz: 9, // Czechia
-  de: [10, 11], // Germany
+  de: [10, 11, 12, 13], // Germany
   dj: 8, // Djibouti
   dk: 8, // Denmark
   dm: 10, // Dominica
@@ -347,7 +347,7 @@ const countryLengthFallback = {
   xk: 8, // Kosovo
   ye: 9, // Yemen
   yt: 9, // Mayotte
-  za: [5, 6, 7, 8, 9], // South Africa
+  za: [9], // South Africa
   zm: 9, // Zambia
   zw: 9, // Zimbabwe
 };
