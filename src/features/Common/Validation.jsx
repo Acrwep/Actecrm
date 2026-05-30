@@ -258,7 +258,63 @@ const countryLengthFallback = {
   mk: 8, // Macedonia
   mn: 8, // Mongolia
   tj: 9, // Tajikistan
-  tm: 8, // Turkmenistan
+  tm: 8, // Turkmenistan,
+
+  // North America
+  us: 10, // United States
+  ca: 10, // Canada
+  mx: 10, // Mexico
+  pr: 10, // Puerto Rico
+  do: 10, // Dominican Republic
+
+  // South America (additional)
+  br: [10, 11], // Brazil
+  ar: 10, // Argentina
+  co: 10, // Colombia
+
+  // Europe (additional)
+  gb: 10, // United Kingdom
+  fr: 9, // France
+  it: [9, 10], // Italy
+  es: 9, // Spain
+  nl: 9, // Netherlands
+  se: 9, // Sweden
+  ch: 9, // Switzerland
+  pl: 9, // Poland
+  gr: 10, // Greece
+  fi: [9, 10], // Finland
+  no: 8, // Norway
+  dk: 8, // Denmark
+  ie: 9, // Ireland
+  cz: 9, // Czech Republic
+  be: 9, // Belgium
+  mt: 8, // Malta
+  li: [7, 9], // Liechtenstein
+
+  // Asia (additional)
+  in: 10, // India
+  cn: 11, // China
+  jp: 10, // Japan
+  kr: [9, 10], // South Korea
+  tr: 10, // Turkey
+  tw: 9, // Taiwan
+  kp: [8, 10], // North Korea
+  tl: 8, // Timor-Leste
+
+  // Oceania (additional)
+  au: 9, // Australia
+  nz: 9, // New Zealand
+  gu: 10, // Guam
+  io: 7, // British Indian Ocean Territory
+
+  // Africa (additional)
+  ma: 9, // Morocco
+  tz: 9, // Tanzania
+  st: 7, // Sao Tome & Principe
+
+  // South America & Caribbean (additional)
+  gy: 7, // Guyana
+  sr: 7, // Suriname
 };
 
 export const getExpectedPhoneLength = (countryCode, mobileNumber = "") => {
@@ -316,14 +372,16 @@ export const mobileValidator = (mobile, countryCode) => {
     const iso = countryCode.toLowerCase();
     const expectedLength = getExpectedPhoneLength(countryCode, mobile);
     const fallback = countryLengthFallback[iso];
-    // Determine the set of valid lengths: prioritize array fallback if available
-    const validLengths = Array.isArray(expectedLength)
-      ? expectedLength
-      : Array.isArray(fallback)
-        ? fallback
-        : expectedLength !== null
-          ? [expectedLength]
-          : null;
+    
+    let validLengths = null;
+    if (fallback !== undefined) {
+      validLengths = Array.isArray(fallback) ? fallback : [fallback];
+    } else if (expectedLength !== null) {
+      validLengths = Array.isArray(expectedLength)
+        ? expectedLength
+        : [expectedLength];
+    }
+
     if (validLengths) {
       if (!validLengths.includes(mobile.length)) {
         error = ` must be ${validLengths.join(" or ")} digits`;
