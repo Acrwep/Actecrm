@@ -140,6 +140,7 @@ const countryLengthFallback = {
   // Europe (commonly missing)
   at: [10, 11], // Austria
   bg: [8, 9], // Bulgaria
+  de: [10, 11], // Germany
   hr: 9, // Croatia
   hu: 9, // Hungary
   lt: 8, // Lithuania
@@ -261,6 +262,8 @@ const countryLengthFallback = {
 };
 
 export const getExpectedPhoneLength = (countryCode, mobileNumber = "") => {
+  console.log("countryCode", countryCode);
+
   if (!countryCode) return null;
   const iso = countryCode.toLowerCase();
   const countryObj = defaultCountries.find((c) => parseCountry(c).iso2 === iso);
@@ -744,6 +747,15 @@ export const getDatesFromRangeLabel = (label) => {
       end_date: end_date.format("YYYY-MM-DD"),
     },
   };
+};
+
+/** Billing month range (26th → 25th), same as CommonMuiCustomDatePicker "This Month". */
+export const getThisMonthDateRange = () => {
+  const range = getDatesFromRangeLabel("One Month");
+  if (!range?.card_settings) {
+    return getCurrentandPreviousweekDate();
+  }
+  return [range.card_settings.start_date, range.card_settings.end_date];
 };
 
 export const getLast3Months = () => {

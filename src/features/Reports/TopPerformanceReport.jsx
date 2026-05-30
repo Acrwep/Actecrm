@@ -127,6 +127,10 @@ export default function TopPerformanceReport() {
     },
   ];
 
+  const getRowClassName = (record) => {
+    return record.groupIndex % 2 === 0 ? "branch-even" : "branch-odd";
+  };
+
   const prepareTableData = (data) => {
     const groupCount = {};
     const groupIndexMap = {};
@@ -291,9 +295,7 @@ export default function TopPerformanceReport() {
     console.log("loginUserId", loginUserId, value);
 
     try {
-      const response = await getAllDownlineUsers(
-        value.length >= 1 ? value : loginUserId,
-      );
+      const response = await getAllDownlineUsers(value ? value : loginUserId);
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -725,6 +727,7 @@ export default function TopPerformanceReport() {
           checkBox="false"
           size="small"
           className="questionupload_table"
+          rowClassName={getRowClassName}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page

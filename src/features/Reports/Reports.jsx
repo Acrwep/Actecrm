@@ -14,6 +14,8 @@ import UserwiseTransactionReport from "./UserwiseTransactionReport";
 import ServerReport from "./ServerReport";
 import TicketsReport from "./TicketsReport";
 import CustomerFeesHistoryReport from "./CustomerFeesHistoryReport";
+import RegionPerformanceReport from "./RegionPerformanceReport";
+import UserwiseLeadsourceReport from "./UserwiseLeadSourceReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -46,44 +48,54 @@ export default function Reports() {
       key: "3",
       children: <UserwiseTransactionReport />,
     },
+    permissions.includes("Userwise Transaction Analysis Report") && {
+      label: "Userwise Leadsource Analysis",
+      key: "4",
+      children: <UserwiseLeadsourceReport />,
+    },
+    permissions.includes("Branchwise Performance Report") && {
+      label: "Regionwise Performance",
+      key: "5",
+      children: <RegionPerformanceReport />,
+    },
     permissions.includes("Branchwise Performance Report") && {
       label: "Branchwise Performance",
-      key: "4",
+      key: "6",
       children: <BranchPerformanceReport />,
     },
     permissions.includes("Top Performance Channel Report") && {
       label: "Top Performance Channel",
-      key: "5",
+      key: "7",
       children: <TopPerformanceReport />,
     },
     permissions.includes("Post Sale Performance Report") && {
       label: "Post Sale Performance",
-      key: "6",
+      key: "8",
       children: <PostSalePerformanceReport />,
     },
     permissions.includes("Payment Report") && {
       label: "Payment Report",
-      key: "7",
+      key: "9",
       children: <PaymentReport />,
     },
     permissions.includes("Transaction Report") && {
       label: "Transaction Report",
-      key: "8",
+      key: "10",
       children: <TransactionReport />,
     },
     permissions.includes("Customer Fees History Report") && {
       label: "Customer Fees History Report",
-      key: "9",
+      key: "11",
       children: <CustomerFeesHistoryReport />,
     },
     permissions.includes("Server Report") && {
       label: "Server Report",
-      key: "10",
+      key: "12",
       children: <ServerReport />,
     },
     permissions.includes("Tickets Report") && {
       label: "Tickets Report",
-      key: "11",
+      key: "13",
       children: <TicketsReport />,
     },
   ].filter(Boolean); // ✅ removes false/null items

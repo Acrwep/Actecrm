@@ -1538,6 +1538,24 @@ export const userwisePerformanceReports = async (payload) => {
   }
 };
 
+export const userwiseLeadSourceAnalysis = async (payload) => {
+  try {
+    const response = await api.post(`/api/getLeadSourceReport`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const regionwiseLeadsAnalysisReports = async (payload) => {
+  try {
+    const response = await api.post(`/api/regionReportDatewise`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const branchwiseLeadsAnalysisReports = async (payload) => {
   try {
     const response = await api.post(`/api/reportBranchWiseLeads`, payload);

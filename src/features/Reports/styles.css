@@ -479,3 +479,48 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* leadsource report styles */
+.leadsourcereport_table .ant-table-cell {
+  padding: 8px !important;
+  white-space: nowrap !important;
+}
+
+.leadsourcereport_table .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+.leadsourcereport_table .ant-table-thead > tr:first-child > th {
+  background: #5b69ca !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border-bottom: 0 !important;
+}
+
+.leadsourcereport_table .ant-table-thead > tr:nth-child(2) > th {
+  background: #e8ebff !important;
+  color: #3949ab !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.leadsourcereport_table .ant-table-thead > tr > th {
+  border-right: 1px solid #fff !important;
+}
+.leadsourcereport_table .ant-table-thead > tr > th {
+  line-height: 0px !important;
+}
+/* TOTAL HEADER */
+.leadsourcereport_table .total-column-header {
+  background: #ffe599 !important;
+  color: #7a5200 !important;
+}
+
+/* TOTAL BODY CELL */
+.leadsourcereport_table .total-column-cell {
+  background: #fff7d6 !important;
+  font-weight: 700 !important;
+}

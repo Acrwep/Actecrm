@@ -10,6 +10,7 @@ import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
+  getThisMonthDateRange,
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
@@ -22,6 +23,7 @@ import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
 export default function BranchPerformanceReport() {
   const mounted = useRef(false);
@@ -29,6 +31,11 @@ export default function BranchPerformanceReport() {
   const childUsers = useSelector((state) => state.childusers);
 
   const [selectedDates, setSelectedDates] = useState([]);
+  const [viewType, setViewType] = useState("month");
+  const viewTypeOptions = [
+    { id: "month", name: "Monthwise" },
+    { id: "date", name: "Datewise" },
+  ];
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
@@ -333,6 +340,7 @@ export default function BranchPerformanceReport() {
         customizeDate[1],
         null,
         null,
+        "month",
       );
     }
   }, [childUsers]);
@@ -342,6 +350,7 @@ export default function BranchPerformanceReport() {
     endDate,
     regionId,
     branchId,
+    view_type,
   ) => {
     setLoading(true);
     const payload = {
@@ -349,6 +358,7 @@ export default function BranchPerformanceReport() {
       ...(branchId && { branch_id: branchId }),
       start_date: startDate,
       end_date: endDate,
+      type: view_type,
     };
     try {
       const response = await branchwiseLeadsAnalysisReports(payload);
@@ -433,6 +443,9 @@ export default function BranchPerformanceReport() {
     setSelectedDates(getLast3MonthDates);
     const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
     setStartDateAndEndDate(customizeDate);
+    setSelectedRegionId(null);
+    setSelectedBranchId(null);
+    setViewType("month");
     setPagination({
       page: 1,
       limit: 500,
@@ -443,15 +456,16 @@ export default function BranchPerformanceReport() {
       customizeDate[1],
       null,
       null,
+      "month",
     );
   };
 
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
+        <Col xs={24} sm={24} md={24} lg={20}>
           <Row gutter={16}>
-            <Col span={7}>
+            <Col span={5}>
               <CommonSelectField
                 height="35px"
                 label="Select Region"
@@ -484,6 +498,7 @@ export default function BranchPerformanceReport() {
                     startDateAndEndDate[1],
                     value,
                     null,
+                    viewType,
                   );
                   getBranchesData(value);
                 }}
@@ -491,7 +506,7 @@ export default function BranchPerformanceReport() {
                 disableClearable={false}
               />
             </Col>
-            <Col span={7}>
+            <Col span={5}>
               <CommonSelectField
                 height="35px"
                 label="Select Branch"
@@ -510,6 +525,7 @@ export default function BranchPerformanceReport() {
                     startDateAndEndDate[1],
                     selectedRegionId,
                     value,
+                    viewType,
                   );
                 }}
                 value={selectedBranchId}
@@ -517,30 +533,87 @@ export default function BranchPerformanceReport() {
                 disabled={selectedRegionId == 3 ? true : false}
               />
             </Col>
-            <Col span={10}>
-              <CommonDoubleMonthPicker
-                label="Select Months"
-                value={selectedDates}
-                onChange={(dates, strings) => {
-                  console.log(strings);
-                  setSelectedDates([
-                    dates[0].format("YYYY-MM"),
-                    dates[1].format("YYYY-MM"),
-                  ]);
-                  const customizeDate = customizeStartDateAndEndDate(dates);
-                  setStartDateAndEndDate(customizeDate);
-                  setPagination({
-                    page: 1,
-                    limit: pagination.limit,
-                  });
-                  getBranchWiseLeadsReportData(
-                    customizeDate[0],
-                    customizeDate[1],
-                    selectedRegionId,
-                    selectedBranchId,
-                  );
+
+            <Col span={5}>
+              <CommonSelectField
+                height="35px"
+                label="View Type"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={viewTypeOptions}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  setViewType(type);
+                  if (type == "month") {
+                    const getLast3MonthDates = getLast3Months();
+                    setSelectedDates(getLast3MonthDates);
+                    const customizeDate =
+                      customizeStartDateAndEndDate(getLast3MonthDates);
+                    setStartDateAndEndDate(customizeDate);
+                    getBranchWiseLeadsReportData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      selectedRegionId,
+                      selectedBranchId,
+                      type,
+                    );
+                  } else {
+                    const thisMonthDateRange = getThisMonthDateRange();
+                    setSelectedDates(thisMonthDateRange);
+                    getBranchWiseLeadsReportData(
+                      thisMonthDateRange[0],
+                      thisMonthDateRange[1],
+                      selectedRegionId,
+                      selectedBranchId,
+                      type,
+                    );
+                  }
                 }}
+                value={viewType}
               />
+            </Col>
+
+            <Col span={9}>
+              {viewType == "month" ? (
+                <CommonDoubleMonthPicker
+                  label="Select Months"
+                  value={selectedDates}
+                  onChange={(dates, strings) => {
+                    console.log(strings);
+                    setSelectedDates([
+                      dates[0].format("YYYY-MM"),
+                      dates[1].format("YYYY-MM"),
+                    ]);
+                    const customizeDate = customizeStartDateAndEndDate(dates);
+                    setStartDateAndEndDate(customizeDate);
+                    setPagination({
+                      page: 1,
+                      limit: pagination.limit,
+                    });
+                    getBranchWiseLeadsReportData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      selectedRegionId,
+                      selectedBranchId,
+                      viewType,
+                    );
+                  }}
+                />
+              ) : (
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    getBranchWiseLeadsReportData(
+                      dates[0],
+                      dates[1],
+                      selectedRegionId,
+                      selectedBranchId,
+                      viewType,
+                    );
+                  }}
+                />
+              )}
             </Col>
           </Row>
         </Col>
@@ -548,7 +621,7 @@ export default function BranchPerformanceReport() {
           xs={24}
           sm={24}
           md={24}
-          lg={7}
+          lg={4}
           style={{
             display: "flex",
             justifyContent: "flex-end",

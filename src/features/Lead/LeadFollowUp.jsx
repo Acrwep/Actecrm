@@ -87,9 +87,15 @@ export default function LeadFollowUp({
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
 
+  //redux datas
   const filterValuesFromRedux = useSelector(
     (state) => state.followupfiltervalues,
   );
+  const followup_status_counts = useSelector(
+    (state) => state.followupstatuscounts,
+  );
+  //usestates
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -1353,6 +1359,31 @@ export default function LeadFollowUp({
           </div>
         </Col>
       </Row>
+
+      <div className="customers_scroll_wrapper">
+        <div className="customers_status_mainContainer">
+          {followup_status_counts.map((item, index) => {
+            const statusClass = item.name.toLowerCase().replace(/\s+/g, "_");
+            console.log("statusClass", statusClass);
+
+            return (
+              <div
+                key={index}
+                className={`leadfollwup_status_container ${statusClass} ${
+                  selectedStatus === item.name ? "active" : ""
+                }`}
+                onClick={() => setSelectedStatus(item.name)}
+              >
+                {" "}
+                <p>
+                  {item?.name} {`( ${item.count} )`}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           // scroll={{ x: 1250 }}

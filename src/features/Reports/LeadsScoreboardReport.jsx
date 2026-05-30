@@ -12,6 +12,7 @@ import { MdHistory } from "react-icons/md";
 import {
   customizeStartDateAndEndDate,
   getLast3Months,
+  getThisMonthDateRange,
 } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
@@ -25,6 +26,7 @@ import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
+import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 
 export default function LeadsScoreboardReport() {
   const mounted = useRef(false);
@@ -33,6 +35,11 @@ export default function LeadsScoreboardReport() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [selectedDates, setSelectedDates] = useState([]);
+  const [viewType, setViewType] = useState("month");
+  const viewTypeOptions = [
+    { id: "month", name: "Monthwise" },
+    { id: "date", name: "Datewise" },
+  ];
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
@@ -257,18 +264,25 @@ export default function LeadsScoreboardReport() {
         customizeDate[0],
         customizeDate[1],
         downliners_ids,
+        "month",
       );
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
-  const getScoreBoardReportsData = async (startDate, endDate, downliners) => {
+  const getScoreBoardReportsData = async (
+    startDate,
+    endDate,
+    downliners,
+    view_type,
+  ) => {
     setLoading(true);
     const payload = {
       user_ids: downliners,
       start_date: startDate,
       end_date: endDate,
+      type: view_type,
     };
     try {
       const response = await scoreBoardReports(payload);
@@ -328,6 +342,7 @@ export default function LeadsScoreboardReport() {
         startDateAndEndDate[0],
         startDateAndEndDate[1],
         downliners_ids,
+        viewType,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -340,6 +355,7 @@ export default function LeadsScoreboardReport() {
     setSelectedUserId(null);
     const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
     setStartDateAndEndDate(customizeDate);
+    setViewType("month");
     setPagination({
       page: 1,
     });
@@ -362,25 +378,79 @@ export default function LeadsScoreboardReport() {
                 value={selectedUserId}
               />
             </Col>
-            <Col span={16}>
-              <CommonDoubleMonthPicker
-                label="Select Months"
-                value={selectedDates}
-                onChange={(dates, strings) => {
-                  console.log(strings);
-                  setSelectedDates([
-                    dates[0].format("YYYY-MM"),
-                    dates[1].format("YYYY-MM"),
-                  ]);
-                  const customizeDate = customizeStartDateAndEndDate(dates);
-                  setStartDateAndEndDate(customizeDate);
-                  getScoreBoardReportsData(
-                    customizeDate[0],
-                    customizeDate[1],
-                    allDownliners,
-                  );
+
+            <Col span={6}>
+              <CommonSelectField
+                height="35px"
+                label="View Type"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={viewTypeOptions}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  setViewType(type);
+                  if (type == "month") {
+                    const getLast3MonthDates = getLast3Months();
+                    setSelectedDates(getLast3MonthDates);
+                    const customizeDate =
+                      customizeStartDateAndEndDate(getLast3MonthDates);
+                    setStartDateAndEndDate(customizeDate);
+                    getScoreBoardReportsData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      allDownliners,
+                      type,
+                    );
+                  } else {
+                    const thisMonthDateRange = getThisMonthDateRange();
+                    setSelectedDates(thisMonthDateRange);
+                    getScoreBoardReportsData(
+                      thisMonthDateRange[0],
+                      thisMonthDateRange[1],
+                      allDownliners,
+                      type,
+                    );
+                  }
                 }}
+                value={viewType}
               />
+            </Col>
+
+            <Col span={11}>
+              {viewType == "month" ? (
+                <CommonDoubleMonthPicker
+                  label="Select Months"
+                  value={selectedDates}
+                  onChange={(dates, strings) => {
+                    console.log(strings);
+                    setSelectedDates([
+                      dates[0].format("YYYY-MM"),
+                      dates[1].format("YYYY-MM"),
+                    ]);
+                    const customizeDate = customizeStartDateAndEndDate(dates);
+                    setStartDateAndEndDate(customizeDate);
+                    getScoreBoardReportsData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      allDownliners,
+                      viewType,
+                    );
+                  }}
+                />
+              ) : (
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    getScoreBoardReportsData(
+                      dates[0],
+                      dates[1],
+                      allDownliners,
+                      viewType,
+                    );
+                  }}
+                />
+              )}
             </Col>
           </Row>
         </Col>
