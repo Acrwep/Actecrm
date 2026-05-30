@@ -21,6 +21,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonDnd from "../Common/CommonDnd";
 import { IoIosClose } from "react-icons/io";
+import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import {
   downloadLeadFollowUps,
   getAllDownlineUsers,
@@ -82,6 +83,14 @@ export default function LeadFollowUp({
   const chatBoxRef = useRef();
   const mounted = useRef(false);
   const addLeaduseRef = useRef();
+  const scrollRef = useRef();
+
+  const scroll = (scrollOffset) => {
+    scrollRef.current.scrollBy({
+      left: scrollOffset,
+      behavior: "smooth",
+    });
+  };
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -267,18 +276,10 @@ export default function LeadFollowUp({
       fixed: "right",
       width: 140,
       render: (text) => {
+        const statusClass = text?.toLowerCase().replace(/\s+/g, "_");
+
         return (
-          <div
-            className={
-              text == "Hot Follow Up" ||
-              text == "Cold Follow Up" ||
-              text == "Interested"
-                ? "leadmanager_followupstatus_hotfollowup_container"
-                : text == "Only Enquiry" || text == "Hold"
-                  ? "leadmanager_leadstatus_medium_container"
-                  : "leadmanager_leadstatus_junk_container"
-            }
-          >
+          <div className={`leadfollwup_table_status_container ${statusClass}`}>
             <p>{text}</p>
           </div>
         );
@@ -1361,7 +1362,36 @@ export default function LeadFollowUp({
       </Row>
 
       <div className="customers_scroll_wrapper">
-        <div className="customers_status_mainContainer">
+        <button
+          onClick={() => scroll(-600)}
+          className="followup_statusscroll_button"
+        >
+          <IoMdArrowDropleft size={25} />
+        </button>
+        <div className="customers_status_mainContainer" ref={scrollRef}>
+          <div
+            className={
+              selectedStatus === ""
+                ? "trainers_active_all_container"
+                : "trainers_all_container"
+            }
+            onClick={() => {
+              setSelectedStatus("");
+              dispatch(
+                storeFollowUpFilterValues({
+                  status_id: null,
+                  status_name: "",
+                  pageNumber: 1,
+                }),
+              );
+            }}
+          >
+            <p>
+              All{" "}
+              {`( ${pagination && pagination.total != undefined ? pagination.total : "-"} )`}
+            </p>
+          </div>
+
           {followup_status_counts.map((item, index) => {
             const statusClass = item.name.toLowerCase().replace(/\s+/g, "_");
             console.log("statusClass", statusClass);
@@ -1372,7 +1402,29 @@ export default function LeadFollowUp({
                 className={`leadfollwup_status_container ${statusClass} ${
                   selectedStatus === item.name ? "active" : ""
                 }`}
-                onClick={() => setSelectedStatus(item.name)}
+                onClick={() => {
+                  setSelectedStatus(item.name);
+                  dispatch(
+                    storeFollowUpFilterValues({
+                      status_id:
+                        item.name == "Hot Follow Up"
+                          ? 1
+                          : item.name == "Cold Follow Up"
+                            ? 7
+                            : item.name == "Interested"
+                              ? 8
+                              : item.name == "Only Enquiry"
+                                ? 9
+                                : item.name == "Hold"
+                                  ? 10
+                                  : item.name == "No Response"
+                                    ? 11
+                                    : null,
+                      status_name: item.name,
+                      pageNumber: 1,
+                    }),
+                  );
+                }}
               >
                 {" "}
                 <p>
@@ -1382,6 +1434,12 @@ export default function LeadFollowUp({
             );
           })}
         </div>
+        <button
+          onClick={() => scroll(600)}
+          className="followup_statusscroll_button"
+        >
+          <IoMdArrowDropright size={25} />
+        </button>
       </div>
 
       <div style={{ marginTop: "20px" }}>

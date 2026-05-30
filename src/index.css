@@ -467,3 +467,112 @@ button:focus-visible {
 .ant-timeline.ant-timeline-label .ant-timeline-item-label {
   font-size: 13px !important;
 }
+
+/* ==========================================
+   STATUS FILTER TABS OPTIMIZATIONS
+   ========================================== */
+.customers_formpending_container,
+.customers_active_formpending_container,
+.customers_paymentreject_container,
+.customers_active_paymentreject_container,
+.customers_awaitfinance_container,
+.customers_active_awaitfinance_container,
+.customers_studentvefity_container,
+.customers_active_studentvefity_container,
+.customers_assigntrainers_container,
+.customers_active_assigntrainers_container,
+.customers_verifytrainers_container,
+.customers_active_verifytrainers_container,
+.customers_awaitingclass_container,
+.customers_active_awaitingclass_container,
+.customers_classschedule_container,
+.customers_active_classschedule_container,
+.customers_classgoing_container,
+.customers_active_classgoing_container,
+.customers_pendingfees_container,
+.customers_active_pendingfees_container,
+.customers_escalated_container,
+.customers_active_escalated_container,
+.customers_feedback_container,
+.customers_active_feedback_container,
+.customers_completed_container,
+.customers_active_completed_container,
+.customers_others_container,
+.customers_active_others_container,
+.trainers_all_container,
+.trainers_active_all_container,
+.trainers_active_formpending_container,
+.trainers_active_verifypending_container,
+.trainers_active_verifiedtrainers_container,
+.trainers_active_rejectedtrainers_container,
+.trainers_rejected_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+/* Active press-down feedback for inactive/clickable status tabs */
+.customers_formpending_container:active,
+.customers_paymentreject_container:active,
+.customers_awaitfinance_container:active,
+.customers_studentvefity_container:active,
+.customers_assigntrainers_container:active,
+.customers_verifytrainers_container:active,
+.customers_awaitingclass_container:active,
+.customers_classschedule_container:active,
+.customers_classgoing_container:active,
+.customers_pendingfees_container:active,
+.customers_escalated_container:active,
+.customers_feedback_container:active,
+.customers_completed_container:active,
+.customers_others_container:active,
+.trainers_all_container:active,
+.trainers_rejected_container:active {
+  transform: translateY(0) !important;
+}
+
+/* Standardize paragraph margin resetting within all status tab containers */
+.customers_formpending_container p,
+.customers_active_formpending_container p,
+.customers_paymentreject_container p,
+.customers_active_paymentreject_container p,
+.customers_awaitfinance_container p,
+.customers_active_awaitfinance_container p,
+.customers_studentvefity_container p,
+.customers_active_studentvefity_container p,
+.customers_assigntrainers_container p,
+.customers_active_assigntrainers_container p,
+.customers_verifytrainers_container p,
+.customers_active_verifytrainers_container p,
+.customers_awaitingclass_container p,
+.customers_active_awaitingclass_container p,
+.customers_classschedule_container p,
+.customers_active_classschedule_container p,
+.customers_classgoing_container p,
+.customers_active_classgoing_container p,
+.customers_pendingfees_container p,
+.customers_active_pendingfees_container p,
+.customers_escalated_container p,
+.customers_active_escalated_container p,
+.customers_feedback_container p,
+.customers_active_feedback_container p,
+.customers_completed_container p,
+.customers_active_completed_container p,
+.customers_others_container p,
+.customers_active_others_container p,
+.trainers_all_container p,
+.trainers_active_all_container p,
+.trainers_active_formpending_container p,
+.trainers_active_verifypending_container p,
+.trainers_active_verifiedtrainers_container p,
+.trainers_active_rejectedtrainers_container p,
+.trainers_rejected_container p {
+  margin: 0 !important;
+}

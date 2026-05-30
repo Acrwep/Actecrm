@@ -3,9 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
 import LeadFollowUp from "./LeadFollowUp";
-import { Button, Tooltip, Dropdown } from "antd";
+import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
-import { FaCaretDown } from "react-icons/fa";
 import {
   getAllAreas,
   getAllDownlineUsers,
@@ -16,9 +15,7 @@ import {
   getLeadStatus,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import {
-  resetFollowUpFilterValues,
   storeAreaList,
   storeAssignLeadFilterValues,
   storeCourseList,
@@ -44,25 +41,14 @@ export default function LeadManager() {
   const liveLeadSelecteDates = useSelector(
     (state) => state.liveleadselecteddates,
   );
-  const followup_status_counts = useSelector(
-    (state) => state.followupstatuscounts,
-  );
-  const tabName = useSelector((state) => state.leadmanageractivepage);
-  const filterValuesFromRedux = useSelector(
-    (state) => state.followupfiltervalues,
-  );
 
   const [activePage, setActivePage] = useState("followup");
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
   const [liveLeadCount, setLiveLeadCount] = useState(0);
-  const [openLiveLeadTooltip, setOpenLiveLeadTooltip] = useState(false);
   const [junkLeadCount, setJunkLeadCount] = useState(0);
   const [assignLeadCount, setAssignLeadCount] = useState(0);
-  const [isLeadPageVisited, setIsLeadPageVisited] = useState(false);
-  const [isAssignLeadPageVisited, setIsAssignLeadPageVisited] = useState(false);
-  const [isJunkPageVisited, setIsJunkPageVisited] = useState(false);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
@@ -401,92 +387,18 @@ export default function LeadManager() {
     <div>
       <div className="settings_tabbutton_maincontainer">
         <div style={{ display: "flex", gap: "18px" }}>
-          <Dropdown
-            trigger={["hover"]}
-            placement="bottomLeft"
-            menu={{
-              items: [
-                {
-                  key: "clear",
-                  label: (
-                    <div
-                      style={{
-                        padding: "2px 12px",
-                        height: "25px",
-                        fontSize: "13px",
-                      }}
-                    >
-                      All
-                    </div>
-                  ),
-                  onClick: () => {
-                    dispatch(
-                      storeFollowUpFilterValues({
-                        status_id: null,
-                        status_name: null,
-                        pageNumber: 1,
-                      }),
-                    );
-                    handleRefresh();
-                    handleTabClick("followup");
-                  },
-                },
-                ...followup_status_counts.map((item, index) => ({
-                  key: item.id || item.status_id || index,
-                  label: (
-                    <div
-                      style={{
-                        padding: "2px 12px",
-                        height: "25px",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {`${item.name} ( ${item.count} )`}
-                    </div>
-                  ),
-                  onClick: () => {
-                    dispatch(
-                      storeFollowUpFilterValues({
-                        status_id:
-                          item.name == "Hot Follow Up"
-                            ? 1
-                            : item.name == "Cold Follow Up"
-                              ? 7
-                              : item.name == "Interested"
-                                ? 8
-                                : item.name == "Only Enquiry"
-                                  ? 9
-                                  : item.name == "Hold"
-                                    ? 10
-                                    : item.name == "No Response"
-                                      ? 11
-                                      : null,
-                        status_name: item.name,
-                        pageNumber: 1,
-                      }),
-                    );
-                    handleRefresh();
-                    handleTabClick("followup");
-                  },
-                })),
-              ],
-            }}
+          <button
+            className={
+              activePage === "followup"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("followup")}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
           >
-            <button
-              className={
-                activePage === "followup"
-                  ? "settings_tab_activebutton"
-                  : "settings_tab_inactivebutton"
-              }
-              onClick={() => handleTabClick("followup")}
-              style={{ display: "flex", alignItems: "center", gap: "6px" }}
-            >
-              Lead Followup ( {followupCount} ){" "}
-              {filterValuesFromRedux.status_name &&
-                ` - ${filterValuesFromRedux.status_name}`}{" "}
-              <FaCaretDown />
-            </button>
-          </Dropdown>
+            Lead Followup ( {followupCount} ){" "}
+          </button>
+
           <button
             className={
               activePage === "leads"
