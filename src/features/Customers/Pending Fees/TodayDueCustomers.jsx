@@ -871,10 +871,10 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={10}>
+      <Row style={{ alignItems: "center" }}>
+        <Col xs={24} sm={24} md={24} lg={14}>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={9}>
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
@@ -984,7 +984,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={12}>
+              <Col span={9}>
                 <CommonMultiSelectField
                   height="35px"
                   label="Select User"
@@ -998,15 +998,31 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             )}
           </Row>
         </Col>
+
         <Col
-          span={14}
+          span={10}
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            gap: "16px",
+            gap: "12px",
           }}
         >
+          <div
+            className="overall_pending_amount_card"
+            style={{ padding: "8px 16px" }}
+          >
+            <span className="overall_pending_amount_label">
+              Amount to be Collected Today:
+            </span>
+            <span
+              className="overall_pending_amount_value"
+              style={{ fontSize: "20px" }}
+            >
+              ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
+            </span>
+          </div>
+
           <Tooltip placement="top" title="Download">
             <Button
               className="reports_download_button"
@@ -1029,7 +1045,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           <FiFilter
             size={20}
             color="#5b69ca"
-            style={{ marginRight: "16px", cursor: "pointer" }}
+            style={{ cursor: "pointer" }}
             onClick={() => {
               setIsOpenFilterDrawer(true);
               getTableColumnsData(loginUserId);
@@ -1037,17 +1053,6 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
           />
         </Col>
       </Row>
-
-      <div className="overall_pending_amount_container">
-        <div className="overall_pending_amount_card">
-          <span className="overall_pending_amount_label">
-            Amount to be Collected Today:
-          </span>
-          <span className="overall_pending_amount_value">
-            ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
-          </span>
-        </div>
-      </div>
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable

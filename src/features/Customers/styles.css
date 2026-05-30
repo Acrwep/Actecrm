@@ -1799,25 +1799,32 @@
 }
 
 .overall_pending_amount_card {
-  background: linear-gradient(135deg, #f0f4ff, #e6ecf8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); */
-  border: 1px solid #dbe4f0;
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  padding: 12px 24px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-left: 5px solid #e11d48;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
-
 .overall_pending_amount_label {
   font-size: 13px;
   font-weight: 600;
-  color: #4b5563;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .overall_pending_amount_value {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 800;
   color: #e11d48;
   letter-spacing: 0.5px;
 }

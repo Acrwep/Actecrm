@@ -907,10 +907,10 @@ export default function OverallDueCustomers({
 
   return (
     <div>
-      <Row style={{ marginTop: "40px" }}>
-        <Col xs={24} sm={24} md={24} lg={17}>
+      <Row style={{ alignItems: "center" }}>
+        <Col xs={24} sm={24} md={24} lg={14}>
           <Row gutter={16}>
-            <Col span={7}>
+            <Col span={9}>
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
@@ -1024,54 +1024,45 @@ export default function OverallDueCustomers({
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={7}>
+              <Col span={9}>
                 <CommonMultiSelectField
                   height="35px"
                   label="Select User"
                   labelMarginTop="0px"
                   labelFontSize="13px"
+                  width={"100%"}
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}
                 />
               </Col>
             )}
-            <Col span={10}>
-              {/* <div style={{ position: "relative" }}>
-                <CommonMuiCustomDatePicker
-                  value={selectedDates}
-                  onDateChange={(dates) => {
-                    setSelectedDates(dates);
-                    setDueSelectedDates(dates);
-                    setPagination({
-                      page: 1,
-                    });
-                    getPendingFeesCustomersData(
-                      dates[0],
-                      dates[1],
-                      searchValue,
-                      allDownliners,
-                      1,
-                      pagination.limit,
-                    );
-                  }}
-                />
-                <p className="pendingcustomers_datepicker_label">
-                  Nxt Due Date
-                </p>
-              </div> */}
-            </Col>
           </Row>
         </Col>
         <Col
-          span={7}
+          span={10}
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            gap: "16px",
+            gap: "12px",
           }}
         >
+          <div
+            className="overall_pending_amount_card"
+            style={{ padding: "8px 16px" }}
+          >
+            <span className="overall_pending_amount_label">
+              Overall Pending Amount:
+            </span>
+            <span
+              className="overall_pending_amount_value"
+              style={{ fontSize: "20px" }}
+            >
+              ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
+            </span>
+          </div>
+
           <Tooltip placement="top" title="Download">
             <Button
               className="reports_download_button"
@@ -1093,7 +1084,7 @@ export default function OverallDueCustomers({
           <FiFilter
             size={20}
             color="#5b69ca"
-            style={{ marginRight: "16px", cursor: "pointer" }}
+            style={{ cursor: "pointer" }}
             onClick={() => {
               setIsOpenFilterDrawer(true);
               getTableColumnsData(loginUserId);
@@ -1102,18 +1093,7 @@ export default function OverallDueCustomers({
         </Col>
       </Row>
 
-      <div className="overall_pending_amount_container">
-        <div className="overall_pending_amount_card">
-          <span className="overall_pending_amount_label">
-            Overall Pending Amount:
-          </span>
-          <span className="overall_pending_amount_value">
-            ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
-          </span>
-        </div>
-      </div>
-
-      <div style={{ marginTop: "16px" }}>
+      <div style={{ marginTop: "30px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
