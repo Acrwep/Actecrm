@@ -1790,3 +1790,34 @@
   transform: scale(1.1);
   border-color: #1b538c;
 }
+
+.overall_pending_amount_container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.overall_pending_amount_card {
+  background: linear-gradient(135deg, #f0f4ff, #e6ecf8);
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #dbe4f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.overall_pending_amount_label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.overall_pending_amount_value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #e11d48;
+  letter-spacing: 0.5px;
+}

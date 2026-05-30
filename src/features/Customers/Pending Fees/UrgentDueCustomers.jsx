@@ -69,6 +69,7 @@ export default function UrgentDueCustomers({
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [allDownliners, setAllDownliners] = useState([]);
+  const [overAllPendingAmount, setOverAllPendingAmount] = useState(0);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -482,7 +483,7 @@ export default function UrgentDueCustomers({
       setCustomersData(response?.data?.data?.data || []);
       const pagination = response?.data?.data?.pagination;
       setUrgentDueCount(pagination?.total || 0);
-
+      setOverAllPendingAmount(pagination?.overall_balance || 0);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -494,6 +495,7 @@ export default function UrgentDueCustomers({
         setLoading(false);
       }, 300);
     } catch (error) {
+      setOverAllPendingAmount(0);
       setCustomersData([]);
       setLoading(false);
       console.log("pending fee customer error", error);
@@ -1098,6 +1100,17 @@ export default function UrgentDueCustomers({
           />
         </Col>
       </Row>
+
+      <div className="overall_pending_amount_container">
+        <div className="overall_pending_amount_card">
+          <span className="overall_pending_amount_label">
+            Urgent Collection Amount:
+          </span>
+          <span className="overall_pending_amount_value">
+            ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
+          </span>
+        </div>
+      </div>
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable

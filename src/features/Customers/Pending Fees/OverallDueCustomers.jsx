@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import "../styles.css";
 import {
   Row,
   Col,
@@ -68,6 +69,7 @@ export default function OverallDueCustomers({
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
+  const [overAllPendingAmount, setOverAllPendingAmount] = useState(0);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -479,6 +481,7 @@ export default function OverallDueCustomers({
       setCustomersData(response?.data?.data?.data || []);
       const pagination = response?.data?.data?.pagination;
       setOverAllDueCount(pagination?.total || 0);
+      setOverAllPendingAmount(pagination?.overall_balance || 0);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -491,6 +494,7 @@ export default function OverallDueCustomers({
       }, 300);
     } catch (error) {
       setCustomersData([]);
+      setOverAllPendingAmount(0);
       setLoading(false);
       console.log("pending fee customer error", error);
     }
@@ -1098,7 +1102,18 @@ export default function OverallDueCustomers({
         </Col>
       </Row>
 
-      <div style={{ marginTop: "22px" }}>
+      <div className="overall_pending_amount_container">
+        <div className="overall_pending_amount_card">
+          <span className="overall_pending_amount_label">
+            Overall Pending Amount:
+          </span>
+          <span className="overall_pending_amount_value">
+            ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "16px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
