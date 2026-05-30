@@ -74,6 +74,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 const { TextArea } = Input;
 
 export default function LeadFollowUp({
+  followupCount,
   setFollowupCount,
   refreshLeads,
   leadTypeOptions,
@@ -372,16 +373,6 @@ export default function LeadFollowUp({
               ? filterValuesFromRedux.user_id
               : convertAsJson?.user_id,
           );
-          // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-          // getLeadFollowUpsData(
-          //   null,
-          //   PreviousAndCurrentDate[0],
-          //   PreviousAndCurrentDate[1],
-          //   false,
-          //   null,
-          //   1,
-          //   10
-          // );
         }
       }
     }
@@ -498,7 +489,7 @@ export default function LeadFollowUp({
       console.log("updateDataaa", updatedData);
 
       setFollowUpData(updatedData);
-      setFollowupCount(pagination.total);
+      setFollowupCount(pagination?.total || 0);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -1066,6 +1057,7 @@ export default function LeadFollowUp({
                             allDownliners,
                             1,
                             pagination.limit,
+                            filterValuesFromRedux.status_id,
                           );
                         }}
                       >
@@ -1128,6 +1120,7 @@ export default function LeadFollowUp({
                                 allDownliners,
                                 1,
                                 pagination.limit,
+                                filterValuesFromRedux.status_id,
                               );
                             }
                           }}
@@ -1259,6 +1252,7 @@ export default function LeadFollowUp({
                     allDownliners,
                     1,
                     pagination.limit,
+                    filterValuesFromRedux.status_id,
                   );
                 }}
               />
@@ -1387,15 +1381,12 @@ export default function LeadFollowUp({
             }}
           >
             <p>
-              All{" "}
-              {`( ${pagination && pagination.total != undefined ? pagination.total : "-"} )`}
+              All {`( ${followupCount != undefined ? followupCount : "-"} )`}
             </p>
           </div>
 
           {followup_status_counts.map((item, index) => {
             const statusClass = item.name.toLowerCase().replace(/\s+/g, "_");
-            console.log("statusClass", statusClass);
-
             return (
               <div
                 key={index}
@@ -1623,6 +1614,7 @@ export default function LeadFollowUp({
               allDownliners,
               pagination.page,
               pagination.limit,
+              filterValuesFromRedux.status_id,
             );
             refreshLeads();
           }}

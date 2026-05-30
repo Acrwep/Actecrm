@@ -492,6 +492,7 @@ export default function LeadManager() {
         >
           <LeadFollowUp
             key={tabKeys.followup}
+            followupCount={followupCount}
             setFollowupCount={setFollowupCount}
             refreshLeads={refreshLeads}
             leadTypeOptions={leadTypeOptions}
