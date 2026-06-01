@@ -34,6 +34,7 @@ import {
   viewCertForCustomer,
 } from "../ApiService/action";
 import {
+  customersStatusDisplay,
   getCurrentandPreviousweekDate,
   isWithin30Days,
 } from "../Common/Validation";
@@ -374,6 +375,15 @@ export default function Customers() {
       dataIndex: "status",
       fixed: "right",
       width: 182,
+      ...(status === "" || status === "Others"
+        ? {
+            sorter: (a, b) =>
+              customersStatusDisplay(a).localeCompare(
+                customersStatusDisplay(b),
+              ),
+            sortDirections: ["ascend", "descend"],
+          }
+        : {}),
       render: (text, record) => {
         let classPercent = 0;
 
@@ -1708,6 +1718,15 @@ export default function Customers() {
               return {
                 ...col,
                 width: 182,
+                ...(status === "" || status === "Others"
+                  ? {
+                      sorter: (a, b) =>
+                        customersStatusDisplay(a).localeCompare(
+                          customersStatusDisplay(b),
+                        ),
+                      sortDirections: ["ascend", "descend"],
+                    }
+                  : {}),
                 render: (text, record) => {
                   let classPercent = 0;
 

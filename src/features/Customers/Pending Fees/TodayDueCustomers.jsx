@@ -21,7 +21,10 @@ import {
   updateTableColumns,
 } from "../../ApiService/action";
 import { DownloadOutlined } from "@ant-design/icons";
-import { formatToBackendIST } from "../../Common/Validation";
+import {
+  customersStatusDisplay,
+  formatToBackendIST,
+} from "../../Common/Validation";
 import CommonTable from "../../Common/CommonTable";
 import { FaRegEye } from "react-icons/fa";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -201,6 +204,9 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
       dataIndex: "status",
       fixed: "right",
       width: 190,
+      sorter: (a, b) =>
+        customersStatusDisplay(a).localeCompare(customersStatusDisplay(b)),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         let classPercent = 0;
 
@@ -601,6 +607,11 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
                 return {
                   ...col,
                   width: 180,
+                  sorter: (a, b) =>
+                    customersStatusDisplay(a).localeCompare(
+                      customersStatusDisplay(b),
+                    ),
+                  sortDirections: ["ascend", "descend"],
                   render: (text, record) => {
                     let classPercent = 0;
 

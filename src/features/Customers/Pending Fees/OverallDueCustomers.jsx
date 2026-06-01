@@ -23,6 +23,7 @@ import {
   updateTableColumns,
 } from "../../ApiService/action";
 import {
+  customersStatusDisplay,
   formatToBackendIST,
   getCurrentandPreviousweekDate,
 } from "../../Common/Validation";
@@ -213,7 +214,8 @@ export default function OverallDueCustomers({
       dataIndex: "status",
       fixed: "right",
       width: 190,
-      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
+      sorter: (a, b) =>
+        customersStatusDisplay(a).localeCompare(customersStatusDisplay(b)),
       sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         let classPercent = 0;
@@ -626,7 +628,9 @@ export default function OverallDueCustomers({
                   ...col,
                   width: 180,
                   sorter: (a, b) =>
-                    (a.status || "").localeCompare(b.status || ""),
+                    customersStatusDisplay(a).localeCompare(
+                      customersStatusDisplay(b),
+                    ),
                   sortDirections: ["ascend", "descend"],
                   render: (text, record) => {
                     let classPercent = 0;

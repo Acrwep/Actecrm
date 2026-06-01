@@ -942,3 +942,19 @@ export const formatAddress = (value) => {
     )
     .join(", ");
 };
+
+export const customersStatusDisplay = (record) => {
+  if (record.is_second_due === 1) {
+    return "Payment Verify";
+  }
+
+  if (record.is_last_pay_rejected === 1) {
+    return "Payment Rejected";
+  }
+
+  if (record.status === "Awaiting Finance") {
+    return "Payment Verify";
+  }
+
+  return record.status || "";
+};

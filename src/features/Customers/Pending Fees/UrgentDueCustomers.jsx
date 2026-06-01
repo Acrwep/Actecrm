@@ -22,6 +22,7 @@ import {
   updateTableColumns,
 } from "../../ApiService/action";
 import {
+  customersStatusDisplay,
   formatToBackendIST,
   getCurrentandPreviousweekDate,
 } from "../../Common/Validation";
@@ -213,6 +214,9 @@ export default function UrgentDueCustomers({
       dataIndex: "status",
       fixed: "right",
       width: 190,
+      sorter: (a, b) =>
+        customersStatusDisplay(a).localeCompare(customersStatusDisplay(b)),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         let classPercent = 0;
 
@@ -625,6 +629,11 @@ export default function UrgentDueCustomers({
                 return {
                   ...col,
                   width: 180,
+                  sorter: (a, b) =>
+                    customersStatusDisplay(a).localeCompare(
+                      customersStatusDisplay(b),
+                    ),
+                  sortDirections: ["ascend", "descend"],
                   render: (text, record) => {
                     let classPercent = 0;
 
