@@ -29,6 +29,7 @@ export default function CommonMuiDatePicker({
         }}
         open={!disabled && open} // ✅ only open if not disabled
         format="DD/MM/YYYY"
+        views={["month", "year", "day"]}
         onClose={() => setOpen(false)}
         onOpen={() => {
           if (!disabled) {
@@ -70,10 +71,38 @@ export default function CommonMuiDatePicker({
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: "13px",
               },
-              "& .MuiYearCalendar-button": {
-                fontSize: "13px !important", // desired font size
-                fontFamily: "Poppins, sans-serif", // desired font family
+              // Year Button Styles
+              "& .MuiYearCalendar-button, & .MuiYearCalendar-root button": {
+                fontSize: "13px !important",
+                fontFamily: "Poppins, sans-serif !important",
               },
+              "& .MuiYearCalendar-button.Mui-selected, & .MuiYearCalendar-root button.Mui-selected":
+                {
+                  backgroundColor: "#5b69ca !important",
+                  color: "#fff !important",
+                },
+              "& .MuiYearCalendar-button.Mui-selected:hover, & .MuiYearCalendar-root button.Mui-selected:hover":
+                {
+                  backgroundColor: "#4a58b0 !important",
+                },
+              // Month Button Styles
+              "& .MuiPickersMonth-monthButton, & .MuiMonthCalendar-root button":
+                {
+                  fontSize: "13px !important",
+                  fontFamily: "Poppins, sans-serif !important",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              "& .MuiPickersMonth-monthButton.Mui-selected, & .MuiMonthCalendar-root button.Mui-selected":
+                {
+                  backgroundColor: "#5b69ca !important",
+                  color: "#fff !important",
+                },
+              "& .MuiPickersMonth-monthButton.Mui-selected:hover, & .MuiMonthCalendar-root button.Mui-selected:hover":
+                {
+                  backgroundColor: "#4a58b0 !important",
+                },
             },
           },
           actionBar: {

@@ -28,6 +28,7 @@ export default function CommonMuiDateTimePicker({
         }}
         open={!disabled && open}
         format="DD/MM/YYYY HH:mm" // ✅ includes time
+        views={["month", "year", "day", "hours", "minutes"]}
         onClose={() => setOpen(false)}
         onOpen={() => {
           if (!disabled) setOpen(true);
@@ -84,13 +85,37 @@ export default function CommonMuiDateTimePicker({
                   color: "#fff !important",
                 },
               },
-              "& .MuiYearCalendar-button": {
-                fontSize: "12px",
-                fontFamily: "Poppins, sans-serif",
-                "&.Mui-selected": {
-                  backgroundColor: "#5b69ca !important",
-                },
+              "& .MuiYearCalendar-button, & .MuiYearCalendar-root button": {
+                fontSize: "13px !important",
+                fontFamily: "Poppins, sans-serif !important",
               },
+              "& .MuiYearCalendar-button.Mui-selected, & .MuiYearCalendar-root button.Mui-selected":
+                {
+                  backgroundColor: "#5b69ca !important",
+                  color: "#fff !important",
+                },
+              "& .MuiYearCalendar-button.Mui-selected:hover, & .MuiYearCalendar-root button.Mui-selected:hover":
+                {
+                  backgroundColor: "#4a58b0 !important",
+                },
+              // Month Button Styles
+              "& .MuiPickersMonth-monthButton, & .MuiMonthCalendar-root button":
+                {
+                  fontSize: "13px !important",
+                  fontFamily: "Poppins, sans-serif !important",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              "& .MuiPickersMonth-monthButton.Mui-selected, & .MuiMonthCalendar-root button.Mui-selected":
+                {
+                  backgroundColor: "#5b69ca !important",
+                  color: "#fff !important",
+                },
+              "& .MuiPickersMonth-monthButton.Mui-selected:hover, & .MuiMonthCalendar-root button.Mui-selected:hover":
+                {
+                  backgroundColor: "#4a58b0 !important",
+                },
               "& .MuiPickersCalendarHeader-label": {
                 fontSize: "13px", // slightly larger for header
                 fontWeight: 600,
