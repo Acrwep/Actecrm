@@ -129,10 +129,12 @@ export default function CommonInputField({
             boxSizing: "border-box",
             fontSize: "14px",
           },
-          "& .Mui-disabled": {
-            backgroundColor: "#f5f5f5", // change background
-            color: "#888", // change text color
-            WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+          "& .MuiOutlinedInput-root.Mui-disabled": {
+            backgroundColor: "#f5f5f5",
+          },
+          "& .MuiOutlinedInput-input.Mui-disabled": {
+            WebkitTextFillColor: "#888",
+            color: "#888",
           },
         }}
         inputRef={(node) => {
