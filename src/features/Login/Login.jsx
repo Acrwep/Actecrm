@@ -76,6 +76,7 @@ export default function Login() {
   };
 
   useEffect(() => {
+    window.dispatchEvent(new Event("manualLogout"));
     localStorage.removeItem("AccessToken");
     localStorage.removeItem("loginUserDetails");
     sessionStorage.clear();
