@@ -1250,6 +1250,57 @@
   text-align: center;
   overflow-wrap: break-word;
 }
+
+.customers_review_container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customers_review_image {
+  width: 250px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.customers_review_google_active {
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+  background-color: #f6ffed;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.customers_review_linkedin_active {
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid #91caff;
+  border-radius: 6px;
+  background-color: #e6f7ff;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.customers_review_inactive {
+  padding: 4px 8px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.customers_review_grayscale {
+  filter: grayscale(100%);
+}
+
 /* overall due styles */
 .overallduecustomers_filterContainer {
   display: flex;

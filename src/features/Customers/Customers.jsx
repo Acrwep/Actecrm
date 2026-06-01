@@ -13,6 +13,7 @@ import {
   Modal,
   Upload,
   Skeleton,
+  Popover,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -36,7 +37,8 @@ import {
   getCurrentandPreviousweekDate,
   isWithin30Days,
 } from "../Common/Validation";
-import { HiDotsVertical, HiOutlineMail } from "react-icons/hi";
+import { FcGoogle } from "react-icons/fc";
+import { FaLinkedin } from "react-icons/fa";
 import CommonSpinner from "../Common/CommonSpinner";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
@@ -81,6 +83,7 @@ import ReAssignTrainer from "./ReAssignTrainer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PreCertificate from "./PreCertificate";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
+import PrismaZoom from "react-prismazoom";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -174,6 +177,11 @@ export default function Customers() {
     { id: 1, name: "Classroom", checked: true },
     { id: 1, name: "Online", checked: true },
   ]);
+  //review modal
+  const [isOpenReviewScreenshotModal, setIsOpenReviewScreenshotModal] =
+    useState(false);
+  const [reviewScreenshot, setReviewScreenshot] = useState("");
+  const [reviewModalTitle, setReviewModalTitle] = useState("");
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -312,6 +320,20 @@ export default function Customers() {
       key: "trainer_mobile",
       dataIndex: "trainer_mobile",
       width: 150,
+    },
+    {
+      title: "Review Status",
+      key: "review_status",
+      dataIndex: "review_status",
+      width: 120,
+      render: () => {
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FcGoogle size={15} />
+            <FaLinkedinIn size={15} color="#0a66c2" />
+          </div>
+        );
+      },
     },
     {
       title: "Form Status",
@@ -1593,6 +1615,56 @@ export default function Customers() {
                     >
                       {text && text ? text + "%" : "-"}
                     </p>
+                  );
+                },
+              };
+            case "review_status":
+              return {
+                ...col,
+                width: 120,
+                render: (text, record) => {
+                  return (
+                    <div className="customers_review_container">
+                      {record?.google_review ? (
+                        <div
+                          className="customers_review_google_active"
+                          onClick={() => {
+                            setReviewModalTitle("Google Review");
+                            setReviewScreenshot(record?.google_review);
+                            setIsOpenReviewScreenshotModal(true);
+                          }}
+                        >
+                          <FcGoogle size={15} />
+                        </div>
+                      ) : (
+                        <Tooltip title="Google Review Not Collected">
+                          <div className="customers_review_inactive">
+                            <FcGoogle
+                              size={15}
+                              className="customers_review_grayscale"
+                            />
+                          </div>
+                        </Tooltip>
+                      )}
+                      {record?.linkedin_review ? (
+                        <div
+                          className="customers_review_linkedin_active"
+                          onClick={() => {
+                            setReviewModalTitle("LinkedIn Review");
+                            setReviewScreenshot(record?.linkedin_review);
+                            setIsOpenReviewScreenshotModal(true);
+                          }}
+                        >
+                          <FaLinkedinIn size={14} color="#0a66c2" />
+                        </div>
+                      ) : (
+                        <Tooltip title="LinkedIn Review Not Collected">
+                          <div className="customers_review_inactive">
+                            <FaLinkedinIn size={14} color="#8c8c8c" />
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   );
                 },
               };
@@ -5232,6 +5304,34 @@ export default function Customers() {
           </div>
         </div>
       </Drawer>
+
+      {/* review screenshot modal */}
+      <Modal
+        title={reviewModalTitle}
+        open={isOpenReviewScreenshotModal}
+        onCancel={() => {
+          setIsOpenReviewScreenshotModal(false);
+          setReviewScreenshot("");
+          setReviewModalTitle("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {reviewScreenshot ? (
+              <img
+                src={`data:image/png;base64,${reviewScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
+      </Modal>
     </div>
   );
 }
