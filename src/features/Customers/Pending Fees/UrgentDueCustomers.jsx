@@ -1053,10 +1053,7 @@ export default function UrgentDueCustomers({
             <span className="overall_pending_amount_label">
               Urgent Collection Amount:
             </span>
-            <span
-              className="overall_pending_amount_value"
-              style={{ fontSize: "20px" }}
-            >
+            <span className="overall_pending_amount_value">
               ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
             </span>
           </div>

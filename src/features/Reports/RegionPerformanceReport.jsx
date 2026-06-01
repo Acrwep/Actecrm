@@ -7,7 +7,12 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { MdHistory } from "react-icons/md";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  customizeStartDateAndEndDate,
+  getCurrentandPreviousweekDate,
+  getLast3Months,
+  getThisMonthDateRange,
+} from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
@@ -32,6 +37,7 @@ export default function RegionPerformanceReport() {
     { id: "month", name: "Monthwise" },
     { id: "date", name: "Datewise" },
   ];
+  const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -49,7 +55,7 @@ export default function RegionPerformanceReport() {
       key: "date",
       dataIndex: "date",
       width: 150,
-      render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+      // render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
     },
     {
       title: "Hub Leads",
@@ -183,18 +189,25 @@ export default function RegionPerformanceReport() {
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
 
-      getRegionWiseLeadsReportData(
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-      );
+      const getLast3MonthDates = getLast3Months();
+      setSelectedDates(getLast3MonthDates);
+      const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
+      setStartDateAndEndDate(customizeDate);
+
+      getRegionWiseLeadsReportData(customizeDate[0], customizeDate[1], "month");
     }
   }, [childUsers]);
 
-  const getRegionWiseLeadsReportData = async (startDate, endDate) => {
+  const getRegionWiseLeadsReportData = async (
+    startDate,
+    endDate,
+    view_type,
+  ) => {
     setLoading(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
+      type: view_type,
     };
     try {
       const response = await regionwiseLeadsAnalysisReports(payload);
@@ -221,16 +234,16 @@ export default function RegionPerformanceReport() {
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    const getLast3MonthDates = getLast3Months();
+    setSelectedDates(getLast3MonthDates);
+    const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
+    setStartDateAndEndDate(customizeDate);
+    setViewType("month");
     setPagination({
       page: 1,
       limit: 500,
     });
-    getRegionWiseLeadsReportData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-    );
+    getRegionWiseLeadsReportData(customizeDate[0], customizeDate[1], "month");
   };
 
   return (
@@ -238,14 +251,69 @@ export default function RegionPerformanceReport() {
       <Row>
         <Col xs={24} sm={24} md={24} lg={20}>
           <Row gutter={16}>
-            <Col span={10}>
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  getRegionWiseLeadsReportData(dates[0], dates[1]);
+            <Col span={6}>
+              <CommonSelectField
+                height="35px"
+                label="View Type"
+                labelMarginTop="0px"
+                labelFontSize="13px"
+                options={viewTypeOptions}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  setViewType(type);
+                  if (type == "month") {
+                    const getLast3MonthDates = getLast3Months();
+                    setSelectedDates(getLast3MonthDates);
+                    const customizeDate =
+                      customizeStartDateAndEndDate(getLast3MonthDates);
+                    setStartDateAndEndDate(customizeDate);
+                    getRegionWiseLeadsReportData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      type,
+                    );
+                  } else {
+                    const thisMonthDateRange = getThisMonthDateRange();
+                    setSelectedDates(thisMonthDateRange);
+                    getRegionWiseLeadsReportData(
+                      thisMonthDateRange[0],
+                      thisMonthDateRange[1],
+                      type,
+                    );
+                  }
                 }}
+                value={viewType}
               />
+            </Col>
+            <Col span={10}>
+              {viewType == "month" ? (
+                <CommonDoubleMonthPicker
+                  label="Select Months"
+                  value={selectedDates}
+                  onChange={(dates, strings) => {
+                    console.log(strings);
+                    setSelectedDates([
+                      dates[0].format("YYYY-MM"),
+                      dates[1].format("YYYY-MM"),
+                    ]);
+                    const customizeDate = customizeStartDateAndEndDate(dates);
+                    setStartDateAndEndDate(customizeDate);
+                    getRegionWiseLeadsReportData(
+                      customizeDate[0],
+                      customizeDate[1],
+                      viewType,
+                    );
+                  }}
+                />
+              ) : (
+                <CommonMuiCustomDatePicker
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    getRegionWiseLeadsReportData(dates[0], dates[1], viewType);
+                  }}
+                />
+              )}
             </Col>
           </Row>
         </Col>
@@ -272,7 +340,7 @@ export default function RegionPerformanceReport() {
                     "DD MMMM YYYY",
                   )} to ${moment(selectedDates[1]).format(
                     "DD MMMM YYYY",
-                  )} Branchwise Performance.csv`,
+                  )} Regionwise Performance.csv`,
                 );
               }}
             >

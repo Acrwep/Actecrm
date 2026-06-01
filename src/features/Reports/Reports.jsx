@@ -43,17 +43,17 @@ export default function Reports() {
       key: "2",
       children: <UserwisePerformanceReport />,
     },
-    permissions.includes("Userwise Transaction Analysis Report") && {
-      label: "Userwise Transaction Analysis",
-      key: "3",
-      children: <UserwiseTransactionReport />,
-    },
-    permissions.includes("Userwise Transaction Analysis Report") && {
+    permissions.includes("Userwise Leadsource Analysis Report") && {
       label: "Userwise Leadsource Analysis",
-      key: "4",
+      key: "3",
       children: <UserwiseLeadsourceReport />,
     },
-    permissions.includes("Branchwise Performance Report") && {
+    permissions.includes("Userwise Transaction Analysis Report") && {
+      label: "Userwise Transaction Analysis",
+      key: "4",
+      children: <UserwiseTransactionReport />,
+    },
+    permissions.includes("Regionwise Performance Report") && {
       label: "Regionwise Performance",
       key: "5",
       children: <RegionPerformanceReport />,

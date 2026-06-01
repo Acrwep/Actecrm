@@ -1015,10 +1015,7 @@ export default function TodayDueCustomers({ setTodayDueCount }) {
             <span className="overall_pending_amount_label">
               Amount to be Collected Today:
             </span>
-            <span
-              className="overall_pending_amount_value"
-              style={{ fontSize: "20px" }}
-            >
+            <span className="overall_pending_amount_value">
               ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
             </span>
           </div>

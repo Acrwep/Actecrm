@@ -1815,7 +1815,7 @@
   transition: all 0.3s ease;
 }
 .overall_pending_amount_label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -1823,7 +1823,7 @@
 }
 
 .overall_pending_amount_value {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   color: #e11d48;
   letter-spacing: 0.5px;

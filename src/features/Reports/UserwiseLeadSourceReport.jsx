@@ -225,6 +225,78 @@ export default function UserwiseLeadsourceReport() {
     getTransactionReportData(selectedDates[0], selectedDates[1], value);
   };
 
+  const flattenColumns = (columns) => {
+    const result = [];
+
+    columns.forEach((col) => {
+      if (col.children) {
+        col.children.forEach((child) => {
+          result.push({
+            title: `${col.title} - ${child.title}`,
+            dataIndex: child.dataIndex,
+            key: child.key,
+          });
+        });
+      } else {
+        result.push({
+          title: col.title,
+          dataIndex: col.dataIndex,
+          key: col.key,
+        });
+      }
+    });
+
+    return result;
+  };
+
+  const DownloadDataAsCSV = (data, columns, filename) => {
+    const headerRow1 = [];
+    const headerRow2 = [];
+    const flatColumns = [];
+
+    columns.forEach((col) => {
+      if (col.children) {
+        col.children.forEach((child) => {
+          headerRow1.push(col.title);
+          headerRow2.push(child.title);
+          flatColumns.push(child);
+        });
+      } else {
+        headerRow1.push(col.title);
+        headerRow2.push("");
+        flatColumns.push(col);
+      }
+    });
+
+    let csvContent = "";
+
+    // Parent Header Row
+    csvContent += headerRow1.join(",") + "\n";
+
+    // Child Header Row
+    csvContent += headerRow2.join(",") + "\n";
+
+    // Data Rows
+    data.forEach((row) => {
+      const rowData = flatColumns.map((col) => row[col.dataIndex] ?? "");
+
+      csvContent += rowData.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -336,12 +408,12 @@ export default function UserwiseLeadsourceReport() {
                     user_name:
                       row.user_name === "total" ? "Total" : row.user_name, // Excel-safe
                   }));
-                DownloadTableAsCSV(
+                DownloadDataAsCSV(
                   formattedData,
                   columns,
                   `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
                     selectedDates[1],
-                  ).format("DD-MM-YYYY")} Userwise Transaction Report.csv`,
+                  ).format("DD-MM-YYYY")} Userwise Lead Source Report.csv`,
                 );
               }}
             >

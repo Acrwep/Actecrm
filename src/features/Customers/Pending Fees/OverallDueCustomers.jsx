@@ -213,6 +213,8 @@ export default function OverallDueCustomers({
       dataIndex: "status",
       fixed: "right",
       width: 190,
+      sorter: (a, b) => (a.status || "").localeCompare(b.status || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
         let classPercent = 0;
 
@@ -623,6 +625,9 @@ export default function OverallDueCustomers({
                 return {
                   ...col,
                   width: 180,
+                  sorter: (a, b) =>
+                    (a.status || "").localeCompare(b.status || ""),
+                  sortDirections: ["ascend", "descend"],
                   render: (text, record) => {
                     let classPercent = 0;
 
@@ -1055,10 +1060,7 @@ export default function OverallDueCustomers({
             <span className="overall_pending_amount_label">
               Overall Pending Amount:
             </span>
-            <span
-              className="overall_pending_amount_value"
-              style={{ fontSize: "20px" }}
-            >
+            <span className="overall_pending_amount_value">
               ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
             </span>
           </div>
