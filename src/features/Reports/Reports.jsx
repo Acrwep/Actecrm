@@ -16,6 +16,7 @@ import TicketsReport from "./TicketsReport";
 import CustomerFeesHistoryReport from "./CustomerFeesHistoryReport";
 import RegionPerformanceReport from "./RegionPerformanceReport";
 import UserwiseLeadsourceReport from "./UserwiseLeadSourceReport";
+import AnnualSaleReport from "./AnnualSaleReport";
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -83,19 +84,24 @@ export default function Reports() {
       key: "10",
       children: <TransactionReport />,
     },
+    permissions.includes("Transaction Report") && {
+      label: "Annual Sale Report",
+      key: "11",
+      children: <AnnualSaleReport />,
+    },
     permissions.includes("Customer Fees History Report") && {
       label: "Customer Fees History Report",
-      key: "11",
+      key: "12",
       children: <CustomerFeesHistoryReport />,
     },
     permissions.includes("Server Report") && {
       label: "Server Report",
-      key: "12",
+      key: "13",
       children: <ServerReport />,
     },
     permissions.includes("Tickets Report") && {
       label: "Tickets Report",
-      key: "13",
+      key: "14",
       children: <TicketsReport />,
     },
   ].filter(Boolean); // ✅ removes false/null items

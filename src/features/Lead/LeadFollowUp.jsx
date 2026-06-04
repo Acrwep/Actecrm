@@ -275,13 +275,16 @@ export default function LeadFollowUp({
       key: "action_name",
       dataIndex: "action_name",
       fixed: "right",
-      width: 140,
+      width: 150,
+      sorter: (a, b) =>
+        (a.action_name || "").localeCompare(b.action_name || ""),
+      sortDirections: ["ascend", "descend"],
       render: (text) => {
         const statusClass = text?.toLowerCase().replace(/\s+/g, "_");
 
         return (
           <div className={`leadfollwup_table_status_container ${statusClass}`}>
-            <p>{text}</p>
+            <p>{text == "Others" ? "Followup Stopped" : text}</p>
           </div>
         );
       },
@@ -467,12 +470,14 @@ export default function LeadFollowUp({
       console.log("statusCounts", statusCounts);
 
       const requiredOrder = [
+        "Overall",
         "Hot Follow Up",
         "Cold Follow Up",
         "Interested",
         "Only Enquiry",
         "Hold",
         "No Response",
+        "Others",
       ];
 
       const formattedData = requiredOrder.map((key) => ({
@@ -654,7 +659,9 @@ export default function LeadFollowUp({
               return {
                 ...col,
                 title: "Followup Status",
-                width: 140,
+                width: 150,
+                sorter: (a, b) =>
+                  (a.action_name || "").localeCompare(b.action_name || ""),
                 render: (text) => {
                   const statusClass = text?.toLowerCase().replace(/\s+/g, "_");
 
@@ -662,7 +669,7 @@ export default function LeadFollowUp({
                     <div
                       className={`leadfollwup_table_status_container ${statusClass}`}
                     >
-                      <p>{text}</p>
+                      <p>{text == "Others" ? "Followup Stopped" : text}</p>
                     </div>
                   );
                 },
@@ -1357,28 +1364,6 @@ export default function LeadFollowUp({
           <IoMdArrowDropleft size={25} />
         </button>
         <div className="customers_status_mainContainer" ref={scrollRef}>
-          <div
-            className={
-              selectedStatus === ""
-                ? "trainers_active_all_container"
-                : "trainers_all_container"
-            }
-            onClick={() => {
-              setSelectedStatus("");
-              dispatch(
-                storeFollowUpFilterValues({
-                  status_id: null,
-                  status_name: "",
-                  pageNumber: 1,
-                }),
-              );
-            }}
-          >
-            <p>
-              All {`( ${followupCount != undefined ? followupCount : "-"} )`}
-            </p>
-          </div>
-
           {followup_status_counts.map((item, index) => {
             const statusClass = item.name.toLowerCase().replace(/\s+/g, "_");
             return (
@@ -1388,7 +1373,11 @@ export default function LeadFollowUp({
                   selectedStatus === item.name ? "active" : ""
                 }`}
                 onClick={() => {
-                  setSelectedStatus(item.name);
+                  if (item.name == "Overall") {
+                    setSelectedStatus("");
+                  } else {
+                    setSelectedStatus(item.name);
+                  }
                   dispatch(
                     storeFollowUpFilterValues({
                       status_id:
@@ -1404,8 +1393,10 @@ export default function LeadFollowUp({
                                   ? 10
                                   : item.name == "No Response"
                                     ? 11
-                                    : null,
-                      status_name: item.name,
+                                    : item.name == "Others"
+                                      ? 6
+                                      : null,
+                      status_name: item.name == "Overall" ? "" : item?.name,
                       pageNumber: 1,
                     }),
                   );
@@ -1413,7 +1404,12 @@ export default function LeadFollowUp({
               >
                 {" "}
                 <p>
-                  {item?.name} {`( ${item.count} )`}
+                  {item?.name == "Overall"
+                    ? "All"
+                    : item.name == "Others"
+                      ? "Followup Stopped"
+                      : item?.name}{" "}
+                  {`( ${item.count} )`}
                 </p>
               </div>
             );

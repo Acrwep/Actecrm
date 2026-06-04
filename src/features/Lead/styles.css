@@ -491,6 +491,23 @@
   margin: 0 !important;
 }
 
+/* Over All */
+.leadfollwup_status_container.overall {
+  border: 1px solid #0959d97c;
+  background-color: #0959d911;
+  color: #0959d9c4;
+}
+.leadfollwup_status_container.overall:hover {
+  border-color: #0959d97c;
+  background-color: #0959d92f;
+  color: #0959d9c4;
+}
+.leadfollwup_status_container.overall.active {
+  background-color: #0959d9c4;
+  border-color: #0959d9c4;
+  color: #ffffff;
+}
+
 /* Hot Follow Up */
 .leadfollwup_status_container.hot_follow_up {
   border: 1px solid #ffa39e;
@@ -592,21 +609,21 @@
   border-color: #595959;
   color: #ffffff;
 }
-.followup_statusscroll_button {
+/* .followup_statusscroll_button {
   display: none;
+} */
+/* @media (max-width: 1024px) { */
+.followup_statusscroll_button {
+  border-radius: 50%;
+  padding: 6px 6px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  color: #333;
+  background-color: #e0e3e8;
 }
-@media (max-width: 1024px) {
-  .followup_statusscroll_button {
-    border-radius: 50%;
-    padding: 6px 6px !important;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: transparent;
-    color: #333;
-    background-color: #e0e3e8;
-  }
-}
+/* } */
 .leadfollwup_table_status_container {
   display: flex;
   justify-content: center;
@@ -669,7 +686,6 @@
   background-color: #1d39c4;
   border-color: #1d39c4;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(29, 57, 196, 0.25);
 }
 .leadfollowup_actionmodal.ant-modal .ant-modal-content {
   padding: 0px !important;
