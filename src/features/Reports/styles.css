@@ -532,27 +532,67 @@
   font-size: 12px;
 }
 .annualsalereport_table .ant-table-thead > tr > th {
-  padding: 4px 8px !important;
+  /* padding: 4px 8px !important; */
+  line-height: 0px !important;
   font-weight: 600;
-}
-.annualsalereport_table .ant-table-tbody > tr > td {
-  padding: 4px 8px !important;
-  height: 35px;
 }
 
 /* Header Background Colors (using !important to override default Antd styles) */
-.annualsalereport_table .ant-table-thead > tr > th.header-blue { background-color: #1677ff !important; color: #fff !important; text-align: center !important; }
-.annualsalereport_table .ant-table-thead > tr > th.header-orange { background-color: #fa8c16 !important; color: #fff !important; text-align: center !important; }
-.annualsalereport_table .ant-table-thead > tr > th.header-green { background-color: #52c41a !important; color: #fff !important; text-align: center !important; }
-.annualsalereport_table .ant-table-thead > tr > th.header-cyan { background-color: #13c2c2 !important; color: #fff !important; text-align: center !important; }
-.annualsalereport_table .ant-table-thead > tr > th.header-purple { background-color: #722ed1 !important; color: #fff !important; text-align: center !important; }
+.annualsalereport_table .ant-table-thead > tr > th.header-blue {
+  background-color: #1677ff !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.annualsalereport_table .ant-table-thead > tr > th.header-orange {
+  background-color: #fa8c16 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.annualsalereport_table .ant-table-thead > tr > th.header-green {
+  background-color: #52c41a !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.annualsalereport_table .ant-table-thead > tr > th.header-cyan {
+  background-color: #13c2c2 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.annualsalereport_table .ant-table-thead > tr > th.header-purple {
+  background-color: #722ed1 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
 
 /* Cell background */
-.annualsalereport_table .ant-table-tbody > tr > td.cell-grey { background-color: #fafafa !important; border-right: 1px solid #f0f0f0 !important; }
+.annualsalereport_table .ant-table-tbody > tr > td.cell-grey {
+  background-color: #fafafa !important;
+  border-right: 1px solid #f0f0f0 !important;
+}
 
 /* Dynamic vibrant pastel cell backgrounds matching header groups */
-.annualsalereport_table .ant-table-tbody > tr > td.cell-light-blue { background-color: #e6f4ff !important; border-right: 1px solid #bae0ff !important; border-bottom: 1px solid #bae0ff !important; }
-.annualsalereport_table .ant-table-tbody > tr > td.cell-light-orange { background-color: #fff2e8 !important; border-right: 1px solid #ffd8bf !important; border-bottom: 1px solid #ffd8bf !important; }
-.annualsalereport_table .ant-table-tbody > tr > td.cell-light-green { background-color: #f6ffed !important; border-right: 1px solid #d9f7be !important; border-bottom: 1px solid #d9f7be !important; }
-.annualsalereport_table .ant-table-tbody > tr > td.cell-light-cyan { background-color: #e6fffb !important; border-right: 1px solid #b5f5ec !important; border-bottom: 1px solid #b5f5ec !important; }
-.annualsalereport_table .ant-table-tbody > tr > td.cell-light-purple { background-color: #f9f0ff !important; border-right: 1px solid #efdbff !important; border-bottom: 1px solid #efdbff !important; }
+.annualsalereport_table .ant-table-tbody > tr > td.cell-light-blue {
+  background-color: #e6f4ff !important;
+  border-right: 1px solid #bae0ff !important;
+  border-bottom: 1px solid #bae0ff !important;
+}
+.annualsalereport_table .ant-table-tbody > tr > td.cell-light-orange {
+  background-color: #fff2e8 !important;
+  border-right: 1px solid #ffd8bf !important;
+  border-bottom: 1px solid #ffd8bf !important;
+}
+.annualsalereport_table .ant-table-tbody > tr > td.cell-light-green {
+  background-color: #f6ffed !important;
+  border-right: 1px solid #d9f7be !important;
+  border-bottom: 1px solid #d9f7be !important;
+}
+.annualsalereport_table .ant-table-tbody > tr > td.cell-light-cyan {
+  background-color: #e6fffb !important;
+  border-right: 1px solid #b5f5ec !important;
+  border-bottom: 1px solid #b5f5ec !important;
+}
+.annualsalereport_table .ant-table-tbody > tr > td.cell-light-purple {
+  background-color: #f9f0ff !important;
+  border-right: 1px solid #efdbff !important;
+  border-bottom: 1px solid #efdbff !important;
+}

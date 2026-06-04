@@ -58,34 +58,106 @@ export default function AnnualSaleReport() {
       title: "TOTAL",
       onHeaderCell: blueHeader,
       children: [
-        { title: "LEAD", dataIndex: "total_lead", align: "center", width: 80, onHeaderCell: blueHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-blue") },
-        { title: "JOINT", dataIndex: "total_joint", align: "center", width: 80, onHeaderCell: blueHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-blue") },
-        { title: "PAYMENT", dataIndex: "total_payment", align: "center", width: 100, onHeaderCell: blueHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-blue") },
+        {
+          title: "LEAD",
+          dataIndex: "total_lead",
+          align: "center",
+          width: 80,
+          onHeaderCell: blueHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-blue"),
+        },
+        {
+          title: "JOINT",
+          dataIndex: "total_joint",
+          align: "center",
+          width: 80,
+          onHeaderCell: blueHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-blue"),
+        },
+        {
+          title: "PAYMENT",
+          dataIndex: "total_payment",
+          align: "center",
+          width: 100,
+          onHeaderCell: blueHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-blue"),
+        },
       ],
     },
     {
       title: "AVERAGE PER MONTH",
       onHeaderCell: orangeHeader,
       children: [
-        { title: "L", dataIndex: "avg_month_lead", align: "center", width: 60, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
-        { title: "J", dataIndex: "avg_month_joint", align: "center", width: 60, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
-        { title: "P", dataIndex: "avg_month_payment", align: "center", width: 80, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
+        {
+          title: "L",
+          dataIndex: "avg_month_lead",
+          align: "center",
+          width: 60,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
+        {
+          title: "J",
+          dataIndex: "avg_month_joint",
+          align: "center",
+          width: 60,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
+        {
+          title: "P",
+          dataIndex: "avg_month_payment",
+          align: "center",
+          width: 80,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
       ],
     },
     {
       title: "AVERAGE PER DAY",
       onHeaderCell: orangeHeader,
       children: [
-        { title: "L", dataIndex: "avg_day_lead", align: "center", width: 60, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
-        { title: "J", dataIndex: "avg_day_joint", align: "center", width: 60, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
-        { title: "P", dataIndex: "avg_day_payment", align: "center", width: 80, onHeaderCell: orangeHeader, onCell: (record) => getCellProps(record, "rowSpan12", "cell-light-orange") },
+        {
+          title: "L",
+          dataIndex: "avg_day_lead",
+          align: "center",
+          width: 60,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
+        {
+          title: "J",
+          dataIndex: "avg_day_joint",
+          align: "center",
+          width: 60,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
+        {
+          title: "P",
+          dataIndex: "avg_day_payment",
+          align: "center",
+          width: 80,
+          onHeaderCell: orangeHeader,
+          onCell: (record) =>
+            getCellProps(record, "rowSpan12", "cell-light-orange"),
+        },
       ],
     },
     {
       title: "HALF YEARLY",
       dataIndex: "half_yearly_name",
       align: "center",
-      width: 100,
+      width: 110,
       onHeaderCell: greenHeader,
       onCell: (record) => getCellProps(record, "rowSpan6", "cell-light-green"),
       render: (text) => <em>{text}</em>,
