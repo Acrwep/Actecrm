@@ -61,11 +61,18 @@ export default function LeadsScoreboardReport() {
 
   const columns = [
     {
-      title: "Month",
+      title: viewType === "month" ? "Month" : "Date",
       key: "sale_month",
       dataIndex: "sale_month",
-      width: 170,
+      width: 180,
       fixed: "left",
+      render: (value) => {
+        if (viewType === "month") {
+          return value;
+        }
+
+        return moment(value).format("DD/MM/YYYY dddd");
+      },
     },
     {
       title: "Total Leads",
@@ -104,6 +111,15 @@ export default function LeadsScoreboardReport() {
       },
     },
     {
+      title: "Pending",
+      key: "pending",
+      dataIndex: "pending",
+      width: 140,
+      render: (text) => {
+        return <p>{Number(text).toLocaleString("en-IN")}</p>;
+      },
+    },
+    {
       title: "Total Collection",
       key: "total_collection",
       dataIndex: "total_collection",
@@ -112,7 +128,7 @@ export default function LeadsScoreboardReport() {
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
             <p>{Number(text).toLocaleString("en-IN")}</p>
-            {text == 0 ? (
+            {text == 0 || viewType == "date" ? (
               ""
             ) : (
               <Tooltip
@@ -182,15 +198,6 @@ export default function LeadsScoreboardReport() {
             )}
           </div>
         );
-      },
-    },
-    {
-      title: "Pending",
-      key: "pending",
-      dataIndex: "pending",
-      width: 140,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
       },
     },
     {
@@ -328,7 +335,9 @@ export default function LeadsScoreboardReport() {
     const value = e.target.value;
     setSelectedUserId(value);
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        value?.length ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -339,8 +348,8 @@ export default function LeadsScoreboardReport() {
         page: 1,
       });
       getScoreBoardReportsData(
-        startDateAndEndDate[0],
-        startDateAndEndDate[1],
+        viewType == "month" ? startDateAndEndDate[0] : selectedDates[0],
+        viewType == "month" ? startDateAndEndDate[1] : selectedDates[1],
         downliners_ids,
         viewType,
       );

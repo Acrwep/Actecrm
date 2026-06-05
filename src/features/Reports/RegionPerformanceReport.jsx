@@ -51,11 +51,39 @@ export default function RegionPerformanceReport() {
 
   const columns = [
     {
-      title: "Date",
+      title: viewType === "month" ? "Month" : "Date",
       key: "date",
       dataIndex: "date",
-      width: 150,
-      // render: (text) => <p>{moment(text).format("DD/MM/YYYY")}</p>,
+      width: 180,
+      fixed: "left",
+      render: (value) => {
+        if (viewType === "month") {
+          return value;
+        }
+
+        return moment(value).format("DD/MM/YYYY dddd");
+      },
+    },
+    {
+      title: "Overall Leads",
+      key: "overall_leads",
+      dataIndex: "overall_leads",
+      width: 130,
+      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
+    },
+    {
+      title: "Overall Joins",
+      key: "overall_joins",
+      dataIndex: "overall_joins",
+      width: 130,
+      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
+    },
+    {
+      title: "Overall Collections",
+      key: "overall_collections",
+      dataIndex: "overall_collections",
+      width: 180,
+      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
     },
     {
       title: "Hub Leads",
@@ -118,27 +146,6 @@ export default function RegionPerformanceReport() {
       key: "bangalore_collections",
       dataIndex: "bangalore_collections",
       width: 190,
-      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
-    },
-    {
-      title: "Overall Leads",
-      key: "overall_leads",
-      dataIndex: "overall_leads",
-      width: 130,
-      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
-    },
-    {
-      title: "Overall Joins",
-      key: "overall_joins",
-      dataIndex: "overall_joins",
-      width: 130,
-      render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
-    },
-    {
-      title: "Overall Collections",
-      key: "overall_collections",
-      dataIndex: "overall_collections",
-      width: 180,
       render: (text) => <p>{Number(text).toLocaleString("en-IN")}</p>,
     },
   ];

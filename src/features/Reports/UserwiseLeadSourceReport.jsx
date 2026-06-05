@@ -56,15 +56,17 @@ export default function UserwiseLeadsourceReport() {
       page: 1,
       limit: 1000,
     };
+    let activeSaleUsers;
     try {
       const response = await getUsers(payload);
       const users_data = response?.data?.data?.data || [];
-      const activeSaleUsers = users_data.filter(
+      activeSaleUsers = users_data.filter(
         (user) =>
           user.is_active === 1 &&
           user.roles?.some((role) => role.role_name === "Sale"),
       );
       setSaleUsersData(activeSaleUsers);
+      setSelectedUserId(activeSaleUsers[0]?.user_id);
     } catch (error) {
       setSaleUsersData([]);
       console.log(error);
@@ -73,7 +75,7 @@ export default function UserwiseLeadsourceReport() {
       getTransactionReportData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
-        null,
+        [activeSaleUsers[0]?.user_id],
       );
     }
   };
@@ -173,7 +175,7 @@ export default function UserwiseLeadsourceReport() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      user_ids: user_id,
+      user_ids: user_id ? [...user_id].join(",") : null,
     };
     try {
       const response = await userwiseLeadSourceAnalysis(payload);
@@ -218,11 +220,17 @@ export default function UserwiseLeadsourceReport() {
   const handleSelectUser = (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+    console.log("valllllllllll", value);
+
     setPagination({
       page: 1,
       limit: pagination.limit,
     });
-    getTransactionReportData(selectedDates[0], selectedDates[1], value);
+    getTransactionReportData(
+      selectedDates[0],
+      selectedDates[1],
+      value?.length ? value : null,
+    );
   };
 
   const flattenColumns = (columns) => {
@@ -300,6 +308,7 @@ export default function UserwiseLeadsourceReport() {
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    setSelectedUserId(saleUsersData[0]?.user_id);
     setPagination({
       page: 1,
       limit: 100,
@@ -307,7 +316,7 @@ export default function UserwiseLeadsourceReport() {
     getTransactionReportData(
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
-      null,
+      [saleUsersData[0]?.user_id],
     );
   };
 

@@ -494,8 +494,12 @@ export default function BranchPerformanceReport() {
                     limit: pagination.limit,
                   });
                   getBranchWiseLeadsReportData(
-                    startDateAndEndDate[0],
-                    startDateAndEndDate[1],
+                    viewType == "month"
+                      ? startDateAndEndDate[0]
+                      : selectedDates[0],
+                    viewType == "month"
+                      ? startDateAndEndDate[1]
+                      : selectedDates[1],
                     value,
                     null,
                     viewType,
@@ -521,8 +525,12 @@ export default function BranchPerformanceReport() {
                     limit: pagination.limit,
                   });
                   getBranchWiseLeadsReportData(
-                    startDateAndEndDate[0],
-                    startDateAndEndDate[1],
+                    viewType == "month"
+                      ? startDateAndEndDate[0]
+                      : selectedDates[0],
+                    viewType == "month"
+                      ? startDateAndEndDate[1]
+                      : selectedDates[1],
                     selectedRegionId,
                     value,
                     viewType,

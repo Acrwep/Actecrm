@@ -44,6 +44,11 @@ export default function AnnualSaleReport() {
     };
   };
 
+  const renderPayment = (text) => {
+    if (text === null || text === undefined || isNaN(text)) return text || "-";
+    return Number(text).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  };
+
   const columns = [
     {
       title: "ANNUALLY",
@@ -84,6 +89,7 @@ export default function AnnualSaleReport() {
           onHeaderCell: blueHeader,
           onCell: (record) =>
             getCellProps(record, "rowSpan12", "cell-light-blue"),
+          render: renderPayment,
         },
       ],
     },
@@ -117,6 +123,7 @@ export default function AnnualSaleReport() {
           onHeaderCell: orangeHeader,
           onCell: (record) =>
             getCellProps(record, "rowSpan12", "cell-light-orange"),
+          render: renderPayment,
         },
       ],
     },
@@ -150,6 +157,7 @@ export default function AnnualSaleReport() {
           onHeaderCell: orangeHeader,
           onCell: (record) =>
             getCellProps(record, "rowSpan12", "cell-light-orange"),
+          render: renderPayment,
         },
       ],
     },
@@ -185,6 +193,7 @@ export default function AnnualSaleReport() {
       width: 90,
       onHeaderCell: greenHeader,
       onCell: (record) => getCellProps(record, "rowSpan6", "cell-light-green"),
+      render: renderPayment,
     },
     {
       title: "QUARTERLY",
@@ -217,6 +226,7 @@ export default function AnnualSaleReport() {
       width: 90,
       onHeaderCell: cyanHeader,
       onCell: (record) => getCellProps(record, "rowSpan3", "cell-light-cyan"),
+      render: renderPayment,
     },
     {
       title: "MONTH",
@@ -249,6 +259,7 @@ export default function AnnualSaleReport() {
       width: 90,
       onHeaderCell: purpleHeader,
       onCell: (record) => getCellProps(record, null, "cell-light-purple"),
+      render: renderPayment,
     },
   ];
 
@@ -379,7 +390,7 @@ export default function AnnualSaleReport() {
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={16}>
+            <Col span={8}>
               <DatePicker
                 picker="year"
                 value={selectedYear}

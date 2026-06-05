@@ -15,8 +15,8 @@ import {
 import { useSelector } from "react-redux";
 import CommonDoubleMonthPicker from "../Common/CommonDoubleMonthPicker";
 import {
-  getAllDownlineUsers,
   getMonthwiseTotalCollectionReport,
+  getUsers,
   userwisePerformanceReports,
 } from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
@@ -39,15 +39,15 @@ export default function UserwisePerformanceReport() {
     { id: "date", name: "Datewise" },
   ];
   const [startDateAndEndDate, setStartDateAndEndDate] = useState([]);
-  const [allDownliners, setAllDownliners] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [totalCounts, setTotalCounts] = useState(null);
   const [collectionHistory, setCollectionHistory] = useState([]);
-  const [loginUserId, setLoginUserId] = useState("");
+  const [defaultUserId, setDefaultUserId] = useState("");
   const [collectionLoading, setCollectionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
+  const [saleUsersData, setSaleUsersData] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
@@ -86,11 +86,18 @@ export default function UserwisePerformanceReport() {
       }),
     },
     {
-      title: "Month",
+      title: viewType === "month" ? "Month" : "Date",
       key: "label",
       dataIndex: "label",
-      width: 160,
+      width: 180,
       fixed: "left",
+      render: (value) => {
+        if (viewType === "month") {
+          return value;
+        }
+
+        return moment(value).format("DD/MM/YYYY dddd");
+      },
     },
     {
       title: "Total Leads",
@@ -370,39 +377,47 @@ export default function UserwisePerformanceReport() {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
+      console.log("downlineUsers", downlineUsers);
+
       const getLast3MonthDates = getLast3Months();
       setSelectedDates(getLast3MonthDates);
-
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      setLoginUserId(convertAsJson?.user_id);
-      getAllDownlineUsersData(convertAsJson?.user_id);
+      getAllUsersData();
     }
   }, [childUsers]);
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getAllUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    let activeSaleUsers;
     try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
+      const response = await getUsers(payload);
+      const users_data = response?.data?.data?.data || [];
+      activeSaleUsers = users_data.filter(
+        (user) =>
+          user.is_active === 1 &&
+          user.roles?.some((role) => role.role_name === "Sale"),
+      );
+      setSaleUsersData(activeSaleUsers);
+      setSelectedUserId(activeSaleUsers[0]?.user_id);
+    } catch (error) {
+      setSaleUsersData([]);
+      console.log(error);
+    } finally {
       const getLast3MonthDates = getLast3Months();
       setSelectedDates(getLast3MonthDates);
       const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
       setStartDateAndEndDate(customizeDate);
       console.log("startAndEndDate", customizeDate);
-
+      setSelectedUserId(activeSaleUsers[0]?.user_id);
+      setDefaultUserId(activeSaleUsers[0]?.user_id);
       getUsersWiseLeadsReportData(
         customizeDate[0],
         customizeDate[1],
-        downliners_ids,
+        activeSaleUsers[0]?.user_id,
         "month",
       );
-    } catch (error) {
-      console.log("all downlines error", error);
     }
   };
 
@@ -448,27 +463,12 @@ export default function UserwisePerformanceReport() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      setAllDownliners(downliners_ids);
-      setPagination({
-        page: 1,
-        limit: pagination.limit,
-      });
-      getUsersWiseLeadsReportData(
-        startDateAndEndDate[0],
-        startDateAndEndDate[1],
-        downliners_ids,
-        viewType,
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
+    getUsersWiseLeadsReportData(
+      viewType == "month" ? startDateAndEndDate[0] : selectedDates[0],
+      viewType == "month" ? startDateAndEndDate[1] : selectedDates[1],
+      value?.length ? value : null,
+      viewType,
+    );
   };
 
   const getMonthwiseTotalCollectionData = async (
@@ -501,13 +501,18 @@ export default function UserwisePerformanceReport() {
     setSelectedDates(getLast3MonthDates);
     const customizeDate = customizeStartDateAndEndDate(getLast3MonthDates);
     setStartDateAndEndDate(customizeDate);
-    setSelectedUserId(null);
+    setSelectedUserId([defaultUserId]);
     setViewType("month");
     setPagination({
       page: 1,
       limit: 500,
     });
-    getAllDownlineUsersData(loginUserId);
+    getUsersWiseLeadsReportData(
+      startDateAndEndDate[0],
+      startDateAndEndDate[1],
+      [defaultUserId],
+      "month",
+    );
   };
 
   return (
@@ -521,7 +526,7 @@ export default function UserwisePerformanceReport() {
                 label="Select User"
                 labelMarginTop="0px"
                 labelFontSize="13px"
-                options={subUsers}
+                options={saleUsersData}
                 onChange={handleSelectUser}
                 value={selectedUserId}
               />
@@ -545,7 +550,7 @@ export default function UserwisePerformanceReport() {
                     getUsersWiseLeadsReportData(
                       customizeDate[0],
                       customizeDate[1],
-                      allDownliners,
+                      selectedUserId,
                       type,
                     );
                   } else {
@@ -554,7 +559,7 @@ export default function UserwisePerformanceReport() {
                     getUsersWiseLeadsReportData(
                       thisMonthDateRange[0],
                       thisMonthDateRange[1],
-                      allDownliners,
+                      selectedUserId,
                       type,
                     );
                   }
@@ -582,7 +587,7 @@ export default function UserwisePerformanceReport() {
                     getUsersWiseLeadsReportData(
                       customizeDate[0],
                       customizeDate[1],
-                      allDownliners,
+                      selectedUserId,
                       viewType,
                     );
                   }}
@@ -599,7 +604,7 @@ export default function UserwisePerformanceReport() {
                     getUsersWiseLeadsReportData(
                       dates[0],
                       dates[1],
-                      allDownliners,
+                      selectedUserId,
                       viewType,
                     );
                   }}
