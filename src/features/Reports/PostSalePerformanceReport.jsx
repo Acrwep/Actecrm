@@ -254,7 +254,9 @@ export default function PostSalePerformanceReport() {
     const value = e.target.value;
     setSelectedUserId(value);
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        value?.length ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {

@@ -105,7 +105,7 @@ export default function LeadFollowUp({
     (state) => state.followupstatuscounts,
   );
   //usestates
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("Overall");
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -1373,11 +1373,7 @@ export default function LeadFollowUp({
                   selectedStatus === item.name ? "active" : ""
                 }`}
                 onClick={() => {
-                  if (item.name == "Overall") {
-                    setSelectedStatus("");
-                  } else {
-                    setSelectedStatus(item.name);
-                  }
+                  setSelectedStatus(item.name);
                   dispatch(
                     storeFollowUpFilterValues({
                       status_id:
@@ -1396,7 +1392,7 @@ export default function LeadFollowUp({
                                     : item.name == "Others"
                                       ? 6
                                       : null,
-                      status_name: item.name == "Overall" ? "" : item?.name,
+                      status_name: item?.name,
                       pageNumber: 1,
                     }),
                   );

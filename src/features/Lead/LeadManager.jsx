@@ -109,6 +109,7 @@ export default function LeadManager() {
           start_date: moment(today).format("YYYY-MM-DD"),
           end_date: moment(today).format("YYYY-MM-DD"),
           user_id: null,
+          status_id: null,
           pageNumber: 1,
           pageLimit: 10,
         }),
@@ -348,6 +349,65 @@ export default function LeadManager() {
   };
 
   const handleRefresh = () => {
+    const today = new Date();
+    const todayFormatted = moment(today).format("YYYY-MM-DD");
+
+    if (activePage === "followup") {
+      dispatch(
+        storeFollowUpFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: todayFormatted,
+          end_date: todayFormatted,
+          user_id: null,
+          status_id: null,
+          pageNumber: 1,
+          pageLimit: 10,
+        }),
+      );
+    } else if (activePage === "leads") {
+      dispatch(
+        storeLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: todayFormatted,
+          end_date: todayFormatted,
+          user_id: null,
+          lead_source: null,
+          lead_status_id: null,
+          call_getraapi: true,
+          pageNumber: 1,
+          pageLimit: 10,
+        }),
+      );
+    } else if (activePage === "live_leads") {
+      dispatch(storeLiveLeadSelectedDates([todayFormatted, todayFormatted]));
+      dispatch(storeLiveLeadSearchValue(null));
+      dispatch(storeLiveLeadFilterType(1));
+    } else if (activePage === "assign_leads") {
+      dispatch(
+        storeAssignLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: todayFormatted,
+          end_date: todayFormatted,
+          pageNumber: 1,
+          pageLimit: 10,
+        }),
+      );
+    } else if (activePage === "junk") {
+      dispatch(
+        storeJunkLeadFilterValues({
+          searchValue: null,
+          filterType: 1,
+          start_date: todayFormatted,
+          end_date: todayFormatted,
+          pageNumber: 1,
+          pageLimit: 10,
+        }),
+      );
+    }
+
     setTabKeys((prev) => ({
       ...prev,
       [activePage]: prev[activePage] + 1, // change key to remount

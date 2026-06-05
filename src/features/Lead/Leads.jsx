@@ -34,6 +34,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered } from "react-icons/md";
 import CommonTable from "../Common/CommonTable";
+import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
@@ -91,8 +92,19 @@ export default function Leads({
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const addLeaduseRef = useRef();
+  const scrollRef = useRef();
   const courseOptions = useSelector((state) => state.courselist);
 
+  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
+  const statusClassMap = {
+    high: "hot_follow_up",
+    medium: "cold_follow_up",
+    low: "no_response",
+    others: "others",
+    overall: "overall",
+  };
+  const [leadStatusId, setLeadStatusId] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("overall");
   const [leadData, setLeadData] = useState([]);
 
   const filterValuesFromRedux = useSelector((state) => state.leadfiltervalues);
@@ -448,19 +460,9 @@ export default function Leads({
       render: (text) => {
         return (
           <div
-            className={
-              text == "High"
-                ? "leadmanager_leadstatus_high_container"
-                : text == "Medium"
-                  ? "leadmanager_leadstatus_medium_container"
-                  : text == "Low"
-                    ? "leadmanager_leadstatus_low_container"
-                    : text == "Follow-Up Stoped"
-                      ? "leadmanager_leadstatus_followup_stopped_container"
-                      : "leadmanager_leadstatus_junk_container"
-            }
+            className={`leadfollwup_table_status_container ${text == "High" ? "hot_follow_up" : text == "Medium" ? "cold_follow_up" : text == "Low" ? "no_response" : "others"}`}
           >
-            <p>{text == "Follow-Up Stoped" ? "Followup Stopped" : text}</p>
+            <p>{text == "Others" ? "Followup Stopped" : text}</p>
           </div>
         );
       },
@@ -867,21 +869,9 @@ export default function Leads({
                 render: (text) => {
                   return (
                     <div
-                      className={
-                        text == "High"
-                          ? "leadmanager_leadstatus_high_container"
-                          : text == "Medium"
-                            ? "leadmanager_leadstatus_medium_container"
-                            : text == "Low"
-                              ? "leadmanager_leadstatus_low_container"
-                              : text == "Follow-Up Stoped"
-                                ? "leadmanager_leadstatus_followup_stopped_container"
-                                : "leadmanager_leadstatus_junk_container"
-                      }
+                      className={`leadfollwup_table_status_container ${text == "High" ? "hot_follow_up" : text == "Medium" ? "cold_follow_up" : text == "Low" ? "no_response" : "others"}`}
                     >
-                      <p>
-                        {text == "Follow-Up Stoped" ? "Followup Stopped" : text}
-                      </p>
+                      <p>{text == "Others" ? "Followup Stopped" : text}</p>
                     </div>
                   );
                 },
@@ -1078,6 +1068,7 @@ export default function Leads({
           : PreviousAndCurrentDate[1],
         downliners_ids,
         filterValuesFromRedux.lead_source,
+        filterValuesFromRedux.lead_status_id,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
       );
@@ -1092,6 +1083,7 @@ export default function Leads({
     endDate,
     downliners,
     leadsource,
+    leadStatusId,
     pageNumber,
     limit,
   ) => {
@@ -1110,15 +1102,57 @@ export default function Leads({
       end_date: endDate,
       user_ids: downliners,
       ...(leadsource && { lead_type: leadsource }),
+      ...(leadStatusId && { lead_status_id: leadStatusId }),
       page: pageNumber,
       limit: limit,
     };
     try {
       const response = await getLeads(payload);
+      console.log("leads responsesssss", response);
 
       const paginations = response?.data?.data?.pagination;
       const apiData = response?.data?.data?.data || [];
+      const lead_status_counts = response?.data?.data?.status;
       console.log("leads data", apiData);
+
+      //status filter
+      const statusCountsMap = (lead_status_counts || []).reduce((acc, item) => {
+        acc[item.name.toLowerCase()] = item.total_count;
+        return acc;
+      }, {});
+
+      const leadStatusOptionsWithCount = [
+        {
+          id: "overall",
+          name: "All",
+          count: statusCountsMap["total"] || 0,
+        },
+        {
+          id: "high",
+          name: "High",
+          count: statusCountsMap["high"] || 0,
+        },
+        {
+          id: "medium",
+          name: "Medium",
+          count: statusCountsMap["medium"] || 0,
+        },
+        {
+          id: "low",
+          name: "Low",
+          count: statusCountsMap["low"] || 0,
+        },
+        {
+          id: "others",
+          name: "Others",
+          count:
+            (statusCountsMap["junk"] || 0) +
+            (statusCountsMap["not interested"] || 0) +
+            (statusCountsMap["follow-up stoped"] || 0),
+        },
+      ];
+
+      setLeadStatusOptions(leadStatusOptionsWithCount);
 
       // ✅ Add serial number here
       const updatedData = apiData.map((item, index) => ({
@@ -1418,6 +1452,7 @@ export default function Leads({
           selectedDates[1],
           allDownliners,
           leadSourceFilterId,
+          leadStatusId,
           pagination.page,
           pagination.limit,
         );
@@ -1593,6 +1628,7 @@ export default function Leads({
         selectedDates[1],
         allDownliners,
         leadSourceFilterId,
+        leadStatusId,
         1,
         pagination.limit,
       );
@@ -1654,6 +1690,7 @@ export default function Leads({
             selectedDates[1],
             allDownliners,
             leadSourceFilterId,
+            leadStatusId,
             pagination.page,
             pagination.limit,
           );
@@ -1686,6 +1723,7 @@ export default function Leads({
       selectedDates[1],
       allDownliners,
       leadSourceFilterId,
+      leadStatusId,
       page,
       limit,
     );
@@ -1723,6 +1761,7 @@ export default function Leads({
         selectedDates[1],
         downliners_ids,
         leadSourceFilterId,
+        leadStatusId,
         1,
         pagination.limit,
       );
@@ -1852,6 +1891,7 @@ export default function Leads({
                             selectedDates[1],
                             allDownliners,
                             leadSourceFilterId,
+                            leadStatusId,
                             1,
                             pagination.limit,
                           );
@@ -1914,6 +1954,7 @@ export default function Leads({
                                 selectedDates[1],
                                 allDownliners,
                                 leadSourceFilterId,
+                                leadStatusId,
                                 1,
                                 pagination.limit,
                               );
@@ -2046,6 +2087,7 @@ export default function Leads({
                     selectedDates[1],
                     allDownliners,
                     e.target.value,
+                    leadStatusId,
                     1,
                     pagination.limit,
                   );
@@ -2076,6 +2118,7 @@ export default function Leads({
                     dates[1],
                     allDownliners,
                     leadSourceFilterId,
+                    leadStatusId,
                     1,
                     pagination.limit,
                   );
@@ -2175,6 +2218,67 @@ export default function Leads({
           </div>
         </Col>
       </Row>
+
+      <div className="customers_scroll_wrapper">
+        {/* <button
+          onClick={() => scroll(-600)}
+          className="followup_statusscroll_button"
+        >
+          <IoMdArrowDropleft size={25} />
+        </button> */}
+        <div className="customers_status_mainContainer" ref={scrollRef}>
+          {leadStatusOptions.map(({ id, name, count }) => (
+            <div
+              key={id}
+              className={`leadfollwup_status_container ${
+                statusClassMap[id]
+              } ${selectedStatus?.toLowerCase() === id ? "active" : ""}`}
+              onClick={() => {
+                setSelectedStatus(id);
+                const status_id =
+                  name == "High"
+                    ? 1
+                    : name == "Medium"
+                      ? 2
+                      : name == "Low"
+                        ? 3
+                        : name == "Others"
+                          ? 6
+                          : null;
+                setLeadStatusId(status_id);
+                dispatch(
+                  storeLeadFilterValues({
+                    lead_status_id: status_id,
+                    pageNumber: 1,
+                    pageLimit: pagination.limit,
+                  }),
+                );
+                getAllLeadData(
+                  searchValue,
+                  selectedDates[0],
+                  selectedDates[1],
+                  allDownliners,
+                  leadSourceFilterId,
+                  status_id,
+                  1,
+                  pagination.limit,
+                );
+              }}
+            >
+              <p>
+                {`${name === "Others" ? "Followup Stopped " : name} ( ${count} )`}
+              </p>
+            </div>
+          ))}
+        </div>
+        {/* <button
+          onClick={() => scroll(600)}
+          className="followup_statusscroll_button"
+        >
+          <IoMdArrowDropright size={25} />
+        </button> */}
+      </div>
+
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           // scroll={{ x: 3350 }}
@@ -2234,6 +2338,7 @@ export default function Leads({
               selectedDates[1],
               allDownliners,
               leadSourceFilterId,
+              leadStatusId,
               pagination.page,
               pagination.limit,
             );

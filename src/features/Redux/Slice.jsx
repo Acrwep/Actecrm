@@ -372,6 +372,7 @@ const leadFilterValues = {
   end_date: null,
   user_id: null,
   lead_source: null,
+  lead_status_id: null,
   call_getraapi: true,
   pageNumber: 1,
   pageLimit: 10,
