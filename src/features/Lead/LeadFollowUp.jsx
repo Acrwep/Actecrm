@@ -74,7 +74,6 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 const { TextArea } = Input;
 
 export default function LeadFollowUp({
-  followupCount,
   setFollowupCount,
   refreshLeads,
   leadTypeOptions,

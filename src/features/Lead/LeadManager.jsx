@@ -58,6 +58,7 @@ export default function LeadManager() {
   const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   //quality tab section
   const [refreshToggle, setRefreshToggle] = useState(false);
+  const [isReduxReset, setIsReduxReset] = useState(false);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -98,16 +99,17 @@ export default function LeadManager() {
       }
       // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       const today = new Date();
+      const todayFormatted = moment(today).format("YYYY-MM-DD");
 
-      dispatch(storeLiveLeadFilterType(null));
-      dispatch(storeLiveLeadSelectedDates([]));
+      dispatch(storeLiveLeadFilterType(1));
+      dispatch(storeLiveLeadSelectedDates([todayFormatted, todayFormatted]));
       dispatch(storeLiveLeadSearchValue(null));
       dispatch(
         storeFollowUpFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: moment(today).format("YYYY-MM-DD"),
-          end_date: moment(today).format("YYYY-MM-DD"),
+          start_date: todayFormatted,
+          end_date: todayFormatted,
           user_id: null,
           status_id: null,
           pageNumber: 1,
@@ -118,8 +120,8 @@ export default function LeadManager() {
         storeLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: moment(today).format("YYYY-MM-DD"),
-          end_date: moment(today).format("YYYY-MM-DD"),
+          start_date: todayFormatted,
+          end_date: todayFormatted,
           user_id: null,
           lead_source: null,
           call_getraapi: true,
@@ -131,8 +133,8 @@ export default function LeadManager() {
         storeAssignLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: moment(today).format("YYYY-MM-DD"),
-          end_date: moment(today).format("YYYY-MM-DD"),
+          start_date: todayFormatted,
+          end_date: todayFormatted,
           pageNumber: 1,
           pageLimit: 10,
         }),
@@ -141,12 +143,13 @@ export default function LeadManager() {
         storeJunkLeadFilterValues({
           searchValue: null,
           filterType: 1,
-          start_date: moment(today).format("YYYY-MM-DD"),
-          end_date: moment(today).format("YYYY-MM-DD"),
+          start_date: todayFormatted,
+          end_date: todayFormatted,
           pageNumber: 1,
           pageLimit: 10,
         }),
       );
+      setIsReduxReset(true);
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
     }
@@ -213,7 +216,6 @@ export default function LeadManager() {
       const response = await getLeadAndFollowupCount(payload);
       console.log("lead count response", response);
       const countDetails = response?.data?.data;
-      setFollowupCount(countDetails.follow_up_count);
       setLeadCount(countDetails.total_lead_count);
       setLiveLeadCount(countDetails.web_lead_count);
       setJunkLeadCount(countDetails.junk_lead_count);
@@ -443,6 +445,10 @@ export default function LeadManager() {
     }));
   };
 
+  if (!isReduxReset) {
+    return null;
+  }
+
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
@@ -552,7 +558,6 @@ export default function LeadManager() {
         >
           <LeadFollowUp
             key={tabKeys.followup}
-            followupCount={followupCount}
             setFollowupCount={setFollowupCount}
             refreshLeads={refreshLeads}
             leadTypeOptions={leadTypeOptions}
