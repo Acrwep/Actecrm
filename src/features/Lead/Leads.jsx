@@ -100,6 +100,7 @@ export default function Leads({
     high: "hot_follow_up",
     medium: "cold_follow_up",
     low: "no_response",
+    junk: "hold",
     others: "others",
     overall: "overall",
   };
@@ -1146,9 +1147,13 @@ export default function Leads({
           id: "others",
           name: "Others",
           count:
-            (statusCountsMap["junk"] || 0) +
             (statusCountsMap["not interested"] || 0) +
             (statusCountsMap["follow-up stoped"] || 0),
+        },
+        {
+          id: "junk",
+          name: "Junk",
+          count: statusCountsMap["junk"] || 0,
         },
       ];
 
@@ -2242,9 +2247,11 @@ export default function Leads({
                       ? 2
                       : name == "Low"
                         ? 3
-                        : name == "Others"
-                          ? 6
-                          : null;
+                        : name == "Junk"
+                          ? 4
+                          : name == "Others"
+                            ? 6
+                            : null;
                 setLeadStatusId(status_id);
                 dispatch(
                   storeLeadFilterValues({
@@ -2266,7 +2273,7 @@ export default function Leads({
               }}
             >
               <p>
-                {`${name === "Others" ? "Followup Stopped " : name} ( ${count} )`}
+                {`${name === "Others" ? "FU Stopped " : name} ( ${count} )`}
               </p>
             </div>
           ))}

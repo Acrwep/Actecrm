@@ -1402,7 +1402,7 @@ export default function LeadFollowUp({
                   {item?.name == "Overall"
                     ? "All"
                     : item.name == "Others"
-                      ? "Followup Stopped"
+                      ? "FU Stopped"
                       : item?.name}{" "}
                   {`( ${item.count} )`}
                 </p>
