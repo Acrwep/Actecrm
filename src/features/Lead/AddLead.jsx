@@ -189,6 +189,16 @@ const AddLead = forwardRef(
     ];
     const [batchTrack, setBatchTrack] = useState(1);
     const [batchTrackError, setBatchTrackError] = useState("");
+    //response status usestates
+    const communicationStatusOptions = [
+      { id: 1, name: "Communicated" },
+      { id: 2, name: "Not-Communicated" },
+    ];
+    const [communicationStatus, setCommunicationStatus] = useState(null);
+    const [communicationStatusError, setCommunicationStatusError] =
+      useState("");
+    const [contactMode, setContactMode] = useState(null);
+    const [contactModeError, setContactModeError] = useState("");
     const [comments, setComments] = useState("");
     const [commentsError, setCommentsError] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
@@ -1127,6 +1137,46 @@ const AddLead = forwardRef(
       setSaveOnlyLoading(false);
     };
 
+    const SectionHeader = ({ title, color }) => (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "24px",
+          marginTop: "0px",
+        }}
+      >
+        <div
+          style={{
+            width: "5px",
+            height: "22px",
+            backgroundColor: color,
+            borderRadius: "4px",
+            marginRight: "12px",
+          }}
+        ></div>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: "17px",
+            fontWeight: 600,
+            color: "#1f2937",
+            letterSpacing: "0.3px",
+          }}
+        >
+          {title}
+        </h3>
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            backgroundColor: "#e5e7eb",
+            marginLeft: "20px",
+          }}
+        ></div>
+      </div>
+    );
+
     return (
       <div>
         {liveLeadItem && (
@@ -1270,10 +1320,12 @@ const AddLead = forwardRef(
           </div>
         )}
 
-        <p className="addleaddrawer_headings" id="leadform_basicinfo_heading">
-          Basic Information
-        </p>
-        <Row gutter={16}>
+        <SectionHeader title="Basic Information" color="#3b82f6" />
+        <Row
+          gutter={16}
+          style={{ marginBottom: "30px" }}
+          id="leadform_basicinfo_heading"
+        >
           <Col span={8}>
             <CommonInputField
               label="Candidate Name"
@@ -1350,10 +1402,7 @@ const AddLead = forwardRef(
               disabled={isReEntry}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
+          <Col span={8} style={{ marginTop: "30px" }}>
             <CommonInputField
               label="Email"
               required={true}
@@ -1363,23 +1412,7 @@ const AddLead = forwardRef(
               disabled={isReEntry}
             />
           </Col>
-          <Col span={8}>
-            <CommonSelectField
-              label="Lead Source"
-              required={true}
-              options={leadTypeOptions}
-              onChange={(e) => {
-                setLeadType(e.target.value);
-                if (validationTrigger) {
-                  setLeadTypeError(selectValidator(e.target.value));
-                }
-              }}
-              value={leadType}
-              error={leadTypeError}
-              disabled={isReEntry}
-            />
-          </Col>
-          <Col span={8}>
+          <Col span={8} style={{ marginTop: "30px" }}>
             <CommonSelectField
               label="Country"
               value={countryId}
@@ -1390,10 +1423,7 @@ const AddLead = forwardRef(
               disabled={isReEntry}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "26px", marginBottom: "30px" }}>
-          <Col span={8}>
+          <Col span={8} style={{ marginTop: "30px" }}>
             <CommonSelectField
               label="State"
               value={stateId}
@@ -1404,7 +1434,7 @@ const AddLead = forwardRef(
               disabled={isReEntry}
             />
           </Col>
-          <Col span={8}>
+          <Col span={8} style={{ marginTop: "30px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
               <div style={{ flex: 1 }}>
                 <CommonSelectField
@@ -1451,8 +1481,29 @@ const AddLead = forwardRef(
           </Col>
         </Row>
 
-        <p className="addleaddrawer_headings">Course Details</p>
-        <Row gutter={16}>
+        <SectionHeader title="Lead Source" color="#8b5cf6" />
+
+        <Row gutter={16} style={{ marginBottom: "30px" }}>
+          <Col span={8}>
+            <CommonSelectField
+              label="Lead Source"
+              required={true}
+              options={leadTypeOptions}
+              onChange={(e) => {
+                setLeadType(e.target.value);
+                if (validationTrigger) {
+                  setLeadTypeError(selectValidator(e.target.value));
+                }
+              }}
+              value={leadType}
+              error={leadTypeError}
+              disabled={isReEntry}
+            />
+          </Col>
+        </Row>
+
+        <SectionHeader title="Course Details" color="#10b981" />
+        <Row gutter={16} style={{ marginBottom: "30px" }}>
           <Col span={8}>
             <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
               <div style={{ flex: 1 }}>
@@ -1514,7 +1565,7 @@ const AddLead = forwardRef(
               disabled={isReEntry}
             />
           </Col>
-          <Col span={8}>
+          {/* <Col span={8}>
             <Checkbox
               checked={isShowSecondaryCourse}
               onChange={(e) => {
@@ -1528,34 +1579,7 @@ const AddLead = forwardRef(
             >
               Add Course
             </Checkbox>
-          </Col>
-        </Row>
-
-        {isShowSecondaryCourse && (
-          <Row gutter={16} style={{ marginTop: "30px" }}>
-            <Col span={8}>
-              <CommonSelectField
-                label="Secondary Course"
-                value={secondaryCourse}
-                onChange={(e) => {
-                  setSecondaryCourse(e.target.value);
-                }}
-                options={courseOptions}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Fees"
-                value={secondaryFees}
-                onChange={(e) => {
-                  setSecondaryFees(e.target.value);
-                }}
-              />
-            </Col>
-          </Row>
-        )}
-
-        <Row gutter={16} style={{ marginTop: "30px", marginBottom: "30px" }}>
+          </Col> */}
           <Col span={8}>
             <CommonSelectField
               label="Region"
@@ -1578,7 +1602,7 @@ const AddLead = forwardRef(
           {regionId == 3 ? (
             ""
           ) : (
-            <Col span={8}>
+            <Col span={8} style={{ marginTop: "30px" }}>
               <CommonSelectField
                 label="Branch Name"
                 required={true}
@@ -1596,7 +1620,7 @@ const AddLead = forwardRef(
             </Col>
           )}
 
-          <Col span={8}>
+          <Col span={8} style={{ marginTop: "30px" }}>
             <CommonSelectField
               label="Batch Track"
               required={true}
@@ -1614,16 +1638,34 @@ const AddLead = forwardRef(
           </Col>
         </Row>
 
-        {/* <Row gutter={16} style={{ marginTop: "30px",  }}>
-          <Col span={8}>
-          
-          </Col>
-        </Row> */}
+        {/* {isShowSecondaryCourse && (
+          <Row gutter={16} style={{ marginTop: "30px" }}>
+            <Col span={8}>
+              <CommonSelectField
+                label="Secondary Course"
+                value={secondaryCourse}
+                onChange={(e) => {
+                  setSecondaryCourse(e.target.value);
+                }}
+                options={courseOptions}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Fees"
+                value={secondaryFees}
+                onChange={(e) => {
+                  setSecondaryFees(e.target.value);
+                }}
+              />
+            </Col>
+          </Row>
+        )} */}
 
-        <p className="addleaddrawer_headings">Response Status</p>
+        <SectionHeader title="Response Status" color="#f59e0b" />
 
         <Row gutter={16} style={{ marginBottom: "30px" }}>
-          <Col span={8}>
+          {/* <Col span={8}>
             <CommonSelectField
               label="Lead Status"
               required={true}
@@ -1709,6 +1751,148 @@ const AddLead = forwardRef(
                 />
               </Col>
             </>
+          )} */}
+
+          <Col span={8}>
+            <CommonSelectField
+              label="Communicate Status"
+              required={true}
+              options={communicationStatusOptions}
+              onChange={(e) => {
+                setCommunicationStatus(e.target.value);
+                setContactMode(null);
+                setCommunicationStatusError(selectValidator(e.target.value));
+              }}
+              value={communicationStatus}
+              error={communicationStatusError}
+            />
+          </Col>
+          {communicationStatus == 1 && (
+            <Col span={8}>
+              <CommonSelectField
+                label="Communicate Mode"
+                required={true}
+                options={[
+                  { id: 1, name: "Phone Call" },
+                  { id: 2, name: "WhatsApp" },
+                  { id: 3, name: "SMS" },
+                  { id: 4, name: "Email" },
+                ]}
+                onChange={(e) => {
+                  setContactMode(e.target.value);
+                  setContactModeError(selectValidator(e.target.value));
+                }}
+                value={contactMode}
+                error={contactModeError}
+              />
+            </Col>
+          )}
+
+          {communicationStatus == 2 && (
+            <Col span={8}>
+              <CommonSelectField
+                label="Reason"
+                options={[
+                  { id: 5, name: "Data Correct But No Response" },
+                  { id: 6, name: "Data Incorrect" },
+                ]}
+                onChange={(e) => {
+                  setContactMode(e.target.value);
+                  setContactModeError(selectValidator(e.target.value));
+                }}
+                value={contactMode}
+                error={contactModeError}
+              />
+            </Col>
+          )}
+
+          {communicationStatus && (
+            <Col span={8}>
+              <CommonSelectField
+                label="Lead Priority"
+                required={true}
+                options={[
+                  { id: 1, name: "Super Hot", color: "#dc2626" },
+                  { id: 2, name: "Hot", color: "#f97316" },
+                  { id: 3, name: "Medium", color: "#eab308" },
+                  { id: 4, name: "Cold", color: "#3b82f6" },
+                ]}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
+                          backgroundColor: option.color || "gray",
+                        }}
+                      ></span>
+                      <span>{option.name}</span>
+                    </div>
+                  </li>
+                )}
+                onChange={(e) => {
+                  setLeadStatus(e.target.value);
+                  setLeadStatusError(selectValidator(e.target.value));
+                }}
+                value={leadStatus}
+                error={leadStatusError}
+              />
+            </Col>
+          )}
+
+          {communicationStatus && (
+            <Col span={8} style={{ marginTop: "30px" }}>
+              <CommonSelectField
+                label="Followup Status"
+                required={true}
+                options={[
+                  { id: 1, name: "Highly Interested", color: "#16a34a" },
+                  { id: 2, name: "Interested", color: "#22c55e" },
+                  { id: 3, name: "Need Follow-up", color: "#f97316" },
+                  { id: 4, name: "Call Back Later", color: "#eab308" },
+                  { id: 5, name: "Only Enquiry", color: "#6b7280" },
+                  { id: 6, name: "No Response", color: "#dc2626" },
+                  { id: 7, name: "Service Not Availabe", color: "#4b5563" },
+                  { id: 8, name: "Not Interested", color: "#991b1b" },
+                  { id: 9, name: "Lead Lost", color: "#111827" },
+                ]}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "10px",
+                          height: "10px",
+                          borderRadius: "50%",
+                          backgroundColor: option.color || "gray",
+                        }}
+                      ></span>
+                      <span>{option.name}</span>
+                    </div>
+                  </li>
+                )}
+                onChange={(e) => {
+                  setFollowUpStatusId(e.target.value);
+                  setFollowUpStatusIdError(selectValidator(e.target.value));
+                }}
+                value={followUpStatusId}
+                error={followUpStatusIdError}
+              />
+            </Col>
           )}
         </Row>
 

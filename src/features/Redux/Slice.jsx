@@ -373,6 +373,7 @@ const leadFilterValues = {
   user_id: null,
   lead_source: null,
   lead_status_id: null,
+  bucket: "all",
   call_getraapi: true,
   pageNumber: 1,
   pageLimit: 10,

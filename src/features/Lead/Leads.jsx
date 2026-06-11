@@ -13,6 +13,7 @@ import {
   Switch,
   Spin,
   Badge,
+  Popover,
 } from "antd";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
@@ -95,17 +96,17 @@ export default function Leads({
   const scrollRef = useRef();
   const courseOptions = useSelector((state) => state.courselist);
 
-  const [leadStatusOptions, setLeadStatusOptions] = useState([]);
+  const [leadBucketOptions, setLeadBucketOptions] = useState([]);
   const statusClassMap = {
-    high: "hot_follow_up",
-    medium: "cold_follow_up",
-    low: "no_response",
-    junk: "hold",
-    others: "others",
-    overall: "overall",
+    all: "all",
+    valid_leads: "valid_leads",
+    eligible_leads: "eligible_leads",
+    interested_leads: "interested_leads",
+    sales_ready: "sales_ready",
+    joinings: "joinings",
   };
+  const [leadBucketName, setLeadBucketName] = useState("All");
   const [leadStatusId, setLeadStatusId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState("overall");
   const [leadData, setLeadData] = useState([]);
 
   const filterValuesFromRedux = useSelector((state) => state.leadfiltervalues);
@@ -641,6 +642,7 @@ export default function Leads({
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setSelectedUserId(filterValuesFromRedux.user_id);
+        setLeadBucketName(filterValuesFromRedux.bucket);
         setPagination({
           page: filterValuesFromRedux.pageNumber,
           limit: filterValuesFromRedux.pageLimit,
@@ -1070,6 +1072,9 @@ export default function Leads({
         downliners_ids,
         filterValuesFromRedux.lead_source,
         filterValuesFromRedux.lead_status_id,
+        filterValuesFromRedux.bucket == "all"
+          ? ""
+          : filterValuesFromRedux.bucket,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
       );
@@ -1085,6 +1090,7 @@ export default function Leads({
     downliners,
     leadsource,
     leadStatusId,
+    bucket,
     pageNumber,
     limit,
   ) => {
@@ -1104,6 +1110,7 @@ export default function Leads({
       user_ids: downliners,
       ...(leadsource && { lead_type: leadsource }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
+      ...(bucket && { bucket: bucket }),
       page: pageNumber,
       limit: limit,
     };
@@ -1113,51 +1120,43 @@ export default function Leads({
 
       const paginations = response?.data?.data?.pagination;
       const apiData = response?.data?.data?.data || [];
-      const lead_status_counts = response?.data?.data?.status;
+      const bucket_counts = response?.data?.data?.bucket_counts || {};
       console.log("leads data", apiData);
-
-      //status filter
-      const statusCountsMap = (lead_status_counts || []).reduce((acc, item) => {
-        acc[item.name.toLowerCase()] = item.total_count;
-        return acc;
-      }, {});
 
       const leadStatusOptionsWithCount = [
         {
-          id: "overall",
-          name: "All",
-          count: statusCountsMap["total"] || 0,
+          id: "all",
+          name: "all",
+          count: bucket_counts["all"] || 0,
         },
         {
-          id: "high",
-          name: "High",
-          count: statusCountsMap["high"] || 0,
+          id: "valid_leads",
+          name: "Valid Leads",
+          count: bucket_counts["valid_leads"] || 0,
         },
         {
-          id: "medium",
-          name: "Medium",
-          count: statusCountsMap["medium"] || 0,
+          id: "eligible_leads",
+          name: "Eligible Leads",
+          count: bucket_counts["eligible_leads"] || 0,
         },
         {
-          id: "low",
-          name: "Low",
-          count: statusCountsMap["low"] || 0,
+          id: "interested_leads",
+          name: "Interested Leads",
+          count: bucket_counts["interested_leads"] || 0,
         },
         {
-          id: "others",
-          name: "Others",
-          count:
-            (statusCountsMap["not interested"] || 0) +
-            (statusCountsMap["follow-up stoped"] || 0),
+          id: "sales_ready",
+          name: "Sales Ready",
+          count: bucket_counts["sales_ready"] || 0,
         },
         {
-          id: "junk",
-          name: "Junk",
-          count: statusCountsMap["junk"] || 0,
+          id: "joinings",
+          name: "Joinings",
+          count: bucket_counts["joinings"] || 0,
         },
       ];
 
-      setLeadStatusOptions(leadStatusOptionsWithCount);
+      setLeadBucketOptions(leadStatusOptionsWithCount);
 
       // ✅ Add serial number here
       const updatedData = apiData.map((item, index) => ({
@@ -1458,6 +1457,7 @@ export default function Leads({
           allDownliners,
           leadSourceFilterId,
           leadStatusId,
+          filterValuesFromRedux.bucket,
           pagination.page,
           pagination.limit,
         );
@@ -1634,6 +1634,7 @@ export default function Leads({
         allDownliners,
         leadSourceFilterId,
         leadStatusId,
+        filterValuesFromRedux.bucket,
         1,
         pagination.limit,
       );
@@ -1696,6 +1697,7 @@ export default function Leads({
             allDownliners,
             leadSourceFilterId,
             leadStatusId,
+            filterValuesFromRedux.bucket,
             pagination.page,
             pagination.limit,
           );
@@ -1729,6 +1731,7 @@ export default function Leads({
       allDownliners,
       leadSourceFilterId,
       leadStatusId,
+      filterValuesFromRedux.bucket,
       page,
       limit,
     );
@@ -1767,6 +1770,7 @@ export default function Leads({
         downliners_ids,
         leadSourceFilterId,
         leadStatusId,
+        filterValuesFromRedux.bucket,
         1,
         pagination.limit,
       );
@@ -1856,8 +1860,8 @@ export default function Leads({
     <div>
       <Row>
         <Col xs={24} sm={24} md={24} lg={20}>
-          <Row gutter={10}>
-            <Col flex="22%">
+          <Row gutter={16}>
+            <Col flex="28%">
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
@@ -1897,6 +1901,7 @@ export default function Leads({
                             allDownliners,
                             leadSourceFilterId,
                             leadStatusId,
+                            filterValuesFromRedux.bucket,
                             1,
                             pagination.limit,
                           );
@@ -1960,6 +1965,7 @@ export default function Leads({
                                 allDownliners,
                                 leadSourceFilterId,
                                 leadStatusId,
+                                filterValuesFromRedux.bucket,
                                 1,
                                 pagination.limit,
                               );
@@ -1992,115 +1998,6 @@ export default function Leads({
                 </div>
               </div>
             </Col>
-            {permissions.includes("Lead Executive Filter") && (
-              <Col flex="22%">
-                <div className="overallduecustomers_filterContainer">
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <CommonMultiSelectField
-                      height="35px"
-                      label="Select User"
-                      labelMarginTop="0px"
-                      labelFontSize="12px"
-                      options={subUsers}
-                      onChange={handleSelectUser}
-                      value={selectedUserId}
-                      borderRightNone={true}
-                    />
-                  </div>
-                  <div
-                    onClick={() => {
-                      if (executiveCountTooltip) {
-                        return;
-                      }
-                      handleLeadCountByExecutive();
-                    }}
-                    style={{ marginLeft: "-2px" }}
-                  >
-                    <Flex
-                      justify="center"
-                      align="center"
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      <Tooltip
-                        placement="bottomLeft"
-                        color="#fff"
-                        title={
-                          <>
-                            {leadExeCountLoading ? (
-                              <div className="leadsmanager_executivecount_loader_container">
-                                <Spin size="small" />
-                              </div>
-                            ) : (
-                              <div
-                                style={{
-                                  maxHeight: "140px",
-                                  overflowY: "auto",
-                                  whiteSpace: "pre-line",
-                                  lineHeight: "24px",
-                                }}
-                              >
-                                {leadCountByExecutives.map((item, index) => {
-                                  return (
-                                    <p className="leadsmanager_executivecount_text">
-                                      {`${index + 1}. ${item.user_name} - ${
-                                        item.lead_count
-                                      }`}
-                                    </p>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </>
-                        }
-                        trigger={["click"]}
-                        onOpenChange={(value) => {
-                          setExecutiveCountTooltip(value);
-                          if (value === false) {
-                            setLeadCountByExecutives([]);
-                          }
-                        }}
-                      >
-                        <Button className="leadsmanager_executivecount_iconcontainer">
-                          <MdFormatListNumbered size={16} />
-                        </Button>
-                      </Tooltip>
-                    </Flex>
-                  </div>
-                </div>
-              </Col>
-            )}
-            <Col flex="20%">
-              <CommonSelectField
-                width="100%"
-                height="35px"
-                label="Select Lead Source"
-                labelMarginTop="0px"
-                labelFontSize="12px"
-                options={leadTypeOptions}
-                onChange={(e) => {
-                  setLeadSourceFilterId(e.target.value);
-                  dispatch(
-                    storeLeadFilterValues({
-                      lead_source: e.target.value,
-                      pageNumber: 1,
-                      pageLimit: pagination.limit,
-                    }),
-                  );
-                  getAllLeadData(
-                    null,
-                    selectedDates[0],
-                    selectedDates[1],
-                    allDownliners,
-                    e.target.value,
-                    leadStatusId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                value={leadSourceFilterId}
-                disableClearable={false}
-              />{" "}
-            </Col>
             <Col flex="30%">
               <CommonMuiCustomDatePicker
                 value={selectedDates}
@@ -2124,11 +2021,300 @@ export default function Leads({
                     allDownliners,
                     leadSourceFilterId,
                     leadStatusId,
+                    filterValuesFromRedux.bucket,
                     1,
                     pagination.limit,
                   );
                 }}
               />
+            </Col>
+            <Col flex="20%">
+              <Popover
+                placement="bottomLeft"
+                trigger="click"
+                overlayInnerStyle={{
+                  padding: 0,
+                  borderRadius: "12px",
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e2e8f0",
+                }}
+                content={
+                  <div
+                    style={{
+                      width: "360px",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "16px 20px",
+                        borderBottom: "1px solid #f1f5f9",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        backgroundColor: "#f8fafc",
+                        borderTopLeftRadius: "12px",
+                        borderTopRightRadius: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: "600",
+                          fontSize: "16px",
+                          color: "#0f172a",
+                        }}
+                      >
+                        Advanced Filters
+                      </span>
+                      <Badge
+                        count={4}
+                        style={{
+                          backgroundColor: "#3b82f6",
+                          boxShadow: "0 0 0 2px #f8fafc",
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "20px",
+                        maxHeight: "420px",
+                        overflowY: "auto",
+                        padding: "20px",
+                      }}
+                    >
+                      {permissions.includes("Lead Executive Filter") && (
+                        <div style={{ width: "100%" }}>
+                          <div className="overallduecustomers_filterContainer">
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <CommonMultiSelectField
+                                height="35px"
+                                label="Select User"
+                                labelMarginTop="0px"
+                                labelFontSize="12px"
+                                options={subUsers}
+                                onChange={handleSelectUser}
+                                value={selectedUserId}
+                                borderRightNone={true}
+                              />
+                            </div>
+                            <div
+                              onClick={() => {
+                                if (executiveCountTooltip) {
+                                  return;
+                                }
+                                handleLeadCountByExecutive();
+                              }}
+                              style={{ marginLeft: "-2px" }}
+                            >
+                              <Flex
+                                justify="center"
+                                align="center"
+                                style={{ whiteSpace: "nowrap" }}
+                              >
+                                <Tooltip
+                                  placement="bottomLeft"
+                                  color="#fff"
+                                  title={
+                                    <>
+                                      {leadExeCountLoading ? (
+                                        <div className="leadsmanager_executivecount_loader_container">
+                                          <Spin size="small" />
+                                        </div>
+                                      ) : (
+                                        <div
+                                          style={{
+                                            maxHeight: "140px",
+                                            overflowY: "auto",
+                                            whiteSpace: "pre-line",
+                                            lineHeight: "24px",
+                                          }}
+                                        >
+                                          {leadCountByExecutives.map(
+                                            (item, index) => {
+                                              return (
+                                                <p className="leadsmanager_executivecount_text">
+                                                  {`${index + 1}. ${item.user_name} - ${
+                                                    item.lead_count
+                                                  }`}
+                                                </p>
+                                              );
+                                            },
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  }
+                                  trigger={["click"]}
+                                  onOpenChange={(value) => {
+                                    setExecutiveCountTooltip(value);
+                                    if (value === false) {
+                                      setLeadCountByExecutives([]);
+                                    }
+                                  }}
+                                >
+                                  <Button className="leadsmanager_executivecount_iconcontainer">
+                                    <MdFormatListNumbered size={16} />
+                                  </Button>
+                                </Tooltip>
+                              </Flex>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Select Lead Source"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={leadTypeOptions}
+                          onChange={(e) => {
+                            setLeadSourceFilterId(e.target.value);
+                            dispatch(
+                              storeLeadFilterValues({
+                                lead_source: e.target.value,
+                                pageNumber: 1,
+                                pageLimit: pagination.limit,
+                              }),
+                            );
+                            getAllLeadData(
+                              null,
+                              selectedDates[0],
+                              selectedDates[1],
+                              allDownliners,
+                              e.target.value,
+                              leadStatusId,
+                              filterValuesFromRedux.bucket,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                          value={leadSourceFilterId}
+                          disableClearable={false}
+                        />{" "}
+                      </div>
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Lead Priority"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={[
+                            { id: 1, name: "Super Hot", color: "#dc2626" },
+                            { id: 2, name: "Hot", color: "#f97316" },
+                            { id: 3, name: "Medium", color: "#eab308" },
+                            { id: 4, name: "Cold", color: "#3b82f6" },
+                          ]}
+                          onChange={() => {}}
+                          value={null}
+                          disableClearable={false}
+                          renderOption={(props, option) => (
+                            <li {...props}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: option.color || "gray",
+                                  }}
+                                ></span>
+                                <span>{option.name}</span>
+                              </div>
+                            </li>
+                          )}
+                        />
+                      </div>
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Followup Status"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={[
+                            {
+                              id: 1,
+                              name: "Highly Interested",
+                              color: "#16a34a",
+                            },
+                            { id: 2, name: "Interested", color: "#22c55e" },
+                            { id: 3, name: "Need Follow-up", color: "#f97316" },
+                            {
+                              id: 4,
+                              name: "Call Back Later",
+                              color: "#eab308",
+                            },
+                            { id: 5, name: "Only Enquiry", color: "#6b7280" },
+                            { id: 6, name: "No Response", color: "#dc2626" },
+                            {
+                              id: 7,
+                              name: "Service Not Availabe",
+                              color: "#4b5563",
+                            },
+                            { id: 8, name: "Not Interested", color: "#991b1b" },
+                            { id: 9, name: "Lead Lost", color: "#111827" },
+                          ]}
+                          onChange={() => {}}
+                          value={null}
+                          disableClearable={false}
+                          renderOption={(props, option) => (
+                            <li {...props}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: option.color || "gray",
+                                  }}
+                                ></span>
+                                <span>{option.name}</span>
+                              </div>
+                            </li>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                }
+              >
+                <Button
+                  // type="primary"
+                  icon={<IoFilter size={16} />}
+                  className="leads_advancefilter_button"
+                  style={{
+                    background: "#fff",
+                    borderRadius: "6px",
+                    height: "35px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontWeight: "500",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  Filters
+                </Button>
+              </Popover>
             </Col>
           </Row>
         </Col>
@@ -2232,30 +2418,18 @@ export default function Leads({
           <IoMdArrowDropleft size={25} />
         </button> */}
         <div className="customers_status_mainContainer" ref={scrollRef}>
-          {leadStatusOptions.map(({ id, name, count }) => (
+          {leadBucketOptions.map(({ id, name, count }) => (
             <div
               key={id}
-              className={`leadfollwup_status_container ${
+              className={`leads_bucket_container ${
                 statusClassMap[id]
-              } ${selectedStatus?.toLowerCase() === id ? "active" : ""}`}
+              } ${leadBucketName === name ? "active" : ""}`}
               onClick={() => {
-                setSelectedStatus(id);
-                const status_id =
-                  name == "High"
-                    ? 1
-                    : name == "Medium"
-                      ? 2
-                      : name == "Low"
-                        ? 3
-                        : name == "Junk"
-                          ? 4
-                          : name == "Others"
-                            ? 6
-                            : null;
-                setLeadStatusId(status_id);
+                const bucket_name = name;
+                setLeadBucketName(bucket_name);
                 dispatch(
                   storeLeadFilterValues({
-                    lead_status_id: status_id,
+                    bucket: bucket_name == "all" ? "" : bucket_name,
                     pageNumber: 1,
                     pageLimit: pagination.limit,
                   }),
@@ -2266,14 +2440,15 @@ export default function Leads({
                   selectedDates[1],
                   allDownliners,
                   leadSourceFilterId,
-                  status_id,
+                  leadStatusId,
+                  bucket_name == "all" ? "" : bucket_name,
                   1,
                   pagination.limit,
                 );
               }}
             >
               <p>
-                {`${name === "Others" ? "FU Stopped " : name} ( ${count} )`}
+                {name == "all" ? "All" : name} {`( ${count} )`}
               </p>
             </div>
           ))}
@@ -2346,6 +2521,7 @@ export default function Leads({
               allDownliners,
               leadSourceFilterId,
               leadStatusId,
+              filterValuesFromRedux.bucket,
               pagination.page,
               pagination.limit,
             );

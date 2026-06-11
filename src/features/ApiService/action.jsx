@@ -504,7 +504,7 @@ export const leadReEntry = async (payload) => {
 
 export const getLeads = async (payload) => {
   try {
-    const response = await api.post("/api/getLeads", payload);
+    const response = await api.post("/api/getLeadsV1", payload);
     return response;
   } catch (error) {
     throw error;
