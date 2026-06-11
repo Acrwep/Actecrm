@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Tooltip, Checkbox, Modal, Button } from "antd";
+import { Row, Col, Tooltip, Checkbox, Modal, Button, Rate } from "antd";
 import { Country, State } from "country-state-city";
 import { MdAdd } from "react-icons/md";
 import CommonInputField from "../Common/CommonInputField";
@@ -104,30 +104,8 @@ const AddLead = forwardRef(
     const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
     const [secondaryCourse, setSecondaryCourse] = useState(null);
     const [secondaryFees, setSecondaryFees] = useState("");
-    const [leadType, setLeadType] = useState(null);
-    const [leadTypeError, setLeadTypeError] = useState("");
-    // const leadStatusOptions = [
-    //   {
-    //     id: 1,
-    //     name: "High",
-    //   },
-    //   {
-    //     id: 2,
-    //     name: "Medium",
-    //   },
-    //   {
-    //     id: 3,
-    //     name: "Low",
-    //   },
-    //   {
-    //     id: 4,
-    //     name: "Junk",
-    //   },
-    //   {
-    //     id: 5,
-    //     name: "Not Interested",
-    //   },
-    // ];
+    const [leadSource, setLeadSource] = useState(null);
+    const [leadSourceError, setLeadSourceError] = useState("");
     const [leadStatusOptions, setLeadStatusOptions] = useState([
       {
         id: 1,
@@ -199,6 +177,7 @@ const AddLead = forwardRef(
       useState("");
     const [contactMode, setContactMode] = useState(null);
     const [contactModeError, setContactModeError] = useState("");
+    const [interestRate, setInterestRate] = useState(1);
     const [comments, setComments] = useState("");
     const [commentsError, setCommentsError] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
@@ -218,19 +197,19 @@ const AddLead = forwardRef(
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
 
-    useEffect(() => {
-      const updatedOptions = leadStatusOptions.map((item) => ({
-        ...item,
-        is_active:
-          item.id == 6
-            ? false
-            : (item.id == 4 || item.id == 5) && updateLeadItem
-              ? false
-              : item.is_active,
-      }));
+    // useEffect(() => {
+    //   const updatedOptions = leadStatusOptions.map((item) => ({
+    //     ...item,
+    //     is_active:
+    //       item.id == 6
+    //         ? false
+    //         : (item.id == 4 || item.id == 5) && updateLeadItem
+    //           ? false
+    //           : item.is_active,
+    //   }));
 
-      setLeadStatusOptions(updatedOptions);
-    }, [updateLeadItem, isPreviousJunk]);
+    //   setLeadStatusOptions(updatedOptions);
+    // }, [updateLeadItem, isPreviousJunk]);
 
     useEffect(() => {
       const countries = Country.getAllCountries();
@@ -336,16 +315,16 @@ const AddLead = forwardRef(
         setPrimaryFees(updateLeadItem.primary_fees);
         setSecondaryCourse(updateLeadItem.secondary_course_id);
         setSecondaryFees(updateLeadItem.secondary_fees);
-        setLeadType(updateLeadItem.lead_type_id);
+        setLeadSource(updateLeadItem.lead_type_id);
         setLeadStatus(updateLeadItem.lead_status_id);
-        if (
-          updateLeadItem.lead_status_id == 4 ||
-          updateLeadItem.lead_status_id == 5
-        ) {
-          setIsPreviousJunk(true);
-        } else {
-          setIsPreviousJunk(false);
-        }
+        // if (
+        //   updateLeadItem.lead_status_id == 4 ||
+        //   updateLeadItem.lead_status_id == 5
+        // ) {
+        //   setIsPreviousJunk(true);
+        // } else {
+        //   setIsPreviousJunk(false);
+        // }
         if (isReEntry) {
           setAssignLeadId(updateLeadItem.lead_assigned_to_id);
           const today = new Date();
@@ -386,7 +365,7 @@ const AddLead = forwardRef(
         setEmail(liveLeadItem.email);
         setMobile(liveLeadItem.phone);
         setWhatsApp(liveLeadItem.phone);
-        setLeadType(4);
+        setLeadSource(4);
         liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
       }
     };
@@ -746,24 +725,24 @@ const AddLead = forwardRef(
       console.log("convertAsJson", convertAsJson);
       setValidationTrigger(true);
 
-      let nxtFollowupDateValidate;
-      let followUpStatusIdValidate;
+      // let nxtFollowupDateValidate;
+      // let followUpStatusIdValidate;
 
-      if (leadStatus == 4 || leadStatus == 5) {
-        nxtFollowupDateValidate = "";
-        followUpStatusIdValidate = "";
-      } else {
-        nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
-        followUpStatusIdValidate = selectValidator(followUpStatusId);
-      }
+      // if (leadStatus == 4 || leadStatus == 5) {
+      //   nxtFollowupDateValidate = "";
+      //   followUpStatusIdValidate = "";
+      // } else {
+      //   nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
+      //   followUpStatusIdValidate = selectValidator(followUpStatusId);
+      // }
 
-      if (
-        (leadStatus == 1 || leadStatus == 2 || leadStatus == 3) &&
-        followUpStatusId == 6
-      ) {
-        followUpStatusIdValidate =
-          " cannot be Others when lead status is High, Medium, or Low";
-      }
+      // if (
+      //   (leadStatus == 1 || leadStatus == 2 || leadStatus == 3) &&
+      //   followUpStatusId == 6
+      // ) {
+      //   followUpStatusIdValidate =
+      //     " cannot be Others when lead status is High, Medium, or Low";
+      // }
       const nameValidate = nameValidator(name);
       let emailValidate = emailValidator(email);
       let mobileValidate = mobileValidator(mobile, mobileCountry);
@@ -773,11 +752,16 @@ const AddLead = forwardRef(
       const cityValidate = selectValidator(areaId);
       const primaryCourseValidate = selectValidator(primaryCourse);
       const primaryFeesValidate = selectValidator(primaryFees);
-      const leadTypeValidate = selectValidator(leadType);
+      const leadTypeValidate = selectValidator(leadSource);
       const leadStatusValidate = selectValidator(leadStatus);
       const regionIdValidate = selectValidator(regionId);
       const branchValidate = selectValidator(branch);
       const batchTrackValidate = selectValidator(batchTrack);
+      const communicationStatusValidate = selectValidator(communicationStatus);
+      const nxtFollowupDateValidate =
+        contactMode == 6 ? "" : selectValidator(nxtFollowupDate);
+      const contactModeValidate = selectValidator(contactMode);
+      const followUpStatusIdValidate = selectValidator(followUpStatusId);
       const commentsValidate = addressValidator(comments);
 
       if (email && emailAndMobileValidation.email == 0) {
@@ -813,8 +797,10 @@ const AddLead = forwardRef(
       setAreaError(cityValidate);
       setPrimaryCourseError(primaryCourseValidate);
       setPrimaryFeesError(primaryFeesValidate);
-      setLeadTypeError(leadTypeValidate);
+      setLeadSourceError(leadTypeValidate);
       setLeadStatusError(leadStatusValidate);
+      setCommunicationStatusError(communicationStatusValidate);
+      setContactModeError(contactModeValidate);
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setFollowUpStatusIdError(followUpStatusIdValidate);
       setRegionError(regionIdValidate);
@@ -834,6 +820,8 @@ const AddLead = forwardRef(
         primaryFeesValidate ||
         leadTypeValidate ||
         leadStatusValidate ||
+        communicationStatusValidate ||
+        contactModeValidate ||
         nxtFollowupDateValidate ||
         followUpStatusIdValidate ||
         regionIdValidate ||
@@ -877,13 +865,16 @@ const AddLead = forwardRef(
             : liveLeadItem && liveLeadItem.domain_origin
               ? liveLeadItem.domain_origin
               : "Direct",
-        lead_type_id: leadType,
+        lead_type_id: leadSource,
         lead_status_id: leadStatus,
         lead_action_id: followUpStatusId,
-        ...(updateLeadItem && {
-          is_previous_junk:
-            isPreviousJunk && leadStatus != 4 && leadStatus != 5,
-        }),
+        // ...(updateLeadItem && {
+        //   is_previous_junk:
+        //     isPreviousJunk && leadStatus != 4 && leadStatus != 5,
+        // }),
+        is_previous_junk: false,
+        communication_status: communicationStatus,
+        contact_mode: contactMode,
         next_follow_up_date: nxtFollowupDate
           ? formatToBackendIST(nxtFollowupDate)
           : null,
@@ -959,10 +950,10 @@ const AddLead = forwardRef(
         }
       } else {
         //---------------lead cerate--------------
-        if (leadStatus == 4 || leadStatus == 5) {
-          handleMoveLiveLeadToJunk(saveType);
-          return;
-        }
+        // if (leadStatus == 4 || leadStatus == 5) {
+        //   handleMoveLiveLeadToJunk(saveType);
+        //   return;
+        // }
         try {
           await createLead(payload);
           CommonMessage("success", "Lead created");
@@ -1116,12 +1107,16 @@ const AddLead = forwardRef(
       setIsShowSecondaryCourse(false);
       setSecondaryCourse(null);
       setSecondaryFees("");
-      setLeadType(null);
-      setLeadTypeError("");
+      setLeadSource(null);
+      setLeadSourceError("");
       setLeadStatus(null);
       setLeadStatusError("");
       setNxtFollowupDate(null);
       setNxtFollowupDateError("");
+      setCommunicationStatus(null);
+      setCommunicationStatusError("");
+      setContactMode(null);
+      setContactModeError("");
       setAssignLeadId("");
       setAssignLeadIdError("");
       setExpectDateJoin(null);
@@ -1490,13 +1485,13 @@ const AddLead = forwardRef(
               required={true}
               options={leadTypeOptions}
               onChange={(e) => {
-                setLeadType(e.target.value);
+                setLeadSource(e.target.value);
                 if (validationTrigger) {
-                  setLeadTypeError(selectValidator(e.target.value));
+                  setLeadSourceError(selectValidator(e.target.value));
                 }
               }}
-              value={leadType}
-              error={leadTypeError}
+              value={leadSource}
+              error={leadSourceError}
               disabled={isReEntry}
             />
           </Col>
@@ -1665,106 +1660,30 @@ const AddLead = forwardRef(
         <SectionHeader title="Response Status" color="#f59e0b" />
 
         <Row gutter={16} style={{ marginBottom: "30px" }}>
-          {/* <Col span={8}>
-            <CommonSelectField
-              label="Lead Status"
-              required={true}
-              options={leadStatusOptions}
-              onChange={(e) => {
-                const value = e.target.value;
-                console.log("value", value);
-                setLeadStatus(value);
-                if (value == 4 || value == 5) {
-                  setNxtFollowupDate(null);
-                  setNxtFollowupDateError("");
-                  setExpectDateJoin(null);
-                }
-                if (validationTrigger) {
-                  setLeadStatusError(selectValidator(value));
-                }
-              }}
-              value={leadStatus}
-              error={leadStatusError}
-              disabled={isReEntry}
-            />
-          </Col>
-
-          {leadStatus == 4 || leadStatus == 5 ? (
-            ""
-          ) : (
-            <>
-              <Col span={8}>
-                <CommonNxtFollowupDatePicker
-                  label="Next Follow-Up Date"
-                  required={true}
-                  onChange={(value) => {
-                    console.log("vallll", value);
-                    setNxtFollowupDate(value);
-                    if (validationTrigger) {
-                      setNxtFollowupDateError(selectValidator(value));
-                    }
-                  }}
-                  value={nxtFollowupDate}
-                  disablePreviousDates={true}
-                  error={nxtFollowupDateError}
-                  disabled={
-                    isReEntry
-                      ? false
-                      : isPreviousJunk == false && updateLeadItem
-                        ? true
-                        : false
-                  }
-                />
-              </Col>
-
-              <Col span={8}>
-                <CommonSelectField
-                  label="Followup Status"
-                  required={true}
-                  options={followUpStatusOptions}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    console.log("value", value);
-                    setFollowUpStatusId(value);
-                    if (validationTrigger) {
-                      setFollowUpStatusIdError(selectValidator(value));
-                    }
-                  }}
-                  value={followUpStatusId}
-                  error={followUpStatusIdError}
-                  disabled={leadStatus == 6}
-                />
-              </Col>
-
-              <Col span={8} style={{ marginTop: "30px" }}>
-                <CommonMuiDatePicker
-                  label="Expected Date Join"
-                  required={false}
-                  onChange={(value) => {
-                    console.log("vallll", value);
-                    setExpectDateJoin(value);
-                  }}
-                  value={expectDateJoin}
-                  error=""
-                  disablePreviousDates={true}
-                  disabled={isReEntry}
-                />
-              </Col>
-            </>
-          )} */}
-
           <Col span={8}>
             <CommonSelectField
               label="Communicate Status"
               required={true}
               options={communicationStatusOptions}
               onChange={(e) => {
-                setCommunicationStatus(e.target.value);
+                const value = e.target.value;
+                setCommunicationStatus(value);
                 setContactMode(null);
-                setCommunicationStatusError(selectValidator(e.target.value));
+                setLeadStatus(null);
+                setFollowUpStatusId(null);
+                setNxtFollowupDate(null);
+                setExpectDateJoin(null);
+                if (validationTrigger) {
+                  setCommunicationStatusError(selectValidator(value));
+                  setContactModeError(selectValidator(null));
+                  setLeadStatusError(selectValidator(null));
+                  setFollowUpStatusIdError(selectValidator(null));
+                  setNxtFollowupDateError(selectValidator(null));
+                }
               }}
               value={communicationStatus}
               error={communicationStatusError}
+              errorFontSize={"10px"}
             />
           </Col>
           {communicationStatus == 1 && (
@@ -1780,8 +1699,11 @@ const AddLead = forwardRef(
                 ]}
                 onChange={(e) => {
                   setContactMode(e.target.value);
-                  setContactModeError(selectValidator(e.target.value));
+                  if (validationTrigger) {
+                    setContactModeError(selectValidator(e.target.value));
+                  }
                 }}
+                errorFontSize="11px"
                 value={contactMode}
                 error={contactModeError}
               />
@@ -1797,8 +1719,21 @@ const AddLead = forwardRef(
                   { id: 6, name: "Data Incorrect" },
                 ]}
                 onChange={(e) => {
-                  setContactMode(e.target.value);
-                  setContactModeError(selectValidator(e.target.value));
+                  const value = e.target.value;
+                  setContactMode(value);
+                  if (value == 5) {
+                    setLeadStatus(3);
+                    setFollowUpStatusId(11);
+                  } else {
+                    setLeadStatus(4);
+                    setNxtFollowupDate(null);
+                    setExpectDateJoin(null);
+                  }
+                  setFollowUpStatusIdError("");
+                  setLeadStatusError("");
+                  if (validationTrigger) {
+                    setContactModeError(selectValidator(value));
+                  }
                 }}
                 value={contactMode}
                 error={contactModeError}
@@ -1812,10 +1747,11 @@ const AddLead = forwardRef(
                 label="Lead Priority"
                 required={true}
                 options={[
-                  { id: 1, name: "Super Hot", color: "#dc2626" },
-                  { id: 2, name: "Hot", color: "#f97316" },
-                  { id: 3, name: "Medium", color: "#eab308" },
-                  { id: 4, name: "Cold", color: "#3b82f6" },
+                  { id: 5, name: "Super Hot", color: "#dc2626" },
+                  { id: 1, name: "Hot", color: "#f97316" },
+                  { id: 2, name: "Medium", color: "#eab308" },
+                  { id: 3, name: "Cold", color: "#3b82f6" },
+                  { id: 4, name: "Junk", color: "#6b7280" },
                 ]}
                 renderOption={(props, option) => (
                   <li {...props}>
@@ -1840,29 +1776,35 @@ const AddLead = forwardRef(
                 )}
                 onChange={(e) => {
                   setLeadStatus(e.target.value);
-                  setLeadStatusError(selectValidator(e.target.value));
+                  if (validationTrigger) {
+                    setLeadStatusError(selectValidator(e.target.value));
+                  }
                 }}
                 value={leadStatus}
                 error={leadStatusError}
+                disabled={contactMode == 5 || contactMode == 6}
               />
             </Col>
           )}
 
-          {communicationStatus && (
+          {(communicationStatus == 1 ||
+            (communicationStatus &&
+              contactMode != null &&
+              contactMode != 6)) && (
             <Col span={8} style={{ marginTop: "30px" }}>
               <CommonSelectField
                 label="Followup Status"
                 required={true}
                 options={[
                   { id: 1, name: "Highly Interested", color: "#16a34a" },
-                  { id: 2, name: "Interested", color: "#22c55e" },
-                  { id: 3, name: "Need Follow-up", color: "#f97316" },
-                  { id: 4, name: "Call Back Later", color: "#eab308" },
-                  { id: 5, name: "Only Enquiry", color: "#6b7280" },
-                  { id: 6, name: "No Response", color: "#dc2626" },
-                  { id: 7, name: "Service Not Availabe", color: "#4b5563" },
-                  { id: 8, name: "Not Interested", color: "#991b1b" },
-                  { id: 9, name: "Lead Lost", color: "#111827" },
+                  { id: 8, name: "Interested", color: "#22c55e" },
+                  { id: 7, name: "Need Follow-up", color: "#f97316" },
+                  { id: 10, name: "Call Back Later", color: "#eab308" },
+                  { id: 9, name: "Only Enquiry", color: "#6b7280" },
+                  { id: 11, name: "No Response", color: "#dc2626" },
+                  { id: 3, name: "Service Not Availabe", color: "#4b5563" },
+                  { id: 5, name: "Not Interested", color: "#991b1b" },
+                  { id: 2, name: "Lead Lost", color: "#111827" },
                 ]}
                 renderOption={(props, option) => (
                   <li {...props}>
@@ -1887,11 +1829,73 @@ const AddLead = forwardRef(
                 )}
                 onChange={(e) => {
                   setFollowUpStatusId(e.target.value);
-                  setFollowUpStatusIdError(selectValidator(e.target.value));
+                  if (validationTrigger) {
+                    setFollowUpStatusIdError(selectValidator(e.target.value));
+                  }
                 }}
                 value={followUpStatusId}
                 error={followUpStatusIdError}
+                disabled={contactMode == 5}
               />
+            </Col>
+          )}
+
+          {(communicationStatus == 1 ||
+            (communicationStatus &&
+              contactMode != null &&
+              contactMode != 6)) && (
+            <Col span={8} style={{ marginTop: "30px" }}>
+              <CommonNxtFollowupDatePicker
+                label="Next Follow-Up Date"
+                required={true}
+                onChange={(value) => {
+                  setNxtFollowupDate(value);
+                  if (validationTrigger) {
+                    setNxtFollowupDateError(selectValidator(value));
+                  }
+                }}
+                value={nxtFollowupDate}
+                disablePreviousDates={true}
+                error={nxtFollowupDateError}
+                // disabled={
+                //   isReEntry
+                //     ? false
+                //     : isPreviousJunk == false && updateLeadItem
+                //       ? true
+                //       : false
+                // }
+              />
+            </Col>
+          )}
+
+          {(communicationStatus == 1 ||
+            (communicationStatus &&
+              contactMode != null &&
+              contactMode != 5 &&
+              contactMode != 6)) && (
+            <Col span={8} style={{ marginTop: "30px" }}>
+              <CommonMuiDatePicker
+                label="Expected Date Join"
+                required={false}
+                onChange={(value) => {
+                  console.log("vallll", value);
+                  setExpectDateJoin(value);
+                }}
+                value={expectDateJoin}
+                error=""
+                disablePreviousDates={true}
+                disabled={isReEntry}
+              />
+            </Col>
+          )}
+
+          {followUpStatusId && (
+            <Col span={8}>
+              <div>
+                <label>Interest Rating</label>
+                <br />
+                <Rate value={interestRate} onChange={setInterestRate} />
+              </div>
             </Col>
           )}
         </Row>
