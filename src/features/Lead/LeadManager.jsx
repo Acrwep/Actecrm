@@ -59,6 +59,7 @@ export default function LeadManager({ type }) {
     };
     try {
       await assignLiveLead(payload);
+      window.dispatchEvent(new Event("refreshLiveLeads"));
     } catch (error) {
       console.log("assign live lead error", error);
     }
@@ -676,6 +677,7 @@ export default function LeadManager({ type }) {
           }}
         >
           <Leads
+            activePage={activePage}
             triggerApi={triggerApi}
             setTriggerApi={setTriggerApi}
             key={tabKeys.leads}
@@ -755,7 +757,7 @@ export default function LeadManager({ type }) {
         >
           <AddNewLead
             key={tabKeys.add_lead}
-            setActivePage={setActivePage}
+            setActivePage={handleTabClick}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
             subUsers={childUsers}

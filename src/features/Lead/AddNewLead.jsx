@@ -7,16 +7,7 @@ import React, {
 import { Row, Col, Tooltip, Checkbox, Modal, Button, Rate } from "antd";
 import { useNavigate } from "react-router-dom";
 import { Country, State } from "country-state-city";
-import {
-  MdAdd,
-  MdPerson,
-  MdPhone,
-  MdThumbUp,
-  MdSchool,
-  MdPlayArrow,
-  MdAttachMoney,
-  MdCheck,
-} from "react-icons/md";
+import { MdAdd, MdPerson, MdCheck } from "react-icons/md";
 import CommonInputField from "../Common/CommonInputField";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -120,7 +111,7 @@ const AddNewLead = forwardRef(
     const [referralName, setReferralName] = useState("");
     const [preferredMode, setPreferredMode] = useState(null);
     const [preferredBatch, setPreferredBatch] = useState(1);
-    const [counsel, setCounsel] = useState(null);
+    const [counsel, setCounsel] = useState("Not Given");
     const [leadScore, setLeadScore] = useState("Auto");
     const [nextFollowupTime, setNextFollowupTime] = useState(null);
     const [addTodayFollowup, setAddTodayFollowup] = useState(false);
@@ -203,7 +194,7 @@ const AddNewLead = forwardRef(
       useState("");
     const [contactMode, setContactMode] = useState(null);
     const [contactModeError, setContactModeError] = useState("");
-    const [interestRate, setInterestRate] = useState(1);
+    const [interestRate, setInterestRate] = useState(5);
     const [comments, setComments] = useState("");
     const [commentsError, setCommentsError] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
@@ -271,17 +262,17 @@ const AddNewLead = forwardRef(
     const fetchLeadDetails = async () => {
       if (updateLeadItem) {
         console.log("updateLeadItem", updateLeadItem);
-        setTimeout(() => {
-          const drawerBody = document.querySelector(
-            "#leadform_addlead_drawer .ant-drawer-body",
-          );
-          if (drawerBody) {
-            drawerBody.scrollTo({
-              top: 0,
-              behavior: "smooth",
-            });
-          }
-        }, 300);
+        // setTimeout(() => {
+        //   const drawerBody = document.querySelector(
+        //     "#leadform_addlead_drawer .ant-drawer-body",
+        //   );
+        //   if (drawerBody) {
+        //     drawerBody.scrollTo({
+        //       top: 0,
+        //       behavior: "smooth",
+        //     });
+        //   }
+        // }, 300);
 
         let areasList;
         try {
@@ -393,19 +384,21 @@ const AddNewLead = forwardRef(
         getBranchesData(updateLeadItem.region_id);
         setBranch(updateLeadItem.branch_id);
         setBatchTrack(updateLeadItem.batch_track_id);
+        setInterestRate(updateLeadItem?.interest_rate || 5);
         setComments(updateLeadItem.comments);
       } else if (liveLeadItem) {
-        setTimeout(() => {
-          const drawerBody = document.querySelector(
-            "#leadform_addlead_drawer .ant-drawer-body",
-          );
-          if (drawerBody) {
-            drawerBody.scrollTo({
-              top: 0,
-              behavior: "smooth",
-            });
-          }
-        }, 300);
+        // --------------------live lead item-----------------------
+        // setTimeout(() => {
+        //   const drawerBody = document.querySelector(
+        //     "#leadform_addlead_drawer .ant-drawer-body",
+        //   );
+        //   if (drawerBody) {
+        //     drawerBody.scrollTo({
+        //       top: 0,
+        //       behavior: "smooth",
+        //     });
+        //   }
+        // }, 300);
         console.log("liveLeadItem", liveLeadItem);
         setName(liveLeadItem.name);
         setEmail(liveLeadItem.email);
@@ -1013,7 +1006,7 @@ const AddNewLead = forwardRef(
         lead_status_id: leadStatus,
         lead_sub_source: null,
         referral_name: "",
-        lead_action_id: followUpStatusId,
+        lead_action_id: contactMode == 6 ? 2 : 1,
         is_today_followup: addTodayFollowup
           ? formatToBackendIST(new Date())
           : null,
@@ -1024,7 +1017,7 @@ const AddNewLead = forwardRef(
         is_previous_junk: false,
         communication_status: communicationStatus,
         contact_mode: contactMode,
-        interest_rate: 1,
+        interest_rate: interestRate,
         next_follow_up_date: nxtFollowupDate
           ? formatToBackendIST(nxtFollowupDate)
           : null,
@@ -1197,27 +1190,11 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const releaseLead = async () => {
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      const payload = {
-        user_id: convertAsJson?.user_id,
-        lead_id: liveLeadItem?.id,
-        is_assigned: false,
-      };
-      try {
-        await assignLiveLead(payload);
-      } catch (error) {
-        console.log("assign live lead error", error);
-      } finally {
-        setButtonLoading(false);
-        setSaveOnlyLoading(false);
-      }
-    };
-
     const formReset = (dontCloseAddDrawer) => {
       if (updateLeadItem) {
         navigate("/leads/lead-manager", { state: "open leads" });
+      } else if (liveLeadItem) {
+        setActivePage("live_leads");
       }
       setValidationTrigger(false);
       setName("");
@@ -1289,10 +1266,7 @@ const AddNewLead = forwardRef(
       setNextFollowupTime(null);
       setAddTodayFollowup(false);
       setFollowUpStatusId("");
-      setInterestRate(1);
-      if (liveLeadItem) {
-        releaseLead();
-      }
+      setInterestRate(5);
       setButtonLoading(false);
       setSaveOnlyLoading(false);
     };
@@ -1907,6 +1881,7 @@ const AddNewLead = forwardRef(
                   labelFontSize={"12px"}
                   errorFontSize={"9px"}
                   labelMarginTop={"-0.4px"}
+                  disabled={liveLeadItem}
                 />
               </div>
 
@@ -2121,6 +2096,7 @@ const AddNewLead = forwardRef(
                         const value = e.target.value;
                         setCommunicationStatus(value);
                         setContactMode(null);
+                        setCounsel("Not Given");
                         setLeadStatus(null);
                         setFollowUpStatusId(null);
                         setNxtFollowupDate(null);
@@ -2181,6 +2157,7 @@ const AddNewLead = forwardRef(
                           setExpectDateJoin(null);
                           setLeadStatusError("");
                         } else {
+                          setLeadStatus(5);
                           setComments(comments == "Junk" ? "" : comments);
                         }
                         if (validationTrigger) {
@@ -2214,6 +2191,7 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
+                    disabled={contactMode == 5 || contactMode == 6}
                   />
                 </Col>
                 <Col span={12}>
@@ -2280,7 +2258,7 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
+                    disabled={true}
                   />
                 </Col>
               </Row>
@@ -2301,6 +2279,7 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     labelMarginTop={"0.5px"}
                     iconSize={"16px"}
+                    disabled={contactMode == 6}
                   />
                 </Col>
                 {/* <Col span={12}>

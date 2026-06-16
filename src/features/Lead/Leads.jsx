@@ -94,6 +94,7 @@ export default function Leads({
   refreshToggle,
   setRefreshToggle,
   onEditLead,
+  activePage,
 }) {
   const dispatch = useDispatch();
   const mounted = useRef(false);
@@ -628,29 +629,27 @@ export default function Leads({
               </Tooltip>
             )}
 
-            {permissions.includes("Assign Lead") &&
-              record.lead_status_id != 4 &&
-              record.lead_status_id != 5 && (
-                <Tooltip
-                  placement="bottom"
-                  title="Re-Assign this lead to another user"
-                >
-                  <PiShareFatBold
-                    className="leadmanager_action_icon"
-                    color="#5b69ca"
-                    onClick={() => {
-                      if (onEditLead) {
-                        onEditLead(record, true);
-                      } else {
-                        setIsReEntry(true);
-                        setUpdateLeadItem(record);
-                        setLeadId(record.id);
-                        setIsOpenAddDrawer(true);
-                      }
-                    }}
-                  />
-                </Tooltip>
-              )}
+            {permissions.includes("Assign Lead") && (
+              <Tooltip
+                placement="bottom"
+                title="Re-Assign this lead to another user"
+              >
+                <PiShareFatBold
+                  className="leadmanager_action_icon"
+                  color="#5b69ca"
+                  onClick={() => {
+                    if (onEditLead) {
+                      onEditLead(record, true);
+                    } else {
+                      setIsReEntry(true);
+                      setUpdateLeadItem(record);
+                      setLeadId(record.id);
+                      setIsOpenAddDrawer(true);
+                    }
+                  }}
+                />
+              </Tooltip>
+            )}
           </div>
         );
       },
@@ -695,6 +694,8 @@ export default function Leads({
   };
 
   useEffect(() => {
+    if (activePage !== "leads") return;
+
     if (permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
         return;
@@ -742,7 +743,7 @@ export default function Leads({
         // );
       }
     }
-  }, [childUsers, permissions]);
+  }, [childUsers, permissions, activePage]);
 
   const getTableColumnsData = async (user_id) => {
     try {
@@ -1085,29 +1086,27 @@ export default function Leads({
                         </Tooltip>
                       )}
 
-                      {permissions.includes("Assign Lead") &&
-                        record.lead_status_id != 4 &&
-                        record.lead_status_id != 5 && (
-                          <Tooltip
-                            placement="bottom"
-                            title="Re-Assign this lead to another user"
-                          >
-                            <PiShareFatBold
-                              className="leadmanager_action_icon"
-                              color="#5b69ca"
-                              onClick={() => {
-                                if (onEditLead) {
-                                  onEditLead(record, true);
-                                } else {
-                                  setIsReEntry(true);
-                                  setUpdateLeadItem(record);
-                                  setLeadId(record.id);
-                                  setIsOpenAddDrawer(true);
-                                }
-                              }}
-                            />
-                          </Tooltip>
-                        )}
+                      {permissions.includes("Assign Lead") && (
+                        <Tooltip
+                          placement="bottom"
+                          title="Re-Assign this lead to another user"
+                        >
+                          <PiShareFatBold
+                            className="leadmanager_action_icon"
+                            color="#5b69ca"
+                            onClick={() => {
+                              if (onEditLead) {
+                                onEditLead(record, true);
+                              } else {
+                                setIsReEntry(true);
+                                setUpdateLeadItem(record);
+                                setLeadId(record.id);
+                                setIsOpenAddDrawer(true);
+                              }
+                            }}
+                          />
+                        </Tooltip>
+                      )}
                     </div>
                   );
                 },
@@ -2112,7 +2111,7 @@ export default function Leads({
                 </div>
               </div>
             </Col>
-            <Col flex="30%">
+            <Col flex="none">
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -2142,7 +2141,7 @@ export default function Leads({
                 }}
               />
             </Col>
-            <Col flex="20%">
+            <Col flex="none">
               <Popover
                 placement="bottomLeft"
                 trigger="click"
