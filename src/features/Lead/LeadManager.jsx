@@ -354,23 +354,9 @@ export default function LeadManager({ type }) {
           updatedItem.is_active = 1;
         }
 
-        if (item.name === "Call") {
-          updatedItem.name = "Direct Call";
-        }
-
         return updatedItem;
       });
-      const order = [
-        "Enquiry Form",
-        "Direct Call",
-        "IVR",
-        "SMO",
-        "Whatsapp",
-        "Live Chat",
-        "Direct",
-        "Reference",
-        "G-Add",
-      ];
+      const order = ["Call", "Direct", "Website", "SMO", "Live Chat"];
 
       const sortedLeadTypes = [...update_lead_status].sort(
         (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
@@ -768,17 +754,9 @@ export default function LeadManager({ type }) {
               setPickLeadItem(null);
               setEditLeadItem(null);
               setIsReAssignLead(false);
-
-              if (saveType === "Save And Add New") {
-                // "Save Lead" button -> navigate to Leads Page
-                navigate("/leads/lead-manager", { state: "open leads" });
-              } else {
-                // "Save & Add Another" button (Save Only) -> stay on Add Lead, but reset form.
-                // Resetting form is already handled in AddNewLead component.
-              }
-
+              navigate("/leads/lead-manager", { state: "open leads" });
               refreshLeads();
-              refreshLeadFollowUp();
+              // refreshLeadFollowUp();
             }}
           />
         </div>

@@ -478,15 +478,15 @@ export default function Leads({
       dataIndex: "batch_track",
       width: 120,
     },
-    {
-      title: "Next Followup Date",
-      key: "next_follow_up_date",
-      dataIndex: "next_follow_up_date",
-      width: 160,
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
+    // {
+    //   title: "Next Followup Date",
+    //   key: "next_follow_up_date",
+    //   dataIndex: "next_follow_up_date",
+    //   width: 160,
+    //   render: (text, record) => {
+    //     return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+    //   },
+    // },
     {
       title: "Expected Join Date",
       key: "expected_join_date",
@@ -1111,7 +1111,6 @@ export default function Leads({
                   );
                 },
               };
-            case "next_follow_up_date":
             case "expected_join_date":
               return {
                 ...col,

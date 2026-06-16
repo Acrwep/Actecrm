@@ -64,7 +64,6 @@ const AddNewLead = forwardRef(
   ) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
     const [buttonLoading, setButtonLoading] = useState(false);
     //course and area options
     const courseOptions = useSelector((state) => state.courselist);
@@ -822,24 +821,6 @@ const AddNewLead = forwardRef(
       console.log("convertAsJson", convertAsJson);
       setValidationTrigger(true);
 
-      // let nxtFollowupDateValidate;
-      // let followUpStatusIdValidate;
-
-      // if (leadStatus == 4 || leadStatus == 5) {
-      //   nxtFollowupDateValidate = "";
-      //   followUpStatusIdValidate = "";
-      // } else {
-      //   nxtFollowupDateValidate = selectValidator(nxtFollowupDate);
-      //   followUpStatusIdValidate = selectValidator(followUpStatusId);
-      // }
-
-      // if (
-      //   (leadStatus == 1 || leadStatus == 2 || leadStatus == 3) &&
-      //   followUpStatusId == 6
-      // ) {
-      //   followUpStatusIdValidate =
-      //     " cannot be Others when lead status is High, Medium, or Low";
-      // }
       const nameValidate = nameValidator(name);
       let emailValidate = emailValidator(email);
       let mobileValidate = mobileValidator(mobile, mobileCountry);
@@ -850,10 +831,10 @@ const AddNewLead = forwardRef(
       const primaryCourseValidate = selectValidator(primaryCourse);
       const primaryFeesValidate = selectValidator(primaryFees);
       const leadSourceValidate = selectValidator(leadSource);
-      // const leadSubSourceValidate =
-      //   leadSource == 2 || leadSource == 3
-      //     ? ""
-      //     : selectValidator(leadSubSource);
+      const leadSubSourceValidate =
+        leadSource == 2 || leadSource == 3
+          ? ""
+          : selectValidator(leadSubSource);
       const leadStatusValidate = selectValidator(leadStatus);
       const regionIdValidate = selectValidator(regionId);
       const branchValidate = selectValidator(branch);
@@ -871,10 +852,10 @@ const AddNewLead = forwardRef(
       //   followUpStatusId == ""
       //     ? ""
       //     : selectValidator(nxtFollowupDate);
-      const followUpStatusIdValidate =
-        contactMode == 6 || followUpStatusId == 2
-          ? ""
-          : selectValidator(followUpStatusId);
+      // const followUpStatusIdValidate =
+      //   contactMode == 6 || followUpStatusId == 2
+      //     ? ""
+      //     : selectValidator(followUpStatusId);
       const commentsValidate = addressValidator(comments);
 
       if (email && emailAndMobileValidation.email == 0) {
@@ -911,7 +892,7 @@ const AddNewLead = forwardRef(
       setPrimaryCourseError(primaryCourseValidate);
       setPrimaryFeesError(primaryFeesValidate);
       setLeadSourceError(leadSourceValidate);
-      // setLeadSubSourceError(leadSubSourceValidate);
+      setLeadSubSourceError(leadSubSourceValidate);
       setLeadStatusError(leadStatusValidate);
       setCommunicationStatusError(communicationStatusValidate);
       setContactModeError(contactModeValidate);
@@ -931,10 +912,10 @@ const AddNewLead = forwardRef(
         primaryCourseValidate ||
         primaryFeesValidate ||
         leadSourceValidate ||
+        leadSubSourceValidate ||
         leadStatusValidate ||
         communicationStatusValidate ||
         contactModeValidate ||
-        followUpStatusIdValidate ||
         regionIdValidate ||
         branchValidate ||
         batchTrackValidate ||
@@ -954,7 +935,6 @@ const AddNewLead = forwardRef(
           leadStatusValidate,
           communicationStatusValidate,
           contactModeValidate,
-          followUpStatusIdValidate,
           regionIdValidate,
           branchValidate,
           batchTrackValidate,
@@ -964,11 +944,7 @@ const AddNewLead = forwardRef(
         return;
       }
       //-----------------
-      if (saveType === "Save Only") {
-        setSaveOnlyLoading(true);
-      } else {
-        setButtonLoading(true);
-      }
+      setButtonLoading(true);
 
       const today = new Date();
 
@@ -1004,7 +980,7 @@ const AddNewLead = forwardRef(
               : "Direct",
         lead_type_id: leadSource,
         lead_status_id: leadStatus,
-        lead_sub_source: null,
+        lead_sub_source: leadSubSource,
         referral_name: "",
         lead_action_id: contactMode == 6 ? 2 : 1,
         is_today_followup: addTodayFollowup
@@ -1042,19 +1018,17 @@ const AddNewLead = forwardRef(
       };
 
       console.log("add leadd payload", payload);
-      if (updateLeadItem) {
+      if (updateLeadItem && isReAssign == false) {
         //---------------lead update--------------
         try {
           await updateLead(payload);
           CommonMessage("success", "Lead updated");
           setTimeout(() => {
             formReset();
-            callgetLeadsApi(false, saveType);
           }, 300);
         } catch (error) {
           console.log("lead create error", error);
           setButtonLoading(false);
-          setSaveOnlyLoading(false);
           CommonMessage(
             "error",
             error?.response?.data?.details ||
@@ -1081,7 +1055,6 @@ const AddNewLead = forwardRef(
         } catch (error) {
           console.log("lead create error", error);
           setButtonLoading(false);
-          setSaveOnlyLoading(false);
           CommonMessage(
             "error",
             error?.response?.data?.details ||
@@ -1089,7 +1062,7 @@ const AddNewLead = forwardRef(
           );
         }
       } else {
-        //---------------lead cerate--------------
+        //---------------lead create--------------
         // if (leadStatus == 4 || leadStatus == 5) {
         //   handleMoveLiveLeadToJunk(saveType);
         //   return;
@@ -1098,17 +1071,7 @@ const AddNewLead = forwardRef(
           await createLead(payload);
           CommonMessage("success", "Lead created");
           setTimeout(() => {
-            if (saveType === "Save Only") {
-              formReset();
-            } else {
-              formReset(true);
-            }
-            if (liveLeadItem?.is_assign_lead) {
-              console.log("dont call getLeadsApi");
-            } else {
-              callgetLeadsApi(false, saveType);
-            }
-
+            formReset();
             if (liveLeadItem) {
               handleAssignLiveLead();
             }
@@ -1116,7 +1079,6 @@ const AddNewLead = forwardRef(
         } catch (error) {
           console.log("lead create error", error);
           setButtonLoading(false);
-          setSaveOnlyLoading(false);
           CommonMessage(
             "error",
             error?.response?.data?.details ||
@@ -1157,41 +1119,14 @@ const AddNewLead = forwardRef(
       };
       try {
         await updateLiveLeadStatus(payload);
-        callgetLeadsApi();
       } catch (error) {
         console.log("livelead update status error", error);
       }
     };
 
-    const handleMoveLiveLeadToJunk = async (saveType) => {
-      const payload = {
-        lead_ids: [liveLeadItem && liveLeadItem.id ? liveLeadItem.id : ""],
-        is_junk: true,
-        reason: comments,
-      };
-
-      try {
-        await moveLiveLeadToJunk(payload);
-        CommonMessage("success", "Updated");
-        setTimeout(() => {
-          if (saveType === "Save Only") {
-            formReset();
-          } else {
-            formReset(true);
-          }
-          callgetLeadsApi(true);
-        }, 300);
-      } catch (error) {
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
-      }
-    };
-
-    const formReset = (dontCloseAddDrawer) => {
+    const formReset = () => {
       if (updateLeadItem) {
+        callgetLeadsApi();
         navigate("/leads/lead-manager", { state: "open leads" });
       } else if (liveLeadItem) {
         setActivePage("live_leads");
@@ -1268,7 +1203,6 @@ const AddNewLead = forwardRef(
       setFollowUpStatusId("");
       setInterestRate(5);
       setButtonLoading(false);
-      setSaveOnlyLoading(false);
     };
 
     const SectionHeader = ({ title }) => {
@@ -1501,7 +1435,11 @@ const AddNewLead = forwardRef(
                 color: "#0f172a",
               }}
             >
-              {updateLeadItem ? "Update Lead" : "Add New Lead"}
+              {isReAssign
+                ? "Re-Assign Lead"
+                : updateLeadItem
+                  ? "Update Lead"
+                  : "Add New Lead"}
             </h2>
             <p
               style={{
@@ -1528,7 +1466,7 @@ const AddNewLead = forwardRef(
             </Button>
             <Button
               onClick={() => handleSubmit("Save Only")}
-              loading={saveOnlyLoading}
+              loading={buttonLoading}
               style={{
                 borderRadius: "6px",
                 fontWeight: 500,
@@ -1855,7 +1793,7 @@ const AddNewLead = forwardRef(
               }}
             >
               <SectionHeader title="2. Lead Source" />
-              <div style={{ marginBottom: "8px" }}>
+              <div style={{ marginBottom: "24px" }}>
                 <CommonSelectField
                   label="Lead Source"
                   required={true}
@@ -1885,9 +1823,10 @@ const AddNewLead = forwardRef(
                 />
               </div>
 
-              {/* <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "8px" }}>
                 <CommonSelectField
                   label="Lead Sub Source"
+                  required={leadSource == 2 || leadSource == 3 ? false : true}
                   onChange={(e) => {
                     setLeadSubSource(e.target.value);
                     if (validationTrigger) {
@@ -1908,7 +1847,7 @@ const AddNewLead = forwardRef(
                   labelMarginTop={"-0.4px"}
                 />
               </div>
-              <div style={{ marginBottom: "0px" }}>
+              {/* <div style={{ marginBottom: "0px" }}>
                 <CommonInputField
                   label="Referral Name"
                   value={referralName}

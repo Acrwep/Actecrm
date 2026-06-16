@@ -171,11 +171,7 @@ export default function FollowUpDrawerForm({
             </Col>
             <Col span={12}>
               <EllipsisTooltip
-                text={
-                  leadDetails && leadDetails.candidate_name
-                    ? leadDetails.candidate_name
-                    : "-"
-                }
+                text={leadDetails && leadDetails.name ? leadDetails.name : "-"}
                 smallText={true}
               />
             </Col>
@@ -645,7 +641,7 @@ export default function FollowUpDrawerForm({
                 const value = e.target.value;
                 setContactMode(value);
                 if (value == 5) {
-                  setActionId(11);
+                  setActionId(10);
                   setActionIdError("");
                 }
                 if (validationTrigger) {
@@ -676,15 +672,12 @@ export default function FollowUpDrawerForm({
                 }
               }}
               options={[
-                { id: 1, name: "Highly Interested", color: "#16a34a" },
-                { id: 8, name: "Interested", color: "#22c55e" },
-                { id: 7, name: "Need Follow-up", color: "#f97316" },
-                { id: 10, name: "Call Back Later", color: "#eab308" },
-                { id: 9, name: "Only Enquiry", color: "#6b7280" },
-                { id: 11, name: "No Response", color: "#dc2626" },
-                { id: 3, name: "Service Not Availabe", color: "#4b5563" },
-                { id: 5, name: "Not Interested", color: "#991b1b" },
-                { id: 2, name: "Lead Lost", color: "#111827" },
+                { id: 5, name: "Sales Ready", color: "#dc2626" },
+                { id: 1, name: "Highly Interested", color: "#f97316" },
+                { id: 8, name: "Interested", color: "#eab308" },
+                { id: 9, name: "Exploring", color: "#3b82f6" },
+                { id: 10, name: "Not Responding", color: "#4b5563" },
+                { id: 2, name: "Not Interested", color: "#111827" },
               ]}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -758,9 +751,26 @@ export default function FollowUpDrawerForm({
               onChange={setInterestRate}
             />
           </Col>
+          <Col span={9} style={{ marginTop: "40px" }}>
+            <Checkbox
+              checked={addTodayFollowup}
+              onChange={(e) => setAddTodayFollowup(e.target.checked)}
+              disabled={contactMode == 6}
+            >
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "#475569",
+                  fontWeight: 500,
+                }}
+              >
+                Add to today's follow-up list
+              </span>
+            </Checkbox>
+          </Col>
         </Row>
 
-        <div style={{ marginBottom: "16px" }}>
+        {/* <div style={{ marginBottom: "16px" }}>
           <Checkbox
             checked={addTodayFollowup}
             onChange={(e) => setAddTodayFollowup(e.target.checked)}
@@ -776,7 +786,7 @@ export default function FollowUpDrawerForm({
               Add to today's follow-up list
             </span>
           </Checkbox>
-        </div>
+        </div> */}
 
         <div style={{ marginBottom: "12px" }}>
           <CommonTextArea
