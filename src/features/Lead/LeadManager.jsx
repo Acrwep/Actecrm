@@ -341,19 +341,42 @@ export default function LeadManager({ type }) {
     try {
       const response = await getLeadType();
       const lead_status = response?.data?.result || [];
-      const update_lead_status = lead_status.map((item) => {
-        if (item.name == "Whatsapp") {
-          return {
-            ...item,
-            is_active: permissions.includes("Whatsapp Lead Source") ? 1 : 0,
-          };
-        } else {
-          return { ...item, is_active: 1 };
-        }
-      });
-      console.log("update_lead_status", update_lead_status);
 
-      setLeadTypeOptions(update_lead_status);
+      const update_lead_status = lead_status.map((item) => {
+        let updatedItem = { ...item };
+
+        if (item.name === "Whatsapp") {
+          updatedItem.is_active = permissions.includes("Whatsapp Lead Source")
+            ? 1
+            : 0;
+        } else {
+          updatedItem.is_active = 1;
+        }
+
+        if (item.name === "Call") {
+          updatedItem.name = "Direct Call";
+        }
+
+        return updatedItem;
+      });
+      const order = [
+        "Enquiry Form",
+        "Direct Call",
+        "IVR",
+        "SMO",
+        "Whatsapp",
+        "Live Chat",
+        "Direct",
+        "Reference",
+        "G-Add",
+      ];
+
+      const sortedLeadTypes = [...update_lead_status].sort(
+        (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
+      );
+      console.log("sortedLeadTypes", sortedLeadTypes);
+
+      setLeadTypeOptions(sortedLeadTypes);
     } catch (error) {
       setLeadTypeOptions([]);
       console.log("lead type error", error);
@@ -363,7 +386,6 @@ export default function LeadManager({ type }) {
       }, 300);
     }
   };
-
   const getRegionData = async () => {
     try {
       const response = await getRegions();

@@ -857,10 +857,10 @@ const AddNewLead = forwardRef(
       const primaryCourseValidate = selectValidator(primaryCourse);
       const primaryFeesValidate = selectValidator(primaryFees);
       const leadSourceValidate = selectValidator(leadSource);
-      const leadSubSourceValidate =
-        leadSource == 2 || leadSource == 3
-          ? ""
-          : selectValidator(leadSubSource);
+      // const leadSubSourceValidate =
+      //   leadSource == 2 || leadSource == 3
+      //     ? ""
+      //     : selectValidator(leadSubSource);
       const leadStatusValidate = selectValidator(leadStatus);
       const regionIdValidate = selectValidator(regionId);
       const branchValidate = selectValidator(branch);
@@ -871,13 +871,13 @@ const AddNewLead = forwardRef(
       const contactModeValidate = updateLeadItem
         ? ""
         : selectValidator(contactMode);
-      const nxtFollowupDateValidate =
-        contactMode == 6 ||
-        followUpStatusId == 2 ||
-        followUpStatusId == null ||
-        followUpStatusId == ""
-          ? ""
-          : selectValidator(nxtFollowupDate);
+      // const nxtFollowupDateValidate =
+      //   contactMode == 6 ||
+      //   followUpStatusId == 2 ||
+      //   followUpStatusId == null ||
+      //   followUpStatusId == ""
+      //     ? ""
+      //     : selectValidator(nxtFollowupDate);
       const followUpStatusIdValidate =
         contactMode == 6 || followUpStatusId == 2
           ? ""
@@ -918,11 +918,10 @@ const AddNewLead = forwardRef(
       setPrimaryCourseError(primaryCourseValidate);
       setPrimaryFeesError(primaryFeesValidate);
       setLeadSourceError(leadSourceValidate);
-      setLeadSubSourceError(leadSubSourceValidate);
+      // setLeadSubSourceError(leadSubSourceValidate);
       setLeadStatusError(leadStatusValidate);
       setCommunicationStatusError(communicationStatusValidate);
       setContactModeError(contactModeValidate);
-      setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
       setBatchTrackError(batchTrackValidate);
@@ -939,11 +938,9 @@ const AddNewLead = forwardRef(
         primaryCourseValidate ||
         primaryFeesValidate ||
         leadSourceValidate ||
-        leadSubSourceValidate ||
         leadStatusValidate ||
         communicationStatusValidate ||
         contactModeValidate ||
-        nxtFollowupDateValidate ||
         followUpStatusIdValidate ||
         regionIdValidate ||
         branchValidate ||
@@ -964,7 +961,6 @@ const AddNewLead = forwardRef(
           leadStatusValidate,
           communicationStatusValidate,
           contactModeValidate,
-          nxtFollowupDateValidate,
           followUpStatusIdValidate,
           regionIdValidate,
           branchValidate,
@@ -1015,8 +1011,8 @@ const AddNewLead = forwardRef(
               : "Direct",
         lead_type_id: leadSource,
         lead_status_id: leadStatus,
-        lead_sub_source: leadSubSource,
-        referral_name: referralName,
+        lead_sub_source: null,
+        referral_name: "",
         lead_action_id: followUpStatusId,
         is_today_followup: addTodayFollowup
           ? formatToBackendIST(new Date())
@@ -1595,6 +1591,89 @@ const AddNewLead = forwardRef(
           </div>
         </div>
 
+        {liveLeadItem && (
+          <div
+            style={{
+              background: "#f8fafc",
+              border: "1px dashed #cbd5e1",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "12px",
+                gap: "8px",
+              }}
+            >
+              <div
+                style={{
+                  width: "6px",
+                  height: "14px",
+                  background: "#3b82f6",
+                  borderRadius: "4px",
+                }}
+              ></div>
+              <span
+                style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}
+              >
+                Live Lead Details
+              </span>
+            </div>
+
+            <Row gutter={[16, 8]}>
+              {[
+                { label: "Name", value: liveLeadItem?.name || "-" },
+                { label: "Email", value: liveLeadItem?.email || "-" },
+                { label: "Mobile", value: liveLeadItem?.phone || "-" },
+                { label: "Location", value: liveLeadItem?.location || "-" },
+                { label: "Course", value: liveLeadItem?.course || "-" },
+                { label: "Training", value: liveLeadItem?.training || "-" },
+                {
+                  label: "Comments",
+                  value: liveLeadItem?.comments || "-",
+                  span: 24,
+                },
+              ].map((item, index) => (
+                <Col xs={24} sm={12} md={item.span || 8} key={index}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#64748b",
+                        width: "70px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.label}:
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        color: "#1e293b",
+                        fontWeight: 500,
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      {item.value}
+                    </span>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
+
         <Row gutter={8}>
           {/* Column 1 */}
           <Col
@@ -1802,7 +1881,7 @@ const AddNewLead = forwardRef(
               }}
             >
               <SectionHeader title="2. Lead Source" />
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "8px" }}>
                 <CommonSelectField
                   label="Lead Source"
                   required={true}
@@ -1831,7 +1910,7 @@ const AddNewLead = forwardRef(
                 />
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
+              {/* <div style={{ marginBottom: "24px" }}>
                 <CommonSelectField
                   label="Lead Sub Source"
                   onChange={(e) => {
@@ -1865,7 +1944,7 @@ const AddNewLead = forwardRef(
                   labelFontSize={"12px"}
                   errorFontSize={"9px"}
                 />
-              </div>
+              </div> */}
             </div>
 
             <div
@@ -2060,7 +2139,7 @@ const AddNewLead = forwardRef(
                       height={"35px"}
                       fontSize={"13px"}
                       labelFontSize={"12px"}
-                      errorFontSize={"7px"}
+                      errorFontSize={"7.7px"}
                       labelMarginTop={"0px"}
                     />
                   </Col>
@@ -2139,7 +2218,7 @@ const AddNewLead = forwardRef(
                 </Col>
                 <Col span={12}>
                   <CommonSelectField
-                    label="Lead Temperature"
+                    label="Lead Temp."
                     options={
                       contactMode == 6
                         ? [
@@ -2199,7 +2278,7 @@ const AddNewLead = forwardRef(
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
-                    errorFontSize={"7px"}
+                    errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disabled={contactMode == 5 || contactMode == 6}
                   />
