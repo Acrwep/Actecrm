@@ -14,6 +14,7 @@ import {
   Flex,
   Spin,
   Tour,
+  Rate,
 } from "antd";
 import { FiFilter } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
@@ -54,6 +55,7 @@ import {
   isWithin30Days,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
+import CommonMuiDateTimePicker from "../Common/CommonMuiDateTimePicker";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonTextArea from "../Common/CommonTextArea";
 import { Country, State } from "country-state-city";
@@ -63,6 +65,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
+import FollowUpDrawerForm from "./FollowUpDrawerForm";
 import {
   storeFollowUpFilterValues,
   storeFollowupStatusCounts,
@@ -130,6 +133,22 @@ export default function LeadFollowUp({
   const [actionIdError, setActionIdError] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [newCommentError, setNewCommentError] = useState("");
+
+  const communicationStatusOptions = [
+    { id: 1, name: "Communicated" },
+    { id: 2, name: "Not-Communicated" },
+  ];
+  const [communicationStatus, setCommunicationStatus] = useState(null);
+  const [communicationStatusError, setCommunicationStatusError] = useState("");
+
+  const [contactMode, setContactMode] = useState(null);
+  const [contactModeError, setContactModeError] = useState("");
+
+  const [nextFollowupTime, setNextFollowupTime] = useState(null);
+  const [interestRate, setInterestRate] = useState(1);
+  const [addTodayFollowup, setAddTodayFollowup] = useState(false);
+  const [validationTrigger, setValidationTrigger] = useState(false);
+
   const [commentsHistory, setCommentsHistory] = useState([]);
   const [leadHistoryId, setLeadHistoryId] = useState(null);
   const [leadId, setLeadId] = useState(null);
@@ -468,21 +487,26 @@ export default function LeadFollowUp({
       const statusCounts = response?.data?.data?.statusCounts || {};
       console.log("statusCounts", statusCounts);
 
+      const formattedData = [];
+      if (statusCounts["Overall"] !== undefined) {
+        formattedData.push({ name: "Overall", count: statusCounts["Overall"] });
+      } else {
+        formattedData.push({ name: "Overall", count: "0/0" });
+      }
+
       const requiredOrder = [
-        "Overall",
-        "Hot Follow Up",
-        "Cold Follow Up",
+        "Highly Interested",
         "Interested",
+        "Need Follow-up",
+        "Call Back Later",
         "Only Enquiry",
-        "Hold",
         "No Response",
-        "Others",
+        "Not Interested",
       ];
 
-      const formattedData = requiredOrder.map((key) => ({
-        name: key,
-        count: statusCounts[key] || 0,
-      }));
+      requiredOrder.forEach((key) => {
+        formattedData.push({ name: key, count: statusCounts[key] || "0/0" });
+      });
 
       dispatch(storeFollowupStatusCounts(formattedData));
       // ✅ Add serial number here
@@ -736,39 +760,56 @@ export default function LeadFollowUp({
 
   //onchange functions
   const handleUpdateFollowUp = async () => {
+    setValidationTrigger(true);
+    const communicationStatusValidate = selectValidator(communicationStatus);
+    const contactModeValidate = selectValidator(contactMode);
     const actionValidate = selectValidator(actionId);
+    const nxtFollowdateValidate =
+      actionId == 2 || actionId == null || actionId == ""
+        ? ""
+        : selectValidator(nxtFollowupDate);
     const commentValidate = addressValidator(newComment);
 
-    let nxtFollowdateValidate = "";
-
-    if (actionId == 6) {
-      nxtFollowdateValidate = "";
-    } else {
-      nxtFollowdateValidate = selectValidator(nxtFollowupDate);
-    }
-
+    setCommunicationStatusError(communicationStatusValidate);
+    setContactModeError(contactModeValidate);
     setActionIdError(actionValidate);
     setNxtFollowupDateError(nxtFollowdateValidate);
     setNewCommentError(commentValidate);
 
-    if (actionValidate || nxtFollowdateValidate || commentValidate) return;
+    if (
+      communicationStatusValidate ||
+      contactModeValidate ||
+      actionValidate ||
+      nxtFollowdateValidate ||
+      commentValidate
+    )
+      return;
 
     setButtonLoading(true);
-    const today = new Date();
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
 
     const payload = {
       lead_history_id: leadHistoryId,
-      comments: newComment,
+      today_followup_date: addTodayFollowup
+        ? formatToBackendIST(new Date())
+        : null,
       next_follow_up_date: nxtFollowupDate
         ? formatToBackendIST(nxtFollowupDate)
         : null,
       lead_status_id: actionId,
       lead_id: leadId,
+      communication_status: communicationStatus,
+      contact_mode: contactMode,
+      next_follow_up_time: nextFollowupTime ? nextFollowupTime : null,
+      interest_rate: interestRate,
+      is_today_followup: addTodayFollowup
+        ? formatToBackendIST(new Date())
+        : null,
+      comments: newComment,
       updated_by:
         converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-      updated_date: formatToBackendIST(today),
+      updated_date: formatToBackendIST(new Date()),
     };
 
     try {
@@ -792,6 +833,14 @@ export default function LeadFollowUp({
         setActionIdError("");
         setNxtFollowupDate(null);
         setNxtFollowupDateError("");
+        setCommunicationStatus(null);
+        setCommunicationStatusError("");
+        setContactMode(null);
+        setContactModeError("");
+        setNextFollowupTime(null);
+        setInterestRate(1);
+        setAddTodayFollowup(false);
+        setValidationTrigger(false);
         setButtonLoading(false);
       }, 300);
     } catch (error) {
@@ -1002,6 +1051,14 @@ export default function LeadFollowUp({
     setLeadId(null);
     setLeadDetails(null);
     setCurrentIndex(null);
+    setCommunicationStatus(null);
+    setCommunicationStatusError("");
+    setContactMode(null);
+    setContactModeError("");
+    setNextFollowupTime(null);
+    setInterestRate(1);
+    setAddTodayFollowup(false);
+    setValidationTrigger(false);
     //add lead usestates
     if (dontCloseAddDrawer === true) {
       setIsOpenAddDrawer(true);
@@ -1268,7 +1325,7 @@ export default function LeadFollowUp({
               gap: "12px",
             }}
           >
-            {permissions.includes("Add Lead Button") && (
+            {/* {permissions.includes("Add Lead Button") && (
               <>
                 <button
                   className="leadmanager_addleadbutton"
@@ -1291,32 +1348,8 @@ export default function LeadFollowUp({
                 >
                   Add Lead
                 </button>
-
-                {/* <Tour
-                  open={addLeadTour}
-                  onClose={() => setAddLeadTour(false)}
-                  steps={steps}
-                  onFinish={() => {
-                    setAddLeadTour(false);
-                    setIsOpenAddDrawer(true);
-                    setTimeout(() => {
-                      const drawerBody = document.querySelector(
-                        "#leadfollowup_addlead_drawer .ant-drawer-body"
-                      );
-                      if (drawerBody) {
-                        drawerBody.scrollTo({
-                          top: 0,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 300);
-                  }}
-                  mask={{
-                    style: { backgroundColor: "rgba(0,0,0,0.6)" }, // dull background
-                  }}
-                /> */}
               </>
-            )}
+            )} */}
 
             {permissions.includes("Download Lead Followups") && (
               <Tooltip placement="top" title="Download">
@@ -1365,32 +1398,33 @@ export default function LeadFollowUp({
         <div className="customers_status_mainContainer" ref={scrollRef}>
           {followup_status_counts.map((item, index) => {
             const statusClass = item.name.toLowerCase().replace(/\s+/g, "_");
+
+            const isSelected = selectedStatus === item.name;
+
             return (
               <div
                 key={index}
                 className={`leadfollwup_status_container ${statusClass} ${
-                  selectedStatus === item.name ? "active" : ""
+                  isSelected ? "active" : ""
                 }`}
                 onClick={() => {
                   setSelectedStatus(item.name);
+
+                  const statusIdMap = {
+                    "Highly Interested": 1,
+                    Interested: 8,
+                    "Need Follow-up": 7,
+                    "Call Back Later": 10,
+                    "Only Enquiry": 9,
+                    "No Response": 11,
+                    "Service Not Availabe": 3,
+                    "Not Interested": 5,
+                    Others: 6,
+                  };
+
                   dispatch(
                     storeFollowUpFilterValues({
-                      status_id:
-                        item.name == "Hot Follow Up"
-                          ? 1
-                          : item.name == "Cold Follow Up"
-                            ? 7
-                            : item.name == "Interested"
-                              ? 8
-                              : item.name == "Only Enquiry"
-                                ? 9
-                                : item.name == "Hold"
-                                  ? 10
-                                  : item.name == "No Response"
-                                    ? 11
-                                    : item.name == "Others"
-                                      ? 6
-                                      : null,
+                      status_id: statusIdMap[item.name] || null,
                       status_name: item?.name,
                       pageNumber: 1,
                     }),
@@ -1641,396 +1675,31 @@ export default function LeadFollowUp({
         </div>
       </Drawer>
 
-      <Drawer
-        title="Lead Follow-Up"
-        open={isOpenFollowUpDrawer}
+      <FollowUpDrawerForm
+        isOpen={isOpenFollowUpDrawer}
         onClose={formReset}
-        width="52%"
-        style={{ position: "relative", paddingBottom: "65px" }}
-        className="customer_statusupdate_drawer"
-      >
-        <p
-          className="leadfollowup_leaddetails_heading"
-          id="leadfollowup_leaddetails_heading"
-        >
-          Lead Details
-        </p>
-        <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    leadDetails && leadDetails.candidate_name
-                      ? leadDetails.candidate_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    leadDetails && leadDetails.email ? leadDetails.email : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.phone ? leadDetails.phone : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.whatsapp
-                    ? leadDetails.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Area</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.area_id
-                    ? leadDetails.area_id
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineDateRange size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Next Followup</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.next_follow_up_date
-                    ? moment(leadDetails.next_follow_up_date).format(
-                        "DD/MM/YYYY",
-                      )
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    leadDetails && leadDetails.primary_course
-                      ? leadDetails.primary_course
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#333", fontWeight: 700 }}
-                >
-                  {leadDetails && leadDetails.primary_fees
-                    ? "₹" + leadDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    leadDetails && leadDetails.branche_name
-                      ? leadDetails.branche_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.batch_track
-                    ? leadDetails.batch_track
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Status</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.lead_status
-                    ? leadDetails.lead_status
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={`${
-                    leadDetails && leadDetails.lead_assigned_to_id
-                      ? leadDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    leadDetails && leadDetails.lead_assigned_to_name
-                      ? leadDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-        <Divider className="customer_statusupdate_divider" />
-        <div className="customer_statusupdate_adddetailsContainer">
-          <p className="customer_statusupdate_adddetails_heading">
-            Follow-Up History
-          </p>
-
-          {commentsHistory.length >= 1 ? (
-            <div className="leadmanager_comments_maincontainer">
-              {commentsHistory.map((item) => {
-                return (
-                  <>
-                    <div className="leadmanager_comments_namecontainer">
-                      <CommonAvatar itemName={item.user_name} avatarSize={32} />
-                      <p className="leadfollowup_comment_username">
-                        {item.user_name
-                          ? `${item.updated_by} - ${item.user_name}`
-                          : "-"}
-                        <span className="leadfollowup_comment_time">
-                          {item.updated_date
-                            ? moment(item.updated_date).format(
-                                "YYYY-MM-DD hh:mm:ss A",
-                              )
-                            : item.created_date
-                              ? moment(item.created_date).format(
-                                  "YYYY-MM-DD hh:mm:ss A",
-                                )
-                              : "-"}
-                        </span>
-                      </p>
-                    </div>
-                    <p className="leadfollowup_comments_text">
-                      {item.comments}
-                    </p>
-
-                    {item.status && (
-                      <p className="leadfollowup_qualitystatus_text">
-                        <span style={{ fontWeight: 600, color: "gray" }}>
-                          Status:
-                        </span>{" "}
-                        {item.status == 1
-                          ? "Details Shared"
-                          : item.status == 2
-                            ? "Details Not Shared"
-                            : "CNA"}
-                      </p>
-                    )}
-                  </>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="leadfollowup_comment_nodatafound">
-              No comments found
-            </p>
-          )}
-        </div>{" "}
-        <Divider className="customer_statusupdate_divider" />
-        <div className="customer_statusupdate_adddetailsContainer">
-          <p className="customer_statusupdate_adddetails_heading">
-            Update Follow-Up
-          </p>
-          <Row style={{ marginTop: "10px" }}>
-            <Col span={24}>
-              <CommonTextArea
-                label="Comments"
-                required={true}
-                onChange={(e) => {
-                  setNewComment(e.target.value);
-                  setNewCommentError(addressValidator(e.target.value));
-                }}
-                value={newComment}
-                error={newCommentError}
-              />
-            </Col>
-          </Row>
-
-          <Row gutter={16} style={{ marginTop: "30px", marginBottom: "16px" }}>
-            <Col span={12}>
-              <CommonSelectField
-                label="Action"
-                required={true}
-                options={actionOptions}
-                value={actionId}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setActionId(value);
-                  if (value != 1) {
-                    setNxtFollowupDate(null);
-                    setNxtFollowupDateError("");
-                  } else {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-
-                    let nextDay = new Date(today);
-                    nextDay.setDate(today.getDate() + 1);
-
-                    // 🔥 If Sunday → move to Monday
-                    if (nextDay.getDay() === 0) {
-                      nextDay.setDate(nextDay.getDate() + 1);
-                    }
-
-                    setNxtFollowupDate(nextDay);
-                    setNxtFollowupDateError("");
-                  }
-                  setActionIdError(selectValidator(value));
-                }}
-                error={actionIdError}
-              />{" "}
-            </Col>
-
-            {actionId == 6 ? (
-              ""
-            ) : (
-              <Col span={12}>
-                <CommonNxtFollowupDatePicker
-                  label="Next Followup Date"
-                  onChange={(value) => {
-                    setNxtFollowupDate(value);
-                    setNxtFollowupDateError(selectValidator(value));
-                  }}
-                  value={nxtFollowupDate}
-                  error={nxtFollowupDateError}
-                  disablePreviousDates={true}
-                  // disabled={true}
-                />
-              </Col>
-            )}
-          </Row>
-        </div>
-        <div
-          className="leadmanager_tablefiler_footer"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          <div className="leadfollowup_prev_next_container">
-            <Button
-              className="leadfollowup_prev_next_button"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              className="leadfollowup_prev_next_button"
-              onClick={handleNext}
-              disabled={currentIndex === followUpData.length - 1}
-            >
-              Next
-            </Button>
-          </div>
-          <div className="leadmanager_submitlead_buttoncontainer">
-            {buttonLoading ? (
-              <button className="users_adddrawer_loadingcreatebutton">
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className="users_adddrawer_createbutton"
-                onClick={handleUpdateFollowUp}
-              >
-                Submit
-              </button>
-            )}
-          </div>
-        </div>
-      </Drawer>
+        leadDetails={leadDetails}
+        commentsHistory={commentsHistory}
+        leadId={leadId}
+        leadHistoryId={leadHistoryId}
+        onUpdateSuccess={() => {
+          getLeadFollowUpsData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            true,
+            allDownliners,
+            pagination.page,
+            pagination.limit,
+            filterValuesFromRedux.status_id,
+          );
+          refreshLeads();
+        }}
+        handlePrevious={handlePrevious}
+        handleNext={handleNext}
+        currentIndex={currentIndex}
+        totalItems={followUpData.length}
+      />
     </div>
   );
 }

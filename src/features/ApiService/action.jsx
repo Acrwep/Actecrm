@@ -417,6 +417,17 @@ export const getLeadStatus = async (payload) => {
   }
 };
 
+export const getLeadSubCategory = async (payload) => {
+  try {
+    const response = await api.get("/api/getLeadSubCategory", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getLeadResponseStatus = async (payload) => {
   try {
     const response = await api.get("/api/getResponseStatus", {

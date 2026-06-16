@@ -62,6 +62,7 @@ export default function LiveLead({
   refreshLeads,
   refreshJunkLeads,
   refreshAssignLeads,
+  onPickLead,
 }) {
   //useref
   const filterTypeRef = useRef("");
@@ -949,7 +950,7 @@ export default function LiveLead({
 
     try {
       await assignLiveLead(payload);
-      setPickLeadItem({
+      const pickedData = {
         id: item.id,
         name: item.name,
         email: item.email,
@@ -959,8 +960,13 @@ export default function LiveLead({
         course: item.course ? item.course : "",
         training: item.training ? item.training : "",
         comments: item.comments ? item.comments : "",
-      });
-      setIsOpenAddDrawer(true);
+      };
+      if (onPickLead) {
+        onPickLead(pickedData);
+      } else {
+        setPickLeadItem(pickedData);
+        setIsOpenAddDrawer(true);
+      }
     } catch (error) {
       console.log("assign live lead error", error);
       CommonMessage(

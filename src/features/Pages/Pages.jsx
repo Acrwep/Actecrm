@@ -117,7 +117,7 @@ export default function Pages() {
       //   content: (
       //     <div
       //       style={{ cursor: "pointer" }}
-      //       onClick={() => navigate("/lead-manager", { state: "open live_leads" })}
+      //       onClick={() => navigate("/leads", { state: "open live_leads" })}
       //     >
       //       <b>{data.title || "Notification"}</b>
       //       <div>{data.body}</div>
@@ -237,7 +237,15 @@ export default function Pages() {
         >
           <Routes>
             <Route element={<Dashboard />} path="/dashboard" />
-            <Route element={<LeadManager />} path="/lead-manager" />
+            <Route element={<Navigate to="/leads/add-lead" />} path="/leads" />
+            <Route
+              element={<LeadManager type="addlead" />}
+              path="/leads/add-lead"
+            />
+            <Route
+              element={<LeadManager type="leads" />}
+              path="/leads/lead-manager"
+            />
             <Route element={<LeadFollowUp />} path="/lead-followup" />
             <Route element={<BulkSearch />} path="/bulk-search" />
             <Route element={<Customers />} path="/customers" />

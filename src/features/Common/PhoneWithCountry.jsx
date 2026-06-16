@@ -25,6 +25,8 @@ export default function PhoneWithCountry({
   height,
   borderLeftNone,
   countryCode,
+  countrySelectPadding,
+  countryFlagSize,
   onCountryChange,
   selectedCountry,
   disabled = false,
@@ -131,6 +133,7 @@ export default function PhoneWithCountry({
   return (
     <FormControl
       sx={{
+        width: "100%",
         "& .Mui-disabled": {
           backgroundColor: "#f5f5f5", // change background
           color: "#888", // change text color
@@ -195,13 +198,17 @@ export default function PhoneWithCountry({
                     width: "max-content",
                     fieldset: { display: "none" },
                     ".MuiSelect-select": {
-                      padding: "8px 0px 8px 8px",
+                      padding: countrySelectPadding || "8px 0px 8px 8px",
                     },
                   }}
                   value={country.iso2}
                   onChange={handleCountryChange}
                   renderValue={(v) => (
-                    <FlagImage iso2={v} style={{ display: "flex" }} />
+                    <FlagImage
+                      iso2={v}
+                      style={{ display: "flex" }}
+                      size={countryFlagSize || 22}
+                    />
                   )}
                 >
                   {defaultCountries.map((c) => {

@@ -10,6 +10,7 @@ export default function CommonInputField({
   error,
   required,
   height,
+  fontSize,
   labelFontSize,
   errorFontSize,
   ref: passedRef,
@@ -127,7 +128,7 @@ export default function CommonInputField({
           "& .MuiInputBase-input": {
             height: height || "auto",
             boxSizing: "border-box",
-            fontSize: "14px",
+            fontSize: fontSize || "14px",
           },
           "& .MuiOutlinedInput-root.Mui-disabled": {
             backgroundColor: "#f5f5f5",

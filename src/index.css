@@ -144,7 +144,10 @@ button:focus-visible {
 .ant-menu-light:not(.ant-menu-horizontal) .ant-menu-submenu-title:hover {
   background-color: transparent !important;
 }
-
+.ant-menu-inline.ant-menu-root .ant-menu-submenu-title {
+  color: #fff !important;
+  font-size: 13px !important;
+}
 /* antd datepicker styles */
 .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
   background: #5b69ca !important;

@@ -40,9 +40,19 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Lead Manager",
+      title: "Leads",
       icon: <PiHandCoins size={17} />,
-      path: "lead-manager",
+      path: "leads",
+      children: [
+        {
+          title: "Add Lead",
+          path: "leads/add-lead",
+        },
+        {
+          title: "Lead Manager",
+          path: "leads/lead-manager",
+        },
+      ],
     },
     3: {
       title: "Customers",
@@ -103,9 +113,19 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Lead Manager",
+      title: "Leads",
       icon: <PiHandCoins size={17} />,
-      path: "lead-manager",
+      path: "leads",
+      children: [
+        {
+          title: "Add Lead",
+          path: "leads/add-lead",
+        },
+        {
+          title: "Lead Manager",
+          path: "leads/lead-manager",
+        },
+      ],
     },
     3: {
       title: "Customers",
@@ -191,7 +211,7 @@ export default function SideMenu() {
   }, [permissions]);
 
   useEffect(() => {
-    const pathName = location.pathname.split("/")[1];
+    const pathName = location.pathname.substring(1);
     setSelectedKey(pathName);
   }, [location.pathname]);
 
@@ -281,19 +301,40 @@ export default function SideMenu() {
   };
 
   const renderMenuItems = (menuConfig) => {
-    return Object.entries(menuConfig).map(([key, item]) => ({
-      key: item.path,
-      icon: item.icon,
-      label: (
-        <Link
-          to={`/${item.path}`}
-          className="side-menu-link"
-          style={{ color: "inherit" }}
-        >
-          {item.title}
-        </Link>
-      ),
-    }));
+    return Object.entries(menuConfig).map(([key, item]) => {
+      if (item.children) {
+        return {
+          key: item.path || key,
+          icon: item.icon,
+          label: item.title,
+          children: item.children.map((child) => ({
+            key: child.path,
+            label: (
+              <Link
+                to={`/${child.path}`}
+                className="side-menu-link"
+                style={{ color: "inherit" }}
+              >
+                {child.title}
+              </Link>
+            ),
+          })),
+        };
+      }
+      return {
+        key: item.path,
+        icon: item.icon,
+        label: (
+          <Link
+            to={`/${item.path}`}
+            className="side-menu-link"
+            style={{ color: "inherit" }}
+          >
+            {item.title}
+          </Link>
+        ),
+      };
+    });
   };
 
   const handleMenuClick = (e) => {
@@ -304,6 +345,7 @@ export default function SideMenu() {
     <Menu
       mode="inline"
       selectedKeys={[selectedKey]}
+      defaultOpenKeys={["leads"]}
       items={renderMenuItems(sideMenuOptions)}
       onClick={handleMenuClick}
       style={{ backgroundColor: "rgb(91 105 202 / 0%)", borderRight: "none" }} // 👈 Add this

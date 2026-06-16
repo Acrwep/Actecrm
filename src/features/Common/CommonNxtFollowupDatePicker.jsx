@@ -9,6 +9,10 @@ export default function CommonNxtFollowupDatePicker({
   required,
   onChange,
   value,
+  height,
+  labelFontSize,
+  labelMarginTop,
+  followUpStatus,
   error,
   errorFontSize,
   disablePreviousDates,
@@ -40,27 +44,43 @@ export default function CommonNxtFollowupDatePicker({
 
           const today = dayjs().startOf("day");
 
-          // base allowed dates
-          let allowedDates = [
-            today,
-            today.add(1, "day"),
-            today.add(3, "day"),
-            today.add(5, "day"),
-            today.add(7, "day"),
-          ];
+          let maxDays = 0;
 
-          // 🔥 replace Sunday with Monday
-          allowedDates = allowedDates.map((d) => {
-            if (d.day() === 0) {
-              // Sunday = 0
-              return d.add(1, "day"); // move to Monday
-            }
-            return d;
-          });
+          switch (followUpStatus) {
+            case 1:
+              maxDays = 3;
+              break;
 
-          const isAllowed = allowedDates.some((d) => date.isSame(d, "day"));
+            case 8:
+              maxDays = 7;
+              break;
 
-          return !isAllowed;
+            case 7:
+            case 10:
+            case 11:
+              maxDays = 15;
+              break;
+
+            case 9:
+            case 3:
+            case 5:
+              maxDays = 30;
+              break;
+
+            default:
+              maxDays = 7;
+              break;
+          }
+
+          const selectedDate = date.startOf("day");
+
+          // Disable previous dates
+          if (selectedDate.isBefore(today)) {
+            return true;
+          }
+
+          // Disable dates after the allowed range
+          return selectedDate.isAfter(today.add(maxDays, "day"));
         }}
         slotProps={{
           day: {
@@ -113,13 +133,13 @@ export default function CommonNxtFollowupDatePicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "42px !important",
+                height: height ? height : "42px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                marginTop: "3px",
+                fontSize: labelFontSize || "13px",
+                marginTop: labelMarginTop ? labelMarginTop : "3px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
@@ -155,6 +175,13 @@ export default function CommonNxtFollowupDatePicker({
                 backgroundColor: "#f5f5f5", // change background
                 color: "#888", // change text color
                 WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+              },
+              "& .MuiFormHelperText-root": {
+                color: "#d32f2f !important",
+              },
+
+              "& .MuiFormHelperText-root.Mui-error": {
+                color: "#d32f2f !important",
               },
             },
           },

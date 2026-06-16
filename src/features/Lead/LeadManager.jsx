@@ -13,6 +13,7 @@ import {
   getRegions,
   getTechnologies,
   getLeadStatus,
+  assignLiveLead,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -30,9 +31,10 @@ import {
 import LiveLead from "./LiveLeads";
 import JunkLeads from "./JunkLeads";
 import AssignLeads from "./AssignLeads";
+import AddNewLead from "./AddNewLead";
 import moment from "moment";
 
-export default function LeadManager() {
+export default function LeadManager({ type }) {
   const mounted = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,7 +44,53 @@ export default function LeadManager() {
     (state) => state.liveleadselecteddates,
   );
 
-  const [activePage, setActivePage] = useState("followup");
+  const [activePage, setActivePage] = useState("leads");
+  const [pickLeadItem, setPickLeadItem] = useState(null);
+  const [editLeadItem, setEditLeadItem] = useState(null);
+  const [isReAssignLead, setIsReAssignLead] = useState(false);
+
+  const releaseLead = async (lead_id) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      lead_id: lead_id,
+      is_assigned: false,
+    };
+    try {
+      await assignLiveLead(payload);
+    } catch (error) {
+      console.log("assign live lead error", error);
+    }
+  };
+
+  const pickLeadItemRef = useRef(null);
+
+  useEffect(() => {
+    pickLeadItemRef.current = pickLeadItem;
+  }, [pickLeadItem]);
+
+  useEffect(() => {
+    if (activePage !== "add_lead") {
+      if (pickLeadItem) {
+        releaseLead(pickLeadItem.id);
+        setPickLeadItem(null);
+      }
+      if (editLeadItem) {
+        setEditLeadItem(null);
+        setIsReAssignLead(false);
+      }
+    }
+  }, [activePage, pickLeadItem, editLeadItem]);
+
+  useEffect(() => {
+    return () => {
+      if (pickLeadItemRef.current) {
+        releaseLead(pickLeadItemRef.current.id);
+      }
+    };
+  }, []);
+
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
@@ -64,11 +112,12 @@ export default function LeadManager() {
 
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
-    followup: true, // first tab shown initially
-    leads: false,
+    followup: false,
+    leads: true,
     live_leads: false,
     junk: false,
     assign_leads: false,
+    add_lead: false,
   });
 
   // For forcing remount
@@ -78,6 +127,7 @@ export default function LeadManager() {
     live_leads: 0,
     junk: 0,
     assign_leads: 0,
+    add_lead: 0,
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
@@ -155,7 +205,32 @@ export default function LeadManager() {
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
     }
-  }, [childUsers, permissions]);
+  }, [childUsers, permissions, type, location.state]);
+
+  useEffect(() => {
+    if (location?.state === "open live_leads") {
+      handleTabClick("live_leads");
+    } else if (location?.state === "open leads") {
+      handleTabClick("leads");
+    } else if (location?.state?.editItem) {
+      setEditLeadItem(location.state.editItem);
+      setIsReAssignLead(location.state.isReAssign);
+      handleTabClick("add_lead");
+    } else if (type === "leads") {
+      if (activePage !== "leads" || !loadedTabs.leads) {
+        handleTabClick("leads");
+      }
+    } else if (type === "addlead") {
+      if (
+        activePage !== "add_lead" &&
+        activePage !== "live_leads" &&
+        activePage !== "assign_leads" &&
+        activePage !== "junk"
+      ) {
+        handleTabClick("add_lead");
+      }
+    }
+  }, [type, location.state]);
 
   const isFetchingLiveLead = useRef(false);
   const liveLeadTimeout = useRef(null);
@@ -350,6 +425,9 @@ export default function LeadManager() {
     setActivePage(tab);
     dispatch(storeLeadManagerActivePage(tab));
     setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
+    if (tab === "add_lead") {
+      setTabKeys((prev) => ({ ...prev, add_lead: prev.add_lead + 1 }));
+    }
   };
 
   const handleRefresh = () => {
@@ -456,87 +534,83 @@ export default function LeadManager() {
     <div>
       <div className="settings_tabbutton_maincontainer">
         <div style={{ display: "flex", gap: "18px" }}>
-          <button
-            className={
-              activePage === "followup"
-                ? "settings_tab_activebutton"
-                : "settings_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("followup")}
-            style={{ display: "flex", alignItems: "center", gap: "6px" }}
-          >
-            Lead Followup ( {followupCount} ){" "}
-          </button>
+          {type === "leads" && (
+            <>
+              {/* <button
+                className={
+                  activePage === "followup"
+                    ? "settings_tab_activebutton"
+                    : "settings_tab_inactivebutton"
+                }
+                onClick={() => handleTabClick("followup")}
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                Lead Followup ( {followupCount} ){" "}
+              </button> */}
 
-          <button
-            className={
-              activePage === "leads"
-                ? "settings_tab_activebutton"
-                : "settings_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("leads")}
-          >
-            <p>{`Leads (${leadCount})`}</p>
-          </button>
+              <button
+                className={
+                  activePage === "leads"
+                    ? "settings_tab_activebutton"
+                    : "settings_tab_inactivebutton"
+                }
+                onClick={() => handleTabClick("leads")}
+              >
+                <p>{`Leads (${leadCount})`}</p>
+              </button>
+            </>
+          )}
 
-          {/* <Tooltip
-            open={openLiveLeadTooltip}
-            placement="bottomRight"
-            color="#fff"
-            styles={{
-              body: {
-                maxWidth: "none",
-                whiteSpace: "normal",
-              },
-            }}
-            title={
-              <div style={{ color: "#333" }}>
-                <p>Hiii</p>
-              </div>
-            }
-          > */}
-          <button
-            className={
-              activePage === "live_leads"
-                ? "livelead_tab_activebutton"
-                : "livelead_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("live_leads")}
-          >
-            <p>{`Live Leads (${liveLeadCount})`}</p>
+          {type === "addlead" && (
+            <>
+              {permissions.includes("Add Lead Button") && (
+                <button
+                  className={
+                    activePage === "add_lead"
+                      ? "settings_tab_activebutton"
+                      : "settings_tab_inactivebutton"
+                  }
+                  onClick={() => handleTabClick("add_lead")}
+                >
+                  <p>Add Lead</p>
+                </button>
+              )}
 
-            {/* <FaCaretDown
-                size={15}
-                style={{ marginLeft: "8px", marginTop: "-2px" }}
-                color={activePage === "live_leads" ? "#fff" : "#333"}
-                onMouseEnter={() => setOpenLiveLeadTooltip(true)}
-                onMouseLeave={() => setOpenLiveLeadTooltip(false)}
-              /> */}
-          </button>
-          {/* </Tooltip> */}
+              <button
+                className={
+                  activePage === "live_leads"
+                    ? "livelead_tab_activebutton"
+                    : "livelead_tab_inactivebutton"
+                }
+                onClick={() => handleTabClick("live_leads")}
+              >
+                <p>{`Live Leads (${liveLeadCount})`}</p>
+              </button>
 
-          <button
-            className={
-              activePage === "assign_leads"
-                ? "settings_tab_activebutton"
-                : "settings_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("assign_leads")}
-          >
-            <p>{`Assign Leads (${assignLeadCount})`}</p>
-          </button>
+              <button
+                className={
+                  activePage === "assign_leads"
+                    ? "settings_tab_activebutton"
+                    : "settings_tab_inactivebutton"
+                }
+                onClick={() => handleTabClick("assign_leads")}
+              >
+                <p>{`Assign Leads (${assignLeadCount})`}</p>
+              </button>
 
-          {permissions.includes("Junk Leads Tab") && (
-            <button
-              className={
-                activePage === "junk"
-                  ? "settings_tab_activebutton"
-                  : "settings_tab_inactivebutton"
-              }
-              onClick={() => handleTabClick("junk")}
-            >
-              <p>{`Junk (${junkLeadCount})`}</p>
-            </button>
+              {permissions.includes("Junk Leads Tab") && (
+                <button
+                  className={
+                    activePage === "junk"
+                      ? "settings_tab_activebutton"
+                      : "settings_tab_inactivebutton"
+                  }
+                  onClick={() => handleTabClick("junk")}
+                >
+                  <p>{`Junk (${junkLeadCount})`}</p>
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -589,6 +663,11 @@ export default function LeadManager() {
             regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}
             setRefreshToggle={setRefreshToggle}
+            onEditLead={(itemData, isReAssign) => {
+              navigate("/leads/add-lead", {
+                state: { editItem: itemData, isReAssign: isReAssign },
+              });
+            }}
           />
         </div>
       )}
@@ -609,6 +688,10 @@ export default function LeadManager() {
             regionOptions={regionOptions}
             refreshJunkLeads={refreshJunkLeads}
             refreshAssignLeads={refreshAssignLeads}
+            onPickLead={(itemData) => {
+              setPickLeadItem(itemData);
+              handleTabClick("add_lead");
+            }}
           />
         </div>
       )}
@@ -639,6 +722,41 @@ export default function LeadManager() {
           }}
         >
           <JunkLeads key={tabKeys.junk} setJunkLeadCount={setJunkLeadCount} />
+        </div>
+      )}
+
+      {loadedTabs.add_lead && (
+        <div
+          style={{
+            display: activePage === "add_lead" ? "block" : "none",
+          }}
+        >
+          <AddNewLead
+            key={tabKeys.add_lead}
+            setActivePage={setActivePage}
+            leadTypeOptions={leadTypeOptions}
+            regionOptions={regionOptions}
+            subUsers={childUsers}
+            liveLeadItem={pickLeadItem}
+            updateLeadItem={editLeadItem}
+            isReAssign={isReAssignLead}
+            callgetLeadsApi={(is_refreshjunk, saveType) => {
+              setPickLeadItem(null);
+              setEditLeadItem(null);
+              setIsReAssignLead(false);
+
+              if (saveType === "Save And Add New") {
+                // "Save Lead" button -> navigate to Leads Page
+                navigate("/leads/lead-manager", { state: "open leads" });
+              } else {
+                // "Save & Add Another" button (Save Only) -> stay on Add Lead, but reset form.
+                // Resetting form is already handled in AddNewLead component.
+              }
+
+              refreshLeads();
+              refreshLeadFollowUp();
+            }}
+          />
         </div>
       )}
     </div>

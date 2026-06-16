@@ -29,11 +29,12 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import { PiShareFatBold } from "react-icons/pi";
+import { FaRegEye } from "react-icons/fa";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
-import { MdFormatListNumbered } from "react-icons/md";
+import { MdFormatListNumbered, MdOutlineDateRange } from "react-icons/md";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
@@ -46,6 +47,8 @@ import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
 import { MdAutorenew } from "react-icons/md";
+import ViewLeadDetails from "./ViewLeadDetails";
+import FollowUpDrawerForm from "./FollowUpDrawerForm";
 import CommonDnd from "../Common/CommonDnd";
 import { Country, State } from "country-state-city";
 import { IoFilter } from "react-icons/io5";
@@ -53,6 +56,7 @@ import {
   downloadLeads,
   getAllDownlineUsers,
   getLeads,
+  getLeadFollowUps,
   getLeadsCountByUserIds,
   getTableColumns,
   getUsers,
@@ -89,6 +93,7 @@ export default function Leads({
   setLeadCountLoading,
   refreshToggle,
   setRefreshToggle,
+  onEditLead,
 }) {
   const dispatch = useDispatch();
   const mounted = useRef(false);
@@ -120,6 +125,8 @@ export default function Leads({
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [leadId, setLeadId] = useState(null);
   const [updateLeadItem, setUpdateLeadItem] = useState(null);
+  const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
+  const [viewLeadItem, setViewLeadItem] = useState(null);
   const batchTrackOptions = [
     {
       id: 1,
@@ -138,6 +145,44 @@ export default function Leads({
   const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
+  const [isOpenFollowUpDrawer, setIsOpenFollowUpDrawer] = useState(false);
+  const [selectedLeadForFollowUp, setSelectedLeadForFollowUp] = useState(null);
+  const [followupHistory, setFollowupHistory] = useState([]);
+  const [leadHistoryId, setLeadHistoryId] = useState(null);
+
+  const openFollowUpForm = async (record) => {
+    setSelectedLeadForFollowUp(record);
+    try {
+      const payload = {
+        phone: record.phone, // filter by phone to get exactly this lead's followup history
+        page: 1,
+        limit: 10,
+      };
+      const response = await getLeadFollowUps(payload);
+      const followup_data = response?.data?.data?.data || [];
+      if (followup_data.length > 0) {
+        const matchingLead = followup_data[0]; // Assuming it's the exact match
+        const merged = [
+          ...matchingLead.histories.map((item) => ({
+            ...item,
+            date: item.updated_date,
+          })),
+        ];
+        merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setFollowupHistory(merged);
+        setLeadHistoryId(matchingLead.lead_history_id);
+      } else {
+        setFollowupHistory([]);
+        setLeadHistoryId(null);
+      }
+    } catch (error) {
+      console.log("Error fetching followup history", error);
+      setFollowupHistory([]);
+      setLeadHistoryId(null);
+    }
+    setIsOpenFollowUpDrawer(true);
+  };
+
   const [filterType, setFilterType] = useState(1);
   const [downloadButtonLoader, setDownloadButtonLoader] = useState(false);
 
@@ -460,11 +505,22 @@ export default function Leads({
         (a.lead_status || "").localeCompare(b.lead_status || ""),
       sortDirections: ["ascend", "descend"],
       render: (text) => {
+        const statusClass =
+          text === "Super Hot"
+            ? "super_hot_priority"
+            : text === "Hot"
+              ? "hot_priority"
+              : text === "Medium"
+                ? "medium_priority"
+                : text === "Cold"
+                  ? "cold_priority"
+                  : text === "Junk"
+                    ? "junk_priority"
+                    : "others";
+
         return (
-          <div
-            className={`leadfollwup_table_status_container ${text == "High" ? "hot_follow_up" : text == "Medium" ? "cold_follow_up" : text == "Low" ? "no_response" : "others"}`}
-          >
-            <p>{text == "Others" ? "Followup Stopped" : text}</p>
+          <div className={`leadfollwup_table_status_container ${statusClass}`}>
+            <p>{text}</p>
           </div>
         );
       },
@@ -488,21 +544,57 @@ export default function Leads({
       render: (text, record) => {
         const isAfter45Days = checkIsAfter45Days(record.created_date);
         return (
-          <div className="trainers_actionbuttonContainer">
+          <div className="leadmanager_actionbuttonContainer">
+            <Tooltip placement="bottom" title="View Lead Details">
+              <FaRegEye
+                size={15}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setViewLeadItem(record);
+                  setIsOpenViewDrawer(true);
+                }}
+              />
+            </Tooltip>
+
+            {record.is_customer_reg === 0 && (
+              <Tooltip placement="bottom" title="Followup Lead">
+                <MdOutlineDateRange
+                  className="leadmanager_action_icon"
+                  color="#f59e0b"
+                  onClick={() => openFollowUpForm(record)}
+                />
+              </Tooltip>
+            )}
+
+            {permissions.includes("Edit Lead Button") &&
+              isShowEdit &&
+              record.is_customer_reg === 0 && (
+                <AiOutlineEdit
+                  className="leadmanager_action_icon"
+                  onClick={() => {
+                    if (onEditLead) {
+                      onEditLead(record, false);
+                    } else {
+                      setUpdateLeadItem(record);
+                      setLeadId(record.id);
+                      setIsOpenAddDrawer(true);
+                    }
+                  }}
+                />
+              )}
+
             {record.is_customer_reg === 1 ? (
               <Tooltip placement="bottom" title="Already a Customer">
                 <FaRegAddressCard
-                  size={19}
+                  className="leadmanager_action_icon"
                   color="#2ed573"
-                  className="trainers_action_icons"
                 />
               </Tooltip>
             ) : (
               <Tooltip placement="bottom" title="Make as customer">
                 <FaRegAddressCard
-                  size={19}
+                  className="leadmanager_action_icon"
                   color="#d32f2f"
-                  className="trainers_action_icons"
                   onClick={() => {
                     if (permissions.includes("Edit Lead Button")) {
                       if (filterValuesFromRedux.call_getraapi) {
@@ -515,10 +607,12 @@ export default function Leads({
                       setCustomerCourseId(record.primary_course_id);
                       setCustomerBatchTrackId(record.batch_track_id);
                       setClickedLeadItem(record);
+
                       setTimeout(() => {
                         const drawerBody = document.querySelector(
                           "#leadmanager_paymentdetails_drawer .ant-drawer-body",
                         );
+
                         if (drawerBody) {
                           drawerBody.scrollTo({
                             top: 0,
@@ -534,45 +628,29 @@ export default function Leads({
               </Tooltip>
             )}
 
-            {permissions.includes("Edit Lead Button") &&
-            isShowEdit &&
-            record.is_customer_reg === 0 ? (
-              <AiOutlineEdit
-                size={20}
-                className="trainers_action_icons"
-                // onClick={() => handleEdit(record)}
-                onClick={() => {
-                  setUpdateLeadItem(record);
-                  setLeadId(record.id);
-                  setIsOpenAddDrawer(true);
-                }}
-              />
-            ) : (
-              ""
-            )}
-
             {permissions.includes("Assign Lead") &&
-            record.lead_status_id != 4 &&
-            record.lead_status_id != 5 ? (
-              <Tooltip
-                placement="bottom"
-                title="Re-Assign this lead to another user"
-              >
-                <PiShareFatBold
-                  size={20}
-                  color="#5b69ca"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setIsReEntry(true);
-                    setUpdateLeadItem(record);
-                    setLeadId(record.id);
-                    setIsOpenAddDrawer(true);
-                  }}
-                />
-              </Tooltip>
-            ) : (
-              ""
-            )}
+              record.lead_status_id != 4 &&
+              record.lead_status_id != 5 && (
+                <Tooltip
+                  placement="bottom"
+                  title="Re-Assign this lead to another user"
+                >
+                  <PiShareFatBold
+                    className="leadmanager_action_icon"
+                    color="#5b69ca"
+                    onClick={() => {
+                      if (onEditLead) {
+                        onEditLead(record, true);
+                      } else {
+                        setIsReEntry(true);
+                        setUpdateLeadItem(record);
+                        setLeadId(record.id);
+                        setIsOpenAddDrawer(true);
+                      }
+                    }}
+                  />
+                </Tooltip>
+              )}
           </div>
         );
       },
@@ -870,11 +948,24 @@ export default function Leads({
                 title: "Lead Priority",
                 width: 140,
                 render: (text) => {
+                  const statusClass =
+                    text === "Super Hot"
+                      ? "super_hot_priority"
+                      : text === "Hot"
+                        ? "hot_priority"
+                        : text === "Warm"
+                          ? "medium_priority"
+                          : text === "Cold"
+                            ? "cold_priority"
+                            : text === "Junk"
+                              ? "junk_priority"
+                              : "others";
+
                   return (
                     <div
-                      className={`leadfollwup_table_status_container ${text == "High" ? "hot_follow_up" : text == "Medium" ? "cold_follow_up" : text == "Low" ? "no_response" : "others"}`}
+                      className={`leadfollwup_table_status_container ${statusClass}`}
                     >
-                      <p>{text == "Others" ? "Followup Stopped" : text}</p>
+                      <p>{text}</p>
                     </div>
                   );
                 },
@@ -904,24 +995,61 @@ export default function Leads({
             case "action":
               return {
                 ...col,
+                width: 160,
                 render: (text, record) => {
                   const isAfter45Days = checkIsAfter45Days(record.created_date);
                   return (
-                    <div className="trainers_actionbuttonContainer">
+                    <div className="leadmanager_actionbuttonContainer">
+                      <Tooltip placement="bottom" title="View Lead Details">
+                        <FaRegEye
+                          size={15}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            setViewLeadItem(record);
+                            setIsOpenViewDrawer(true);
+                          }}
+                        />
+                      </Tooltip>
+
+                      {record.is_customer_reg === 0 && (
+                        <Tooltip placement="bottom" title="Followup Lead">
+                          <MdOutlineDateRange
+                            className="leadmanager_action_icon"
+                            color="#f59e0b"
+                            onClick={() => openFollowUpForm(record)}
+                          />
+                        </Tooltip>
+                      )}
+
+                      {permissions.includes("Edit Lead Button") &&
+                        isShowEdit &&
+                        record.is_customer_reg === 0 && (
+                          <AiOutlineEdit
+                            className="leadmanager_action_icon"
+                            onClick={() => {
+                              if (onEditLead) {
+                                onEditLead(record, false);
+                              } else {
+                                setUpdateLeadItem(record);
+                                setLeadId(record.id);
+                                setIsOpenAddDrawer(true);
+                              }
+                            }}
+                          />
+                        )}
+
                       {record.is_customer_reg === 1 ? (
                         <Tooltip placement="bottom" title="Already a Customer">
                           <FaRegAddressCard
-                            size={19}
+                            className="leadmanager_action_icon"
                             color="#2ed573"
-                            className="trainers_action_icons"
                           />
                         </Tooltip>
                       ) : (
                         <Tooltip placement="bottom" title="Make as customer">
                           <FaRegAddressCard
-                            size={19}
+                            className="leadmanager_action_icon"
                             color="#d32f2f"
-                            className="trainers_action_icons"
                             onClick={() => {
                               if (permissions.includes("Edit Lead Button")) {
                                 if (filterValuesFromRedux.call_getraapi) {
@@ -936,10 +1064,12 @@ export default function Leads({
                                 setCustomerCourseId(record.primary_course_id);
                                 setCustomerBatchTrackId(record.batch_track_id);
                                 setClickedLeadItem(record);
+
                                 setTimeout(() => {
                                   const drawerBody = document.querySelector(
                                     "#leadmanager_paymentdetails_drawer .ant-drawer-body",
                                   );
+
                                   if (drawerBody) {
                                     drawerBody.scrollTo({
                                       top: 0,
@@ -955,45 +1085,29 @@ export default function Leads({
                         </Tooltip>
                       )}
 
-                      {permissions.includes("Edit Lead Button") &&
-                      isShowEdit &&
-                      record.is_customer_reg === 0 ? (
-                        <AiOutlineEdit
-                          size={20}
-                          className="trainers_action_icons"
-                          // onClick={() => handleEdit(record)}
-                          onClick={() => {
-                            setUpdateLeadItem(record);
-                            setLeadId(record.id);
-                            setIsOpenAddDrawer(true);
-                          }}
-                        />
-                      ) : (
-                        ""
-                      )}
-
                       {permissions.includes("Assign Lead") &&
-                      record.lead_status_id != 4 &&
-                      record.lead_status_id != 5 ? (
-                        <Tooltip
-                          placement="bottom"
-                          title="Re-Assign this lead to another user"
-                        >
-                          <PiShareFatBold
-                            size={20}
-                            color="#5b69ca"
-                            className="trainers_action_icons"
-                            onClick={() => {
-                              setIsReEntry(true);
-                              setUpdateLeadItem(record);
-                              setLeadId(record.id);
-                              setIsOpenAddDrawer(true);
-                            }}
-                          />
-                        </Tooltip>
-                      ) : (
-                        ""
-                      )}
+                        record.lead_status_id != 4 &&
+                        record.lead_status_id != 5 && (
+                          <Tooltip
+                            placement="bottom"
+                            title="Re-Assign this lead to another user"
+                          >
+                            <PiShareFatBold
+                              className="leadmanager_action_icon"
+                              color="#5b69ca"
+                              onClick={() => {
+                                if (onEditLead) {
+                                  onEditLead(record, true);
+                                } else {
+                                  setIsReEntry(true);
+                                  setUpdateLeadItem(record);
+                                  setLeadId(record.id);
+                                  setIsOpenAddDrawer(true);
+                                }
+                              }}
+                            />
+                          </Tooltip>
+                        )}
                     </div>
                   );
                 },
@@ -2327,7 +2441,7 @@ export default function Leads({
               gap: "12px",
             }}
           >
-            {permissions.includes("Add Lead Button") && isShowEdit === true ? (
+            {/* {permissions.includes("Add Lead Button") && isShowEdit === true ? (
               <button
                 className="leadmanager_addleadbutton"
                 onClick={() => {
@@ -2349,8 +2463,7 @@ export default function Leads({
               </button>
             ) : (
               ""
-            )}
-
+            )} */}
             {permissions.includes("Download Leads") &&
             selectedRowKeys.length == 0 ? (
               <Tooltip placement="top" title="Download">
@@ -3292,6 +3405,52 @@ export default function Leads({
           />
         </div>
       </Modal>
+
+      {/* View Lead Drawer */}
+      <Drawer
+        title={
+          <span
+            style={{ fontSize: "16px", fontWeight: "600", color: "#1e293b" }}
+          >
+            Lead Details
+          </span>
+        }
+        width={800}
+        onClose={() => {
+          setIsOpenViewDrawer(false);
+          setViewLeadItem(null);
+        }}
+        open={isOpenViewDrawer}
+        styles={{
+          body: {
+            padding: 0,
+            background: "#f8fafc",
+          },
+          header: {
+            borderBottom: "1px solid #e2e8f0",
+          },
+        }}
+      >
+        {viewLeadItem && <ViewLeadDetails leadData={viewLeadItem} />}
+      </Drawer>
+
+      <FollowUpDrawerForm
+        isOpen={isOpenFollowUpDrawer}
+        onClose={() => setIsOpenFollowUpDrawer(false)}
+        leadDetails={selectedLeadForFollowUp}
+        commentsHistory={followupHistory}
+        leadId={selectedLeadForFollowUp?.id}
+        leadHistoryId={leadHistoryId}
+        onUpdateSuccess={() => {
+          // If update is successful, we don't automatically have the new history.
+          // In a real scenario, we might want to refetch the leads table or close the drawer.
+          // For now, closing the drawer is fine.
+          setIsOpenFollowUpDrawer(false);
+          // refresh leads to show updated followup date if necessary
+          if (refreshLeadFollowUp) refreshLeadFollowUp();
+          if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
+        }}
+      />
     </div>
   );
 }

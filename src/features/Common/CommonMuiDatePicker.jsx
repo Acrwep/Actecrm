@@ -9,6 +9,11 @@ export default function CommonMuiDatePicker({
   required,
   onChange,
   value,
+  height,
+  fontSize,
+  labelFontSize,
+  labelMarginTop,
+  iconSize,
   error,
   errorFontSize,
   disablePreviousDates,
@@ -131,13 +136,13 @@ export default function CommonMuiDatePicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "42px !important",
+                height: height || "42px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                marginTop: "3px",
+                fontSize: labelFontSize || "13px",
+                marginTop: labelMarginTop || "3px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
@@ -145,15 +150,15 @@ export default function CommonMuiDatePicker({
               // value font
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
                 marginTop: "3px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
               },
               "& .MuiSvgIcon-root": {
-                fontSize: "20px",
+                fontSize: iconSize || "20px",
                 marginTop: "-1px",
               },
               /** ✅ Correct border overrides */
