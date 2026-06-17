@@ -146,8 +146,7 @@ const AddNewLead = forwardRef(
         is_active: 0,
       },
     ]);
-    const [leadStatus, setLeadStatus] = useState(null);
-    const [leadStatusError, setLeadStatusError] = useState("");
+    const [leadTemperature, setLeadTemperature] = useState(null);
     const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
     const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
     const followUpStatusOptions = [
@@ -348,7 +347,7 @@ const AddNewLead = forwardRef(
         setLeadSource(updateLeadItem.lead_type_id);
         getLeadSubSourceData(updateLeadItem.lead_type_id);
         setLeadSubSource(updateLeadItem?.lead_sub_source);
-        setLeadStatus(updateLeadItem.lead_status_id);
+        setLeadTemperature(updateLeadItem.lead_status_id);
         // if (
         //   updateLeadItem.lead_status_id == 4 ||
         //   updateLeadItem.lead_status_id == 5
@@ -835,7 +834,6 @@ const AddNewLead = forwardRef(
         leadSource == 2 || leadSource == 3
           ? ""
           : selectValidator(leadSubSource);
-      const leadStatusValidate = selectValidator(leadStatus);
       const regionIdValidate = selectValidator(regionId);
       const branchValidate = selectValidator(branch);
       const batchTrackValidate = selectValidator(batchTrack);
@@ -845,17 +843,10 @@ const AddNewLead = forwardRef(
       const contactModeValidate = updateLeadItem
         ? ""
         : selectValidator(contactMode);
-      // const nxtFollowupDateValidate =
-      //   contactMode == 6 ||
-      //   followUpStatusId == 2 ||
-      //   followUpStatusId == null ||
-      //   followUpStatusId == ""
-      //     ? ""
-      //     : selectValidator(nxtFollowupDate);
+      const nxtFollowupDateValidate =
+        contactMode == 6 ? "" : selectValidator(nxtFollowupDate);
       // const followUpStatusIdValidate =
-      //   contactMode == 6 || followUpStatusId == 2
-      //     ? ""
-      //     : selectValidator(followUpStatusId);
+      //   contactMode == 6 ? "" : selectValidator(followUpStatusId);
       const commentsValidate = addressValidator(comments);
 
       if (email && emailAndMobileValidation.email == 0) {
@@ -893,9 +884,9 @@ const AddNewLead = forwardRef(
       setPrimaryFeesError(primaryFeesValidate);
       setLeadSourceError(leadSourceValidate);
       setLeadSubSourceError(leadSubSourceValidate);
-      setLeadStatusError(leadStatusValidate);
       setCommunicationStatusError(communicationStatusValidate);
       setContactModeError(contactModeValidate);
+      setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
       setBatchTrackError(batchTrackValidate);
@@ -913,9 +904,9 @@ const AddNewLead = forwardRef(
         primaryFeesValidate ||
         leadSourceValidate ||
         leadSubSourceValidate ||
-        leadStatusValidate ||
         communicationStatusValidate ||
         contactModeValidate ||
+        nxtFollowupDateValidate ||
         regionIdValidate ||
         branchValidate ||
         batchTrackValidate ||
@@ -932,9 +923,10 @@ const AddNewLead = forwardRef(
           primaryCourseValidate,
           primaryFeesValidate,
           leadSourceValidate,
-          leadStatusValidate,
+          leadSubSourceValidate,
           communicationStatusValidate,
           contactModeValidate,
+          nxtFollowupDateValidate,
           regionIdValidate,
           branchValidate,
           batchTrackValidate,
@@ -979,16 +971,16 @@ const AddNewLead = forwardRef(
               ? liveLeadItem.domain_origin
               : "Direct",
         lead_type_id: leadSource,
-        lead_status_id: leadStatus,
+        lead_status_id: leadTemperature,
         lead_sub_source: leadSubSource,
         referral_name: "",
-        lead_action_id: contactMode == 6 ? 2 : 1,
+        lead_action_id: followUpStatusId,
         is_today_followup: addTodayFollowup
           ? formatToBackendIST(new Date())
           : null,
         // ...(updateLeadItem && {
         //   is_previous_junk:
-        //     isPreviousJunk && leadStatus != 4 && leadStatus != 5,
+        //     isPreviousJunk && leadTemperature != 4 && leadTemperature != 5,
         // }),
         is_previous_junk: false,
         communication_status: communicationStatus,
@@ -1063,7 +1055,7 @@ const AddNewLead = forwardRef(
         }
       } else {
         //---------------lead create--------------
-        // if (leadStatus == 4 || leadStatus == 5) {
+        // if (leadTemperature == 4 || leadTemperature == 5) {
         //   handleMoveLiveLeadToJunk(saveType);
         //   return;
         // }
@@ -1071,7 +1063,7 @@ const AddNewLead = forwardRef(
           await createLead(payload);
           CommonMessage("success", "Lead created");
           setTimeout(() => {
-            formReset();
+            formReset(true);
             if (liveLeadItem) {
               handleAssignLiveLead();
             }
@@ -1124,12 +1116,13 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const formReset = () => {
+    const formReset = (isSuccess = false) => {
       if (updateLeadItem) {
         callgetLeadsApi();
-        navigate("/leads/lead-manager", { state: "open leads" });
-      } else if (liveLeadItem) {
+      } else if (liveLeadItem && !isSuccess) {
         setActivePage("live_leads");
+      } else if (isSuccess) {
+        callgetLeadsApi(true);
       }
       setValidationTrigger(false);
       setName("");
@@ -1172,8 +1165,7 @@ const AddNewLead = forwardRef(
       setSecondaryFees("");
       setLeadSource(null);
       setLeadSourceError("");
-      setLeadStatus(null);
-      setLeadStatusError("");
+      setLeadTemperature(null);
       setNxtFollowupDate(null);
       setNxtFollowupDateError("");
       setCommunicationStatus(null);
@@ -1196,7 +1188,7 @@ const AddNewLead = forwardRef(
       setReferralName("");
       setPreferredMode(null);
       setPreferredBatch(1);
-      setCounsel(null);
+      setCounsel("Not Given");
       setLeadScore(null);
       setNextFollowupTime(null);
       setAddTodayFollowup(false);
@@ -2036,7 +2028,7 @@ const AddNewLead = forwardRef(
                         setCommunicationStatus(value);
                         setContactMode(null);
                         setCounsel("Not Given");
-                        setLeadStatus(null);
+                        setLeadTemperature(null);
                         setFollowUpStatusId(null);
                         setNxtFollowupDate(null);
                         setNextFollowupTime(null);
@@ -2045,7 +2037,6 @@ const AddNewLead = forwardRef(
                         if (validationTrigger) {
                           setCommunicationStatusError(selectValidator(value));
                           setContactModeError(selectValidator(null));
-                          setLeadStatusError(selectValidator(null));
                         }
                       }}
                       options={communicationStatusOptions}
@@ -2083,10 +2074,11 @@ const AddNewLead = forwardRef(
                         setContactMode(value);
                         if (value == 5) {
                           setComments(comments == "Junk" ? "" : comments);
-                          setLeadStatus(1);
+                          setLeadTemperature(1);
                           setFollowUpStatusId(1);
                         } else if (value == 6) {
-                          setLeadStatus(4);
+                          setLeadTemperature(4);
+                          setFollowUpStatusId(null);
                           setNxtFollowupDate(null);
                           setNxtFollowupDateError("");
                           setNextFollowupTime(null);
@@ -2094,9 +2086,9 @@ const AddNewLead = forwardRef(
                           setComments("Junk");
                           setCommentsError("");
                           setExpectDateJoin(null);
-                          setLeadStatusError("");
                         } else {
-                          setLeadStatus(5);
+                          setLeadTemperature(5);
+                          setFollowUpStatusId(5);
                           setComments(comments == "Junk" ? "" : comments);
                         }
                         if (validationTrigger) {
@@ -2184,14 +2176,10 @@ const AddNewLead = forwardRef(
                       </li>
                     )}
                     onChange={(e) => {
-                      setLeadStatus(e.target.value);
-                      setFollowUpStatusId(1);
-                      if (validationTrigger) {
-                        setLeadStatusError(selectValidator(e.target.value));
-                      }
+                      setLeadTemperature(e.target.value);
                     }}
-                    value={leadStatus}
-                    error={leadStatusError}
+                    value={leadTemperature}
+                    error={""}
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
@@ -2296,7 +2284,10 @@ const AddNewLead = forwardRef(
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
-                    disabled={!permissions.includes("Assign Lead")}
+                    disabled={
+                      !permissions.includes("Assign Lead") ||
+                      (isReAssign == false && updateLeadItem)
+                    }
                   />
                 </div>
                 <div style={{ marginBottom: "24px" }}>
@@ -2340,7 +2331,7 @@ const AddNewLead = forwardRef(
                 }}
               >
                 <SectionHeader title="6. Follow-Up Planning" />
-                {/* <div style={{ marginBottom: "24px" }}>
+                <div style={{ marginBottom: "24px" }}>
                   <CommonSelectField
                     label="Follow-up Type"
                     required={true}
@@ -2348,31 +2339,14 @@ const AddNewLead = forwardRef(
                     onChange={(e) => {
                       const value = e.target.value;
                       setFollowUpStatusId(value);
-                      setFollowUpStatusIdError(selectValidator(value));
-                      if (value == 2) {
-                        setNxtFollowupDate(null);
-                        setNxtFollowupDateError("");
-                        setNextFollowupTime(null);
-                      }
                     }}
                     options={[
-                      {
-                        id: 1,
-                        name: "Highly Interested",
-                        color: "#16a34a",
-                      },
-                      { id: 8, name: "Interested", color: "#22c55e" },
-                      { id: 7, name: "Need Follow-up", color: "#f97316" },
-                      { id: 10, name: "Call Back Later", color: "#eab308" },
-                      { id: 9, name: "Only Enquiry", color: "#6b7280" },
-                      { id: 11, name: "No Response", color: "#dc2626" },
-                      {
-                        id: 3,
-                        name: "Service Not Availabe",
-                        color: "#4b5563",
-                      },
-                      { id: 5, name: "Not Interested", color: "#991b1b" },
-                      // { id: 2, name: "Lead Lost", color: "#111827" },
+                      { id: 5, name: "Sales Ready", color: "#dc2626" },
+                      { id: 1, name: "Highly Interested", color: "#f97316" },
+                      { id: 8, name: "Interested", color: "#eab308" },
+                      { id: 9, name: "Exploring", color: "#3b82f6" },
+                      { id: 10, name: "Not Responding", color: "#4b5563" },
+                      { id: 2, name: "Not Interested", color: "#111827" },
                     ]}
                     renderOption={(props, option) => (
                       <li {...props}>
@@ -2399,13 +2373,8 @@ const AddNewLead = forwardRef(
                     fontSize={"13px"}
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
-                    error={followUpStatusIdError}
-                    disabled={
-                      contactMode == 5 ||
-                      contactMode == 6 ||
-                      updateLeadItem ||
-                      leadStatus
-                    }
+                    error={""}
+                    disabled={true}
                   />
                 </div>
 
@@ -2418,17 +2387,14 @@ const AddNewLead = forwardRef(
                       setNxtFollowupDate(val);
                       setNxtFollowupDateError(selectValidator(val));
                     }}
-                    followUpStatus={parseInt(followUpStatusId)}
+                    leadTemperature={parseInt(leadTemperature)}
                     error={nxtFollowupDateError}
-                    height={"36px"}
-                    labelMarginTop={"1px"}
-                    disabled={
-                      contactMode == 6 ||
-                      followUpStatusId == null ||
-                      followUpStatusId == "" ||
-                      followUpStatusId == 2 ||
-                      updateLeadItem
-                    }
+                    height={"35px"}
+                    labelFontSize={"12px"}
+                    fontSize={"13px"}
+                    labelMarginTop={"0.5px"}
+                    iconSize={"16px"}
+                    disabled={contactMode == 6 || updateLeadItem}
                   />
                 </div>
                 <div style={{ marginBottom: "16px" }}>
@@ -2439,17 +2405,14 @@ const AddNewLead = forwardRef(
                     onChange={(val) => setNextFollowupTime(val)}
                     error={""}
                     onlyTime={true}
-                    height={"36px"}
-                    labelMarginTop={"1px"}
-                    disabled={
-                      contactMode == 6 ||
-                      followUpStatusId == null ||
-                      followUpStatusId == "" ||
-                      followUpStatusId == 2 ||
-                      updateLeadItem
-                    }
+                    height={"35px"}
+                    labelFontSize={"12px"}
+                    fontSize={"13px"}
+                    labelMarginTop={"0.5px"}
+                    iconSize={"16px"}
+                    disabled={contactMode == 6 || updateLeadItem}
                   />
-                </div> */}
+                </div>
 
                 {/* {followUpStatusId && (
                       <div style={{ marginBottom: "16px" }}>

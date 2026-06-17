@@ -496,13 +496,13 @@
 
 .leadfollwup_table_status_container.hot_priority {
   border: 1px solid #ffbb96;
-  background-color: #fff7e6;
+  background-color: #fa8c1613;
   color: #fa8c16;
 }
 
 .leadfollwup_table_status_container.medium_priority {
   border: 1px solid #ffe58f;
-  background-color: #fffbe6;
+  background-color: #d4b2061a;
   color: #d4b106;
 }
 
@@ -513,15 +513,15 @@
 }
 
 .leadfollwup_table_status_container.junk_priority {
-  border: 1px solid #d9d9d9;
-  background-color: #fafafa;
-  color: #8c8c8c;
+  border: 1px solid #991b1b34;
+  background-color: #991b1b13;
+  color: #991b1b;
 }
 .leadmanager_action_icon {
-  width: 16px;
-  height: 16px;
-  min-width: 16px;
-  min-height: 16px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1362,9 +1362,9 @@
   color: #2ed573;
 }
 .leads_bucket_container.valid_leads.active {
+  color: #fff;
   border-color: #2ed573;
   background-color: #2ed573;
-  color: #fff;
 }
 .leads_bucket_container.eligible_leads {
   border: 1px solid #f67e074f;

@@ -12,6 +12,8 @@ export default function CommonMuiDateTimePicker({
   value,
   onlyTime = false,
   height,
+  fontSize,
+  iconSize,
   labelFontSize,
   labelMarginTop,
   error,
@@ -105,7 +107,7 @@ export default function CommonMuiDateTimePicker({
                   color: error ? "#d32f2f" : "#5b69ca",
                 },
                 "& .MuiSvgIcon-root": {
-                  fontSize: "20px",
+                  fontSize: iconSize || "20px",
                   marginTop: "-1px",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
@@ -113,7 +115,9 @@ export default function CommonMuiDateTimePicker({
                 },
                 "& .MuiPickersOutlinedInput-root:hover .MuiPickersOutlinedInput-notchedOutline":
                   {
-                    borderColor: error ? "#d32f2f" : "rgba(128, 128, 128, 0.712)",
+                    borderColor: error
+                      ? "#d32f2f"
+                      : "rgba(128, 128, 128, 0.712)",
                   },
                 "& .MuiPickersOutlinedInput-root.Mui-focused .MuiPickersOutlinedInput-notchedOutline":
                   {
@@ -278,7 +282,7 @@ export default function CommonMuiDateTimePicker({
               },
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
                 marginTop: "3px",
               },
               "& .MuiPickersSectionList-sectionContent": {
@@ -287,6 +291,7 @@ export default function CommonMuiDateTimePicker({
               },
               "& .MuiSvgIcon-root": {
                 fontSize: "20px",
+                fontSize: iconSize || "20px",
                 marginTop: "-1px",
               },
               "& .MuiOutlinedInput-notchedOutline": {

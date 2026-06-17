@@ -522,6 +522,15 @@ export const getLeads = async (payload) => {
   }
 };
 
+export const getLeadById = async (lead_id) => {
+  try {
+    const response = await api.get(`/api/getLeadById?lead_id=${lead_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const downloadLeads = async (payload) => {
   try {
     const response = await api.post("/api/downloadLeads", payload);

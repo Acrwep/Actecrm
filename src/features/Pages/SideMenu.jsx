@@ -40,19 +40,9 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Leads",
+      title: "Lead Manager",
       icon: <PiHandCoins size={17} />,
-      path: "leads",
-      children: [
-        {
-          title: "Add Lead",
-          path: "leads/add-lead",
-        },
-        {
-          title: "Lead Manager",
-          path: "leads/lead-manager",
-        },
-      ],
+      path: "leads/lead-manager",
     },
     3: {
       title: "Customers",
@@ -113,19 +103,9 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Leads",
+      title: "Lead Manager",
       icon: <PiHandCoins size={17} />,
-      path: "leads",
-      children: [
-        {
-          title: "Add Lead",
-          path: "leads/add-lead",
-        },
-        {
-          title: "Lead Manager",
-          path: "leads/lead-manager",
-        },
-      ],
+      path: "leads/lead-manager",
     },
     3: {
       title: "Customers",

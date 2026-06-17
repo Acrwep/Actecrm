@@ -37,8 +37,8 @@ export default function FollowUpDrawerForm({
   const [communicationStatusError, setCommunicationStatusError] = useState("");
   const [contactMode, setContactMode] = useState(null);
   const [contactModeError, setContactModeError] = useState("");
-  const [actionId, setActionId] = useState(null);
-  const [actionIdError, setActionIdError] = useState("");
+  const [followupType, setFollowupType] = useState(null);
+  const [followupTypeError, setFollowupTypeError] = useState("");
   const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
   const [nxtFollowupDateError, setNxtFollowupDateError] = useState("");
   const [nextFollowupTime, setNextFollowupTime] = useState(null);
@@ -59,8 +59,8 @@ export default function FollowUpDrawerForm({
     setCommunicationStatusError("");
     setContactMode(null);
     setContactModeError("");
-    setActionId(null);
-    setActionIdError("");
+    setFollowupType(null);
+    setFollowupTypeError("");
     setNxtFollowupDate(null);
     setNxtFollowupDateError("");
     setNextFollowupTime(null);
@@ -77,23 +77,24 @@ export default function FollowUpDrawerForm({
     setValidationTrigger(true);
     const communicationStatusValidate = selectValidator(communicationStatus);
     const contactModeValidate = selectValidator(contactMode);
-    const actionValidate = selectValidator(actionId);
-    // const nxtFollowdateValidate =
-    //   actionId == 2 || actionId == null || actionId === ""
-    //     ? ""
-    //     : selectValidator(nxtFollowupDate);
+    const followupTypeValidate = selectValidator(followupType);
+    const nxtFollowdateValidate =
+      followupType == 2 || followupType == null || followupType === ""
+        ? ""
+        : selectValidator(nxtFollowupDate);
     const commentValidate = addressValidator(newComment);
 
     setCommunicationStatusError(communicationStatusValidate);
     setContactModeError(contactModeValidate);
-    setActionIdError(actionValidate);
-    // setNxtFollowupDateError(nxtFollowdateValidate);
+    setFollowupTypeError(followupTypeValidate);
+    setNxtFollowupDateError(nxtFollowdateValidate);
     setNewCommentError(commentValidate);
 
     if (
       communicationStatusValidate ||
       contactModeValidate ||
-      actionValidate ||
+      followupTypeValidate ||
+      nxtFollowdateValidate ||
       commentValidate
     )
       return;
@@ -112,15 +113,14 @@ export default function FollowUpDrawerForm({
       next_follow_up_date: nxtFollowupDate
         ? formatToBackendIST(nxtFollowupDate)
         : null,
-      lead_status_id: actionId,
+      lead_status_id: followupType,
       lead_id: leadId,
       communication_status: communicationStatus,
       contact_mode: contactMode,
-      next_follow_up_time: nextFollowupTime ? nextFollowupTime : null,
-      interest_rate: interestRate,
-      is_today_followup: addTodayFollowup
-        ? formatToBackendIST(new Date())
+      next_follow_up_time: nextFollowupTime
+        ? formatToBackendIST(nextFollowupTime)
         : null,
+      interest_rate: interestRate,
       comments: newComment,
       updated_by:
         converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
@@ -301,8 +301,8 @@ export default function FollowUpDrawerForm({
             <Col span={12}>
               <EllipsisTooltip
                 text={
-                  leadDetails && leadDetails.branche_name
-                    ? leadDetails.branche_name
+                  leadDetails && leadDetails.branch_name
+                    ? leadDetails.branch_name
                     : "-"
                 }
                 smallText={true}
@@ -381,15 +381,12 @@ export default function FollowUpDrawerForm({
           >
             {commentsHistory.map((item, index) => {
               const statusColors = {
-                "Highly Interested": "#16a34a",
-                Interested: "#22c55e",
-                "Need Follow-up": "#f97316",
-                "Call Back Later": "#eab308",
-                "Only Enquiry": "#6b7280",
-                "No Response": "#dc2626",
-                "Service Not Availabe": "#4b5563",
-                "Not Interested": "#991b1b",
-                "Lead Lost": "#111827",
+                "Sales Ready": "#dc2626",
+                "Highly Interested": "#f97316",
+                Interested: "#eab308",
+                Exploring: "#3b82f6",
+                "Not Responding": "#4b5563",
+                "Not Interested": "#111827",
               };
               const baseColor =
                 statusColors[item.lead_action_name] || "#4338ca";
@@ -606,19 +603,20 @@ export default function FollowUpDrawerForm({
                 const value = e.target.value;
                 setCommunicationStatus(value);
                 setContactMode(null);
-                setActionId(null);
+                setFollowupType(null);
                 setNxtFollowupDate(null);
                 setNextFollowupTime(null);
                 setAddTodayFollowup(false);
                 if (validationTrigger) {
                   setCommunicationStatusError(selectValidator(value));
                   setContactModeError(selectValidator(null));
-                  setActionIdError(selectValidator(null));
+                  setFollowupTypeError(selectValidator(null));
                 }
               }}
               options={communicationStatusOptions}
               error={communicationStatusError}
               height={"36px"}
+              fontSize={"13px"}
               labelFontSize={"13px"}
               errorFontSize={"10px"}
             />
@@ -641,8 +639,8 @@ export default function FollowUpDrawerForm({
                 const value = e.target.value;
                 setContactMode(value);
                 if (value == 5) {
-                  setActionId(10);
-                  setActionIdError("");
+                  setFollowupType(10);
+                  setFollowupTypeError("");
                 }
                 if (validationTrigger) {
                   setContactModeError(selectValidator(value));
@@ -651,6 +649,7 @@ export default function FollowUpDrawerForm({
               value={contactMode}
               error={contactModeError}
               height={"36px"}
+              fontSize={"13px"}
               labelFontSize={"13px"}
               errorFontSize={"10px"}
               disabled={!communicationStatus}
@@ -660,15 +659,16 @@ export default function FollowUpDrawerForm({
             <CommonSelectField
               label="Follow-up Type"
               required={true}
-              value={actionId}
+              value={followupType}
               onChange={(e) => {
                 const value = e.target.value;
-                setActionId(value);
-                setActionIdError(selectValidator(value));
+                setFollowupType(value);
+                setFollowupTypeError(selectValidator(value));
                 if (value == 2) {
                   setNxtFollowupDate(null);
                   setNxtFollowupDateError("");
                   setNextFollowupTime(null);
+                  setInterestRate(1);
                 }
               }}
               options={[
@@ -701,46 +701,49 @@ export default function FollowUpDrawerForm({
                 </li>
               )}
               height={"36px"}
+              fontSize={"13px"}
               labelFontSize={"13px"}
-              error={actionIdError}
+              error={followupTypeError}
               disabled={contactMode == 5 || contactMode == 6}
             />
           </Col>
-          {/* <Col span={8} style={{ marginTop: "24px" }}>
-              <CommonNxtFollowupDatePicker
-                label="Next Follow-up Date"
-                required={true}
-                value={nxtFollowupDate}
-                onChange={(val) => {
-                  setNxtFollowupDate(val);
-                  setNxtFollowupDateError(selectValidator(val));
-                }}
-                followUpStatus={parseInt(actionId)}
-                error={nxtFollowupDateError}
-                height={"36px"}
-                labelMarginTop={"1px"}
-                disabled={actionId == null || actionId === "" || actionId == 2}
-              />
-            </Col>
+          <Col span={8} style={{ marginTop: "24px" }}>
+            <CommonNxtFollowupDatePicker
+              label="Next Follow-up Date"
+              required={true}
+              value={nxtFollowupDate}
+              onChange={(val) => {
+                setNxtFollowupDate(val);
+                setNxtFollowupDateError(selectValidator(val));
+              }}
+              leadTemperature={parseInt(leadDetails?.lead_status_id)}
+              error={nxtFollowupDateError}
+              height={"36px"}
+              labelMarginTop={"1px"}
+              disabled={
+                followupType == null || followupType === "" || followupType == 2
+              }
+            />
+          </Col>
 
-            <Col span={8} style={{ marginTop: "24px" }}>
-              <CommonMuiDateTimePicker
-                label="Next Follow-up Time"
-                required={false}
-                value={nextFollowupTime}
-                onChange={(val) => setNextFollowupTime(val)}
-                error={""}
-                onlyTime={true}
-                height={"36px"}
-                labelMarginTop={"1px"}
-                disabled={
-                  contactMode == 6 ||
-                  actionId == null ||
-                  actionId === "" ||
-                  actionId == 2
-                }
-              />
-            </Col> */}
+          <Col span={8} style={{ marginTop: "24px" }}>
+            <CommonMuiDateTimePicker
+              label="Next Follow-up Time"
+              required={false}
+              value={nextFollowupTime}
+              onChange={(val) => setNextFollowupTime(val)}
+              error={""}
+              onlyTime={true}
+              height={"36px"}
+              labelMarginTop={"1px"}
+              disabled={
+                contactMode == 6 ||
+                followupType == null ||
+                followupType === "" ||
+                followupType == 2
+              }
+            />
+          </Col>
           <Col span={8} style={{ marginTop: "24px" }}>
             <p style={{ fontWeight: "500", fontSize: "13px", color: "gray" }}>
               Interest Rating
@@ -749,9 +752,10 @@ export default function FollowUpDrawerForm({
               style={{ marginTop: "6px", fontSize: "20px" }}
               value={interestRate}
               onChange={setInterestRate}
+              disabled={contactMode == 6 || followupType == 2}
             />
           </Col>
-          <Col span={9} style={{ marginTop: "40px" }}>
+          <Col span={9} style={{ marginTop: "20px" }}>
             <Checkbox
               checked={addTodayFollowup}
               onChange={(e) => setAddTodayFollowup(e.target.checked)}

@@ -34,7 +34,7 @@ import AssignLeads from "./AssignLeads";
 import AddNewLead from "./AddNewLead";
 import moment from "moment";
 
-export default function LeadManager({ type }) {
+export default function LeadManager() {
   const mounted = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +44,7 @@ export default function LeadManager({ type }) {
     (state) => state.liveleadselecteddates,
   );
 
-  const [activePage, setActivePage] = useState("leads");
+  const [activePage, setActivePage] = useState("add_lead");
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [editLeadItem, setEditLeadItem] = useState(null);
   const [isReAssignLead, setIsReAssignLead] = useState(false);
@@ -114,11 +114,11 @@ export default function LeadManager({ type }) {
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
     followup: false,
-    leads: true,
+    leads: false,
     live_leads: false,
     junk: false,
     assign_leads: false,
-    add_lead: false,
+    add_lead: true,
   });
 
   // For forcing remount
@@ -206,7 +206,7 @@ export default function LeadManager({ type }) {
       getAllDownlineUsersData(convertAsJson?.user_id);
       // getLeadAndFollowupCountData(childUsers);
     }
-  }, [childUsers, permissions, type, location.state]);
+  }, [childUsers, permissions, location.state]);
 
   useEffect(() => {
     if (location?.state === "open live_leads") {
@@ -217,21 +217,18 @@ export default function LeadManager({ type }) {
       setEditLeadItem(location.state.editItem);
       setIsReAssignLead(location.state.isReAssign);
       handleTabClick("add_lead");
-    } else if (type === "leads") {
-      if (activePage !== "leads" || !loadedTabs.leads) {
-        handleTabClick("leads");
-      }
-    } else if (type === "addlead") {
+    } else {
       if (
         activePage !== "add_lead" &&
         activePage !== "live_leads" &&
         activePage !== "assign_leads" &&
-        activePage !== "junk"
+        activePage !== "junk" &&
+        activePage !== "leads"
       ) {
         handleTabClick("add_lead");
       }
     }
-  }, [type, location.state]);
+  }, [location.state]);
 
   const isFetchingLiveLead = useRef(false);
   const liveLeadTimeout = useRef(null);
@@ -543,83 +540,63 @@ export default function LeadManager({ type }) {
     <div>
       <div className="settings_tabbutton_maincontainer">
         <div style={{ display: "flex", gap: "18px" }}>
-          {type === "leads" && (
-            <>
-              {/* <button
-                className={
-                  activePage === "followup"
-                    ? "settings_tab_activebutton"
-                    : "settings_tab_inactivebutton"
-                }
-                onClick={() => handleTabClick("followup")}
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                Lead Followup ( {followupCount} ){" "}
-              </button> */}
-
-              <button
-                className={
-                  activePage === "leads"
-                    ? "settings_tab_activebutton"
-                    : "settings_tab_inactivebutton"
-                }
-                onClick={() => handleTabClick("leads")}
-              >
-                <p>{`Leads (${leadCount})`}</p>
-              </button>
-            </>
+          {permissions.includes("Add Lead Button") && (
+            <button
+              className={
+                activePage === "add_lead"
+                  ? "settings_tab_activebutton"
+                  : "settings_tab_inactivebutton"
+              }
+              onClick={() => handleTabClick("add_lead")}
+            >
+              <p>Add Lead</p>
+            </button>
           )}
 
-          {type === "addlead" && (
-            <>
-              {permissions.includes("Add Lead Button") && (
-                <button
-                  className={
-                    activePage === "add_lead"
-                      ? "settings_tab_activebutton"
-                      : "settings_tab_inactivebutton"
-                  }
-                  onClick={() => handleTabClick("add_lead")}
-                >
-                  <p>Add Lead</p>
-                </button>
-              )}
+          <button
+            className={
+              activePage === "live_leads"
+                ? "livelead_tab_activebutton"
+                : "livelead_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("live_leads")}
+          >
+            <p>{`Live Leads (${liveLeadCount})`}</p>
+          </button>
 
-              <button
-                className={
-                  activePage === "live_leads"
-                    ? "livelead_tab_activebutton"
-                    : "livelead_tab_inactivebutton"
-                }
-                onClick={() => handleTabClick("live_leads")}
-              >
-                <p>{`Live Leads (${liveLeadCount})`}</p>
-              </button>
+          <button
+            className={
+              activePage === "assign_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("assign_leads")}
+          >
+            <p>{`Assign Leads (${assignLeadCount})`}</p>
+          </button>
 
-              <button
-                className={
-                  activePage === "assign_leads"
-                    ? "settings_tab_activebutton"
-                    : "settings_tab_inactivebutton"
-                }
-                onClick={() => handleTabClick("assign_leads")}
-              >
-                <p>{`Assign Leads (${assignLeadCount})`}</p>
-              </button>
+          <button
+            className={
+              activePage === "leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("leads")}
+          >
+            <p>{`Leads (${leadCount})`}</p>
+          </button>
 
-              {permissions.includes("Junk Leads Tab") && (
-                <button
-                  className={
-                    activePage === "junk"
-                      ? "settings_tab_activebutton"
-                      : "settings_tab_inactivebutton"
-                  }
-                  onClick={() => handleTabClick("junk")}
-                >
-                  <p>{`Junk (${junkLeadCount})`}</p>
-                </button>
-              )}
-            </>
+          {permissions.includes("Junk Leads Tab") && (
+            <button
+              className={
+                activePage === "junk"
+                  ? "settings_tab_activebutton"
+                  : "settings_tab_inactivebutton"
+              }
+              onClick={() => handleTabClick("junk")}
+            >
+              <p>{`Junk (${junkLeadCount})`}</p>
+            </button>
           )}
         </div>
 
@@ -674,9 +651,9 @@ export default function LeadManager({ type }) {
             setLeadCountLoading={setLeadCountLoading}
             setRefreshToggle={setRefreshToggle}
             onEditLead={(itemData, isReAssign) => {
-              navigate("/leads/add-lead", {
-                state: { editItem: itemData, isReAssign: isReAssign },
-              });
+              setEditLeadItem(itemData);
+              setIsReAssignLead(isReAssign);
+              handleTabClick("add_lead");
             }}
           />
         </div>
@@ -750,11 +727,13 @@ export default function LeadManager({ type }) {
             liveLeadItem={pickLeadItem}
             updateLeadItem={editLeadItem}
             isReAssign={isReAssignLead}
-            callgetLeadsApi={(is_refreshjunk, saveType) => {
+            callgetLeadsApi={(dontSwitchTab) => {
               setPickLeadItem(null);
               setEditLeadItem(null);
               setIsReAssignLead(false);
-              navigate("/leads/lead-manager", { state: "open leads" });
+              if (!dontSwitchTab) {
+                handleTabClick("leads");
+              }
               refreshLeads();
               // refreshLeadFollowUp();
             }}

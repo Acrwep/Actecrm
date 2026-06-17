@@ -38,34 +38,51 @@ export default function CommonCertificateViewer({
 
   const generatePDF = async () => {
     if (!certificateRef.current) return;
-    setLoading(true);
 
-    const canvas = await html2canvas(certificateRef.current, {
-      scale: 3, // you can lower to 1.5 if still big
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
+    try {
+      setLoading(true);
 
-    // Convert canvas to JPEG with compression
-    const imgData = canvas.toDataURL("image/jpeg", 0.9); // ✅ 0.6 compression reduces size massively
+      // Wait for all fonts to load
+      await document.fonts.ready;
 
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: [780, 1220],
-      compress: true, // ✅ Enable PDF compression
-      hotfixes: ["px_scaling"],
-    });
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+      // Use PNG for sharper text
+      const imgData = canvas.toDataURL("image/png");
 
-    // Insert JPEG instead of PNG
-    pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pdfHeight);
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
 
-    pdf.save(`${candidateName}_Acte_Certificate.pdf`);
-    setLoading(false);
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        0,
+        0,
+        pageWidth,
+        pageHeight,
+        undefined,
+        "FAST",
+      );
+
+      pdf.save(`${candidateName}_Acte_Certificate.pdf`);
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

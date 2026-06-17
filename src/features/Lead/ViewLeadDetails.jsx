@@ -1,5 +1,5 @@
-import React from "react";
-import { Row, Col, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import { Row, Col, Typography, Spin, Rate } from "antd";
 import { Country, State } from "country-state-city";
 import moment from "moment";
 import {
@@ -10,10 +10,35 @@ import {
   MdEventNote,
   MdSearch,
 } from "react-icons/md";
+import { getLeadById } from "../ApiService/action";
+import CommonAvatar from "../Common/CommonAvatar";
 
 const { Text } = Typography;
 
-export default function ViewLeadDetails({ leadData }) {
+export default function ViewLeadDetails({ leadData: initialData }) {
+  const [leadData, setLeadData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialData?.id) {
+      fetchLeadDetails();
+    }
+  }, [initialData]);
+
+  const fetchLeadDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await getLeadById(initialData.id);
+      if (res?.data?.data) {
+        setLeadData(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!leadData) return null;
 
   const renderField = (label, value) => (
@@ -103,29 +128,6 @@ export default function ViewLeadDetails({ leadData }) {
         return "Data Correct But No Response";
       case 6:
         return "Data Incorrect";
-      default:
-        return "-";
-    }
-  };
-
-  const getFollowUpStatusName = (id) => {
-    switch (id) {
-      case 1:
-        return "Highly Interested";
-      case 8:
-        return "Interested";
-      case 7:
-        return "Need Follow-up";
-      case 10:
-        return "Call Back Later";
-      case 9:
-        return "Only Enquiry";
-      case 11:
-        return "No Response";
-      case 3:
-        return "Service Not Availabe";
-      case 5:
-        return "Not Interested";
       default:
         return "-";
     }
@@ -274,20 +276,9 @@ export default function ViewLeadDetails({ leadData }) {
           title="Screening"
         />
         <Row gutter={24}>
-          <Col span={8}>
-            {renderField(
-              "Communication",
-              getCommunicationStatusName(leadData.communication_status),
-            )}
-          </Col>
-          <Col span={8}>
-            {renderField("Mode", getContactModeName(leadData.contact_mode))}
-          </Col>
+          <Col span={8}>{renderField("Lead Temp.", leadData.lead_status)}</Col>
           <Col span={8}>
             {renderField("Counsel Given", leadData?.counsel || "Not Given")}
-          </Col>
-          <Col span={8}>
-            {renderField("Lead Priority", leadData.lead_status)}
           </Col>
           <Col span={8}>
             {renderField(
@@ -322,43 +313,252 @@ export default function ViewLeadDetails({ leadData }) {
         </Row>
       </div>
 
-      {/* 6. Follow-Up Planning */}
+      {/* 6. Follow-Up History */}
       <div style={cardStyle}>
         <HeaderTitle
           icon={<MdEventNote size={18} color="#2563eb" />}
-          title="Follow-up Planning"
+          title="Followup History"
         />
-        <Row gutter={24}>
-          <Col span={8}>
-            {renderField(
-              "Follow-up Type",
-              getFollowUpStatusName(leadData.lead_action_id),
-            )}
-          </Col>
-          <Col span={8}>
-            {renderField(
-              "Next Follow-up Date",
-              formatDateTime(leadData.next_follow_up_date, "DD MMM YYYY"),
-            )}
-          </Col>
-          <Col span={8}>
-            {renderField(
-              "Next Follow-up Time",
-              leadData.next_follow_up_time
-                ? moment(leadData.next_follow_up_time, "HH:mm:ss").format(
-                    "hh:mm A",
-                  )
-                : "-",
-            )}
-          </Col>
-          <Col span={8}>
-            {renderField(
-              "Interest Rating",
-              leadData.interest_rate ? `${leadData.interest_rate} / 5` : "-",
-            )}
-          </Col>
-          <Col span={24}>{renderField("Remarks", leadData.comments)}</Col>
-        </Row>
+        <div style={{ padding: "8px 12px 0 12px" }}>
+          {loading && !leadData?.history ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <Spin />
+            </div>
+          ) : leadData?.history && leadData.history.length > 0 ? (
+            <div
+              className="leadmanager_comments_maincontainer"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+                padding: "12px 12px",
+              }}
+            >
+              {leadData.history.map((item, index) => {
+                const statusColors = {
+                  "Sales Ready": "#dc2626",
+                  "Highly Interested": "#f97316",
+                  Interested: "#eab308",
+                  Exploring: "#3b82f6",
+                  "Not Responding": "#4b5563",
+                  "Not Interested": "#111827",
+                };
+                const baseColor =
+                  statusColors[item.lead_action_name] || "#4338ca";
+
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      background: "#f8fafc",
+                      position: "relative",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <CommonAvatar
+                          itemName={item.user_name || "Unknown"}
+                          avatarSize={32}
+                        />
+                        <div>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontWeight: 600,
+                              fontSize: "13px",
+                              color: "#1e293b",
+                            }}
+                          >
+                            {item.user_name
+                              ? `${item.updated_by} - ${item.user_name}`
+                              : "-"}
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "11px",
+                              color: "#64748b",
+                            }}
+                          >
+                            {item.updated_date
+                              ? moment(item.updated_date).format(
+                                  "MMM DD, YYYY hh:mm A",
+                                )
+                              : item.created_date
+                                ? moment(item.created_date).format(
+                                    "MMM DD, YYYY hh:mm A",
+                                  )
+                                : "-"}
+                          </p>
+                        </div>
+                      </div>
+                      {item.lead_action_name && (
+                        <div
+                          style={{
+                            background: `${baseColor}1A`,
+                            color: baseColor,
+                            border: `1px solid ${baseColor}`,
+                            padding: "4px 10px",
+                            borderRadius: "20px",
+                            fontSize: "11px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.lead_action_name}
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "12px",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Communication:
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            background: item.communication_status_name
+                              ? "#dcfce7"
+                              : "#f1f5f9",
+                            color: item.communication_status_name
+                              ? "#166534"
+                              : "#334155",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          {item.communication_status_name || "-"}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Mode:
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            background: item.contact_mode_name
+                              ? "#fef3c7"
+                              : "#f1f5f9",
+                            color: item.contact_mode_name
+                              ? "#92400e"
+                              : "#334155",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          {item.contact_mode_name || "-"}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Interest Rate:
+                        </span>
+                        <Rate
+                          disabled
+                          value={item.interest_rate || 0}
+                          style={{ fontSize: "12px", color: "#f59e0b" }}
+                        />
+                      </div>
+
+                      {item.next_follow_up_date && (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span style={{ fontSize: "11px", color: "gray" }}>
+                            Next Follow-up:
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "#1677ff",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {moment(item.next_follow_up_date).format(
+                              "DD MMM YYYY",
+                            )}{" "}
+                            {item.next_followup_time &&
+                            item.next_followup_time !== "00:00:00"
+                              ? moment(
+                                  item.next_followup_time,
+                                  "HH:mm:ss",
+                                ).format("hh:mm A")
+                              : ""}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {item.comments && (
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          color: "#334155",
+                          background: "#fff",
+                          padding: "10px",
+                          borderRadius: "6px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        {item.comments}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <Text type="secondary">No history available</Text>
+          )}
+        </div>
       </div>
     </div>
   );

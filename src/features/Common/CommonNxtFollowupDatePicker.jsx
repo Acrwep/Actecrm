@@ -9,10 +9,12 @@ export default function CommonNxtFollowupDatePicker({
   required,
   onChange,
   value,
+  fontSize,
   height,
   labelFontSize,
   labelMarginTop,
-  followUpStatus,
+  iconSize,
+  leadTemperature,
   error,
   errorFontSize,
   disablePreviousDates,
@@ -46,25 +48,21 @@ export default function CommonNxtFollowupDatePicker({
 
           let maxDays = 0;
 
-          switch (followUpStatus) {
-            case 1:
-              maxDays = 3;
-              break;
-
-            case 8:
+          switch (leadTemperature) {
+            case 5:
               maxDays = 7;
               break;
 
-            case 7:
-            case 10:
-            case 11:
+            case 1:
               maxDays = 15;
               break;
 
-            case 9:
-            case 3:
-            case 5:
+            case 2:
               maxDays = 30;
+              break;
+
+            case 3:
+              maxDays = 45;
               break;
 
             default:
@@ -147,7 +145,7 @@ export default function CommonNxtFollowupDatePicker({
               // value font
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
                 marginTop: "3px",
               },
               "& .MuiPickersSectionList-sectionContent": {
@@ -155,7 +153,7 @@ export default function CommonNxtFollowupDatePicker({
                 fontSize: "13px",
               },
               "& .MuiSvgIcon-root": {
-                fontSize: "20px",
+                fontSize: iconSize || "20px",
                 marginTop: "-1px",
               },
               /** ✅ Correct border overrides */

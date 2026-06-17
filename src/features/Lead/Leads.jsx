@@ -56,7 +56,7 @@ import {
   downloadLeads,
   getAllDownlineUsers,
   getLeads,
-  getLeadFollowUps,
+  getLeadById,
   getLeadsCountByUserIds,
   getTableColumns,
   getUsers,
@@ -154,24 +154,22 @@ export default function Leads({
   const openFollowUpForm = async (record) => {
     setSelectedLeadForFollowUp(record);
     try {
-      const payload = {
-        phone: record.phone, // filter by phone to get exactly this lead's followup history
-        page: 1,
-        limit: 10,
-      };
-      const response = await getLeadFollowUps(payload);
-      const followup_data = response?.data?.data?.data || [];
-      if (followup_data.length > 0) {
-        const matchingLead = followup_data[0]; // Assuming it's the exact match
+      const response = await getLeadById(record.id);
+      const leadDetails = response?.data?.data;
+      if (
+        leadDetails &&
+        leadDetails.history &&
+        leadDetails.history.length > 0
+      ) {
         const merged = [
-          ...matchingLead.histories.map((item) => ({
+          ...leadDetails.history.map((item) => ({
             ...item,
-            date: item.updated_date,
+            date: item.updated_date || item.created_date,
           })),
         ];
         merged.sort((a, b) => new Date(b.date) - new Date(a.date));
         setFollowupHistory(merged);
-        setLeadHistoryId(matchingLead.lead_history_id);
+        setLeadHistoryId(leadDetails.lead_history_id || null);
       } else {
         setFollowupHistory([]);
         setLeadHistoryId(null);
@@ -314,39 +312,69 @@ export default function Leads({
         return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    {
-      title: "Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 120,
-      render: (text, record) => {
-        return (
-          <>
-            {record.re_assigned_date ? (
-              <Badge
-                size="small"
-                count={moment(record.re_assigned_date).format(
-                  "DD/MM/YYYY HH:mm:ss",
-                )}
-                offset={[0, 0]}
-                color="#1e90ff"
-                style={{ fontSize: "10px" }}
-              >
-                <div style={{ fontSize: "12px", marginTop: "9px" }}>
-                  <EllipsisTooltip
-                    text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
-                  />
+    ...(leadBucketName === "Interested Leads"
+      ? [
+          {
+            title: "Next Follow Up",
+            key: "next_follow_up_date",
+            dataIndex: "next_follow_up_date",
+            width: 150,
+            render: (text, record, index) => {
+              return (
+                <div
+                  className="leadfollowup_tabledateContainer"
+                  onClick={() => {
+                    if (!permissions.includes("Update Lead Followup")) {
+                      CommonMessage("error", "Access Denied");
+                      return;
+                    }
+                    openFollowUpForm(record);
+                  }}
+                >
+                  <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                  <div className="leadfollowup_tablecommentContainer">
+                    <p>{1}</p>
+                  </div>
                 </div>
-              </Badge>
-            ) : (
-              <EllipsisTooltip
-                text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
-              />
-            )}
-          </>
-        );
-      },
-    },
+              );
+            },
+          },
+        ]
+      : [
+          {
+            title: "Created At",
+            key: "created_date",
+            dataIndex: "created_date",
+            width: 170,
+            render: (text, record) => {
+              return (
+                <>
+                  {record.re_assigned_date ? (
+                    <Badge
+                      size="small"
+                      count={moment(record.re_assigned_date).format(
+                        "DD/MM/YYYY HH:mm:ss",
+                      )}
+                      offset={[0, 0]}
+                      color="#1e90ff"
+                      style={{ fontSize: "10px" }}
+                    >
+                      <div style={{ fontSize: "12px", marginTop: "9px" }}>
+                        <EllipsisTooltip
+                          text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+                        />
+                      </div>
+                    </Badge>
+                  ) : (
+                    <EllipsisTooltip
+                      text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
+                    />
+                  )}
+                </>
+              );
+            },
+          },
+        ]),
     {
       title: "Candidate Name",
       key: "name",
@@ -557,16 +585,6 @@ export default function Leads({
               />
             </Tooltip>
 
-            {record.is_customer_reg === 0 && (
-              <Tooltip placement="bottom" title="Followup Lead">
-                <MdOutlineDateRange
-                  className="leadmanager_action_icon"
-                  color="#f59e0b"
-                  onClick={() => openFollowUpForm(record)}
-                />
-              </Tooltip>
-            )}
-
             {permissions.includes("Edit Lead Button") &&
               isShowEdit &&
               record.is_customer_reg === 0 && (
@@ -669,9 +687,31 @@ export default function Leads({
     }
   }, [columns]);
 
+  const prevTargetPageName = useRef(
+    leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads",
+  );
+
   useEffect(() => {
     setTableColumns(nonChangeColumns);
   }, [permissions, isShowEdit]);
+
+  useEffect(() => {
+    if (loginUserId) {
+      const currentPage =
+        leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads";
+      if (currentPage !== prevTargetPageName.current) {
+        const updatedColumns = nonChangeColumns.map((col) => ({
+          ...col,
+          isChecked: true,
+        }));
+        setColumns(updatedColumns);
+        setTableColumns(nonChangeColumns);
+
+        getTableColumnsData(loginUserId);
+        prevTargetPageName.current = currentPage;
+      }
+    }
+  }, [leadBucketName, loginUserId]);
 
   useEffect(() => {
     getUsersData();
@@ -694,7 +734,7 @@ export default function Leads({
   };
 
   useEffect(() => {
-    if (activePage !== "leads") return;
+    if (activePage !== "leads" && activePage !== "add_lead") return;
 
     if (permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
@@ -755,7 +795,13 @@ export default function Leads({
         return updateTableColumnsData();
       }
 
-      const filterPage = data.find((f) => f.page_name === "Leads");
+      const filterPage = data.find(
+        (f) =>
+          f.page_name ===
+          (leadBucketName === "Interested Leads"
+            ? "Interested Leads"
+            : "Leads"),
+      );
       if (!filterPage) {
         setUpdateTableId(null);
         return updateTableColumnsData();
@@ -799,57 +845,97 @@ export default function Leads({
                   return <EllipsisTooltip text={text} />;
                 },
               };
+            case "next_follow_up_date":
             case "created_date":
-              return {
-                ...col,
-                width: 170,
-                render: (text, record) => {
-                  return (
-                    <>
-                      {record.re_assigned_date ? (
+              return leadBucketName === "Interested Leads"
+                ? {
+                    ...col,
+                    title: "Next Follow Up",
+                    key: "next_follow_up_date",
+                    dataIndex: "next_follow_up_date",
+                    width: 150,
+                    // render: (text, record) => {
+                    //   return <p>{text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}</p>;
+                    // },
+                    render: (text, record, index) => {
+                      return (
                         <div
-                          style={{
-                            display: "flex",
-                            // alignItems: "center",
-                            flexDirection: "column",
-                            position: "relative",
+                          className="leadfollowup_tabledateContainer"
+                          onClick={() => {
+                            if (!permissions.includes("Update Lead Followup")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
+                            openFollowUpForm(record);
                           }}
                         >
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "-10px",
-                              left: "12px",
-                            }}
-                          >
-                            <Badge
-                              size="small"
-                              count={moment(record.re_assigned_date).format(
-                                "DD/MM/YYYY - HH:mm:ss",
-                              )}
-                              offset={[0, 0]}
-                              color="#1e90ff"
-                              style={{ fontSize: "10px" }}
-                            ></Badge>
+                          <p>
+                            {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                          </p>
+                          <div className="leadfollowup_tablecommentContainer">
+                            <p>{1}</p>
                           </div>
+                        </div>
+                      );
+                    },
+                  }
+                : {
+                    ...col,
+                    title: "Created At",
+                    key: "created_date",
+                    dataIndex: "created_date",
+                    width: 170,
+                    render: (text, record) => {
+                      return (
+                        <>
+                          {record.re_assigned_date ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                // alignItems: "center",
+                                flexDirection: "column",
+                                position: "relative",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: "-10px",
+                                  left: "12px",
+                                }}
+                              >
+                                <Badge
+                                  size="small"
+                                  count={moment(record.re_assigned_date).format(
+                                    "DD/MM/YYYY - HH:mm:ss",
+                                  )}
+                                  offset={[0, 0]}
+                                  color="#1e90ff"
+                                  style={{ fontSize: "10px" }}
+                                ></Badge>
+                              </div>
 
-                          <div style={{ fontSize: "12px", marginTop: "9px" }}>
+                              <div
+                                style={{ fontSize: "12px", marginTop: "9px" }}
+                              >
+                                <EllipsisTooltip
+                                  text={moment(text).format(
+                                    "DD/MM/YYYY - HH:mm:ss",
+                                  )}
+                                />
+                              </div>
+                            </div>
+                          ) : (
                             <EllipsisTooltip
                               text={moment(text).format(
                                 "DD/MM/YYYY - HH:mm:ss",
                               )}
                             />
-                          </div>
-                        </div>
-                      ) : (
-                        <EllipsisTooltip
-                          text={moment(text).format("DD/MM/YYYY - HH:mm:ss")}
-                        />
-                      )}
-                    </>
-                  );
-                },
-              };
+                          )}
+                        </>
+                      );
+                    },
+                  };
             case "country":
               return {
                 ...col,
@@ -943,10 +1029,10 @@ export default function Leads({
             case "lead_status":
               return {
                 ...col,
+                title: "Lead Temp.",
                 sorter: (a, b) =>
                   (a.lead_status || "").localeCompare(b.lead_status || ""),
                 sortDirections: ["ascend", "descend"],
-                title: "Lead Priority",
                 width: 140,
                 render: (text) => {
                   const statusClass =
@@ -996,14 +1082,14 @@ export default function Leads({
             case "action":
               return {
                 ...col,
-                width: 160,
+                width: 140,
                 render: (text, record) => {
                   const isAfter45Days = checkIsAfter45Days(record.created_date);
                   return (
                     <div className="leadmanager_actionbuttonContainer">
                       <Tooltip placement="bottom" title="View Lead Details">
                         <FaRegEye
-                          size={15}
+                          size={16}
                           style={{ cursor: "pointer" }}
                           onClick={() => {
                             setViewLeadItem(record);
@@ -1011,16 +1097,6 @@ export default function Leads({
                           }}
                         />
                       </Tooltip>
-
-                      {record.is_customer_reg === 0 && (
-                        <Tooltip placement="bottom" title="Followup Lead">
-                          <MdOutlineDateRange
-                            className="leadmanager_action_icon"
-                            color="#f59e0b"
-                            onClick={() => openFollowUpForm(record)}
-                          />
-                        </Tooltip>
-                      )}
 
                       {permissions.includes("Edit Lead Button") &&
                         isShowEdit &&
@@ -1152,7 +1228,8 @@ export default function Leads({
 
     const payload = {
       user_id: convertAsJson?.user_id,
-      page_name: "Leads",
+      page_name:
+        leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads",
       column_names: columns,
     };
     console.log("updateTableColumnsData", payload);
@@ -1256,11 +1333,7 @@ export default function Leads({
           name: "Interested Leads",
           count: bucket_counts["interested_leads"] || 0,
         },
-        {
-          id: "sales_ready",
-          name: "Sales Ready",
-          count: bucket_counts["sales_ready"] || 0,
-        },
+
         {
           id: "joinings",
           name: "Joinings",
@@ -1277,7 +1350,7 @@ export default function Leads({
       }));
 
       setLeadData(updatedData);
-      setLeadCount(paginations.total || 0);
+      setLeadCount(bucket_counts["all"] || 0);
       setPagination({
         page: pageNumber,
         limit: limit,
@@ -2357,27 +2430,20 @@ export default function Leads({
                           labelMarginTop="0px"
                           labelFontSize="12px"
                           options={[
+                            { id: 5, name: "Sales Ready", color: "#dc2626" },
                             {
                               id: 1,
                               name: "Highly Interested",
-                              color: "#16a34a",
+                              color: "#f97316",
                             },
-                            { id: 2, name: "Interested", color: "#22c55e" },
-                            { id: 3, name: "Need Follow-up", color: "#f97316" },
+                            { id: 8, name: "Interested", color: "#eab308" },
+                            { id: 9, name: "Exploring", color: "#3b82f6" },
                             {
-                              id: 4,
-                              name: "Call Back Later",
-                              color: "#eab308",
-                            },
-                            { id: 5, name: "Only Enquiry", color: "#6b7280" },
-                            { id: 6, name: "No Response", color: "#dc2626" },
-                            {
-                              id: 7,
-                              name: "Service Not Availabe",
+                              id: 10,
+                              name: "Not Responding",
                               color: "#4b5563",
                             },
-                            { id: 8, name: "Not Interested", color: "#991b1b" },
-                            { id: 9, name: "Lead Lost", color: "#111827" },
+                            { id: 2, name: "Not Interested", color: "#111827" },
                           ]}
                           onChange={() => {}}
                           value={null}
@@ -2577,7 +2643,7 @@ export default function Leads({
           // scroll={{ x: 3350 }}
           scroll={{
             x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
+              (total, col) => total + (Number(col.width) || 150),
               0,
             ),
           }}
@@ -2750,7 +2816,10 @@ export default function Leads({
                 const payload = {
                   user_id: loginUserId,
                   id: updateTableId,
-                  page_name: "Leads",
+                  page_name:
+                    leadBucketName === "Interested Leads"
+                      ? "Interested Leads"
+                      : "Leads",
                   column_names: columns,
                 };
                 try {
@@ -3440,13 +3509,21 @@ export default function Leads({
         leadId={selectedLeadForFollowUp?.id}
         leadHistoryId={leadHistoryId}
         onUpdateSuccess={() => {
-          // If update is successful, we don't automatically have the new history.
-          // In a real scenario, we might want to refetch the leads table or close the drawer.
-          // For now, closing the drawer is fine.
           setIsOpenFollowUpDrawer(false);
-          // refresh leads to show updated followup date if necessary
-          if (refreshLeadFollowUp) refreshLeadFollowUp();
+          // if (refreshLeadFollowUp) refreshLeadFollowUp();
           if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
+
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            allDownliners,
+            leadSourceFilterId,
+            leadStatusId,
+            filterValuesFromRedux.bucket,
+            pagination.page,
+            pagination.limit,
+          );
         }}
       />
     </div>
