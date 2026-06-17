@@ -103,6 +103,8 @@ export default function Leads({
   const courseOptions = useSelector((state) => state.courselist);
 
   const [leadBucketOptions, setLeadBucketOptions] = useState([]);
+  const [interestedLeadActions, setInterestedLeadActions] = useState({});
+  const [leadActionFilter, setLeadActionFilter] = useState("all");
   const statusClassMap = {
     all: "all",
     valid_leads: "valid_leads",
@@ -333,7 +335,7 @@ export default function Leads({
                 >
                   <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
                   <div className="leadfollowup_tablecommentContainer">
-                    <p>{1}</p>
+                    <p>{record?.completed_followup_count || 0}</p>
                   </div>
                 </div>
               );
@@ -873,7 +875,7 @@ export default function Leads({
                             {text ? moment(text).format("DD/MM/YYYY") : "-"}
                           </p>
                           <div className="leadfollowup_tablecommentContainer">
-                            <p>{1}</p>
+                            <p>{record?.completed_followup_count || 0}</p>
                           </div>
                         </div>
                       );
@@ -1282,7 +1284,10 @@ export default function Leads({
     bucket,
     pageNumber,
     limit,
+    actionOverride,
   ) => {
+    const currentAction =
+      actionOverride !== undefined ? actionOverride : leadActionFilter;
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
@@ -1300,6 +1305,8 @@ export default function Leads({
       ...(leadsource && { lead_type: leadsource }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
       ...(bucket && { bucket: bucket }),
+      ...(bucket === "Interested Leads" &&
+        currentAction !== "all" && { lead_action: currentAction }),
       page: pageNumber,
       limit: limit,
     };
@@ -1310,7 +1317,11 @@ export default function Leads({
       const paginations = response?.data?.data?.pagination;
       const apiData = response?.data?.data?.data || [];
       const bucket_counts = response?.data?.data?.bucket_counts || {};
+      const interested_actions =
+        response?.data?.data?.interested_lead_actions || {};
       console.log("leads data", apiData);
+
+      setInterestedLeadActions(interested_actions);
 
       const leadStatusOptionsWithCount = [
         {
@@ -2604,6 +2615,7 @@ export default function Leads({
               onClick={() => {
                 const bucket_name = name;
                 setLeadBucketName(bucket_name);
+                setLeadActionFilter("all");
                 dispatch(
                   storeLeadFilterValues({
                     bucket: bucket_name == "all" ? "" : bucket_name,
@@ -2621,6 +2633,7 @@ export default function Leads({
                   bucket_name == "all" ? "" : bucket_name,
                   1,
                   pagination.limit,
+                  "all",
                 );
               }}
             >
@@ -2637,6 +2650,124 @@ export default function Leads({
           <IoMdArrowDropright size={25} />
         </button> */}
       </div>
+
+      {leadBucketName === "Interested Leads" &&
+        Object.keys(interestedLeadActions).length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginTop: "15px",
+              flexWrap: "wrap",
+              padding: "0 5px",
+            }}
+          >
+            {(() => {
+              const orderedKeys = [
+                "all",
+                "sale_ready",
+                "sales_ready",
+                "highly_interested",
+                "interested",
+                "exploring",
+                "not_responding",
+                "not_interested",
+              ];
+
+              const sortedKeys = Object.keys(interestedLeadActions).sort(
+                (a, b) => {
+                  let indexA = orderedKeys.indexOf(a);
+                  let indexB = orderedKeys.indexOf(b);
+                  if (indexA === -1) indexA = 999;
+                  if (indexB === -1) indexB = 999;
+                  return indexA - indexB;
+                },
+              );
+
+              return sortedKeys.map((key) => {
+                const count = interestedLeadActions[key];
+                const displayName =
+                  key === "all"
+                    ? "All"
+                    : key
+                        .split("_")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ");
+                const isActive = leadActionFilter === key;
+                const actionColorMap = {
+                  all: "#0284c7",
+                  sale_ready: "#dc2626",
+                  sales_ready: "#dc2626",
+                  highly_interested: "#f97316",
+                  interested: "#eab308",
+                  exploring: "#3b82f6",
+                  not_responding: "#4b5563",
+                  not_interested: "#111827",
+                };
+                const baseColor = actionColorMap[key] || "#475569";
+
+                return (
+                  <div
+                    key={key}
+                    onClick={() => {
+                      setLeadActionFilter(key);
+                      dispatch(
+                        storeLeadFilterValues({
+                          pageNumber: 1,
+                          pageLimit: pagination.limit,
+                        }),
+                      );
+                      getAllLeadData(
+                        searchValue,
+                        selectedDates[0],
+                        selectedDates[1],
+                        allDownliners,
+                        leadSourceFilterId,
+                        leadStatusId,
+                        "Interested Leads",
+                        1,
+                        pagination.limit,
+                        key,
+                      );
+                    }}
+                    style={{
+                      padding: "6px 16px",
+                      borderRadius: "20px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: isActive ? "600" : "500",
+                      backgroundColor: isActive ? baseColor : `${baseColor}15`,
+                      color: isActive ? "white" : baseColor,
+                      border: `1px solid ${isActive ? baseColor : `${baseColor}40`}`,
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: isActive ? `0 2px 4px ${baseColor}40` : "none",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    {displayName}
+                    <span
+                      style={{
+                        backgroundColor: isActive ? "white" : baseColor,
+                        color: isActive ? baseColor : "white",
+                        padding: "2px 8px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {count}
+                    </span>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        )}
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
