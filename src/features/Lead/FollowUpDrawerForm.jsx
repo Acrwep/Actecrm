@@ -373,12 +373,26 @@ export default function FollowUpDrawerForm({
           <div
             className="leadmanager_comments_maincontainer"
             style={{
+              position: "relative",
+              padding: "16px 12px",
               display: "flex",
               flexDirection: "column",
-              gap: "16px",
-              padding: "12px 12px",
+              gap: "24px",
             }}
           >
+            {/* The vertical timeline track */}
+            <div
+              style={{
+                position: "absolute",
+                top: "32px",
+                bottom: "32px",
+                left: "27px",
+                width: "2px",
+                backgroundColor: "#e2e8f0",
+                zIndex: 0,
+              }}
+            ></div>
+
             {commentsHistory.map((item, index) => {
               const statusColors = {
                 "Sales Ready": "#dc2626",
@@ -395,188 +409,226 @@ export default function FollowUpDrawerForm({
                 <div
                   key={index}
                   style={{
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    background: "#f8fafc",
+                    display: "flex",
+                    gap: "16px",
                     position: "relative",
+                    zIndex: 1,
                   }}
                 >
+                  {/* <div
+                    style={{
+                      flexShrink: 0,
+                      background: "#fff",
+                      borderRadius: "50%",
+                      padding: "2px",
+                      boxShadow: "0 0 0 4px #fff",
+                    }}
+                  >
+                    <CommonAvatar
+                      itemName={item.user_name || "Unknown"}
+                      avatarSize={32}
+                    />
+                  </div> */}
+
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "12px",
+                      flex: 1,
+                      border: "1px solid #f1f5f9",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      background: "#fff",
+                      boxShadow:
+                        "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
+                      position: "relative",
                     }}
                   >
                     <div
                       style={{
                         display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "12px",
                       }}
                     >
-                      <CommonAvatar
-                        itemName={item.user_name || "Unknown"}
-                        avatarSize={32}
-                      />
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontWeight: 600,
-                            fontSize: "13px",
-                            color: "#1e293b",
-                          }}
-                        >
-                          {item.user_name
-                            ? `${item.updated_by} - ${item.user_name}`
-                            : "-"}
-                        </p>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: "11px",
-                            color: "#64748b",
-                          }}
-                        >
-                          {item.updated_date
-                            ? moment(item.updated_date).format(
-                                "MMM DD, YYYY hh:mm A",
-                              )
-                            : item.created_date
-                              ? moment(item.created_date).format(
-                                  "MMM DD, YYYY hh:mm A",
-                                )
-                              : "-"}
-                        </p>
-                      </div>
-                    </div>
-                    {item.lead_action_name && (
                       <div
                         style={{
-                          background: `${baseColor}1A`,
-                          color: baseColor,
-                          border: `1px solid ${baseColor}`,
-                          padding: "4px 10px",
-                          borderRadius: "20px",
-                          fontSize: "11px",
-                          fontWeight: 600,
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
-                        {item.lead_action_name}
+                        <div
+                          style={{
+                            flexShrink: 0,
+                            background: "#fff",
+                            borderRadius: "50%",
+                            boxShadow: "0 0 0 4px #fff",
+                          }}
+                        >
+                          <CommonAvatar
+                            itemName={item.user_name || "Unknown"}
+                            avatarSize={32}
+                          />
+                        </div>
+                        <div>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontWeight: 600,
+                              fontSize: "13px",
+                              color: "#1e293b",
+                            }}
+                          >
+                            {item.user_name
+                              ? `${item.updated_by} - ${item.user_name}`
+                              : "-"}
+                          </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "11px",
+                              color: "#64748b",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {item.updated_date
+                              ? moment(item.updated_date).format(
+                                  "MMM DD, YYYY hh:mm A",
+                                )
+                              : item.created_date
+                                ? moment(item.created_date).format(
+                                    "MMM DD, YYYY hh:mm A",
+                                  )
+                                : "-"}
+                          </p>
+                        </div>
+                      </div>
+                      {item.lead_action_name && (
+                        <div
+                          style={{
+                            background: `${baseColor}1A`,
+                            color: baseColor,
+                            border: `1px solid ${baseColor}`,
+                            padding: "4px 10px",
+                            borderRadius: "20px",
+                            fontSize: "11px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.lead_action_name}
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "12px",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Communication:
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            background: item.communication_status_name
+                              ? "#dcfce7"
+                              : "#f1f5f9",
+                            color: item.communication_status_name
+                              ? "#166534"
+                              : "#334155",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          {item.communication_status_name || "-"}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Mode:
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            background: item.contact_mode_name
+                              ? "#fef3c7"
+                              : "#f1f5f9",
+                            color: item.contact_mode_name
+                              ? "#92400e"
+                              : "#334155",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          {item.contact_mode_name || "-"}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "gray" }}>
+                          Interest Rate:
+                        </span>
+                        <Rate
+                          disabled
+                          value={item.interest_rate || 0}
+                          style={{ fontSize: "12px", color: "#f59e0b" }}
+                        />
+                      </div>
+                    </div>
+
+                    {item.comments && (
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          color: "#334155",
+                          background: "#fff",
+                          padding: "10px",
+                          borderRadius: "6px",
+                          border: "1px solid #e2e8f0",
+                        }}
+                      >
+                        {item.comments}
+                      </div>
+                    )}
+
+                    {item.status && (
+                      <div style={{ marginTop: "10px" }}>
+                        <p className="leadfollowup_qualitystatus_text">
+                          <span style={{ fontWeight: 600, color: "gray" }}>
+                            Status:
+                          </span>{" "}
+                          {item.status == 1
+                            ? "Details Shared"
+                            : item.status == 2
+                              ? "Details Not Shared"
+                              : "CNA"}
+                        </p>
                       </div>
                     )}
                   </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "6px",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span style={{ fontSize: "11px", color: "gray" }}>
-                        Communication:
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          background: item.communication_status_name
-                            ? "#dcfce7"
-                            : "#f1f5f9",
-                          color: item.communication_status_name
-                            ? "#166534"
-                            : "#334155",
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {item.communication_status_name || "-"}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "6px",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span style={{ fontSize: "11px", color: "gray" }}>
-                        Mode:
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          background: item.contact_mode_name
-                            ? "#fef3c7"
-                            : "#f1f5f9",
-                          color: item.contact_mode_name ? "#92400e" : "#334155",
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {item.contact_mode_name || "-"}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "6px",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span style={{ fontSize: "11px", color: "gray" }}>
-                        Interest Rate:
-                      </span>
-                      <Rate
-                        disabled
-                        value={item.interest_rate || 0}
-                        style={{ fontSize: "12px", color: "#f59e0b" }}
-                      />
-                    </div>
-                  </div>
-
-                  {item.comments && (
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: "#334155",
-                        background: "#fff",
-                        padding: "10px",
-                        borderRadius: "6px",
-                        border: "1px solid #e2e8f0",
-                      }}
-                    >
-                      {item.comments}
-                    </div>
-                  )}
-
-                  {item.status && (
-                    <div style={{ marginTop: "10px" }}>
-                      <p className="leadfollowup_qualitystatus_text">
-                        <span style={{ fontWeight: 600, color: "gray" }}>
-                          Status:
-                        </span>{" "}
-                        {item.status == 1
-                          ? "Details Shared"
-                          : item.status == 2
-                            ? "Details Not Shared"
-                            : "CNA"}
-                      </p>
-                    </div>
-                  )}
                 </div>
               );
             })}
