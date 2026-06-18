@@ -153,6 +153,7 @@ export default function FollowUpDrawerForm({
       width="52%"
       style={{ position: "relative", paddingBottom: "65px" }}
       className="customer_statusupdate_drawer"
+      destroyOnClose={true}
     >
       <p
         className="leadfollowup_leaddetails_heading"
@@ -393,7 +394,13 @@ export default function FollowUpDrawerForm({
               }}
             ></div>
 
-            {commentsHistory.map((item, index) => {
+            {[...commentsHistory]
+              .sort(
+                (a, b) =>
+                  new Date(b.updated_date || b.created_date) -
+                  new Date(a.updated_date || a.created_date)
+              )
+              .map((item, index) => {
               const statusColors = {
                 "Sales Ready": "#dc2626",
                 "Highly Interested": "#f97316",

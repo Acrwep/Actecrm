@@ -870,25 +870,42 @@
 .leadfollowup_tabledateContainer {
   background-color: #5b69ca;
   color: #fff;
-  padding: 2px 12px;
-  border-radius: 14px;
+  padding: 4px 12px;
+  border-radius: 20px;
   position: relative;
   cursor: pointer;
   width: max-content;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid #dbe4ff;
+  transition: all 0.2s ease-in-out;
 }
+
+.leadfollowup_tabledateContainer:hover {
+  transform: scale(1.04);
+  transition: all 0.3 ease-in-out;
+}
+
+.leadfollowup_tabledateContainer p {
+  margin: 0;
+}
+
 .leadfollowup_tablecommentContainer {
   position: absolute;
-  top: -6px;
-  right: -5px;
-  background-color: #ffa502;
+  top: -8px;
+  right: -8px;
+  background-color: #ff922b;
   color: #fff;
   border-radius: 50%;
-  height: 16px;
-  width: 16px;
+  height: 20px;
+  width: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(255, 146, 43, 0.3);
+  border: 2px solid #fff;
 }
 .leadfollowup_chatbox_container {
   position: fixed;

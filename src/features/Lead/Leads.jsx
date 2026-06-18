@@ -320,7 +320,7 @@ export default function Leads({
             title: "Next Follow Up",
             key: "next_follow_up_date",
             dataIndex: "next_follow_up_date",
-            width: 150,
+            width: 140,
             render: (text, record, index) => {
               return (
                 <div
@@ -855,7 +855,7 @@ export default function Leads({
                     title: "Next Follow Up",
                     key: "next_follow_up_date",
                     dataIndex: "next_follow_up_date",
-                    width: 150,
+                    width: 140,
                     // render: (text, record) => {
                     //   return <p>{text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}</p>;
                     // },

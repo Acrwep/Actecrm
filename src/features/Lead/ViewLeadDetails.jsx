@@ -303,13 +303,29 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           <Col span={8}>
             {renderField("Assigned Branch", leadData.branch_name)}
           </Col>
+          {leadData?.re_assigned_date && (
+            <Col span={8}>
+              {renderField(
+                "Re-Assign Date",
+                formatDateTime(leadData.re_assigned_date),
+              )}
+            </Col>
+          )}
           <Col span={8}>
-            {renderField("Assigned Executive", leadData.lead_assigned_to_name)}
+            {renderField(
+              "Assigned Executive",
+              `${leadData.lead_assigned_to_id} - ${leadData.lead_assigned_to_name}`,
+            )}
           </Col>
           <Col span={8}>
             {renderField("Assigned Manager", leadData.assigned_manager_name)}
           </Col>
-          <Col span={8}>{renderField("Lead Owner", leadData.user_id)}</Col>
+          <Col span={8}>
+            {renderField(
+              "Lead Owner",
+              `${leadData?.user_id} - ${leadData.user_name}`,
+            )}
+          </Col>
         </Row>
       </div>
 
@@ -346,7 +362,13 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                 zIndex: 0,
               }}
             ></div>
-            {leadData.history.map((item, index) => {
+            {[...leadData.history]
+              .sort(
+                (a, b) =>
+                  new Date(b.updated_date || b.created_date) -
+                  new Date(a.updated_date || a.created_date)
+              )
+              .map((item, index) => {
               const statusColors = {
                 "Sales Ready": "#dc2626",
                 "Highly Interested": "#f97316",
