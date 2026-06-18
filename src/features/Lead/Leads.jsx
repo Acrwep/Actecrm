@@ -2402,13 +2402,32 @@ export default function Leads({
                           labelMarginTop="0px"
                           labelFontSize="12px"
                           options={[
-                            { id: 1, name: "Super Hot", color: "#dc2626" },
-                            { id: 2, name: "Hot", color: "#f97316" },
-                            { id: 3, name: "Medium", color: "#eab308" },
-                            { id: 4, name: "Cold", color: "#3b82f6" },
+                            { id: 5, name: "Super Hot", color: "#dc2626" },
+                            { id: 1, name: "Hot", color: "#f97316" },
+                            { id: 2, name: "Warm", color: "#eab308" },
+                            { id: 3, name: "Cold", color: "#3b82f6" },
+                            {
+                              id: 6,
+                              name: "Not Interested",
+                              color: "#991b1b",
+                            },
+                            { id: 4, name: "Dormant", color: "#6b7280" },
                           ]}
-                          onChange={() => {}}
-                          value={null}
+                          onChange={(e) => {
+                            setLeadStatusId(e.target.value);
+                            getAllLeadData(
+                              searchValue,
+                              selectedDates[0],
+                              selectedDates[1],
+                              allDownliners,
+                              leadSourceFilterId,
+                              e.target.value,
+                              filterValuesFromRedux.bucket,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                          value={leadStatusId}
                           disableClearable={false}
                           renderOption={(props, option) => (
                             <li {...props}>
@@ -2433,7 +2452,7 @@ export default function Leads({
                           )}
                         />
                       </div>
-                      <div style={{ width: "100%" }}>
+                      {/* <div style={{ width: "100%" }}>
                         <CommonSelectField
                           width="100%"
                           height="35px"
@@ -2481,7 +2500,7 @@ export default function Leads({
                             </li>
                           )}
                         />
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 }
