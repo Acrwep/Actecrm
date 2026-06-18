@@ -545,7 +545,7 @@ export default function Leads({
                 ? "medium_priority"
                 : text === "Cold"
                   ? "cold_priority"
-                  : text === "Junk"
+                  : text === "Junk" || text === "Dormant"
                     ? "junk_priority"
                     : "others";
 
@@ -566,114 +566,118 @@ export default function Leads({
         return <EllipsisTooltip text={text} />;
       },
     },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
-        const isAfter45Days = checkIsAfter45Days(record.created_date);
-        return (
-          <div className="leadmanager_actionbuttonContainer">
-            <Tooltip placement="bottom" title="View Lead Details">
-              <FaRegEye
-                size={15}
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  setViewLeadItem(record);
-                  setIsOpenViewDrawer(true);
-                }}
-              />
-            </Tooltip>
+    ...(leadBucketName !== "Interested Leads"
+      ? [
+          {
+            title: "Action",
+            key: "action",
+            dataIndex: "action",
+            fixed: "right",
+            width: 120,
+            render: (text, record) => {
+              const isAfter45Days = checkIsAfter45Days(record.created_date);
+              return (
+                <div className="leadmanager_actionbuttonContainer">
+                  <Tooltip placement="bottom" title="View Lead Details">
+                    <FaRegEye
+                      size={15}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        setViewLeadItem(record);
+                        setIsOpenViewDrawer(true);
+                      }}
+                    />
+                  </Tooltip>
 
-            {permissions.includes("Edit Lead Button") &&
-              isShowEdit &&
-              record.is_customer_reg === 0 && (
-                <AiOutlineEdit
-                  className="leadmanager_action_icon"
-                  onClick={() => {
-                    if (onEditLead) {
-                      onEditLead(record, false);
-                    } else {
-                      setUpdateLeadItem(record);
-                      setLeadId(record.id);
-                      setIsOpenAddDrawer(true);
-                    }
-                  }}
-                />
-              )}
+                  {permissions.includes("Edit Lead Button") &&
+                    isShowEdit &&
+                    record.is_customer_reg === 0 && (
+                      <AiOutlineEdit
+                        className="leadmanager_action_icon"
+                        onClick={() => {
+                          if (onEditLead) {
+                            onEditLead(record, false);
+                          } else {
+                            setUpdateLeadItem(record);
+                            setLeadId(record.id);
+                            setIsOpenAddDrawer(true);
+                          }
+                        }}
+                      />
+                    )}
 
-            {record.is_customer_reg === 1 ? (
-              <Tooltip placement="bottom" title="Already a Customer">
-                <FaRegAddressCard
-                  className="leadmanager_action_icon"
-                  color="#2ed573"
-                />
-              </Tooltip>
-            ) : (
-              <Tooltip placement="bottom" title="Make as customer">
-                <FaRegAddressCard
-                  className="leadmanager_action_icon"
-                  color="#d32f2f"
-                  onClick={() => {
-                    if (permissions.includes("Edit Lead Button")) {
-                      if (filterValuesFromRedux.call_getraapi) {
-                        getRaUsers();
-                      }
-                      setIsOpenPaymentDrawer(true);
-                      setSubTotal(parseFloat(record.primary_fees));
-                      setAmount(parseFloat(record.primary_fees));
-                      setBalanceAmount(parseFloat(record.primary_fees));
-                      setCustomerCourseId(record.primary_course_id);
-                      setCustomerBatchTrackId(record.batch_track_id);
-                      setClickedLeadItem(record);
+                  {record.is_customer_reg === 1 ? (
+                    <Tooltip placement="bottom" title="Already a Customer">
+                      <FaRegAddressCard
+                        className="leadmanager_action_icon"
+                        color="#2ed573"
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip placement="bottom" title="Make as customer">
+                      <FaRegAddressCard
+                        className="leadmanager_action_icon"
+                        color="#d32f2f"
+                        onClick={() => {
+                          if (permissions.includes("Edit Lead Button")) {
+                            if (filterValuesFromRedux.call_getraapi) {
+                              getRaUsers();
+                            }
+                            setIsOpenPaymentDrawer(true);
+                            setSubTotal(parseFloat(record.primary_fees));
+                            setAmount(parseFloat(record.primary_fees));
+                            setBalanceAmount(parseFloat(record.primary_fees));
+                            setCustomerCourseId(record.primary_course_id);
+                            setCustomerBatchTrackId(record.batch_track_id);
+                            setClickedLeadItem(record);
 
-                      setTimeout(() => {
-                        const drawerBody = document.querySelector(
-                          "#leadmanager_paymentdetails_drawer .ant-drawer-body",
-                        );
+                            setTimeout(() => {
+                              const drawerBody = document.querySelector(
+                                "#leadmanager_paymentdetails_drawer .ant-drawer-body",
+                              );
 
-                        if (drawerBody) {
-                          drawerBody.scrollTo({
-                            top: 0,
-                            behavior: "smooth",
-                          });
-                        }
-                      }, 300);
-                    } else {
-                      CommonMessage("error", "Access Denied");
-                    }
-                  }}
-                />
-              </Tooltip>
-            )}
+                              if (drawerBody) {
+                                drawerBody.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }
+                            }, 300);
+                          } else {
+                            CommonMessage("error", "Access Denied");
+                          }
+                        }}
+                      />
+                    </Tooltip>
+                  )}
 
-            {permissions.includes("Assign Lead") && (
-              <Tooltip
-                placement="bottom"
-                title="Re-Assign this lead to another user"
-              >
-                <PiShareFatBold
-                  className="leadmanager_action_icon"
-                  color="#5b69ca"
-                  onClick={() => {
-                    if (onEditLead) {
-                      onEditLead(record, true);
-                    } else {
-                      setIsReEntry(true);
-                      setUpdateLeadItem(record);
-                      setLeadId(record.id);
-                      setIsOpenAddDrawer(true);
-                    }
-                  }}
-                />
-              </Tooltip>
-            )}
-          </div>
-        );
-      },
-    },
+                  {permissions.includes("Assign Lead") && (
+                    <Tooltip
+                      placement="bottom"
+                      title="Re-Assign this lead to another user"
+                    >
+                      <PiShareFatBold
+                        className="leadmanager_action_icon"
+                        color="#5b69ca"
+                        onClick={() => {
+                          if (onEditLead) {
+                            onEditLead(record, true);
+                          } else {
+                            setIsReEntry(true);
+                            setUpdateLeadItem(record);
+                            setLeadId(record.id);
+                            setIsOpenAddDrawer(true);
+                          }
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   const [columns, setColumns] = useState(
@@ -763,6 +767,7 @@ export default function Leads({
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setSelectedUserId(filterValuesFromRedux.user_id);
+        console.log("0000000000000000000000000000000000000000000");
         setLeadBucketName(filterValuesFromRedux.bucket);
         setPagination({
           page: filterValuesFromRedux.pageNumber,
@@ -1046,7 +1051,7 @@ export default function Leads({
                           ? "medium_priority"
                           : text === "Cold"
                             ? "cold_priority"
-                            : text === "Junk"
+                            : text === "Junk" || text === "Dormant"
                               ? "junk_priority"
                               : "others";
 
@@ -1204,9 +1209,16 @@ export default function Leads({
       // --- ✅ Process columns ---
       setUpdateTableId(filterPage.id);
 
-      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const filteredColumns = filterPage.column_names.filter((col) => {
+        if (leadBucketName === "Interested Leads" && col.key === "action") {
+          return false;
+        }
+        return true;
+      });
+
+      const allColumns = attachRenderFunctions(filteredColumns);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked),
+        filteredColumns.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -2567,6 +2579,7 @@ export default function Leads({
                       ? "customer_loading_download_button"
                       : "customer_download_button"
                   }
+                  style={{ padding: "2px 10px" }}
                   onClick={handleDownload}
                   disabled={downloadButtonLoader}
                 >
@@ -2632,6 +2645,7 @@ export default function Leads({
                 statusClassMap[id]
               } ${leadBucketName === name ? "active" : ""}`}
               onClick={() => {
+                if (leadBucketName === name) return;
                 const bucket_name = name;
                 setLeadBucketName(bucket_name);
                 setLeadActionFilter("all");
@@ -2732,6 +2746,7 @@ export default function Leads({
                   <div
                     key={key}
                     onClick={() => {
+                      if (leadActionFilter === key) return;
                       setLeadActionFilter(key);
                       dispatch(
                         storeLeadFilterValues({

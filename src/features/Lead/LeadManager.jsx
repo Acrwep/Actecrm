@@ -14,6 +14,7 @@ import {
   getTechnologies,
   getLeadStatus,
   assignLiveLead,
+  getAllBranches,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -104,6 +105,7 @@ export default function LeadManager() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
+  const [allBranchesData, setAllBranchesData] = useState([]);
   const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   //quality tab section
   const [refreshToggle, setRefreshToggle] = useState(false);
@@ -424,6 +426,19 @@ export default function LeadManager() {
     } catch (error) {
       setLeadStatusOptions([]);
       console.log("lead status error", error);
+    } finally {
+      getAllBranchesData();
+    }
+  };
+
+  const getAllBranchesData = async () => {
+    try {
+      const response = await getAllBranches();
+      console.log("all branches response", response);
+      setAllBranchesData(response?.data?.result || []);
+    } catch (error) {
+      setAllBranchesData([]);
+      console.log(error);
     }
   };
 
@@ -723,6 +738,7 @@ export default function LeadManager() {
             setActivePage={handleTabClick}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
+            allBranchesData={allBranchesData}
             subUsers={childUsers}
             liveLeadItem={pickLeadItem}
             updateLeadItem={editLeadItem}

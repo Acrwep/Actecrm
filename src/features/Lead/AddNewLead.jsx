@@ -54,6 +54,7 @@ const AddNewLead = forwardRef(
     {
       leadTypeOptions,
       regionOptions,
+      allBranchesData,
       updateLeadItem,
       isReAssign = false,
       liveLeadItem,
@@ -372,14 +373,19 @@ const AddNewLead = forwardRef(
         //     setNxtFollowupDate(updateLeadItem.next_follow_up_date);
         //   }
         // }
-        setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+        if (isReAssign) {
+          setNxtFollowupDate(new Date());
+          setFollowUpStatusId(1);
+        } else {
+          setNxtFollowupDate(updateLeadItem.next_follow_up_date);
+          setFollowUpStatusId(updateLeadItem?.lead_action_id);
+        }
         setCommunicationStatus(updateLeadItem?.communication_status);
         setContactMode(updateLeadItem?.contact_mode);
         setCounsel(updateLeadItem?.counsel);
-        setFollowUpStatusId(updateLeadItem?.lead_action_id);
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
-        getBranchesData(updateLeadItem.region_id);
+        // getBranchesData(updateLeadItem.region_id);
         setBranch(updateLeadItem.branch_id);
         setBatchTrack(updateLeadItem.batch_track_id);
         setInterestRate(updateLeadItem?.interest_rate || 5);
@@ -973,7 +979,7 @@ const AddNewLead = forwardRef(
         lead_type_id: leadSource,
         lead_status_id: leadTemperature,
         lead_sub_source: leadSubSource,
-        referral_name: "",
+        referral_name: referralName,
         lead_action_id: followUpStatusId,
         is_today_followup: addTodayFollowup
           ? formatToBackendIST(new Date())
@@ -1034,6 +1040,12 @@ const AddNewLead = forwardRef(
           lead_ids: [updateLeadItem?.id],
           assign_date: formatToBackendIST(today),
           next_follow_up_date: formatToBackendIST(nxtFollowupDate),
+          next_followup_time: nextFollowupTime
+            ? formatToBackendIST(nextFollowupTime)
+            : null,
+          today_followup_date: addTodayFollowup
+            ? formatToBackendIST(new Date())
+            : null,
           assigned_to: assignExecutiveId,
           updated_by: convertAsJson?.user_id,
         };
@@ -1207,7 +1219,7 @@ const AddNewLead = forwardRef(
           style={{
             display: "flex",
             alignItems: "flex-start",
-            marginBottom: isLast ? "0" : "18px",
+            marginBottom: isLast ? "0" : "8px",
             position: "relative",
           }}
         >
@@ -1217,7 +1229,7 @@ const AddNewLead = forwardRef(
                 position: "absolute",
                 left: "9px",
                 top: "22px",
-                bottom: "-20px",
+                bottom: "-10px",
                 width: "2px",
                 borderLeft: "2px dotted #cbd5e1",
                 zIndex: 0,
@@ -1344,7 +1356,7 @@ const AddNewLead = forwardRef(
         style={{
           display: "flex",
           alignItems: "flex-start",
-          marginBottom: isLast ? "0" : "8px",
+          marginBottom: isLast ? "0" : "5.5px",
           position: "relative",
         }}
       >
@@ -1363,8 +1375,8 @@ const AddNewLead = forwardRef(
         )}
         <div
           style={{
-            width: "18px",
-            height: "18px",
+            width: "16px",
+            height: "16px",
             borderRadius: "50%",
             background: color,
             display: "flex",
@@ -1373,7 +1385,7 @@ const AddNewLead = forwardRef(
             zIndex: 1,
             transform: isSmall ? "scale(0.4)" : "none",
             color: "#fff",
-            fontSize: "10px",
+            fontSize: "1px",
             fontWeight: "bold",
             boxShadow: "0 0 0 4px #fff",
           }}
@@ -1584,9 +1596,9 @@ const AddNewLead = forwardRef(
             xs={24}
             sm={24}
             md={12}
-            lg={8}
-            xl={{ flex: "25%" }}
-            xxl={{ flex: "25%" }}
+            lg={6}
+            // xl={{ flex: "25%" }}
+            // xxl={{ flex: "25%" }}
           >
             <div
               style={{
@@ -1601,14 +1613,12 @@ const AddNewLead = forwardRef(
               }}
             >
               <SectionHeader title="1. Basic Information (Mandatory)" />
-              <Row gutter={16}>
-                <Col span={24}>
-                  <ReadOnlyField
-                    label="Lead Date & Time"
-                    value={moment().format("DD MMM YYYY hh:mm A")}
-                  />
-                </Col>
-              </Row>
+              <div style={{ marginBottom: "26px" }}>
+                <ReadOnlyField
+                  label="Lead Date & Time"
+                  value={moment().format("DD MMM YYYY hh:mm A")}
+                />
+              </div>
               <div style={{ marginBottom: "26px" }}>
                 <CommonInputField
                   label="Candidate Name"
@@ -1675,37 +1685,35 @@ const AddNewLead = forwardRef(
                   errorFontSize={"9px"}
                 />
               </div>
-              <Row gutter={12} style={{ marginBottom: "22px" }}>
-                <Col span={12}>
-                  <CommonSelectField
-                    label="Country"
-                    required={true}
-                    onChange={handleCountry}
-                    options={countryOptions}
-                    value={countryId}
-                    error={countryError}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-                <Col span={12}>
-                  <CommonSelectField
-                    label="State"
-                    value={stateId}
-                    onChange={handleState}
-                    options={stateOptions}
-                    error={stateError}
-                    required={true}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-              </Row>
-              <div style={{ marginBottom: "12px" }}>
+              <div style={{ marginBottom: "26px" }}>
+                <CommonSelectField
+                  label="Country"
+                  required={true}
+                  onChange={handleCountry}
+                  options={countryOptions}
+                  value={countryId}
+                  error={countryError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                />
+              </div>
+              <div style={{ marginBottom: "26px" }}>
+                <CommonSelectField
+                  label="State"
+                  value={stateId}
+                  onChange={handleState}
+                  options={stateOptions}
+                  error={stateError}
+                  required={true}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                />
+              </div>
+              <div style={{ marginBottom: "8px" }}>
                 <div
                   style={{
                     display: "flex",
@@ -1761,6 +1769,77 @@ const AddNewLead = forwardRef(
                 </div>
               </div>
             </div>
+
+            <div style={cardStyle}>
+              <SectionHeader title="5. Assignment" />
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Assigned Branch"
+                  required={true}
+                  value={branch}
+                  onChange={(e) => {
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={allBranchesData}
+                  error={branchError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                  labelMarginTop={"0px"}
+                  disabled={isReAssign}
+                />
+              </div>
+              <div style={{ marginBottom: "20px" }}>
+                <CommonSelectField
+                  label="Assigned Executive"
+                  required={true}
+                  value={assignExecutiveId}
+                  onChange={(e) => {
+                    setAssignExecutiveId(e.target.value);
+                    getSaleManagers(e.target.value);
+                  }}
+                  options={saleUsers}
+                  error={assignExecutiveError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={
+                    !permissions.includes("Assign Lead") ||
+                    (isReAssign == false && updateLeadItem)
+                  }
+                />
+              </div>
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Assigned Manager"
+                  required={true}
+                  value={assignedManager}
+                  options={managersList}
+                  error={""}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={true}
+                />
+              </div>
+              <div style={{ marginBottom: "0px" }}>
+                <CommonSelectField
+                  label="Lead Owner"
+                  required={true}
+                  value={leadOwner}
+                  options={saleUsers}
+                  error={""}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={true}
+                />
+              </div>
+            </div>
           </Col>
 
           {/* Column 2 */}
@@ -1768,9 +1847,9 @@ const AddNewLead = forwardRef(
             xs={24}
             sm={24}
             md={12}
-            lg={8}
-            xl={{ flex: "21%" }}
-            xxl={{ flex: "21%" }}
+            lg={6}
+            // xl={{ flex: "21%" }}
+            // xxl={{ flex: "21%" }}
           >
             <div
               style={{
@@ -1782,10 +1861,11 @@ const AddNewLead = forwardRef(
                       opacity: 0.8,
                     }
                   : {}),
+                marginBottom: "8px",
               }}
             >
               <SectionHeader title="2. Lead Source" />
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "22px" }}>
                 <CommonSelectField
                   label="Lead Source"
                   required={true}
@@ -1815,7 +1895,7 @@ const AddNewLead = forwardRef(
                 />
               </div>
 
-              <div style={{ marginBottom: "8px" }}>
+              <div style={{ marginBottom: "22px" }}>
                 <CommonSelectField
                   label="Lead Sub Source"
                   required={leadSource == 2 || leadSource == 3 ? false : true}
@@ -1839,7 +1919,31 @@ const AddNewLead = forwardRef(
                   labelMarginTop={"-0.4px"}
                 />
               </div>
-              {/* <div style={{ marginBottom: "0px" }}>
+
+              <div style={{ marginBottom: "22px" }}>
+                <CommonSelectField
+                  label="Region"
+                  required={true}
+                  onChange={(e) => {
+                    setRegionId(e.target.value);
+                    // getBranchesData(e.target.value);
+                    if (validationTrigger) {
+                      setRegionError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={regionOptions}
+                  value={regionId}
+                  error={regionError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                  labelMarginTop={"0px"}
+                  disabled={isReAssign}
+                />
+              </div>
+
+              <div style={{ marginBottom: "0px" }}>
                 <CommonInputField
                   label="Referral Name"
                   value={referralName}
@@ -1850,7 +1954,7 @@ const AddNewLead = forwardRef(
                   labelFontSize={"12px"}
                   errorFontSize={"9px"}
                 />
-              </div> */}
+              </div>
             </div>
 
             <div
@@ -1866,7 +1970,7 @@ const AddNewLead = forwardRef(
               }}
             >
               <SectionHeader title="3. Course Requirement" />
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "21px" }}>
                 <div
                   style={{
                     display: "flex",
@@ -1924,7 +2028,7 @@ const AddNewLead = forwardRef(
                 </div>
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "21px" }}>
                 <CommonInputField
                   label="Fees"
                   required={true}
@@ -1943,7 +2047,7 @@ const AddNewLead = forwardRef(
                 />
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "22px" }}>
                 <CommonSelectField
                   label="Preferred Mode"
                   value={preferredMode}
@@ -1961,7 +2065,7 @@ const AddNewLead = forwardRef(
                 />
               </div>
 
-              <div style={{ marginBottom: "6px" }}>
+              <div style={{ marginBottom: "0px" }}>
                 <CommonSelectField
                   label="Preferred Batch"
                   onChange={(e) => {
@@ -1990,21 +2094,11 @@ const AddNewLead = forwardRef(
                 />
               </div>
             </div>
-          </Col>
 
-          {/* Column 3 */}
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
-            lg={8}
-            xl={{ flex: "29%" }}
-            xxl={{ flex: "29%" }}
-          >
             <div
               style={{
                 ...cardStyle,
-                ...(isReAssign
+                ...(contactMode == 6
                   ? {
                       background: "#eff6ff",
                       pointerEvents: "none",
@@ -2013,408 +2107,95 @@ const AddNewLead = forwardRef(
                   : {}),
               }}
             >
-              <SectionHeader title="4. Screening" />
-              {updateLeadItem ? (
-                ""
-              ) : (
-                <Row gutter={6} style={{ marginBottom: "24px" }}>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label="Communication"
-                      required={true}
-                      value={communicationStatus}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setCommunicationStatus(value);
-                        setContactMode(null);
-                        setCounsel("Not Given");
-                        setLeadTemperature(null);
-                        setFollowUpStatusId(null);
-                        setNxtFollowupDate(null);
-                        setNextFollowupTime(null);
-                        setAddTodayFollowup(false);
-                        setExpectDateJoin(null);
-                        if (validationTrigger) {
-                          setCommunicationStatusError(selectValidator(value));
-                          setContactModeError(selectValidator(null));
-                        }
-                      }}
-                      options={communicationStatusOptions}
-                      error={communicationStatusError}
-                      disabled={updateLeadItem}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"7.7px"}
-                      labelMarginTop={"0px"}
-                    />
-                  </Col>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label={communicationStatus == 2 ? "Reason" : "Mode"}
-                      required={true}
-                      options={
-                        communicationStatus == 2
-                          ? [
-                              {
-                                id: 5,
-                                name: "Data Correct But No Response",
-                              },
-                              { id: 6, name: "Data Incorrect" },
-                            ]
-                          : [
-                              { id: 1, name: "Phone Call" },
-                              { id: 2, name: "WhatsApp" },
-                              { id: 3, name: "SMS" },
-                              { id: 4, name: "Email" },
-                            ]
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setContactMode(value);
-                        if (value == 5) {
-                          setComments(comments == "Junk" ? "" : comments);
-                          setLeadTemperature(1);
-                          setFollowUpStatusId(1);
-                        } else if (value == 6) {
-                          setLeadTemperature(4);
-                          setFollowUpStatusId(null);
-                          setNxtFollowupDate(null);
-                          setNxtFollowupDateError("");
-                          setNextFollowupTime(null);
-                          setCounsel("Not Given");
-                          setComments("Junk");
-                          setCommentsError("");
-                          setExpectDateJoin(null);
-                        } else {
-                          setLeadTemperature(5);
-                          setFollowUpStatusId(5);
-                          setComments(comments == "Junk" ? "" : comments);
-                        }
-                        if (validationTrigger) {
-                          setContactModeError(selectValidator(value));
-                        }
-                      }}
-                      value={contactMode}
-                      error={contactModeError}
-                      disabled={updateLeadItem}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                    />
-                  </Col>
-                </Row>
-              )}
-              <Row gutter={6} style={{ marginBottom: "24px" }}>
-                <Col span={12}>
-                  <CommonSelectField
-                    label="Counsel"
-                    value={counsel}
-                    onChange={(e) => setCounsel(e.target.value)}
-                    options={[
-                      { id: "Given", name: "Given" },
-                      { id: "Not Given", name: "Not Given" },
-                    ]}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                    labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
-                  />
-                </Col>
-                <Col span={12}>
-                  <CommonSelectField
-                    label="Lead Temp."
-                    options={
-                      contactMode == 6
-                        ? [
-                            { id: 5, name: "Super Hot", color: "#dc2626" },
-                            { id: 1, name: "Hot", color: "#f97316" },
-                            { id: 2, name: "Warm", color: "#eab308" },
-                            { id: 3, name: "Cold", color: "#3b82f6" },
-                            {
-                              id: 6,
-                              name: "Not Interested",
-                              color: "#991b1b",
-                            },
-                            { id: 4, name: "Dormant", color: "#6b7280" },
-                          ]
-                        : [
-                            { id: 5, name: "Super Hot", color: "#dc2626" },
-                            { id: 1, name: "Hot", color: "#f97316" },
-                            { id: 2, name: "Warm", color: "#eab308" },
-                            { id: 3, name: "Cold", color: "#3b82f6" },
-                            {
-                              id: 6,
-                              name: "Not Interested",
-                              color: "#991b1b",
-                            },
-                          ]
-                    }
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        <div
+              <SectionHeader title="6. Follow-Up Planning" />
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Follow-up Type"
+                  required={true}
+                  value={followUpStatusId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFollowUpStatusId(value);
+                  }}
+                  options={[
+                    { id: 5, name: "Sales Ready", color: "#dc2626" },
+                    { id: 1, name: "Highly Interested", color: "#f97316" },
+                    { id: 8, name: "Interested", color: "#eab308" },
+                    { id: 9, name: "Exploring", color: "#3b82f6" },
+                    { id: 10, name: "Not Responding", color: "#4b5563" },
+                    { id: 2, name: "Not Interested", color: "#111827" },
+                  ]}
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <span
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: option.color || "gray",
                           }}
-                        >
-                          <span
-                            style={{
-                              width: "10px",
-                              height: "10px",
-                              borderRadius: "50%",
-                              backgroundColor: option.color || "gray",
-                            }}
-                          ></span>
-                          <span>{option.name}</span>
-                        </div>
-                      </li>
-                    )}
-                    onChange={(e) => {
-                      setLeadTemperature(e.target.value);
-                    }}
-                    value={leadTemperature}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                    labelMarginTop={"0px"}
-                    disabled={true}
-                  />
-                </Col>
-              </Row>
-              <Row gutter={16} style={{ marginBottom: "0px" }}>
-                <Col span={24}>
-                  <CommonMuiDatePicker
-                    label="Expected Date Join"
-                    required={false}
-                    onChange={(value) => {
-                      console.log("vallll", value);
-                      setExpectDateJoin(value);
-                    }}
-                    value={expectDateJoin}
-                    error=""
-                    disablePreviousDates={true}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    labelMarginTop={"0.5px"}
-                    iconSize={"16px"}
-                    disabled={contactMode == 6}
-                  />
-                </Col>
-                {/* <Col span={12}>
-                      <CommonInputField
-                        label="Lead Score"
-                        value={""}
-                        error={""}
-                        height={"36px"}
-                        labelFontSize={"13px"}
-                        disabled={true}
-                      />
-                    </Col> */}
-              </Row>
-            </div>
-
-            {updateLeadItem ? (
-              <div style={cardStyle}>
-                <SectionHeader title="5. Assignment" />
-                <Row gutter={12} style={{ marginBottom: "24px" }}>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label="Region"
-                      required={true}
-                      onChange={(e) => {
-                        setRegionId(e.target.value);
-                        getBranchesData(e.target.value);
-                        if (validationTrigger) {
-                          setRegionError(selectValidator(e.target.value));
-                        }
-                      }}
-                      options={regionOptions}
-                      value={regionId}
-                      error={regionError}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={isReAssign}
-                    />
-                  </Col>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label="Branch"
-                      required={true}
-                      value={branch}
-                      onChange={(e) => {
-                        setBranch(e.target.value);
-                        if (validationTrigger) {
-                          setBranchError(selectValidator(e.target.value));
-                        }
-                      }}
-                      options={branchOptions}
-                      error={branchError}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={isReAssign}
-                    />
-                  </Col>
-                </Row>
-                <div style={{ marginBottom: "20px" }}>
-                  <CommonSelectField
-                    label="Assigned Executive"
-                    required={true}
-                    value={assignExecutiveId}
-                    onChange={(e) => {
-                      setAssignExecutiveId(e.target.value);
-                      getSaleManagers(e.target.value);
-                    }}
-                    options={saleUsers}
-                    error={assignExecutiveError}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={
-                      !permissions.includes("Assign Lead") ||
-                      (isReAssign == false && updateLeadItem)
-                    }
-                  />
-                </div>
-                <div style={{ marginBottom: "24px" }}>
-                  <CommonSelectField
-                    label="Assigned Manager"
-                    required={true}
-                    value={assignedManager}
-                    options={managersList}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={true}
-                  />
-                </div>
-                <div style={{ marginBottom: "0px" }}>
-                  <CommonSelectField
-                    label="Lead Owner"
-                    required={true}
-                    value={leadOwner}
-                    options={saleUsers}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={true}
-                  />
-                </div>
+                        ></span>
+                        <span>{option.name}</span>
+                      </div>
+                    </li>
+                  )}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                  error={""}
+                  disabled={true}
+                />
               </div>
-            ) : (
-              <div
-                style={{
-                  ...cardStyle,
-                  ...(contactMode == 6
-                    ? {
-                        background: "#eff6ff",
-                        pointerEvents: "none",
-                        opacity: 0.8,
-                      }
-                    : {}),
-                }}
-              >
-                <SectionHeader title="6. Follow-Up Planning" />
-                <div style={{ marginBottom: "24px" }}>
-                  <CommonSelectField
-                    label="Follow-up Type"
-                    required={true}
-                    value={followUpStatusId}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFollowUpStatusId(value);
-                    }}
-                    options={[
-                      { id: 5, name: "Sales Ready", color: "#dc2626" },
-                      { id: 1, name: "Highly Interested", color: "#f97316" },
-                      { id: 8, name: "Interested", color: "#eab308" },
-                      { id: 9, name: "Exploring", color: "#3b82f6" },
-                      { id: 10, name: "Not Responding", color: "#4b5563" },
-                      { id: 2, name: "Not Interested", color: "#111827" },
-                    ]}
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: "10px",
-                              height: "10px",
-                              borderRadius: "50%",
-                              backgroundColor: option.color || "gray",
-                            }}
-                          ></span>
-                          <span>{option.name}</span>
-                        </div>
-                      </li>
-                    )}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                    error={""}
-                    disabled={true}
-                  />
-                </div>
 
-                <div style={{ marginBottom: "24px" }}>
-                  <CommonNxtFollowupDatePicker
-                    label="Next Follow-up Date"
-                    required={true}
-                    value={nxtFollowupDate}
-                    onChange={(val) => {
-                      setNxtFollowupDate(val);
-                      setNxtFollowupDateError(selectValidator(val));
-                    }}
-                    leadTemperature={parseInt(leadTemperature)}
-                    error={nxtFollowupDateError}
-                    height={"35px"}
-                    labelFontSize={"12px"}
-                    fontSize={"13px"}
-                    labelMarginTop={"0.5px"}
-                    iconSize={"16px"}
-                    disabled={contactMode == 6 || updateLeadItem}
-                  />
-                </div>
-                <div style={{ marginBottom: "16px" }}>
-                  <CommonMuiDateTimePicker
-                    label="Next Follow-up Time"
-                    required={false}
-                    value={nextFollowupTime}
-                    onChange={(val) => setNextFollowupTime(val)}
-                    error={""}
-                    onlyTime={true}
-                    height={"35px"}
-                    labelFontSize={"12px"}
-                    fontSize={"13px"}
-                    labelMarginTop={"0.5px"}
-                    iconSize={"16px"}
-                    disabled={contactMode == 6 || updateLeadItem}
-                  />
-                </div>
+              <div style={{ marginBottom: "24px" }}>
+                <CommonNxtFollowupDatePicker
+                  label="Next Follow-up Date"
+                  required={true}
+                  value={nxtFollowupDate}
+                  onChange={(val) => {
+                    setNxtFollowupDate(val);
+                    setNxtFollowupDateError(selectValidator(val));
+                  }}
+                  leadTemperature={parseInt(leadTemperature)}
+                  error={nxtFollowupDateError}
+                  height={"35px"}
+                  labelFontSize={"12px"}
+                  fontSize={"13px"}
+                  labelMarginTop={"0.5px"}
+                  iconSize={"16px"}
+                  disabled={
+                    contactMode == 6 || (updateLeadItem && isReAssign == false)
+                  }
+                />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <CommonMuiDateTimePicker
+                  label="Next Follow-up Time"
+                  required={false}
+                  value={nextFollowupTime}
+                  onChange={(val) => setNextFollowupTime(val)}
+                  error={""}
+                  onlyTime={true}
+                  height={"35px"}
+                  labelFontSize={"12px"}
+                  fontSize={"13px"}
+                  labelMarginTop={"0.5px"}
+                  iconSize={"16px"}
+                  disabled={
+                    contactMode == 6 || (updateLeadItem && isReAssign == false)
+                  }
+                />
+              </div>
 
-                {/* {followUpStatusId && (
+              {/* {followUpStatusId && (
                       <div style={{ marginBottom: "16px" }}>
                         <p style={{ fontWeight: "500" }}>Interest Rating</p>
                         <Rate
@@ -2425,370 +2206,467 @@ const AddNewLead = forwardRef(
                       </div>
                     )} */}
 
-                <div style={{ marginBottom: "16px" }}>
-                  <Checkbox
-                    checked={addTodayFollowup}
-                    onChange={(e) => setAddTodayFollowup(e.target.checked)}
-                    disabled={contactMode == 6}
-                  >
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        color: "#475569",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Add to today's follow-up list
-                    </span>
-                  </Checkbox>
-                </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <CommonTextArea
-                    label={"Remarks"}
-                    placeholder="Enter remarks..."
-                    value={comments}
-                    onChange={(e) => {
-                      setComments(e.target.value);
-                      if (validationTrigger) {
-                        setCommentsError(addressValidator(e.target.value));
-                      }
-                    }}
-                    error={commentsError}
-                    disabled={contactMode == 6}
-                  />
-                </div>
-              </div>
-            )}
-          </Col>
-
-          {/* Right Sidebar (Status Flow & Score Criteria) */}
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
-            lg={24}
-            xl={{ flex: "25%" }}
-            xxl={{ flex: "25%" }}
-          >
-            {/* <div
-              style={{
-                background: "#eff6ff",
-                padding: "20px",
-                borderRadius: "10px",
-                border: "1px solid #bfdbfe",
-                marginBottom: "24px",
-              }}
-            >
-              <h4
-                style={{
-                  margin: "0 0 8px 0",
-                  color: "#1e3a8a",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <span
-                  style={{
-                    background: "#3b82f6",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    width: "18px",
-                    height: "18px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "10px",
-                  }}
-                >
-                  i
-                </span>
-                Note for Executive
-              </h4>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "12px",
-                  color: "#1e3a8a",
-                  lineHeight: "1.6",
-                }}
-              >
-                Please fill mandatory fields (*) to create a lead. You can
-                update remaining details during counselling.
-              </p>
-            </div> */}
-            {updateLeadItem ? (
-              ""
-            ) : (
-              <div style={cardStyle}>
-                <SectionHeader title="5. Assignment" />
-                <Row gutter={12} style={{ marginBottom: "24px" }}>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label="Region"
-                      required={true}
-                      onChange={(e) => {
-                        setRegionId(e.target.value);
-                        getBranchesData(e.target.value);
-                        if (validationTrigger) {
-                          setRegionError(selectValidator(e.target.value));
-                        }
-                      }}
-                      options={regionOptions}
-                      value={regionId}
-                      error={regionError}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={isReAssign}
-                    />
-                  </Col>
-                  <Col span={12}>
-                    <CommonSelectField
-                      label="Branch"
-                      required={true}
-                      value={branch}
-                      onChange={(e) => {
-                        setBranch(e.target.value);
-                        if (validationTrigger) {
-                          setBranchError(selectValidator(e.target.value));
-                        }
-                      }}
-                      options={branchOptions}
-                      error={branchError}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={isReAssign}
-                    />
-                  </Col>
-                </Row>
-                <div style={{ marginBottom: "20px" }}>
-                  <CommonSelectField
-                    label="Assigned Executive"
-                    required={true}
-                    value={assignExecutiveId}
-                    onChange={(e) => {
-                      setAssignExecutiveId(e.target.value);
-                      getSaleManagers(e.target.value);
-                    }}
-                    options={saleUsers}
-                    error={assignExecutiveError}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={!permissions.includes("Assign Lead")}
-                  />
-                </div>
-                <div style={{ marginBottom: "24px" }}>
-                  <CommonSelectField
-                    label="Assigned Manager"
-                    required={true}
-                    value={assignedManager}
-                    options={managersList}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={true}
-                  />
-                </div>
-                <div style={{ marginBottom: "0px" }}>
-                  <CommonSelectField
-                    label="Lead Owner"
-                    required={true}
-                    value={leadOwner}
-                    options={saleUsers}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={true}
-                  />
-                </div>
-              </div>
-            )}
-            <div
-              style={{
-                ...cardStyle,
-                background: "#f8fafc",
-                padding: "12px 16px",
-              }}
-            >
               <div
                 style={{
-                  color: "#0f172a",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  marginBottom: "12px",
+                  marginBottom: "16px",
+                  display: "flex",
+                  justifyContent: "flex-end",
                 }}
               >
-                Lead Status Flow
-              </div>
-              <div>
-                <StatusTimelineItem
-                  status="New Lead"
-                  color="#2563eb"
-                  icon={<span style={{ fontSize: "11px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Validated"
-                  color="#2563eb"
-                  isSmall={true}
-                />
-                <StatusTimelineItem
-                  status="Contacted"
-                  color="#0d9488"
-                  icon={<span style={{ fontSize: "11px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Interested"
-                  color="#ef4444"
-                  icon={<span style={{ fontSize: "11px" }}>B</span>}
-                />
-                <StatusTimelineItem
-                  status="Counselling"
-                  color="#ef4444"
-                  icon={<span style={{ fontSize: "11px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Demo Attended"
-                  color="#f97316"
-                  icon={<span style={{ fontSize: "11px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Fee Discussion"
-                  color="#f59e0b"
-                  icon={<span style={{ fontSize: "11px" }}>Y</span>}
-                />
-                <StatusTimelineItem
-                  status="Sales Ready"
-                  color="#eab308"
-                  icon={<span style={{ fontSize: "11px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Joined"
-                  color="#22c55e"
-                  icon={<MdCheck size={13} />}
-                />
-                <StatusTimelineItem
-                  status="Payment Collected"
-                  color="#16a34a"
-                  icon={<MdPerson size={13} />}
-                  isLast={true}
-                />
+                <Checkbox
+                  checked={addTodayFollowup}
+                  onChange={(e) => setAddTodayFollowup(e.target.checked)}
+                  disabled={contactMode == 6}
+                >
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#475569",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Add to today's follow-up list
+                  </span>
+                </Checkbox>
               </div>
             </div>
+          </Col>
 
-            <div style={{ ...cardStyle, padding: "0" }}>
-              <div
-                style={{
-                  padding: "12px 16px",
-                  background: "#f8fafc",
-                  borderBottom: "1px solid #e2e8f0",
-                  borderRadius: "9px 9px 0 0",
-                  color: "#0f172a",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  textAlign: "center",
-                }}
-              >
-                Score Criteria (Max 100)
-              </div>
-              <div style={{ padding: "16px" }}>
-                <table
+          {/* Right Half (Columns 3 and 4) */}
+          <Col xs={24} sm={24} md={24} lg={12}>
+            <Row gutter={8}>
+              {/* Column 3 */}
+              <Col xs={24} sm={24} md={12} lg={12}>
+                <div
                   style={{
-                    width: "100%",
-                    fontSize: "13px",
-                    borderCollapse: "collapse",
-                    color: "#334155",
+                    ...cardStyle,
+                    ...(isReAssign
+                      ? {
+                          background: "#eff6ff",
+                          pointerEvents: "none",
+                          opacity: 0.8,
+                        }
+                      : {}),
+                    height: "98%",
                   }}
                 >
-                  <tbody>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                        Contact Connected
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +10
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                        Interested
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                        Demo Attended
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                        Budget Available
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-                      <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                        Joining Within 30 Days
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +30
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        style={{
-                          padding: "12px 0",
-                          fontWeight: "700",
-                          color: "#0f172a",
-                        }}
-                      >
-                        Total Score
-                      </td>
-                      <td
-                        align="right"
-                        style={{
-                          padding: "12px 0",
-                          fontWeight: "700",
-                          color: "#0f172a",
-                        }}
-                      >
-                        100
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                  <SectionHeader title="4. Screening" />
+                  {updateLeadItem ? (
+                    ""
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: "24px" }}>
+                        <CommonSelectField
+                          label="Communication"
+                          required={true}
+                          value={communicationStatus}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCommunicationStatus(value);
+                            setContactMode(null);
+                            setCounsel("Not Given");
+                            setLeadTemperature(null);
+                            setFollowUpStatusId(null);
+                            setNxtFollowupDate(null);
+                            setNextFollowupTime(null);
+                            setAddTodayFollowup(false);
+                            setExpectDateJoin(null);
+                            if (validationTrigger) {
+                              setCommunicationStatusError(
+                                selectValidator(value),
+                              );
+                              setContactModeError(selectValidator(null));
+                            }
+                          }}
+                          options={communicationStatusOptions}
+                          error={communicationStatusError}
+                          disabled={updateLeadItem}
+                          height={"35px"}
+                          fontSize={"13px"}
+                          labelFontSize={"12px"}
+                          errorFontSize={"7.7px"}
+                          labelMarginTop={"0px"}
+                        />
+                      </div>
+                      <div style={{ marginBottom: "24px" }}>
+                        <CommonSelectField
+                          label={communicationStatus == 2 ? "Reason" : "Mode"}
+                          required={true}
+                          options={
+                            communicationStatus == 2
+                              ? [
+                                  {
+                                    id: 5,
+                                    name: "Data Correct But No Response",
+                                  },
+                                  { id: 6, name: "Data Incorrect" },
+                                ]
+                              : [
+                                  { id: 1, name: "Phone Call" },
+                                  { id: 2, name: "WhatsApp" },
+                                  { id: 3, name: "SMS" },
+                                  { id: 4, name: "Email" },
+                                ]
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setContactMode(value);
+                            if (value == 5) {
+                              setComments(comments == "Junk" ? "" : comments);
+                              setLeadTemperature(1);
+                              setFollowUpStatusId(1);
+                            } else if (value == 6) {
+                              setLeadTemperature(4);
+                              setFollowUpStatusId(null);
+                              setNxtFollowupDate(null);
+                              setNxtFollowupDateError("");
+                              setNextFollowupTime(null);
+                              setCounsel("Not Given");
+                              setComments("Junk");
+                              setCommentsError("");
+                              setExpectDateJoin(null);
+                            } else {
+                              setLeadTemperature(5);
+                              setFollowUpStatusId(5);
+                              setComments(comments == "Junk" ? "" : comments);
+                            }
+                            if (validationTrigger) {
+                              setContactModeError(selectValidator(value));
+                            }
+                          }}
+                          value={contactMode}
+                          error={contactModeError}
+                          disabled={updateLeadItem}
+                          height={"35px"}
+                          fontSize={"13px"}
+                          labelFontSize={"12px"}
+                          errorFontSize={"9px"}
+                          labelMarginTop={"0px"}
+                        />
+                      </div>
+                    </>
+                  )}
+                  <div style={{ marginBottom: "24px" }}>
+                    <CommonSelectField
+                      label="Counsel"
+                      value={counsel}
+                      onChange={(e) => setCounsel(e.target.value)}
+                      options={[
+                        { id: "Given", name: "Given" },
+                        { id: "Not Given", name: "Not Given" },
+                      ]}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      errorFontSize={"9px"}
+                      labelMarginTop={"0px"}
+                      disabled={contactMode == 5 || contactMode == 6}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "24px" }}>
+                    <CommonSelectField
+                      label="Lead Temp."
+                      options={
+                        contactMode == 6
+                          ? [
+                              { id: 5, name: "Super Hot", color: "#dc2626" },
+                              { id: 1, name: "Hot", color: "#f97316" },
+                              { id: 2, name: "Warm", color: "#eab308" },
+                              { id: 3, name: "Cold", color: "#3b82f6" },
+                              {
+                                id: 6,
+                                name: "Not Interested",
+                                color: "#991b1b",
+                              },
+                              { id: 4, name: "Dormant", color: "#6b7280" },
+                            ]
+                          : [
+                              { id: 5, name: "Super Hot", color: "#dc2626" },
+                              { id: 1, name: "Hot", color: "#f97316" },
+                              { id: 2, name: "Warm", color: "#eab308" },
+                              { id: 3, name: "Cold", color: "#3b82f6" },
+                              {
+                                id: 6,
+                                name: "Not Interested",
+                                color: "#991b1b",
+                              },
+                            ]
+                      }
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                borderRadius: "50%",
+                                backgroundColor: option.color || "gray",
+                              }}
+                            ></span>
+                            <span>{option.name}</span>
+                          </div>
+                        </li>
+                      )}
+                      onChange={(e) => {
+                        setLeadTemperature(e.target.value);
+                      }}
+                      value={leadTemperature}
+                      error={""}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      errorFontSize={"9px"}
+                      labelMarginTop={"0px"}
+                      disabled={true}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "24px" }}>
+                    <CommonMuiDatePicker
+                      label="Expected Date Join"
+                      required={false}
+                      onChange={(value) => {
+                        console.log("vallll", value);
+                        setExpectDateJoin(value);
+                      }}
+                      value={expectDateJoin}
+                      error=""
+                      disablePreviousDates={true}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      labelMarginTop={"0.5px"}
+                      iconSize={"16px"}
+                      disabled={contactMode == 6}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "6px" }}>
+                    <CommonInputField
+                      label="Lead Score"
+                      value={""}
+                      error={""}
+                      height={"36px"}
+                      labelFontSize={"13px"}
+                      disabled={true}
+                    />
+                  </div>
+                  {/* <Col span={12}>
+                      <CommonInputField
+                        label="Lead Score"
+                        value={""}
+                        error={""}
+                        height={"36px"}
+                        labelFontSize={"13px"}
+                        disabled={true}
+                      />
+                    </Col> */}
+                </div>
+              </Col>
+
+              {/* Right Sidebar (Status Flow & Score Criteria) */}
+              <Col xs={24} sm={24} md={12} lg={12}>
+                <div
+                  style={{
+                    ...cardStyle,
+                    background: "#f8fafc",
+                    padding: "8px 16px",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#0f172a",
+                      fontWeight: 700,
+                      fontSize: "13px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    Lead Status Flow
+                  </div>
+                  <div>
+                    <StatusTimelineItem
+                      status="New Lead"
+                      color="#2563eb"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Validated"
+                      color="#2563eb"
+                      isSmall={true}
+                    />
+                    <StatusTimelineItem
+                      status="Contacted"
+                      color="#0d9488"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Counselling"
+                      color="#ef4444"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Fee Discussion"
+                      color="#f59e0b"
+                      icon={<span style={{ fontSize: "9px" }}>Y</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Interested"
+                      color="#ef4444"
+                      icon={<span style={{ fontSize: "9px" }}>B</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Follow-up"
+                      color="#f97316"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Sales Ready"
+                      color="#eab308"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Joined"
+                      color="#22c55e"
+                      icon={<MdCheck size={13} />}
+                    />
+                    <StatusTimelineItem
+                      status="Payment Collected"
+                      color="#16a34a"
+                      icon={<MdPerson size={13} />}
+                      isLast={true}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ ...cardStyle, padding: "0" }}>
+                  <div
+                    style={{
+                      padding: "6px 16px",
+                      background: "#f8fafc",
+                      borderBottom: "1px solid #e2e8f0",
+                      borderRadius: "9px 9px 0 0",
+                      color: "#0f172a",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Score Criteria (Max 100)
+                  </div>
+                  <div style={{ padding: "4px 16px" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        fontSize: "13px",
+                        borderCollapse: "collapse",
+                        color: "#334155",
+                      }}
+                    >
+                      <tbody>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Contact Connected
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +10
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Interested
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Demo Attended
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Budget Available
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Joining Within 30 Days
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +30
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              padding: "8px 0",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                            }}
+                          >
+                            Total Score
+                          </td>
+                          <td
+                            align="right"
+                            style={{
+                              padding: "8px 0",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                            }}
+                          >
+                            100
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+
+            <div style={{ ...cardStyle, marginTop: "1px" }}>
+              <SectionHeader title="7. Remarks" />
+              <div style={{ marginBottom: "12px" }}>
+                <CommonTextArea
+                  label={""}
+                  placeholder="Enter remarks..."
+                  value={comments}
+                  onChange={(e) => {
+                    setComments(e.target.value);
+                    if (validationTrigger) {
+                      setCommentsError(addressValidator(e.target.value));
+                    }
+                  }}
+                  error={commentsError ? `Remarks ${commentsError}` : ""}
+                  disabled={contactMode == 6}
+                />
               </div>
             </div>
           </Col>

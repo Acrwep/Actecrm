@@ -1443,3 +1443,20 @@
   background-color: #3c9111;
   color: #fff;
 }
+
+.remarks-textarea {
+  width: 100%;
+  min-height: 150px;
+  background-color: #f1f5f9;
+  border: none;
+  outline: none;
+  padding: 12px;
+  font-size: 13px;
+  color: #333;
+  resize: none;
+}
+
+.remarks-textarea::placeholder {
+  color: #2563eb;
+  font-style: italic;
+}
