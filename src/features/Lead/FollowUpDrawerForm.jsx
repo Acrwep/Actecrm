@@ -415,21 +415,6 @@ export default function FollowUpDrawerForm({
                     zIndex: 1,
                   }}
                 >
-                  {/* <div
-                    style={{
-                      flexShrink: 0,
-                      background: "#fff",
-                      borderRadius: "50%",
-                      padding: "2px",
-                      boxShadow: "0 0 0 4px #fff",
-                    }}
-                  >
-                    <CommonAvatar
-                      itemName={item.user_name || "Unknown"}
-                      avatarSize={32}
-                    />
-                  </div> */}
-
                   <div
                     style={{
                       flex: 1,

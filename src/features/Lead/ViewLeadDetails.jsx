@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Typography, Spin, Rate } from "antd";
+import { Row, Col, Typography, Spin, Rate, Empty } from "antd";
 import { Country, State } from "country-state-city";
 import moment from "moment";
 import {
@@ -319,41 +319,65 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           icon={<MdEventNote size={18} color="#2563eb" />}
           title="Followup History"
         />
-        <div style={{ padding: "8px 12px 0 12px" }}>
-          {loading && !leadData?.history ? (
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <Spin />
-            </div>
-          ) : leadData?.history && leadData.history.length > 0 ? (
+        {loading && !leadData?.history ? (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <Spin />
+          </div>
+        ) : leadData?.history?.length > 0 ? (
+          <div
+            className="leadmanager_comments_maincontainer"
+            style={{
+              position: "relative",
+              padding: "16px 12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+          >
+            {/* The vertical timeline track */}
             <div
-              className="leadmanager_comments_maincontainer"
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                padding: "12px 12px",
+                position: "absolute",
+                top: "32px",
+                bottom: "32px",
+                left: "27px",
+                width: "2px",
+                backgroundColor: "#e2e8f0",
+                zIndex: 0,
               }}
-            >
-              {leadData.history.map((item, index) => {
-                const statusColors = {
-                  "Sales Ready": "#dc2626",
-                  "Highly Interested": "#f97316",
-                  Interested: "#eab308",
-                  Exploring: "#3b82f6",
-                  "Not Responding": "#4b5563",
-                  "Not Interested": "#111827",
-                };
-                const baseColor =
-                  statusColors[item.lead_action_name] || "#4338ca";
+            ></div>
+            {leadData.history.map((item, index) => {
+              const statusColors = {
+                "Sales Ready": "#dc2626",
+                "Highly Interested": "#f97316",
+                Interested: "#eab308",
+                Exploring: "#3b82f6",
+                "Not Responding": "#4b5563",
+                "Not Interested": "#111827",
+              };
 
-                return (
+              const baseColor =
+                statusColors[item.lead_action_name] || "#4338ca";
+
+              return (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    gap: "16px",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
                   <div
-                    key={index}
                     style={{
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
+                      flex: 1,
+                      border: "1px solid #f1f5f9",
+                      borderRadius: "12px",
                       padding: "16px",
-                      background: "#f8fafc",
+                      background: "#fff",
+                      boxShadow:
+                        "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
                       position: "relative",
                     }}
                   >
@@ -369,13 +393,22 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: "10px",
                         }}
                       >
-                        <CommonAvatar
-                          itemName={item.user_name || "Unknown"}
-                          avatarSize={32}
-                        />
+                        <div
+                          style={{
+                            flexShrink: 0,
+                            background: "#fff",
+                            borderRadius: "50%",
+                            boxShadow: "0 0 0 4px #fff",
+                          }}
+                        >
+                          <CommonAvatar
+                            itemName={item.user_name || "Unknown"}
+                            avatarSize={32}
+                          />
+                        </div>
+
                         <div>
                           <p
                             style={{
@@ -389,11 +422,13 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                               ? `${item.updated_by} - ${item.user_name}`
                               : "-"}
                           </p>
+
                           <p
                             style={{
                               margin: 0,
                               fontSize: "11px",
                               color: "#64748b",
+                              fontWeight: 500,
                             }}
                           >
                             {item.updated_date
@@ -408,6 +443,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                           </p>
                         </div>
                       </div>
+
                       {item.lead_action_name && (
                         <div
                           style={{
@@ -497,44 +533,16 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                         <span style={{ fontSize: "11px", color: "gray" }}>
                           Interest Rate:
                         </span>
+
                         <Rate
                           disabled
                           value={item.interest_rate || 0}
-                          style={{ fontSize: "12px", color: "#f59e0b" }}
+                          style={{
+                            fontSize: "12px",
+                            color: "#f59e0b",
+                          }}
                         />
                       </div>
-
-                      {item.next_follow_up_date && (
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "6px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
-                            Next Follow-up:
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "11px",
-                              color: "#1677ff",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {moment(item.next_follow_up_date).format(
-                              "DD MMM YYYY",
-                            )}{" "}
-                            {item.next_followup_time &&
-                            item.next_followup_time !== "00:00:00"
-                              ? moment(
-                                  item.next_followup_time,
-                                  "HH:mm:ss",
-                                ).format("hh:mm A")
-                              : ""}
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {item.comments && (
@@ -551,14 +559,34 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                         {item.comments}
                       </div>
                     )}
+
+                    {item.status && (
+                      <div style={{ marginTop: "10px" }}>
+                        <p className="leadfollowup_qualitystatus_text">
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              color: "gray",
+                            }}
+                          >
+                            Status:
+                          </span>{" "}
+                          {item.status === 1
+                            ? "Details Shared"
+                            : item.status === 2
+                              ? "Details Not Shared"
+                              : "CNA"}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <Text type="secondary">No history available</Text>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <Empty description="No follow-up history found" />
+        )}
       </div>
     </div>
   );
