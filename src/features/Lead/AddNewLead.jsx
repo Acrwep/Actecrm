@@ -73,6 +73,7 @@ const AddNewLead = forwardRef(
     //permissions
     const permissions = useSelector((state) => state.userpermissions);
 
+    const [loginUserId, setLogInUserId] = useState("");
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [email, setEmail] = useState("");
@@ -193,6 +194,8 @@ const AddNewLead = forwardRef(
       useState("");
     const [contactMode, setContactMode] = useState(null);
     const [contactModeError, setContactModeError] = useState("");
+    const [responseStatus, setResponseStatus] = useState(null);
+    const [responseStatusError, setResponseStatusError] = useState(null);
     const [interestRate, setInterestRate] = useState(5);
     const [comments, setComments] = useState("");
     const [commentsError, setCommentsError] = useState("");
@@ -249,8 +252,19 @@ const AddNewLead = forwardRef(
       }, 300);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
+      setLogInUserId(convertAsJson?.user_id);
       setAssignExecutiveId(convertAsJson?.user_id);
       if (!updateLeadItem) {
+        setRegionId(
+          convertAsJson?.user_id?.startsWith("CHN")
+            ? 1
+            : convertAsJson?.user_id?.startsWith("BNG")
+              ? 2
+              : convertAsJson?.user_id?.startsWith("HUB") ||
+                  convertAsJson?.user_id?.startsWith("DEV")
+                ? 3
+                : null,
+        );
         getSaleManagers(convertAsJson?.user_id);
       }
       setLeadOwner(convertAsJson?.user_id);
@@ -1131,8 +1145,8 @@ const AddNewLead = forwardRef(
     const formReset = (isSuccess = false) => {
       if (updateLeadItem) {
         callgetLeadsApi();
-      } else if (liveLeadItem && !isSuccess) {
-        setActivePage("live_leads");
+      } else if (liveLeadItem) {
+        callgetLeadsApi();
       } else if (isSuccess) {
         callgetLeadsApi(true);
       }
@@ -1214,62 +1228,6 @@ const AddNewLead = forwardRef(
       const number = parts[0];
       const text = parts.slice(1).join(". ");
 
-      const StatusTimelineItem = ({ status, color, isSmall, isLast, icon }) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            marginBottom: isLast ? "0" : "8px",
-            position: "relative",
-          }}
-        >
-          {!isLast && (
-            <div
-              style={{
-                position: "absolute",
-                left: "9px",
-                top: "22px",
-                bottom: "-10px",
-                width: "2px",
-                borderLeft: "2px dotted #cbd5e1",
-                zIndex: 0,
-              }}
-            ></div>
-          )}
-          <div
-            style={{
-              width: "20px",
-              height: "20px",
-              borderRadius: "50%",
-              background: color,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 1,
-              transform: isSmall ? "scale(0.4)" : "none",
-              color: "#fff",
-              fontSize: "12px",
-              fontWeight: "bold",
-              boxShadow: "0 0 0 4px #fff",
-            }}
-          >
-            {icon}
-          </div>
-          <div
-            style={{
-              marginLeft: "14px",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "#1e293b",
-              paddingTop: "1px",
-              letterSpacing: "0.2px",
-            }}
-          >
-            {status}
-          </div>
-        </div>
-      );
-
       return (
         <div
           style={{
@@ -1296,16 +1254,7 @@ const AddNewLead = forwardRef(
           >
             {number}
           </div>
-          <span
-            style={{
-              color: "#1e40af",
-              fontWeight: 600,
-              fontSize: "14px",
-              letterSpacing: "0.2px",
-            }}
-          >
-            {text || number}
-          </span>
+          <span className="addnewlead_card_headings">{text || number}</span>
         </div>
       );
     };
@@ -1591,15 +1540,7 @@ const AddNewLead = forwardRef(
         )}
 
         <Row gutter={8}>
-          {/* Column 1 */}
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
-            lg={6}
-            // xl={{ flex: "25%" }}
-            // xxl={{ flex: "25%" }}
-          >
+          <Col span={6} style={{ display: "flex" }}>
             <div
               style={{
                 ...cardStyle,
@@ -1610,13 +1551,19 @@ const AddNewLead = forwardRef(
                       opacity: 0.8,
                     }
                   : {}),
+                width: "100%",
               }}
             >
               <SectionHeader title="1. Basic Information (Mandatory)" />
               <div style={{ marginBottom: "26px" }}>
-                <ReadOnlyField
+                <CommonInputField
                   label="Lead Date & Time"
                   value={moment().format("DD MMM YYYY hh:mm A")}
+                  disabled={true}
+                  error={""}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
                 />
               </div>
               <div style={{ marginBottom: "26px" }}>
@@ -1713,7 +1660,7 @@ const AddNewLead = forwardRef(
                   errorFontSize={"9px"}
                 />
               </div>
-              <div style={{ marginBottom: "8px" }}>
+              <div style={{ marginBottom: "0px" }}>
                 <div
                   style={{
                     display: "flex",
@@ -1769,907 +1716,264 @@ const AddNewLead = forwardRef(
                 </div>
               </div>
             </div>
-
-            <div style={cardStyle}>
-              <SectionHeader title="5. Assignment" />
-              <div style={{ marginBottom: "24px" }}>
-                <CommonSelectField
-                  label="Assigned Branch"
-                  required={true}
-                  value={branch}
-                  onChange={(e) => {
-                    setBranch(e.target.value);
-                    if (validationTrigger) {
-                      setBranchError(selectValidator(e.target.value));
-                    }
-                  }}
-                  options={allBranchesData}
-                  error={branchError}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"0px"}
-                  disabled={isReAssign}
-                />
-              </div>
-              <div style={{ marginBottom: "20px" }}>
-                <CommonSelectField
-                  label="Assigned Executive"
-                  required={true}
-                  value={assignExecutiveId}
-                  onChange={(e) => {
-                    setAssignExecutiveId(e.target.value);
-                    getSaleManagers(e.target.value);
-                  }}
-                  options={saleUsers}
-                  error={assignExecutiveError}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  disabled={
-                    !permissions.includes("Assign Lead") ||
-                    (isReAssign == false && updateLeadItem)
-                  }
-                />
-              </div>
-              <div style={{ marginBottom: "24px" }}>
-                <CommonSelectField
-                  label="Assigned Manager"
-                  required={true}
-                  value={assignedManager}
-                  options={managersList}
-                  error={""}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  disabled={true}
-                />
-              </div>
-              <div style={{ marginBottom: "0px" }}>
-                <CommonSelectField
-                  label="Lead Owner"
-                  required={true}
-                  value={leadOwner}
-                  options={saleUsers}
-                  error={""}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  disabled={true}
-                />
-              </div>
-            </div>
           </Col>
-
-          {/* Column 2 */}
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
-            lg={6}
-            // xl={{ flex: "21%" }}
-            // xxl={{ flex: "21%" }}
-          >
+          <Col span={6} style={{ display: "flex" }}>
             <div
               style={{
-                ...cardStyle,
-                ...(isReAssign
-                  ? {
-                      background: "#eff6ff",
-                      pointerEvents: "none",
-                      opacity: 0.8,
-                    }
-                  : {}),
-                marginBottom: "8px",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              <SectionHeader title="2. Lead Source" />
-              <div style={{ marginBottom: "22px" }}>
-                <CommonSelectField
-                  label="Lead Source"
-                  required={true}
-                  value={leadSource}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setLeadSource(value);
-                    if (value == 2 || value == 3) {
-                      setLeadSubSourceOptions([]);
-                      setLeadSubSource(null);
-                      setLeadSubSourceError("");
-                    } else {
-                      getLeadSubSourceData(value);
-                    }
-                    if (validationTrigger) {
-                      setLeadSourceError(selectValidator(value));
-                    }
-                  }}
-                  options={leadTypeOptions}
-                  error={leadSourceError}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"-0.4px"}
-                  disabled={liveLeadItem}
-                />
-              </div>
+              <div
+                style={{
+                  ...cardStyle,
+                  ...(isReAssign
+                    ? {
+                        background: "#eff6ff",
+                        pointerEvents: "none",
+                        opacity: 0.8,
+                      }
+                    : {}),
+                  marginBottom: "12px",
+                }}
+              >
+                <SectionHeader title="2. Lead Source" />
+                <div style={{ marginBottom: "22px" }}>
+                  <CommonSelectField
+                    label="Lead Source"
+                    required={true}
+                    value={leadSource}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setLeadSource(value);
+                      if (value == 2 || value == 3) {
+                        setLeadSubSourceOptions([]);
+                        setLeadSubSource(null);
+                        setLeadSubSourceError("");
+                      } else {
+                        getLeadSubSourceData(value);
+                      }
+                      if (validationTrigger) {
+                        setLeadSourceError(selectValidator(value));
+                      }
+                    }}
+                    options={leadTypeOptions}
+                    error={leadSourceError}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"-0.4px"}
+                    disabled={liveLeadItem}
+                  />
+                </div>
 
-              <div style={{ marginBottom: "22px" }}>
-                <CommonSelectField
-                  label="Lead Sub Source"
-                  required={leadSource == 2 || leadSource == 3 ? false : true}
-                  onChange={(e) => {
-                    setLeadSubSource(e.target.value);
-                    if (validationTrigger) {
-                      setLeadSubSourceError(selectValidator(e.target.value));
-                    }
-                  }}
-                  options={leadSubSourceOptions?.map((item) => ({
-                    id: item.sub_category_id,
-                    name: item.sub_category,
-                  }))}
-                  value={leadSubSource}
-                  error={leadSubSourceError}
-                  disabled={leadSource == 2 || leadSource == 3}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"-0.4px"}
-                />
-              </div>
+                <div style={{ marginBottom: "22px" }}>
+                  <CommonSelectField
+                    label="Lead Sub Source"
+                    required={leadSource == 2 || leadSource == 3 ? false : true}
+                    onChange={(e) => {
+                      setLeadSubSource(e.target.value);
+                      if (validationTrigger) {
+                        setLeadSubSourceError(selectValidator(e.target.value));
+                      }
+                    }}
+                    options={leadSubSourceOptions?.map((item) => ({
+                      id: item.sub_category_id,
+                      name: item.sub_category,
+                    }))}
+                    value={leadSubSource}
+                    error={leadSubSourceError}
+                    disabled={leadSource == 2 || leadSource == 3}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"-0.4px"}
+                  />
+                </div>
 
-              <div style={{ marginBottom: "22px" }}>
-                <CommonSelectField
-                  label="Region"
-                  required={true}
-                  onChange={(e) => {
-                    setRegionId(e.target.value);
-                    // getBranchesData(e.target.value);
-                    if (validationTrigger) {
-                      setRegionError(selectValidator(e.target.value));
-                    }
-                  }}
-                  options={regionOptions}
-                  value={regionId}
-                  error={regionError}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"0px"}
-                  disabled={isReAssign}
-                />
-              </div>
+                <div style={{ marginBottom: "22px" }}>
+                  <CommonSelectField
+                    label="Region"
+                    required={true}
+                    onChange={(e) => {
+                      setRegionId(e.target.value);
+                      // getBranchesData(e.target.value);
+                      if (validationTrigger) {
+                        setRegionError(selectValidator(e.target.value));
+                      }
+                    }}
+                    options={regionOptions}
+                    value={regionId}
+                    error={regionError}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                    disabled={true}
+                  />
+                </div>
 
-              <div style={{ marginBottom: "0px" }}>
-                <CommonInputField
-                  label="Referral Name"
-                  value={referralName}
-                  onChange={(e) => setReferralName(e.target.value)}
-                  placeholder="Enter referral name"
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                />
-              </div>
-            </div>
-
-            <div
-              style={{
-                ...cardStyle,
-                ...(isReAssign
-                  ? {
-                      background: "#eff6ff",
-                      pointerEvents: "none",
-                      opacity: 0.8,
-                    }
-                  : {}),
-              }}
-            >
-              <SectionHeader title="3. Course Requirement" />
-              <div style={{ marginBottom: "21px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "3px",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <CommonSelectField
-                      label="Primary Course"
-                      value={primaryCourse}
-                      onChange={(e) => {
-                        setPrimaryCourse(e.target.value);
-                        if (validationTrigger) {
-                          setPrimaryCourseError(
-                            selectValidator(e.target.value),
-                          );
-                        }
-                      }}
-                      options={courseOptions}
-                      error={primaryCourseError}
-                      required={true}
-                      borderRightNone={true}
-                      onFocus={() => setIsPrimaryCourseFocused(true)}
-                      onBlur={() => setIsPrimaryCourseFocused(false)}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"-0.4px"}
-                    />
-                  </div>
-
-                  <div
-                    className={
-                      primaryCourseError
-                        ? "leads_errorcourse_addcontainer"
-                        : isPrimaryCourseFocused
-                          ? "leads_focusedcourse_addcontainer"
-                          : "leads_course_addcontainer"
-                    }
-                  >
-                    <Tooltip
-                      placement="bottom"
-                      title="Add Course"
-                      className="leadtable_customertooltip"
-                    >
-                      <MdAdd
-                        size={19}
-                        style={{ color: "#333333af", cursor: "pointer" }}
-                        onClick={() => setIsOpenAddCourseModal(true)}
-                      />
-                    </Tooltip>
-                  </div>
+                <div style={{ marginBottom: "0px" }}>
+                  <CommonInputField
+                    label="Referral Name"
+                    value={referralName}
+                    onChange={(e) => setReferralName(e.target.value)}
+                    placeholder="Enter referral name"
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                  />
                 </div>
               </div>
-
-              <div style={{ marginBottom: "21px" }}>
-                <CommonInputField
-                  label="Fees"
-                  required={true}
-                  value={primaryFees}
-                  onChange={(e) => {
-                    setPrimaryFees(e.target.value);
-                    if (validationTrigger) {
-                      setPrimaryFeesError(selectValidator(e.target.value));
-                    }
-                  }}
-                  error={primaryFeesError}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                />
-              </div>
-
-              <div style={{ marginBottom: "22px" }}>
-                <CommonSelectField
-                  label="Preferred Mode"
-                  value={preferredMode}
-                  onChange={(e) => setPreferredMode(e.target.value)}
-                  options={[
-                    { id: 1, name: "Online" },
-                    { id: 2, name: "Classroom" },
-                  ]}
-                  error={""}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"0px"}
-                />
-              </div>
-
-              <div style={{ marginBottom: "0px" }}>
-                <CommonSelectField
-                  label="Preferred Batch"
-                  onChange={(e) => {
-                    setPreferredBatch(e.target.value);
-                  }}
-                  options={[
-                    {
-                      id: 1,
-                      name: "Normal",
-                    },
-                    {
-                      id: 2,
-                      name: "Fastrack",
-                    },
-                    {
-                      id: 3,
-                      name: "Custom",
-                    },
-                  ]}
-                  value={preferredBatch}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  labelMarginTop={"0px"}
-                />
-              </div>
-            </div>
-
-            <div
-              style={{
-                ...cardStyle,
-                ...(contactMode == 6
-                  ? {
-                      background: "#eff6ff",
-                      pointerEvents: "none",
-                      opacity: 0.8,
-                    }
-                  : {}),
-              }}
-            >
-              <SectionHeader title="6. Follow-Up Planning" />
-              <div style={{ marginBottom: "24px" }}>
-                <CommonSelectField
-                  label="Follow-up Type"
-                  required={true}
-                  value={followUpStatusId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFollowUpStatusId(value);
-                  }}
-                  options={[
-                    { id: 5, name: "Sales Ready", color: "#dc2626" },
-                    { id: 1, name: "Highly Interested", color: "#f97316" },
-                    { id: 8, name: "Interested", color: "#eab308" },
-                    { id: 9, name: "Exploring", color: "#3b82f6" },
-                    { id: 10, name: "Not Responding", color: "#4b5563" },
-                    { id: 2, name: "Not Interested", color: "#111827" },
-                  ]}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: "10px",
-                            height: "10px",
-                            borderRadius: "50%",
-                            backgroundColor: option.color || "gray",
-                          }}
-                        ></span>
-                        <span>{option.name}</span>
-                      </div>
-                    </li>
-                  )}
-                  height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
-                  errorFontSize={"9px"}
-                  error={""}
-                  disabled={true}
-                />
-              </div>
-
-              <div style={{ marginBottom: "24px" }}>
-                <CommonNxtFollowupDatePicker
-                  label="Next Follow-up Date"
-                  required={true}
-                  value={nxtFollowupDate}
-                  onChange={(val) => {
-                    setNxtFollowupDate(val);
-                    setNxtFollowupDateError(selectValidator(val));
-                  }}
-                  leadTemperature={parseInt(leadTemperature)}
-                  error={nxtFollowupDateError}
-                  height={"35px"}
-                  labelFontSize={"12px"}
-                  fontSize={"13px"}
-                  labelMarginTop={"0.5px"}
-                  iconSize={"16px"}
-                  disabled={
-                    contactMode == 6 || (updateLeadItem && isReAssign == false)
-                  }
-                />
-              </div>
-              <div style={{ marginBottom: "16px" }}>
-                <CommonMuiDateTimePicker
-                  label="Next Follow-up Time"
-                  required={false}
-                  value={nextFollowupTime}
-                  onChange={(val) => setNextFollowupTime(val)}
-                  error={""}
-                  onlyTime={true}
-                  height={"35px"}
-                  labelFontSize={"12px"}
-                  fontSize={"13px"}
-                  labelMarginTop={"0.5px"}
-                  iconSize={"16px"}
-                  disabled={
-                    contactMode == 6 || (updateLeadItem && isReAssign == false)
-                  }
-                />
-              </div>
-
-              {/* {followUpStatusId && (
-                      <div style={{ marginBottom: "16px" }}>
-                        <p style={{ fontWeight: "500" }}>Interest Rating</p>
-                        <Rate
-                          style={{ marginTop: "6px", fontSize: "22px" }}
-                          value={interestRate}
-                          onChange={setInterestRate}
-                        />
-                      </div>
-                    )} */}
 
               <div
                 style={{
-                  marginBottom: "16px",
-                  display: "flex",
-                  justifyContent: "flex-end",
+                  ...cardStyle,
+                  flex: 1,
+                  ...(isReAssign
+                    ? {
+                        background: "#eff6ff",
+                        pointerEvents: "none",
+                        opacity: 0.8,
+                      }
+                    : {}),
                 }}
               >
-                <Checkbox
-                  checked={addTodayFollowup}
-                  onChange={(e) => setAddTodayFollowup(e.target.checked)}
-                  disabled={contactMode == 6}
-                >
-                  <span
+                <SectionHeader title="3. Course Requirement" />
+                <div style={{ marginBottom: "21px" }}>
+                  <div
                     style={{
-                      fontSize: "12px",
-                      color: "#475569",
-                      fontWeight: 500,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "3px",
                     }}
                   >
-                    Add to today's follow-up list
-                  </span>
-                </Checkbox>
-              </div>
-            </div>
-          </Col>
-
-          {/* Right Half (Columns 3 and 4) */}
-          <Col xs={24} sm={24} md={24} lg={12}>
-            <Row gutter={8}>
-              {/* Column 3 */}
-              <Col xs={24} sm={24} md={12} lg={12}>
-                <div
-                  style={{
-                    ...cardStyle,
-                    ...(isReAssign
-                      ? {
-                          background: "#eff6ff",
-                          pointerEvents: "none",
-                          opacity: 0.8,
-                        }
-                      : {}),
-                    height: "98%",
-                  }}
-                >
-                  <SectionHeader title="4. Screening" />
-                  {updateLeadItem ? (
-                    ""
-                  ) : (
-                    <>
-                      <div style={{ marginBottom: "24px" }}>
-                        <CommonSelectField
-                          label="Communication"
-                          required={true}
-                          value={communicationStatus}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCommunicationStatus(value);
-                            setContactMode(null);
-                            setCounsel("Not Given");
-                            setLeadTemperature(null);
-                            setFollowUpStatusId(null);
-                            setNxtFollowupDate(null);
-                            setNextFollowupTime(null);
-                            setAddTodayFollowup(false);
-                            setExpectDateJoin(null);
-                            if (validationTrigger) {
-                              setCommunicationStatusError(
-                                selectValidator(value),
-                              );
-                              setContactModeError(selectValidator(null));
-                            }
-                          }}
-                          options={communicationStatusOptions}
-                          error={communicationStatusError}
-                          disabled={updateLeadItem}
-                          height={"35px"}
-                          fontSize={"13px"}
-                          labelFontSize={"12px"}
-                          errorFontSize={"7.7px"}
-                          labelMarginTop={"0px"}
-                        />
-                      </div>
-                      <div style={{ marginBottom: "24px" }}>
-                        <CommonSelectField
-                          label={communicationStatus == 2 ? "Reason" : "Mode"}
-                          required={true}
-                          options={
-                            communicationStatus == 2
-                              ? [
-                                  {
-                                    id: 5,
-                                    name: "Data Correct But No Response",
-                                  },
-                                  { id: 6, name: "Data Incorrect" },
-                                ]
-                              : [
-                                  { id: 1, name: "Phone Call" },
-                                  { id: 2, name: "WhatsApp" },
-                                  { id: 3, name: "SMS" },
-                                  { id: 4, name: "Email" },
-                                ]
+                    <div style={{ flex: 1 }}>
+                      <CommonSelectField
+                        label="Primary Course"
+                        value={primaryCourse}
+                        onChange={(e) => {
+                          setPrimaryCourse(e.target.value);
+                          if (validationTrigger) {
+                            setPrimaryCourseError(
+                              selectValidator(e.target.value),
+                            );
                           }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setContactMode(value);
-                            if (value == 5) {
-                              setComments(comments == "Junk" ? "" : comments);
-                              setLeadTemperature(1);
-                              setFollowUpStatusId(1);
-                            } else if (value == 6) {
-                              setLeadTemperature(4);
-                              setFollowUpStatusId(null);
-                              setNxtFollowupDate(null);
-                              setNxtFollowupDateError("");
-                              setNextFollowupTime(null);
-                              setCounsel("Not Given");
-                              setComments("Junk");
-                              setCommentsError("");
-                              setExpectDateJoin(null);
-                            } else {
-                              setLeadTemperature(5);
-                              setFollowUpStatusId(5);
-                              setComments(comments == "Junk" ? "" : comments);
-                            }
-                            if (validationTrigger) {
-                              setContactModeError(selectValidator(value));
-                            }
-                          }}
-                          value={contactMode}
-                          error={contactModeError}
-                          disabled={updateLeadItem}
-                          height={"35px"}
-                          fontSize={"13px"}
-                          labelFontSize={"12px"}
-                          errorFontSize={"9px"}
-                          labelMarginTop={"0px"}
-                        />
-                      </div>
-                    </>
-                  )}
-                  <div style={{ marginBottom: "24px" }}>
-                    <CommonSelectField
-                      label="Counsel"
-                      value={counsel}
-                      onChange={(e) => setCounsel(e.target.value)}
-                      options={[
-                        { id: "Given", name: "Given" },
-                        { id: "Not Given", name: "Not Given" },
-                      ]}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={contactMode == 5 || contactMode == 6}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "24px" }}>
-                    <CommonSelectField
-                      label="Lead Temp."
-                      options={
-                        contactMode == 6
-                          ? [
-                              { id: 5, name: "Super Hot", color: "#dc2626" },
-                              { id: 1, name: "Hot", color: "#f97316" },
-                              { id: 2, name: "Warm", color: "#eab308" },
-                              { id: 3, name: "Cold", color: "#3b82f6" },
-                              {
-                                id: 6,
-                                name: "Not Interested",
-                                color: "#991b1b",
-                              },
-                              { id: 4, name: "Dormant", color: "#6b7280" },
-                            ]
-                          : [
-                              { id: 5, name: "Super Hot", color: "#dc2626" },
-                              { id: 1, name: "Hot", color: "#f97316" },
-                              { id: 2, name: "Warm", color: "#eab308" },
-                              { id: 3, name: "Cold", color: "#3b82f6" },
-                              {
-                                id: 6,
-                                name: "Not Interested",
-                                color: "#991b1b",
-                              },
-                            ]
-                      }
-                      renderOption={(props, option) => (
-                        <li {...props}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                width: "10px",
-                                height: "10px",
-                                borderRadius: "50%",
-                                backgroundColor: option.color || "gray",
-                              }}
-                            ></span>
-                            <span>{option.name}</span>
-                          </div>
-                        </li>
-                      )}
-                      onChange={(e) => {
-                        setLeadTemperature(e.target.value);
-                      }}
-                      value={leadTemperature}
-                      error={""}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      errorFontSize={"9px"}
-                      labelMarginTop={"0px"}
-                      disabled={true}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: "24px" }}>
-                    <CommonMuiDatePicker
-                      label="Expected Date Join"
-                      required={false}
-                      onChange={(value) => {
-                        console.log("vallll", value);
-                        setExpectDateJoin(value);
-                      }}
-                      value={expectDateJoin}
-                      error=""
-                      disablePreviousDates={true}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      labelMarginTop={"0.5px"}
-                      iconSize={"16px"}
-                      disabled={contactMode == 6}
-                    />
-                  </div>
-                  <div style={{ marginBottom: "6px" }}>
-                    <CommonInputField
-                      label="Lead Score"
-                      value={""}
-                      error={""}
-                      height={"36px"}
-                      labelFontSize={"13px"}
-                      disabled={true}
-                    />
-                  </div>
-                  {/* <Col span={12}>
-                      <CommonInputField
-                        label="Lead Score"
-                        value={""}
-                        error={""}
-                        height={"36px"}
-                        labelFontSize={"13px"}
-                        disabled={true}
+                        }}
+                        options={courseOptions}
+                        error={primaryCourseError}
+                        required={true}
+                        borderRightNone={true}
+                        onFocus={() => setIsPrimaryCourseFocused(true)}
+                        onBlur={() => setIsPrimaryCourseFocused(false)}
+                        height={"35px"}
+                        fontSize={"13px"}
+                        labelFontSize={"12px"}
+                        errorFontSize={"9px"}
+                        labelMarginTop={"-0.4px"}
                       />
-                    </Col> */}
-                </div>
-              </Col>
+                    </div>
 
-              {/* Right Sidebar (Status Flow & Score Criteria) */}
-              <Col xs={24} sm={24} md={12} lg={12}>
-                <div
-                  style={{
-                    ...cardStyle,
-                    background: "#f8fafc",
-                    padding: "8px 16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#0f172a",
-                      fontWeight: 700,
-                      fontSize: "13px",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    Lead Status Flow
-                  </div>
-                  <div>
-                    <StatusTimelineItem
-                      status="New Lead"
-                      color="#2563eb"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Validated"
-                      color="#2563eb"
-                      isSmall={true}
-                    />
-                    <StatusTimelineItem
-                      status="Contacted"
-                      color="#0d9488"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Counselling"
-                      color="#ef4444"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Fee Discussion"
-                      color="#f59e0b"
-                      icon={<span style={{ fontSize: "9px" }}>Y</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Interested"
-                      color="#ef4444"
-                      icon={<span style={{ fontSize: "9px" }}>B</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Follow-up"
-                      color="#f97316"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Sales Ready"
-                      color="#eab308"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Joined"
-                      color="#22c55e"
-                      icon={<MdCheck size={13} />}
-                    />
-                    <StatusTimelineItem
-                      status="Payment Collected"
-                      color="#16a34a"
-                      icon={<MdPerson size={13} />}
-                      isLast={true}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ ...cardStyle, padding: "0" }}>
-                  <div
-                    style={{
-                      padding: "6px 16px",
-                      background: "#f8fafc",
-                      borderBottom: "1px solid #e2e8f0",
-                      borderRadius: "9px 9px 0 0",
-                      color: "#0f172a",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      textAlign: "center",
-                    }}
-                  >
-                    Score Criteria (Max 100)
-                  </div>
-                  <div style={{ padding: "4px 16px" }}>
-                    <table
-                      style={{
-                        width: "100%",
-                        fontSize: "13px",
-                        borderCollapse: "collapse",
-                        color: "#334155",
-                      }}
+                    <div
+                      className={
+                        primaryCourseError
+                          ? "leads_errorcourse_addcontainer"
+                          : isPrimaryCourseFocused
+                            ? "leads_focusedcourse_addcontainer"
+                            : "leads_course_addcontainer"
+                      }
                     >
-                      <tbody>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Contact Connected
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +10
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Interested
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Demo Attended
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Budget Available
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Joining Within 30 Days
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +30
-                          </td>
-                        </tr>
-                        <tr>
-                          <td
-                            style={{
-                              padding: "8px 0",
-                              fontWeight: "700",
-                              color: "#0f172a",
-                            }}
-                          >
-                            Total Score
-                          </td>
-                          <td
-                            align="right"
-                            style={{
-                              padding: "8px 0",
-                              fontWeight: "700",
-                              color: "#0f172a",
-                            }}
-                          >
-                            100
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                      <Tooltip
+                        placement="bottom"
+                        title="Add Course"
+                        className="leadtable_customertooltip"
+                      >
+                        <MdAdd
+                          size={19}
+                          style={{ color: "#333333af", cursor: "pointer" }}
+                          onClick={() => setIsOpenAddCourseModal(true)}
+                        />
+                      </Tooltip>
+                    </div>
                   </div>
                 </div>
-              </Col>
-            </Row>
 
-            <div style={{ ...cardStyle, marginTop: "1px" }}>
-              <SectionHeader title="7. Remarks" />
-              <div style={{ marginBottom: "12px" }}>
-                <CommonTextArea
-                  label={""}
-                  placeholder="Enter remarks..."
-                  value={comments}
-                  onChange={(e) => {
-                    setComments(e.target.value);
-                    if (validationTrigger) {
-                      setCommentsError(addressValidator(e.target.value));
-                    }
-                  }}
-                  error={commentsError ? `Remarks ${commentsError}` : ""}
-                  disabled={contactMode == 6}
-                />
+                <div style={{ marginBottom: "21px" }}>
+                  <CommonInputField
+                    label="Fees"
+                    required={true}
+                    value={primaryFees}
+                    onChange={(e) => {
+                      setPrimaryFees(e.target.value);
+                      if (validationTrigger) {
+                        setPrimaryFeesError(selectValidator(e.target.value));
+                      }
+                    }}
+                    error={primaryFeesError}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "22px" }}>
+                  <CommonSelectField
+                    label="Preferred Mode"
+                    value={preferredMode}
+                    onChange={(e) => setPreferredMode(e.target.value)}
+                    options={[
+                      { id: 1, name: "Online" },
+                      { id: 2, name: "Classroom" },
+                    ]}
+                    error={""}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "0px" }}>
+                  <CommonSelectField
+                    label="Preferred Batch"
+                    onChange={(e) => {
+                      setPreferredBatch(e.target.value);
+                    }}
+                    options={[
+                      {
+                        id: 1,
+                        name: "Normal",
+                      },
+                      {
+                        id: 2,
+                        name: "Fastrack",
+                      },
+                      {
+                        id: 3,
+                        name: "Custom",
+                      },
+                    ]}
+                    value={preferredBatch}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                  />
+                </div>
               </div>
             </div>
           </Col>
+          <Col span={6}></Col>
+          <Col span={6}></Col>
         </Row>
 
         {/* add course modal */}

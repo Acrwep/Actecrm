@@ -36,7 +36,6 @@ import {
 } from "../Common/Validation";
 import CommonTable from "../Common/CommonTable";
 import { useDispatch, useSelector } from "react-redux";
-import AddLead from "./AddLead";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonTextArea from "../Common/CommonTextArea";
@@ -51,23 +50,21 @@ export default function AssignLeads({
   refreshLeads,
   refreshJunkLeads,
   setAssignLeadCount,
+  onPickLead,
 }) {
   const dispatch = useDispatch();
-  //useref
-  const addLeaduseRef = useRef();
-
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   //usestates
   const filterValuesFromRedux = useSelector(
     (state) => state.assignleadfiltervalues,
   );
+  const tabName = useSelector((state) => state.leadmanageractivepage);
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
   //pick lead drawer
-  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [allDownliners, setAllDownliners] = useState([]);
@@ -413,11 +410,28 @@ export default function AssignLeads({
     }
   };
 
+  useEffect(() => {
+    if (tabName === "assign_leads" && permissions.length >= 1) {
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getManualAssignLeadsData(
+        filterValuesFromRedux.searchValue,
+        filterValuesFromRedux.start_date
+          ? filterValuesFromRedux.start_date
+          : PreviousAndCurrentDate[0],
+        filterValuesFromRedux.end_date
+          ? filterValuesFromRedux.end_date
+          : PreviousAndCurrentDate[1],
+        filterValuesFromRedux.pageNumber,
+        filterValuesFromRedux.pageLimit,
+      );
+    }
+  }, [tabName]);
+
   const handlePick = async (item) => {
     console.log("itemmmm", item);
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
-    setPickLeadItem({
+    const pickedData = {
       id: item.id,
       name: item.name,
       email: item.email,
@@ -427,8 +441,13 @@ export default function AssignLeads({
       training: item.training ? item.training : "",
       comments: item.comments ? item.comments : "",
       is_assign_lead: true,
-    });
-    setIsOpenAddDrawer(true);
+    };
+    if (onPickLead) {
+      onPickLead(pickedData);
+    } else {
+      setPickLeadItem(pickedData);
+      setIsOpenAddDrawer(true);
+    }
   };
 
   const handleSelectedRow = (row) => {
@@ -830,70 +849,6 @@ export default function AssignLeads({
           totalPageNumber={pagination.total} // total rows
         />
       </div>
-
-      {/* add lead drawer */}
-      <Drawer
-        title="Add Lead"
-        open={isOpenAddDrawer}
-        onClose={async () => {
-          setIsOpenAddDrawer(false);
-          setPickLeadItem(null);
-        }}
-        width="52%"
-        style={{ position: "relative" }}
-        id="leadform_addlead_drawer"
-      >
-        <AddLead
-          ref={addLeaduseRef}
-          key={pickLeadItem}
-          leadTypeOptions={leadTypeOptions}
-          regionOptions={regionOptions}
-          updateLeadItem={null}
-          setSaveOnlyLoading={setButtonLoading}
-          setButtonLoading={setButtonLoading}
-          setIsOpenAddDrawer={setIsOpenAddDrawer}
-          liveLeadItem={pickLeadItem}
-          callgetLeadsApi={(is_refreshjunk) => {
-            console.log("is_refreshjunk", is_refreshjunk);
-            if (is_refreshjunk == true) {
-              setPickLeadItem(null);
-              refreshJunkLeads();
-              return;
-            }
-            setPickLeadItem(null);
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              pagination.page,
-              pagination.limit,
-            );
-            refreshLeadFollowUp();
-            refreshLeads();
-          }}
-        />
-
-        <div className="leadmanager_submitlead_buttoncontainer">
-          <div style={{ display: "flex", gap: "12px" }}>
-            <>
-              {buttonLoading ? (
-                <button className={"leadmanager_loadingupdateleadbutton"}>
-                  <CommonSpinner />
-                </button>
-              ) : (
-                <button
-                  className={"leadmanager_updateleadbutton"}
-                  onClick={() =>
-                    addLeaduseRef.current.handleSubmit("Save Only")
-                  }
-                >
-                  Submit
-                </button>
-              )}
-            </>
-          </div>
-        </div>
-      </Drawer>
 
       {/* move to live lead modal */}
       <Modal

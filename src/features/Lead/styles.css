@@ -1460,3 +1460,14 @@
   color: #2563eb;
   font-style: italic;
 }
+.addnewlead_card_headings {
+  color: #1e40af;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+@media (min-width: 300px) and (max-width: 1400px) {
+  .addnewlead_card_headings {
+    font-size: 11.5px;
+  }
+}

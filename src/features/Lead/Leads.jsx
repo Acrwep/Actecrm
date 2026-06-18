@@ -84,6 +84,7 @@ import { storeLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -757,6 +758,16 @@ export default function Leads({
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
         mounted.current = true;
+        // Calculate bucket from activePage instead of relying solely on Redux initial state
+        const bucketMapping = {
+          all_leads: "all",
+          valid_leads: "Valid Leads",
+          eligible_leads: "Eligible Leads",
+          interested_leads: "Interested Leads",
+          joinings: "Joinings"
+        };
+        const targetBucket = bucketMapping[activePage] || filterValuesFromRedux.bucket;
+
         // ---------------------
         setSelectedDates([
           filterValuesFromRedux.start_date,
@@ -766,7 +777,14 @@ export default function Leads({
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setSelectedUserId(filterValuesFromRedux.user_id);
-        setLeadBucketName(filterValuesFromRedux.bucket);
+        setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
+        
+        dispatch(
+          storeLeadFilterValues({
+            bucket: targetBucket === "all" ? "" : targetBucket,
+          })
+        );
+
         setPagination({
           page: filterValuesFromRedux.pageNumber,
           limit: filterValuesFromRedux.pageLimit,
@@ -777,6 +795,7 @@ export default function Leads({
           filterValuesFromRedux.user_id
             ? filterValuesFromRedux.user_id
             : convertAsJson?.user_id,
+          targetBucket === "all" ? "" : targetBucket
         );
       }
     }
@@ -1281,7 +1300,7 @@ export default function Leads({
     }
   };
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getAllDownlineUsersData = async (user_id, bucketOverride) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -1302,9 +1321,11 @@ export default function Leads({
         downliners_ids,
         filterValuesFromRedux.lead_source,
         filterValuesFromRedux.lead_status_id,
-        filterValuesFromRedux.bucket == "all"
-          ? ""
-          : filterValuesFromRedux.bucket,
+        bucketOverride !== undefined
+          ? bucketOverride
+          : (filterValuesFromRedux.bucket == "all"
+              ? ""
+              : filterValuesFromRedux.bucket),
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
       );
@@ -2669,15 +2690,8 @@ export default function Leads({
 
       {leadBucketName === "Interested Leads" &&
         Object.keys(interestedLeadActions).length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginTop: "15px",
-              flexWrap: "wrap",
-              padding: "0 5px",
-            }}
-          >
+          <div style={{ marginTop: "15px", padding: "0 5px" }}>
+            <ScrollableTabContainer>
             {(() => {
               const orderedKeys = [
                 "all",
@@ -2783,6 +2797,7 @@ export default function Leads({
                 );
               });
             })()}
+            </ScrollableTabContainer>
           </div>
         )}
 

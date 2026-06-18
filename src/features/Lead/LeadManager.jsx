@@ -34,6 +34,7 @@ import JunkLeads from "./JunkLeads";
 import AssignLeads from "./AssignLeads";
 import AddNewLead from "./AddNewLead";
 import moment from "moment";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 
 export default function LeadManager() {
   const mounted = useRef(false);
@@ -75,7 +76,9 @@ export default function LeadManager() {
   useEffect(() => {
     if (activePage !== "add_lead") {
       if (pickLeadItem) {
-        releaseLead(pickLeadItem.id);
+        if (!pickLeadItem.is_assign_lead) {
+          releaseLead(pickLeadItem.id);
+        }
         setPickLeadItem(null);
       }
       if (editLeadItem) {
@@ -87,7 +90,7 @@ export default function LeadManager() {
 
   useEffect(() => {
     return () => {
-      if (pickLeadItemRef.current) {
+      if (pickLeadItemRef.current && !pickLeadItemRef.current.is_assign_lead) {
         releaseLead(pickLeadItemRef.current.id);
       }
     };
@@ -123,7 +126,7 @@ export default function LeadManager() {
   // Track whether each tab has been opened at least once
   const [loadedTabs, setLoadedTabs] = useState({
     followup: false,
-    leads: false,
+    leads: true,
     live_leads: false,
     junk: false,
     assign_leads: false,
@@ -141,6 +144,7 @@ export default function LeadManager() {
   });
 
   // const [userTableLoading, setUserTableLoading] = useState(true);
+  const prevActivePageRef = useRef("all_leads");
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -232,7 +236,13 @@ export default function LeadManager() {
         activePage !== "live_leads" &&
         activePage !== "assign_leads" &&
         activePage !== "junk" &&
-        !['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage)
+        ![
+          "all_leads",
+          "valid_leads",
+          "eligible_leads",
+          "interested_leads",
+          "joinings",
+        ].includes(activePage)
       ) {
         handleTabClick("add_lead");
       }
@@ -301,7 +311,10 @@ export default function LeadManager() {
       console.log("lead count response", response);
       const countDetails = response?.data?.data;
       setLeadCount(countDetails.total_lead_count);
-      setBucketCounts((prev) => ({ ...prev, all: countDetails.total_lead_count }));
+      setBucketCounts((prev) => ({
+        ...prev,
+        all: countDetails.total_lead_count,
+      }));
       setLiveLeadCount(countDetails.web_lead_count);
       setJunkLeadCount(countDetails.junk_lead_count);
       setAssignLeadCount(countDetails.assign_lead_count);
@@ -451,18 +464,27 @@ export default function LeadManager() {
   };
 
   const handleTabClick = (tab) => {
+    if (tab !== "add_lead") {
+      prevActivePageRef.current = tab;
+    }
     setActivePage(tab);
     dispatch(storeLeadManagerActivePage(tab));
-    
+
     setLoadedTabs((prev) => {
-      const isLeadBucket = ['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(tab);
-      return { 
-        ...prev, 
+      const isLeadBucket = [
+        "all_leads",
+        "valid_leads",
+        "eligible_leads",
+        "interested_leads",
+        "joinings",
+      ].includes(tab);
+      return {
+        ...prev,
         [tab]: true,
-        ...(isLeadBucket ? { leads: true } : {})
+        ...(isLeadBucket ? { leads: true } : {}),
       };
     });
-    
+
     if (tab === "add_lead") {
       setTabKeys((prev) => ({ ...prev, add_lead: prev.add_lead + 1 }));
     }
@@ -485,13 +507,21 @@ export default function LeadManager() {
           pageLimit: 10,
         }),
       );
-    } else if (['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage)) {
+    } else if (
+      [
+        "all_leads",
+        "valid_leads",
+        "eligible_leads",
+        "interested_leads",
+        "joinings",
+      ].includes(activePage)
+    ) {
       const bucketMapping = {
         all_leads: "all",
         valid_leads: "Valid Leads",
         eligible_leads: "Eligible Leads",
         interested_leads: "Interested Leads",
-        joinings: "Joinings"
+        joinings: "Joinings",
       };
       dispatch(
         storeLeadFilterValues({
@@ -535,11 +565,22 @@ export default function LeadManager() {
         }),
       );
     }
+    setTabKeys((prev) => {
+      const isLeadBucket = [
+        "all_leads",
+        "valid_leads",
+        "eligible_leads",
+        "interested_leads",
+        "joinings",
+      ].includes(activePage);
+      
+      const keyToIncrement = isLeadBucket ? "leads" : activePage;
 
-    setTabKeys((prev) => ({
-      ...prev,
-      [activePage]: prev[activePage] + 1, // change key to remount
-    }));
+      return {
+        ...prev,
+        [keyToIncrement]: (prev[keyToIncrement] || 0) + 1, // change key to remount
+      };
+    });
     setRefreshToggle(!refreshToggle);
   };
 
@@ -578,7 +619,7 @@ export default function LeadManager() {
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
-        <div style={{ display: "flex", gap: "18px", flexWrap: "wrap", paddingBottom: "5px" }}>
+        <ScrollableTabContainer>
           {permissions.includes("Add Lead Button") && (
             <button
               className={
@@ -666,7 +707,7 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("joinings")}
           >
-            <p>{`Joings (${bucketCounts.joinings})`}</p>
+            <p>{`Joinings (${bucketCounts.joinings})`}</p>
           </button>
 
           {permissions.includes("Junk Leads Tab") && (
@@ -681,7 +722,7 @@ export default function LeadManager() {
               <p>{`Junk (${junkLeadCount})`}</p>
             </button>
           )}
-        </div>
+        </ScrollableTabContainer>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <Tooltip placement="top" title="Refresh">
@@ -719,7 +760,15 @@ export default function LeadManager() {
       {loadedTabs.leads && (
         <div
           style={{
-            display: ['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage) ? "block" : "none",
+            display: [
+              "all_leads",
+              "valid_leads",
+              "eligible_leads",
+              "interested_leads",
+              "joinings",
+            ].includes(activePage)
+              ? "block"
+              : "none",
           }}
         >
           <Leads
@@ -782,6 +831,10 @@ export default function LeadManager() {
             regionOptions={regionOptions}
             refreshJunkLeads={refreshJunkLeads}
             setAssignLeadCount={setAssignLeadCount}
+            onPickLead={(itemData) => {
+              setPickLeadItem(itemData);
+              handleTabClick("add_lead");
+            }}
           />
         </div>
       )}
@@ -817,7 +870,7 @@ export default function LeadManager() {
               setEditLeadItem(null);
               setIsReAssignLead(false);
               if (!dontSwitchTab) {
-                handleTabClick("leads");
+                handleTabClick(prevActivePageRef.current);
               }
               refreshLeads();
               // refreshLeadFollowUp();
