@@ -96,6 +96,13 @@ export default function LeadManager() {
   const [triggerApi, setTriggerApi] = useState(true);
   const [followupCount, setFollowupCount] = useState(0);
   const [leadCount, setLeadCount] = useState(0);
+  const [bucketCounts, setBucketCounts] = useState({
+    all: 0,
+    valid_leads: 0,
+    eligible_leads: 0,
+    interested_leads: 0,
+    joinings: 0,
+  });
   const [liveLeadCount, setLiveLeadCount] = useState(0);
   const [junkLeadCount, setJunkLeadCount] = useState(0);
   const [assignLeadCount, setAssignLeadCount] = useState(0);
@@ -214,7 +221,7 @@ export default function LeadManager() {
     if (location?.state === "open live_leads") {
       handleTabClick("live_leads");
     } else if (location?.state === "open leads") {
-      handleTabClick("leads");
+      handleTabClick("all_leads");
     } else if (location?.state?.editItem) {
       setEditLeadItem(location.state.editItem);
       setIsReAssignLead(location.state.isReAssign);
@@ -225,7 +232,7 @@ export default function LeadManager() {
         activePage !== "live_leads" &&
         activePage !== "assign_leads" &&
         activePage !== "junk" &&
-        activePage !== "leads"
+        !['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage)
       ) {
         handleTabClick("add_lead");
       }
@@ -294,6 +301,7 @@ export default function LeadManager() {
       console.log("lead count response", response);
       const countDetails = response?.data?.data;
       setLeadCount(countDetails.total_lead_count);
+      setBucketCounts((prev) => ({ ...prev, all: countDetails.total_lead_count }));
       setLiveLeadCount(countDetails.web_lead_count);
       setJunkLeadCount(countDetails.junk_lead_count);
       setAssignLeadCount(countDetails.assign_lead_count);
@@ -445,7 +453,16 @@ export default function LeadManager() {
   const handleTabClick = (tab) => {
     setActivePage(tab);
     dispatch(storeLeadManagerActivePage(tab));
-    setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
+    
+    setLoadedTabs((prev) => {
+      const isLeadBucket = ['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(tab);
+      return { 
+        ...prev, 
+        [tab]: true,
+        ...(isLeadBucket ? { leads: true } : {})
+      };
+    });
+    
     if (tab === "add_lead") {
       setTabKeys((prev) => ({ ...prev, add_lead: prev.add_lead + 1 }));
     }
@@ -468,7 +485,14 @@ export default function LeadManager() {
           pageLimit: 10,
         }),
       );
-    } else if (activePage === "leads") {
+    } else if (['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage)) {
+      const bucketMapping = {
+        all_leads: "all",
+        valid_leads: "Valid Leads",
+        eligible_leads: "Eligible Leads",
+        interested_leads: "Interested Leads",
+        joinings: "Joinings"
+      };
       dispatch(
         storeLeadFilterValues({
           searchValue: null,
@@ -478,7 +502,7 @@ export default function LeadManager() {
           user_id: null,
           lead_source: null,
           lead_status_id: null,
-          bucket: "all",
+          bucket: bucketMapping[activePage],
           call_getraapi: true,
           pageNumber: 1,
           pageLimit: 10,
@@ -554,7 +578,7 @@ export default function LeadManager() {
   return (
     <div>
       <div className="settings_tabbutton_maincontainer">
-        <div style={{ display: "flex", gap: "18px" }}>
+        <div style={{ display: "flex", gap: "18px", flexWrap: "wrap", paddingBottom: "5px" }}>
           {permissions.includes("Add Lead Button") && (
             <button
               className={
@@ -592,13 +616,57 @@ export default function LeadManager() {
 
           <button
             className={
-              activePage === "leads"
+              activePage === "all_leads" || activePage === "leads"
                 ? "settings_tab_activebutton"
                 : "settings_tab_inactivebutton"
             }
-            onClick={() => handleTabClick("leads")}
+            onClick={() => handleTabClick("all_leads")}
           >
-            <p>{`Leads (${leadCount})`}</p>
+            <p>{`All Leads (${bucketCounts.all})`}</p>
+          </button>
+
+          <button
+            className={
+              activePage === "valid_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("valid_leads")}
+          >
+            <p>{`Valid Leads (${bucketCounts.valid_leads})`}</p>
+          </button>
+
+          <button
+            className={
+              activePage === "eligible_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("eligible_leads")}
+          >
+            <p>{`Eligible Leads (${bucketCounts.eligible_leads})`}</p>
+          </button>
+
+          <button
+            className={
+              activePage === "interested_leads"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("interested_leads")}
+          >
+            <p>{`Interested Leads (${bucketCounts.interested_leads})`}</p>
+          </button>
+
+          <button
+            className={
+              activePage === "joinings"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("joinings")}
+          >
+            <p>{`Joings (${bucketCounts.joinings})`}</p>
           </button>
 
           {permissions.includes("Junk Leads Tab") && (
@@ -651,7 +719,7 @@ export default function LeadManager() {
       {loadedTabs.leads && (
         <div
           style={{
-            display: activePage === "leads" ? "block" : "none",
+            display: ['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage) ? "block" : "none",
           }}
         >
           <Leads
@@ -661,6 +729,7 @@ export default function LeadManager() {
             key={tabKeys.leads}
             refreshLeadFollowUp={refreshLeadFollowUp}
             setLeadCount={setLeadCount}
+            setBucketCounts={setBucketCounts}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}

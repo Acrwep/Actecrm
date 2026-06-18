@@ -88,6 +88,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 export default function Leads({
   refreshLeadFollowUp,
   setLeadCount,
+  setBucketCounts,
   leadTypeOptions,
   regionOptions,
   setLeadCountLoading,
@@ -568,115 +569,115 @@ export default function Leads({
     },
     ...(leadBucketName !== "Interested Leads"
       ? [
-          {
-            title: "Action",
-            key: "action",
-            dataIndex: "action",
-            fixed: "right",
-            width: 120,
-            render: (text, record) => {
-              const isAfter45Days = checkIsAfter45Days(record.created_date);
-              return (
-                <div className="leadmanager_actionbuttonContainer">
-                  <Tooltip placement="bottom" title="View Lead Details">
-                    <FaRegEye
-                      size={15}
-                      style={{ cursor: "pointer" }}
+        {
+          title: "Action",
+          key: "action",
+          dataIndex: "action",
+          fixed: "right",
+          width: 120,
+          render: (text, record) => {
+            const isAfter45Days = checkIsAfter45Days(record.created_date);
+            return (
+              <div className="leadmanager_actionbuttonContainer">
+                <Tooltip placement="bottom" title="View Lead Details">
+                  <FaRegEye
+                    size={15}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setViewLeadItem(record);
+                      setIsOpenViewDrawer(true);
+                    }}
+                  />
+                </Tooltip>
+
+                {permissions.includes("Edit Lead Button") &&
+                  isShowEdit &&
+                  record.is_customer_reg === 0 && (
+                    <AiOutlineEdit
+                      className="leadmanager_action_icon"
                       onClick={() => {
-                        setViewLeadItem(record);
-                        setIsOpenViewDrawer(true);
+                        if (onEditLead) {
+                          onEditLead(record, false);
+                        } else {
+                          setUpdateLeadItem(record);
+                          setLeadId(record.id);
+                          setIsOpenAddDrawer(true);
+                        }
+                      }}
+                    />
+                  )}
+
+                {record.is_customer_reg === 1 ? (
+                  <Tooltip placement="bottom" title="Already a Customer">
+                    <FaRegAddressCard
+                      className="leadmanager_action_icon"
+                      color="#2ed573"
+                    />
+                  </Tooltip>
+                ) : (
+                  <Tooltip placement="bottom" title="Make as customer">
+                    <FaRegAddressCard
+                      className="leadmanager_action_icon"
+                      color="#d32f2f"
+                      onClick={() => {
+                        if (permissions.includes("Edit Lead Button")) {
+                          if (filterValuesFromRedux.call_getraapi) {
+                            getRaUsers();
+                          }
+                          setIsOpenPaymentDrawer(true);
+                          setSubTotal(parseFloat(record.primary_fees));
+                          setAmount(parseFloat(record.primary_fees));
+                          setBalanceAmount(parseFloat(record.primary_fees));
+                          setCustomerCourseId(record.primary_course_id);
+                          setCustomerBatchTrackId(record.batch_track_id);
+                          setClickedLeadItem(record);
+
+                          setTimeout(() => {
+                            const drawerBody = document.querySelector(
+                              "#leadmanager_paymentdetails_drawer .ant-drawer-body",
+                            );
+
+                            if (drawerBody) {
+                              drawerBody.scrollTo({
+                                top: 0,
+                                behavior: "smooth",
+                              });
+                            }
+                          }, 300);
+                        } else {
+                          CommonMessage("error", "Access Denied");
+                        }
                       }}
                     />
                   </Tooltip>
+                )}
 
-                  {permissions.includes("Edit Lead Button") &&
-                    isShowEdit &&
-                    record.is_customer_reg === 0 && (
-                      <AiOutlineEdit
-                        className="leadmanager_action_icon"
-                        onClick={() => {
-                          if (onEditLead) {
-                            onEditLead(record, false);
-                          } else {
-                            setUpdateLeadItem(record);
-                            setLeadId(record.id);
-                            setIsOpenAddDrawer(true);
-                          }
-                        }}
-                      />
-                    )}
-
-                  {record.is_customer_reg === 1 ? (
-                    <Tooltip placement="bottom" title="Already a Customer">
-                      <FaRegAddressCard
-                        className="leadmanager_action_icon"
-                        color="#2ed573"
-                      />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip placement="bottom" title="Make as customer">
-                      <FaRegAddressCard
-                        className="leadmanager_action_icon"
-                        color="#d32f2f"
-                        onClick={() => {
-                          if (permissions.includes("Edit Lead Button")) {
-                            if (filterValuesFromRedux.call_getraapi) {
-                              getRaUsers();
-                            }
-                            setIsOpenPaymentDrawer(true);
-                            setSubTotal(parseFloat(record.primary_fees));
-                            setAmount(parseFloat(record.primary_fees));
-                            setBalanceAmount(parseFloat(record.primary_fees));
-                            setCustomerCourseId(record.primary_course_id);
-                            setCustomerBatchTrackId(record.batch_track_id);
-                            setClickedLeadItem(record);
-
-                            setTimeout(() => {
-                              const drawerBody = document.querySelector(
-                                "#leadmanager_paymentdetails_drawer .ant-drawer-body",
-                              );
-
-                              if (drawerBody) {
-                                drawerBody.scrollTo({
-                                  top: 0,
-                                  behavior: "smooth",
-                                });
-                              }
-                            }, 300);
-                          } else {
-                            CommonMessage("error", "Access Denied");
-                          }
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-
-                  {permissions.includes("Assign Lead") && (
-                    <Tooltip
-                      placement="bottom"
-                      title="Re-Assign this lead to another user"
-                    >
-                      <PiShareFatBold
-                        className="leadmanager_action_icon"
-                        color="#5b69ca"
-                        onClick={() => {
-                          if (onEditLead) {
-                            onEditLead(record, true);
-                          } else {
-                            setIsReEntry(true);
-                            setUpdateLeadItem(record);
-                            setLeadId(record.id);
-                            setIsOpenAddDrawer(true);
-                          }
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </div>
-              );
-            },
+                {permissions.includes("Assign Lead") && (
+                  <Tooltip
+                    placement="bottom"
+                    title="Re-Assign this lead to another user"
+                  >
+                    <PiShareFatBold
+                      className="leadmanager_action_icon"
+                      color="#5b69ca"
+                      onClick={() => {
+                        if (onEditLead) {
+                          onEditLead(record, true);
+                        } else {
+                          setIsReEntry(true);
+                          setUpdateLeadItem(record);
+                          setLeadId(record.id);
+                          setIsOpenAddDrawer(true);
+                        }
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              </div>
+            );
           },
-        ]
+        },
+      ]
       : []),
   ];
 
@@ -740,7 +741,7 @@ export default function Leads({
   };
 
   useEffect(() => {
-    if (activePage !== "leads" && activePage !== "add_lead") return;
+    if (!['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings', 'leads'].includes(activePage) && activePage !== "add_lead") return;
 
     if (permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
@@ -751,9 +752,7 @@ export default function Leads({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
-      setTimeout(() => {
-        getTableColumnsData(convertAsJson?.user_id);
-      }, 300);
+
 
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
@@ -767,7 +766,6 @@ export default function Leads({
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setSelectedUserId(filterValuesFromRedux.user_id);
-        console.log("0000000000000000000000000000000000000000000");
         setLeadBucketName(filterValuesFromRedux.bucket);
         setPagination({
           page: filterValuesFromRedux.pageNumber,
@@ -780,17 +778,51 @@ export default function Leads({
             ? filterValuesFromRedux.user_id
             : convertAsJson?.user_id,
         );
-        // getAllLeadData(
-        //   null,
-        //   PreviousAndCurrentDate[0],
-        //   PreviousAndCurrentDate[1],
-        //   null,
-        //   1,
-        //   10
-        // );
       }
     }
   }, [childUsers, permissions, activePage]);
+
+  const prevActivePage = useRef(activePage);
+
+  useEffect(() => {
+    if (['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage) && mounted.current) {
+      if (prevActivePage.current !== activePage) {
+        prevActivePage.current = activePage;
+
+        const bucketMapping = {
+          all_leads: "all",
+          valid_leads: "Valid Leads",
+          eligible_leads: "Eligible Leads",
+          interested_leads: "Interested Leads",
+          joinings: "Joinings"
+        };
+        const targetBucket = bucketMapping[activePage];
+
+        setLeadBucketName(targetBucket);
+        setLeadActionFilter("all");
+        dispatch(
+          storeLeadFilterValues({
+            bucket: targetBucket == "all" ? "" : targetBucket,
+            pageNumber: 1,
+            pageLimit: pagination.limit,
+          })
+        );
+
+        getAllLeadData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          allDownliners,
+          leadSourceFilterId,
+          leadStatusId,
+          targetBucket == "all" ? "" : targetBucket,
+          1,
+          pagination.limit,
+          "all"
+        );
+      }
+    }
+  }, [activePage]);
 
   const getTableColumnsData = async (user_id) => {
     try {
@@ -861,9 +893,6 @@ export default function Leads({
                     key: "next_follow_up_date",
                     dataIndex: "next_follow_up_date",
                     width: 140,
-                    // render: (text, record) => {
-                    //   return <p>{text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}</p>;
-                    // },
                     render: (text, record, index) => {
                       return (
                         <div
@@ -899,7 +928,6 @@ export default function Leads({
                             <div
                               style={{
                                 display: "flex",
-                                // alignItems: "center",
                                 flexDirection: "column",
                                 position: "relative",
                               }}
@@ -921,7 +949,6 @@ export default function Leads({
                                   style={{ fontSize: "10px" }}
                                 ></Badge>
                               </div>
-
                               <div
                                 style={{ fontSize: "12px", marginTop: "9px" }}
                               >
@@ -1335,6 +1362,16 @@ export default function Leads({
 
       setInterestedLeadActions(interested_actions);
 
+      if (setBucketCounts) {
+        setBucketCounts({
+          all: bucket_counts["all"] || 0,
+          valid_leads: bucket_counts["valid_leads"] || 0,
+          eligible_leads: bucket_counts["eligible_leads"] || 0,
+          interested_leads: bucket_counts["interested_leads"] || 0,
+          joinings: bucket_counts["joinings"] || 0,
+        });
+      }
+
       const leadStatusOptionsWithCount = [
         {
           id: "all",
@@ -1680,7 +1717,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-          "Something went wrong. Try again later",
+        "Something went wrong. Try again later",
       );
     }
   };
@@ -1688,9 +1725,8 @@ export default function Leads({
   const handleSendCustomerFormLink = async (customerDetails) => {
     const payload = {
       email: customerDetails.email,
-      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
-        customerDetails.insertId
-      }`,
+      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${customerDetails.insertId
+        }`,
       customer_id: customerDetails.insertId,
     };
 
@@ -1700,7 +1736,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later",
+        "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1721,7 +1757,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later",
+        "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1742,7 +1778,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later",
+        "Something went wrong. Try again later",
       );
     }
   };
@@ -1919,7 +1955,7 @@ export default function Leads({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
         );
       }
     }
@@ -2052,7 +2088,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later",
+        "Something went wrong. Try again later",
       );
     }
   };
@@ -2345,9 +2381,8 @@ export default function Leads({
                                             (item, index) => {
                                               return (
                                                 <p className="leadsmanager_executivecount_text">
-                                                  {`${index + 1}. ${item.user_name} - ${
-                                                    item.lead_count
-                                                  }`}
+                                                  {`${index + 1}. ${item.user_name} - ${item.lead_count
+                                                    }`}
                                                 </p>
                                               );
                                             },
@@ -2571,7 +2606,7 @@ export default function Leads({
               ""
             )} */}
             {permissions.includes("Download Leads") &&
-            selectedRowKeys.length == 0 ? (
+              selectedRowKeys.length == 0 ? (
               <Tooltip placement="top" title="Download">
                 <Button
                   className={
@@ -2630,59 +2665,7 @@ export default function Leads({
         </Col>
       </Row>
 
-      <div className="customers_scroll_wrapper">
-        {/* <button
-          onClick={() => scroll(-600)}
-          className="followup_statusscroll_button"
-        >
-          <IoMdArrowDropleft size={25} />
-        </button> */}
-        <div className="customers_status_mainContainer" ref={scrollRef}>
-          {leadBucketOptions.map(({ id, name, count }) => (
-            <div
-              key={id}
-              className={`leads_bucket_container ${
-                statusClassMap[id]
-              } ${leadBucketName === name ? "active" : ""}`}
-              onClick={() => {
-                if (leadBucketName === name) return;
-                const bucket_name = name;
-                setLeadBucketName(bucket_name);
-                setLeadActionFilter("all");
-                dispatch(
-                  storeLeadFilterValues({
-                    bucket: bucket_name == "all" ? "" : bucket_name,
-                    pageNumber: 1,
-                    pageLimit: pagination.limit,
-                  }),
-                );
-                getAllLeadData(
-                  searchValue,
-                  selectedDates[0],
-                  selectedDates[1],
-                  allDownliners,
-                  leadSourceFilterId,
-                  leadStatusId,
-                  bucket_name == "all" ? "" : bucket_name,
-                  1,
-                  pagination.limit,
-                  "all",
-                );
-              }}
-            >
-              <p>
-                {name == "all" ? "All" : name} {`( ${count} )`}
-              </p>
-            </div>
-          ))}
-        </div>
-        {/* <button
-          onClick={() => scroll(600)}
-          className="followup_statusscroll_button"
-        >
-          <IoMdArrowDropright size={25} />
-        </button> */}
-      </div>
+
 
       {leadBucketName === "Interested Leads" &&
         Object.keys(interestedLeadActions).length > 0 && (
@@ -2723,12 +2706,12 @@ export default function Leads({
                   key === "all"
                     ? "All"
                     : key
-                        .split("_")
-                        .map(
-                          (word) =>
-                            word.charAt(0).toUpperCase() + word.slice(1),
-                        )
-                        .join(" ");
+                      .split("_")
+                      .map(
+                        (word) =>
+                          word.charAt(0).toUpperCase() + word.slice(1),
+                      )
+                      .join(" ");
                 const isActive = leadActionFilter === key;
                 const actionColorMap = {
                   all: "#0284c7",
@@ -3208,15 +3191,13 @@ export default function Leads({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {`${
-                    clickedLeadItem && clickedLeadItem.lead_assigned_to_id
-                      ? clickedLeadItem.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    clickedLeadItem && clickedLeadItem.lead_assigned_to_name
+                  {`${clickedLeadItem && clickedLeadItem.lead_assigned_to_id
+                    ? clickedLeadItem.lead_assigned_to_id
+                    : "-"
+                    } (${clickedLeadItem && clickedLeadItem.lead_assigned_to_name
                       ? clickedLeadItem.lead_assigned_to_name
                       : "-"
-                  })`}
+                    })`}
                 </p>
               </Col>
             </Row>
