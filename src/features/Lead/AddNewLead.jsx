@@ -118,6 +118,7 @@ const AddNewLead = forwardRef(
     const [addTodayFollowup, setAddTodayFollowup] = useState(false);
 
     const [primaryFees, setPrimaryFees] = useState("");
+    const [primaryFeesError, setPrimaryFeesError] = useState("");
     const [isPrimaryCourseFocused, setIsPrimaryCourseFocused] = useState(false);
     const [isShowSecondaryCourse, setIsShowSecondaryCourse] = useState(false);
     const [secondaryCourse, setSecondaryCourse] = useState(null);
@@ -355,6 +356,7 @@ const AddNewLead = forwardRef(
         setPrimaryFees(updateLeadItem.primary_fees);
         setSecondaryCourse(updateLeadItem.secondary_course_id);
         setSecondaryFees(updateLeadItem.secondary_fees);
+        setPreferredMode(updateLeadItem?.preferred_mode);
         setLeadSource(updateLeadItem.lead_type_id);
         getLeadSubSourceData(updateLeadItem.lead_type_id);
         setLeadSubSource(updateLeadItem?.lead_sub_source);
@@ -839,7 +841,7 @@ const AddNewLead = forwardRef(
         ? selectValidator(responseStatus)
         : "";
       const nxtFollowupDateValidate =
-        communicationStatus && contactMode == 6
+        communicationStatus && contactMode != 6
           ? selectValidator(nxtFollowupDate)
           : "";
       // const followUpStatusIdValidate =
@@ -989,6 +991,8 @@ const AddNewLead = forwardRef(
           ? { is_reentry: true }
           : { is_reentry: false }),
         created_date: formatToBackendIST(today),
+        updated_date: formatToBackendIST(today),
+        updated_by: convertAsJson?.user_id,
         is_manager: permissions.includes("Add Lead With Existing Mobile Number")
           ? true
           : false,
@@ -1149,6 +1153,7 @@ const AddNewLead = forwardRef(
       setAreaError("");
       setPrimaryCourse(null);
       setPrimaryFees("");
+      setPrimaryFeesError("");
       setIsShowSecondaryCourse(false);
       setSecondaryCourse(null);
       setSecondaryFees("");
@@ -1901,6 +1906,7 @@ const AddNewLead = forwardRef(
                     label="Fees"
                     required={false}
                     value={primaryFees}
+                    type={"number"}
                     onChange={(e) => {
                       setPrimaryFees(e.target.value);
                     }}

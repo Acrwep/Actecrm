@@ -529,6 +529,36 @@ export default function Leads({
       },
     },
     {
+      title: "Followup Status",
+      key: "lead_action_name",
+      dataIndex: "lead_action_name",
+      fixed: "right",
+      width: 140,
+      sorter: (a, b) =>
+        (a.lead_action_name || "").localeCompare(b.lead_action_name || ""),
+      sortDirections: ["ascend", "descend"],
+      render: (text) => {
+        const statusClass =
+          text === "Super Hot"
+            ? "super_hot_priority"
+            : text === "Hot"
+              ? "hot_priority"
+              : text === "Medium"
+                ? "medium_priority"
+                : text === "Cold"
+                  ? "cold_priority"
+                  : text === "Junk" || text === "Dormant"
+                    ? "junk_priority"
+                    : "others";
+
+        return (
+          <div className={`leadfollwup_table_status_container ${statusClass}`}>
+            <p>{text}</p>
+          </div>
+        );
+      },
+    },
+    {
       title: "Lead Priority",
       key: "lead_status",
       dataIndex: "lead_status",
@@ -606,8 +636,9 @@ export default function Leads({
                 />
               )}
 
-            {(leadBucketName === "All" || leadBucketName === "Interested Leads") && (
-              record.is_customer_reg === 1 ? (
+            {(leadBucketName === "All" ||
+              leadBucketName === "Interested Leads") &&
+              (record.is_customer_reg === 1 ? (
                 <Tooltip placement="bottom" title="Already a Customer">
                   <FaRegAddressCard
                     className="leadmanager_action_icon"
@@ -650,30 +681,30 @@ export default function Leads({
                     }}
                   />
                 </Tooltip>
-              )
-            )}
+              ))}
 
-            {permissions.includes("Assign Lead") && leadBucketName === "All" && (
-              <Tooltip
-                placement="bottom"
-                title="Re-Assign this lead to another user"
-              >
-                <PiShareFatBold
-                  className="leadmanager_action_icon"
-                  color="#5b69ca"
-                  onClick={() => {
-                    if (onEditLead) {
-                      onEditLead(record, true);
-                    } else {
-                      setIsReEntry(true);
-                      setUpdateLeadItem(record);
-                      setLeadId(record.id);
-                      setIsOpenAddDrawer(true);
-                    }
-                  }}
-                />
-              </Tooltip>
-            )}
+            {permissions.includes("Assign Lead") &&
+              leadBucketName === "All" && (
+                <Tooltip
+                  placement="bottom"
+                  title="Re-Assign this lead to another user"
+                >
+                  <PiShareFatBold
+                    className="leadmanager_action_icon"
+                    color="#5b69ca"
+                    onClick={() => {
+                      if (onEditLead) {
+                        onEditLead(record, true);
+                      } else {
+                        setIsReEntry(true);
+                        setUpdateLeadItem(record);
+                        setLeadId(record.id);
+                        setIsOpenAddDrawer(true);
+                      }
+                    }}
+                  />
+                </Tooltip>
+              )}
           </div>
         );
       },
@@ -1131,6 +1162,38 @@ export default function Leads({
                   );
                 },
               };
+            case "lead_action_name":
+              return {
+                ...col,
+                width: 150,
+                sorter: (a, b) =>
+                  (a.lead_action_name || "").localeCompare(
+                    b.lead_action_name || "",
+                  ),
+                sortDirections: ["ascend", "descend"],
+                render: (text) => {
+                  const statusClass =
+                    text === "Super Hot"
+                      ? "super_hot_priority"
+                      : text === "Hot"
+                        ? "hot_priority"
+                        : text === "Medium"
+                          ? "medium_priority"
+                          : text === "Cold"
+                            ? "cold_priority"
+                            : text === "Junk" || text === "Dormant"
+                              ? "junk_priority"
+                              : "others";
+
+                  return (
+                    <div
+                      className={`leadfollwup_table_status_container ${statusClass}`}
+                    >
+                      <p>{text}</p>
+                    </div>
+                  );
+                },
+              };
             case "region_name":
               return {
                 ...col,
@@ -1189,9 +1252,13 @@ export default function Leads({
                           />
                         )}
 
-                      {(leadBucketName === "All" || leadBucketName === "Interested Leads") && (
-                        record.is_customer_reg === 1 ? (
-                          <Tooltip placement="bottom" title="Already a Customer">
+                      {(leadBucketName === "All" ||
+                        leadBucketName === "Interested Leads") &&
+                        (record.is_customer_reg === 1 ? (
+                          <Tooltip
+                            placement="bottom"
+                            title="Already a Customer"
+                          >
                             <FaRegAddressCard
                               className="leadmanager_action_icon"
                               color="#2ed573"
@@ -1214,7 +1281,9 @@ export default function Leads({
                                     parseFloat(record.primary_fees),
                                   );
                                   setCustomerCourseId(record.primary_course_id);
-                                  setCustomerBatchTrackId(record.batch_track_id);
+                                  setCustomerBatchTrackId(
+                                    record.batch_track_id,
+                                  );
                                   setClickedLeadItem(record);
 
                                   setTimeout(() => {
@@ -1235,30 +1304,30 @@ export default function Leads({
                               }}
                             />
                           </Tooltip>
-                        )
-                      )}
+                        ))}
 
-                      {permissions.includes("Assign Lead") && leadBucketName === "All" && (
-                        <Tooltip
-                          placement="bottom"
-                          title="Re-Assign this lead to another user"
-                        >
-                          <PiShareFatBold
-                            className="leadmanager_action_icon"
-                            color="#5b69ca"
-                            onClick={() => {
-                              if (onEditLead) {
-                                onEditLead(record, true);
-                              } else {
-                                setIsReEntry(true);
-                                setUpdateLeadItem(record);
-                                setLeadId(record.id);
-                                setIsOpenAddDrawer(true);
-                              }
-                            }}
-                          />
-                        </Tooltip>
-                      )}
+                      {permissions.includes("Assign Lead") &&
+                        leadBucketName === "All" && (
+                          <Tooltip
+                            placement="bottom"
+                            title="Re-Assign this lead to another user"
+                          >
+                            <PiShareFatBold
+                              className="leadmanager_action_icon"
+                              color="#5b69ca"
+                              onClick={() => {
+                                if (onEditLead) {
+                                  onEditLead(record, true);
+                                } else {
+                                  setIsReEntry(true);
+                                  setUpdateLeadItem(record);
+                                  setLeadId(record.id);
+                                  setIsOpenAddDrawer(true);
+                                }
+                              }}
+                            />
+                          </Tooltip>
+                        )}
                     </div>
                   );
                 },
@@ -1278,7 +1347,21 @@ export default function Leads({
       // --- ✅ Process columns ---
       setUpdateTableId(filterPage.id);
 
-      const filteredColumns = filterPage.column_names.filter((col) => {
+      const missingColumns = nonChangeColumns.filter(
+        (nc) => !filterPage.column_names.some((fc) => fc.key === nc.key),
+      );
+
+      const completeColumns = [
+        ...filterPage.column_names,
+        ...missingColumns.map((col) => ({ ...col, isChecked: true })),
+      ];
+
+      const filteredColumns = completeColumns.filter((col) => {
+        if (leadBucketName === "Interested Leads") {
+          if (col.key === "lead_status") return false;
+        } else {
+          if (col.key === "lead_action_name") return false;
+        }
         return true;
       });
 
@@ -2145,9 +2228,9 @@ export default function Leads({
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={20}>
+        <Col xs={24} sm={24} md={24} lg={22}>
           <Row gutter={16}>
-            <Col flex="28%">
+            <Col flex="23%">
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
@@ -2284,6 +2367,85 @@ export default function Leads({
                 </div>
               </div>
             </Col>
+            <Col flex="26%">
+              {permissions.includes("Lead Executive Filter") && (
+                <div style={{ width: "100%" }}>
+                  <div className="overallduecustomers_filterContainer">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <CommonMultiSelectField
+                        height="35px"
+                        label="Select User"
+                        labelMarginTop="0px"
+                        labelFontSize="12px"
+                        options={subUsers}
+                        onChange={handleSelectUser}
+                        value={selectedUserId}
+                        borderRightNone={true}
+                      />
+                    </div>
+                    <div
+                      onClick={() => {
+                        if (executiveCountTooltip) {
+                          return;
+                        }
+                        handleLeadCountByExecutive();
+                      }}
+                      style={{ marginLeft: "-2px" }}
+                    >
+                      <Flex
+                        justify="center"
+                        align="center"
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        <Tooltip
+                          placement="bottomLeft"
+                          color="#fff"
+                          title={
+                            <>
+                              {leadExeCountLoading ? (
+                                <div className="leadsmanager_executivecount_loader_container">
+                                  <Spin size="small" />
+                                </div>
+                              ) : (
+                                <div
+                                  style={{
+                                    maxHeight: "140px",
+                                    overflowY: "auto",
+                                    whiteSpace: "pre-line",
+                                    lineHeight: "24px",
+                                  }}
+                                >
+                                  {leadCountByExecutives.map((item, index) => {
+                                    return (
+                                      <p className="leadsmanager_executivecount_text">
+                                        {`${index + 1}. ${item.user_name} - ${
+                                          item.lead_count
+                                        }`}
+                                      </p>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          }
+                          trigger={["click"]}
+                          onOpenChange={(value) => {
+                            setExecutiveCountTooltip(value);
+                            if (value === false) {
+                              setLeadCountByExecutives([]);
+                            }
+                          }}
+                        >
+                          <Button className="leadsmanager_executivecount_iconcontainer">
+                            <MdFormatListNumbered size={16} />
+                          </Button>
+                        </Tooltip>
+                      </Flex>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Col>
             <Col flex="none">
               <CommonMuiCustomDatePicker
                 value={selectedDates}
@@ -2372,85 +2534,6 @@ export default function Leads({
                         padding: "20px",
                       }}
                     >
-                      {permissions.includes("Lead Executive Filter") && (
-                        <div style={{ width: "100%" }}>
-                          <div className="overallduecustomers_filterContainer">
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <CommonMultiSelectField
-                                height="35px"
-                                label="Select User"
-                                labelMarginTop="0px"
-                                labelFontSize="12px"
-                                options={subUsers}
-                                onChange={handleSelectUser}
-                                value={selectedUserId}
-                                borderRightNone={true}
-                              />
-                            </div>
-                            <div
-                              onClick={() => {
-                                if (executiveCountTooltip) {
-                                  return;
-                                }
-                                handleLeadCountByExecutive();
-                              }}
-                              style={{ marginLeft: "-2px" }}
-                            >
-                              <Flex
-                                justify="center"
-                                align="center"
-                                style={{ whiteSpace: "nowrap" }}
-                              >
-                                <Tooltip
-                                  placement="bottomLeft"
-                                  color="#fff"
-                                  title={
-                                    <>
-                                      {leadExeCountLoading ? (
-                                        <div className="leadsmanager_executivecount_loader_container">
-                                          <Spin size="small" />
-                                        </div>
-                                      ) : (
-                                        <div
-                                          style={{
-                                            maxHeight: "140px",
-                                            overflowY: "auto",
-                                            whiteSpace: "pre-line",
-                                            lineHeight: "24px",
-                                          }}
-                                        >
-                                          {leadCountByExecutives.map(
-                                            (item, index) => {
-                                              return (
-                                                <p className="leadsmanager_executivecount_text">
-                                                  {`${index + 1}. ${item.user_name} - ${
-                                                    item.lead_count
-                                                  }`}
-                                                </p>
-                                              );
-                                            },
-                                          )}
-                                        </div>
-                                      )}
-                                    </>
-                                  }
-                                  trigger={["click"]}
-                                  onOpenChange={(value) => {
-                                    setExecutiveCountTooltip(value);
-                                    if (value === false) {
-                                      setLeadCountByExecutives([]);
-                                    }
-                                  }}
-                                >
-                                  <Button className="leadsmanager_executivecount_iconcontainer">
-                                    <MdFormatListNumbered size={16} />
-                                  </Button>
-                                </Tooltip>
-                              </Flex>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                       <div style={{ width: "100%" }}>
                         <CommonSelectField
                           width="100%"
@@ -2616,7 +2699,7 @@ export default function Leads({
             </Col>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={4}>
+        <Col xs={24} sm={24} md={24} lg={2}>
           <div
             style={{
               display: "flex",
@@ -2808,6 +2891,13 @@ export default function Leads({
                 ];
                 return joiningsColumns.includes(col.key);
               }
+
+              if (leadBucketName === "Interested Leads") {
+                if (col.key === "lead_status") return false;
+              } else {
+                if (col.key === "lead_action_name") return false;
+              }
+
               return true;
             })
             .map((col) => {
@@ -2815,7 +2905,9 @@ export default function Leads({
                 return {
                   ...col,
                   render: (text, record) => {
-                    const isAfter45Days = checkIsAfter45Days(record.created_date);
+                    const isAfter45Days = checkIsAfter45Days(
+                      record.created_date,
+                    );
                     return (
                       <div className="leadmanager_actionbuttonContainer">
                         <Tooltip placement="bottom" title="View Lead Details">
@@ -2846,32 +2938,47 @@ export default function Leads({
                             />
                           )}
 
-                        {(leadBucketName === "All" || leadBucketName === "Interested Leads") && (
-                          record.is_customer_reg === 1 ? (
-                            <Tooltip placement="bottom" title="Already a Customer">
+                        {(leadBucketName === "All" ||
+                          leadBucketName === "Interested Leads") &&
+                          (record.is_customer_reg === 1 ? (
+                            <Tooltip
+                              placement="bottom"
+                              title="Already a Customer"
+                            >
                               <FaRegAddressCard
                                 className="leadmanager_action_icon"
                                 color="#2ed573"
                               />
                             </Tooltip>
                           ) : (
-                            <Tooltip placement="bottom" title="Make as customer">
+                            <Tooltip
+                              placement="bottom"
+                              title="Make as customer"
+                            >
                               <FaRegAddressCard
                                 className="leadmanager_action_icon"
                                 color="#d32f2f"
                                 onClick={() => {
-                                  if (permissions.includes("Edit Lead Button")) {
+                                  if (
+                                    permissions.includes("Edit Lead Button")
+                                  ) {
                                     if (filterValuesFromRedux.call_getraapi) {
                                       getRaUsers();
                                     }
                                     setIsOpenPaymentDrawer(true);
-                                    setSubTotal(parseFloat(record.primary_fees));
+                                    setSubTotal(
+                                      parseFloat(record.primary_fees),
+                                    );
                                     setAmount(parseFloat(record.primary_fees));
                                     setBalanceAmount(
                                       parseFloat(record.primary_fees),
                                     );
-                                    setCustomerCourseId(record.primary_course_id);
-                                    setCustomerBatchTrackId(record.batch_track_id);
+                                    setCustomerCourseId(
+                                      record.primary_course_id,
+                                    );
+                                    setCustomerBatchTrackId(
+                                      record.batch_track_id,
+                                    );
                                     setClickedLeadItem(record);
 
                                     setTimeout(() => {
@@ -2892,30 +2999,30 @@ export default function Leads({
                                 }}
                               />
                             </Tooltip>
-                          )
-                        )}
+                          ))}
 
-                        {permissions.includes("Assign Lead") && leadBucketName === "All" && (
-                          <Tooltip
-                            placement="bottom"
-                            title="Re-Assign this lead to another user"
-                          >
-                            <PiShareFatBold
-                              className="leadmanager_action_icon"
-                              color="#5b69ca"
-                              onClick={() => {
-                                if (onEditLead) {
-                                  onEditLead(record, true);
-                                } else {
-                                  setIsReEntry(true);
-                                  setUpdateLeadItem(record);
-                                  setLeadId(record.id);
-                                  setIsOpenAddDrawer(true);
-                                }
-                              }}
-                            />
-                          </Tooltip>
-                        )}
+                        {permissions.includes("Assign Lead") &&
+                          leadBucketName === "All" && (
+                            <Tooltip
+                              placement="bottom"
+                              title="Re-Assign this lead to another user"
+                            >
+                              <PiShareFatBold
+                                className="leadmanager_action_icon"
+                                color="#5b69ca"
+                                onClick={() => {
+                                  if (onEditLead) {
+                                    onEditLead(record, true);
+                                  } else {
+                                    setIsReEntry(true);
+                                    setUpdateLeadItem(record);
+                                    setLeadId(record.id);
+                                    setIsOpenAddDrawer(true);
+                                  }
+                                }}
+                              />
+                            </Tooltip>
+                          )}
                       </div>
                     );
                   },
