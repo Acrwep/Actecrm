@@ -15,6 +15,7 @@ const CommonTextArea = ({
   className,
   style,
   disabled = false,
+  textAreaStyle,
 }) => {
   const textAreaRef = useRef(null);
   const cursorRef = useRef(null);
@@ -45,7 +46,7 @@ const CommonTextArea = ({
   }, [value]);
 
   return (
-    <div style={style}>
+    <div style={{ position: "relative", ...style }}>
       <div style={{ display: "flex" }}>
         <label className="commontextarea_label">{label}</label>
         {required ? (
@@ -63,6 +64,7 @@ const CommonTextArea = ({
         status={error ? "error" : ""}
         maxLength={maxLength}
         disabled={disabled}
+        style={textAreaStyle}
         className={`${
           !error ? "commontextarea" : "commontextarea_error"
         } ${className || ""}`}

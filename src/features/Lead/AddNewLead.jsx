@@ -863,8 +863,13 @@ const AddNewLead = forwardRef(
       const contactModeValidate = updateLeadItem
         ? ""
         : selectValidator(contactMode);
+      const responseStatusValidate = updateLeadItem
+        ? ""
+        : selectValidator(responseStatus);
       const nxtFollowupDateValidate =
-        contactMode == 6 ? "" : selectValidator(nxtFollowupDate);
+        contactMode == 6 || updateLeadItem
+          ? ""
+          : selectValidator(nxtFollowupDate);
       // const followUpStatusIdValidate =
       //   contactMode == 6 ? "" : selectValidator(followUpStatusId);
       const commentsValidate = addressValidator(comments);
@@ -906,6 +911,7 @@ const AddNewLead = forwardRef(
       setLeadSubSourceError(leadSubSourceValidate);
       setCommunicationStatusError(communicationStatusValidate);
       setContactModeError(contactModeValidate);
+      setResponseStatusError(responseStatusValidate);
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
@@ -926,6 +932,7 @@ const AddNewLead = forwardRef(
         leadSubSourceValidate ||
         communicationStatusValidate ||
         contactModeValidate ||
+        responseStatusValidate ||
         nxtFollowupDateValidate ||
         regionIdValidate ||
         branchValidate ||
@@ -946,6 +953,7 @@ const AddNewLead = forwardRef(
           leadSubSourceValidate,
           communicationStatusValidate,
           contactModeValidate,
+          responseStatusValidate,
           nxtFollowupDateValidate,
           regionIdValidate,
           branchValidate,
@@ -1005,6 +1013,7 @@ const AddNewLead = forwardRef(
         is_previous_junk: false,
         communication_status: communicationStatus,
         contact_mode: contactMode,
+        response_status: responseStatus,
         interest_rate: interestRate,
         next_follow_up_date: nxtFollowupDate
           ? formatToBackendIST(nxtFollowupDate)
@@ -1237,24 +1246,16 @@ const AddNewLead = forwardRef(
             marginBottom: "20px",
           }}
         >
-          <div
-            style={{
-              width: "20px",
-              height: "20px",
-              borderRadius: "50%",
-              background: "#2563eb",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "11px",
-              fontWeight: "bold",
-              flexShrink: 0,
-            }}
+          <div className="addnewlead_card_heading_circleicon">{number}</div>
+          <span
+            className={
+              text.includes("Basic Information")
+                ? "addnewlead_basicinfo_card_headings"
+                : "addnewlead_card_headings"
+            }
           >
-            {number}
-          </div>
-          <span className="addnewlead_card_headings">{text || number}</span>
+            {text || number}
+          </span>
         </div>
       );
     };
@@ -2000,116 +2001,122 @@ const AddNewLead = forwardRef(
                 }}
               >
                 <SectionHeader title="4. Screening" />
-                {updateLeadItem ? (
-                  ""
-                ) : (
-                  <>
-                    <div style={{ marginBottom: "24px" }}>
-                      <CommonSelectField
-                        label="Communication"
-                        required={true}
-                        value={communicationStatus}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setCommunicationStatus(value);
-                          setContactMode(null);
-                          setCounsel("Not Given");
-                          setLeadTemperature(null);
-                          setFollowUpStatusId(null);
-                          setNxtFollowupDate(null);
-                          setNextFollowupTime(null);
-                          setAddTodayFollowup(false);
-                          setExpectDateJoin(null);
-                          if (validationTrigger) {
-                            setCommunicationStatusError(selectValidator(value));
-                            setContactModeError(selectValidator(null));
-                          }
-                        }}
-                        options={communicationStatusOptions}
-                        error={communicationStatusError}
-                        disabled={updateLeadItem}
-                        height={"35px"}
-                        fontSize={"13px"}
-                        labelFontSize={"12px"}
-                        errorFontSize={"7.7px"}
-                        labelMarginTop={"0px"}
-                      />
-                    </div>
-                    <div style={{ marginBottom: "24px" }}>
-                      <CommonSelectField
-                        label={communicationStatus == 2 ? "Reason" : "Mode"}
-                        required={true}
-                        options={
-                          communicationStatus == 2
-                            ? [
-                                {
-                                  id: 5,
-                                  name: "Data Correct But No Response",
-                                },
-                                { id: 6, name: "Data Incorrect" },
-                              ]
-                            : [
-                                { id: 1, name: "Phone Call" },
-                                { id: 2, name: "WhatsApp" },
-                                { id: 3, name: "SMS" },
-                                { id: 4, name: "Email" },
-                              ]
-                        }
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setContactMode(value);
-                          if (value == 5) {
-                            setComments(comments == "Junk" ? "" : comments);
-                            setLeadTemperature(1);
-                            setFollowUpStatusId(1);
-                          } else if (value == 6) {
-                            setLeadTemperature(4);
-                            setFollowUpStatusId(null);
-                            setNxtFollowupDate(null);
-                            setNxtFollowupDateError("");
-                            setNextFollowupTime(null);
-                            setCounsel("Not Given");
-                            setResponseStatus("Not Given");
-                            setComments("Junk");
-                            setCommentsError("");
-                            setExpectDateJoin(null);
-                          } else {
-                            setLeadTemperature(5);
-                            setFollowUpStatusId(5);
-                            setComments(comments == "Junk" ? "" : comments);
-                          }
-                          if (validationTrigger) {
-                            setContactModeError(selectValidator(value));
-                          }
-                        }}
-                        value={contactMode}
-                        error={contactModeError}
-                        disabled={updateLeadItem}
-                        height={"35px"}
-                        fontSize={"13px"}
-                        labelFontSize={"12px"}
-                        errorFontSize={"9px"}
-                        labelMarginTop={"0px"}
-                      />
-                    </div>
-                  </>
-                )}
                 <div style={{ marginBottom: "24px" }}>
                   <CommonSelectField
-                    label="Response Status"
+                    label="Communication"
                     required={true}
-                    value={responseStatus}
-                    onChange={(e) => setResponseStatus(e.target.value)}
-                    options={[
-                      { id: "Given", name: "Given" },
-                      { id: "Not Given", name: "Not Given" },
-                    ]}
+                    value={communicationStatus}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCommunicationStatus(value);
+                      setContactMode(null);
+                      setResponseStatus(null);
+                      setResponseStatusError("");
+                      setCounsel("Not Given");
+                      setLeadTemperature(null);
+                      setFollowUpStatusId(null);
+                      setNxtFollowupDate(null);
+                      setNextFollowupTime(null);
+                      setAddTodayFollowup(false);
+                      setExpectDateJoin(null);
+                      if (validationTrigger) {
+                        setCommunicationStatusError(selectValidator(value));
+                        setContactModeError(selectValidator(null));
+                      }
+                    }}
+                    options={communicationStatusOptions}
+                    error={communicationStatusError}
+                    disabled={updateLeadItem}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"7.7px"}
+                    labelMarginTop={"0px"}
+                  />
+                </div>
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label={communicationStatus == 2 ? "Reason" : "Mode"}
+                    required={true}
+                    options={
+                      communicationStatus == 2
+                        ? [
+                            {
+                              id: 5,
+                              name: "Data Correct But No Response",
+                            },
+                            { id: 6, name: "Data Incorrect" },
+                          ]
+                        : [
+                            { id: 1, name: "Phone Call" },
+                            { id: 2, name: "WhatsApp" },
+                            { id: 3, name: "SMS" },
+                            { id: 4, name: "Email" },
+                          ]
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setContactMode(value);
+                      if (value == 5) {
+                        setComments(comments == "Junk" ? "" : comments);
+                        setLeadTemperature(1);
+                        setFollowUpStatusId(1);
+                        setResponseStatus("Not-Received");
+                        setResponseStatusError("");
+                      } else if (value == 6) {
+                        setLeadTemperature(4);
+                        setFollowUpStatusId(null);
+                        setNxtFollowupDate(null);
+                        setNxtFollowupDateError("");
+                        setNextFollowupTime(null);
+                        setCounsel("Not Given");
+                        setResponseStatus("Not-Received");
+                        setResponseStatusError("");
+                        setComments("Junk");
+                        setCommentsError("");
+                        setExpectDateJoin(null);
+                      } else {
+                        setLeadTemperature(5);
+                        setFollowUpStatusId(5);
+                        setComments(comments == "Junk" ? "" : comments);
+                      }
+                      if (validationTrigger) {
+                        setContactModeError(selectValidator(value));
+                      }
+                    }}
+                    value={contactMode}
+                    error={contactModeError}
+                    disabled={updateLeadItem}
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label="Response Status"
+                    required={true}
+                    value={responseStatus}
+                    onChange={(e) => {
+                      setResponseStatus(e.target.value);
+                      setResponseStatusError(selectValidator(e.target.value));
+                    }}
+                    options={[
+                      { id: "Received", name: "Received" },
+                      { id: "Not-Received", name: "Not-Received" },
+                    ]}
+                    error={responseStatusError}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                    disabled={
+                      contactMode == 5 || contactMode == 6 || updateLeadItem
+                    }
                   />
                 </div>
 
@@ -2135,32 +2142,18 @@ const AddNewLead = forwardRef(
                   <CommonSelectField
                     label="Lead Temp."
                     required={true}
-                    options={
-                      contactMode == 6
-                        ? [
-                            { id: 5, name: "Super Hot", color: "#dc2626" },
-                            { id: 1, name: "Hot", color: "#f97316" },
-                            { id: 2, name: "Warm", color: "#eab308" },
-                            { id: 3, name: "Cold", color: "#3b82f6" },
-                            {
-                              id: 6,
-                              name: "Not Interested",
-                              color: "#991b1b",
-                            },
-                            { id: 4, name: "Dormant", color: "#6b7280" },
-                          ]
-                        : [
-                            { id: 5, name: "Super Hot", color: "#dc2626" },
-                            { id: 1, name: "Hot", color: "#f97316" },
-                            { id: 2, name: "Warm", color: "#eab308" },
-                            { id: 3, name: "Cold", color: "#3b82f6" },
-                            {
-                              id: 6,
-                              name: "Not Interested",
-                              color: "#991b1b",
-                            },
-                          ]
-                    }
+                    options={[
+                      { id: 5, name: "Super Hot", color: "#dc2626" },
+                      { id: 1, name: "Hot", color: "#f97316" },
+                      { id: 2, name: "Warm", color: "#eab308" },
+                      { id: 3, name: "Cold", color: "#3b82f6" },
+                      {
+                        id: 6,
+                        name: "Not Interested",
+                        color: "#991b1b",
+                      },
+                      { id: 4, name: "Dormant", color: "#6b7280" },
+                    ]}
                     renderOption={(props, option) => (
                       <li {...props}>
                         <div
@@ -2496,7 +2489,7 @@ const AddNewLead = forwardRef(
             <div
               style={{
                 ...cardStyle,
-                ...(contactMode == 6
+                ...(contactMode == 6 || updateLeadItem
                   ? {
                       background: "#eff6ff",
                       pointerEvents: "none",
@@ -2632,17 +2625,40 @@ const AddNewLead = forwardRef(
           <Col span={12}>
             <div
               style={{
-                width: "100%",
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
               }}
             >
-              <div style={{ ...cardStyle, flex: 1 }}>
+              <div
+                style={{
+                  ...cardStyle,
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 <SectionHeader title="7. Remarks" />
-                <div style={{ marginBottom: "12px" }}>
+                <div
+                  style={{
+                    marginBottom: "8px",
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <CommonTextArea
                     label={""}
+                    textAreaStyle={{
+                      height: "100%",
+                      resize: "none",
+                      flex: 1,
+                    }}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
                     placeholder="Enter remarks..."
                     value={comments}
                     onChange={(e) => {

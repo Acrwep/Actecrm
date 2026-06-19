@@ -376,7 +376,14 @@ export default function LeadManager() {
 
         return updatedItem;
       });
-      const order = ["Call", "Direct", "Website", "SMO", "Live Chat"];
+      const order = [
+        "Call",
+        "Direct",
+        "Website",
+        "SMO",
+        "Live Chat",
+        "Reference",
+      ];
 
       const sortedLeadTypes = [...update_lead_status].sort(
         (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
@@ -573,7 +580,7 @@ export default function LeadManager() {
         "interested_leads",
         "joinings",
       ].includes(activePage);
-      
+
       const keyToIncrement = isLeadBucket ? "leads" : activePage;
 
       return {

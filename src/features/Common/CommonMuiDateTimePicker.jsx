@@ -289,11 +289,6 @@ export default function CommonMuiDateTimePicker({
                 fontFamily: "Poppins, sans-serif",
                 fontSize: "13px",
               },
-              "& .MuiSvgIcon-root": {
-                fontSize: "20px",
-                fontSize: iconSize || "20px",
-                marginTop: "-1px",
-              },
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: error ? "#d32f2f" : "#b0b0b0",
               },

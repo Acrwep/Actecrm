@@ -299,19 +299,19 @@
 }
 .commontextarea_errormessagediv {
   position: absolute;
-  left: 0%;
+  left: 0;
   opacity: 0;
-  top: 0%;
+  top: 100%;
 }
 .commontextarea_errormessage_activediv {
-  transform: translateX(4%);
-  transform: translateY(20%);
   opacity: 1;
   position: absolute;
-  font-size: 12px !important;
-  transition:
-    transform 0.4s ease-in-out,
-    opacity 0.4s ease-in-out;
+  top: 100%;
+  left: 0;
+  margin-left: 12px;
+  margin-top: 3px;
+  font-size: 11px !important;
+  transition: opacity 0.4s ease-in-out;
 }
 
 /* signature pad styles */
