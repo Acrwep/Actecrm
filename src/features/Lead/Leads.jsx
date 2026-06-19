@@ -510,15 +510,6 @@ export default function Leads({
       dataIndex: "batch_track",
       width: 120,
     },
-    // {
-    //   title: "Next Followup Date",
-    //   key: "next_follow_up_date",
-    //   dataIndex: "next_follow_up_date",
-    //   width: 160,
-    //   render: (text, record) => {
-    //     return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-    //   },
-    // },
     {
       title: "Expected Join Date",
       key: "expected_join_date",
@@ -528,66 +519,84 @@ export default function Leads({
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
-    {
-      title: "Followup Status",
-      key: "lead_action_name",
-      dataIndex: "lead_action_name",
-      fixed: "right",
-      width: 140,
-      sorter: (a, b) =>
-        (a.lead_action_name || "").localeCompare(b.lead_action_name || ""),
-      sortDirections: ["ascend", "descend"],
-      render: (text) => {
-        const statusClass =
-          text === "Super Hot"
-            ? "super_hot_priority"
-            : text === "Hot"
-              ? "hot_priority"
-              : text === "Medium"
-                ? "medium_priority"
-                : text === "Cold"
-                  ? "cold_priority"
-                  : text === "Junk" || text === "Dormant"
-                    ? "junk_priority"
-                    : "others";
+    ...(leadBucketName === "Interested Leads"
+      ? [
+          {
+            title: "Followup Status",
+            key: "lead_action_name",
+            dataIndex: "lead_action_name",
+            fixed: "right",
+            width: 160,
+            sorter: (a, b) =>
+              (a.lead_action_name || "").localeCompare(
+                b.lead_action_name || "",
+              ),
+            sortDirections: ["ascend", "descend"],
+            render: (text) => {
+              const statusColors = {
+                "Sales Ready": "#dc2626",
+                "Highly Interested": "#f97316",
+                Interested: "#eab308",
+                Exploring: "#3b82f6",
+                "Not Responding": "#4b5563",
+                "Not Interested": "#111827",
+              };
+              const baseColor = statusColors[text] || "#4338ca";
 
-        return (
-          <div className={`leadfollwup_table_status_container ${statusClass}`}>
-            <p>{text}</p>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Lead Priority",
-      key: "lead_status",
-      dataIndex: "lead_status",
-      fixed: "right",
-      width: 140,
-      sorter: (a, b) =>
-        (a.lead_status || "").localeCompare(b.lead_status || ""),
-      sortDirections: ["ascend", "descend"],
-      render: (text) => {
-        const statusClass =
-          text === "Super Hot"
-            ? "super_hot_priority"
-            : text === "Hot"
-              ? "hot_priority"
-              : text === "Medium"
-                ? "medium_priority"
-                : text === "Cold"
-                  ? "cold_priority"
-                  : text === "Junk" || text === "Dormant"
-                    ? "junk_priority"
-                    : "others";
+              return (
+                <>
+                  {text ? (
+                    <div
+                      className="leadfollwup_table_status_container"
+                      style={{
+                        background: `${baseColor}1A`,
+                        color: baseColor,
+                      }}
+                    >
+                      {text}
+                    </div>
+                  ) : (
+                    <p>-</p>
+                  )}
+                </>
+              );
+            },
+          },
+        ]
+      : [
+          {
+            title: "Lead Temp",
+            key: "lead_status",
+            dataIndex: "lead_status",
+            fixed: "right",
+            width: 140,
+            sorter: (a, b) =>
+              (a.lead_status || "").localeCompare(b.lead_status || ""),
+            sortDirections: ["ascend", "descend"],
+            render: (text) => {
+              const statusClass =
+                text === "Super Hot"
+                  ? "super_hot_priority"
+                  : text === "Hot"
+                    ? "hot_priority"
+                    : text === "Medium"
+                      ? "medium_priority"
+                      : text === "Cold"
+                        ? "cold_priority"
+                        : text === "Junk" || text === "Dormant"
+                          ? "junk_priority"
+                          : "others";
 
-        return (
-          <div className={`leadfollwup_table_status_container ${statusClass}`}>
-            <p>{text}</p>
-          </div>
-        );
-      },
-    },
+              return (
+                <div
+                  className={`leadfollwup_table_status_container ${statusClass}`}
+                >
+                  <p>{text}</p>
+                </div>
+              );
+            },
+          },
+        ]),
     {
       title: "Comments",
       key: "comments",
@@ -744,7 +753,7 @@ export default function Leads({
         setColumns(updatedColumns);
         setTableColumns(nonChangeColumns);
 
-        getTableColumnsData(loginUserId);
+        getTableColumnsData(loginUserId, updatedColumns);
         prevTargetPageName.current = currentPage;
       }
     }
@@ -876,6 +885,7 @@ export default function Leads({
             pageLimit: pagination.limit,
           }),
         );
+        setLeadData([]);
 
         getAllLeadData(
           searchValue,
@@ -893,14 +903,14 @@ export default function Leads({
     }
   }, [activePage]);
 
-  const getTableColumnsData = async (user_id) => {
+  const getTableColumnsData = async (user_id, latestColumns = null) => {
     try {
       const response = await getTableColumns(user_id);
       console.log("get table columns response", response);
 
       const data = response?.data?.data || [];
       if (data.length === 0) {
-        return updateTableColumnsData();
+        return updateTableColumnsData(latestColumns || columns);
       }
 
       const filterPage = data.find(
@@ -912,7 +922,7 @@ export default function Leads({
       );
       if (!filterPage) {
         setUpdateTableId(null);
-        return updateTableColumnsData();
+        return updateTableColumnsData(latestColumns || columns);
       }
 
       // --- ✅ Helper function to reattach render logic ---
@@ -1130,70 +1140,83 @@ export default function Leads({
                 sortDirections: ["ascend", "descend"],
               };
             case "lead_status":
-              return {
-                ...col,
-                title: "Lead Temp.",
-                sorter: (a, b) =>
-                  (a.lead_status || "").localeCompare(b.lead_status || ""),
-                sortDirections: ["ascend", "descend"],
-                width: 140,
-                render: (text) => {
-                  const statusClass =
-                    text === "Super Hot"
-                      ? "super_hot_priority"
-                      : text === "Hot"
-                        ? "hot_priority"
-                        : text === "Warm"
-                          ? "medium_priority"
-                          : text === "Cold"
-                            ? "cold_priority"
-                            : text === "Not Interested"
-                              ? "junk_priority"
-                              : text === "Dormant" || text === "Junk"
-                                ? "dormant_priority"
-                                : "others";
-
-                  return (
-                    <div
-                      className={`leadfollwup_table_status_container ${statusClass}`}
-                    >
-                      <p>{text}</p>
-                    </div>
-                  );
-                },
-              };
             case "lead_action_name":
-              return {
-                ...col,
-                width: 150,
-                sorter: (a, b) =>
-                  (a.lead_action_name || "").localeCompare(
-                    b.lead_action_name || "",
-                  ),
-                sortDirections: ["ascend", "descend"],
-                render: (text) => {
-                  const statusClass =
-                    text === "Super Hot"
-                      ? "super_hot_priority"
-                      : text === "Hot"
-                        ? "hot_priority"
-                        : text === "Medium"
-                          ? "medium_priority"
-                          : text === "Cold"
-                            ? "cold_priority"
-                            : text === "Junk" || text === "Dormant"
-                              ? "junk_priority"
-                              : "others";
+              return leadBucketName === "Interested Leads"
+                ? {
+                    ...col,
+                    title: "Followup Status",
+                    key: "lead_action_name",
+                    dataIndex: "lead_action_name",
+                    width: 160,
+                    sorter: (a, b) =>
+                      (a.lead_action_name || "").localeCompare(
+                        b.lead_action_name || "",
+                      ),
+                    sortDirections: ["ascend", "descend"],
+                    render: (text) => {
+                      const statusColors = {
+                        "Sales Ready": "#dc2626",
+                        "Highly Interested": "#f97316",
+                        Interested: "#eab308",
+                        Exploring: "#3b82f6",
+                        "Not Responding": "#4b5563",
+                        "Not Interested": "#111827",
+                      };
+                      const baseColor = statusColors[text] || "#4338ca";
 
-                  return (
-                    <div
-                      className={`leadfollwup_table_status_container ${statusClass}`}
-                    >
-                      <p>{text}</p>
-                    </div>
-                  );
-                },
-              };
+                      return (
+                        <>
+                          {text ? (
+                            <div
+                              className="leadfollwup_table_status_container"
+                              style={{
+                                background: `${baseColor}1A`,
+                                color: baseColor,
+                              }}
+                            >
+                              {text}
+                            </div>
+                          ) : (
+                            <p>-</p>
+                          )}
+                        </>
+                      );
+                    },
+                  }
+                : {
+                    ...col,
+                    title: "Lead Temp.",
+                    key: "lead_status",
+                    dataIndex: "lead_status",
+                    sorter: (a, b) =>
+                      (a.lead_status || "").localeCompare(b.lead_status || ""),
+                    sortDirections: ["ascend", "descend"],
+                    width: 140,
+                    render: (text) => {
+                      const statusClass =
+                        text === "Super Hot"
+                          ? "super_hot_priority"
+                          : text === "Hot"
+                            ? "hot_priority"
+                            : text === "Warm"
+                              ? "medium_priority"
+                              : text === "Cold"
+                                ? "cold_priority"
+                                : text === "Not Interested"
+                                  ? "junk_priority"
+                                  : text === "Dormant" || text === "Junk"
+                                    ? "dormant_priority"
+                                    : "others";
+
+                      return (
+                        <div
+                          className={`leadfollwup_table_status_container ${statusClass}`}
+                        >
+                          <p>{text}</p>
+                        </div>
+                      );
+                    },
+                  };
             case "region_name":
               return {
                 ...col,
@@ -1387,7 +1410,7 @@ export default function Leads({
     getTableColumnsData(convertAsJson?.user_id);
   }, [filterValuesFromRedux.call_getraapi]);
 
-  const updateTableColumnsData = async () => {
+  const updateTableColumnsData = async (latestColumns = columns) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
@@ -1395,7 +1418,7 @@ export default function Leads({
       user_id: convertAsJson?.user_id,
       page_name:
         leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads",
-      column_names: columns,
+      column_names: latestColumns,
     };
     console.log("updateTableColumnsData", payload);
     try {
@@ -2573,7 +2596,7 @@ export default function Leads({
                         <CommonSelectField
                           width="100%"
                           height="35px"
-                          label="Lead Priority"
+                          label="Lead Temp."
                           labelMarginTop="0px"
                           labelFontSize="12px"
                           options={[

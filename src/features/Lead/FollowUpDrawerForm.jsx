@@ -410,12 +410,12 @@ export default function FollowUpDrawerForm({
               )
               .map((item, index) => {
                 const statusColors = {
-                  "Super Hot": "#dc2626",
-                  Hot: "#f97316",
-                  Warm: "#eab308",
-                  Cold: "#3b82f6",
-                  Dormant: "#6b7280",
-                  "Not Interested": "#991b1b",
+                  "Sales Ready": "#dc2626",
+                  "Highly Interested": "#f97316",
+                  Interested: "#eab308",
+                  Exploring: "#3b82f6",
+                  "Not Responding": "#4b5563",
+                  "Not Interested": "#111827",
                 };
                 const baseColor =
                   statusColors[item.lead_action_name] || "#4338ca";
@@ -646,21 +646,6 @@ export default function FollowUpDrawerForm({
                           {item.comments}
                         </div>
                       )}
-
-                      {item.status && (
-                        <div style={{ marginTop: "10px" }}>
-                          <p className="leadfollowup_qualitystatus_text">
-                            <span style={{ fontWeight: 600, color: "gray" }}>
-                              Status:
-                            </span>{" "}
-                            {item.status == 1
-                              ? "Details Shared"
-                              : item.status == 2
-                                ? "Details Not Shared"
-                                : "CNA"}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -783,12 +768,12 @@ export default function FollowUpDrawerForm({
                 }
               }}
               options={[
-                { id: 5, name: "Super Hot", color: "#dc2626" },
-                { id: 1, name: "Hot", color: "#f97316" },
-                { id: 2, name: "Warm", color: "#eab308" },
-                { id: 3, name: "Cold", color: "#3b82f6" },
-                { id: 6, name: "Not Interested", color: "#991b1b" },
-                { id: 4, name: "Dormant", color: "#6b7280" },
+                { id: 5, name: "Sales Ready", color: "#dc2626" },
+                { id: 1, name: "Highly Interested", color: "#f97316" },
+                { id: 8, name: "Interested", color: "#eab308" },
+                { id: 9, name: "Exploring", color: "#3b82f6" },
+                { id: 10, name: "Not Responding", color: "#4b5563" },
+                { id: 2, name: "Not Interested", color: "#111827" },
               ]}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -814,6 +799,7 @@ export default function FollowUpDrawerForm({
               height={"36px"}
               fontSize={"13px"}
               labelFontSize={"13px"}
+              labelMarginTop={"0px"}
               error={followupTypeError}
               disabled={contactMode == 5 || contactMode == 6}
             />

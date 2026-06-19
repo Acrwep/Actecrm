@@ -369,14 +369,14 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                   new Date(a.updated_date || a.created_date),
               )
               .map((item, index) => {
-              const statusColors = {
-                "Super Hot": "#dc2626",
-                Hot: "#f97316",
-                Warm: "#eab308",
-                Cold: "#3b82f6",
-                Dormant: "#6b7280",
-                "Not Interested": "#991b1b",
-              };
+                const statusColors = {
+                  "Sales Ready": "#dc2626",
+                  "Highly Interested": "#f97316",
+                  Interested: "#eab308",
+                  Exploring: "#3b82f6",
+                  "Not Responding": "#4b5563",
+                  "Not Interested": "#111827",
+                };
 
                 const baseColor =
                   statusColors[item.lead_action_name] || "#4338ca";
