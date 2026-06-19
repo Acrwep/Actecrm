@@ -373,8 +373,8 @@ export default function AssignLeads({
             : searchvalue && filterType == 4
               ? { course: searchvalue }
               : {}),
-      start_date: startDate,
-      end_date: endDate,
+      // start_date: startDate,
+      // end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
         ? { user_id: convertAsJson?.user_id }
         : {}),
@@ -644,7 +644,7 @@ export default function AssignLeads({
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={7}>
+            <Col span={8}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={
@@ -773,7 +773,7 @@ export default function AssignLeads({
                 </div>
               </div>
             </Col>
-            <Col span={10}>
+            {/* <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -798,7 +798,7 @@ export default function AssignLeads({
                   );
                 }}
               />
-            </Col>
+            </Col> */}
           </Row>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>

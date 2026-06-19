@@ -967,8 +967,8 @@ const AddNewLead = forwardRef(
         //     isPreviousJunk && leadTemperature != 4 && leadTemperature != 5,
         // }),
         is_previous_junk: false,
-        communication_status: communicationStatus,
-        contact_mode: contactMode,
+        communication_status: communicationStatus ? communicationStatus : null,
+        contact_mode: contactMode ? contactMode : null,
         response_status: responseStatus,
         interest_rate: interestRate,
         next_follow_up_date: nxtFollowupDate
@@ -2004,7 +2004,7 @@ const AddNewLead = forwardRef(
                       setNextFollowupTime(null);
                       setAddTodayFollowup(false);
                       setExpectDateJoin(null);
-                      if (value) {
+                      if (value && validationTrigger) {
                         setContactModeError(selectValidator(null));
                         setResponseStatusError(selectValidator(null));
                         setNxtFollowupDateError(selectValidator(null));
