@@ -2234,179 +2234,190 @@ const AddNewLead = forwardRef(
           <Col span={6}>
             <div
               style={{
-                ...cardStyle,
-                background: "#f8fafc",
-                padding: "8px 16px",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              <div
-                style={{
-                  color: "#0f172a",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  marginBottom: "14px",
-                }}
-              >
-                Lead Status Flow
-              </div>
-              <div>
-                <StatusTimelineItem
-                  status="New Lead"
-                  color="#2563eb"
-                  icon={<span style={{ fontSize: "9px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Validated"
-                  color="#2563eb"
-                  isSmall={true}
-                />
-                <StatusTimelineItem
-                  status="Contacted"
-                  color="#0d9488"
-                  icon={<span style={{ fontSize: "9px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Counselling"
-                  color="#ef4444"
-                  icon={<span style={{ fontSize: "9px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Fee Discussion"
-                  color="#f59e0b"
-                  icon={<span style={{ fontSize: "9px" }}>Y</span>}
-                />
-                <StatusTimelineItem
-                  status="Interested"
-                  color="#ef4444"
-                  icon={<span style={{ fontSize: "9px" }}>B</span>}
-                />
-                <StatusTimelineItem
-                  status="Follow-up"
-                  color="#f97316"
-                  icon={<span style={{ fontSize: "9px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Sales Ready"
-                  color="#eab308"
-                  icon={<span style={{ fontSize: "9px" }}>A</span>}
-                />
-                <StatusTimelineItem
-                  status="Joined"
-                  color="#22c55e"
-                  icon={<MdCheck size={13} />}
-                />
-                <StatusTimelineItem
-                  status="Payment Collected"
-                  color="#16a34a"
-                  icon={<MdPerson size={13} />}
-                  isLast={true}
-                />
-              </div>
-            </div>
-
-            <div style={{ ...cardStyle, padding: "0" }}>
-              <div
-                style={{
-                  padding: "6px 16px",
-                  background: "#f8fafc",
-                  borderBottom: "1px solid #e2e8f0",
-                  borderRadius: "9px 9px 0 0",
-                  color: "#0f172a",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  textAlign: "center",
-                }}
-              >
-                Score Criteria (Max 100)
-              </div>
-              <div style={{ padding: "4px 16px" }}>
-                <table
+              <div style={{ flex: 1 }}>
+                <div
                   style={{
-                    width: "100%",
-                    fontSize: "13px",
-                    borderCollapse: "collapse",
-                    color: "#334155",
+                    ...cardStyle,
+                    background: "#f8fafc",
+                    padding: "8px 16px",
                   }}
                 >
-                  <tbody>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                        Contact Connected
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +10
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                        Interested
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                        Demo Attended
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                        Budget Available
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +20
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                        Joining Within 30 Days
-                      </td>
-                      <td
-                        align="right"
-                        style={{ fontWeight: 600, color: "#2563eb" }}
-                      >
-                        +30
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        style={{
-                          padding: "8px 0",
-                          fontWeight: "700",
-                          color: "#0f172a",
-                        }}
-                      >
-                        Total Score
-                      </td>
-                      <td
-                        align="right"
-                        style={{
-                          padding: "8px 0",
-                          fontWeight: "700",
-                          color: "#0f172a",
-                        }}
-                      >
-                        100
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                  <div
+                    style={{
+                      color: "#0f172a",
+                      fontWeight: 700,
+                      fontSize: "13px",
+                      marginBottom: "14px",
+                    }}
+                  >
+                    Lead Status Flow
+                  </div>
+                  <div>
+                    <StatusTimelineItem
+                      status="New Lead"
+                      color="#2563eb"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Validated"
+                      color="#2563eb"
+                      isSmall={true}
+                    />
+                    <StatusTimelineItem
+                      status="Contacted"
+                      color="#0d9488"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Counselling"
+                      color="#ef4444"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Fee Discussion"
+                      color="#f59e0b"
+                      icon={<span style={{ fontSize: "9px" }}>Y</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Interested"
+                      color="#ef4444"
+                      icon={<span style={{ fontSize: "9px" }}>B</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Follow-up"
+                      color="#f97316"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Sales Ready"
+                      color="#eab308"
+                      icon={<span style={{ fontSize: "9px" }}>A</span>}
+                    />
+                    <StatusTimelineItem
+                      status="Joined"
+                      color="#22c55e"
+                      icon={<MdCheck size={13} />}
+                    />
+                    <StatusTimelineItem
+                      status="Payment Collected"
+                      color="#16a34a"
+                      icon={<MdPerson size={13} />}
+                      isLast={true}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ ...cardStyle, padding: "0" }}>
+                  <div
+                    style={{
+                      padding: "6px 16px",
+                      background: "#f8fafc",
+                      borderBottom: "1px solid #e2e8f0",
+                      borderRadius: "9px 9px 0 0",
+                      color: "#0f172a",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Score Criteria (Max 100)
+                  </div>
+                  <div style={{ padding: "4px 16px" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        fontSize: "13px",
+                        borderCollapse: "collapse",
+                        color: "#334155",
+                      }}
+                    >
+                      <tbody>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Contact Connected
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +10
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Interested
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Demo Attended
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Budget Available
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +20
+                          </td>
+                        </tr>
+                        <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                            Joining Within 30 Days
+                          </td>
+                          <td
+                            align="right"
+                            style={{ fontWeight: 600, color: "#2563eb" }}
+                          >
+                            +30
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              padding: "8px 0",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                            }}
+                          >
+                            Total Score
+                          </td>
+                          <td
+                            align="right"
+                            style={{
+                              padding: "8px 0",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                            }}
+                          >
+                            100
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </Col>
