@@ -918,7 +918,7 @@ const AddNewLead = forwardRef(
 
         return;
       }
-      return;
+      // return;
       //-----------------
       setButtonLoading(true);
 
