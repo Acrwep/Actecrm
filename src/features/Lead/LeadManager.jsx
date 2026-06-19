@@ -631,7 +631,7 @@ export default function LeadManager() {
       >
         <ScrollableTabContainer>
           {permissions.includes("Add Lead Button") && (
-            <button
+            <div
               className={
                 activePage === "add_lead"
                   ? "addlead_tab_activebutton"
@@ -640,10 +640,10 @@ export default function LeadManager() {
               onClick={() => handleTabClick("add_lead")}
             >
               <p style={{ margin: 0 }}>Add Lead</p>
-            </button>
+            </div>
           )}
 
-          <button
+          <div
             className={
               activePage === "live_leads"
                 ? "livelead_tab_activebutton"
@@ -652,9 +652,9 @@ export default function LeadManager() {
             onClick={() => handleTabClick("live_leads")}
           >
             <p style={{ margin: 0 }}>{`Live Leads (${liveLeadCount})`}</p>
-          </button>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "assign_leads"
                 ? "assignleads_tab_activebutton"
@@ -663,9 +663,9 @@ export default function LeadManager() {
             onClick={() => handleTabClick("assign_leads")}
           >
             <p style={{ margin: 0 }}>{`Assign Leads (${assignLeadCount})`}</p>
-          </button>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "all_leads" || activePage === "leads"
                 ? "allleads_tab_activebutton"
@@ -674,9 +674,9 @@ export default function LeadManager() {
             onClick={() => handleTabClick("all_leads")}
           >
             <p style={{ margin: 0 }}>{`All Leads (${bucketCounts.all})`}</p>
-          </button>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "valid_leads"
                 ? "validleads_tab_activebutton"
@@ -684,10 +684,12 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("valid_leads")}
           >
-            <p style={{ margin: 0 }}>{`Valid Leads (${bucketCounts.valid_leads})`}</p>
-          </button>
+            <p
+              style={{ margin: 0 }}
+            >{`Valid Leads (${bucketCounts.valid_leads})`}</p>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "eligible_leads"
                 ? "eligibleleads_tab_activebutton"
@@ -695,10 +697,12 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("eligible_leads")}
           >
-            <p style={{ margin: 0 }}>{`Eligible Leads (${bucketCounts.eligible_leads})`}</p>
-          </button>
+            <p
+              style={{ margin: 0 }}
+            >{`Eligible Leads (${bucketCounts.eligible_leads})`}</p>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "interested_leads"
                 ? "interestedleads_tab_activebutton"
@@ -706,10 +710,12 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("interested_leads")}
           >
-            <p style={{ margin: 0 }}>{`Interested Leads (${bucketCounts.interested_leads})`}</p>
-          </button>
+            <p
+              style={{ margin: 0 }}
+            >{`Interested Leads (${bucketCounts.interested_leads})`}</p>
+          </div>
 
-          <button
+          <div
             className={
               activePage === "joinings"
                 ? "joinings_tab_activebutton"
@@ -718,7 +724,7 @@ export default function LeadManager() {
             onClick={() => handleTabClick("joinings")}
           >
             <p style={{ margin: 0 }}>{`Joinings (${bucketCounts.joinings})`}</p>
-          </button>
+          </div>
 
           {/* {permissions.includes("Junk Leads Tab") && (
             <button

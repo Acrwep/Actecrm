@@ -2254,7 +2254,7 @@ export default function Leads({
     <div>
       <Row>
         <Col xs={24} sm={24} md={24} lg={22}>
-          <Row gutter={16}>
+          <Row gutter={12}>
             <Col flex="23%">
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput

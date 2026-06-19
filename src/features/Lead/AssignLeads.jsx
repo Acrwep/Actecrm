@@ -290,7 +290,7 @@ export default function AssignLeads({
               />
             </Tooltip>
 
-            <Tooltip placement="bottom" title="Move to Junk">
+            {/* <Tooltip placement="bottom" title="Move to Junk">
               <MdOutlinePlaylistRemove
                 color="#d32f2f"
                 size={20}
@@ -300,7 +300,7 @@ export default function AssignLeads({
                   setIsOpenJunkModal(true);
                 }}
               />
-            </Tooltip>
+            </Tooltip> */}
           </div>
         );
       },
