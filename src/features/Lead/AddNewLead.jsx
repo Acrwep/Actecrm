@@ -1305,7 +1305,7 @@ const AddNewLead = forwardRef(
         style={{
           display: "flex",
           alignItems: "flex-start",
-          marginBottom: isLast ? "0" : "5.5px",
+          marginBottom: isLast ? "0" : "6px",
           position: "relative",
         }}
       >
@@ -1786,7 +1786,9 @@ const AddNewLead = forwardRef(
                     }))}
                     value={leadSubSource}
                     error={leadSubSourceError}
-                    disabled={leadSource == 2 || leadSource == 3}
+                    disabled={
+                      leadSource == 2 || leadSource == 3 || leadSource == 6
+                    }
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
@@ -1818,18 +1820,21 @@ const AddNewLead = forwardRef(
                   />
                 </div>
 
-                <div style={{ marginBottom: "0px" }}>
-                  <CommonInputField
-                    label="Referral Name"
-                    value={referralName}
-                    onChange={(e) => setReferralName(e.target.value)}
-                    placeholder="Enter referral name"
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    errorFontSize={"9px"}
-                  />
-                </div>
+                {leadSource == 6 && (
+                  <div style={{ marginBottom: "0px" }}>
+                    <CommonInputField
+                      label="Referral Name"
+                      required={true}
+                      value={referralName}
+                      onChange={(e) => setReferralName(e.target.value)}
+                      placeholder="Enter referral name"
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      errorFontSize={"9px"}
+                    />
+                  </div>
+                )}
               </div>
 
               <div
@@ -1972,10 +1977,688 @@ const AddNewLead = forwardRef(
               </div>
             </div>
           </Col>
-          <Col span={6}></Col>
-          <Col span={6}></Col>
+          <Col span={6}>
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  ...cardStyle,
+                  ...(isReAssign
+                    ? {
+                        background: "#eff6ff",
+                        pointerEvents: "none",
+                        opacity: 0.8,
+                      }
+                    : {}),
+                  flex: 1,
+                }}
+              >
+                <SectionHeader title="4. Screening" />
+                {updateLeadItem ? (
+                  ""
+                ) : (
+                  <>
+                    <div style={{ marginBottom: "24px" }}>
+                      <CommonSelectField
+                        label="Communication"
+                        required={true}
+                        value={communicationStatus}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCommunicationStatus(value);
+                          setContactMode(null);
+                          setCounsel("Not Given");
+                          setLeadTemperature(null);
+                          setFollowUpStatusId(null);
+                          setNxtFollowupDate(null);
+                          setNextFollowupTime(null);
+                          setAddTodayFollowup(false);
+                          setExpectDateJoin(null);
+                          if (validationTrigger) {
+                            setCommunicationStatusError(selectValidator(value));
+                            setContactModeError(selectValidator(null));
+                          }
+                        }}
+                        options={communicationStatusOptions}
+                        error={communicationStatusError}
+                        disabled={updateLeadItem}
+                        height={"35px"}
+                        fontSize={"13px"}
+                        labelFontSize={"12px"}
+                        errorFontSize={"7.7px"}
+                        labelMarginTop={"0px"}
+                      />
+                    </div>
+                    <div style={{ marginBottom: "24px" }}>
+                      <CommonSelectField
+                        label={communicationStatus == 2 ? "Reason" : "Mode"}
+                        required={true}
+                        options={
+                          communicationStatus == 2
+                            ? [
+                                {
+                                  id: 5,
+                                  name: "Data Correct But No Response",
+                                },
+                                { id: 6, name: "Data Incorrect" },
+                              ]
+                            : [
+                                { id: 1, name: "Phone Call" },
+                                { id: 2, name: "WhatsApp" },
+                                { id: 3, name: "SMS" },
+                                { id: 4, name: "Email" },
+                              ]
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setContactMode(value);
+                          if (value == 5) {
+                            setComments(comments == "Junk" ? "" : comments);
+                            setLeadTemperature(1);
+                            setFollowUpStatusId(1);
+                          } else if (value == 6) {
+                            setLeadTemperature(4);
+                            setFollowUpStatusId(null);
+                            setNxtFollowupDate(null);
+                            setNxtFollowupDateError("");
+                            setNextFollowupTime(null);
+                            setCounsel("Not Given");
+                            setResponseStatus("Not Given");
+                            setComments("Junk");
+                            setCommentsError("");
+                            setExpectDateJoin(null);
+                          } else {
+                            setLeadTemperature(5);
+                            setFollowUpStatusId(5);
+                            setComments(comments == "Junk" ? "" : comments);
+                          }
+                          if (validationTrigger) {
+                            setContactModeError(selectValidator(value));
+                          }
+                        }}
+                        value={contactMode}
+                        error={contactModeError}
+                        disabled={updateLeadItem}
+                        height={"35px"}
+                        fontSize={"13px"}
+                        labelFontSize={"12px"}
+                        errorFontSize={"9px"}
+                        labelMarginTop={"0px"}
+                      />
+                    </div>
+                  </>
+                )}
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label="Response Status"
+                    required={true}
+                    value={responseStatus}
+                    onChange={(e) => setResponseStatus(e.target.value)}
+                    options={[
+                      { id: "Given", name: "Given" },
+                      { id: "Not Given", name: "Not Given" },
+                    ]}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                    disabled={contactMode == 5 || contactMode == 6}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label="Counsel"
+                    required={true}
+                    value={counsel}
+                    onChange={(e) => setCounsel(e.target.value)}
+                    options={[
+                      { id: "Given", name: "Given" },
+                      { id: "Not Given", name: "Not Given" },
+                    ]}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                    disabled={contactMode == 5 || contactMode == 6}
+                  />
+                </div>
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label="Lead Temp."
+                    required={true}
+                    options={
+                      contactMode == 6
+                        ? [
+                            { id: 5, name: "Super Hot", color: "#dc2626" },
+                            { id: 1, name: "Hot", color: "#f97316" },
+                            { id: 2, name: "Warm", color: "#eab308" },
+                            { id: 3, name: "Cold", color: "#3b82f6" },
+                            {
+                              id: 6,
+                              name: "Not Interested",
+                              color: "#991b1b",
+                            },
+                            { id: 4, name: "Dormant", color: "#6b7280" },
+                          ]
+                        : [
+                            { id: 5, name: "Super Hot", color: "#dc2626" },
+                            { id: 1, name: "Hot", color: "#f97316" },
+                            { id: 2, name: "Warm", color: "#eab308" },
+                            { id: 3, name: "Cold", color: "#3b82f6" },
+                            {
+                              id: 6,
+                              name: "Not Interested",
+                              color: "#991b1b",
+                            },
+                          ]
+                    }
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "50%",
+                              backgroundColor: option.color || "gray",
+                            }}
+                          ></span>
+                          <span>{option.name}</span>
+                        </div>
+                      </li>
+                    )}
+                    onChange={(e) => {
+                      setLeadTemperature(e.target.value);
+                    }}
+                    value={leadTemperature}
+                    error={""}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    errorFontSize={"9px"}
+                    labelMarginTop={"0px"}
+                    disabled={true}
+                  />
+                </div>
+
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonMuiDatePicker
+                    label="Joining Timeframe"
+                    required={false}
+                    onChange={(value) => {
+                      console.log("vallll", value);
+                      setExpectDateJoin(value);
+                    }}
+                    value={expectDateJoin}
+                    error=""
+                    disablePreviousDates={true}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    labelMarginTop={"0.5px"}
+                    iconSize={"16px"}
+                    disabled={contactMode == 6}
+                  />
+                </div>
+                <div style={{ marginBottom: "6px" }}>
+                  <CommonInputField
+                    label="Lead Score"
+                    value={""}
+                    error={""}
+                    height={"36px"}
+                    labelFontSize={"13px"}
+                    disabled={true}
+                  />
+                </div>
+                {/* <Col span={12}>
+                      <CommonInputField
+                        label="Lead Score"
+                        value={""}
+                        error={""}
+                        height={"36px"}
+                        labelFontSize={"13px"}
+                        disabled={true}
+                      />
+                    </Col> */}
+              </div>
+            </div>
+          </Col>
+          <Col span={6}>
+            <div
+              style={{
+                ...cardStyle,
+                background: "#f8fafc",
+                padding: "8px 16px",
+              }}
+            >
+              <div
+                style={{
+                  color: "#0f172a",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  marginBottom: "14px",
+                }}
+              >
+                Lead Status Flow
+              </div>
+              <div>
+                <StatusTimelineItem
+                  status="New Lead"
+                  color="#2563eb"
+                  icon={<span style={{ fontSize: "9px" }}>A</span>}
+                />
+                <StatusTimelineItem
+                  status="Validated"
+                  color="#2563eb"
+                  isSmall={true}
+                />
+                <StatusTimelineItem
+                  status="Contacted"
+                  color="#0d9488"
+                  icon={<span style={{ fontSize: "9px" }}>A</span>}
+                />
+                <StatusTimelineItem
+                  status="Counselling"
+                  color="#ef4444"
+                  icon={<span style={{ fontSize: "9px" }}>A</span>}
+                />
+                <StatusTimelineItem
+                  status="Fee Discussion"
+                  color="#f59e0b"
+                  icon={<span style={{ fontSize: "9px" }}>Y</span>}
+                />
+                <StatusTimelineItem
+                  status="Interested"
+                  color="#ef4444"
+                  icon={<span style={{ fontSize: "9px" }}>B</span>}
+                />
+                <StatusTimelineItem
+                  status="Follow-up"
+                  color="#f97316"
+                  icon={<span style={{ fontSize: "9px" }}>A</span>}
+                />
+                <StatusTimelineItem
+                  status="Sales Ready"
+                  color="#eab308"
+                  icon={<span style={{ fontSize: "9px" }}>A</span>}
+                />
+                <StatusTimelineItem
+                  status="Joined"
+                  color="#22c55e"
+                  icon={<MdCheck size={13} />}
+                />
+                <StatusTimelineItem
+                  status="Payment Collected"
+                  color="#16a34a"
+                  icon={<MdPerson size={13} />}
+                  isLast={true}
+                />
+              </div>
+            </div>
+
+            <div style={{ ...cardStyle, padding: "0" }}>
+              <div
+                style={{
+                  padding: "6px 16px",
+                  background: "#f8fafc",
+                  borderBottom: "1px solid #e2e8f0",
+                  borderRadius: "9px 9px 0 0",
+                  color: "#0f172a",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  textAlign: "center",
+                }}
+              >
+                Score Criteria (Max 100)
+              </div>
+              <div style={{ padding: "4px 16px" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    borderCollapse: "collapse",
+                    color: "#334155",
+                  }}
+                >
+                  <tbody>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Contact Connected
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +10
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Interested
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Demo Attended
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Budget Available
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Joining Within 30 Days
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +30
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style={{
+                          padding: "8px 0",
+                          fontWeight: "700",
+                          color: "#0f172a",
+                        }}
+                      >
+                        Total Score
+                      </td>
+                      <td
+                        align="right"
+                        style={{
+                          padding: "8px 0",
+                          fontWeight: "700",
+                          color: "#0f172a",
+                        }}
+                      >
+                        100
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Col>
         </Row>
 
+        <Row gutter={8}>
+          <Col span={6}>
+            <div style={cardStyle}>
+              <SectionHeader title="5. Assignment" />
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Assigned Branch"
+                  required={true}
+                  value={branch}
+                  onChange={(e) => {
+                    setBranch(e.target.value);
+                    if (validationTrigger) {
+                      setBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  options={allBranchesData}
+                  error={branchError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                  labelMarginTop={"0px"}
+                  disabled={isReAssign}
+                />
+              </div>
+              <div style={{ marginBottom: "20px" }}>
+                <CommonSelectField
+                  label="Assigned Executive"
+                  required={true}
+                  value={assignExecutiveId}
+                  onChange={(e) => {
+                    setAssignExecutiveId(e.target.value);
+                    getSaleManagers(e.target.value);
+                  }}
+                  options={saleUsers}
+                  error={assignExecutiveError}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={
+                    !permissions.includes("Assign Lead") ||
+                    (isReAssign == false && updateLeadItem)
+                  }
+                />
+              </div>
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Assigned Manager"
+                  required={true}
+                  value={assignedManager}
+                  options={managersList}
+                  error={""}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={true}
+                />
+              </div>
+              <div style={{ marginBottom: "0px" }}>
+                <CommonSelectField
+                  label="Lead Owner"
+                  required={true}
+                  value={leadOwner}
+                  options={saleUsers}
+                  error={""}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </Col>
+          <Col span={6}>
+            <div
+              style={{
+                ...cardStyle,
+                ...(contactMode == 6
+                  ? {
+                      background: "#eff6ff",
+                      pointerEvents: "none",
+                      opacity: 0.8,
+                    }
+                  : {}),
+              }}
+            >
+              <SectionHeader title="6. Follow-Up Planning" />
+              <div style={{ marginBottom: "24px" }}>
+                <CommonSelectField
+                  label="Follow-up Type"
+                  required={true}
+                  value={followUpStatusId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFollowUpStatusId(value);
+                  }}
+                  options={[
+                    { id: 5, name: "Sales Ready", color: "#dc2626" },
+                    { id: 1, name: "Highly Interested", color: "#f97316" },
+                    { id: 8, name: "Interested", color: "#eab308" },
+                    { id: 9, name: "Exploring", color: "#3b82f6" },
+                    { id: 10, name: "Not Responding", color: "#4b5563" },
+                    { id: 2, name: "Not Interested", color: "#111827" },
+                  ]}
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: option.color || "gray",
+                          }}
+                        ></span>
+                        <span>{option.name}</span>
+                      </div>
+                    </li>
+                  )}
+                  height={"35px"}
+                  fontSize={"13px"}
+                  labelFontSize={"12px"}
+                  errorFontSize={"9px"}
+                  error={""}
+                  disabled={true}
+                />
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <CommonNxtFollowupDatePicker
+                  label="Next Follow-up Date"
+                  required={true}
+                  value={nxtFollowupDate}
+                  onChange={(val) => {
+                    setNxtFollowupDate(val);
+                    setNxtFollowupDateError(selectValidator(val));
+                  }}
+                  leadTemperature={parseInt(leadTemperature)}
+                  error={nxtFollowupDateError}
+                  height={"35px"}
+                  labelFontSize={"12px"}
+                  fontSize={"13px"}
+                  labelMarginTop={"0.5px"}
+                  iconSize={"16px"}
+                  disabled={
+                    contactMode == 6 || (updateLeadItem && isReAssign == false)
+                  }
+                />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <CommonMuiDateTimePicker
+                  label="Next Follow-up Time"
+                  required={false}
+                  value={nextFollowupTime}
+                  onChange={(val) => setNextFollowupTime(val)}
+                  error={""}
+                  onlyTime={true}
+                  height={"35px"}
+                  labelFontSize={"12px"}
+                  fontSize={"13px"}
+                  labelMarginTop={"0.5px"}
+                  iconSize={"16px"}
+                  disabled={
+                    contactMode == 6 || (updateLeadItem && isReAssign == false)
+                  }
+                />
+              </div>
+
+              {/* {followUpStatusId && (
+                      <div style={{ marginBottom: "16px" }}>
+                        <p style={{ fontWeight: "500" }}>Interest Rating</p>
+                        <Rate
+                          style={{ marginTop: "6px", fontSize: "22px" }}
+                          value={interestRate}
+                          onChange={setInterestRate}
+                        />
+                      </div>
+                    )} */}
+
+              <div
+                style={{
+                  marginBottom: "16px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Checkbox
+                  checked={addTodayFollowup}
+                  onChange={(e) => setAddTodayFollowup(e.target.checked)}
+                  disabled={contactMode == 6}
+                >
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#475569",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Add to today's follow-up list
+                  </span>
+                </Checkbox>
+              </div>
+            </div>
+          </Col>
+          <Col span={12}>
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div style={{ ...cardStyle, flex: 1 }}>
+                <SectionHeader title="7. Remarks" />
+                <div style={{ marginBottom: "12px" }}>
+                  <CommonTextArea
+                    label={""}
+                    placeholder="Enter remarks..."
+                    value={comments}
+                    onChange={(e) => {
+                      setComments(e.target.value);
+                      if (validationTrigger) {
+                        setCommentsError(addressValidator(e.target.value));
+                      }
+                    }}
+                    error={commentsError ? `Remarks ${commentsError}` : ""}
+                    disabled={contactMode == 6}
+                  />
+                </div>
+              </div>
+            </div>
+          </Col>
+        </Row>
         {/* add course modal */}
         <Modal
           title="Add Course"
