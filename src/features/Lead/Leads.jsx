@@ -1359,8 +1359,10 @@ export default function Leads({
       const filteredColumns = completeColumns.filter((col) => {
         if (leadBucketName === "Interested Leads") {
           if (col.key === "lead_status") return false;
+          if (col.key === "created_date") return false;
         } else {
           if (col.key === "lead_action_name") return false;
+          if (col.key === "next_follow_up_date") return false;
         }
         return true;
       });
