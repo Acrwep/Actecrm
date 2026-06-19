@@ -625,7 +625,10 @@ export default function LeadManager() {
 
   return (
     <div>
-      <div className="settings_tabbutton_maincontainer">
+      <div
+        className="settings_tabbutton_maincontainer"
+        style={{ marginBottom: "12px" }}
+      >
         <ScrollableTabContainer>
           {permissions.includes("Add Lead Button") && (
             <button

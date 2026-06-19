@@ -48,7 +48,7 @@ const CommonTextArea = ({
   return (
     <div style={{ position: "relative", ...style }}>
       <div style={{ display: "flex" }}>
-        <label className="commontextarea_label">{label}</label>
+        {label && <label className="commontextarea_label">{label}</label>}
         {required ? (
           <p style={{ color: "#d32f2f", marginLeft: "4px" }}>*</p>
         ) : (

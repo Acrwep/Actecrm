@@ -410,12 +410,12 @@ export default function FollowUpDrawerForm({
               )
               .map((item, index) => {
                 const statusColors = {
-                  "Sales Ready": "#dc2626",
-                  "Highly Interested": "#f97316",
-                  Interested: "#eab308",
-                  Exploring: "#3b82f6",
-                  "Not Responding": "#4b5563",
-                  "Not Interested": "#111827",
+                  "Super Hot": "#dc2626",
+                  Hot: "#f97316",
+                  Warm: "#eab308",
+                  Cold: "#3b82f6",
+                  Dormant: "#6b7280",
+                  "Not Interested": "#991b1b",
                 };
                 const baseColor =
                   statusColors[item.lead_action_name] || "#4338ca";
@@ -597,6 +597,39 @@ export default function FollowUpDrawerForm({
                             style={{ fontSize: "12px", color: "#f59e0b" }}
                           />
                         </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span style={{ fontSize: "11px", color: "gray" }}>
+                            Response Status:
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              background:
+                                item.response_status === "Received"
+                                  ? "#dcfce7"
+                                  : item.response_status === "Not-Received"
+                                    ? "#fee2e2"
+                                    : "#f1f5f9",
+                              color:
+                                item.response_status === "Received"
+                                  ? "#166534"
+                                  : item.response_status === "Not-Received"
+                                    ? "#991b1b"
+                                    : "#334155",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {item.response_status || "-"}
+                          </span>
+                        </div>
                       </div>
 
                       {item.comments && (
@@ -750,12 +783,12 @@ export default function FollowUpDrawerForm({
                 }
               }}
               options={[
-                { id: 5, name: "Sales Ready", color: "#dc2626" },
-                { id: 1, name: "Highly Interested", color: "#f97316" },
-                { id: 8, name: "Interested", color: "#eab308" },
-                { id: 9, name: "Exploring", color: "#3b82f6" },
-                { id: 10, name: "Not Responding", color: "#4b5563" },
-                { id: 2, name: "Not Interested", color: "#111827" },
+                { id: 5, name: "Super Hot", color: "#dc2626" },
+                { id: 1, name: "Hot", color: "#f97316" },
+                { id: 2, name: "Warm", color: "#eab308" },
+                { id: 3, name: "Cold", color: "#3b82f6" },
+                { id: 6, name: "Not Interested", color: "#991b1b" },
+                { id: 4, name: "Dormant", color: "#6b7280" },
               ]}
               renderOption={(props, option) => (
                 <li {...props}>

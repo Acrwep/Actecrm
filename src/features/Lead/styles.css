@@ -517,6 +517,12 @@
   background-color: #991b1b13;
   color: #991b1b;
 }
+
+.leadfollwup_table_status_container.dormant_priority {
+  border: 1px solid #6b72804d;
+  background-color: #6b72801a;
+  color: #6b7280;
+}
 .leadmanager_action_icon {
   width: 18px;
   height: 18px;
@@ -621,6 +627,80 @@
   background-color: #389e0d;
   border-color: #389e0d;
   color: #ffffff;
+}
+
+/* Interested Leads Sub-Buckets UI */
+.leadmanager_bucket {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.leadmanager_bucket.active {
+  font-weight: 600;
+  color: white !important;
+}
+
+.leadmanager_bucket.super_hot {
+  border: 1px solid #dc2626;
+  background-color: white;
+  color: #dc2626;
+}
+.leadmanager_bucket.super_hot.active {
+  background-color: #dc2626;
+}
+
+.leadmanager_bucket.hot {
+  border: 1px solid #f97316;
+  background-color: white;
+  color: #f97316;
+}
+.leadmanager_bucket.hot.active {
+  background-color: #f97316;
+}
+
+.leadmanager_bucket.warm {
+  border: 1px solid #eab308;
+  background-color: white;
+  color: #eab308;
+}
+.leadmanager_bucket.warm.active {
+  background-color: #eab308;
+}
+
+.leadmanager_bucket.cold {
+  border: 1px solid #3b82f6;
+  background-color: white;
+  color: #3b82f6;
+}
+.leadmanager_bucket.cold.active {
+  background-color: #3b82f6;
+}
+
+.leadmanager_bucket.not_interested {
+  border: 1px solid #991b1b;
+  background-color: white;
+  color: #991b1b;
+}
+.leadmanager_bucket.not_interested.active {
+  background-color: #991b1b;
+}
+
+.leadmanager_bucket.dormant {
+  border: 1px solid #6b7280;
+  background-color: white;
+  color: #6b7280;
+}
+.leadmanager_bucket.dormant.active {
+  background-color: #6b7280;
 }
 
 /* Only Enquiry */

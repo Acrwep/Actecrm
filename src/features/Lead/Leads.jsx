@@ -106,7 +106,7 @@ export default function Leads({
 
   const [leadBucketOptions, setLeadBucketOptions] = useState([]);
   const [interestedLeadActions, setInterestedLeadActions] = useState({});
-  const [leadActionFilter, setLeadActionFilter] = useState("all");
+  const [leadActionFilter, setLeadActionFilter] = useState("super_hot");
   const statusClassMap = {
     all: "all",
     valid_leads: "valid_leads",
@@ -570,115 +570,115 @@ export default function Leads({
     },
     ...(leadBucketName !== "Interested Leads"
       ? [
-        {
-          title: "Action",
-          key: "action",
-          dataIndex: "action",
-          fixed: "right",
-          width: 120,
-          render: (text, record) => {
-            const isAfter45Days = checkIsAfter45Days(record.created_date);
-            return (
-              <div className="leadmanager_actionbuttonContainer">
-                <Tooltip placement="bottom" title="View Lead Details">
-                  <FaRegEye
-                    size={15}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setViewLeadItem(record);
-                      setIsOpenViewDrawer(true);
-                    }}
-                  />
-                </Tooltip>
-
-                {permissions.includes("Edit Lead Button") &&
-                  isShowEdit &&
-                  record.is_customer_reg === 0 && (
-                    <AiOutlineEdit
-                      className="leadmanager_action_icon"
+          {
+            title: "Action",
+            key: "action",
+            dataIndex: "action",
+            fixed: "right",
+            width: 120,
+            render: (text, record) => {
+              const isAfter45Days = checkIsAfter45Days(record.created_date);
+              return (
+                <div className="leadmanager_actionbuttonContainer">
+                  <Tooltip placement="bottom" title="View Lead Details">
+                    <FaRegEye
+                      size={15}
+                      style={{ cursor: "pointer" }}
                       onClick={() => {
-                        if (onEditLead) {
-                          onEditLead(record, false);
-                        } else {
-                          setUpdateLeadItem(record);
-                          setLeadId(record.id);
-                          setIsOpenAddDrawer(true);
-                        }
+                        setViewLeadItem(record);
+                        setIsOpenViewDrawer(true);
                       }}
                     />
+                  </Tooltip>
+
+                  {permissions.includes("Edit Lead Button") &&
+                    isShowEdit &&
+                    record.is_customer_reg === 0 && (
+                      <AiOutlineEdit
+                        className="leadmanager_action_icon"
+                        onClick={() => {
+                          if (onEditLead) {
+                            onEditLead(record, false);
+                          } else {
+                            setUpdateLeadItem(record);
+                            setLeadId(record.id);
+                            setIsOpenAddDrawer(true);
+                          }
+                        }}
+                      />
+                    )}
+
+                  {record.is_customer_reg === 1 ? (
+                    <Tooltip placement="bottom" title="Already a Customer">
+                      <FaRegAddressCard
+                        className="leadmanager_action_icon"
+                        color="#2ed573"
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip placement="bottom" title="Make as customer">
+                      <FaRegAddressCard
+                        className="leadmanager_action_icon"
+                        color="#d32f2f"
+                        onClick={() => {
+                          if (permissions.includes("Edit Lead Button")) {
+                            if (filterValuesFromRedux.call_getraapi) {
+                              getRaUsers();
+                            }
+                            setIsOpenPaymentDrawer(true);
+                            setSubTotal(parseFloat(record.primary_fees));
+                            setAmount(parseFloat(record.primary_fees));
+                            setBalanceAmount(parseFloat(record.primary_fees));
+                            setCustomerCourseId(record.primary_course_id);
+                            setCustomerBatchTrackId(record.batch_track_id);
+                            setClickedLeadItem(record);
+
+                            setTimeout(() => {
+                              const drawerBody = document.querySelector(
+                                "#leadmanager_paymentdetails_drawer .ant-drawer-body",
+                              );
+
+                              if (drawerBody) {
+                                drawerBody.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }
+                            }, 300);
+                          } else {
+                            CommonMessage("error", "Access Denied");
+                          }
+                        }}
+                      />
+                    </Tooltip>
                   )}
 
-                {record.is_customer_reg === 1 ? (
-                  <Tooltip placement="bottom" title="Already a Customer">
-                    <FaRegAddressCard
-                      className="leadmanager_action_icon"
-                      color="#2ed573"
-                    />
-                  </Tooltip>
-                ) : (
-                  <Tooltip placement="bottom" title="Make as customer">
-                    <FaRegAddressCard
-                      className="leadmanager_action_icon"
-                      color="#d32f2f"
-                      onClick={() => {
-                        if (permissions.includes("Edit Lead Button")) {
-                          if (filterValuesFromRedux.call_getraapi) {
-                            getRaUsers();
+                  {permissions.includes("Assign Lead") && (
+                    <Tooltip
+                      placement="bottom"
+                      title="Re-Assign this lead to another user"
+                    >
+                      <PiShareFatBold
+                        className="leadmanager_action_icon"
+                        color="#5b69ca"
+                        onClick={() => {
+                          if (onEditLead) {
+                            onEditLead(record, true);
+                          } else {
+                            setIsReEntry(true);
+                            setUpdateLeadItem(record);
+                            setLeadId(record.id);
+                            setIsOpenAddDrawer(true);
                           }
-                          setIsOpenPaymentDrawer(true);
-                          setSubTotal(parseFloat(record.primary_fees));
-                          setAmount(parseFloat(record.primary_fees));
-                          setBalanceAmount(parseFloat(record.primary_fees));
-                          setCustomerCourseId(record.primary_course_id);
-                          setCustomerBatchTrackId(record.batch_track_id);
-                          setClickedLeadItem(record);
-
-                          setTimeout(() => {
-                            const drawerBody = document.querySelector(
-                              "#leadmanager_paymentdetails_drawer .ant-drawer-body",
-                            );
-
-                            if (drawerBody) {
-                              drawerBody.scrollTo({
-                                top: 0,
-                                behavior: "smooth",
-                              });
-                            }
-                          }, 300);
-                        } else {
-                          CommonMessage("error", "Access Denied");
-                        }
-                      }}
-                    />
-                  </Tooltip>
-                )}
-
-                {permissions.includes("Assign Lead") && (
-                  <Tooltip
-                    placement="bottom"
-                    title="Re-Assign this lead to another user"
-                  >
-                    <PiShareFatBold
-                      className="leadmanager_action_icon"
-                      color="#5b69ca"
-                      onClick={() => {
-                        if (onEditLead) {
-                          onEditLead(record, true);
-                        } else {
-                          setIsReEntry(true);
-                          setUpdateLeadItem(record);
-                          setLeadId(record.id);
-                          setIsOpenAddDrawer(true);
-                        }
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            );
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </div>
+              );
+            },
           },
-        },
-      ]
+        ]
       : []),
   ];
 
@@ -742,7 +742,18 @@ export default function Leads({
   };
 
   useEffect(() => {
-    if (!['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings', 'leads'].includes(activePage) && activePage !== "add_lead") return;
+    if (
+      ![
+        "all_leads",
+        "valid_leads",
+        "eligible_leads",
+        "interested_leads",
+        "joinings",
+        "leads",
+      ].includes(activePage) &&
+      activePage !== "add_lead"
+    )
+      return;
 
     if (permissions.length >= 1) {
       if (!permissions.includes("Lead Manager Page")) {
@@ -753,8 +764,6 @@ export default function Leads({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
-
-
       if (childUsers.length > 0 && !mounted.current) {
         setSubUsers(downlineUsers);
         mounted.current = true;
@@ -764,9 +773,10 @@ export default function Leads({
           valid_leads: "Valid Leads",
           eligible_leads: "Eligible Leads",
           interested_leads: "Interested Leads",
-          joinings: "Joinings"
+          joinings: "Joinings",
         };
-        const targetBucket = bucketMapping[activePage] || filterValuesFromRedux.bucket;
+        const targetBucket =
+          bucketMapping[activePage] || filterValuesFromRedux.bucket;
 
         // ---------------------
         setSelectedDates([
@@ -778,11 +788,11 @@ export default function Leads({
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setSelectedUserId(filterValuesFromRedux.user_id);
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
-        
+
         dispatch(
           storeLeadFilterValues({
             bucket: targetBucket === "all" ? "" : targetBucket,
-          })
+          }),
         );
 
         setPagination({
@@ -795,7 +805,7 @@ export default function Leads({
           filterValuesFromRedux.user_id
             ? filterValuesFromRedux.user_id
             : convertAsJson?.user_id,
-          targetBucket === "all" ? "" : targetBucket
+          targetBucket === "all" ? "" : targetBucket,
         );
       }
     }
@@ -804,7 +814,16 @@ export default function Leads({
   const prevActivePage = useRef(activePage);
 
   useEffect(() => {
-    if (['all_leads', 'valid_leads', 'eligible_leads', 'interested_leads', 'joinings'].includes(activePage) && mounted.current) {
+    if (
+      [
+        "all_leads",
+        "valid_leads",
+        "eligible_leads",
+        "interested_leads",
+        "joinings",
+      ].includes(activePage) &&
+      mounted.current
+    ) {
       if (prevActivePage.current !== activePage) {
         prevActivePage.current = activePage;
 
@@ -813,18 +832,20 @@ export default function Leads({
           valid_leads: "Valid Leads",
           eligible_leads: "Eligible Leads",
           interested_leads: "Interested Leads",
-          joinings: "Joinings"
+          joinings: "Joinings",
         };
         const targetBucket = bucketMapping[activePage];
 
         setLeadBucketName(targetBucket);
-        setLeadActionFilter("all");
+        setLeadActionFilter(
+          targetBucket === "Interested Leads" ? "super_hot" : "all",
+        );
         dispatch(
           storeLeadFilterValues({
             bucket: targetBucket == "all" ? "" : targetBucket,
             pageNumber: 1,
             pageLimit: pagination.limit,
-          })
+          }),
         );
 
         getAllLeadData(
@@ -834,10 +855,10 @@ export default function Leads({
           allDownliners,
           leadSourceFilterId,
           leadStatusId,
-          targetBucket == "all" ? "" : targetBucket,
+          targetBucket === "all" ? "" : targetBucket,
           1,
           pagination.limit,
-          "all"
+          targetBucket === "Interested Leads" ? "super_hot" : "all",
         );
       }
     }
@@ -1097,9 +1118,11 @@ export default function Leads({
                           ? "medium_priority"
                           : text === "Cold"
                             ? "cold_priority"
-                            : text === "Junk" || text === "Dormant"
+                            : text === "Not Interested"
                               ? "junk_priority"
-                              : "others";
+                              : text === "Dormant" || text === "Junk"
+                                ? "dormant_priority"
+                                : "others";
 
                   return (
                     <div
@@ -1323,9 +1346,9 @@ export default function Leads({
         filterValuesFromRedux.lead_status_id,
         bucketOverride !== undefined
           ? bucketOverride
-          : (filterValuesFromRedux.bucket == "all"
-              ? ""
-              : filterValuesFromRedux.bucket),
+          : filterValuesFromRedux.bucket == "all"
+            ? ""
+            : filterValuesFromRedux.bucket,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
       );
@@ -1738,7 +1761,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.message ||
-        "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1746,8 +1769,9 @@ export default function Leads({
   const handleSendCustomerFormLink = async (customerDetails) => {
     const payload = {
       email: customerDetails.email,
-      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${customerDetails.insertId
-        }`,
+      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
+        customerDetails.insertId
+      }`,
       customer_id: customerDetails.insertId,
     };
 
@@ -1757,7 +1781,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-        "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1778,7 +1802,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-        "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
       );
     } finally {
       setTimeout(() => {
@@ -1799,7 +1823,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-        "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -1976,7 +2000,7 @@ export default function Leads({
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-          "Something went wrong. Try again later",
+            "Something went wrong. Try again later",
         );
       }
     }
@@ -2109,7 +2133,7 @@ export default function Leads({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-        "Something went wrong. Try again later",
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -2402,8 +2426,9 @@ export default function Leads({
                                             (item, index) => {
                                               return (
                                                 <p className="leadsmanager_executivecount_text">
-                                                  {`${index + 1}. ${item.user_name} - ${item.lead_count
-                                                    }`}
+                                                  {`${index + 1}. ${item.user_name} - ${
+                                                    item.lead_count
+                                                  }`}
                                                 </p>
                                               );
                                             },
@@ -2627,7 +2652,7 @@ export default function Leads({
               ""
             )} */}
             {permissions.includes("Download Leads") &&
-              selectedRowKeys.length == 0 ? (
+            selectedRowKeys.length == 0 ? (
               <Tooltip placement="top" title="Download">
                 <Button
                   className={
@@ -2686,117 +2711,85 @@ export default function Leads({
         </Col>
       </Row>
 
-
-
       {leadBucketName === "Interested Leads" &&
         Object.keys(interestedLeadActions).length > 0 && (
           <div style={{ marginTop: "15px", padding: "0 5px" }}>
             <ScrollableTabContainer>
-            {(() => {
-              const orderedKeys = [
-                "all",
-                "sale_ready",
-                "sales_ready",
-                "highly_interested",
-                "interested",
-                "exploring",
-                "not_responding",
-                "not_interested",
-              ];
+              {(() => {
+                const orderedKeys = [
+                  "super_hot",
+                  "hot",
+                  "warm",
+                  "cold",
+                  "not_interested",
+                  "dormant",
+                ];
 
-              const sortedKeys = Object.keys(interestedLeadActions).sort(
-                (a, b) => {
-                  let indexA = orderedKeys.indexOf(a);
-                  let indexB = orderedKeys.indexOf(b);
-                  if (indexA === -1) indexA = 999;
-                  if (indexB === -1) indexB = 999;
-                  return indexA - indexB;
-                },
-              );
+                const sortedKeys = Object.keys(interestedLeadActions)
+                  .filter((k) => k !== "all")
+                  .sort((a, b) => {
+                    let indexA = orderedKeys.indexOf(a);
+                    let indexB = orderedKeys.indexOf(b);
+                    if (indexA === -1) indexA = 999;
+                    if (indexB === -1) indexB = 999;
+                    return indexA - indexB;
+                  });
 
-              return sortedKeys.map((key) => {
-                const count = interestedLeadActions[key];
-                const displayName =
-                  key === "all"
-                    ? "All"
-                    : key
-                      .split("_")
-                      .map(
-                        (word) =>
-                          word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ");
-                const isActive = leadActionFilter === key;
-                const actionColorMap = {
-                  all: "#0284c7",
-                  sale_ready: "#dc2626",
-                  sales_ready: "#dc2626",
-                  highly_interested: "#f97316",
-                  interested: "#eab308",
-                  exploring: "#3b82f6",
-                  not_responding: "#4b5563",
-                  not_interested: "#111827",
-                };
-                const baseColor = actionColorMap[key] || "#475569";
+                return sortedKeys.map((key) => {
+                  const count = interestedLeadActions[key];
+                  const displayName =
+                    key === "all"
+                      ? "All"
+                      : key
+                          .split("_")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1),
+                          )
+                          .join(" ");
+                  const isActive = leadActionFilter === key;
+                  const actionColorMap = {
+                    super_hot: "#dc2626",
+                    hot: "#f97316",
+                    warm: "#eab308",
+                    cold: "#3b82f6",
+                    not_interested: "#991b1b",
+                    dormant: "#6b7280",
+                  };
+                  const baseColor = actionColorMap[key] || "#475569";
 
-                return (
-                  <div
-                    key={key}
-                    onClick={() => {
-                      if (leadActionFilter === key) return;
-                      setLeadActionFilter(key);
-                      dispatch(
-                        storeLeadFilterValues({
-                          pageNumber: 1,
-                          pageLimit: pagination.limit,
-                        }),
-                      );
-                      getAllLeadData(
-                        searchValue,
-                        selectedDates[0],
-                        selectedDates[1],
-                        allDownliners,
-                        leadSourceFilterId,
-                        leadStatusId,
-                        "Interested Leads",
-                        1,
-                        pagination.limit,
-                        key,
-                      );
-                    }}
-                    style={{
-                      padding: "6px 16px",
-                      borderRadius: "20px",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                      fontWeight: isActive ? "600" : "500",
-                      backgroundColor: isActive ? baseColor : `${baseColor}15`,
-                      color: isActive ? "white" : baseColor,
-                      border: `1px solid ${isActive ? baseColor : `${baseColor}40`}`,
-                      transition: "all 0.2s ease-in-out",
-                      boxShadow: isActive ? `0 2px 4px ${baseColor}40` : "none",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    {displayName}
-                    <span
-                      style={{
-                        backgroundColor: isActive ? "white" : baseColor,
-                        color: isActive ? baseColor : "white",
-                        padding: "2px 8px",
-                        borderRadius: "10px",
-                        fontSize: "11px",
-                        fontWeight: "bold",
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => {
+                        if (leadActionFilter === key) return;
+                        setLeadActionFilter(key);
+                        dispatch(
+                          storeLeadFilterValues({
+                            pageNumber: 1,
+                            pageLimit: pagination.limit,
+                          }),
+                        );
+                        getAllLeadData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          allDownliners,
+                          leadSourceFilterId,
+                          leadStatusId,
+                          "Interested Leads",
+                          1,
+                          pagination.limit,
+                          key,
+                        );
                       }}
+                      className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
                     >
-                      {count}
-                    </span>
-                  </div>
-                );
-              });
-            })()}
+                      {displayName} {`( ${count} )`}
+                    </div>
+                  );
+                });
+              })()}
             </ScrollableTabContainer>
           </div>
         )}
@@ -3206,13 +3199,15 @@ export default function Leads({
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {`${clickedLeadItem && clickedLeadItem.lead_assigned_to_id
-                    ? clickedLeadItem.lead_assigned_to_id
-                    : "-"
-                    } (${clickedLeadItem && clickedLeadItem.lead_assigned_to_name
+                  {`${
+                    clickedLeadItem && clickedLeadItem.lead_assigned_to_id
+                      ? clickedLeadItem.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    clickedLeadItem && clickedLeadItem.lead_assigned_to_name
                       ? clickedLeadItem.lead_assigned_to_name
                       : "-"
-                    })`}
+                  })`}
                 </p>
               </Col>
             </Row>
