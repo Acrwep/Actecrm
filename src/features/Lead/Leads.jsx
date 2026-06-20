@@ -2392,8 +2392,8 @@ export default function Leads({
                 </div>
               </div>
             </Col>
-            <Col flex="26%">
-              {permissions.includes("Lead Executive Filter") && (
+            {permissions.includes("Lead Executive Filter") && (
+              <Col flex="26%">
                 <div style={{ width: "100%" }}>
                   <div className="overallduecustomers_filterContainer">
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -2469,8 +2469,9 @@ export default function Leads({
                     </div>
                   </div>
                 </div>
-              )}
-            </Col>
+              </Col>
+            )}
+
             <Col flex="none">
               <CommonMuiCustomDatePicker
                 value={selectedDates}

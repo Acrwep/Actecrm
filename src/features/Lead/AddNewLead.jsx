@@ -943,7 +943,7 @@ const AddNewLead = forwardRef(
         state: stateId,
         district: getArea.name,
         primary_course_id: primaryCourse,
-        primary_fees: primaryFees,
+        primary_fees: primaryFees ? primaryFees : 0,
         price_category: priceCategory(primaryFees),
         secondary_course_id: secondaryCourse,
         secondary_fees: secondaryFees ? secondaryFees : 0,

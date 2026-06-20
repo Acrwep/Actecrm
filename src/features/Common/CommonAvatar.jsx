@@ -3,14 +3,19 @@ import { Avatar } from "antd";
 
 export default function CommonAvatar({ itemName, avatarSize, avatarfontSize }) {
   const getInitials = (fullName) => {
-    const nameArray = fullName.split(" ");
-    if (nameArray.length >= 2) {
-      const firstLetter = nameArray[0].charAt(0);
-      const secondLetter = nameArray[1].charAt(0);
-      return `${firstLetter}${secondLetter}`;
-    } else {
-      return fullName.charAt(0); // Use the first letter if no space is found
+    const words = fullName
+      .split(/[\s-]+/) // split by space and hyphen
+      .filter((word) => word.trim() !== "");
+
+    // Take the first character from the first meaningful word
+    // and the first character from the last word
+    if (words.length >= 2) {
+      const firstLetter = words[0].charAt(0);
+      const lastLetter = words[words.length - 1].charAt(0);
+      return `${firstLetter}${lastLetter}`;
     }
+
+    return fullName.charAt(0);
   };
 
   const getColorForName = (name) => {
