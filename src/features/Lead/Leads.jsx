@@ -2542,7 +2542,7 @@ export default function Leads({
                         Advanced Filters
                       </span>
                       <Badge
-                        count={4}
+                        count={2}
                         style={{
                           backgroundColor: "#3b82f6",
                           boxShadow: "0 0 0 2px #f8fafc",
@@ -2826,8 +2826,8 @@ export default function Leads({
                   "hot",
                   "warm",
                   "cold",
-                  "not_interested",
                   "dormant",
+                  "not_interested",
                 ];
 
                 const sortedKeys = Object.keys(interestedLeadActions)

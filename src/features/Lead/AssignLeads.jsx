@@ -93,15 +93,128 @@ export default function AssignLeads({
     totalPages: 0,
   });
 
+  const formatDuration = (dateString) => {
+    if (import.meta.env.PROD) {
+      const created = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - created;
+
+      if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalHours = totalSeconds / 3600;
+
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+      const pad = (n) => String(n).padStart(2, "0");
+
+      let text = "";
+
+      if (days === 0) {
+        // HHh:MMm
+        const hh = pad(Math.floor(totalSeconds / 3600));
+        text = `${hh}h:${pad(minutes)}m`;
+      } else {
+        // DDd:HHh:MMm
+        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+      }
+
+      return { text, hours: totalHours };
+    } else {
+      //dev
+      // Time is coming with a +5h 30m IST offset, so subtract 5h 30m
+      const createdUTC = new Date(dateString);
+      const createdIST = new Date(createdUTC.getTime() - 5.5 * 60 * 60 * 1000);
+
+      const now = new Date();
+      const diffMs = now - createdIST;
+
+      if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalHours = totalSeconds / 3600;
+
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+      const pad = (n) => String(n).padStart(2, "0");
+
+      let text = "";
+
+      if (days === 0) {
+        const hh = pad(Math.floor(totalSeconds / 3600));
+        text = `${hh}h:${pad(minutes)}m`;
+      } else {
+        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+      }
+
+      return { text, hours: totalHours };
+    }
+  };
+
   const columns = [
     { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Assigned At",
       key: "assigned_date_ist",
       dataIndex: "assigned_date_ist",
-      width: 110,
+      width: 160,
       render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+        return (
+          <p>{text ? moment(text).format("DD/MM/YYYY - HH:mm:ss") : "-"}</p>
+        );
+      },
+    },
+    {
+      title: "Assigned Before",
+      key: "assigned_date_ist",
+      dataIndex: "assigned_date_ist",
+      width: 130,
+      render: (text) => {
+        const { text: durationText, hours } = formatDuration(text);
+
+        let bg = "";
+        let color = "";
+
+        if (hours <= 1) {
+          bg = "rgba(0, 128, 0, 0.12)"; // light green
+          color = "#0f8a0f"; // dark green
+        } else if (hours > 1 && hours <= 24) {
+          bg = "rgba(255, 165, 0, 0.15)"; // light orange
+          color = "#d27a00"; // dark orange
+        } else {
+          bg = "rgba(255, 0, 0, 0.13)"; // light red
+          color = "#c80000"; // dark red
+        }
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                background: bg,
+                color: color,
+                padding: "3px 8px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 600,
+                display: "inline-block",
+                minWidth: "75px",
+                textAlign: "center",
+              }}
+            >
+              {durationText}
+            </span>
+          </div>
+        );
       },
     },
     {
