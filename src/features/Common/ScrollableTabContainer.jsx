@@ -75,7 +75,7 @@ const ScrollableTabContainer = ({ children }) => {
         <button
           onClick={scrollLeft}
           className="customer_statusscroll_button"
-          style={{ marginRight: "8px", flexShrink: 0 }}
+          style={{ marginRight: "4px", flexShrink: 0 }}
         >
           <IoMdArrowDropleft size={25} />
         </button>

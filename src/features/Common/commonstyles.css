@@ -624,3 +624,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* nxt followup date picker styles */
+.nxtfollowup_datepicker_errortext {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  font-size: 11px;
+  color: #d32f2f !important;
+}

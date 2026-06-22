@@ -149,6 +149,7 @@ const AddNewLead = forwardRef(
       },
     ]);
     const [leadTemperature, setLeadTemperature] = useState(null);
+    const [leadTemperatureError, setLeadTemperatureError] = useState(null);
     const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
     const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
     const followUpStatusOptions = [
@@ -161,6 +162,7 @@ const AddNewLead = forwardRef(
       { id: 6, name: "Others" },
     ];
     const [followUpStatusId, setFollowUpStatusId] = useState("");
+    const [followUpStatusIdError, setFollowUpStatusIdError] = useState("");
     const [expectDateJoin, setExpectDateJoin] = useState(null);
 
     const [regionId, setRegionId] = useState(null);
@@ -840,6 +842,13 @@ const AddNewLead = forwardRef(
       const responseStatusValidate = communicationStatus
         ? selectValidator(responseStatus)
         : "";
+      const leadTemperatureValidate = communicationStatus
+        ? selectValidator(leadTemperature)
+        : "";
+      const followUpStatusIdValidate =
+        communicationStatus && communicationStatus != 2
+          ? selectValidator(followUpStatusId)
+          : "";
       const nxtFollowupDateValidate =
         communicationStatus && contactMode != 6
           ? selectValidator(nxtFollowupDate)
@@ -882,6 +891,8 @@ const AddNewLead = forwardRef(
       setLeadSubSourceError(leadSubSourceValidate);
       setContactModeError(contactModeValidate);
       setResponseStatusError(responseStatusValidate);
+      setLeadTemperatureError(leadTemperatureValidate);
+      setFollowUpStatusIdError(followUpStatusIdValidate);
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       // setBranchError(branchValidate);
@@ -898,6 +909,8 @@ const AddNewLead = forwardRef(
         leadSubSourceValidate ||
         contactModeValidate ||
         responseStatusValidate ||
+        leadTemperatureValidate ||
+        followUpStatusIdValidate ||
         nxtFollowupDateValidate ||
         regionIdValidate ||
         batchTrackValidate
@@ -913,6 +926,8 @@ const AddNewLead = forwardRef(
           leadSubSourceValidate,
           contactModeValidate,
           responseStatusValidate,
+          leadTemperatureValidate,
+          followUpStatusIdValidate,
           nxtFollowupDateValidate,
           regionIdValidate,
           batchTrackValidate,
@@ -1161,6 +1176,7 @@ const AddNewLead = forwardRef(
       setLeadSource(null);
       setLeadSourceError("");
       setLeadTemperature(null);
+      setLeadTemperatureError("");
       setNxtFollowupDate(null);
       setNxtFollowupDateError("");
       setCommunicationStatus(null);
@@ -1196,6 +1212,7 @@ const AddNewLead = forwardRef(
       setNextFollowupTime(null);
       setAddTodayFollowup(false);
       setFollowUpStatusId("");
+      setFollowUpStatusIdError("");
       setInterestRate(5);
       setButtonLoading(false);
     };
@@ -1352,7 +1369,7 @@ const AddNewLead = forwardRef(
             <h2
               style={{
                 margin: 0,
-                fontSize: "16px",
+                fontSize: "15px",
                 fontWeight: 700,
                 color: "#0f172a",
               }}
@@ -1367,7 +1384,7 @@ const AddNewLead = forwardRef(
               style={{
                 margin: 0,
                 color: "#64748b",
-                fontSize: "11px",
+                fontSize: "10px",
                 marginTop: "4px",
               }}
             >
@@ -1382,6 +1399,7 @@ const AddNewLead = forwardRef(
                 fontWeight: 500,
                 borderColor: "#cbd5e1",
                 color: "#334155",
+                fontSize: "13px",
               }}
             >
               Cancel
@@ -1395,6 +1413,7 @@ const AddNewLead = forwardRef(
                 border: "1px solid #2563eb",
                 color: "#2563eb",
                 height: "33px",
+                fontSize: "13px",
               }}
             >
               {isReAssign
@@ -2006,7 +2025,9 @@ const AddNewLead = forwardRef(
                       setResponseStatusError("");
                       setCounsel("Not Given");
                       setLeadTemperature(null);
+                      setLeadTemperatureError("");
                       setFollowUpStatusId(null);
+                      setFollowUpStatusIdError("");
                       setNxtFollowupDate(null);
                       setNextFollowupTime(null);
                       setAddTodayFollowup(false);
@@ -2014,6 +2035,8 @@ const AddNewLead = forwardRef(
                       if (value && validationTrigger) {
                         setContactModeError(selectValidator(null));
                         setResponseStatusError(selectValidator(null));
+                        setLeadTemperatureError(selectValidator(null));
+                        setFollowUpStatusIdError(selectValidator(null));
                         setNxtFollowupDateError(selectValidator(null));
                       } else {
                         setContactModeError("");
@@ -2061,12 +2084,17 @@ const AddNewLead = forwardRef(
                       if (value == 5) {
                         setComments(comments == "Junk" ? "" : comments);
                         setLeadTemperature(1);
+                        setLeadTemperatureError("");
                         setFollowUpStatusId(1);
+                        setFollowUpStatusIdError("");
+                        setCounsel("Not Given");
                         setResponseStatus("Not-Received");
                         setResponseStatusError("");
                       } else if (value == 6) {
                         setLeadTemperature(4);
+                        setLeadTemperatureError("");
                         setFollowUpStatusId(null);
+                        setFollowUpStatusIdError("");
                         setNxtFollowupDate(null);
                         setNxtFollowupDateError("");
                         setNextFollowupTime(null);
@@ -2076,8 +2104,6 @@ const AddNewLead = forwardRef(
                         setComments("Junk");
                         setExpectDateJoin(null);
                       } else {
-                        setLeadTemperature(5);
-                        setFollowUpStatusId(5);
                         setComments(comments == "Junk" ? "" : comments);
                       }
                       if (validationTrigger) {
@@ -2104,8 +2130,12 @@ const AddNewLead = forwardRef(
                     required={communicationStatus ? true : false}
                     value={responseStatus}
                     onChange={(e) => {
-                      setResponseStatus(e.target.value);
-                      setResponseStatusError(selectValidator(e.target.value));
+                      const value = e.target.value;
+                      setResponseStatus(value);
+                      if (value == "Not-Received") {
+                        setCounsel("Not Given");
+                      }
+                      setResponseStatusError(selectValidator(value));
                     }}
                     options={[
                       { id: "Received", name: "Received" },
@@ -2136,7 +2166,11 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
+                    disabled={
+                      contactMode == 5 ||
+                      contactMode == 6 ||
+                      responseStatus == "Not-Received"
+                    }
                   />
                 </div>
                 <div style={{ marginBottom: "24px" }}>
@@ -2178,15 +2212,20 @@ const AddNewLead = forwardRef(
                     )}
                     onChange={(e) => {
                       setLeadTemperature(e.target.value);
+                      if (validationTrigger) {
+                        setLeadTemperatureError(
+                          selectValidator(e.target.value),
+                        );
+                      }
                     }}
                     value={leadTemperature}
-                    error={""}
+                    error={leadTemperatureError}
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={true}
+                    disabled={contactMode == 5 || contactMode == 6}
                   />
                 </div>
 
@@ -2537,6 +2576,11 @@ const AddNewLead = forwardRef(
                     onChange={(e) => {
                       const value = e.target.value;
                       setFollowUpStatusId(value);
+                      if (validationTrigger) {
+                        setFollowUpStatusIdError(
+                          selectValidator(e.target.value),
+                        );
+                      }
                     }}
                     options={[
                       { id: 5, name: "Sales Ready", color: "#dc2626" },
@@ -2572,8 +2616,13 @@ const AddNewLead = forwardRef(
                     labelMarginTop={"0px"}
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
-                    error={""}
-                    disabled={true}
+                    error={followUpStatusIdError}
+                    disabled={
+                      communicationStatus == null ||
+                      communicationStatus == "" ||
+                      contactMode == 5 ||
+                      contactMode == 6
+                    }
                   />
                 </div>
 
@@ -2598,6 +2647,8 @@ const AddNewLead = forwardRef(
                     iconSize={"16px"}
                     disabled={
                       contactMode == 6 ||
+                      leadTemperature == "" ||
+                      leadTemperature == null ||
                       (updateLeadItem?.completed_followup_count != null &&
                         updateLeadItem?.completed_followup_count !== 0 &&
                         isReAssign == false)

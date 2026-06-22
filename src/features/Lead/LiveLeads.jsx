@@ -224,7 +224,7 @@ export default function LiveLead({
                 color: color,
                 padding: "3px 8px",
                 borderRadius: "20px",
-                fontSize: "12px",
+                fontSize: "11px",
                 fontWeight: 600,
                 display: "inline-block",
                 minWidth: "75px",
@@ -671,7 +671,7 @@ export default function LiveLead({
                           color: color,
                           padding: "3px 8px",
                           borderRadius: "20px",
-                          fontSize: "12px",
+                          fontSize: "11px",
                           fontWeight: 600,
                           display: "inline-block",
                           minWidth: "75px",
@@ -1100,7 +1100,7 @@ export default function LiveLead({
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={7}>
+            <Col span={8}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
                   label={

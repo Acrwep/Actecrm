@@ -89,7 +89,7 @@
 }
 .customer_statusscroll_button {
   border-radius: 50%;
-  padding: 6px 6px !important;
+  padding: 5px 5px !important;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1881,7 +1881,7 @@
   transition: all 0.3s ease;
 }
 .overall_pending_amount_label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -1889,7 +1889,7 @@
 }
 
 .overall_pending_amount_value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: #e11d48;
   letter-spacing: 0.5px;

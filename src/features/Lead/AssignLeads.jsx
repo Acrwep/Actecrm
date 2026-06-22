@@ -204,7 +204,7 @@ export default function AssignLeads({
                 color: color,
                 padding: "3px 8px",
                 borderRadius: "20px",
-                fontSize: "12px",
+                fontSize: "11px",
                 fontWeight: 600,
                 display: "inline-block",
                 minWidth: "75px",

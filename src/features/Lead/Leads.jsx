@@ -661,6 +661,28 @@ export default function Leads({
                     color="#d32f2f"
                     onClick={() => {
                       if (permissions.includes("Edit Lead Button")) {
+                        if (
+                          record?.lead_type_id == null ||
+                          record?.lead_type_id == "" ||
+                          record?.lead_type_id == 0
+                        ) {
+                          CommonMessage(
+                            "error",
+                            "Please fill in the Lead Source section in the Add Lead form",
+                          );
+                          return;
+                        }
+                        if (
+                          record?.primary_course_id == null ||
+                          record?.primary_course_id == "" ||
+                          record?.primary_course_id == 0
+                        ) {
+                          CommonMessage(
+                            "error",
+                            "Please fill in the Course section in the Add Lead form",
+                          );
+                          return;
+                        }
                         if (filterValuesFromRedux.call_getraapi) {
                           getRaUsers();
                         }
@@ -1294,6 +1316,28 @@ export default function Leads({
                               color="#d32f2f"
                               onClick={() => {
                                 if (permissions.includes("Edit Lead Button")) {
+                                  if (
+                                    record?.lead_type_id == null ||
+                                    record?.lead_type_id == "" ||
+                                    record?.lead_type_id == 0
+                                  ) {
+                                    CommonMessage(
+                                      "error",
+                                      "Please fill in the Lead Source section in the Add Lead form",
+                                    );
+                                    return;
+                                  }
+                                  if (
+                                    record?.primary_course_id == null ||
+                                    record?.primary_course_id == "" ||
+                                    record?.primary_course_id == 0
+                                  ) {
+                                    CommonMessage(
+                                      "error",
+                                      "Please fill in the Course section in the Add Lead form",
+                                    );
+                                    return;
+                                  }
                                   if (filterValuesFromRedux.call_getraapi) {
                                     getRaUsers();
                                   }
@@ -2989,6 +3033,28 @@ export default function Leads({
                                   if (
                                     permissions.includes("Edit Lead Button")
                                   ) {
+                                    if (
+                                      record?.lead_type_id == null ||
+                                      record?.lead_type_id == "" ||
+                                      record?.lead_type_id == 0
+                                    ) {
+                                      CommonMessage(
+                                        "error",
+                                        "Please fill in the Lead Source section in the Add Lead form",
+                                      );
+                                      return;
+                                    }
+                                    if (
+                                      record?.primary_course_id == null ||
+                                      record?.primary_course_id == "" ||
+                                      record?.primary_course_id == 0
+                                    ) {
+                                      CommonMessage(
+                                        "error",
+                                        "Please fill in the Course section in the Add Lead form",
+                                      );
+                                      return;
+                                    }
                                     if (filterValuesFromRedux.call_getraapi) {
                                       getRaUsers();
                                     }

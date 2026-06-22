@@ -2,6 +2,7 @@ import * as React from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "./commonstyles.css";
 import dayjs from "dayjs";
 
 export default function CommonNxtFollowupDatePicker({
@@ -115,15 +116,7 @@ export default function CommonNxtFollowupDatePicker({
             error: error,
             disabled: disabled,
             helperText: error ? (
-              <span
-                style={{
-                  position: "absolute",
-                  bottom: "-18px", // adjust distance below the input
-                  left: "0",
-                  fontSize: errorFontSize ? errorFontSize : "11px",
-                  color: "#d32f2f",
-                }}
-              >
+              <span className="nxtfollowup_datepicker_errortext">
                 {label + error}
               </span>
             ) : null,
@@ -179,6 +172,9 @@ export default function CommonNxtFollowupDatePicker({
               },
 
               "& .MuiFormHelperText-root.Mui-error": {
+                color: "#d32f2f !important",
+              },
+              "& .MuiFormHelperText-root.Mui-disabled": {
                 color: "#d32f2f !important",
               },
             },
