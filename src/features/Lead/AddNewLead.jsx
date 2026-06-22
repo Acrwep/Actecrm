@@ -933,6 +933,36 @@ const AddNewLead = forwardRef(
           batchTrackValidate,
         });
 
+        setTimeout(() => {
+          const errorElements = Array.from(
+            document.querySelectorAll(
+              ".Mui-error input, .Mui-error .MuiSelect-select, .Mui-error textarea, .common_singledatepicker_error input, .commontextarea_error, .common_antdmultiselectfield_error input",
+            ),
+          );
+
+          const firstErrorElement = errorElements.find((el) => {
+            if (el.type === "hidden") return false;
+            if (el.tabIndex < 0 && !el.classList.contains("MuiSelect-select"))
+              return false;
+            if (el.classList.contains("MuiSelect-nativeInput")) return false;
+            if (
+              el.classList.contains("MuiSelect-select") &&
+              el.closest(".MuiInputAdornment-root")
+            ) {
+              return false;
+            }
+            return true;
+          });
+
+          if (firstErrorElement) {
+            firstErrorElement.focus();
+            firstErrorElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }, 100);
+
         return;
       }
       // return;
@@ -2177,18 +2207,32 @@ const AddNewLead = forwardRef(
                   <CommonSelectField
                     label="Lead Temp."
                     required={true}
-                    options={[
-                      { id: 5, name: "Super Hot", color: "#dc2626" },
-                      { id: 1, name: "Hot", color: "#f97316" },
-                      { id: 2, name: "Warm", color: "#eab308" },
-                      { id: 3, name: "Cold", color: "#3b82f6" },
-                      {
-                        id: 6,
-                        name: "Not Interested",
-                        color: "#991b1b",
-                      },
-                      { id: 4, name: "Dormant", color: "#6b7280" },
-                    ]}
+                    options={
+                      contactMode == 6
+                        ? [
+                            { id: 5, name: "Super Hot", color: "#dc2626" },
+                            { id: 1, name: "Hot", color: "#f97316" },
+                            { id: 2, name: "Warm", color: "#eab308" },
+                            { id: 3, name: "Cold", color: "#3b82f6" },
+                            {
+                              id: 6,
+                              name: "Not Interested",
+                              color: "#991b1b",
+                            },
+                            { id: 4, name: "Dormant", color: "#6b7280" },
+                          ]
+                        : [
+                            { id: 5, name: "Super Hot", color: "#dc2626" },
+                            { id: 1, name: "Hot", color: "#f97316" },
+                            { id: 2, name: "Warm", color: "#eab308" },
+                            { id: 3, name: "Cold", color: "#3b82f6" },
+                            {
+                              id: 6,
+                              name: "Not Interested",
+                              color: "#991b1b",
+                            },
+                          ]
+                    }
                     renderOption={(props, option) => (
                       <li {...props}>
                         <div

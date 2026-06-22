@@ -74,7 +74,10 @@ export default function CommonNxtFollowupDatePicker({
           const selectedDate = date.startOf("day");
 
           // Disable previous dates
-          if (selectedDate.isBefore(today)) {
+          if (
+            selectedDate.isBefore(today) ||
+            selectedDate.isSame(today, "day")
+          ) {
             return true;
           }
 
@@ -116,7 +119,15 @@ export default function CommonNxtFollowupDatePicker({
             error: error,
             disabled: disabled,
             helperText: error ? (
-              <span className="nxtfollowup_datepicker_errortext">
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "-18px", // adjust distance below the input
+                  left: "0",
+                  fontSize: errorFontSize ? errorFontSize : "11px",
+                  color: "#d32f2f",
+                }}
+              >
                 {label + error}
               </span>
             ) : null,

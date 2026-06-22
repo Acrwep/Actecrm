@@ -565,7 +565,7 @@ export default function Leads({
         ]
       : [
           {
-            title: "Lead Temp",
+            title: "Lead Temp.",
             key: "lead_status",
             dataIndex: "lead_status",
             fixed: "right",
@@ -588,11 +588,17 @@ export default function Leads({
                           : "others";
 
               return (
-                <div
-                  className={`leadfollwup_table_status_container ${statusClass}`}
-                >
-                  <p>{text}</p>
-                </div>
+                <>
+                  {text ? (
+                    <div
+                      className={`leadfollwup_table_status_container ${statusClass}`}
+                    >
+                      <p>{text}</p>
+                    </div>
+                  ) : (
+                    <p>-</p>
+                  )}
+                </>
               );
             },
           },
@@ -1231,11 +1237,17 @@ export default function Leads({
                                     : "others";
 
                       return (
-                        <div
-                          className={`leadfollwup_table_status_container ${statusClass}`}
-                        >
-                          <p>{text}</p>
-                        </div>
+                        <>
+                          {text ? (
+                            <div
+                              className={`leadfollwup_table_status_container ${statusClass}`}
+                            >
+                              <p>{text}</p>
+                            </div>
+                          ) : (
+                            <p>-</p>
+                          )}
+                        </>
                       );
                     },
                   };

@@ -149,6 +149,16 @@ export default function PhoneWithCountry({
         onChange={handleInputChange}
         type="tel"
         inputRef={inputRef}
+        onFocus={(e) => {
+          const target = e.target;
+          setTimeout(() => {
+            const val = target.value;
+            target.setSelectionRange(val.length, val.length);
+          }, 0);
+          if (restProps.onFocus) {
+            restProps.onFocus(e);
+          }
+        }}
         className="common_inputfield"
         error={!!error}
         disabled={disabled}
@@ -185,6 +195,8 @@ export default function PhoneWithCountry({
               >
                 <Select
                   disabled={disableCountrySelect}
+                  tabIndex={-1}
+                  inputProps={{ tabIndex: -1 }}
                   MenuProps={{
                     style: {
                       height: "300px",
