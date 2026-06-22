@@ -1755,10 +1755,10 @@ export default function Dashboard() {
       }}
     >
       <Row>
-        <Col span={10}>
+        <Col span={20}>
           <Row gutter={16}>
             {permissions.includes("Region-wise Filter") && (
-              <Col flex="50%">
+              <Col flex="25%">
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
                     <CommonSelectField
@@ -1794,7 +1794,7 @@ export default function Dashboard() {
               </Col>
             )}
 
-            <Col flex="50%">
+            <Col flex="30%">
               {permissions.includes("Lead Executive Filter") && (
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
@@ -1824,7 +1824,7 @@ export default function Dashboard() {
             </Col>
           </Row>
         </Col>
-        <Col span={14}>
+        <Col span={4}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Tooltip placement="top" title="Refresh">
               <Button

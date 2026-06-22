@@ -934,8 +934,8 @@ export default function UrgentDueCustomers({
                             : ""
                   }
                   width="100%"
-                  height="33px"
-                  labelFontSize="12px"
+                  height="32px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -961,7 +961,7 @@ export default function UrgentDueCustomers({
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
                     borderTopRightRadius: "0px",
                     borderBottomRightRadius: "0px",
@@ -1024,7 +1024,7 @@ export default function UrgentDueCustomers({
                       }
                     >
                       <Button className="users_filterbutton">
-                        <IoFilter size={18} />
+                        <IoFilter size={16} />
                       </Button>
                     </Tooltip>
                   </Flex>
@@ -1034,10 +1034,10 @@ export default function UrgentDueCustomers({
             {permissions.includes("Lead Executive Filter") && (
               <Col span={9}>
                 <CommonMultiSelectField
-                  height="35px"
+                  height="34px"
                   label="Select User"
-                  labelMarginTop="0px"
-                  labelFontSize="13px"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
                   options={subUsers}
                   onChange={handleSelectUser}
                   value={selectedUserId}

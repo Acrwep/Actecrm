@@ -173,7 +173,7 @@
   border-top-right-radius: 3px !important;
   border-bottom-right-radius: 3px !important;
   border-color: rgb(128 128 128 / 44%) !important;
-  height: 35px;
+  height: 34px;
   padding: 10px !important;
   color: #333 !important;
 }
@@ -374,7 +374,7 @@
 
 .leadmanager_paymentdetails_drawer_heading {
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14px;
   padding: 0px 24px;
 }
 
@@ -502,17 +502,17 @@
 }
 
 .leads_serverrequired_label {
-  font-size: 12.5px;
+  font-size: 12px;
   /* font-weight: 500; */
 }
 
 .leads_serverrequired_switch.ant-switch {
-  height: 20px !important;
+  height: 18px !important;
 }
 
 .leads_serverrequired_switch.ant-switch .ant-switch-handle {
-  width: 16px !important;
-  height: 16px !important;
+  width: 14px !important;
+  height: 14px !important;
 }
 
 .leads_serverrequired_switch.ant-switch.ant-switch-checked {
@@ -585,10 +585,10 @@
 }
 
 .leadmanager_action_icon {
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  min-height: 18px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -704,9 +704,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 16px;
+  padding: 5px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -856,10 +856,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 11px 12px !important;
+  padding: 10px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12.5px;
+  font-size: 11px;
   border-radius: 5px;
   border: none !important;
   height: 0px !important;
@@ -1348,11 +1348,11 @@
   border: 1px solid #5b6aca65;
   background-color: #5b69ca1a;
   color: #5b69ca;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1363,11 +1363,11 @@
   border: 1px solid #5b69ca;
   background-color: #5b69ca;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1378,11 +1378,11 @@
   border: 1px solid #00796b5e;
   background-color: #00796b1a;
   color: #00796b;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1393,11 +1393,11 @@
   border: 1px solid #00796b;
   background-color: #00796b;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1408,11 +1408,11 @@
   border: 1px solid #d32f2f5b;
   background-color: #d32f2f1a;
   color: #d32f2f;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1423,11 +1423,11 @@
   border: 1px solid #d32f2f;
   background-color: #d32f2f;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1438,11 +1438,11 @@
   border: 1px solid #0959d96a;
   background-color: #0959d91a;
   color: #0959d9;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1453,11 +1453,11 @@
   border: 1px solid #0959d9;
   background-color: #0959d9;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1468,11 +1468,11 @@
   border: 1px solid #22c55e6f;
   background-color: #22c55e17;
   color: #22c55e;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1485,11 +1485,11 @@
   background-color: #22c55e;
   border-color: #22c55e;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1500,11 +1500,11 @@
   border: 1px solid #f67e076b;
   background-color: #f67f071a;
   color: #f67f07;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1515,11 +1515,11 @@
   border: 1px solid #f67f07;
   background-color: #f67f07;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1530,11 +1530,11 @@
   border: 1px solid #722ed165;
   background-color: #722ed11a;
   color: #722ed1;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1545,11 +1545,11 @@
   border: 1px solid #722ed1;
   background-color: #722ed1;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1560,11 +1560,11 @@
   border: 1px solid #3c911162;
   background-color: #3c91111a;
   color: #3c9111;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -1575,11 +1575,11 @@
   border: 1px solid #3c9111;
   background-color: #3c9111;
   color: #ffffff;
-  padding: 5px 18px;
+  padding: 5px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease-in-out;

@@ -90,10 +90,7 @@ export default function CustomerRegistration() {
       setIsOtpVerified(true);
     } catch (error) {
       console.log("verify OTP error", error);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message || "Invalid OTP",
-      );
+      CommonMessage("error", error?.response?.data?.message || "Invalid OTP");
     } finally {
       setOtpLoading(false);
     }
@@ -947,41 +944,56 @@ export default function CustomerRegistration() {
   return (
     <div className="customerregistration_mainContainer">
       {!isOtpVerified ? (
-        <div 
-          className="customerregistration_card" 
-          style={{ 
-            maxWidth: "450px", 
-            margin: "12vh auto", 
+        <div
+          className="customerregistration_card"
+          style={{
+            maxWidth: "450px",
+            margin: "12vh auto",
             padding: "40px 30px",
             borderRadius: "12px",
             boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-            backgroundColor: "#fff"
+            backgroundColor: "#fff",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
-            <img 
-              src={Logo} 
-              alt="ACTE Logo" 
-              style={{ width: "120px", marginBottom: "12px", objectFit: "contain" }} 
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: "30px",
+            }}
+          >
+            <img
+              src={Logo}
+              alt="ACTE Logo"
+              style={{
+                width: "120px",
+                marginBottom: "12px",
+                objectFit: "contain",
+              }}
             />
-            <h2 style={{ 
-              color: "#1b538c", 
-              fontSize: "22px", 
-              fontWeight: "600",
-              margin: "0 0 8px 0"
-            }}>
+            <h2
+              style={{
+                color: "#1b538c",
+                fontSize: "22px",
+                fontWeight: "600",
+                margin: "0 0 8px 0",
+              }}
+            >
               Customer Verification
             </h2>
-            <p style={{ 
-              color: "#6c757d", 
-              fontSize: "14px", 
-              margin: 0,
-              textAlign: "center"
-            }}>
+            <p
+              style={{
+                color: "#6c757d",
+                fontSize: "14px",
+                margin: 0,
+                textAlign: "center",
+              }}
+            >
               Please verify your email address to proceed with the registration.
             </p>
           </div>
-            
+
           <div style={{ marginBottom: isOtpSent ? "20px" : "30px" }}>
             <CommonInputField
               label="Email Address"
@@ -1010,25 +1022,39 @@ export default function CustomerRegistration() {
 
           <div style={{ display: "flex", justifyContent: "center" }}>
             {otpLoading ? (
-              <button 
-                className="trainer_registration_loadingsubmitbutton" 
-                style={{ width: "100%", borderRadius: "6px", padding: "10px 0" }} 
+              <button
+                className="trainer_registration_loadingsubmitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                }}
                 disabled
               >
                 <CommonSpinner />
               </button>
             ) : isOtpSent ? (
-              <button 
-                className="trainer_registration_submitbutton" 
-                style={{ width: "100%", borderRadius: "6px", padding: "10px 0", fontSize: "16px" }} 
+              <button
+                className="trainer_registration_submitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                  fontSize: "16px",
+                }}
                 onClick={handleVerifyOtp}
               >
                 Verify OTP
               </button>
             ) : (
-              <button 
-                className="trainer_registration_submitbutton" 
-                style={{ width: "100%", borderRadius: "6px", padding: "10px 0", fontSize: "16px" }} 
+              <button
+                className="trainer_registration_submitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                  fontSize: "16px",
+                }}
                 onClick={handleSendOtp}
               >
                 Send OTP
@@ -1039,569 +1065,582 @@ export default function CustomerRegistration() {
       ) : (
         <>
           <div className="customerregistration_card">
-        <div className="customerregistration_innerContainer">
-          <Row style={{ display: "flex" }}>
-            <Col xs={24} sm={24} md={8} lg={8}>
-              <img src={Logo} className="trainer_registration_logo" />
-              <p
-                className="trainer_registration_logotext"
-                style={{ color: "#1b538c" }}
-              >
-                Technologies
-              </p>
-              <p
-                style={{
-                  color: "#1b538c",
-                  fontWeight: "bold",
-                  marginTop: "1px",
-                  letterSpacing: "0.3px",
-                }}
-              >
-                Private Limited
-              </p>
-            </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={8}
-              lg={8}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                fontSize: "16px",
-              }}
-            >
-              <p className="trainer_registration_heading">
-                Customer Registration Form
-              </p>
-            </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={8}
-              lg={8}
-              className="customerregistration_profileimage_container"
-            >
-              <Upload
-                listType="picture-circle"
-                fileList={profilePictureArray}
-                onPreview={handlePreview}
-                onChange={handleProfileAttachment}
-                onRemove={(file) => handleRemoveProfile(file)}
-                beforeUpload={() => false} // prevent auto upload
-                style={{ width: 90, height: 90 }} // reduce size
-                accept=".png,.jpg,.jpeg"
-              >
-                {profilePictureArray.length >= 1 ? null : (
-                  <div>
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8, fontSize: "12px" }}>
-                      Upload <br /> Profile
-                    </div>
-                  </div>
-                )}
-              </Upload>
-            </Col>
-          </Row>
-        </div>
-
-        {loading ? (
-          <div className="customer_registration_loaderContainer">
-            <CommonSpinner color="#333" />
-          </div>
-        ) : (
-          // <Tabs
-          //   activeKey={activeKey}
-          //   onTabClick={handleTabClick}
-          //   items={tabItems}
-          //   className="trainer_registration_tabs"
-          // />
-          <>
-            <div className="customerregistration_formcontainer">
-              <div className="logincard_innerContainer">
-                <Row gutter={12}>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "20px" }}
+            <div className="customerregistration_innerContainer">
+              <Row style={{ display: "flex" }}>
+                <Col xs={24} sm={24} md={8} lg={8}>
+                  <img src={Logo} className="trainer_registration_logo" />
+                  <p
+                    className="trainer_registration_logotext"
+                    style={{ color: "#1b538c" }}
                   >
-                    <CommonInputField
-                      label="Name"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (validationTrigger) {
-                          setNameError(nameValidator(e.target.value));
-                        }
-                      }}
-                      error={nameError}
-                      required={true}
-                      disabled={true}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "20px" }}
+                    Technologies
+                  </p>
+                  <p
+                    style={{
+                      color: "#1b538c",
+                      fontWeight: "bold",
+                      marginTop: "1px",
+                      letterSpacing: "0.3px",
+                    }}
                   >
-                    <CommonInputField
-                      label="Email"
-                      required={true}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (validationTrigger) {
-                          setEmailError(emailValidator(e.target.value));
-                        }
-                      }}
-                      value={email}
-                      error={emailError}
-                      disabled={true}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "20px" }}
-                  >
-                    <PhoneWithCountry
-                      label="Mobile Number"
-                      onChange={(value) => {
-                        setMobile(value);
-                      }}
-                      selectedCountry={mobileCountry}
-                      countryCode={(code) => {
-                        setMobileCountryCode(code);
-                      }}
-                      onCountryChange={(iso2) => {
-                        setMobileCountry(iso2);
-                        setWhatsAppCountry(iso2);
-                      }}
-                      value={mobile}
-                      disabled={true}
-                      disableCountrySelect={true}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "20px" }}
-                  >
-                    <PhoneWithCountry
-                      label="WhatsApp Number"
-                      onChange={(value) => {
-                        setWhatsApp(value);
-                      }}
-                      countryCode={(code) => {
-                        setWhatsAppCountryCode(code);
-                      }}
-                      selectedCountry={whatsAppCountry}
-                      value={whatsApp}
-                      onCountryChange={(iso2) => {
-                        setWhatsAppCountry(iso2);
-                      }}
-                      disabled={true}
-                      disableCountrySelect={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row gutter={12}>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "30px" }}
-                  >
-                    <CommonMuiDatePicker
-                      label="Date Of Birth"
-                      required={true}
-                      onChange={(value) => {
-                        console.log("vallll", value);
-                        setDateOfBirth(value);
-                        if (validationTrigger) {
-                          setDateOfBirthError(selectValidator(value));
-                        }
-                      }}
-                      value={dateOfBirth}
-                      error={dateOfBirthError}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "30px" }}
-                  >
-                    <CommonSelectField
-                      label="Gender"
-                      required={true}
-                      options={[
-                        { id: "Male", name: "Male" },
-                        { id: "Female", name: "Female" },
-                      ]}
-                      onChange={(e) => {
-                        setGender(e.target.value);
-                        if (validationTrigger) {
-                          setGenderError(selectValidator(e.target.value));
-                        }
-                      }}
-                      value={gender}
-                      error={genderError}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "30px" }}
-                  >
-                    <CommonMuiDatePicker
-                      label="Date Of Joining"
-                      required={true}
-                      maxLength={10}
-                      onChange={(value) => {
-                        console.log("vallll", value);
-                        setDateOfJoining(value);
-                        if (validationTrigger) {
-                          setDateOfJoiningError(selectValidator(value));
-                        }
-                      }}
-                      value={dateOfJoining}
-                      error={dateOfJoiningError}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "30px" }}
-                  >
-                    <CommonSelectField
-                      label="Area"
-                      required={true}
-                      options={areaOptions}
-                      value={areaId}
-                      disabled={true}
-                    />
-                  </Col>
-                </Row>
-
-                <p className="customer_registration_courseheading">
-                  Course Details
-                </p>
-                <Row gutter={12}>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "16px" }}
-                  >
-                    <CommonSelectField
-                      label="Enrolled Course"
-                      required={true}
-                      options={courseOptions}
-                      onChange={(e) => {
-                        setCourse(e.target.value);
-                        if (validationTrigger) {
-                          setCourseError(selectValidator(e.target.value));
-                        }
-                      }}
-                      value={course}
-                      error={courseError}
-                      disabled={true}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "16px" }}
-                  >
-                    <CommonSelectField
-                      label="Batch Track"
-                      required={true}
-                      options={batchTrackOptions}
-                      onChange={(e) => {
-                        setBatchTrack(e.target.value);
-                        if (validationTrigger) {
-                          setBatchTrackError(selectValidator(e.target.value));
-                        }
-                      }}
-                      value={batchTrack}
-                      error={batchTrackError}
-                      disabled={true}
-                    />
-                  </Col>
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={6}
-                    style={{ marginTop: "16px" }}
-                  >
-                    <CommonSelectField
-                      label="Batch Type"
-                      required={true}
-                      options={batchTimingOptions}
-                      onChange={(e) => {
-                        setBatchTiming(e.target.value);
-                        if (validationTrigger) {
-                          setBatchTimingError(selectValidator(e.target.value));
-                        }
-                      }}
-                      value={batchTiming}
-                      error={batchTimingError}
-                      disabled={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "20px", marginBottom: "30px" }}>
-                  <Col
-                    span={6}
-                    style={{ position: "relative", display: "flex" }}
-                  >
-                    {signatureBase64 ? (
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        <div>
-                          <p style={{ fontWeight: 500, color: "#333" }}>
-                            Signature
-                          </p>
-                          <img
-                            src={signatureBase64}
-                            alt="Trainer Signature"
-                            className="customer_signature_image"
-                          />
-                        </div>
-                        <button
-                          className="trainer_registration_signature_createbutton"
-                          onClick={() => setIsOpenSignatureModal(true)}
-                        >
-                          Update
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <Button
-                          className="customer_registration_addsign_button"
-                          onClick={() => {
-                            setIsOpenSignatureModal(true);
-                          }}
-                        >
-                          Add E-Signature
-                        </Button>
-                        {signatureError && (
-                          <p className="trainer_registration_signatureerror">
-                            {signatureError}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </Col>
-                </Row>
-                <div
-                  className="customer_registration_terms_container"
+                    Private Limited
+                  </p>
+                </Col>
+                <Col
+                  xs={24}
+                  sm={24}
+                  md={8}
+                  lg={8}
                   style={{
-                    marginBottom: signatureBase64 ? "20px" : "0px",
+                    display: "flex",
+                    justifyContent: "center",
+                    fontSize: "14px",
                   }}
                 >
-                  <Checkbox
-                    onChange={(e) => {
-                      setIsCheckedTerms(e.target.checked);
-                      if (validationTrigger) {
-                        if (e.target.checked === true) {
-                          setIsCheckedTermsError("");
-                        } else {
-                          setIsCheckedTermsError(" is required");
-                        }
-                      }
-                    }}
-                    value={isCheckedTerms}
-                  >
-                    I have read and agree to the
-                  </Checkbox>
-                  <p
-                    className="customer_registration_terms_text"
-                    onClick={() => setIsOpenTermsModal(true)}
-                  >
-                    Terms and Conditions
+                  <p className="trainer_registration_heading">
+                    Customer Registration Form
                   </p>
-                </div>
-                {/* {isCheckedTermsError && (
+                </Col>
+                <Col
+                  xs={24}
+                  sm={24}
+                  md={8}
+                  lg={8}
+                  className="customerregistration_profileimage_container"
+                >
+                  <Upload
+                    listType="picture-circle"
+                    fileList={profilePictureArray}
+                    onPreview={handlePreview}
+                    onChange={handleProfileAttachment}
+                    onRemove={(file) => handleRemoveProfile(file)}
+                    beforeUpload={() => false} // prevent auto upload
+                    style={{ width: 90, height: 90 }} // reduce size
+                    accept=".png,.jpg,.jpeg"
+                  >
+                    {profilePictureArray.length >= 1 ? null : (
+                      <div>
+                        <PlusOutlined />
+                        <div style={{ marginTop: 8, fontSize: "12px" }}>
+                          Upload <br /> Profile
+                        </div>
+                      </div>
+                    )}
+                  </Upload>
+                </Col>
+              </Row>
+            </div>
+
+            {loading ? (
+              <div className="customer_registration_loaderContainer">
+                <CommonSpinner color="#333" />
+              </div>
+            ) : (
+              // <Tabs
+              //   activeKey={activeKey}
+              //   onTabClick={handleTabClick}
+              //   items={tabItems}
+              //   className="trainer_registration_tabs"
+              // />
+              <>
+                <div className="customerregistration_formcontainer">
+                  <div className="logincard_innerContainer">
+                    <Row gutter={12}>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "20px" }}
+                      >
+                        <CommonInputField
+                          label="Name"
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (validationTrigger) {
+                              setNameError(nameValidator(e.target.value));
+                            }
+                          }}
+                          error={nameError}
+                          required={true}
+                          disabled={true}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "20px" }}
+                      >
+                        <CommonInputField
+                          label="Email"
+                          required={true}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (validationTrigger) {
+                              setEmailError(emailValidator(e.target.value));
+                            }
+                          }}
+                          value={email}
+                          error={emailError}
+                          disabled={true}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "20px" }}
+                      >
+                        <PhoneWithCountry
+                          label="Mobile Number"
+                          onChange={(value) => {
+                            setMobile(value);
+                          }}
+                          selectedCountry={mobileCountry}
+                          countryCode={(code) => {
+                            setMobileCountryCode(code);
+                          }}
+                          onCountryChange={(iso2) => {
+                            setMobileCountry(iso2);
+                            setWhatsAppCountry(iso2);
+                          }}
+                          value={mobile}
+                          disabled={true}
+                          disableCountrySelect={true}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "20px" }}
+                      >
+                        <PhoneWithCountry
+                          label="WhatsApp Number"
+                          onChange={(value) => {
+                            setWhatsApp(value);
+                          }}
+                          countryCode={(code) => {
+                            setWhatsAppCountryCode(code);
+                          }}
+                          selectedCountry={whatsAppCountry}
+                          value={whatsApp}
+                          onCountryChange={(iso2) => {
+                            setWhatsAppCountry(iso2);
+                          }}
+                          disabled={true}
+                          disableCountrySelect={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row gutter={12}>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "30px" }}
+                      >
+                        <CommonMuiDatePicker
+                          label="Date Of Birth"
+                          required={true}
+                          onChange={(value) => {
+                            console.log("vallll", value);
+                            setDateOfBirth(value);
+                            if (validationTrigger) {
+                              setDateOfBirthError(selectValidator(value));
+                            }
+                          }}
+                          value={dateOfBirth}
+                          error={dateOfBirthError}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "30px" }}
+                      >
+                        <CommonSelectField
+                          label="Gender"
+                          required={true}
+                          options={[
+                            { id: "Male", name: "Male" },
+                            { id: "Female", name: "Female" },
+                          ]}
+                          onChange={(e) => {
+                            setGender(e.target.value);
+                            if (validationTrigger) {
+                              setGenderError(selectValidator(e.target.value));
+                            }
+                          }}
+                          value={gender}
+                          error={genderError}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "30px" }}
+                      >
+                        <CommonMuiDatePicker
+                          label="Date Of Joining"
+                          required={true}
+                          maxLength={10}
+                          onChange={(value) => {
+                            console.log("vallll", value);
+                            setDateOfJoining(value);
+                            if (validationTrigger) {
+                              setDateOfJoiningError(selectValidator(value));
+                            }
+                          }}
+                          value={dateOfJoining}
+                          error={dateOfJoiningError}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "30px" }}
+                      >
+                        <CommonSelectField
+                          label="Area"
+                          required={true}
+                          options={areaOptions}
+                          value={areaId}
+                          disabled={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <p className="customer_registration_courseheading">
+                      Course Details
+                    </p>
+                    <Row gutter={12}>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "16px" }}
+                      >
+                        <CommonSelectField
+                          label="Enrolled Course"
+                          required={true}
+                          options={courseOptions}
+                          onChange={(e) => {
+                            setCourse(e.target.value);
+                            if (validationTrigger) {
+                              setCourseError(selectValidator(e.target.value));
+                            }
+                          }}
+                          value={course}
+                          error={courseError}
+                          disabled={true}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "16px" }}
+                      >
+                        <CommonSelectField
+                          label="Batch Track"
+                          required={true}
+                          options={batchTrackOptions}
+                          onChange={(e) => {
+                            setBatchTrack(e.target.value);
+                            if (validationTrigger) {
+                              setBatchTrackError(
+                                selectValidator(e.target.value),
+                              );
+                            }
+                          }}
+                          value={batchTrack}
+                          error={batchTrackError}
+                          disabled={true}
+                        />
+                      </Col>
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "16px" }}
+                      >
+                        <CommonSelectField
+                          label="Batch Type"
+                          required={true}
+                          options={batchTimingOptions}
+                          onChange={(e) => {
+                            setBatchTiming(e.target.value);
+                            if (validationTrigger) {
+                              setBatchTimingError(
+                                selectValidator(e.target.value),
+                              );
+                            }
+                          }}
+                          value={batchTiming}
+                          error={batchTimingError}
+                          disabled={true}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "20px", marginBottom: "30px" }}>
+                      <Col
+                        span={6}
+                        style={{ position: "relative", display: "flex" }}
+                      >
+                        {signatureBase64 ? (
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <div>
+                              <p style={{ fontWeight: 500, color: "#333" }}>
+                                Signature
+                              </p>
+                              <img
+                                src={signatureBase64}
+                                alt="Trainer Signature"
+                                className="customer_signature_image"
+                              />
+                            </div>
+                            <button
+                              className="trainer_registration_signature_createbutton"
+                              onClick={() => setIsOpenSignatureModal(true)}
+                            >
+                              Update
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <Button
+                              className="customer_registration_addsign_button"
+                              onClick={() => {
+                                setIsOpenSignatureModal(true);
+                              }}
+                            >
+                              Add E-Signature
+                            </Button>
+                            {signatureError && (
+                              <p className="trainer_registration_signatureerror">
+                                {signatureError}
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </Col>
+                    </Row>
+                    <div
+                      className="customer_registration_terms_container"
+                      style={{
+                        marginBottom: signatureBase64 ? "20px" : "0px",
+                      }}
+                    >
+                      <Checkbox
+                        onChange={(e) => {
+                          setIsCheckedTerms(e.target.checked);
+                          if (validationTrigger) {
+                            if (e.target.checked === true) {
+                              setIsCheckedTermsError("");
+                            } else {
+                              setIsCheckedTermsError(" is required");
+                            }
+                          }
+                        }}
+                        value={isCheckedTerms}
+                      >
+                        I have read and agree to the
+                      </Checkbox>
+                      <p
+                        className="customer_registration_terms_text"
+                        onClick={() => setIsOpenTermsModal(true)}
+                      >
+                        Terms and Conditions
+                      </p>
+                    </div>
+                    {/* {isCheckedTermsError && (
                   <p className="customer_registration_terms_error">
                     Please accept the terms and conditions
                   </p>
                 )} */}
-              </div>
+                  </div>
+                </div>
+
+                <div className="customer_registration_submitbuttonContainer">
+                  {buttonLoading ? (
+                    <button className="trainer_registration_loadingsubmitbutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="trainer_registration_submitbutton"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <Modal
+            title="Signature"
+            open={isOpenSignatureModal}
+            onCancel={() => setIsOpenSignatureModal(false)}
+            footer={false}
+            className="customerregistration_signaturemodal"
+            // width="40%"
+          >
+            <CommonSignaturePad
+              instruction={true}
+              onUpload={handleSignatureBase64}
+            />
+          </Modal>
+
+          <Modal
+            title="Terms and conditions"
+            open={isOpenTermsModal}
+            onCancel={() => setIsOpenTermsModal(false)}
+            footer={false}
+            width="50%"
+            style={{ top: 20 }} // 👈 distance from top
+            centered
+          >
+            <div className="customer_registration_terms_contentContainer">
+              <ol className="terms-list">
+                <li>
+                  Acte Technologies has the right to postpone/cancel classes due
+                  to instructor illness or natural calamities. No refund in such
+                  cases.
+                </li>
+
+                <li>
+                  The registration fee is ₹2,000 and it is non-refundable.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>
+                    Attendance & Discipline:
+                  </span>{" "}
+                  Candidates must attend classes regularly, be punctual, follow
+                  dress guidelines, and maintain discipline inside the ACTE
+                  campus.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Classroom Rules:</span> Only
+                  training-related activities are allowed during class hours. No
+                  unrelated visitors are permitted on campus.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Quality Concerns:</span> Any
+                  subject or trainer quality issues must be reported
+                  immediately. Management will take corrective action, including
+                  trainer change if required.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>
+                    Assessments & Certification:
+                  </span>{" "}
+                  Good attendance and successful completion of internal
+                  assessments are mandatory. Certificates will be issued within
+                  15 days after registering for certification.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Communication:</span> All
+                  support queries must be raised to{" "}
+                  <a href="mailto:support@acte.in">support@acte.in</a> or the
+                  concerned team. Any non-training discussions in official
+                  WhatsApp groups may result in removal.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Training Resources:</span>{" "}
+                  Trainers will be allocated and classes scheduled after
+                  enrolment. Candidates must bring laptops for practical
+                  sessions; systems will be provided based on availability.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Placement Support:</span>{" "}
+                  ACTE will provide maximum placement assistance. However,
+                  student performance, attendance, and active participation are
+                  mandatory for eligibility.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>
+                    Payments & Initiation:
+                  </span>{" "}
+                  Once payment is made, the training process begins within 24–48
+                  hours. Part-payment candidates must clear pending fees within
+                  15 days of course start.
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Refund Policy:</span>
+                  <ul style={{ listStyleType: "disc" }}>
+                    <li style={{ marginTop: "8px" }}>
+                      Refund requests must be raised within 7 days of
+                      purchase/start of batch.
+                    </li>
+                    <li>
+                      Refund is not applicable once trainer allocation or
+                      classes have started.
+                    </li>
+                    <li>
+                      Accessing more than 30% of content/material or attending
+                      more than one class voids refund eligibility.
+                    </li>
+                    <li>Cancellations by the candidate are non-refundable.</li>
+                    <li>
+                      Quality concerns must first be given for management
+                      correction; refunds will not be issued before
+                      rectification attempts.
+                    </li>
+                    <li>
+                      Approved refunds will be processed within 7–10 working
+                      days.
+                    </li>
+                  </ul>
+                </li>
+
+                <li>
+                  <span style={{ fontWeight: 600 }}>Acceptance:</span> By
+                  enrolling with ACTE, the candidate confirms that they have
+                  fully read, understood, and agreed to these Terms & Conditions
+                  without dispute.
+                </li>
+              </ol>
             </div>
+          </Modal>
 
-            <div className="customer_registration_submitbuttonContainer">
-              {buttonLoading ? (
-                <button className="trainer_registration_loadingsubmitbutton">
-                  <CommonSpinner />
-                </button>
-              ) : (
-                <button
-                  className="trainer_registration_submitbutton"
-                  onClick={handleSubmit}
-                >
-                  Submit
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      <Modal
-        title="Signature"
-        open={isOpenSignatureModal}
-        onCancel={() => setIsOpenSignatureModal(false)}
-        footer={false}
-        className="customerregistration_signaturemodal"
-        // width="40%"
-      >
-        <CommonSignaturePad
-          instruction={true}
-          onUpload={handleSignatureBase64}
-        />
-      </Modal>
-
-      <Modal
-        title="Terms and conditions"
-        open={isOpenTermsModal}
-        onCancel={() => setIsOpenTermsModal(false)}
-        footer={false}
-        width="50%"
-        style={{ top: 20 }} // 👈 distance from top
-        centered
-      >
-        <div className="customer_registration_terms_contentContainer">
-          <ol className="terms-list">
-            <li>
-              Acte Technologies has the right to postpone/cancel classes due to
-              instructor illness or natural calamities. No refund in such cases.
-            </li>
-
-            <li>The registration fee is ₹2,000 and it is non-refundable.</li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Attendance & Discipline:</span>{" "}
-              Candidates must attend classes regularly, be punctual, follow
-              dress guidelines, and maintain discipline inside the ACTE campus.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Classroom Rules:</span> Only
-              training-related activities are allowed during class hours. No
-              unrelated visitors are permitted on campus.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Quality Concerns:</span> Any
-              subject or trainer quality issues must be reported immediately.
-              Management will take corrective action, including trainer change
-              if required.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>
-                Assessments & Certification:
-              </span>{" "}
-              Good attendance and successful completion of internal assessments
-              are mandatory. Certificates will be issued within 15 days after
-              registering for certification.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Communication:</span> All
-              support queries must be raised to{" "}
-              <a href="mailto:support@acte.in">support@acte.in</a> or the
-              concerned team. Any non-training discussions in official WhatsApp
-              groups may result in removal.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Training Resources:</span>{" "}
-              Trainers will be allocated and classes scheduled after enrolment.
-              Candidates must bring laptops for practical sessions; systems will
-              be provided based on availability.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Placement Support:</span> ACTE
-              will provide maximum placement assistance. However, student
-              performance, attendance, and active participation are mandatory
-              for eligibility.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Payments & Initiation:</span>{" "}
-              Once payment is made, the training process begins within 24–48
-              hours. Part-payment candidates must clear pending fees within 15
-              days of course start.
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Refund Policy:</span>
-              <ul style={{ listStyleType: "disc" }}>
-                <li style={{ marginTop: "8px" }}>
-                  Refund requests must be raised within 7 days of purchase/start
-                  of batch.
-                </li>
-                <li>
-                  Refund is not applicable once trainer allocation or classes
-                  have started.
-                </li>
-                <li>
-                  Accessing more than 30% of content/material or attending more
-                  than one class voids refund eligibility.
-                </li>
-                <li>Cancellations by the candidate are non-refundable.</li>
-                <li>
-                  Quality concerns must first be given for management
-                  correction; refunds will not be issued before rectification
-                  attempts.
-                </li>
-                <li>
-                  Approved refunds will be processed within 7–10 working days.
-                </li>
-              </ul>
-            </li>
-
-            <li>
-              <span style={{ fontWeight: 600 }}>Acceptance:</span> By enrolling
-              with ACTE, the candidate confirms that they have fully read,
-              understood, and agreed to these Terms & Conditions without
-              dispute.
-            </li>
-          </ol>
-        </div>
-      </Modal>
-
-      <Modal
-        open={previewOpen}
-        title="Preview Profile"
-        footer={null}
-        onCancel={() => setPreviewOpen(false)}
-      >
-        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
-      </Modal>
-      </>
+          <Modal
+            open={previewOpen}
+            title="Preview Profile"
+            footer={null}
+            onCancel={() => setPreviewOpen(false)}
+          >
+            <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+          </Modal>
+        </>
       )}
     </div>
   );

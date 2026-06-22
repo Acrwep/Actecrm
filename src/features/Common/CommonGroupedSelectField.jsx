@@ -10,6 +10,9 @@ export default function CommonGroupedSelectField({
   options,
   value,
   onChange,
+  height,
+  fontSize,
+  labelFontSize,
   optionLabel = "name",
   optionValue = "id",
   groupByField = "category",
@@ -43,16 +46,16 @@ export default function CommonGroupedSelectField({
         flex: 1,
         width: "100%",
         "& .MuiInputLabel-root": {
-          fontSize: "14px",
+          fontSize: labelFontSize ? labelFontSize : "14px",
           padding: "0px 0px",
           marginTop: "1px",
           fontFamily: "Poppins,  sans-serif",
         },
         "& .MuiOutlinedInput-root": {
-          height: "42px",
+          height: height || "42px",
         },
         "& .MuiAutocomplete-input": {
-          fontSize: "14px",
+          fontSize: fontSize || "14px",
           marginTop: "0px",
         },
         "& .Mui-disabled": {

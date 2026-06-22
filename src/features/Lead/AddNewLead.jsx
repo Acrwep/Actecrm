@@ -1112,12 +1112,13 @@ const AddNewLead = forwardRef(
     };
 
     const formReset = (isSuccess = false) => {
+      const isCancel = !isSuccess;
       if (updateLeadItem) {
-        callgetLeadsApi();
+        callgetLeadsApi(false, isCancel);
       } else if (liveLeadItem) {
-        callgetLeadsApi();
+        callgetLeadsApi(false, isCancel);
       } else if (isSuccess) {
-        callgetLeadsApi(true);
+        callgetLeadsApi(true, isCancel);
       }
       setValidationTrigger(false);
       setName("");

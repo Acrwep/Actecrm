@@ -38,13 +38,13 @@ export default function CommonOutlinedInput({
       sx={{
         width: width ? width : "100%",
         "& .MuiInputLabel-root": {
-          fontSize: labelFontSize ? labelFontSize : "14px",
+          fontSize: labelFontSize ? labelFontSize : "12px",
           marginTop: labelMarginTop,
         },
         "& .MuiInputBase-input": {
-          height: height || "auto",
+          height: height || "36px",
           boxSizing: "border-box",
-          fontSize: "14px",
+          fontSize: "13px",
         },
         "& .Mui-disabled": {
           backgroundColor: "#f5f5f5", // change background
@@ -74,7 +74,7 @@ export default function CommonOutlinedInput({
           <FormHelperText
             className="common_selectfield_errortext"
             style={{
-              fontSize: errorFontSize ? errorFontSize : "11px",
+              fontSize: errorFontSize ? errorFontSize : "10px",
             }}
           >
             {label + " " + error}

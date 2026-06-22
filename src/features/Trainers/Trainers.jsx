@@ -1714,6 +1714,7 @@ export default function Trainers() {
                       ? "leads_focusedcourse_addcontainer"
                       : "leads_course_addcontainer"
                 }
+                style={{ height: "36px" }}
               >
                 <Tooltip
                   placement="bottom"
@@ -1887,7 +1888,7 @@ export default function Trainers() {
                         ? "leads_focusedcourse_addcontainer"
                         : "leads_course_addcontainer"
                   }
-                  style={{ height: "41px" }}
+                  style={{ height: "36px" }}
                 >
                   <Tooltip
                     placement="bottom"
@@ -2041,8 +2042,8 @@ export default function Trainers() {
                           : ""
                   }
                   width="100%"
-                  height="33px"
-                  labelFontSize="12px"
+                  height="32px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -2067,7 +2068,7 @@ export default function Trainers() {
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
                     borderTopRightRadius: "0px",
                     borderBottomRightRadius: "0px",
@@ -2127,7 +2128,7 @@ export default function Trainers() {
                       }
                     >
                       <Button className="users_filterbutton">
-                        <IoFilter size={18} />
+                        <IoFilter size={16} />
                       </Button>
                     </Tooltip>
                   </Flex>
@@ -2140,8 +2141,9 @@ export default function Trainers() {
                   label="HR"
                   options={hrUsers}
                   width="100%"
-                  height="35px"
-                  labelMarginTop="-2px"
+                  height="34px"
+                  labelFontSize={"12px"}
+                  labelMarginTop="-1px"
                   style={{ width: "100%" }}
                   value={hrId}
                   onChange={(e) => {

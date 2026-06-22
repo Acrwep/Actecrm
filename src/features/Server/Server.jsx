@@ -1587,8 +1587,8 @@ export default function Server() {
                           : ""
                   }
                   width="100%"
-                  height="33px"
-                  labelFontSize="12px"
+                  height="32px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -1616,7 +1616,7 @@ export default function Server() {
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
                     borderTopRightRadius: "0px",
                     borderBottomRightRadius: "0px",
@@ -1669,7 +1669,7 @@ export default function Server() {
                       }
                     >
                       <Button className="users_filterbutton">
-                        <IoFilter size={18} />
+                        <IoFilter size={16} />
                       </Button>
                     </Tooltip>
                   </Flex>
@@ -1682,10 +1682,10 @@ export default function Server() {
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
                     <CommonMultiSelectField
-                      height="35px"
+                      height="34px"
                       label="Select User"
-                      labelMarginTop="0px"
-                      labelFontSize="12px"
+                      labelMarginTop="1px"
+                      labelFontSize="11px"
                       options={subUsers}
                       onChange={handleSelectUser}
                       value={selectedUserId}

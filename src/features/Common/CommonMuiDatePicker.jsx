@@ -125,7 +125,7 @@ export default function CommonMuiDatePicker({
                   position: "absolute",
                   bottom: "-18px", // adjust distance below the input
                   left: "0",
-                  fontSize: errorFontSize ? errorFontSize : "11px",
+                  fontSize: errorFontSize ? errorFontSize : "10px",
                   color: "#d32f2f",
                 }}
               >
@@ -136,13 +136,13 @@ export default function CommonMuiDatePicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: height || "42px !important",
+                height: height || "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: labelFontSize || "13px",
-                marginTop: labelMarginTop || "3px",
+                fontSize: labelFontSize || "12px",
+                marginTop: labelMarginTop || "0px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
@@ -158,7 +158,7 @@ export default function CommonMuiDatePicker({
                 fontSize: fontSize || "13px",
               },
               "& .MuiSvgIcon-root": {
-                fontSize: iconSize || "20px",
+                fontSize: iconSize || "16px",
                 marginTop: "-1px",
               },
               /** ✅ Correct border overrides */

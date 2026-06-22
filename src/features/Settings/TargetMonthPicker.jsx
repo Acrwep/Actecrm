@@ -109,13 +109,13 @@ export default function TargetMonthPicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "40px !important",
+                height: "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                marginTop: labelMarginTop ? labelMarginTop : "3px",
+                fontSize: "12px",
+                marginTop: labelMarginTop ? labelMarginTop : "0px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
@@ -131,7 +131,7 @@ export default function TargetMonthPicker({
                 fontSize: "13px",
               },
               "& .MuiSvgIcon-root": {
-                fontSize: "20px",
+                fontSize: "16px",
                 marginTop: "-1px",
               },
               /** ✅ Correct border overrides */

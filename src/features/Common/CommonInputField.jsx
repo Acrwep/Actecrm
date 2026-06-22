@@ -115,7 +115,7 @@ export default function CommonInputField({
         sx={{
           width: "100%",
           "& .MuiInputLabel-root": {
-            fontSize: labelFontSize ? labelFontSize : "14px",
+            fontSize: labelFontSize ? labelFontSize : "12px",
           },
           "& .MuiInputBase-root.MuiOutlinedInput-root": {
             borderLeft: "0px",
@@ -126,9 +126,9 @@ export default function CommonInputField({
             borderLeft: borderLeftNone ? "0px" : "", // ✅ this controls the visible border
           },
           "& .MuiInputBase-input": {
-            height: height || "auto",
+            height: height || "36px",
             boxSizing: "border-box",
-            fontSize: fontSize || "14px",
+            fontSize: fontSize || "13px",
           },
           "& .MuiOutlinedInput-root.Mui-disabled": {
             backgroundColor: "#f5f5f5",

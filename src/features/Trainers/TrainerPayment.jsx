@@ -1271,8 +1271,8 @@ export default function TrainerPayment() {
             <Col span={8}>
               <CommonCustomerSingleSelectField
                 label="Trainer"
-                height="32px"
-                labelMarginTop="-1px"
+                height="31px"
+                labelMarginTop="0px"
                 required={false}
                 options={mergedTrainersList}
                 value={selectedTrainerId}

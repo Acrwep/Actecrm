@@ -119,6 +119,7 @@
 .customers_active_formpending_container {
   border: 1px solid #ff6b6b;
   background-color: #ff6b6b;
+  font-weight: 600;
   color: #fff;
 }
 .customers_paymentreject_container {
@@ -130,6 +131,7 @@
 .customers_active_paymentreject_container {
   border: 1px solid #eb6d4b;
   background-color: #eb6d4b;
+  font-weight: 600;
   color: #fff;
   gap: 4px;
 }
@@ -142,6 +144,7 @@
 .customers_active_awaitfinance_container {
   border: 1px solid #ffbf00;
   background-color: #ffbf00;
+  font-weight: 600;
   color: #fff;
   gap: 4px;
 }
@@ -153,6 +156,7 @@
 .customers_active_studentvefity_container {
   border: 1px solid #ffa502;
   background-color: #ffa502;
+  font-weight: 600;
   color: #fff;
 }
 .customers_assigntrainers_container {
@@ -163,6 +167,7 @@
 .customers_active_assigntrainers_container {
   border: 1px solid #2ed573;
   background-color: #2ed573;
+  font-weight: 600;
   color: #fff;
 }
 .customers_verifytrainers_container {
@@ -173,6 +178,7 @@
 .customers_active_verifytrainers_container {
   border: 1px solid #1e90ff;
   background-color: #1e90ff;
+  font-weight: 600;
   color: #fff;
 }
 .customers_awaitingclass_container {
@@ -183,6 +189,7 @@
 .customers_active_awaitingclass_container {
   border: 1px solid #607d8b;
   background-color: #607d8b;
+  font-weight: 600;
   color: #fff;
 }
 .customers_classschedule_container {
@@ -193,6 +200,7 @@
 .customers_active_classschedule_container {
   border: 1px solid #a29bfe;
   background-color: #a29bfe;
+  font-weight: 600;
   color: #fff;
 }
 .customers_classgoing_container {
@@ -203,6 +211,7 @@
 .customers_active_classgoing_container {
   border: 1px solid #00cec9;
   background-color: #00cec9;
+  font-weight: 600;
   color: #fff;
 }
 .customers_pendingfees_container {
@@ -213,6 +222,7 @@
 .customers_active_pendingfees_container {
   border: 1px solid #e17055;
   background-color: #e17055;
+  font-weight: 600;
   color: #fff;
 }
 .customers_escalated_container {
@@ -223,6 +233,7 @@
 .customers_active_escalated_container {
   border: 1px solid #d32f2f;
   background-color: #d32f2f;
+  font-weight: 600;
   color: #fff;
 }
 .customers_feedback_container {
@@ -233,6 +244,7 @@
 .customers_active_feedback_container {
   border: 1px solid #fd79a8;
   background-color: #fd79a8;
+  font-weight: 600;
   color: #fff;
 }
 .customers_completed_container {
@@ -243,6 +255,7 @@
 .customers_active_completed_container {
   border: 1px solid #3c9111;
   background-color: #3c9111;
+  font-weight: 600;
   color: #fff;
 }
 .customers_others_container {
@@ -254,6 +267,7 @@
 .customers_active_others_container {
   border: 1px solid #0984e3;
   background-color: #0984e3;
+  font-weight: 600;
   color: #fff;
 }
 .customers_status_formpending_button {
@@ -265,7 +279,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -287,7 +301,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -309,7 +323,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -330,7 +344,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -351,7 +365,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -372,7 +386,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -392,7 +406,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -413,7 +427,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -434,7 +448,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -455,7 +469,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -476,7 +490,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -497,7 +511,7 @@
   padding: 11px 12px !important;
   width: max-content !important;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 4px;
   border: none;
   height: 0px !important;
@@ -1407,7 +1421,8 @@
   color: #333;
 }
 .customer_registration_terms_contentContainer li {
-  margin-bottom: 12px;
+  font-size: 13px !important;
+  margin-bottom: 10px;
 }
 .customer_registration_terms_error {
   color: #d32f2f;
@@ -1425,7 +1440,7 @@
   color: #333;
   font-weight: 500;
   margin-top: 22px;
-  font-size: 15px;
+  font-size: 13px;
 }
 .customer_registraion_sign_instruction_container {
   background-color: #5b6aca10;
@@ -1442,7 +1457,7 @@
 }
 .customer_registration_addsign_button {
   width: 140px;
-  font-size: 13px;
+  font-size: 12px;
 }
 .customer_registration_addsign_button:hover {
   color: #5b69ca !important;

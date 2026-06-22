@@ -1032,10 +1032,10 @@ export default function Tickets() {
           <Row gutter={16}>
             <Col span={10}>
               <CommonSelectField
-                height="35px"
+                height="33px"
                 label="Select User"
                 labelMarginTop="0px"
-                labelFontSize="13px"
+                labelFontSize="11px"
                 options={subUsers}
                 onChange={handleSelectUser}
                 value={selectedUserId}

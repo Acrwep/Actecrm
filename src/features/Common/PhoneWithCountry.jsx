@@ -162,7 +162,7 @@ export default function PhoneWithCountry({
         }
         sx={{
           width: "100%",
-          "& .MuiInputLabel-root": { fontSize: labelFontSize || "14px" },
+          "& .MuiInputLabel-root": { fontSize: labelFontSize || "12px" },
           "& .MuiInputBase-root.MuiOutlinedInput-root": {
             borderLeft: "0px",
             borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
@@ -170,9 +170,9 @@ export default function PhoneWithCountry({
           },
           "& fieldset": { borderLeft: borderLeftNone ? "0px" : "" },
           "& .MuiInputBase-input": {
-            height: height || "42px",
+            height: height || "36px",
             boxSizing: "border-box",
-            fontSize: "14px",
+            fontSize: "13px",
           },
         }}
         slotProps={{

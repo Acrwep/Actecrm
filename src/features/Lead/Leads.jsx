@@ -619,7 +619,7 @@ export default function Leads({
           <div className="leadmanager_actionbuttonContainer">
             <Tooltip placement="bottom" title="View Lead Details">
               <FaRegEye
-                size={15}
+                className="leadmanager_action_icon"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   setViewLeadItem(record);
@@ -1249,7 +1249,7 @@ export default function Leads({
                     <div className="leadmanager_actionbuttonContainer">
                       <Tooltip placement="bottom" title="View Lead Details">
                         <FaRegEye
-                          size={16}
+                          className="leadmanager_action_icon"
                           style={{ cursor: "pointer" }}
                           onClick={() => {
                             setViewLeadItem(record);
@@ -2270,8 +2270,8 @@ export default function Leads({
                             : ""
                   }
                   width="100%"
-                  height="33px"
-                  labelFontSize="12px"
+                  height="32px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -2307,7 +2307,7 @@ export default function Leads({
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
                     borderTopRightRadius: "0px",
                     borderBottomRightRadius: "0px",
@@ -2385,7 +2385,7 @@ export default function Leads({
                       }
                     >
                       <Button className="users_filterbutton">
-                        <IoFilter size={18} />
+                        <IoFilter size={16} />
                       </Button>
                     </Tooltip>
                   </Flex>
@@ -2398,10 +2398,10 @@ export default function Leads({
                   <div className="overallduecustomers_filterContainer">
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <CommonMultiSelectField
-                        height="35px"
+                        height="34px"
                         label="Select User"
-                        labelMarginTop="0px"
-                        labelFontSize="12px"
+                        labelMarginTop="1px"
+                        labelFontSize="11px"
                         options={subUsers}
                         onChange={handleSelectUser}
                         value={selectedUserId}
@@ -2516,14 +2516,14 @@ export default function Leads({
                 content={
                   <div
                     style={{
-                      width: "360px",
+                      width: "320px",
                       display: "flex",
                       flexDirection: "column",
                     }}
                   >
                     <div
                       style={{
-                        padding: "16px 20px",
+                        padding: "10px 20px",
                         borderBottom: "1px solid #f1f5f9",
                         display: "flex",
                         justifyContent: "space-between",
@@ -2536,7 +2536,7 @@ export default function Leads({
                       <span
                         style={{
                           fontWeight: "600",
-                          fontSize: "16px",
+                          fontSize: "13px",
                           color: "#0f172a",
                         }}
                       >
@@ -2706,7 +2706,7 @@ export default function Leads({
               >
                 <Button
                   // type="primary"
-                  icon={<IoFilter size={16} />}
+                  icon={<IoFilter size={15} />}
                   className="leads_advancefilter_button"
                   style={{
                     background: "#fff",
@@ -2716,6 +2716,7 @@ export default function Leads({
                     alignItems: "center",
                     gap: "8px",
                     fontWeight: "500",
+                    fontSize: "12px",
                     boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                   }}
                 >
@@ -3498,6 +3499,9 @@ export default function Leads({
                 type="number"
                 value={subTotal}
                 disabled={true}
+                height={"36px"}
+                fontSize={"13px"}
+                labelFontSize={"12px"}
               />
             </Col>
             <Col span={8}>
@@ -3514,7 +3518,10 @@ export default function Leads({
                 onChange={handleTaxType}
                 value={taxType}
                 error={taxTypeError}
-                height="41px"
+                height={"36px"}
+                fontSize={"13px"}
+                labelFontSize={"12px"}
+                labelMarginTop={"0px"}
               />
             </Col>
             <Col span={8}>
@@ -3523,6 +3530,9 @@ export default function Leads({
                 required={true}
                 disabled
                 value={amount}
+                height={"36px"}
+                fontSize={"13px"}
+                labelFontSize={"12px"}
               />
             </Col>
           </Row>
@@ -3557,6 +3567,9 @@ export default function Leads({
                 onChange={handlePaymentMode}
                 value={paymentMode}
                 error={paymentModeError}
+                height={"36px"}
+                fontSize={"13px"}
+                labelFontSize={"12px"}
               />
             </Col>
             <Col span={8}>
@@ -3606,6 +3619,10 @@ export default function Leads({
                 }}
                 value={placeOfPayment}
                 error={placeOfPaymentError}
+                height={"36px"}
+                fontSize={"13px"}
+                labelFontSize={"12px"}
+                labelMarginTop={"0px"}
               />
             </Col>
             <Col span={8}>
@@ -3619,7 +3636,7 @@ export default function Leads({
                 onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
               />
               {paymentScreenShotError && (
-                <p style={{ fontSize: "12px", color: "#d32f2f", marginTop: 4 }}>
+                <p style={{ fontSize: "10px", color: "#d32f2f", marginTop: 4 }}>
                   {`Payment Screenshot ${paymentScreenShotError}`}
                 </p>
               )}
@@ -3765,7 +3782,7 @@ export default function Leads({
                   setGstNumber(value);
                 }}
                 value={gstNumber}
-              />{" "}
+              />
             </Col>
 
             <Col span={8}>

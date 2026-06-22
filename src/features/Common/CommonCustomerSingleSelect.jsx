@@ -62,12 +62,12 @@ export default function CommonCustomerSingleSelectField({
         sx={{
           width: width || "100%",
           "& .MuiInputLabel-root": {
-            fontSize: labelFontSize || "14px",
+            fontSize: labelFontSize || "12px",
             marginTop: labelMarginTop || "1px",
             fontFamily: "Poppins, sans-serif",
           },
           "& .MuiOutlinedInput-root": {
-            minHeight: height || "42px",
+            minHeight: height || "36px",
           },
         }}
       >
@@ -129,7 +129,7 @@ export default function CommonCustomerSingleSelectField({
               onBlur={onBlur}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: fontSize || "14px",
+                  fontSize: fontSize || "13px",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "",
@@ -153,7 +153,7 @@ export default function CommonCustomerSingleSelectField({
           <div style={helperTextContainerStyle}>
             <FormHelperText
               sx={{
-                fontSize: errorFontSize || "11px",
+                fontSize: errorFontSize || "10px",
                 color: "#d32f2f",
                 fontFamily: "Poppins, sans-serif",
                 marginLeft: 0,

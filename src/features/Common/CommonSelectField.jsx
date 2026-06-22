@@ -44,16 +44,16 @@ export default function CommonSelectField({
           flex: 1,
           width: width ? width : "100%",
           "& .MuiInputLabel-root": {
-            fontSize: labelFontSize || "14px",
+            fontSize: labelFontSize || "12px",
             padding: "0px 0px",
-            marginTop: labelMarginTop ? labelMarginTop : "1px",
+            marginTop: labelMarginTop ? labelMarginTop : "0px",
             fontFamily: "Poppins,  sans-serif",
           },
           "& .MuiOutlinedInput-root": {
-            height: height || "42px",
+            height: height || "36px",
           },
           "& .MuiAutocomplete-input": {
-            fontSize: fontSize || "14px",
+            fontSize: fontSize || "13px",
             marginTop: "0px",
           },
           "& .Mui-disabled": {
@@ -116,7 +116,7 @@ export default function CommonSelectField({
               required={required}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: fontSize || "14px",
+                  fontSize: fontSize || "13px",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "", // ⬅️ removes the right border
@@ -158,7 +158,7 @@ export default function CommonSelectField({
             <FormHelperText
               className="common_selectfield_errortext"
               style={{
-                fontSize: errorFontSize ? errorFontSize : "11px",
+                fontSize: errorFontSize ? errorFontSize : "10px",
               }}
             >
               {label + " " + error}

@@ -881,10 +881,12 @@ export default function LeadManager() {
             liveLeadItem={pickLeadItem}
             updateLeadItem={editLeadItem}
             isReAssign={isReAssignLead}
-            callgetLeadsApi={(dontSwitchTab) => {
-              setPickLeadItem(null);
-              setEditLeadItem(null);
-              setIsReAssignLead(false);
+            callgetLeadsApi={(dontSwitchTab, isCancel) => {
+              if (!isCancel) {
+                setPickLeadItem(null);
+                setEditLeadItem(null);
+                setIsReAssignLead(false);
+              }
               if (!dontSwitchTab) {
                 handleTabClick(prevActivePageRef.current);
               }

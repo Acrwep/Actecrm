@@ -444,10 +444,10 @@ export default function Batches() {
             */}
               <CommonSelectField
                 width="100%"
-                height="35px"
+                height="32px"
                 label="Select Region"
                 labelMarginTop="0px"
-                labelFontSize="12px"
+                labelFontSize="11px"
                 options={regionOptions}
                 onChange={handleSelectRegionId}
                 value={selectedRegionId}
@@ -457,9 +457,9 @@ export default function Batches() {
             <Col span={7}>
               <CommonSelectField
                 label="Branch"
-                height="35px"
+                height="32px"
                 labelMarginTop="0px"
-                labelFontSize="12px"
+                labelFontSize="11px"
                 options={branchOptions}
                 value={selectedBranchId}
                 onChange={(e) => {

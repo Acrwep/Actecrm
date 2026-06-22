@@ -124,13 +124,13 @@ export default function CommonMuiTimePicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "42px !important",
+                height: "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                marginTop: "3px",
+                fontSize: "12px",
+                marginTop: "0px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color

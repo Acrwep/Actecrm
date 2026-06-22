@@ -135,7 +135,7 @@ button:focus-visible {
   margin-top: 6px !important;
 }
 .ant-menu-inline.ant-menu-root .ant-menu-item > .ant-menu-title-content {
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 .ant-menu-submenu-title {
   color: #333 !important;
@@ -283,11 +283,11 @@ button:focus-visible {
 }
 .ant-table-thead .ant-table-cell {
   background-color: #e0e3e8 !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   color: #333 !important;
 }
 .ant-table-wrapper .ant-table-tbody > tr > td {
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 .ant-table-wrapper
   .ant-table-container
@@ -351,7 +351,7 @@ button:focus-visible {
   .ant-table-thead
   > tr
   > th {
-  padding: 11px !important;
+  padding: 10px !important;
 }
 .ant-checkbox-indeterminate .ant-checkbox-inner:after {
   background-color: #535bf2 !important;
@@ -512,10 +512,10 @@ button:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px 16px;
+  padding: 5px 16px;
   border-radius: 7px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;

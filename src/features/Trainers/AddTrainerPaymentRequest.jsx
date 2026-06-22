@@ -362,7 +362,7 @@ const AddTrainerPaymentRequest = forwardRef(
               <Flex align="center" gap={8}>
                 <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
                 <span
-                  style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                  style={{ fontWeight: 600, fontSize: "13px", color: "#333" }}
                 >
                   {option.name}
                 </span>
@@ -807,7 +807,7 @@ const AddTrainerPaymentRequest = forwardRef(
                   trigger={["hover", "click"]}
                 >
                   <FaRegEye
-                    size={17}
+                    size={15}
                     className="trainers_action_icons"
                     onClick={() => {
                       setClickedTrainerDetails([selectedTrainerObject]);
