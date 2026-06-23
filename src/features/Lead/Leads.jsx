@@ -106,6 +106,8 @@ export default function Leads({
 
   const [leadBucketOptions, setLeadBucketOptions] = useState([]);
   const [interestedLeadActions, setInterestedLeadActions] = useState({});
+  const [validLeadActions, setValidLeadActions] = useState({});
+  const [eligibleLeadActions, setEligibleLeadActions] = useState({});
   const [leadActionFilter, setLeadActionFilter] = useState("super_hot");
   const statusClassMap = {
     all: "all",
@@ -1550,7 +1552,11 @@ export default function Leads({
       ...(leadStatusId && { lead_status_id: leadStatusId }),
       ...(bucket && { bucket: bucket }),
       ...(bucket === "Interested Leads" &&
-        currentAction !== "all" && { lead_action: currentAction }),
+        ["super_hot", "hot", "warm", "cold", "not_interested", "dormant", "only_enquiry"].includes(currentAction) && { lead_action: currentAction }),
+      ...(bucket === "Valid Leads" &&
+        ["validated", "junk"].includes(currentAction) && { lead_action: currentAction }),
+      ...(bucket === "Eligible Leads" &&
+        ["communicated", "not_communicated", "no_response", "data correct but no response", "data_correct_but_no_response"].includes(currentAction) && { lead_action: currentAction === "communicated" ? "communicated" : currentAction === "not_communicated" ? "not communicated" : "data correct but no response" }),
       page: pageNumber,
       limit: limit,
     };
@@ -1563,9 +1569,15 @@ export default function Leads({
       const bucket_counts = response?.data?.data?.bucket_counts || {};
       const interested_actions =
         response?.data?.data?.interested_lead_actions || {};
+      const valid_actions =
+        response?.data?.data?.valid_lead_actions || {};
+      const eligible_actions =
+        response?.data?.data?.eligible_lead_actions || {};
       console.log("leads data", apiData);
 
       setInterestedLeadActions(interested_actions);
+      setValidLeadActions(valid_actions);
+      setEligibleLeadActions(eligible_actions);
 
       if (setBucketCounts) {
         setBucketCounts({
@@ -2956,6 +2968,114 @@ export default function Leads({
             </ScrollableTabContainer>
           </div>
         )}
+
+      {leadBucketName === "Valid Leads" &&
+        Object.keys(validLeadActions).length > 0 && (
+          <div style={{ marginTop: "15px", padding: "0 5px" }}>
+            <ScrollableTabContainer>
+              {Object.keys(validLeadActions)
+                .filter((k) => k !== "all")
+                .map((key) => {
+                  const count = validLeadActions[key];
+                  const displayName =
+                    key === "validated" ? "Validated" : key === "junk" ? "Junk" : key;
+                  const isActive = leadActionFilter === key;
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => {
+                        if (leadActionFilter === key) return;
+                        setLeadActionFilter(key);
+                        dispatch(
+                          storeLeadFilterValues({
+                            pageNumber: 1,
+                            pageLimit: pagination.limit,
+                          }),
+                        );
+                        getAllLeadData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          allDownliners,
+                          leadSourceFilterId,
+                          leadStatusId,
+                          "Valid Leads",
+                          1,
+                          pagination.limit,
+                          key,
+                        );
+                      }}
+                      className={`leadmanager_bucket ${isActive ? "active" : ""}`}
+                      style={{
+                        border: isActive ? "1px solid #3b82f6" : "1px solid #cbd5e1",
+                        backgroundColor: isActive ? "#3b82f6" : "#f8fafc",
+                        color: isActive ? "#fff" : "#475569",
+                        minWidth: "max-content",
+                      }}
+                    >
+                      {displayName} {`( ${count} )`}
+                    </div>
+                  );
+                })}
+            </ScrollableTabContainer>
+          </div>
+        )}
+
+      {leadBucketName === "Eligible Leads" &&
+        Object.keys(eligibleLeadActions).length > 0 && (
+          <div style={{ marginTop: "15px", padding: "0 5px" }}>
+            <ScrollableTabContainer>
+              {Object.keys(eligibleLeadActions)
+                .filter((k) => k !== "all")
+                .map((key) => {
+                  const count = eligibleLeadActions[key];
+                  let displayName = key;
+                  if (key === "communicated") displayName = "Communicated";
+                  else if (key === "not_communicated") displayName = "Not Communicated";
+                  else if (key === "no_response" || key === "data_correct_but_no_response") displayName = "Data Correct But No Response";
+                  
+                  const isActive = leadActionFilter === key;
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => {
+                        if (leadActionFilter === key) return;
+                        setLeadActionFilter(key);
+                        dispatch(
+                          storeLeadFilterValues({
+                            pageNumber: 1,
+                            pageLimit: pagination.limit,
+                          }),
+                        );
+                        getAllLeadData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          allDownliners,
+                          leadSourceFilterId,
+                          leadStatusId,
+                          "Eligible Leads",
+                          1,
+                          pagination.limit,
+                          key,
+                        );
+                      }}
+                      className={`leadmanager_bucket ${isActive ? "active" : ""}`}
+                      style={{
+                        border: isActive ? "1px solid #3b82f6" : "1px solid #cbd5e1",
+                        backgroundColor: isActive ? "#3b82f6" : "#f8fafc",
+                        color: isActive ? "#fff" : "#475569",
+                        minWidth: "max-content",
+                      }}
+                    >
+                      {displayName} {`( ${count} )`}
+                    </div>
+                  );
+                })}
+            </ScrollableTabContainer>
+          </div>
+        )}
+
 
       <div style={{ marginTop: "20px" }}>
         {(() => {
