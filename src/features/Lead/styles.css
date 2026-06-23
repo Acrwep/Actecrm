@@ -1970,3 +1970,24 @@
     font-size: 11.8px;
   }
 }
+
+.animated-save-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.animated-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+.animated-save-btn:active {
+  transform: translateY(0);
+}
+.animated-cancel-btn {
+  transition: all 0.3s ease;
+}
+.animated-cancel-btn:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}

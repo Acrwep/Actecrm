@@ -219,6 +219,31 @@ const AddNewLead = forwardRef(
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
 
+    // Action bar scroll animation
+    const [showActionBar, setShowActionBar] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+
+    useEffect(() => {
+      const handleScroll = (e) => {
+        const currentScrollY = e.target.scrollTop || window.scrollY;
+        if (currentScrollY > lastScrollY && currentScrollY > 20) {
+          setShowActionBar(true);
+        } else if (currentScrollY < lastScrollY) {
+          setShowActionBar(false);
+        }
+        setLastScrollY(currentScrollY);
+      };
+
+      const drawerBody = document.querySelector(".ant-drawer-body");
+      if (drawerBody) {
+        drawerBody.addEventListener("scroll", handleScroll, { passive: true });
+        return () => drawerBody.removeEventListener("scroll", handleScroll);
+      } else {
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+      }
+    }, [lastScrollY]);
+
     // useEffect(() => {
     //   const updatedOptions = leadStatusOptions.map((item) => ({
     //     ...item,
@@ -846,16 +871,19 @@ const AddNewLead = forwardRef(
         ? selectValidator(leadTemperature)
         : "";
       const followUpStatusIdValidate =
-        communicationStatus && communicationStatus != 2
-          ? selectValidator(followUpStatusId)
-          : "";
+        communicationStatus == 1
+          ? leadTemperature == 6
+            ? ""
+            : selectValidator(followUpStatusId)
+          : communicationStatus && communicationStatus != 2
+            ? selectValidator(followUpStatusId)
+            : "";
       const nxtFollowupDateValidate =
-        communicationStatus && contactMode != 6
-          ? selectValidator(nxtFollowupDate)
-          : "";
-      // const followUpStatusIdValidate =
-      //   contactMode == 6 ? "" : selectValidator(followUpStatusId);
-
+        leadTemperature == 6
+          ? ""
+          : communicationStatus && contactMode != 6
+            ? selectValidator(nxtFollowupDate)
+            : "";
       if (email && emailAndMobileValidation.email == 0) {
         emailValidate = " is already exist";
       }
@@ -1381,99 +1409,6 @@ const AddNewLead = forwardRef(
           margin: "-24px",
         }}
       >
-        {/* Header Banner */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            background: "#fff",
-            padding: "12px 16px",
-            borderRadius: "10px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "rgba(0, 0, 0, 0.04) 0px 1px 3px",
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: "15px",
-                fontWeight: 700,
-                color: "#0f172a",
-              }}
-            >
-              {isReAssign
-                ? "Re-Assign Lead"
-                : updateLeadItem
-                  ? "Update Lead"
-                  : "Add New Lead"}
-            </h2>
-            <p
-              style={{
-                margin: 0,
-                color: "#64748b",
-                fontSize: "10px",
-                marginTop: "4px",
-              }}
-            >
-              Capture new student lead details
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: "12px" }}>
-            <Button
-              onClick={() => formReset()}
-              style={{
-                borderRadius: "6px",
-                fontWeight: 500,
-                borderColor: "#cbd5e1",
-                color: "#334155",
-                fontSize: "13px",
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => handleSubmit("Save Only")}
-              loading={buttonLoading}
-              style={{
-                borderRadius: "6px",
-                fontWeight: 500,
-                border: "1px solid #2563eb",
-                color: "#2563eb",
-                height: "33px",
-                fontSize: "13px",
-              }}
-            >
-              {isReAssign
-                ? "Re-Assign"
-                : updateLeadItem
-                  ? "Update Lead"
-                  : "Save & Add Another"}
-            </Button>
-            {/* <Button
-              type="primary"
-              onClick={() => handleSubmit("Save And Add New")}
-              loading={buttonLoading}
-              style={{
-                backgroundColor: "#2563eb",
-                borderRadius: "6px",
-                fontWeight: 500,
-                border: "none",
-                height: "33px",
-                boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
-              }}
-            >
-              {isReAssign
-                ? "Re-Assign"
-                : updateLeadItem
-                  ? "Update Lead"
-                  : "Save Lead"}
-            </Button> */}
-          </div>
-        </div>
-
         {liveLeadItem && (
           <div
             style={{
@@ -2255,7 +2190,16 @@ const AddNewLead = forwardRef(
                       </li>
                     )}
                     onChange={(e) => {
+                      const value = e.target.value;
                       setLeadTemperature(e.target.value);
+                      if (value == 6) {
+                        setFollowUpStatusId(null);
+                        setFollowUpStatusIdError("");
+                        setNxtFollowupDate(null);
+                        setNxtFollowupDateError("");
+                        setNextFollowupTime(null);
+                        setAddTodayFollowup(false);
+                      }
                       if (validationTrigger) {
                         setLeadTemperatureError(
                           selectValidator(e.target.value),
@@ -2315,199 +2259,6 @@ const AddNewLead = forwardRef(
               </div>
             </div>
           </Col>
-          <Col span={6}>
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    ...cardStyle,
-                    background: "#f8fafc",
-                    padding: "8px 16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#0f172a",
-                      fontWeight: 700,
-                      fontSize: "13px",
-                      marginBottom: "14px",
-                    }}
-                  >
-                    Lead Status Flow
-                  </div>
-                  <div>
-                    <StatusTimelineItem
-                      status="New Lead"
-                      color="#2563eb"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Validated"
-                      color="#2563eb"
-                      isSmall={true}
-                    />
-                    <StatusTimelineItem
-                      status="Contacted"
-                      color="#0d9488"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Counselling"
-                      color="#ef4444"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Fee Discussion"
-                      color="#f59e0b"
-                      icon={<span style={{ fontSize: "9px" }}>Y</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Interested"
-                      color="#ef4444"
-                      icon={<span style={{ fontSize: "9px" }}>B</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Follow-up"
-                      color="#f97316"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Sales Ready"
-                      color="#eab308"
-                      icon={<span style={{ fontSize: "9px" }}>A</span>}
-                    />
-                    <StatusTimelineItem
-                      status="Joined"
-                      color="#22c55e"
-                      icon={<MdCheck size={13} />}
-                    />
-                    <StatusTimelineItem
-                      status="Payment Collected"
-                      color="#16a34a"
-                      icon={<MdPerson size={13} />}
-                      isLast={true}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ ...cardStyle, padding: "0" }}>
-                  <div
-                    style={{
-                      padding: "6px 16px",
-                      background: "#f8fafc",
-                      borderBottom: "1px solid #e2e8f0",
-                      borderRadius: "9px 9px 0 0",
-                      color: "#0f172a",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      textAlign: "center",
-                    }}
-                  >
-                    Score Criteria (Max 100)
-                  </div>
-                  <div style={{ padding: "4px 16px" }}>
-                    <table
-                      style={{
-                        width: "100%",
-                        fontSize: "13px",
-                        borderCollapse: "collapse",
-                        color: "#334155",
-                      }}
-                    >
-                      <tbody>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Contact Connected
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +10
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Interested
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Demo Attended
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Budget Available
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +20
-                          </td>
-                        </tr>
-                        <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
-                          <td style={{ padding: "6px 0", fontWeight: 500 }}>
-                            Joining Within 30 Days
-                          </td>
-                          <td
-                            align="right"
-                            style={{ fontWeight: 600, color: "#2563eb" }}
-                          >
-                            +30
-                          </td>
-                        </tr>
-                        <tr>
-                          <td
-                            style={{
-                              padding: "8px 0",
-                              fontWeight: "700",
-                              color: "#0f172a",
-                            }}
-                          >
-                            Total Score
-                          </td>
-                          <td
-                            align="right"
-                            style={{
-                              padding: "8px 0",
-                              fontWeight: "700",
-                              color: "#0f172a",
-                            }}
-                          >
-                            100
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={8}>
           <Col span={6}>
             <div
               style={{
@@ -2586,20 +2337,12 @@ const AddNewLead = forwardRef(
                   />
                 </div>
               </div>
-            </div>
-          </Col>
-          <Col span={6}>
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
+
               <div
                 style={{
                   ...cardStyle,
                   ...(contactMode == 6 ||
+                  leadTemperature == 6 ||
                   (updateLeadItem?.completed_followup_count != null &&
                     updateLeadItem?.completed_followup_count !== 0)
                     ? {
@@ -2608,7 +2351,7 @@ const AddNewLead = forwardRef(
                         opacity: 0.8,
                       }
                     : {}),
-                  flex: 1,
+                  // flex: 1,
                 }}
               >
                 <SectionHeader title="6. Follow-Up Planning" />
@@ -2665,7 +2408,8 @@ const AddNewLead = forwardRef(
                       communicationStatus == null ||
                       communicationStatus == "" ||
                       contactMode == 5 ||
-                      contactMode == 6
+                      contactMode == 6 ||
+                      leadTemperature == 6
                     }
                   />
                 </div>
@@ -2693,6 +2437,7 @@ const AddNewLead = forwardRef(
                       contactMode == 6 ||
                       leadTemperature == "" ||
                       leadTemperature == null ||
+                      leadTemperature == 6 ||
                       (updateLeadItem?.completed_followup_count != null &&
                         updateLeadItem?.completed_followup_count !== 0 &&
                         isReAssign == false)
@@ -2714,7 +2459,8 @@ const AddNewLead = forwardRef(
                     iconSize={"16px"}
                     disabled={
                       contactMode == 6 ||
-                      (updateLeadItem && isReAssign == false)
+                      (updateLeadItem && isReAssign == false) ||
+                      leadTemperature == 6
                     }
                   />
                 </div>
@@ -2756,6 +2502,9 @@ const AddNewLead = forwardRef(
               </div>
             </div>
           </Col>
+        </Row>
+
+        <Row gutter={8}>
           <Col span={12}>
             <div
               style={{
@@ -2805,7 +2554,172 @@ const AddNewLead = forwardRef(
               </div>
             </div>
           </Col>
+          <Col span={12}>
+            <div style={{ ...cardStyle, padding: "0" }}>
+              <div
+                style={{
+                  padding: "6px 16px",
+                  background: "#f8fafc",
+                  borderBottom: "1px solid #e2e8f0",
+                  borderRadius: "9px 9px 0 0",
+                  color: "#0f172a",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  textAlign: "center",
+                }}
+              >
+                Score Criteria (Max 100)
+              </div>
+              <div style={{ padding: "4px 16px" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    fontSize: "13px",
+                    borderCollapse: "collapse",
+                    color: "#334155",
+                  }}
+                >
+                  <tbody>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Contact Connected
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +10
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Interested
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Demo Attended
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px dashed #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Budget Available
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +20
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: "6px 0", fontWeight: 500 }}>
+                        Joining Within 30 Days
+                      </td>
+                      <td
+                        align="right"
+                        style={{ fontWeight: 600, color: "#2563eb" }}
+                      >
+                        +30
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style={{
+                          padding: "8px 0",
+                          fontWeight: "700",
+                          color: "#0f172a",
+                        }}
+                      >
+                        Total Score
+                      </td>
+                      <td
+                        align="right"
+                        style={{
+                          padding: "8px 0",
+                          fontWeight: "700",
+                          color: "#0f172a",
+                        }}
+                      >
+                        100
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Col>
         </Row>
+
+        <div
+          style={{
+            position: "sticky",
+            bottom: "0",
+            zIndex: 1000,
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            marginTop: "32px",
+            padding: "16px 24px",
+            background: "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: "16px 16px 0 0",
+            borderTop: "1px solid rgba(226, 232, 240, 0.6)",
+            boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.05)",
+            gap: "12px",
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            transform: showActionBar ? "translateY(0)" : "translateY(-4px)",
+            opacity: showActionBar ? 1 : 0.8,
+            margin: "0 -24px -24px -24px",
+          }}
+        >
+          <Button
+            className="animated-cancel-btn"
+            onClick={() => formReset()}
+            style={{
+              borderRadius: "6px",
+              fontWeight: 500,
+              borderColor: "#cbd5e1",
+              color: "#334155",
+              fontSize: "13px",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="animated-save-btn"
+            onClick={() => handleSubmit("Save Only")}
+            loading={buttonLoading}
+            style={{
+              borderRadius: "6px",
+              fontWeight: 500,
+              border: "1px solid #2563eb",
+              color: "#2563eb",
+              height: "33px",
+              fontSize: "13px",
+            }}
+          >
+            {isReAssign
+              ? "Re-Assign"
+              : updateLeadItem
+                ? "Update Lead"
+                : "Save & Add Another"}
+          </Button>
+        </div>
+
         {/* add course modal */}
         <Modal
           title="Add Course"

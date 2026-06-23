@@ -152,6 +152,7 @@ export default function CommonInputField({
           },
         }}
         onInput={onInput}
+        onWheel={type === "number" ? (e) => e.target.blur() : undefined}
       />
     </div>
   );
