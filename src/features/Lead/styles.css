@@ -426,6 +426,7 @@
 
 .leads_coursemodal_cancelbutton {
   margin-right: 6px !important;
+  font-size: 13px !important;
 }
 
 .leads_coursemodal_cancelbutton:hover {

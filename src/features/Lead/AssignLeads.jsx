@@ -557,7 +557,7 @@ export default function AssignLeads({
   };
 
   useEffect(() => {
-    if ((tabName === "assign_leads" || tabName === "add_lead") && permissions.length >= 1) {
+    if (permissions.length >= 1) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getManualAssignLeadsData(
         filterValuesFromRedux.searchValue,

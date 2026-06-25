@@ -108,6 +108,7 @@
 }
 .ant-btn-variant-solid {
   background: #5b69ca !important;
+  font-size: 13px !important;
 }
 /* Red placeholder when error exists */
 .common_singledatepicker_error .ant-picker-input > input::placeholder {

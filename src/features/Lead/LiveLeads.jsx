@@ -405,7 +405,7 @@ export default function LiveLead({
                 />
               )}
             </Tooltip>
-            <Tooltip placement="bottom" title="Move to Junk">
+            <Tooltip placement="bottom" title="Move to Trash">
               <MdOutlinePlaylistRemove
                 color="#d32f2f"
                 size={20}
@@ -905,7 +905,7 @@ export default function LiveLead({
                               />
                             )}
                           </Tooltip>
-                          <Tooltip placement="bottom" title="Move to Junk">
+                          <Tooltip placement="bottom" title="Move to Trash">
                             <MdOutlinePlaylistRemove
                               color="#d32f2f"
                               size={20}
@@ -1366,7 +1366,7 @@ export default function LiveLead({
           <div className="livelead_junkbutton_container">
             {selectedRows.length >= 1 && (
               <>
-                {/* {permissions.includes("Assign Lead") && (
+                {permissions.includes("Assign Lead") && (
                   <button
                     className="leadmanager_addleadbutton"
                     onClick={() => {
@@ -1376,7 +1376,7 @@ export default function LiveLead({
                   >
                     Assign Lead
                   </button>
-                )} */}
+                )}
 
                 {selectedBucketRef.current === "Trash" ? (
                   <Button
@@ -1394,7 +1394,7 @@ export default function LiveLead({
                       setIsOpenJunkModal(true);
                     }}
                   >
-                    Move to Junk
+                    Move to Trash
                   </Button>
                 )}
               </>
@@ -1734,7 +1734,7 @@ export default function LiveLead({
 
       {/* delete modal */}
       {/* <CommonDeleteModal
-        title="Move to Junk"
+        title="Move to Trash"
         open={isOpenJunkModal}
         onCancel={() => {
           setIsOpenJunkModal(false);
@@ -1745,8 +1745,9 @@ export default function LiveLead({
         onClick={handleMoveToJunk}
       /> */}
       <Modal
-        title="Move to Junk"
+        title="Move to Trash"
         open={isOpenJunkModal}
+        width={"30%"}
         onCancel={() => {
           setIsOpenJunkModal(false);
           setLiveLeadId(null);
@@ -1782,15 +1783,19 @@ export default function LiveLead({
               onClick={handleMoveToJunk}
               style={{ width: "120px" }}
             >
-              Move to Junk
+              Move to Trash
             </Button>
           ),
         ]}
       >
-        <div style={{ marginBottom: "20px" }}>
-          <CommonTextArea
-            label="Comments"
-            required={false}
+        <div style={{ marginBottom: "25px", marginTop: "20px" }}>
+          <CommonSelectField
+            label="Reason"
+            required={true}
+            options={[
+              { id: "Data Incorrect", name: "Data Incorrect" },
+              { id: "Data Re-Entry", name: "Data Re-Entry" },
+            ]}
             onChange={(e) => {
               setJunkComments(e.target.value);
               setJunkCommentsError(addressValidator(e.target.value));

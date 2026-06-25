@@ -640,10 +640,7 @@ export default function LeadManager() {
   };
 
   const refreshAssignLeads = () => {
-    setTabKeys((prev) => ({
-      ...prev,
-      assign_leads: prev.assign_leads + 1,
-    }));
+    setRefreshToggle((prev) => !prev);
   };
 
   const refreshJunkLeads = () => {
