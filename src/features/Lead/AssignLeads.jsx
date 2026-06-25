@@ -514,7 +514,7 @@ export default function AssignLeads({
       // start_date: startDate,
       // end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
-        ? { user_id: [convertAsJson?.user_id] }
+        ? { user_ids: [convertAsJson?.user_id] }
         : {}),
       ...(bucketName ? { bucket: bucketName } : {}),
       page: pageNumber,
