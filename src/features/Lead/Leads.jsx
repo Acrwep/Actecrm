@@ -92,6 +92,7 @@ export default function Leads({
   setBucketCounts,
   leadTypeOptions,
   regionOptions,
+  allUsersList,
   setLeadCountLoading,
   refreshToggle,
   setRefreshToggle,
@@ -249,7 +250,6 @@ export default function Leads({
   const [addCourseLoading, setAddCourseLoading] = useState(false);
   //assign lead
   const [isOpenAssignModal, setIsOpenAssignModal] = useState(false);
-  const [allUsersList, setAllUsersList] = useState([]);
   const [assignId, setAssignId] = useState(null);
   const [assignIdError, setAssignIdError] = useState("");
   const [reEntryNxtFollowUpDate, setReEntryNxtFollowUpDate] = useState(null);
@@ -789,25 +789,25 @@ export default function Leads({
     }
   }, [leadBucketName, loginUserId]);
 
-  useEffect(() => {
-    getUsersData();
-    console.log("pageeeeeeeeeee", pagination);
-  }, []);
+  // useEffect(() => {
+  //   getUsersData();
+  //   console.log("pageeeeeeeeeee", pagination);
+  // }, []);
 
-  const getUsersData = async () => {
-    const payload = {
-      page: 1,
-      limit: 1000,
-    };
-    try {
-      const response = await getUsers(payload);
-      console.log("users response", response);
-      setAllUsersList(response?.data?.data?.data || []);
-    } catch (error) {
-      setAllUsersList([]);
-      console.log("get all users error", error);
-    }
-  };
+  // const getUsersData = async () => {
+  //   const payload = {
+  //     page: 1,
+  //     limit: 1000,
+  //   };
+  //   try {
+  //     const response = await getUsers(payload);
+  //     console.log("users response", response);
+  //     setAllUsersList(response?.data?.data?.data || []);
+  //   } catch (error) {
+  //     setAllUsersList([]);
+  //     console.log("get all users error", error);
+  //   }
+  // };
 
   useEffect(() => {
     if (
@@ -1552,11 +1552,34 @@ export default function Leads({
       ...(leadStatusId && { lead_status_id: leadStatusId }),
       ...(bucket && { bucket: bucket }),
       ...(bucket === "Interested Leads" &&
-        ["super_hot", "hot", "warm", "cold", "not_interested", "dormant", "only_enquiry"].includes(currentAction) && { lead_action: currentAction }),
+        [
+          "super_hot",
+          "hot",
+          "warm",
+          "cold",
+          "not_interested",
+          "dormant",
+          "only_enquiry",
+        ].includes(currentAction) && { lead_action: currentAction }),
       ...(bucket === "Valid Leads" &&
-        ["validated", "junk"].includes(currentAction) && { lead_action: currentAction }),
+        ["validated", "junk"].includes(currentAction) && {
+          lead_action: currentAction,
+        }),
       ...(bucket === "Eligible Leads" &&
-        ["communicated", "not_communicated", "no_response", "data correct but no response", "data_correct_but_no_response"].includes(currentAction) && { lead_action: currentAction === "communicated" ? "communicated" : currentAction === "not_communicated" ? "not communicated" : "data correct but no response" }),
+        [
+          "communicated",
+          "not_communicated",
+          "no_response",
+          "data correct but no response",
+          "data_correct_but_no_response",
+        ].includes(currentAction) && {
+          lead_action:
+            currentAction === "communicated"
+              ? "communicated"
+              : currentAction === "not_communicated"
+                ? "not communicated"
+                : "data correct but no response",
+        }),
       page: pageNumber,
       limit: limit,
     };
@@ -1569,8 +1592,7 @@ export default function Leads({
       const bucket_counts = response?.data?.data?.bucket_counts || {};
       const interested_actions =
         response?.data?.data?.interested_lead_actions || {};
-      const valid_actions =
-        response?.data?.data?.valid_lead_actions || {};
+      const valid_actions = response?.data?.data?.valid_lead_actions || {};
       const eligible_actions =
         response?.data?.data?.eligible_lead_actions || {};
       console.log("leads data", apiData);
@@ -2978,8 +3000,18 @@ export default function Leads({
                 .map((key) => {
                   const count = validLeadActions[key];
                   const displayName =
-                    key === "validated" ? "Validated" : key === "junk" ? "Junk" : key;
+                    key === "validated"
+                      ? "Validated"
+                      : key === "junk"
+                        ? "Junk"
+                        : key;
                   const isActive = leadActionFilter === key;
+                  const validColorMap = {
+                    validated: "#16a34a",
+                    junk: "#dc2626",
+                  };
+                  const baseColor = validColorMap[key] || "#3b82f6";
+
                   return (
                     <div
                       key={key}
@@ -3007,9 +3039,11 @@ export default function Leads({
                       }}
                       className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                       style={{
-                        border: isActive ? "1px solid #3b82f6" : "1px solid #cbd5e1",
-                        backgroundColor: isActive ? "#3b82f6" : "#f8fafc",
-                        color: isActive ? "#fff" : "#475569",
+                        border: `1px solid ${isActive ? baseColor : baseColor + "66"}`,
+                        backgroundColor: isActive
+                          ? baseColor
+                          : baseColor + "15",
+                        color: isActive ? "#fff" : baseColor,
                         minWidth: "max-content",
                       }}
                     >
@@ -3031,10 +3065,23 @@ export default function Leads({
                   const count = eligibleLeadActions[key];
                   let displayName = key;
                   if (key === "communicated") displayName = "Communicated";
-                  else if (key === "not_communicated") displayName = "Not Communicated";
-                  else if (key === "no_response" || key === "data_correct_but_no_response") displayName = "Data Correct But No Response";
-                  
+                  else if (key === "not_communicated")
+                    displayName = "Not Communicated";
+                  else if (
+                    key === "no_response" ||
+                    key === "data_correct_but_no_response"
+                  )
+                    displayName = "Data Correct But No Response";
+
                   const isActive = leadActionFilter === key;
+                  const eligibleColorMap = {
+                    communicated: "#6366f1",
+                    not_communicated: "#f97316",
+                    no_response: "#64748b",
+                    data_correct_but_no_response: "#64748b",
+                  };
+                  const baseColor = eligibleColorMap[key] || "#3b82f6";
+
                   return (
                     <div
                       key={key}
@@ -3062,9 +3109,11 @@ export default function Leads({
                       }}
                       className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                       style={{
-                        border: isActive ? "1px solid #3b82f6" : "1px solid #cbd5e1",
-                        backgroundColor: isActive ? "#3b82f6" : "#f8fafc",
-                        color: isActive ? "#fff" : "#475569",
+                        border: `1px solid ${isActive ? baseColor : baseColor + "66"}`,
+                        backgroundColor: isActive
+                          ? baseColor
+                          : baseColor + "15",
+                        color: isActive ? "#fff" : baseColor,
                         minWidth: "max-content",
                       }}
                     >
@@ -3075,7 +3124,6 @@ export default function Leads({
             </ScrollableTabContainer>
           </div>
         )}
-
 
       <div style={{ marginTop: "20px" }}>
         {(() => {

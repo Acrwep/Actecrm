@@ -30,6 +30,7 @@ import {
   createTechnology,
   getAllAreas,
   getBranches,
+  getBranchManagers,
   getLeadSubCategory,
   getTechnologies,
   getUsersByRole,
@@ -54,6 +55,7 @@ const AddNewLead = forwardRef(
     {
       leadTypeOptions,
       regionOptions,
+      allUsersList,
       allBranchesData,
       updateLeadItem,
       isReAssign = false,
@@ -151,7 +153,7 @@ const AddNewLead = forwardRef(
     const [leadTemperature, setLeadTemperature] = useState(null);
     const [leadTemperatureError, setLeadTemperatureError] = useState(null);
     const [nxtFollowupDate, setNxtFollowupDate] = useState(null);
-    const [nxtFollowupDateError, setNxtFollowupDateError] = useState(null);
+    const [nxtFollowupDateError, setNxtFollowupDateError] = useState("");
     const followUpStatusOptions = [
       { id: 1, name: "Hot Follow Up" },
       { id: 7, name: "Cold Follow Up" },
@@ -168,6 +170,7 @@ const AddNewLead = forwardRef(
     const [regionId, setRegionId] = useState(null);
     const [regionError, setRegionError] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
+    const [defaultBranch, setDefaultBranch] = useState("");
     const [branch, setBranch] = useState("");
     const [branchError, setBranchError] = useState("");
     const batchTrackOptions = [
@@ -212,9 +215,8 @@ const AddNewLead = forwardRef(
     //assign lead
     const [saleUsers, setSaleUsers] = useState([]);
     const [assignExecutiveId, setAssignExecutiveId] = useState("");
-    const [assignExecutiveError, setAssignExecutiveError] = useState("");
-    const [managersList, setManagersList] = useState([]);
-    const [assignedManager, setAssignedManager] = useState(null);
+    const [regionManagerId, setRegionManagerId] = useState(null);
+    const [branchManagerId, setBranchManagerId] = useState(null);
     const [leadOwner, setLeadOwner] = useState("Auto Assigned");
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
@@ -292,9 +294,11 @@ const AddNewLead = forwardRef(
         // getSaleManagers(convertAsJson?.user_id);
       }
       setLeadOwner(convertAsJson?.user_id);
-      getSaleUsers();
+      if (allUsersList.length >= 1) {
+        findUserBranch(null);
+      }
       fetchLeadDetails();
-    }, []);
+    }, [allUsersList]);
 
     const fetchLeadDetails = async () => {
       if (updateLeadItem) {
@@ -321,6 +325,9 @@ const AddNewLead = forwardRef(
         }
         setLeadOwner(updateLeadItem?.user_id);
         setAssignExecutiveId(updateLeadItem?.lead_assigned_to_id);
+        if (isReAssign) {
+          getSaleUsersData();
+        }
         // getSaleManagers(updateLeadItem?.lead_assigned_to_id);
         setName(updateLeadItem.name);
         setEmail(updateLeadItem.email);
@@ -430,46 +437,47 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const getSaleUsers = async () => {
-      const payload = {
-        role: "SALE",
-      };
-      try {
-        const response = await getUsersByRole(payload);
-        console.log("get sale users response", response);
-        setSaleUsers(response?.data?.data?.data || []);
-      } catch (error) {
-        setSaleUsers([]);
-        console.log("get sale users error", error);
+    const findUserBranch = async () => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      const findUser = allUsersList.find(
+        (f) => f.user_id == convertAsJson?.user_id,
+      );
+
+      console.log("findUser", findUser);
+
+      if (findUser) {
+        setBranch(findUser?.branch_id);
+        setDefaultBranch(findUser?.branch_id);
+        getBranchManagersData(findUser?.branch_id);
+        return;
       }
     };
 
-    const getSaleManagers = async (sale_userid) => {
+    const getBranchManagersData = async (branchId) => {
       const payload = {
-        role: "Manager",
+        branch_id: branchId,
       };
-      try {
-        const response = await getUsersByRole(payload);
-        console.log("get managers response", response);
-        const managers_data = response?.data?.data?.data || [];
-        setManagersList(managers_data);
-        if (managers_data.length >= 1) {
-          const matchedManager = managers_data.find(
-            (manager) =>
-              manager.user_id?.substring(0, 3) === sale_userid?.substring(0, 3),
-          );
 
-          console.log("managers_data", managers_data);
-          console.log("Matched Manager:", matchedManager);
-          setAssignedManager(matchedManager ? matchedManager?.user_id : "");
-        } else {
-          setAssignedManager("");
+      try {
+        const response = await getBranchManagers(payload);
+        console.log("get branch managers response", response);
+
+        const branch_data = response?.data?.data[0];
+        console.log("branch_data", branch_data);
+
+        if (branch_data) {
+          setRegionManagerId(branch_data?.regional_manager_id);
+
+          if (branch_data?.regional_manager_id?.startsWith("HUB")) {
+            setBranchManagerId(null);
+          } else {
+            setBranchManagerId(branch_data?.branch_manager_id);
+          }
         }
-        // setSaleUsers(response?.data?.data?.data || []);
       } catch (error) {
-        setManagersList([]);
-        // setSaleUsers([]);
-        console.log("get managers error", error);
+        console.log("get branch managers error", error);
       }
     };
 
@@ -555,6 +563,40 @@ const AddNewLead = forwardRef(
       }
     };
 
+    const getSaleUsersData = async () => {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      const payload = {
+        role: "SALE",
+      };
+
+      try {
+        const response = await getUsersByRole(payload);
+
+        const users = response?.data?.data?.data || [];
+
+        // Get first 3 letters from logged-in user_id
+        const loggedPrefix = convertAsJson?.user_id
+          ?.substring(0, 3)
+          ?.toUpperCase();
+
+        // Filter users whose user_id starts with same 3 letters
+        const filteredUsers = loggedPrefix
+          ? users.filter((item) =>
+              item?.user_id?.toUpperCase()?.startsWith(loggedPrefix),
+            )
+          : users;
+
+        console.log("filtered sale users", filteredUsers);
+
+        setSaleUsers(filteredUsers);
+      } catch (error) {
+        setSaleUsers([]);
+        console.log("get sale users error", error);
+      }
+    };
+
     //onchange functions
     const handleCountry = (e) => {
       const value = e.target.value;
@@ -581,34 +623,6 @@ const AddNewLead = forwardRef(
       setStateId(value);
       if (validationTrigger) {
         setStateError(selectValidator(value));
-      }
-    };
-
-    const getBranchesData = async (regionid) => {
-      const payload = {
-        region_id: regionid,
-      };
-      try {
-        const response = await getBranches(payload);
-        const branch_data = response?.data?.result || [];
-
-        if (branch_data.length >= 1) {
-          if (regionid == 1 || regionid == 2) {
-            const reordered = [
-              ...branch_data.filter((item) => item.name !== "Online"),
-              ...branch_data.filter((item) => item.name === "Online"),
-            ];
-            setBranchOptions(reordered);
-          } else {
-            setBranchOptions([]);
-            setBranch(branch_data[0]?.id);
-          }
-        } else {
-          setBranchOptions([]);
-        }
-      } catch (error) {
-        setBranchOptions([]);
-        console.log("response status error", error);
       }
     };
 
@@ -836,10 +850,9 @@ const AddNewLead = forwardRef(
     }));
 
     const handleSubmit = async (saveType) => {
-      console.log("emailAndMobileValidation", emailAndMobileValidation);
+      console.log(branch, defaultBranch, "checkkk");
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-      console.log("convertAsJson", convertAsJson);
       setValidationTrigger(true);
 
       const nameValidate = nameValidator(name);
@@ -993,6 +1006,7 @@ const AddNewLead = forwardRef(
 
         return;
       }
+      console.log("success");
       // return;
       //-----------------
       setButtonLoading(true);
@@ -1005,7 +1019,6 @@ const AddNewLead = forwardRef(
         ...(updateLeadItem && { lead_id: updateLeadItem.id }),
         user_id: leadOwner,
         assigned_executive_id: assignExecutiveId,
-        assigned_manager_id: null,
         name: name,
         phone_code: mobileCountryCode,
         phone: mobile,
@@ -1069,6 +1082,10 @@ const AddNewLead = forwardRef(
         is_manager: permissions.includes("Add Lead With Existing Mobile Number")
           ? true
           : false,
+        assigned_manager_id: regionManagerId,
+        branch_manager_id: branchManagerId,
+        consigned_id: defaultBranch == branch ? null : leadOwner,
+        assigned_to: defaultBranch == branch ? leadOwner : null,
       };
 
       console.log("add leadd payload", payload);
@@ -1091,6 +1108,8 @@ const AddNewLead = forwardRef(
         }
       } else if (isReAssign) {
         //---------------lead re-assign--------------
+        const isBranchChanged = defaultBranch == branch ? false : true;
+
         const today = new Date();
         const reEntryPayload = {
           lead_ids: [updateLeadItem?.id],
@@ -1104,6 +1123,10 @@ const AddNewLead = forwardRef(
             : null,
           assigned_to: assignExecutiveId,
           updated_by: convertAsJson?.user_id,
+          is_branch_changed: isBranchChanged ? 1 : 0,
+          assigned_manager: isBranchChanged ? regionManagerId : null,
+
+          branch_manager_id: isBranchChanged ? branchManagerId : null,
         };
 
         try {
@@ -1256,6 +1279,7 @@ const AddNewLead = forwardRef(
       );
       setRegionError("");
       setBranch("");
+      setDefaultBranch("");
       setBranchError("");
       setBatchTrack(1);
       setBatchTrackError("");
@@ -2041,6 +2065,7 @@ const AddNewLead = forwardRef(
                             { id: 2, name: "WhatsApp" },
                             { id: 3, name: "SMS" },
                             { id: 4, name: "Email" },
+                            { id: 7, name: "Direct" },
                           ]
                     }
                     onChange={(e) => {
@@ -2267,7 +2292,19 @@ const AddNewLead = forwardRef(
                 flexDirection: "column",
               }}
             >
-              <div style={{ ...cardStyle, flex: 1 }}>
+              <div
+                style={{
+                  ...cardStyle,
+                  ...(updateLeadItem && isReAssign == false
+                    ? {
+                        background: "#eff6ff",
+                        pointerEvents: "none",
+                        opacity: 0.8,
+                      }
+                    : {}),
+                  flex: 1,
+                }}
+              >
                 <SectionHeader title="5. Assignment" />
                 <div style={{ marginBottom: "24px" }}>
                   <CommonSelectField
@@ -2276,6 +2313,10 @@ const AddNewLead = forwardRef(
                     value={branch}
                     onChange={(e) => {
                       setBranch(e.target.value);
+                      setAssignExecutiveId("");
+                      setRegionManagerId("");
+                      setBranchManagerId("");
+                      getBranchManagersData(e.target.value);
                       if (validationTrigger) {
                         setBranchError(selectValidator(e.target.value));
                       }
@@ -2287,35 +2328,37 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={true}
+                    // disabled={true}
                   />
                 </div>
-                <div style={{ marginBottom: "20px" }}>
-                  <CommonSelectField
-                    label="Assigned Executive"
-                    required={false}
-                    value={assignExecutiveId}
-                    onChange={(e) => {
-                      setAssignExecutiveId(e.target.value);
-                      // getSaleManagers(e.target.value);
-                    }}
-                    options={saleUsers}
-                    error={assignExecutiveError}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={
-                      !permissions.includes("Assign Lead") ||
-                      (isReAssign == false && updateLeadItem)
-                    }
-                  />
-                </div>
+                {isReAssign && defaultBranch == branch && (
+                  <div style={{ marginBottom: "20px" }}>
+                    <CommonSelectField
+                      label="Assigned Executive"
+                      required={false}
+                      value={assignExecutiveId}
+                      onChange={(e) => {
+                        setAssignExecutiveId(e.target.value);
+                        // getSaleManagers(e.target.value);
+                      }}
+                      options={saleUsers}
+                      error={""}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      // disabled={
+                      //   !permissions.includes("Assign Lead") ||
+                      //   (isReAssign == false && updateLeadItem)
+                      // }
+                    />
+                  </div>
+                )}
                 <div style={{ marginBottom: "24px" }}>
                   <CommonSelectField
-                    label="Assigned Manager"
+                    label="Region Manager"
                     required={false}
-                    value={assignedManager}
-                    options={managersList}
+                    value={regionManagerId}
+                    options={allUsersList}
                     error={""}
                     height={"35px"}
                     fontSize={"13px"}
@@ -2323,12 +2366,28 @@ const AddNewLead = forwardRef(
                     disabled={true}
                   />
                 </div>
+
+                {!regionManagerId?.startsWith("HUB") && (
+                  <div style={{ marginBottom: "24px" }}>
+                    <CommonSelectField
+                      label="Branch Manager"
+                      required={false}
+                      value={branchManagerId}
+                      options={allUsersList}
+                      error={""}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      disabled={true}
+                    />
+                  </div>
+                )}
                 <div style={{ marginBottom: "0px" }}>
                   <CommonSelectField
                     label="Lead Owner"
                     required={false}
                     value={leadOwner}
-                    options={saleUsers}
+                    options={allUsersList}
                     error={""}
                     height={"35px"}
                     fontSize={"13px"}
@@ -2375,7 +2434,6 @@ const AddNewLead = forwardRef(
                       { id: 8, name: "Interested", color: "#eab308" },
                       { id: 9, name: "Exploring", color: "#3b82f6" },
                       { id: 10, name: "Not Responding", color: "#4b5563" },
-                      { id: 2, name: "Not Interested", color: "#111827" },
                     ]}
                     renderOption={(props, option) => (
                       <li {...props}>

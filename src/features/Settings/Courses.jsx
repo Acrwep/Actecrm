@@ -242,6 +242,12 @@ export default function Courses() {
     console.log("PreviousAndCurrentDate", PreviousAndCurrentDate);
 
     setSelectedDates([PreviousAndCurrentDate[0], PreviousAndCurrentDate[1]]);
+    getCourseData(
+      "",
+      null,
+      PreviousAndCurrentDate[0],
+      PreviousAndCurrentDate[1],
+    );
   }, []);
 
   const handleSearch = (e) => {
@@ -794,7 +800,7 @@ export default function Courses() {
                   label={"Search By Name"}
                   width="100%"
                   height="33px"
-                  labelFontSize="12px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -818,7 +824,7 @@ export default function Courses() {
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
                     padding: searchValue
                       ? "0px 26px 0px 0px"
@@ -832,10 +838,10 @@ export default function Courses() {
 
             <Col span={7}>
               <CommonSelectField
-                height="35px"
+                height="33px"
                 label="Select Region"
                 labelMarginTop="0px"
-                labelFontSize="13px"
+                labelFontSize="11px"
                 options={[
                   {
                     id: 1,

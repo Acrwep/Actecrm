@@ -134,7 +134,7 @@ export default function FollowUpDrawerForm({
         converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       updated_date: formatToBackendIST(new Date()),
     };
-
+    console.log("update followup payload", payload);
     try {
       await updateFollowUp(payload);
       CommonMessage("success", "Updated");
@@ -687,10 +687,6 @@ export default function FollowUpDrawerForm({
               }}
               options={communicationStatusOptions}
               error={communicationStatusError}
-              height={"36px"}
-              fontSize={"13px"}
-              labelFontSize={"13px"}
-              errorFontSize={"10px"}
             />
           </Col>
           <Col span={8}>
@@ -705,6 +701,7 @@ export default function FollowUpDrawerForm({
                       { id: 2, name: "WhatsApp" },
                       { id: 3, name: "SMS" },
                       { id: 4, name: "Email" },
+                      { id: 7, name: "Direct" },
                     ]
               }
               onChange={(e) => {
@@ -722,10 +719,6 @@ export default function FollowUpDrawerForm({
               }}
               value={contactMode}
               error={contactModeError}
-              height={"36px"}
-              fontSize={"13px"}
-              labelFontSize={"13px"}
-              errorFontSize={"10px"}
               disabled={!communicationStatus}
             />
           </Col>
@@ -743,11 +736,6 @@ export default function FollowUpDrawerForm({
                 { id: "Not-Received", name: "Not-Received" },
               ]}
               error={responseStatusError}
-              height={"35px"}
-              fontSize={"13px"}
-              labelFontSize={"12px"}
-              errorFontSize={"9px"}
-              labelMarginTop={"0px"}
               disabled={contactMode == 5 || contactMode == 6}
             />
           </Col>
@@ -796,10 +784,6 @@ export default function FollowUpDrawerForm({
                   </div>
                 </li>
               )}
-              height={"36px"}
-              fontSize={"13px"}
-              labelFontSize={"13px"}
-              labelMarginTop={"0px"}
               error={followupTypeError}
               disabled={contactMode == 5 || contactMode == 6}
             />
@@ -816,7 +800,8 @@ export default function FollowUpDrawerForm({
               leadTemperature={parseInt(leadDetails?.lead_status_id)}
               error={nxtFollowupDateError}
               height={"36px"}
-              labelMarginTop={"1px"}
+              labelFontSize={"12px"}
+              labelMarginTop={"0px"}
               disabled={
                 followupType == null || followupType === "" || followupType == 2
               }
@@ -832,7 +817,8 @@ export default function FollowUpDrawerForm({
               error={""}
               onlyTime={true}
               height={"36px"}
-              labelMarginTop={"1px"}
+              labelFontSize={"12px"}
+              labelMarginTop={"0px"}
               disabled={
                 contactMode == 6 ||
                 followupType == null ||

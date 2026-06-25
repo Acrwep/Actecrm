@@ -23,6 +23,7 @@ const CommonTable = ({
   onPaginationChange,
   summary,
   sticky = { offsetHeader: 64 },
+  getCheckboxProps,
 }) => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,13 +108,14 @@ const CommonTable = ({
     checkBox === "false"
       ? null
       : {
-          selectedRowKeys,
-          onChange: (selectedKeys, selectedRows) => {
-            if (selectedDatas) {
-              selectedDatas(selectedRows);
-            }
-          },
-        };
+        selectedRowKeys,
+        onChange: (selectedKeys, selectedRows) => {
+          if (selectedDatas) {
+            selectedDatas(selectedRows);
+          }
+        },
+        getCheckboxProps: getCheckboxProps,
+      };
 
   const paginationConfig = {
     current: page_number || 1,

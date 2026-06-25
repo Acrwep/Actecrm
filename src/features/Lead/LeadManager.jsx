@@ -15,6 +15,7 @@ import {
   getLeadStatus,
   assignLiveLead,
   getAllBranches,
+  getUsers,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -50,6 +51,7 @@ export default function LeadManager() {
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [editLeadItem, setEditLeadItem] = useState(null);
   const [isReAssignLead, setIsReAssignLead] = useState(false);
+  const [allUsersList, setAllUsersList] = useState([]);
 
   const releaseLead = async (lead_id) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -129,7 +131,7 @@ export default function LeadManager() {
     leads: true,
     live_leads: false,
     junk: false,
-    assign_leads: false,
+    assign_leads: true,
     add_lead: true,
   });
 
@@ -317,7 +319,7 @@ export default function LeadManager() {
       }));
       setLiveLeadCount(countDetails.web_lead_count);
       setJunkLeadCount(countDetails.junk_lead_count);
-      setAssignLeadCount(countDetails.assign_lead_count);
+      // setAssignLeadCount(countDetails.assign_lead_count);
       // dispatch(storeUsersList(response?.data?.data || []));
     } catch (error) {
       console.log("lead count error", error);
@@ -467,6 +469,23 @@ export default function LeadManager() {
     } catch (error) {
       setAllBranchesData([]);
       console.log(error);
+    } finally {
+      getUsersData();
+    }
+  };
+
+  const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data?.data || []);
+    } catch (error) {
+      setAllUsersList([]);
+      console.log("get all users error", error);
     }
   };
 
@@ -804,6 +823,7 @@ export default function LeadManager() {
               setIsReAssignLead(isReAssign);
               handleTabClick("add_lead");
             }}
+            allUsersList={allUsersList}
           />
         </div>
       )}
@@ -881,6 +901,7 @@ export default function LeadManager() {
             liveLeadItem={pickLeadItem}
             updateLeadItem={editLeadItem}
             isReAssign={isReAssignLead}
+            allUsersList={allUsersList}
             callgetLeadsApi={(dontSwitchTab, isCancel) => {
               if (!isCancel) {
                 setPickLeadItem(null);

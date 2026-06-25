@@ -15,18 +15,23 @@ import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { GiCardPickup } from "react-icons/gi";
+import { PiShareFatBold } from "react-icons/pi";
+import { LiaUserClockSolid } from "react-icons/lia";
 import { MdOutlinePlaylistRemove } from "react-icons/md";
-import { MdOutlineRefresh } from "react-icons/md";
+import { MdOutlineRefresh, MdOutlineCheckCircle } from "react-icons/md";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   assignLiveLead,
   getAllDownlineUsers,
   getLeadAndFollowupCount,
+  acknowledgeLead,
   getManualAssignLeads,
   getUsers,
   liveLeadManualAssign,
   moveLiveLeadToJunk,
+  getUsersByRole,
+  leadReEntry,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -62,8 +67,14 @@ export default function AssignLeads({
   const tabName = useSelector((state) => state.leadmanageractivepage);
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
+  const [selectedBucket, setSelectedBucket] = useState("Assigned");
+  const [bucketCounts, setBucketCounts] = useState({
+    assigned: 0,
+    consigned: 0,
+  });
   const [leadData, setLeadData] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
+  const [saleUsers, setSaleUsers] = useState([]);
   //pick lead drawer
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -71,8 +82,12 @@ export default function AssignLeads({
   const [leadId, setLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [isActualLead, setIsActualLead] = useState(false);
+  const [actualLeadItem, setActualLeadItem] = useState(null);
   //move modal
   const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
+  const [isOpenAcknowledgeModal, setIsOpenAcknowledgeModal] = useState(false);
+  const [acknowledgeLeadItem, setAcknowledgeLeadItem] = useState(null);
   //assign lead
   const [isOpenAssignModal, setIsOpenAssignModal] = useState(false);
   const [allUsersList, setAllUsersList] = useState([]);
@@ -94,69 +109,36 @@ export default function AssignLeads({
   });
 
   const formatDuration = (dateString) => {
-    if (import.meta.env.PROD) {
-      const created = new Date(dateString);
-      const now = new Date();
-      const diffMs = now - created;
+    const created = new Date(dateString);
+    const now = new Date();
 
-      if (diffMs < 0) return { text: "00:00", hours: 0 };
+    const diffMs = now - created;
 
-      const totalSeconds = Math.floor(diffMs / 1000);
-      const totalHours = totalSeconds / 3600;
+    if (diffMs < 0) return { text: "00:00", hours: 0 };
 
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const totalHours = totalSeconds / 3600;
 
-      const pad = (n) => String(n).padStart(2, "0");
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-      let text = "";
+    const pad = (n) => String(n).padStart(2, "0");
 
-      if (days === 0) {
-        // HHh:MMm
-        const hh = pad(Math.floor(totalSeconds / 3600));
-        text = `${hh}h:${pad(minutes)}m`;
-      } else {
-        // DDd:HHh:MMm
-        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
-      }
+    let text = "";
 
-      return { text, hours: totalHours };
+    if (days === 0) {
+      const hh = pad(Math.floor(totalSeconds / 3600));
+      text = `${hh}h:${pad(minutes)}m`;
     } else {
-      //dev
-      // Time is coming with a +5h 30m IST offset, so subtract 5h 30m
-      const createdUTC = new Date(dateString);
-      const createdIST = new Date(createdUTC.getTime() - 5.5 * 60 * 60 * 1000);
-
-      const now = new Date();
-      const diffMs = now - createdIST;
-
-      if (diffMs < 0) return { text: "00:00", hours: 0 };
-
-      const totalSeconds = Math.floor(diffMs / 1000);
-      const totalHours = totalSeconds / 3600;
-
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-      const pad = (n) => String(n).padStart(2, "0");
-
-      let text = "";
-
-      if (days === 0) {
-        const hh = pad(Math.floor(totalSeconds / 3600));
-        text = `${hh}h:${pad(minutes)}m`;
-      } else {
-        text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
-      }
-
-      return { text, hours: totalHours };
+      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
     }
+
+    return { text, hours: totalHours };
   };
 
   const columns = [
-    { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
+    // { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Assigned At",
       key: "assigned_date_ist",
@@ -233,8 +215,12 @@ export default function AssignLeads({
       dataIndex: "assigned_to_user",
       width: 130,
       render: (text, record) => {
-        const lead_executive = `${record.assigned_to} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
+        if (text) {
+          const lead_executive = `${record.assigned_to} - ${text}`;
+          return <EllipsisTooltip text={lead_executive} />;
+        } else {
+          return <p>-</p>;
+        }
       },
     },
     {
@@ -350,12 +336,14 @@ export default function AssignLeads({
               <p>Classroom</p>
             </div>
           );
-        } else {
+        } else if (text.includes("Corporate")) {
           return (
             <div className="livelead_corporatetraining_container">
               <p>Corporate</p>
             </div>
           );
+        } else {
+          return <p>-</p>;
         }
       },
     },
@@ -369,41 +357,72 @@ export default function AssignLeads({
         return <EllipsisTooltip text={text} />;
       },
     },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            {permissions.includes("Revert to Live Leads") && (
-              <Tooltip placement="bottom" title="Move to Live Leads">
-                <MdOutlineRefresh
-                  size={20}
-                  color="#5b69ca"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setLeadId(record.id);
-                    setIsOpenMoveModal(true);
-                  }}
-                />
-              </Tooltip>
-            )}
-
-            <Tooltip placement="bottom" title="Pick">
-              <GiCardPickup
-                size={24}
-                color="#5b69ca"
-                className="trainers_action_icons"
-                onClick={() => {
-                  handlePick(record);
-                }}
-              />
-            </Tooltip>
-
-            {/* <Tooltip placement="bottom" title="Move to Junk">
+    ...(selectedBucket === "Assigned"
+      ? [
+          {
+            title: "Action",
+            key: "action",
+            dataIndex: "action",
+            fixed: "right",
+            width: 90,
+            render: (text, record) => {
+              const getLoginUserDetails =
+                localStorage.getItem("loginUserDetails");
+              const convertAsJson = JSON.parse(getLoginUserDetails);
+              return (
+                <div className="trainers_actionbuttonContainer">
+                  {record?.lead_entry_type == 1 ? (
+                    <Tooltip placement="bottom" title="Pick">
+                      <GiCardPickup
+                        size={21}
+                        color="#5b69ca"
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          handlePick(record);
+                        }}
+                      />
+                    </Tooltip>
+                  ) : (
+                    <>
+                      {record.assigned_to == null ? (
+                        <PiShareFatBold
+                          size={19}
+                          color="#f67f07"
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setActualLeadItem(record);
+                            setIsActualLead(true);
+                            setIsOpenAssignModal(true);
+                            getUsersData();
+                          }}
+                        />
+                      ) : (
+                        <>
+                          {record.assigned_to == convertAsJson?.user_id ? (
+                            <Tooltip placement="bottom" title="Acknowledge">
+                              <MdOutlineCheckCircle
+                                size={19}
+                                color="#3c9111"
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  setAcknowledgeLeadItem(record);
+                                  setIsOpenAcknowledgeModal(true);
+                                }}
+                              />
+                            </Tooltip>
+                          ) : (
+                            <Tooltip
+                              placement="bottom"
+                              title="Waiting for Acknowledgement"
+                            >
+                              <LiaUserClockSolid size={19} color="gray" />
+                            </Tooltip>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                  {/* <Tooltip placement="bottom" title="Move to Junk">
               <MdOutlinePlaylistRemove
                 color="#d32f2f"
                 size={20}
@@ -414,10 +433,12 @@ export default function AssignLeads({
                 }}
               />
             </Tooltip> */}
-          </div>
-        );
-      },
-    },
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
@@ -435,9 +456,24 @@ export default function AssignLeads({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
-      getAllDownlineUsersData(convertAsJson?.user_id);
+      // getAllDownlineUsersData(convertAsJson?.user_id);
+      getSaleUsersData();
     }
   }, [permissions]);
+
+  const getSaleUsersData = async () => {
+    const payload = {
+      role: "SALE",
+    };
+    try {
+      const response = await getUsersByRole(payload);
+      console.log("get sale users response", response);
+      setSaleUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSaleUsers([]);
+      console.log("get sale users error", error);
+    }
+  };
 
   const getAllDownlineUsersData = async (user_id) => {
     try {
@@ -448,18 +484,6 @@ export default function AssignLeads({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getManualAssignLeadsData(
-        filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date
-          ? filterValuesFromRedux.start_date
-          : PreviousAndCurrentDate[0],
-        filterValuesFromRedux.end_date
-          ? filterValuesFromRedux.end_date
-          : PreviousAndCurrentDate[1],
-        filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit,
-      );
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -471,6 +495,7 @@ export default function AssignLeads({
     endDate,
     pageNumber,
     limit,
+    bucketName = selectedBucket,
   ) => {
     setLoading(true);
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -491,6 +516,7 @@ export default function AssignLeads({
       ...(!permissions.includes("View All Assigned Leads")
         ? { user_id: convertAsJson?.user_id }
         : {}),
+      ...(bucketName ? { bucket: bucketName } : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -499,6 +525,10 @@ export default function AssignLeads({
       console.log("get manual assign leads response", response);
       const data = response?.data?.data?.data || [];
       const pagination = response?.data?.data?.pagination;
+      setBucketCounts({
+        assigned: response?.data?.data?.assigned || 0,
+        consigned: response?.data?.data?.consigned || 0,
+      });
       setLeadData(data);
       setAssignLeadCount(pagination.total);
       setPagination({
@@ -560,6 +590,39 @@ export default function AssignLeads({
     } else {
       setPickLeadItem(pickedData);
       setIsOpenAddDrawer(true);
+    }
+  };
+
+  const handleAcknowledgeLead = async () => {
+    if (!acknowledgeLeadItem) return;
+    setButtonLoading(true);
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+      const payload = {
+        lead_id: acknowledgeLeadItem.id,
+        acknowledged_by: convertAsJson?.user_id,
+        acknowledged_date: moment().format("YYYY-MM-DD HH:mm:ss"),
+      };
+      await acknowledgeLead(payload);
+      CommonMessage("success", "Lead acknowledged successfully");
+      setIsOpenAcknowledgeModal(false);
+      setAcknowledgeLeadItem(null);
+      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      getManualAssignLeadsData(
+        searchValue,
+        selectedDates[0] ? selectedDates[0] : PreviousAndCurrentDate[0],
+        selectedDates[1] ? selectedDates[1] : PreviousAndCurrentDate[1],
+        pagination.page,
+        pagination.limit,
+      );
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details || "Failed to acknowledge lead",
+      );
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -660,52 +723,97 @@ export default function AssignLeads({
   };
 
   const handleAssignLead = async () => {
-    console.log("selectedRowKeys", selectedRowKeys);
+    console.log("selectedRowKeys", selectedRowKeys, "accc", actualLeadItem);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    const today = new Date();
     const userValidate = selectValidator(assignId);
 
     setAssignIdError(userValidate);
 
     if (userValidate) return;
 
-    setButtonLoading(true);
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    const today = new Date();
+    if (isActualLead) {
+      setButtonLoading(true);
+      const reEntryPayload = {
+        lead_ids: [actualLeadItem?.id],
+        assign_date: formatToBackendIST(today),
+        next_follow_up_date: null,
+        next_followup_time: null,
+        today_followup_date: null,
+        assigned_to: assignId,
+        updated_by: convertAsJson?.user_id,
+        is_branch_changed: null,
+        assigned_manager: null,
+        branch_manager_id: null,
+      };
 
-    const payload = {
-      user_id: assignId,
-      assigned_by: convertAsJson?.id,
-      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
-      is_assigned: true,
-      is_reassigned: false,
-      assigned_date: formatToBackendIST(today),
-    };
-
-    try {
-      await liveLeadManualAssign(payload);
-      CommonMessage("success", "Updated");
-      setTimeout(() => {
+      try {
+        await leadReEntry(reEntryPayload);
+        CommonMessage("success", "Lead Assigned");
+        setTimeout(() => {
+          setTimeout(() => {
+            setButtonLoading(false);
+            setIsOpenAssignModal(false);
+            setAssignId(null);
+            setAssignIdError("");
+            setSelectedRows([]);
+            setSelectedRowKeys([]);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              pagination.page,
+              pagination.limit,
+            );
+          }, 300);
+        }, 300);
+      } catch (error) {
+        console.log("lead create error", error);
         setButtonLoading(false);
-        setIsOpenAssignModal(false);
-        setAssignId(null);
-        setAssignIdError("");
-        setSelectedRows([]);
-        setSelectedRowKeys([]);
-        getManualAssignLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
         );
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
+      }
+    } else {
+      setButtonLoading(true);
+      const payload = {
+        user_id: assignId,
+        assigned_by: convertAsJson?.id,
+        lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+        is_assigned: true,
+        is_reassigned: false,
+        assigned_date: formatToBackendIST(today),
+      };
+
+      try {
+        await liveLeadManualAssign(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          setButtonLoading(false);
+          setIsOpenAssignModal(false);
+          setAssignId(null);
+          setAssignIdError("");
+          setSelectedRows([]);
+          setSelectedRowKeys([]);
+          getManualAssignLeadsData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            pagination.page,
+            pagination.limit,
+          );
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
     }
   };
 
@@ -930,19 +1038,78 @@ export default function AssignLeads({
                   </button>
                 )}
 
-                <Button
+                {/* <Button
                   className="livelead_junkbutton"
                   onClick={() => {
                     setIsOpenJunkModal(true);
                   }}
                 >
                   Move to Junk
-                </Button>
+                </Button> */}
               </>
             )}
           </div>
         </Col>
       </Row>
+
+      <div
+        style={{
+          marginTop: "15px",
+          padding: "0 5px",
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Assigned" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket = selectedBucket === "Assigned" ? "" : "Assigned";
+            setSelectedBucket(newBucket);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              1,
+              pagination.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Assigned" ? "#1890ff" : "#1890ff66"}`,
+            backgroundColor:
+              selectedBucket === "Assigned" ? "#1890ff" : "#1890ff15",
+            color: selectedBucket === "Assigned" ? "#fff" : "#1890ff",
+            minWidth: "max-content",
+          }}
+        >
+          Assigned {`( ${bucketCounts.assigned || 0} )`}
+        </div>
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Consigned" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket = selectedBucket === "Consigned" ? "" : "Consigned";
+            setSelectedBucket(newBucket);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              1,
+              pagination.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Consigned" ? "#ff7a45" : "#ff7a4566"}`,
+            backgroundColor:
+              selectedBucket === "Consigned" ? "#ff7a45" : "#ff7a4515",
+            color: selectedBucket === "Consigned" ? "#fff" : "#ff7a45",
+            minWidth: "max-content",
+          }}
+        >
+          Consigned {`( ${bucketCounts.consigned || 0} )`}
+        </div>
+      </div>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
@@ -951,6 +1118,7 @@ export default function AssignLeads({
           dataSource={leadData}
           dataPerPage={10}
           checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
+          // checkBox={"false"}
           loading={loading}
           size="small"
           className="questionupload_table"
@@ -960,6 +1128,10 @@ export default function AssignLeads({
           limit={pagination.limit} // page size
           page_number={pagination.page} // current page
           totalPageNumber={pagination.total} // total rows
+          getCheckboxProps={(record) => ({
+            disabled: record?.lead_entry_type != 1,
+            style: { display: record?.lead_entry_type == 1 ? "" : "none" },
+          })}
         />
       </div>
 
@@ -1017,6 +1189,65 @@ export default function AssignLeads({
         </div>
       </Modal>
 
+      <Modal
+        open={isOpenAcknowledgeModal}
+        onCancel={() => {
+          setIsOpenAcknowledgeModal(false);
+          setAcknowledgeLeadItem(null);
+        }}
+        footer={false}
+        closable={false}
+        width={420}
+      >
+        <div className="junklead_movemodalContainer">
+          <div className="junklead_movemodal_iconContainer">
+            <MdOutlineCheckCircle size={24} color="#5b69ca" />
+          </div>
+
+          <p className="common_deletemodal_confirmdeletetext">
+            Acknowledge Lead
+          </p>
+
+          <p className="common_deletemodal_text">
+            Are you sure you want to acknowledge this lead?
+          </p>
+
+          <div className="common_deletemodal_footerContainer">
+            <Button
+              className="common_deletemodal_cancelbutton"
+              onClick={() => {
+                setIsOpenAcknowledgeModal(false);
+                setAcknowledgeLeadItem(null);
+              }}
+            >
+              No
+            </Button>
+            {buttonLoading ? (
+              <Button
+                className="common_deletemodal_loading_deletebutton"
+                style={{ backgroundColor: "#5b69ca", borderColor: "#5b69ca" }}
+                type="primary"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                className="common_deletemodal_deletebutton"
+                style={{
+                  backgroundColor: "#5b69ca",
+                  borderColor: "#5b69ca",
+                  color: "#fff",
+                }}
+                onClick={handleAcknowledgeLead}
+                type="primary"
+              >
+                Yes
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
+
       {/* assign lead modal */}
       <Modal
         title="Assign Leads"
@@ -1025,6 +1256,8 @@ export default function AssignLeads({
           setIsOpenAssignModal(false);
           setAssignId(null);
           setAssignIdError("");
+          setActualLeadItem(null);
+          setIsActualLead(false);
         }}
         footer={[
           <Button

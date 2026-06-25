@@ -466,6 +466,35 @@ export const getAllBranches = async (payload) => {
   }
 };
 
+export const getBranchManagers = async (payload) => {
+  try {
+    const response = await api.get("/api/getBranchManagers", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const assignBranchManager = async (payload) => {
+  try {
+    const response = await api.post("/api/assignBranchManager", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateBranchManager = async (payload) => {
+  try {
+    const response = await api.put("/api/updateBranchManager", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBatchTrack = async (payload) => {
   try {
     const response = await api.get("/api/getBatchTrack", { params: payload });
@@ -552,6 +581,15 @@ export const globalFilter = async (value) => {
 export const assignLead = async (payload) => {
   try {
     const response = await api.put("/api/assignLead", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const acknowledgeLead = async (payload) => {
+  try {
+    const response = await api.post("/api/acknowledgeLead", payload);
     return response;
   } catch (error) {
     throw error;

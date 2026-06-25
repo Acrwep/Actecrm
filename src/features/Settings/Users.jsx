@@ -32,6 +32,7 @@ import {
 } from "../Common/Validation";
 import {
   createUser,
+  getBranches,
   getUserDownline,
   getUserPermissions,
   getUsers,
@@ -59,6 +60,7 @@ import TargetMonthPicker from "./TargetMonthPicker";
 import CommonDeviceDetails from "../Common/CommonDeviceDetails";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PrismaZoom from "react-prismazoom";
+import CommonSelectField from "../Common/CommonSelectField";
 
 const { Dragger } = Upload;
 
@@ -93,6 +95,11 @@ export default function Users({
   const [profileImage, setProfileImage] = useState("");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
+  const [regionId, setRegionId] = useState(null);
+  const [regionError, setRegionError] = useState("");
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [branchId, setBranchId] = useState(null);
+  const [branchIdError, setBranchIdError] = useState("");
   const [childUsers, setChildUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [userRolesError, setUserRolesError] = useState("");
@@ -319,6 +326,24 @@ export default function Users({
       },
     },
     {
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
+      width: 110,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Branch",
+      key: "branch_name",
+      dataIndex: "branch_name",
+      width: 130,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
       title: "Last Login At",
       key: "last_login_date",
       dataIndex: "last_login_date",
@@ -350,7 +375,8 @@ export default function Users({
       title: "Action",
       key: "action",
       dataIndex: "action",
-      width: 120,
+      width: 100,
+      fixed: "right",
       hidden: !["Update User", "Delete User"].some((p) =>
         permissions.includes(p),
       ),
@@ -359,7 +385,7 @@ export default function Users({
           <div className="trainers_actionbuttonContainer">
             {permissions.includes("Update User") && (
               <AiOutlineEdit
-                size={20}
+                size={18}
                 className="trainers_action_icons"
                 onClick={() => handleEdit(record)}
               />
@@ -446,6 +472,34 @@ export default function Users({
     }
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+        }
+      } else {
+        console.log("ooooooooooooooooooo");
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const handleProfileImageUpload = (file) => {
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
@@ -475,6 +529,9 @@ export default function Users({
     setConfirmPassword(item.password);
     setProfileImage(item.profile_image || "");
     setMobile(item.phone || "");
+    setRegionId(item?.region_id);
+    getBranchesData(item?.region_id);
+    setBranchId(item?.branch_id);
     const alterUserData = allUsersData.filter((f) => f.id != item.id);
     setAssignUsersData(alterUserData);
 
@@ -536,6 +593,8 @@ export default function Users({
     const userIdValidate = addressValidator(userId);
     const profileNameValidate = selectValidator(profileName);
     const mobileValidate = mobileValidator(mobile, "in");
+    const regionIdValidate = selectValidator(regionId);
+    const branchIdValidate = selectValidator(branchId);
     const passwordValidate = passwordValidator(password);
     const confirmPasswordValidate = confirmPasswordValidator(
       password,
@@ -546,6 +605,8 @@ export default function Users({
     setUserIdError(userIdValidate);
     setProfileNameError(profileNameValidate);
     setMobileError(mobileValidate);
+    setRegionError(regionIdValidate);
+    setBranchIdError(branchIdValidate);
     setPasswordError(passwordValidate);
     setConfirmPasswordError(confirmPasswordValidate);
     setUserRolesError(userRolesValidate);
@@ -554,6 +615,8 @@ export default function Users({
       userIdValidate ||
       profileNameValidate ||
       mobileValidate ||
+      regionIdValidate ||
+      branchIdValidate ||
       passwordValidate ||
       confirmPasswordValidate ||
       userRolesValidate
@@ -624,6 +687,7 @@ export default function Users({
       ...(editUserId && { id: editUserId }),
       user_id: userId,
       user_name: profileName,
+      branch_id: branchId,
       password: password,
       phone: mobile,
       profile_image: profileImage,
@@ -707,6 +771,10 @@ export default function Users({
     setProfileImage("");
     setMobile("");
     setMobileError("");
+    setRegionId(null);
+    setRegionError("");
+    setBranchId(null);
+    setBranchIdError("");
   };
 
   const getUserDownlineData = async () => {
@@ -958,7 +1026,7 @@ export default function Users({
       </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1400 }}
           columns={columns}
           dataSource={usersData}
           dataPerPage={10}
@@ -1079,6 +1147,55 @@ export default function Users({
               }}
               value={mobile}
               error={mobileError}
+            />
+          </Col>
+
+          <Col span={12}>
+            <CommonSelectField
+              label="Region"
+              required={true}
+              options={[
+                {
+                  id: 1,
+                  name: "Chennai",
+                },
+                {
+                  id: 2,
+                  name: "Bangalore",
+                },
+                {
+                  id: 3,
+                  name: "Hub",
+                },
+              ]}
+              onChange={(e) => {
+                const value = e.target.value;
+                setRegionId(value);
+                setBranchId("");
+                getBranchesData(parseInt(value));
+                if (validationTrigger) {
+                  setRegionError(selectValidator(value));
+                }
+              }}
+              value={regionId}
+              error={regionError}
+            />
+          </Col>
+
+          <Col span={12}>
+            <CommonSelectField
+              label="Branch"
+              required={true}
+              options={branchOptions}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                if (validationTrigger) {
+                  setBranchIdError(selectValidator(e.target.value));
+                }
+              }}
+              value={branchId}
+              error={branchIdError}
+              // disabled={regionId == 3}
             />
           </Col>
 

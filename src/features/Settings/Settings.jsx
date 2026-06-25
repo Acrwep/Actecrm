@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import Users from "./Users";
 import PageAccess from "./PageAccess";
+import RegionAndBranches from "./RegionsAndBranches";
 import { useDispatch } from "react-redux";
 import {
   getAllPermissions,
   getGroups,
   getRoles,
-  getTechnologies,
   getUsers,
 } from "../ApiService/action";
 import {
@@ -44,6 +44,17 @@ export default function Settings() {
   const courseData = useSelector((state) => state.settingscourselist);
 
   const [activePage, setActivePage] = useState("users");
+  const [hasVisitedBranches, setHasVisitedBranches] = useState(false);
+  const [hasVisitedCourses, setHasVisitedCourses] = useState(false);
+
+  useEffect(() => {
+    if (activePage === "branches") {
+      setHasVisitedBranches(true);
+    }
+    if (activePage === "courses") {
+      setHasVisitedCourses(true);
+    }
+  }, [activePage]);
   const [usersCount, setUsersCount] = useState(0);
   const [userTableLoading, setUserTableLoading] = useState(true);
   const [groupLoading, setGroupLoading] = useState(true);
@@ -156,27 +167,6 @@ export default function Settings() {
     } finally {
       setTimeout(() => {
         setRoleLoading(false);
-        getCourseData();
-      }, 300);
-    }
-  };
-
-  const getCourseData = async () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    const payload = {
-      name: "",
-      start_date: PreviousAndCurrentDate[0],
-      end_date: PreviousAndCurrentDate[1],
-      region_id: null,
-    };
-    try {
-      const response = await getTechnologies(payload);
-      dispatch(storeSettingsCourseList(response?.data?.data || []));
-    } catch (error) {
-      dispatch(storeSettingsCourseList([]));
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
         getPermissionsData();
       }, 300);
     }
@@ -476,16 +466,16 @@ export default function Settings() {
           >
             {`Users ( ${usersCount} )`}
           </button>
-          {/* <button
-          className={
-            activePage === "addfields"
-              ? "settings_tab_activebutton"
-              : "settings_tab_inactivebutton"
-          }
-          onClick={() => setActivePage("addfields")}
-        >
-          Add fields
-        </button> */}
+          <button
+            className={
+              activePage === "branches"
+                ? "settings_tab_activebutton"
+                : "settings_tab_inactivebutton"
+            }
+            onClick={() => setActivePage("branches")}
+          >
+            Regions & Branches
+          </button>
           <button
             className={
               activePage === "pageaccess"
@@ -504,7 +494,7 @@ export default function Settings() {
             }
             onClick={() => setActivePage("courses")}
           >
-            {`Courses ( ${courseData.length} )`}
+            {`Courses ${courseData.length >= 1 ? `( ${courseData.length} )` : ""}`}
           </button>
         </div>
       </div>
@@ -524,10 +514,20 @@ export default function Settings() {
           roleLoading={roleLoading}
           setRoleLoading={setRoleLoading}
         />
-      ) : activePage === "courses" ? (
-        <Courses />
       ) : (
         ""
+      )}
+
+      {hasVisitedBranches && (
+        <div style={{ display: activePage === "branches" ? "block" : "none" }}>
+          <RegionAndBranches />
+        </div>
+      )}
+
+      {hasVisitedCourses && (
+        <div style={{ display: activePage === "courses" ? "block" : "none" }}>
+          <Courses />
+        </div>
       )}
     </div>
   );
