@@ -1133,7 +1133,7 @@ const AddNewLead = forwardRef(
           await leadReEntry(reEntryPayload);
           CommonMessage("success", "Lead Assigned");
           setTimeout(() => {
-            formReset();
+            formReset(true, true);
           }, 300);
         } catch (error) {
           console.log("lead create error", error);
@@ -1154,7 +1154,7 @@ const AddNewLead = forwardRef(
           await createLead(payload);
           CommonMessage("success", "Lead created");
           setTimeout(() => {
-            formReset(true);
+            formReset(true, defaultBranch == branch ? false : true);
             if (liveLeadItem) {
               handleAssignLiveLead();
             }
@@ -1207,14 +1207,15 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const formReset = (isSuccess = false) => {
+    const formReset = (isSuccess = false, isReAssign = false) => {
       const isCancel = !isSuccess;
       if (updateLeadItem) {
-        callgetLeadsApi(false, isCancel);
+        callgetLeadsApi(false, isCancel, isReAssign);
       } else if (liveLeadItem) {
-        callgetLeadsApi(false, isCancel);
+        callgetLeadsApi(false, isCancel, isReAssign);
       } else if (isSuccess) {
-        callgetLeadsApi(true, isCancel);
+        console.log("form reset", isReAssign);
+        callgetLeadsApi(true, isCancel, isReAssign);
       }
       setValidationTrigger(false);
       setName("");
@@ -1265,7 +1266,11 @@ const AddNewLead = forwardRef(
       setContactModeError("");
       setResponseStatus(null);
       setResponseStatusError("");
-      // setAssignExecutiveId("");
+      setAssignExecutiveId(loginUserId);
+      setBranch("");
+      setDefaultBranch("");
+      setBranchError("");
+      findUserBranch(null);
       // setAssignExecutiveError("");
       setExpectDateJoin(null);
       setRegionId(
@@ -1278,9 +1283,6 @@ const AddNewLead = forwardRef(
               : null,
       );
       setRegionError("");
-      setBranch("");
-      setDefaultBranch("");
-      setBranchError("");
       setBatchTrack(1);
       setBatchTrackError("");
       setComments("");

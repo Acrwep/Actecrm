@@ -25,6 +25,7 @@ import {
   liveLeadManualAssign,
   moveLiveLeadToJunk,
   updateTableColumns,
+  deleteJunkLeads,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -37,7 +38,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import { GiCardPickup } from "react-icons/gi";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { MdOutlinePlaylistRemove } from "react-icons/md";
+import { MdOutlinePlaylistRemove, MdOutlineRefresh } from "react-icons/md";
 import CommonSpinner from "../Common/CommonSpinner";
 import AddLead from "./AddLead";
 import { useDispatch, useSelector } from "react-redux";
@@ -82,6 +83,12 @@ export default function LiveLead({
   const permissions = useSelector((state) => state.userpermissions);
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
+  const [selectedBucket, setSelectedBucket] = useState("Lead");
+  const selectedBucketRef = useRef("Lead");
+  const [bucketCounts, setBucketCounts] = useState({
+    live_leads: 0,
+    trash_leads: 0,
+  });
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
@@ -106,6 +113,8 @@ export default function LiveLead({
   const [liveLeadId, setLiveLeadId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [isOpenMoveModal, setIsOpenMoveModal] = useState(false);
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   //table filter usestates
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   //pagination
@@ -473,6 +482,7 @@ export default function LiveLead({
         datesRef.current[1],
         paginationRef.current.page,
         paginationRef.current.limit,
+        selectedBucketRef.current,
       );
     };
 
@@ -569,11 +579,13 @@ export default function LiveLead({
     endDate,
     pageNumber,
     limit,
+    bucketName = selectedBucketRef.current,
   ) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
     const payload = {
       region_type: convertAsJson?.user_id,
+      ...(bucketName ? { bucket: bucketName } : {}),
       ...(searchvalue && filterTypeRef.current == 1
         ? { phone: searchvalue }
         : searchvalue && filterTypeRef.current == 2
@@ -592,6 +604,11 @@ export default function LiveLead({
       const response = await getLiveLeads(payload);
       console.log("live lead response", response);
       const paginations = response?.data?.data?.pagination;
+
+      setBucketCounts({
+        live_leads: response?.data?.data?.bucket?.live_leads || 0,
+        trash_leads: response?.data?.data?.bucket?.trash_leads || 0,
+      });
 
       setLeadData(response?.data?.data?.data || []);
       const count = response?.data?.data?.lead_count || null;
@@ -707,7 +724,7 @@ export default function LiveLead({
                           ? "#1e90ff"
                           : "#d32f2f"
                       }
-                      style={{ fontSize: "10px" }}
+                      style={{ fontSize: "9px" }}
                     >
                       {text.length > 16 ? (
                         <Tooltip
@@ -720,16 +737,16 @@ export default function LiveLead({
                               backgroundColor: "#fff", // Tooltip background
                               color: "#333", // Tooltip text color
                               fontWeight: 500,
-                              fontSize: "13px",
+                              fontSize: "12px",
                             },
                           }}
                         >
-                          <p style={{ cursor: "pointer", fontSize: "13px" }}>
+                          <p style={{ cursor: "pointer", fontSize: "12px" }}>
                             {text.slice(0, 15) + "..."}
                           </p>
                         </Tooltip>
                       ) : (
-                        <p style={{ fontSize: "13px" }}>{text}</p>
+                        <p style={{ fontSize: "12px" }}>{text}</p>
                       )}
                     </Badge>
                   );
@@ -833,37 +850,74 @@ export default function LiveLead({
                 render: (text, record) => {
                   return (
                     <div className="trainers_actionbuttonContainer">
-                      <Tooltip placement="bottom" title="Pick">
-                        {pickLoadingRow == record.id ? (
-                          <GiCardPickup
-                            size={26}
-                            color="#5b69ca"
-                            className="trainers_action_icons"
-                            style={{ opacity: "0.7" }}
-                          />
-                        ) : (
-                          <GiCardPickup
-                            size={26}
-                            color="#5b69ca"
-                            className="trainers_action_icons"
-                            onClick={() => {
-                              setPickLoadingRow(record.id);
-                              handlePick(record);
-                            }}
-                          />
-                        )}
-                      </Tooltip>
-                      <Tooltip placement="bottom" title="Move to Junk">
-                        <MdOutlinePlaylistRemove
-                          color="#d32f2f"
-                          size={20}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setLiveLeadId(record.id);
-                            setIsOpenJunkModal(true);
-                          }}
-                        />
-                      </Tooltip>
+                      {selectedBucketRef.current === "Trash" ? (
+                        <>
+                          {permissions.includes("Revert to Live Leads") && (
+                            <Tooltip
+                              placement="bottom"
+                              title="Move to Live Leads"
+                            >
+                              <MdOutlineRefresh
+                                size={20}
+                                color="#5b69ca"
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  setLiveLeadId(record.id);
+                                  setIsOpenMoveModal(true);
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+
+                          {permissions.includes("Junk Leads Tab") && (
+                            <Tooltip placement="bottom" title="Delete">
+                              <RiDeleteBinLine
+                                color="#d32f2f"
+                                size={18}
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  setLiveLeadId(record.id);
+                                  setIsOpenDeleteModal(true);
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Tooltip placement="bottom" title="Pick">
+                            {pickLoadingRow == record.id ? (
+                              <GiCardPickup
+                                size={26}
+                                color="#5b69ca"
+                                className="trainers_action_icons"
+                                style={{ opacity: "0.7" }}
+                              />
+                            ) : (
+                              <GiCardPickup
+                                size={26}
+                                color="#5b69ca"
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  setPickLoadingRow(record.id);
+                                  handlePick(record);
+                                }}
+                              />
+                            )}
+                          </Tooltip>
+                          <Tooltip placement="bottom" title="Move to Junk">
+                            <MdOutlinePlaylistRemove
+                              color="#d32f2f"
+                              size={20}
+                              className="trainers_action_icons"
+                              onClick={() => {
+                                setLiveLeadId(record.id);
+                                setIsOpenJunkModal(true);
+                              }}
+                            />
+                          </Tooltip>
+                        </>
+                      )}
                     </div>
                   );
                 },
@@ -1095,6 +1149,74 @@ export default function LiveLead({
     }
   };
 
+  const handleMoveToLiveLead = async () => {
+    setButtonLoading(true);
+    const payload = {
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+      is_junk: false,
+    };
+    try {
+      await moveLiveLeadToJunk(payload);
+      CommonMessage("success", "Restored to Live Leads");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenMoveModal(false);
+        setLiveLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        getLiveLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleDelete = async () => {
+    console.log("Hiiiiiiiiiii");
+
+    setButtonLoading(true);
+    const payload = {
+      lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
+    };
+    try {
+      await deleteJunkLeads(payload);
+      CommonMessage("success", "Deleted Successfully");
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenDeleteModal(false);
+        setLiveLeadId(null);
+        setSelectedRows([]);
+        setSelectedRowKeys([]);
+        getLiveLeadsData(
+          searchValue,
+          selectedDates[0],
+          selectedDates[1],
+          pagination.page,
+          pagination.limit,
+        );
+        refreshJunkLeads();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
   return (
     <div>
       <Row>
@@ -1244,7 +1366,7 @@ export default function LiveLead({
           <div className="livelead_junkbutton_container">
             {selectedRows.length >= 1 && (
               <>
-                {permissions.includes("Assign Lead") && (
+                {/* {permissions.includes("Assign Lead") && (
                   <button
                     className="leadmanager_addleadbutton"
                     onClick={() => {
@@ -1254,16 +1376,27 @@ export default function LiveLead({
                   >
                     Assign Lead
                   </button>
-                )}
+                )} */}
 
-                <Button
-                  className="livelead_junkbutton"
-                  onClick={() => {
-                    setIsOpenJunkModal(true);
-                  }}
-                >
-                  Move to Junk
-                </Button>
+                {selectedBucketRef.current === "Trash" ? (
+                  <Button
+                    className="livelead_junkbutton"
+                    onClick={() => {
+                      setIsOpenDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                ) : (
+                  <Button
+                    className="livelead_junkbutton"
+                    onClick={() => {
+                      setIsOpenJunkModal(true);
+                    }}
+                  >
+                    Move to Junk
+                  </Button>
+                )}
               </>
             )}
             <FiFilter
@@ -1338,6 +1471,69 @@ export default function LiveLead({
         </div>
       </div>
 
+      <div
+        style={{
+          marginTop: "15px",
+          padding: "0 5px",
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Lead" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket = selectedBucket === "Lead" ? "" : "Lead";
+            setSelectedBucket(newBucket);
+            selectedBucketRef.current = newBucket;
+            getLiveLeadsData(
+              searchRef.current,
+              datesRef.current[0],
+              datesRef.current[1],
+              1,
+              paginationRef.current.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Lead" ? "#1890ff" : "#1890ff66"}`,
+            backgroundColor:
+              selectedBucket === "Lead" ? "#1890ff" : "#1890ff15",
+            color: selectedBucket === "Lead" ? "#fff" : "#1890ff",
+            minWidth: "max-content",
+            cursor: "pointer",
+          }}
+        >
+          Live {`( ${bucketCounts.live_leads || 0} )`}
+        </div>
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Trash" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket = selectedBucket === "Trash" ? "" : "Trash";
+            setSelectedBucket(newBucket);
+            selectedBucketRef.current = newBucket;
+            getLiveLeadsData(
+              searchRef.current,
+              datesRef.current[0],
+              datesRef.current[1],
+              1,
+              paginationRef.current.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Trash" ? "#ff4d4f" : "#ff4d4f66"}`,
+            backgroundColor:
+              selectedBucket === "Trash" ? "#ff4d4f" : "#ff4d4f15",
+            color: selectedBucket === "Trash" ? "#fff" : "#ff4d4f",
+            minWidth: "max-content",
+            cursor: "pointer",
+          }}
+        >
+          Trash {`( ${bucketCounts.trash_leads || 0} )`}
+        </div>
+      </div>
+
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           // scroll={{ x: 1300 }}
@@ -1347,12 +1543,27 @@ export default function LiveLead({
               0,
             ),
           }}
-          columns={tableColumns}
+          columns={tableColumns.filter((col) => {
+            if (col.key === "action" && selectedBucketRef.current === "Trash") {
+              const hasRestore = permissions.includes("Revert to Live Leads");
+              const hasDelete = permissions.includes("Junk Leads Tab");
+              if (!hasRestore && !hasDelete) {
+                return false;
+              }
+            }
+            return true;
+          })}
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}
           size="small"
           className="questionupload_table"
+          checkBox={
+            selectedBucketRef.current === "Trash" &&
+            !permissions.includes("Junk Leads Tab")
+              ? "false"
+              : true
+          }
           selectedDatas={handleSelectedRow}
           selectedRowKeys={selectedRowKeys}
           onPaginationChange={handlePaginationChange} // callback to fetch new data
@@ -1646,6 +1857,87 @@ export default function LiveLead({
           />
         </div>
       </Modal>
+
+      <Modal
+        centered
+        open={isOpenMoveModal}
+        footer={null}
+        onCancel={() => {
+          setIsOpenMoveModal(false);
+          setLiveLeadId(null);
+        }}
+        closable={false}
+        width={420}
+      >
+        <div
+          className="junklead_movemodalContainer"
+          style={{ marginTop: "0px" }}
+        >
+          <div className="junklead_movemodal_iconContainer">
+            <MdOutlineRefresh size={24} color="#5b69ca" />
+          </div>
+
+          <p className="common_deletemodal_confirmdeletetext">
+            Move to Live Leads
+          </p>
+
+          <p
+            className="common_deletemodal_text"
+            style={{ textAlign: "center" }}
+          >
+            Are you sure you want to restore this lead to Live Leads?
+          </p>
+
+          <div
+            className="common_deletemodal_footerContainer"
+            style={{ marginBottom: "8px" }}
+          >
+            <Button
+              className="common_deletemodal_cancelbutton"
+              onClick={() => {
+                setIsOpenMoveModal(false);
+                setLiveLeadId(null);
+              }}
+            >
+              No
+            </Button>
+            {buttonLoading ? (
+              <Button
+                className="common_deletemodal_loading_deletebutton"
+                style={{ backgroundColor: "#5b69ca", borderColor: "#5b69ca" }}
+                type="primary"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                className="common_deletemodal_deletebutton"
+                style={{
+                  backgroundColor: "#5b69ca",
+                  borderColor: "#5b69ca",
+                  color: "#fff",
+                }}
+                onClick={handleMoveToLiveLead}
+                type="primary"
+              >
+                Yes
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      <CommonDeleteModal
+        open={isOpenDeleteModal}
+        onCancel={() => {
+          setIsOpenDeleteModal(false);
+          setLiveLeadId(null);
+        }}
+        title="Delete Lead"
+        content="Are you sure want to delete the Lead?"
+        onClick={handleDelete}
+        loading={buttonLoading}
+      />
     </div>
   );
 }

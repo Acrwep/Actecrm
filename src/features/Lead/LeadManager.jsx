@@ -877,6 +877,7 @@ export default function LeadManager() {
         >
           <AssignLeads
             key={tabKeys.assign_leads}
+            refreshToggle={refreshToggle}
             setLiveLeadCount={setLiveLeadCount}
             refreshLeads={refreshLeads}
             refreshLeadFollowUp={refreshLeadFollowUp}
@@ -919,7 +920,8 @@ export default function LeadManager() {
             updateLeadItem={editLeadItem}
             isReAssign={isReAssignLead}
             allUsersList={allUsersList}
-            callgetLeadsApi={(dontSwitchTab, isCancel) => {
+            callgetLeadsApi={(dontSwitchTab, isCancel, isReAssign) => {
+              console.log("callgetLeadsApi", isReAssign);
               if (!isCancel) {
                 setPickLeadItem(null);
                 setEditLeadItem(null);
@@ -929,6 +931,9 @@ export default function LeadManager() {
                 handleTabClick(prevActivePageRef.current);
               }
               refreshLeads();
+              if (isReAssign) {
+                refreshAssignLeads();
+              }
               // refreshLeadFollowUp();
             }}
           />

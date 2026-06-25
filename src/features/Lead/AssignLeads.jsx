@@ -56,6 +56,7 @@ export default function AssignLeads({
   refreshJunkLeads,
   setAssignLeadCount,
   onPickLead,
+  refreshToggle,
 }) {
   const dispatch = useDispatch();
   //permissions
@@ -247,7 +248,7 @@ export default function AssignLeads({
                 ? "#1e90ff"
                 : "#d32f2f"
             }
-            style={{ fontSize: "10px" }}
+            style={{ fontSize: "9px" }}
           >
             {text.length > 16 ? (
               <Tooltip
@@ -260,16 +261,16 @@ export default function AssignLeads({
                     backgroundColor: "#fff", // Tooltip background
                     color: "#333", // Tooltip text color
                     fontWeight: 500,
-                    fontSize: "13px",
+                    fontSize: "12px",
                   },
                 }}
               >
-                <p style={{ cursor: "pointer", fontSize: "13px" }}>
+                <p style={{ cursor: "pointer", fontSize: "12px" }}>
                   {text.slice(0, 15) + "..."}
                 </p>
               </Tooltip>
             ) : (
-              <p style={{ fontSize: "13px" }}>{text}</p>
+              <p style={{ fontSize: "12px" }}>{text}</p>
             )}
           </Badge>
         );
@@ -385,17 +386,19 @@ export default function AssignLeads({
                   ) : (
                     <>
                       {record.assigned_to == null ? (
-                        <PiShareFatBold
-                          size={19}
-                          color="#f67f07"
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setActualLeadItem(record);
-                            setIsActualLead(true);
-                            setIsOpenAssignModal(true);
-                            getUsersData();
-                          }}
-                        />
+                        <Tooltip placement="bottom" title="Assign to Executive">
+                          <PiShareFatBold
+                            size={19}
+                            color="#f67f07"
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setActualLeadItem(record);
+                              setIsActualLead(true);
+                              setIsOpenAssignModal(true);
+                              getUsersData();
+                            }}
+                          />
+                        </Tooltip>
                       ) : (
                         <>
                           {record.assigned_to == convertAsJson?.user_id ? (
@@ -422,17 +425,17 @@ export default function AssignLeads({
                       )}
                     </>
                   )}
-                  {/* <Tooltip placement="bottom" title="Move to Junk">
-              <MdOutlinePlaylistRemove
-                color="#d32f2f"
-                size={20}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setLiveLeadId(record.id);
-                  setIsOpenJunkModal(true);
-                }}
-              />
-            </Tooltip> */}
+                  <Tooltip placement="bottom" title="Move to Junk">
+                    <MdOutlinePlaylistRemove
+                      color="#d32f2f"
+                      size={20}
+                      className="trainers_action_icons"
+                      onClick={() => {
+                        setLiveLeadId(record.id);
+                        setIsOpenJunkModal(true);
+                      }}
+                    />
+                  </Tooltip>
                 </div>
               );
             },
@@ -554,7 +557,7 @@ export default function AssignLeads({
   };
 
   useEffect(() => {
-    if (tabName === "assign_leads" && permissions.length >= 1) {
+    if ((tabName === "assign_leads" || tabName === "add_lead") && permissions.length >= 1) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getManualAssignLeadsData(
         filterValuesFromRedux.searchValue,
@@ -568,7 +571,7 @@ export default function AssignLeads({
         filterValuesFromRedux.pageLimit,
       );
     }
-  }, [tabName]);
+  }, [tabName, refreshToggle]);
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);
@@ -1038,14 +1041,14 @@ export default function AssignLeads({
                   </button>
                 )}
 
-                {/* <Button
+                <Button
                   className="livelead_junkbutton"
                   onClick={() => {
                     setIsOpenJunkModal(true);
                   }}
                 >
                   Move to Junk
-                </Button> */}
+                </Button>
               </>
             )}
           </div>
