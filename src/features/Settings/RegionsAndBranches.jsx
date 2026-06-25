@@ -7,10 +7,11 @@ import {
   getBranchManagers,
   updateBranchManager,
   assignBranchManager,
+  getUsers,
 } from "../ApiService/action";
 
 export default function RegionAndBranches() {
-  const usersData = useSelector((state) => state.userslist);
+  const [allUsersList, setAllUsersList] = useState([]);
 
   const [loading, setLoading] = useState(false);
   //pagination
@@ -32,6 +33,23 @@ export default function RegionAndBranches() {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      getUsersData();
+    }
+  };
+
+  const getUsersData = async () => {
+    const payload = {
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setAllUsersList(response?.data?.data?.data || []);
+    } catch (error) {
+      setAllUsersList([]);
+      console.log("get all users error", error);
     } finally {
       setLoading(false);
     }
@@ -96,7 +114,7 @@ export default function RegionAndBranches() {
             height="33px"
             labelMarginTop="0px"
             labelFontSize="11px"
-            options={usersData}
+            options={allUsersList}
             value={record.regional_manager_id}
             onChange={(e) =>
               handleManagerUpdate(
@@ -122,7 +140,7 @@ export default function RegionAndBranches() {
             height="33px"
             labelMarginTop="0px"
             labelFontSize="11px"
-            options={usersData}
+            options={allUsersList}
             value={record.branch_manager_id}
             onChange={(e) =>
               handleManagerUpdate(
