@@ -160,7 +160,11 @@ export default function LeadManager() {
       mounted.current = true;
       if (location) {
         if (location?.state == "open live_leads") {
-          handleTabClick("live_leads");
+          handleTabClick(
+            permissions.includes("Add Lead Button")
+              ? "live_leads"
+              : "all_leads",
+          );
         }
       }
       // const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -224,14 +228,20 @@ export default function LeadManager() {
   }, [childUsers, permissions, location.state]);
 
   useEffect(() => {
+    const hasAddLeadPerm = permissions.includes("Add Lead Button");
+
     if (location?.state === "open live_leads") {
-      handleTabClick("live_leads");
+      handleTabClick(hasAddLeadPerm ? "live_leads" : "all_leads");
     } else if (location?.state === "open leads") {
       handleTabClick("all_leads");
     } else if (location?.state?.editItem) {
-      setEditLeadItem(location.state.editItem);
-      setIsReAssignLead(location.state.isReAssign);
-      handleTabClick("add_lead");
+      if (hasAddLeadPerm) {
+        setEditLeadItem(location.state.editItem);
+        setIsReAssignLead(location.state.isReAssign);
+        handleTabClick("add_lead");
+      } else {
+        handleTabClick("all_leads");
+      }
     } else {
       if (
         activePage !== "add_lead" &&
@@ -246,10 +256,15 @@ export default function LeadManager() {
           "joinings",
         ].includes(activePage)
       ) {
-        handleTabClick("add_lead");
+        handleTabClick(hasAddLeadPerm ? "add_lead" : "all_leads");
+      } else if (
+        !hasAddLeadPerm &&
+        (activePage === "add_lead" || activePage === "live_leads")
+      ) {
+        handleTabClick("all_leads");
       }
     }
-  }, [location.state]);
+  }, [location.state, permissions]);
 
   const isFetchingLiveLead = useRef(false);
   const liveLeadTimeout = useRef(null);
@@ -662,16 +677,18 @@ export default function LeadManager() {
             </div>
           )}
 
-          <div
-            className={
-              activePage === "live_leads"
-                ? "livelead_tab_activebutton"
-                : "livelead_tab_inactivebutton"
-            }
-            onClick={() => handleTabClick("live_leads")}
-          >
-            <p style={{ margin: 0 }}>{`Live Leads (${liveLeadCount})`}</p>
-          </div>
+          {permissions.includes("Add Lead Button") && (
+            <div
+              className={
+                activePage === "live_leads"
+                  ? "livelead_tab_activebutton"
+                  : "livelead_tab_inactivebutton"
+              }
+              onClick={() => handleTabClick("live_leads")}
+            >
+              <p style={{ margin: 0 }}>{`Live Leads (${liveLeadCount})`}</p>
+            </div>
+          )}
 
           <div
             className={
