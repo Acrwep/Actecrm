@@ -221,6 +221,7 @@ export default function Settings() {
         "Edit Lead Mobile Number",
         "Assign Lead",
         "Lead Re-Entry",
+        "Show Lead Executive Id",
         "Lead Executive Filter",
         "Add Quality Comment",
         "Whatsapp Lead Source",

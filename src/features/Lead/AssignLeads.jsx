@@ -425,17 +425,20 @@ export default function AssignLeads({
                       )}
                     </>
                   )}
-                  <Tooltip placement="bottom" title="Move to Junk">
-                    <MdOutlinePlaylistRemove
-                      color="#d32f2f"
-                      size={20}
-                      className="trainers_action_icons"
-                      onClick={() => {
-                        setLiveLeadId(record.id);
-                        setIsOpenJunkModal(true);
-                      }}
-                    />
-                  </Tooltip>
+
+                  {record?.lead_entry_type == 1 && (
+                    <Tooltip placement="bottom" title="Move to Trash">
+                      <MdOutlinePlaylistRemove
+                        color="#d32f2f"
+                        size={20}
+                        className="trainers_action_icons"
+                        onClick={() => {
+                          setLiveLeadId(record.id);
+                          setIsOpenJunkModal(true);
+                        }}
+                      />
+                    </Tooltip>
+                  )}
                 </div>
               );
             },
@@ -1047,7 +1050,7 @@ export default function AssignLeads({
                     setIsOpenJunkModal(true);
                   }}
                 >
-                  Move to Junk
+                  Move to Trash
                 </Button>
               </>
             )}
@@ -1311,7 +1314,7 @@ export default function AssignLeads({
       </Modal>
 
       <Modal
-        title="Move to Junk"
+        title="Move to Trash"
         open={isOpenJunkModal}
         onCancel={() => {
           setIsOpenJunkModal(false);
@@ -1348,7 +1351,7 @@ export default function AssignLeads({
               onClick={handleMoveToJunk}
               style={{ width: "120px" }}
             >
-              Move to Junk
+              Move to Trash
             </Button>
           ),
         ]}

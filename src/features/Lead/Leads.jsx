@@ -303,21 +303,25 @@ export default function Leads({
       dataIndex: "row_num",
       width: 60,
     },
-    {
-      title: "Lead Executive",
-      key: "lead_assigned_to_name",
-      dataIndex: "lead_assigned_to_name",
-      width: 160,
-      sorter: (a, b) =>
-        (a.lead_assigned_to_name || "").localeCompare(
-          b.lead_assigned_to_name || "",
-        ),
-      sortDirections: ["ascend", "descend"],
-      render: (text, record) => {
-        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
-      },
-    },
+    ...(permissions.includes("Show Lead Executive Id")
+      ? [
+          {
+            title: "Lead Executive",
+            key: "lead_assigned_to_name",
+            dataIndex: "lead_assigned_to_name",
+            width: 160,
+            sorter: (a, b) =>
+              (a.lead_assigned_to_name || "").localeCompare(
+                b.lead_assigned_to_name || "",
+              ),
+            sortDirections: ["ascend", "descend"],
+            render: (text, record) => {
+              const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+              return <EllipsisTooltip text={lead_executive} />;
+            },
+          },
+        ]
+      : []),
     ...(leadBucketName === "Interested Leads"
       ? [
           {
@@ -401,44 +405,6 @@ export default function Leads({
     },
     { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
     {
-      title: "Country",
-      key: "country",
-      dataIndex: "country",
-      width: 120,
-      sorter: (a, b) => (a.country || "").localeCompare(b.country || ""),
-      sortDirections: ["ascend", "descend"],
-      render: (text) => {
-        return (
-          <div>
-            <p> {getCountryName(text)}</p>
-          </div>
-        );
-      },
-    },
-    {
-      title: "State",
-      key: "state",
-      dataIndex: "state",
-      width: 150,
-      sorter: (a, b) => (a.state || "").localeCompare(b.state || ""),
-      sortDirections: ["ascend", "descend"],
-      render: (text, record) => {
-        return (
-          <div>
-            <EllipsisTooltip text={getStateName(record.country, text)} />
-          </div>
-        );
-      },
-    },
-    {
-      title: "City ",
-      key: "area_id",
-      dataIndex: "area_id",
-      width: 120,
-      sorter: (a, b) => (a.area_id || "").localeCompare(b.area_id || ""),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
       title: "Orgin",
       key: "domain_origin",
       dataIndex: "domain_origin",
@@ -474,51 +440,6 @@ export default function Leads({
       width: 160,
       render: (text, record) => {
         return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Secondary Course ",
-      key: "secondary_course",
-      dataIndex: "secondary_course",
-      width: 180,
-    },
-    {
-      title: "Secondary Course Fees",
-      key: "secondary_fees",
-      dataIndex: "secondary_fees",
-      width: 180,
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      sorter: (a, b) =>
-        (a.region_name || "").localeCompare(b.region_name || ""),
-      sortDirections: ["ascend", "descend"],
-      width: 140,
-    },
-    {
-      title: "Branch",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 160,
-      sorter: (a, b) =>
-        (a.branch_name || "").localeCompare(b.branch_name || ""),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Batch Track",
-      key: "batch_track",
-      dataIndex: "batch_track",
-      width: 120,
-    },
-    {
-      title: "Expected Join Date",
-      key: "expected_join_date",
-      dataIndex: "expected_join_date",
-      width: 160,
-      render: (text, record) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     ...(leadBucketName === "Interested Leads"
@@ -751,10 +672,18 @@ export default function Leads({
   ];
 
   const [columns, setColumns] = useState(
-    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
+    nonChangeColumns.map((col) => ({
+      ...col,
+      isChecked:
+        col.key === "domain_origin" || col.key === "lead_type" ? false : true,
+    })),
   );
 
-  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+  const [tableColumns, setTableColumns] = useState(
+    nonChangeColumns.filter(
+      (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+    ),
+  );
 
   useEffect(() => {
     if (columns.length > 0) {
@@ -768,7 +697,11 @@ export default function Leads({
   );
 
   useEffect(() => {
-    setTableColumns(nonChangeColumns);
+    setTableColumns(
+      nonChangeColumns.filter(
+        (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+      ),
+    );
   }, [permissions, isShowEdit]);
 
   useEffect(() => {
@@ -778,10 +711,17 @@ export default function Leads({
       if (currentPage !== prevTargetPageName.current) {
         const updatedColumns = nonChangeColumns.map((col) => ({
           ...col,
-          isChecked: true,
+          isChecked:
+            col.key === "domain_origin" || col.key === "lead_type"
+              ? false
+              : true,
         }));
         setColumns(updatedColumns);
-        setTableColumns(nonChangeColumns);
+        setTableColumns(
+          nonChangeColumns.filter(
+            (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+          ),
+        );
 
         getTableColumnsData(loginUserId, updatedColumns);
         prevTargetPageName.current = currentPage;
@@ -1079,42 +1019,6 @@ export default function Leads({
                       );
                     },
                   };
-            case "country":
-              return {
-                ...col,
-                sorter: (a, b) =>
-                  (a.country || "").localeCompare(b.country || ""),
-                sortDirections: ["ascend", "descend"],
-                render: (text) => {
-                  return (
-                    <div>
-                      <p> {getCountryName(text)}</p>
-                    </div>
-                  );
-                },
-              };
-            case "state":
-              return {
-                ...col,
-                sorter: (a, b) => (a.state || "").localeCompare(b.state || ""),
-                sortDirections: ["ascend", "descend"],
-                render: (text, record) => {
-                  return (
-                    <div>
-                      <EllipsisTooltip
-                        text={getStateName(record.country, text)}
-                      />
-                    </div>
-                  );
-                },
-              };
-            case "area_id":
-              return {
-                ...col,
-                sorter: (a, b) =>
-                  (a.area_id || "").localeCompare(b.area_id || ""),
-                sortDirections: ["ascend", "descend"],
-              };
             case "primary_course":
               return {
                 ...col,
@@ -1135,16 +1039,6 @@ export default function Leads({
                 render: (text, record) => {
                   return <p>{"₹" + text}</p>;
                 },
-              };
-            case "secondary_course":
-              return {
-                ...col,
-                width: 160,
-              };
-            case "secondary_fees":
-              return {
-                ...col,
-                width: 180,
               };
             case "domain_origin":
               return {
@@ -1253,20 +1147,6 @@ export default function Leads({
                       );
                     },
                   };
-            case "region_name":
-              return {
-                ...col,
-                sorter: (a, b) =>
-                  (a.region_name || "").localeCompare(b.region_name || ""),
-                sortDirections: ["ascend", "descend"],
-              };
-            case "branch_name":
-              return {
-                ...col,
-                sorter: (a, b) =>
-                  (a.branch_name || "").localeCompare(b.branch_name || ""),
-                sortDirections: ["ascend", "descend"],
-              };
             case "comments":
               return {
                 ...col,
@@ -1413,13 +1293,6 @@ export default function Leads({
                   );
                 },
               };
-            case "expected_join_date":
-              return {
-                ...col,
-                render: (text) => (
-                  <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
-                ),
-              };
             default:
               return col;
           }
@@ -1428,13 +1301,23 @@ export default function Leads({
       // --- ✅ Process columns ---
       setUpdateTableId(filterPage.id);
 
+      const validColumnKeys = new Set(nonChangeColumns.map((col) => col.key));
+
       const missingColumns = nonChangeColumns.filter(
         (nc) => !filterPage.column_names.some((fc) => fc.key === nc.key),
       );
 
       const completeColumns = [
-        ...filterPage.column_names,
-        ...missingColumns.map((col) => ({ ...col, isChecked: true })),
+        ...filterPage.column_names.filter((col) =>
+          validColumnKeys.has(col.key),
+        ),
+        ...missingColumns.map((col) => ({
+          ...col,
+          isChecked:
+            col.key === "domain_origin" || col.key === "lead_type"
+              ? false
+              : true,
+        })),
       ];
 
       const filteredColumns = completeColumns.filter((col) => {

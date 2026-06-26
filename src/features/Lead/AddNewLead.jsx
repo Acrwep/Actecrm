@@ -171,6 +171,8 @@ const AddNewLead = forwardRef(
     const [regionError, setRegionError] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
     const [defaultBranch, setDefaultBranch] = useState("");
+    const [hasSetAssignmentDefaults, setHasSetAssignmentDefaults] =
+      useState(false);
     const [branch, setBranch] = useState("");
     const [branchError, setBranchError] = useState("");
     const batchTrackOptions = [
@@ -261,6 +263,7 @@ const AddNewLead = forwardRef(
     // }, [updateLeadItem, isPreviousJunk]);
 
     useEffect(() => {
+      console.log("JIiiiiiiiiiiiiiiiiiii");
       const countries = Country.getAllCountries();
       const updateCountries = countries.map((c) => {
         return { ...c, id: c.isoCode };
@@ -280,25 +283,75 @@ const AddNewLead = forwardRef(
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLogInUserId(convertAsJson?.user_id);
       setAssignExecutiveId(convertAsJson?.user_id);
-      if (!updateLeadItem) {
-        setRegionId(
-          convertAsJson?.user_id?.startsWith("CHN")
-            ? 1
-            : convertAsJson?.user_id?.startsWith("BNG")
-              ? 2
-              : convertAsJson?.user_id?.startsWith("HUB") ||
-                  convertAsJson?.user_id?.startsWith("DEV")
-                ? 3
-                : null,
-        );
-        // getSaleManagers(convertAsJson?.user_id);
-      }
-      setLeadOwner(convertAsJson?.user_id);
-      if (allUsersList.length >= 1) {
-        findUserBranch(null);
+
+      if (updateLeadItem || liveLeadItem) {
+        if (!updateLeadItem) {
+          setRegionId(
+            convertAsJson?.user_id?.startsWith("CHN")
+              ? 1
+              : convertAsJson?.user_id?.startsWith("BNG")
+                ? 2
+                : convertAsJson?.user_id?.startsWith("HUB") ||
+                    convertAsJson?.user_id?.startsWith("DEV")
+                  ? 3
+                  : null,
+          );
+        }
+        setLeadOwner(convertAsJson?.user_id);
+        if (allUsersList.length >= 1) {
+          findUserBranch(null);
+        }
       }
       fetchLeadDetails();
     }, [allUsersList]);
+
+    useEffect(() => {
+      if (!updateLeadItem && !liveLeadItem && !hasSetAssignmentDefaults) {
+        if (
+          name ||
+          email ||
+          mobile ||
+          whatsApp ||
+          leadSource ||
+          primaryCourse ||
+          branch
+        ) {
+          const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+          const convertAsJson = JSON.parse(getLoginUserDetails);
+
+          setAssignExecutiveId(convertAsJson?.user_id);
+          setLeadOwner(convertAsJson?.user_id);
+          setRegionId(
+            convertAsJson?.user_id?.startsWith("CHN")
+              ? 1
+              : convertAsJson?.user_id?.startsWith("BNG")
+                ? 2
+                : convertAsJson?.user_id?.startsWith("HUB") ||
+                    convertAsJson?.user_id?.startsWith("DEV")
+                  ? 3
+                  : null,
+          );
+          setRegionError("");
+          if (!branch && allUsersList.length >= 1) {
+            findUserBranch(null);
+          }
+
+          setHasSetAssignmentDefaults(true);
+        }
+      }
+    }, [
+      name,
+      email,
+      mobile,
+      whatsApp,
+      leadSource,
+      primaryCourse,
+      branch,
+      allUsersList,
+      hasSetAssignmentDefaults,
+      updateLeadItem,
+      liveLeadItem,
+    ]);
 
     const fetchLeadDetails = async () => {
       if (updateLeadItem) {
@@ -459,7 +512,11 @@ const AddNewLead = forwardRef(
       const payload = {
         branch_id: branchId,
       };
-
+      if (!branchId) {
+        setRegionManagerId(null);
+        setBranchManagerId(null);
+        return;
+      }
       try {
         const response = await getBranchManagers(payload);
         console.log("get branch managers response", response);
@@ -872,7 +929,7 @@ const AddNewLead = forwardRef(
           ? ""
           : selectValidator(leadSubSource);
       const regionIdValidate = selectValidator(regionId);
-      // const branchValidate = selectValidator(branch);
+      const branchValidate = selectValidator(branch);
       const batchTrackValidate = selectValidator(batchTrack);
       const contactModeValidate = communicationStatus
         ? selectValidator(contactMode)
@@ -936,7 +993,7 @@ const AddNewLead = forwardRef(
       setFollowUpStatusIdError(followUpStatusIdValidate);
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
-      // setBranchError(branchValidate);
+      setBranchError(branchValidate);
       setBatchTrackError(batchTrackValidate);
 
       if (
@@ -954,6 +1011,7 @@ const AddNewLead = forwardRef(
         followUpStatusIdValidate ||
         nxtFollowupDateValidate ||
         regionIdValidate ||
+        branchValidate ||
         batchTrackValidate
       ) {
         console.log({
@@ -971,6 +1029,7 @@ const AddNewLead = forwardRef(
           followUpStatusIdValidate,
           nxtFollowupDateValidate,
           regionIdValidate,
+          branchValidate,
           batchTrackValidate,
         });
 
@@ -2324,7 +2383,7 @@ const AddNewLead = forwardRef(
                       }
                     }}
                     options={allBranchesData}
-                    error={""}
+                    error={branchError}
                     height={"35px"}
                     fontSize={"13px"}
                     labelFontSize={"12px"}
@@ -2333,6 +2392,35 @@ const AddNewLead = forwardRef(
                     // disabled={true}
                   />
                 </div>
+                {!regionManagerId?.startsWith("HUB") && (
+                  <div style={{ marginBottom: "24px" }}>
+                    <CommonSelectField
+                      label="Branch Manager"
+                      required={false}
+                      value={branchManagerId}
+                      options={allUsersList}
+                      error={""}
+                      height={"35px"}
+                      fontSize={"13px"}
+                      labelFontSize={"12px"}
+                      disabled={true}
+                    />
+                  </div>
+                )}
+                <div style={{ marginBottom: "24px" }}>
+                  <CommonSelectField
+                    label="Region Manager"
+                    required={false}
+                    value={regionManagerId}
+                    options={allUsersList}
+                    error={""}
+                    height={"35px"}
+                    fontSize={"13px"}
+                    labelFontSize={"12px"}
+                    disabled={true}
+                  />
+                </div>
+
                 {isReAssign && defaultBranch == branch && (
                   <div style={{ marginBottom: "20px" }}>
                     <CommonSelectField
@@ -2355,35 +2443,7 @@ const AddNewLead = forwardRef(
                     />
                   </div>
                 )}
-                <div style={{ marginBottom: "24px" }}>
-                  <CommonSelectField
-                    label="Region Manager"
-                    required={false}
-                    value={regionManagerId}
-                    options={allUsersList}
-                    error={""}
-                    height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
-                    disabled={true}
-                  />
-                </div>
 
-                {!regionManagerId?.startsWith("HUB") && (
-                  <div style={{ marginBottom: "24px" }}>
-                    <CommonSelectField
-                      label="Branch Manager"
-                      required={false}
-                      value={branchManagerId}
-                      options={allUsersList}
-                      error={""}
-                      height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
-                      disabled={true}
-                    />
-                  </div>
-                )}
                 <div style={{ marginBottom: "0px" }}>
                   <CommonSelectField
                     label="Lead Owner"
