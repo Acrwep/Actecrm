@@ -211,6 +211,15 @@ export default function AssignLeads({
       },
     },
     {
+      title: "Assigned Branch",
+      key: "assigned_branch_name",
+      dataIndex: "assigned_branch_name",
+      width: 130,
+      render: (text, record) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
       title: "Assign To",
       key: "assigned_to_user",
       dataIndex: "assigned_to_user",
@@ -1119,7 +1128,7 @@ export default function AssignLeads({
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1300 }}
+          scroll={{ x: 1450 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}

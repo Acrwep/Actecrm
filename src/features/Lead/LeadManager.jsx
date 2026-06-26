@@ -479,8 +479,32 @@ export default function LeadManager() {
   const getAllBranchesData = async () => {
     try {
       const response = await getAllBranches();
-      console.log("all branches response", response);
-      setAllBranchesData(response?.data?.result || []);
+
+      const branchData = response?.data?.result || [];
+
+      // Custom order
+      const branchOrder = [
+        "BDC",
+        "Velachery",
+        "Anna Nagar",
+        "OMR",
+        "Porur",
+        "Thambaram",
+        "Electronic city",
+        "BTM Layout",
+        "Rajaji Nagar",
+        "Marathahalli",
+        "Maraimalai Nagar",
+        "Hebbal",
+      ];
+
+      const sortedBranches = [...branchData].sort(
+        (a, b) => branchOrder.indexOf(a.name) - branchOrder.indexOf(b.name),
+      );
+
+      console.log("all branches response", sortedBranches);
+
+      setAllBranchesData(sortedBranches);
     } catch (error) {
       setAllBranchesData([]);
       console.log(error);

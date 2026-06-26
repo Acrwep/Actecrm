@@ -1145,6 +1145,7 @@ const AddNewLead = forwardRef(
         branch_manager_id: branchManagerId,
         consigned_id: defaultBranch == branch ? null : leadOwner,
         assigned_to: defaultBranch == branch ? leadOwner : null,
+        assigned_branch_id: branch,
       };
 
       console.log("add leadd payload", payload);
@@ -1184,8 +1185,8 @@ const AddNewLead = forwardRef(
           updated_by: convertAsJson?.user_id,
           is_branch_changed: isBranchChanged ? 1 : 0,
           assigned_manager: isBranchChanged ? regionManagerId : null,
-
           branch_manager_id: isBranchChanged ? branchManagerId : null,
+          assigned_branch_id: branch,
         };
 
         try {
