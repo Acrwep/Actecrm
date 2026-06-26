@@ -263,7 +263,6 @@ const AddNewLead = forwardRef(
     // }, [updateLeadItem, isPreviousJunk]);
 
     useEffect(() => {
-      console.log("JIiiiiiiiiiiiiiiiiiii");
       const countries = Country.getAllCountries();
       const updateCountries = countries.map((c) => {
         return { ...c, id: c.isoCode };

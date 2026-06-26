@@ -174,6 +174,13 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           }
         }
 
+        if (
+          column.dataIndex === "google_review" ||
+          column.dataIndex === "linkedin_review"
+        ) {
+          return row[column.dataIndex] ? "Collected" : "Not Collected";
+        }
+
         if (column.dataIndex === "commercial_percentage") {
           return row[column.dataIndex] ? row[column.dataIndex] + "%" : "-";
         }

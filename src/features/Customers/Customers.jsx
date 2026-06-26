@@ -3157,10 +3157,33 @@ export default function Customers() {
                   //   );
                   //   return;
                   // }
-                  const alterColumns = columns.filter(
-                    (f) => f.title != "Action",
-                  );
+                  const googleReview = {
+                    title: "Google Review",
+                    key: "google_review",
+                    dataIndex: "google_review",
+                  };
 
+                  const linkedinReview = {
+                    title: "Linkedin Review",
+                    key: "linkedin_review",
+                    dataIndex: "linkedin_review",
+                  };
+
+                  const alterColumns = columns
+                    // Remove Action and Review Status columns
+                    .filter(
+                      (f) =>
+                        f.title !== "Action" && f.title !== "Review Status",
+                    )
+                    // Insert Google Review & Linkedin Review after TR Number
+                    .flatMap((col) => {
+                      if (col.title === "TR Number") {
+                        return [col, googleReview, linkedinReview];
+                      }
+
+                      return [col];
+                    });
+                  console.log("alterColumns", alterColumns);
                   DownloadTableAsCSV(
                     customersData,
                     alterColumns,

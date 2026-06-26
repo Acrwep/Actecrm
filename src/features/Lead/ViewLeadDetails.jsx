@@ -29,6 +29,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
     try {
       setLoading(true);
       const res = await getLeadById(initialData.id);
+      console.log("particular lead details", res);
       if (res?.data?.data) {
         setLeadData(res.data.data);
       }
@@ -232,9 +233,12 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           <Col span={8}>
             {renderField("Lead Sub Source", leadData.lead_sub_source_name)}
           </Col>
-          <Col span={8}>
-            {renderField("Referral Name", leadData.referral_name)}
-          </Col>
+          <Col span={8}>{renderField("Region", leadData.region_name)}</Col>
+          {leadData?.referral_name && (
+            <Col span={8}>
+              {renderField("Referral Name", leadData.referral_name)}
+            </Col>
+          )}
         </Row>
       </div>
 
@@ -297,12 +301,6 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           title="Assignment"
         />
         <Row gutter={24}>
-          <Col span={8}>
-            {renderField("Assigned Region", leadData.region_name)}
-          </Col>
-          <Col span={8}>
-            {renderField("Assigned Branch", leadData.branch_name)}
-          </Col>
           {leadData?.re_assigned_date && (
             <Col span={8}>
               {renderField(
@@ -312,13 +310,27 @@ export default function ViewLeadDetails({ leadData: initialData }) {
             </Col>
           )}
           <Col span={8}>
+            {renderField("Assigned Branch", leadData.assigned_branch_name)}
+          </Col>
+          {leadData?.assigned_branch_manager && (
+            <Col span={8}>
+              {renderField(
+                "Assigned Manager",
+                `${leadData.branch_manager_id} - ${leadData.assigned_branch_manager}`,
+              )}
+            </Col>
+          )}
+          <Col span={8}>
+            {renderField(
+              "Region Manager",
+              `${leadData.assigned_manager} - ${leadData.assigned_regional_manager}`,
+            )}
+          </Col>
+          <Col span={8}>
             {renderField(
               "Assigned Executive",
               `${leadData.lead_assigned_to_id} - ${leadData.lead_assigned_to_name}`,
             )}
-          </Col>
-          <Col span={8}>
-            {renderField("Assigned Manager", leadData.assigned_manager_name)}
           </Col>
           <Col span={8}>
             {renderField(
