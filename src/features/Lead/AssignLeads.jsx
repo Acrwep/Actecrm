@@ -540,12 +540,15 @@ export default function AssignLeads({
       console.log("get manual assign leads response", response);
       const data = response?.data?.data?.data || [];
       const pagination = response?.data?.data?.pagination;
+
+      const assigned = response?.data?.data?.assigned || 0;
+      const consigned = response?.data?.data?.consigned || 0;
       setBucketCounts({
-        assigned: response?.data?.data?.assigned || 0,
-        consigned: response?.data?.data?.consigned || 0,
+        assigned: assigned,
+        consigned: consigned,
       });
       setLeadData(data);
-      setAssignLeadCount(pagination.total);
+      setAssignLeadCount(assigned + consigned);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,

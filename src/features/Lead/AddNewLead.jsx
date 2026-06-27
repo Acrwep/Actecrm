@@ -453,7 +453,20 @@ const AddNewLead = forwardRef(
           setFollowUpStatusId(1);
         } else {
           setNxtFollowupDate(updateLeadItem.next_follow_up_date);
-          setFollowUpStatusId(updateLeadItem?.lead_action_id);
+          const followupStatusOptions = [
+            { id: 5, name: "Sales Ready", color: "#dc2626" },
+            { id: 1, name: "Highly Interested", color: "#f97316" },
+            { id: 8, name: "Interested", color: "#eab308" },
+            { id: 9, name: "Exploring", color: "#3b82f6" },
+            { id: 10, name: "Not Responding", color: "#4b5563" },
+          ];
+
+          const findLeadActionId = followupStatusOptions.find(
+            (f) =>
+              f.name.toLowerCase() ===
+              updateLeadItem?.lead_action_name?.toLowerCase(),
+          );
+          setFollowUpStatusId(findLeadActionId?.id || null);
         }
         setCommunicationStatus(updateLeadItem?.communication_status);
         setContactMode(updateLeadItem?.contact_mode);
@@ -501,6 +514,7 @@ const AddNewLead = forwardRef(
 
       if (findUser) {
         setBranch(findUser?.branch_id);
+        setBranchError("");
         setDefaultBranch(findUser?.branch_id);
         getBranchManagersData(findUser?.branch_id);
         return;
@@ -928,7 +942,7 @@ const AddNewLead = forwardRef(
           ? ""
           : selectValidator(leadSubSource);
       const regionIdValidate = selectValidator(regionId);
-      const branchValidate = selectValidator(branch);
+      const branchValidate = updateLeadItem ? "" : selectValidator(branch);
       const batchTrackValidate = selectValidator(batchTrack);
       const contactModeValidate = communicationStatus
         ? selectValidator(contactMode)

@@ -114,7 +114,7 @@ export default function FollowUpDrawerForm({
 
     const payload = {
       lead_history_id: leadHistoryId,
-      today_followup_date: addTodayFollowup
+      is_today_followup: addTodayFollowup
         ? formatToBackendIST(new Date())
         : null,
       next_follow_up_date: nxtFollowupDate

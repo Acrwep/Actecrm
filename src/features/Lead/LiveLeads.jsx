@@ -605,9 +605,13 @@ export default function LiveLead({
       console.log("live lead response", response);
       const paginations = response?.data?.data?.pagination;
 
+      const liveLeads = response?.data?.data?.bucket?.live_leads || 0;
+
+      const trashLeads = response?.data?.data?.bucket?.trash_leads || 0;
+
       setBucketCounts({
-        live_leads: response?.data?.data?.bucket?.live_leads || 0,
-        trash_leads: response?.data?.data?.bucket?.trash_leads || 0,
+        live_leads: liveLeads,
+        trash_leads: trashLeads,
       });
 
       setLeadData(response?.data?.data?.data || []);
@@ -615,7 +619,7 @@ export default function LiveLead({
       paginationRef.current = paginations;
 
       setLiveLeadAllCounts(count);
-      setLiveLeadCount(paginations.total);
+      setLiveLeadCount(liveLeads + trashLeads);
       setPagination({
         page: paginations.page,
         limit: paginations.limit,
