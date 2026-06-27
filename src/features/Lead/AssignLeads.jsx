@@ -210,15 +210,19 @@ export default function AssignLeads({
         return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    {
-      title: "Assigned Branch",
-      key: "assigned_branch_name",
-      dataIndex: "assigned_branch_name",
-      width: 130,
-      render: (text, record) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
+    ...(selectedBucket === "Assigned"
+      ? [
+          {
+            title: "Assigned Branch",
+            key: "assigned_branch_name",
+            dataIndex: "assigned_branch_name",
+            width: 130,
+            render: (text, record) => {
+              return <EllipsisTooltip text={text} />;
+            },
+          },
+        ]
+      : []),
     {
       title: "Assign To",
       key: "assigned_to_user",
@@ -304,29 +308,35 @@ export default function AssignLeads({
         return <EllipsisTooltip text={text} />;
       },
     },
-    {
-      title: "Location",
-      key: "location",
-      dataIndex: "location",
-      width: 160,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Origin",
-      key: "domain_origin",
-      dataIndex: "domain_origin",
-      width: 90,
-      hidden: permissions.includes("Show Origin in Live Leads") ? false : true,
-      render: (text) => {
-        return (
-          <EllipsisTooltip
-            text={text ? (text == "Direct" ? "-" : text) : "-"}
-          />
-        );
-      },
-    },
+    ...(selectedBucket === "Assigned"
+      ? [
+          {
+            title: "Location",
+            key: "location",
+            dataIndex: "location",
+            width: 160,
+            render: (text) => {
+              return <EllipsisTooltip text={text} />;
+            },
+          },
+          {
+            title: "Origin",
+            key: "domain_origin",
+            dataIndex: "domain_origin",
+            width: 90,
+            hidden: permissions.includes("Show Origin in Live Leads")
+              ? false
+              : true,
+            render: (text) => {
+              return (
+                <EllipsisTooltip
+                  text={text ? (text == "Direct" ? "-" : text) : "-"}
+                />
+              );
+            },
+          },
+        ]
+      : []),
     {
       title: "Training Mode",
       key: "training",
@@ -1131,7 +1141,7 @@ export default function AssignLeads({
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
-          scroll={{ x: 1450 }}
+          scroll={{ x: 1500 }}
           columns={columns}
           dataSource={leadData}
           dataPerPage={10}

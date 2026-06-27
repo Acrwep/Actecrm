@@ -194,7 +194,7 @@ export default function Login() {
     try {
       const response = await getUserPermissions(payload);
       console.log("user permissions response", response);
-      const permission = response?.data?.data;
+      const permission = response?.data?.data || [];
       if (permission.length >= 1) {
         const updateData = permission.map((item) => {
           return item.permission_name;

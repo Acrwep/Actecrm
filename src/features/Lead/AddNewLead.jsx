@@ -33,6 +33,7 @@ import {
   getBranchManagers,
   getLeadSubCategory,
   getTechnologies,
+  getUsers,
   getUsersByRole,
   leadEmailAndMobileValidator,
   leadReEntry,
@@ -55,7 +56,6 @@ const AddNewLead = forwardRef(
     {
       leadTypeOptions,
       regionOptions,
-      allUsersList,
       allBranchesData,
       updateLeadItem,
       isReAssign = false,
@@ -75,7 +75,6 @@ const AddNewLead = forwardRef(
     //permissions
     const permissions = useSelector((state) => state.userpermissions);
 
-    const [loginUserId, setLogInUserId] = useState("");
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
     const [email, setEmail] = useState("");
@@ -218,8 +217,11 @@ const AddNewLead = forwardRef(
     const [saleUsers, setSaleUsers] = useState([]);
     const [assignExecutiveId, setAssignExecutiveId] = useState("");
     const [regionManagerId, setRegionManagerId] = useState(null);
+    const [regionManagerName, setRegionManagerName] = useState("");
     const [branchManagerId, setBranchManagerId] = useState(null);
-    const [leadOwner, setLeadOwner] = useState("Auto Assigned");
+    const [branchManagerName, setBranchManagerName] = useState("");
+    const [leadOwner, setLeadOwner] = useState("");
+    const [leadOwnerName, setLeadOwnerName] = useState("");
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
 
@@ -280,29 +282,17 @@ const AddNewLead = forwardRef(
       }, 300);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-      setLogInUserId(convertAsJson?.user_id);
       setAssignExecutiveId(convertAsJson?.user_id);
 
       if (updateLeadItem || liveLeadItem) {
         if (!updateLeadItem) {
-          setRegionId(
-            convertAsJson?.user_id?.startsWith("CHN")
-              ? 1
-              : convertAsJson?.user_id?.startsWith("BNG")
-                ? 2
-                : convertAsJson?.user_id?.startsWith("HUB") ||
-                    convertAsJson?.user_id?.startsWith("DEV")
-                  ? 3
-                  : null,
-          );
+          getUserDetailsById();
         }
         setLeadOwner(convertAsJson?.user_id);
-        if (allUsersList.length >= 1) {
-          findUserBranch(null);
-        }
+        setLeadOwnerName(convertAsJson?.user_name);
       }
       fetchLeadDetails();
-    }, [allUsersList]);
+    }, []);
 
     useEffect(() => {
       if (!updateLeadItem && !liveLeadItem && !hasSetAssignmentDefaults) {
@@ -320,21 +310,9 @@ const AddNewLead = forwardRef(
 
           setAssignExecutiveId(convertAsJson?.user_id);
           setLeadOwner(convertAsJson?.user_id);
-          setRegionId(
-            convertAsJson?.user_id?.startsWith("CHN")
-              ? 1
-              : convertAsJson?.user_id?.startsWith("BNG")
-                ? 2
-                : convertAsJson?.user_id?.startsWith("HUB") ||
-                    convertAsJson?.user_id?.startsWith("DEV")
-                  ? 3
-                  : null,
-          );
+          setLeadOwnerName(convertAsJson?.user_name);
+          getUserDetailsById();
           setRegionError("");
-          if (!branch && allUsersList.length >= 1) {
-            findUserBranch(null);
-          }
-
           setHasSetAssignmentDefaults(true);
         }
       }
@@ -346,7 +324,6 @@ const AddNewLead = forwardRef(
       leadSource,
       primaryCourse,
       branch,
-      allUsersList,
       hasSetAssignmentDefaults,
       updateLeadItem,
       liveLeadItem,
@@ -376,6 +353,7 @@ const AddNewLead = forwardRef(
           console.log("response status error", error);
         }
         setLeadOwner(updateLeadItem?.user_id);
+        setLeadOwnerName(updateLeadItem?.user_name);
         setAssignExecutiveId(updateLeadItem?.lead_assigned_to_id);
         if (isReAssign) {
           getSaleUsersData();
@@ -473,6 +451,7 @@ const AddNewLead = forwardRef(
         setCounsel(updateLeadItem?.counsel);
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
+        getBranchManagersData(updateLeadItem?.branch_id);
         // getBranchesData(updateLeadItem.region_id);
         setBranch(updateLeadItem.branch_id);
         setBatchTrack(updateLeadItem.batch_track_id);
@@ -502,22 +481,26 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const findUserBranch = async () => {
+    const getUserDetailsById = async () => {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
-
-      const findUser = allUsersList.find(
-        (f) => f.user_id == convertAsJson?.user_id,
-      );
-
-      console.log("findUser", findUser);
-
-      if (findUser) {
-        setBranch(findUser?.branch_id);
-        setBranchError("");
-        setDefaultBranch(findUser?.branch_id);
-        getBranchManagersData(findUser?.branch_id);
-        return;
+      const payload = {
+        user_id: convertAsJson?.user_id,
+      };
+      try {
+        const response = await getUsers(payload);
+        console.log("get user details response", response);
+        const loginUserFullDetails = response?.data?.data?.data?.[0] ?? null;
+        console.log("loginUserDetails", loginUserFullDetails);
+        if (loginUserFullDetails) {
+          setRegionId(loginUserFullDetails?.region_id);
+          setBranch(loginUserFullDetails?.branch_id);
+          setBranchError("");
+          setDefaultBranch(loginUserFullDetails?.branch_id);
+          getBranchManagersData(loginUserFullDetails?.branch_id);
+        }
+      } catch (error) {
+        console.log("get user by id error", error);
       }
     };
 
@@ -527,7 +510,9 @@ const AddNewLead = forwardRef(
       };
       if (!branchId) {
         setRegionManagerId(null);
+        setRegionManagerName("");
         setBranchManagerId(null);
+        setBranchManagerName("");
         return;
       }
       try {
@@ -539,11 +524,14 @@ const AddNewLead = forwardRef(
 
         if (branch_data) {
           setRegionManagerId(branch_data?.regional_manager_id);
+          setRegionManagerName(branch_data?.regional_manager_name);
 
           if (branch_data?.regional_manager_id?.startsWith("HUB")) {
             setBranchManagerId(null);
+            setBranchManagerName("");
           } else {
             setBranchManagerId(branch_data?.branch_manager_id);
+            setBranchManagerName(branch_data?.branch_manager_name);
           }
         }
       } catch (error) {
@@ -1339,22 +1327,13 @@ const AddNewLead = forwardRef(
       setContactModeError("");
       setResponseStatus(null);
       setResponseStatusError("");
-      setAssignExecutiveId(loginUserId);
+      setAssignExecutiveId(leadOwner);
       setBranch("");
       setDefaultBranch("");
       setBranchError("");
-      findUserBranch(null);
+      getUserDetailsById();
       // setAssignExecutiveError("");
       setExpectDateJoin(null);
-      setRegionId(
-        loginUserId?.startsWith("CHN")
-          ? 1
-          : loginUserId?.startsWith("BNG")
-            ? 2
-            : loginUserId?.startsWith("HUB") || loginUserId?.startsWith("DEV")
-              ? 3
-              : null,
-      );
       setRegionError("");
       setBatchTrack(1);
       setBatchTrackError("");
@@ -2390,7 +2369,9 @@ const AddNewLead = forwardRef(
                       setBranch(e.target.value);
                       setAssignExecutiveId("");
                       setRegionManagerId("");
+                      setRegionManagerName("");
                       setBranchManagerId("");
+                      setBranchManagerName("");
                       getBranchManagersData(e.target.value);
                       if (validationTrigger) {
                         setBranchError(selectValidator(e.target.value));
@@ -2408,11 +2389,14 @@ const AddNewLead = forwardRef(
                 </div>
                 {!regionManagerId?.startsWith("HUB") && (
                   <div style={{ marginBottom: "24px" }}>
-                    <CommonSelectField
+                    <CommonInputField
                       label="Branch Manager"
                       required={false}
-                      value={branchManagerId}
-                      options={allUsersList}
+                      value={
+                        branchManagerId
+                          ? `${branchManagerId} - ${branchManagerName}`
+                          : ""
+                      }
                       error={""}
                       height={"35px"}
                       fontSize={"13px"}
@@ -2422,11 +2406,14 @@ const AddNewLead = forwardRef(
                   </div>
                 )}
                 <div style={{ marginBottom: "24px" }}>
-                  <CommonSelectField
+                  <CommonInputField
                     label="Region Manager"
                     required={false}
-                    value={regionManagerId}
-                    options={allUsersList}
+                    value={
+                      regionManagerId
+                        ? `${regionManagerId} - ${regionManagerName}`
+                        : ""
+                    }
                     error={""}
                     height={"35px"}
                     fontSize={"13px"}
@@ -2459,11 +2446,10 @@ const AddNewLead = forwardRef(
                 )}
 
                 <div style={{ marginBottom: "0px" }}>
-                  <CommonSelectField
+                  <CommonInputField
                     label="Lead Owner"
                     required={false}
-                    value={leadOwner}
-                    options={allUsersList}
+                    value={leadOwner ? `${leadOwner} - ${leadOwnerName}` : ""}
                     error={""}
                     height={"35px"}
                     fontSize={"13px"}

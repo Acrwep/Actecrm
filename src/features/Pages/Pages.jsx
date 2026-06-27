@@ -237,15 +237,15 @@ export default function Pages() {
         >
           <Routes>
             <Route element={<Dashboard />} path="/dashboard" />
-            <Route element={<Navigate to="/leads/lead-manager" />} path="/leads" />
+            <Route
+              element={<Navigate to="/leads/lead-manager" />}
+              path="/leads"
+            />
             <Route
               element={<Navigate to="/leads/lead-manager" />}
               path="/leads/add-lead"
             />
-            <Route
-              element={<LeadManager />}
-              path="/leads/lead-manager"
-            />
+            <Route element={<LeadManager />} path="/presales" />
             <Route element={<LeadFollowUp />} path="/lead-followup" />
             <Route element={<BulkSearch />} path="/bulk-search" />
             <Route element={<Customers />} path="/customers" />

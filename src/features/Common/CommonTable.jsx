@@ -108,14 +108,14 @@ const CommonTable = ({
     checkBox === "false"
       ? null
       : {
-        selectedRowKeys,
-        onChange: (selectedKeys, selectedRows) => {
-          if (selectedDatas) {
-            selectedDatas(selectedRows);
-          }
-        },
-        getCheckboxProps: getCheckboxProps,
-      };
+          selectedRowKeys,
+          onChange: (selectedKeys, selectedRows) => {
+            if (selectedDatas) {
+              selectedDatas(selectedRows);
+            }
+          },
+          getCheckboxProps: getCheckboxProps,
+        };
 
   const paginationConfig = {
     current: page_number || 1,

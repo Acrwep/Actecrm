@@ -98,9 +98,11 @@ export default function Leads({
   setRefreshToggle,
   onEditLead,
   activePage,
+  triggerApi,
 }) {
   const dispatch = useDispatch();
   const mounted = useRef(false);
+  const isTriggerApiInitialMount = useRef(true);
   const addLeaduseRef = useRef();
   const scrollRef = useRef();
   const courseOptions = useSelector((state) => state.courselist);
@@ -822,19 +824,21 @@ export default function Leads({
   const prevActivePage = useRef(activePage);
 
   useEffect(() => {
-    if (
-      [
-        "all_leads",
-        "valid_leads",
-        "eligible_leads",
-        "interested_leads",
-        "joinings",
-      ].includes(activePage) &&
-      mounted.current
-    ) {
-      if (prevActivePage.current !== activePage) {
-        prevActivePage.current = activePage;
+    if (!mounted.current) return;
 
+    if (prevActivePage.current !== activePage) {
+      prevActivePage.current = activePage;
+
+      if (
+        [
+          "all_leads",
+          "valid_leads",
+          "eligible_leads",
+          "interested_leads",
+          "joinings",
+        ].includes(activePage)
+      ) {
+        setLoading(true);
         const bucketMapping = {
           all_leads: "all",
           valid_leads: "Valid Leads",
@@ -855,8 +859,6 @@ export default function Leads({
             pageLimit: pagination.limit,
           }),
         );
-        setLeadData([]);
-
         getAllLeadData(
           searchValue,
           selectedDates[0],
@@ -871,7 +873,29 @@ export default function Leads({
         );
       }
     }
-  }, [activePage]);
+  }, [activePage, mounted]);
+
+  useEffect(() => {
+    if (isTriggerApiInitialMount.current) {
+      isTriggerApiInitialMount.current = false;
+      return;
+    }
+    if (mounted.current && triggerApi !== undefined) {
+      setLoading(true);
+      getAllLeadData(
+        searchValue,
+        selectedDates[0],
+        selectedDates[1],
+        allDownliners,
+        leadSourceFilterId,
+        leadStatusId,
+        leadBucketName === "All" ? "" : leadBucketName,
+        pagination.page,
+        pagination.limit,
+        leadActionFilter,
+      );
+    }
+  }, [triggerApi]);
 
   const getTableColumnsData = async (user_id, latestColumns = null) => {
     try {
@@ -4015,7 +4039,7 @@ export default function Leads({
           <CommonSelectField
             label="Lead Executive"
             required={true}
-            options={allUsersList}
+            options={[]}
             onChange={(e) => {
               setAssignId(e.target.value);
               setAssignIdError(selectValidator(e.target.value));

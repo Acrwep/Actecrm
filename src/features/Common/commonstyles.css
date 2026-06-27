@@ -625,3 +625,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Fix double horizontal scrollbar in antd tables with sticky enabled */
+.ant-table-sticky-scroll {
+  display: none !important;
+}

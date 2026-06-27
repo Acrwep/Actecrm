@@ -40,9 +40,9 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Lead Manager",
+      title: "Pre Sales",
       icon: <PiHandCoins size={17} />,
-      path: "leads/lead-manager",
+      path: "presales",
     },
     3: {
       title: "Customers",
@@ -103,9 +103,9 @@ export default function SideMenu() {
       path: "dashboard",
     },
     2: {
-      title: "Lead Manager",
+      title: "Pre Sales",
       icon: <PiHandCoins size={17} />,
-      path: "leads/lead-manager",
+      path: "presales",
     },
     3: {
       title: "Customers",
@@ -210,10 +210,11 @@ export default function SideMenu() {
 
       const firstPayload = {
         user_id: convertAsJson?.user_id,
+        include_profile_image: true,
       };
       const loginUserResponse = await getUsers(firstPayload);
       console.log("loginUserResponse", loginUserResponse);
-      const loginUserData = loginUserResponse?.data?.data?.data[0] || null;
+      const loginUserData = loginUserResponse?.data?.data?.data?.[0] || null;
       dispatch(storeloginUserProfileBase64(loginUserData?.profile_image));
       // Second API
       const downlineResponse = await getUserDownline(convertAsJson?.user_id);

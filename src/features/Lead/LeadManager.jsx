@@ -342,8 +342,8 @@ export default function LeadManager() {
     } finally {
       setTimeout(() => {
         // setUserTableLoading(false);
-        getLeadTypeData();
-      }, 300);
+        getRegionData();
+      }, 150);
     }
   };
 
@@ -372,6 +372,57 @@ export default function LeadManager() {
       console.log("live lead count error", error);
     } finally {
       isFetchingLiveLead.current = false;
+    }
+  };
+
+  const getRegionData = async () => {
+    try {
+      const response = await getRegions();
+      setRegionOptions(response?.data?.data || []);
+    } catch (error) {
+      setRegionOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setTimeout(() => {
+        getAllBranchesData();
+      }, 300);
+    }
+  };
+
+  const getAllBranchesData = async () => {
+    try {
+      const response = await getAllBranches();
+
+      const branchData = response?.data?.result || [];
+
+      // Custom order
+      const branchOrder = [
+        "BDC",
+        "Velachery",
+        "Anna Nagar",
+        "OMR",
+        "Porur",
+        "Thambaram",
+        "Electronic city",
+        "BTM Layout",
+        "Rajaji Nagar",
+        "Marathahalli",
+        "Maraimalai Nagar",
+        "Hebbal",
+      ];
+
+      const sortedBranches = [...branchData].sort(
+        (a, b) => branchOrder.indexOf(a.name) - branchOrder.indexOf(b.name),
+      );
+
+      console.log("all branches response", sortedBranches);
+
+      setAllBranchesData(sortedBranches);
+    } catch (error) {
+      setAllBranchesData([]);
+      console.log(error);
+    } finally {
+      getLeadTypeData();
     }
   };
 
@@ -411,19 +462,6 @@ export default function LeadManager() {
     } catch (error) {
       setLeadTypeOptions([]);
       console.log("lead type error", error);
-    } finally {
-      setTimeout(() => {
-        getRegionData();
-      }, 300);
-    }
-  };
-  const getRegionData = async () => {
-    try {
-      const response = await getRegions();
-      setRegionOptions(response?.data?.data || []);
-    } catch (error) {
-      setRegionOptions([]);
-      console.log("response status error", error);
     } finally {
       setTimeout(() => {
         getCourseData();
@@ -471,45 +509,6 @@ export default function LeadManager() {
     } catch (error) {
       setLeadStatusOptions([]);
       console.log("lead status error", error);
-    } finally {
-      getAllBranchesData();
-    }
-  };
-
-  const getAllBranchesData = async () => {
-    try {
-      const response = await getAllBranches();
-
-      const branchData = response?.data?.result || [];
-
-      // Custom order
-      const branchOrder = [
-        "BDC",
-        "Velachery",
-        "Anna Nagar",
-        "OMR",
-        "Porur",
-        "Thambaram",
-        "Electronic city",
-        "BTM Layout",
-        "Rajaji Nagar",
-        "Marathahalli",
-        "Maraimalai Nagar",
-        "Hebbal",
-      ];
-
-      const sortedBranches = [...branchData].sort(
-        (a, b) => branchOrder.indexOf(a.name) - branchOrder.indexOf(b.name),
-      );
-
-      console.log("all branches response", sortedBranches);
-
-      setAllBranchesData(sortedBranches);
-    } catch (error) {
-      setAllBranchesData([]);
-      console.log(error);
-    } finally {
-      getUsersData();
     }
   };
 
@@ -657,10 +656,7 @@ export default function LeadManager() {
   };
 
   const refreshLeads = () => {
-    setTabKeys((prev) => ({
-      ...prev,
-      leads: prev.leads + 1,
-    }));
+    setTriggerApi((prev) => !prev);
   };
 
   const refreshAssignLeads = () => {

@@ -10,56 +10,54 @@ const EllipsisTooltip = ({ text, smallText = false }) => {
     const el = textRef.current;
     if (!el) return;
 
-    // wait for Drawer open animation + layout settle
-    const timer = setTimeout(() => {
+    const checkTruncation = () => {
       setIsTruncated(el.scrollWidth > el.offsetWidth);
-    }, 300);
+    };
 
-    return () => clearTimeout(timer);
+    // check initially
+    checkTruncation();
+
+    // wait for Drawer open animation + layout settle
+    const timer = setTimeout(checkTruncation, 300);
+
+    const observer = new ResizeObserver(() => {
+      checkTruncation();
+    });
+    observer.observe(el);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
   }, [text]);
 
   return (
-    <>
-      {isTruncated ? (
-        <Tooltip
-          title={text}
-          placement="bottom"
-          getPopupContainer={() => document.body}
-          color="#fff"
-          styles={{
-            body: {
-              backgroundColor: "#fff",
-              color: "#333",
-              fontWeight: 500,
-              fontSize: "13px",
-            },
-          }}
-        >
-          <span
-            ref={textRef}
-            className={
-              smallText == true
-                ? "ellipsistooltip_smalltext"
-                : "lead-ellipsis-text"
-            }
-            style={{ cursor: "pointer" }}
-          >
-            {text || "-"}
-          </span>
-        </Tooltip>
-      ) : (
-        <span
-          ref={textRef}
-          className={
-            smallText == true
-              ? "ellipsistooltip_smalltext"
-              : "lead-ellipsis-text"
-          }
-        >
-          {text || "-"}
-        </span>
-      )}
-    </>
+    <Tooltip
+      title={isTruncated ? text : null}
+      placement="bottom"
+      getPopupContainer={() => document.body}
+      color="#fff"
+      styles={{
+        body: {
+          backgroundColor: "#fff",
+          color: "#333",
+          fontWeight: 500,
+          fontSize: "13px",
+        },
+      }}
+    >
+      <span
+        ref={textRef}
+        className={
+          smallText == true
+            ? "ellipsistooltip_smalltext"
+            : "lead-ellipsis-text"
+        }
+        style={isTruncated ? { cursor: "pointer" } : undefined}
+      >
+        {text || "-"}
+      </span>
+    </Tooltip>
   );
 };
 

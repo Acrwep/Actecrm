@@ -431,6 +431,7 @@ export default function Users({
           : {}),
       page: pageNumber,
       limit: limit,
+      include_profile_image: true,
     };
     try {
       const response = await getUsers(payload);
@@ -462,6 +463,7 @@ export default function Users({
     const payload = {
       page: 1,
       limit: 1000,
+      include_profile_image: true,
     };
     try {
       const response = await getUsers(payload);

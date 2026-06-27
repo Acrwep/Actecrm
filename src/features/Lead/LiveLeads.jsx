@@ -1112,6 +1112,9 @@ export default function LiveLead({
 
   const handleMoveToJunk = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const commentsValidate = addressValidator(junkComments);
 
     setJunkCommentsError(commentsValidate);
@@ -1123,6 +1126,7 @@ export default function LiveLead({
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
       is_junk: true,
       reason: junkComments,
+      junk_by: convertAsJson?.user_id,
     };
     try {
       await moveLiveLeadToJunk(payload);
