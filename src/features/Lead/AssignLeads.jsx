@@ -596,7 +596,7 @@ export default function AssignLeads({
         filterValuesFromRedux.pageLimit,
       );
     }
-  }, [tabName, refreshToggle]);
+  }, [refreshToggle]);
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);

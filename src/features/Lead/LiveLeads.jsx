@@ -494,7 +494,7 @@ export default function LiveLead({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       getTableColumnsData(convertAsJson?.user_id);
-      getAllDownlineUsersData(convertAsJson?.user_id);
+      // getAllDownlineUsersData(convertAsJson?.user_id);
       setLoginUserId(convertAsJson?.user_id);
     }, 300);
 

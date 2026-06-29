@@ -938,7 +938,12 @@ export default function LeadManager() {
             isReAssign={isReAssignLead}
             allUsersList={allUsersList}
             callgetLeadsApi={(dontSwitchTab, isCancel, isReAssign) => {
-              console.log("callgetLeadsApi", isReAssign);
+              console.log(
+                "callgetLeadsApi",
+                dontSwitchTab,
+                isCancel,
+                isReAssign,
+              );
               if (!isCancel) {
                 setPickLeadItem(null);
                 setEditLeadItem(null);
@@ -947,7 +952,9 @@ export default function LeadManager() {
               if (!dontSwitchTab) {
                 handleTabClick(prevActivePageRef.current);
               }
-              refreshLeads();
+              if (!isCancel) {
+                refreshLeads();
+              }
               if (isReAssign) {
                 refreshAssignLeads();
               }

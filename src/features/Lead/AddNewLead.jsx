@@ -1331,7 +1331,8 @@ const AddNewLead = forwardRef(
       setBranch("");
       setDefaultBranch("");
       setBranchError("");
-      getUserDetailsById();
+      setHasSetAssignmentDefaults(false);
+      // getUserDetailsById();
       // setAssignExecutiveError("");
       setExpectDateJoin(null);
       setRegionError("");
