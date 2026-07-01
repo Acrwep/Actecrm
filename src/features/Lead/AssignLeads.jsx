@@ -414,7 +414,7 @@ export default function AssignLeads({
                               setActualLeadItem(record);
                               setIsActualLead(true);
                               setIsOpenAssignModal(true);
-                              getUsersData();
+                              getUsersData(record?.assigned_branch_id);
                             }}
                           />
                         </Tooltip>
