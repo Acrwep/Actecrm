@@ -67,6 +67,7 @@ import {
   updateTableColumns,
   leadReEntry,
   getUsersByRole,
+  getLeadSubCategory,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -268,6 +269,9 @@ export default function Leads({
   const [allDownliners, setAllDownliners] = useState([]);
   //lead source filter
   const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
+  const [leadSubSourceOptions, setLeadSubSourceOptions] = useState([]);
+  const [leadSubSourceFilterId, setLeadSubSourceFilterId] = useState(null);
+  const [selectedOrigin, setSelectedOrigin] = useState("");
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -796,6 +800,8 @@ export default function Leads({
         setFilterType(filterValuesFromRedux.filterType);
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
+        setLeadSubSourceFilterId(filterValuesFromRedux?.lead_sub_source);
+        setSelectedOrigin(filterValuesFromRedux?.origin);
         setSelectedUserId(filterValuesFromRedux.user_id);
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
 
@@ -865,7 +871,9 @@ export default function Leads({
           selectedDates[1],
           allDownliners,
           leadSourceFilterId,
+          leadSubSourceFilterId,
           leadStatusId,
+          selectedOrigin,
           targetBucket === "all" ? "" : targetBucket,
           1,
           pagination.limit,
@@ -888,7 +896,9 @@ export default function Leads({
         selectedDates[1],
         allDownliners,
         leadSourceFilterId,
+        leadSubSourceFilterId,
         leadStatusId,
+        selectedOrigin,
         leadBucketName === "All" ? "" : leadBucketName,
         pagination.page,
         pagination.limit,
@@ -1413,7 +1423,9 @@ export default function Leads({
           : PreviousAndCurrentDate[1],
         downliners_ids,
         filterValuesFromRedux.lead_source,
+        filterValuesFromRedux.lead_sub_source,
         filterValuesFromRedux.lead_status_id,
+        filterValuesFromRedux?.origin,
         bucketOverride !== undefined
           ? bucketOverride
           : filterValuesFromRedux.bucket == "all"
@@ -1433,7 +1445,9 @@ export default function Leads({
     endDate,
     downliners,
     leadsource,
+    lead_sub_source,
     leadStatusId,
+    origin,
     bucket,
     pageNumber,
     limit,
@@ -1456,7 +1470,9 @@ export default function Leads({
       end_date: endDate,
       user_ids: downliners,
       ...(leadsource && { lead_type: leadsource }),
+      ...(lead_sub_source && { sub_source_id: lead_sub_source }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
+      ...(origin && { domain: origin }),
       ...(bucket && { bucket: bucket }),
       ...(bucket === "Interested Leads" &&
         [
@@ -1847,7 +1863,9 @@ export default function Leads({
           selectedDates[1],
           allDownliners,
           leadSourceFilterId,
+          leadSubSourceFilterId,
           leadStatusId,
+          selectedOrigin,
           filterValuesFromRedux.bucket,
           pagination.page,
           pagination.limit,
@@ -2024,7 +2042,9 @@ export default function Leads({
         selectedDates[1],
         allDownliners,
         leadSourceFilterId,
+        leadSubSourceFilterId,
         leadStatusId,
+        selectedOrigin,
         filterValuesFromRedux.bucket,
         1,
         pagination.limit,
@@ -2087,7 +2107,9 @@ export default function Leads({
             selectedDates[1],
             allDownliners,
             leadSourceFilterId,
+            leadSubSourceFilterId,
             leadStatusId,
+            selectedOrigin,
             filterValuesFromRedux.bucket,
             pagination.page,
             pagination.limit,
@@ -2121,7 +2143,9 @@ export default function Leads({
       selectedDates[1],
       allDownliners,
       leadSourceFilterId,
+      leadSubSourceFilterId,
       leadStatusId,
+      selectedOrigin,
       filterValuesFromRedux.bucket,
       page,
       limit,
@@ -2160,13 +2184,29 @@ export default function Leads({
         selectedDates[1],
         downliners_ids,
         leadSourceFilterId,
+        leadSubSourceFilterId,
         leadStatusId,
+        selectedOrigin,
         filterValuesFromRedux.bucket,
         1,
         pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getLeadSubSourceData = async (lead_source_id) => {
+    const payload = {
+      category_id: lead_source_id,
+    };
+    try {
+      const response = await getLeadSubCategory(payload);
+      const sub_source_data = response?.data?.data || [];
+      setLeadSubSourceOptions(sub_source_data);
+    } catch (error) {
+      setLeadSubSourceOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -2291,7 +2331,9 @@ export default function Leads({
                             selectedDates[1],
                             allDownliners,
                             leadSourceFilterId,
+                            leadSubSourceFilterId,
                             leadStatusId,
+                            selectedOrigin,
                             filterValuesFromRedux.bucket,
                             1,
                             pagination.limit,
@@ -2355,7 +2397,9 @@ export default function Leads({
                                 selectedDates[1],
                                 allDownliners,
                                 leadSourceFilterId,
+                                leadSubSourceFilterId,
                                 leadStatusId,
+                                selectedOrigin,
                                 filterValuesFromRedux.bucket,
                                 1,
                                 pagination.limit,
@@ -2491,7 +2535,9 @@ export default function Leads({
                     dates[1],
                     allDownliners,
                     leadSourceFilterId,
+                    leadSubSourceFilterId,
                     leadStatusId,
+                    selectedOrigin,
                     filterValuesFromRedux.bucket,
                     1,
                     pagination.limit,
@@ -2540,7 +2586,7 @@ export default function Leads({
                         Advanced Filters
                       </span>
                       <Badge
-                        count={2}
+                        count={leadSubSourceFilterId == 3 ? 4 : 3}
                         style={{
                           backgroundColor: "#3b82f6",
                           boxShadow: "0 0 0 2px #f8fafc",
@@ -2566,30 +2612,156 @@ export default function Leads({
                           labelFontSize="12px"
                           options={leadTypeOptions}
                           onChange={(e) => {
-                            setLeadSourceFilterId(e.target.value);
+                            const value = e.target.value;
+                            setLeadSourceFilterId(value);
+                            setLeadSubSourceFilterId(null);
+                            setSelectedOrigin(null);
                             dispatch(
                               storeLeadFilterValues({
                                 lead_source: e.target.value,
+                                lead_sub_source: null,
+                                origin: null,
                                 pageNumber: 1,
                                 pageLimit: pagination.limit,
                               }),
                             );
                             getAllLeadData(
-                              null,
+                              searchValue,
                               selectedDates[0],
                               selectedDates[1],
                               allDownliners,
                               e.target.value,
+                              null,
                               leadStatusId,
+                              null,
                               filterValuesFromRedux.bucket,
                               1,
                               pagination.limit,
                             );
+                            if (value == 2 || value == 3 || value == 6) {
+                              setLeadSubSourceOptions([]);
+                              setLeadSubSourceFilterId(null);
+                            } else if (value) {
+                              getLeadSubSourceData(value);
+                            }
                           }}
                           value={leadSourceFilterId}
                           disableClearable={false}
                         />{" "}
                       </div>
+
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Select Lead Sub Source"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={leadSubSourceOptions?.map((item) => ({
+                            id: item.sub_category_id,
+                            name: item.sub_category,
+                          }))}
+                          onChange={(e) => {
+                            setLeadSubSourceFilterId(e.target.value);
+                            setSelectedOrigin(null);
+                            dispatch(
+                              storeLeadFilterValues({
+                                lead_sub_source: e.target.value,
+                                origin: null,
+                                pageNumber: 1,
+                                pageLimit: pagination.limit,
+                              }),
+                            );
+                            getAllLeadData(
+                              searchValue,
+                              selectedDates[0],
+                              selectedDates[1],
+                              allDownliners,
+                              leadSourceFilterId,
+                              e.target.value,
+                              leadStatusId,
+                              null,
+                              filterValuesFromRedux.bucket,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                          value={leadSubSourceFilterId}
+                          disableClearable={false}
+                          disabled={
+                            leadSourceFilterId == 2 ||
+                            leadSourceFilterId == 3 ||
+                            leadSourceFilterId == 6
+                          }
+                        />
+                      </div>
+
+                      {leadSubSourceFilterId == 3 && (
+                        <div style={{ width: "100%" }}>
+                          <CommonSelectField
+                            width="100%"
+                            height="35px"
+                            label="Select Origin"
+                            labelMarginTop="0px"
+                            labelFontSize="12px"
+                            options={[
+                              {
+                                id: "acte.in",
+                                name: "acte.in",
+                              },
+                              {
+                                id: "acte.co.in",
+                                name: "acte.co.in",
+                              },
+                              {
+                                id: "learnovita.com",
+                                name: "learnovita.com",
+                              },
+                              {
+                                id: "acte.courses",
+                                name: "placement7.com",
+                              },
+                              {
+                                id: "linkplux.com",
+                                name: "linkplux.com",
+                              },
+                              {
+                                id: "careerfast.in",
+                                name: "careerfast.in",
+                              },
+                              {
+                                id: "Google Ads",
+                                name: "Google Ads",
+                              },
+                            ]}
+                            onChange={(e) => {
+                              setSelectedOrigin(e.target.value);
+                              dispatch(
+                                storeLeadFilterValues({
+                                  origin: e.target.value,
+                                  pageNumber: 1,
+                                  pageLimit: pagination.limit,
+                                }),
+                              );
+                              getAllLeadData(
+                                searchValue,
+                                selectedDates[0],
+                                selectedDates[1],
+                                allDownliners,
+                                leadSourceFilterId,
+                                leadSourceFilterId,
+                                leadStatusId,
+                                e.target.value,
+                                filterValuesFromRedux.bucket,
+                                1,
+                                pagination.limit,
+                              );
+                            }}
+                            value={selectedOrigin}
+                            disableClearable={false}
+                          />
+                        </div>
+                      )}
                       <div style={{ width: "100%" }}>
                         <CommonSelectField
                           width="100%"
@@ -2617,7 +2789,9 @@ export default function Leads({
                               selectedDates[1],
                               allDownliners,
                               leadSourceFilterId,
+                              leadSubSourceFilterId,
                               e.target.value,
+                              selectedOrigin,
                               filterValuesFromRedux.bucket,
                               1,
                               pagination.limit,
@@ -2880,7 +3054,9 @@ export default function Leads({
                           selectedDates[1],
                           allDownliners,
                           leadSourceFilterId,
+                          leadSubSourceFilterId,
                           leadStatusId,
+                          selectedOrigin,
                           "Interested Leads",
                           1,
                           pagination.limit,
@@ -2937,7 +3113,9 @@ export default function Leads({
                           selectedDates[1],
                           allDownliners,
                           leadSourceFilterId,
+                          leadSubSourceFilterId,
                           leadStatusId,
+                          selectedOrigin,
                           "Valid Leads",
                           1,
                           pagination.limit,
@@ -3007,7 +3185,9 @@ export default function Leads({
                           selectedDates[1],
                           allDownliners,
                           leadSourceFilterId,
+                          leadSubSourceFilterId,
                           leadStatusId,
+                          selectedOrigin,
                           "Eligible Leads",
                           1,
                           pagination.limit,
@@ -3270,7 +3450,9 @@ export default function Leads({
               selectedDates[1],
               allDownliners,
               leadSourceFilterId,
+              leadSubSourceFilterId,
               leadStatusId,
+              selectedOrigin,
               filterValuesFromRedux.bucket,
               pagination.page,
               pagination.limit,
@@ -4108,7 +4290,9 @@ export default function Leads({
             selectedDates[1],
             allDownliners,
             leadSourceFilterId,
+            leadSubSourceFilterId,
             leadStatusId,
+            selectedOrigin,
             filterValuesFromRedux.bucket,
             pagination.page,
             pagination.limit,

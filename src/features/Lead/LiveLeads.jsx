@@ -194,7 +194,7 @@ export default function LiveLead({
       title: "Sl. No",
       key: "row_num",
       dataIndex: "row_num",
-      width: 60,
+      width: 80,
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
@@ -371,7 +371,27 @@ export default function LiveLead({
       key: "comments",
       dataIndex: "comments",
       fixed: "right",
-      width: 200,
+      width: 190,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Junk Reason",
+      key: "junk_reason",
+      dataIndex: "junk_reason",
+      fixed: "right",
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Junk By",
+      key: "junk_by",
+      dataIndex: "junk_by",
+      fixed: "right",
+      width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -381,7 +401,7 @@ export default function LiveLead({
       key: "action",
       dataIndex: "action",
       fixed: "right",
-      width: 120,
+      width: 100,
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
@@ -841,16 +861,37 @@ export default function LiveLead({
             case "comments":
               return {
                 ...col,
-                width: 200,
+                width: 190,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "junk_reason":
+              return {
+                ...col,
+                title: "Junk Reason",
+                width: 140,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "junk_by":
+              return {
+                ...col,
+                width: 120,
+                render: (text, record) => {
+                  return (
+                    <EllipsisTooltip
+                      text={text ? `${text} - ${record?.junk_by_user}` : "-"}
+                    />
+                  );
                 },
               };
             case "action":
               return {
                 ...col,
                 fixed: "right",
-                width: 120,
+                width: 100,
                 render: (text, record) => {
                   return (
                     <div className="trainers_actionbuttonContainer">
@@ -934,9 +975,19 @@ export default function LiveLead({
       // --- ✅ Process columns ---
       setUpdateTableId(filterPage.id);
 
-      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const savedColKeys = filterPage.column_names.map((c) => c.key);
+      const missingColumns = nonChangeColumns.filter(
+        (c) => !savedColKeys.includes(c.key),
+      );
+
+      const mergedColumns = [
+        ...filterPage.column_names,
+        ...missingColumns.map((col) => ({ ...col, isChecked: true })),
+      ];
+
+      const allColumns = attachRenderFunctions(mergedColumns);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked),
+        mergedColumns.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -1158,10 +1209,13 @@ export default function LiveLead({
   };
 
   const handleMoveToLiveLead = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
     setButtonLoading(true);
     const payload = {
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
       is_junk: false,
+      junk_by: convertAsJson?.user_id,
     };
     try {
       await moveLiveLeadToJunk(payload);
@@ -1551,16 +1605,41 @@ export default function LiveLead({
               0,
             ),
           }}
-          columns={tableColumns.filter((col) => {
-            if (col.key === "action" && selectedBucketRef.current === "Trash") {
-              const hasRestore = permissions.includes("Revert to Live Leads");
-              const hasDelete = permissions.includes("Junk Leads Tab");
-              if (!hasRestore && !hasDelete) {
+          columns={tableColumns
+            .filter((col) => {
+              if (
+                (col.key === "junk_reason" || col.key === "junk_by") &&
+                selectedBucketRef.current !== "Trash"
+              ) {
                 return false;
               }
-            }
-            return true;
-          })}
+              if (
+                col.key === "action" &&
+                selectedBucketRef.current === "Trash"
+              ) {
+                const hasRestore = permissions.includes("Revert to Live Leads");
+                const hasDelete = permissions.includes("Junk Leads Tab");
+                if (!hasRestore && !hasDelete) {
+                  return false;
+                }
+              }
+              return true;
+            })
+            .map((col) => {
+              if (col.key === "comments") {
+                return {
+                  ...col,
+                  fixed: selectedBucketRef.current === "Trash" ? "" : "right",
+                };
+              }
+              if (col.key === "junk_reason" || col.key === "junk_by") {
+                return {
+                  ...col,
+                  fixed: "right",
+                };
+              }
+              return col;
+            })}
           dataSource={leadData}
           dataPerPage={10}
           loading={loading}

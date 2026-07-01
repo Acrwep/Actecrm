@@ -169,7 +169,7 @@ export default function CommonMultiSelectField({
                       padding: "4px",
                       marginRight: "6px",
                       "& .MuiSvgIcon-root": {
-                        fontSize: 18,
+                        fontSize: 16,
                       },
                       "&.Mui-checked": {
                         color: "#5b69ca",
@@ -178,7 +178,7 @@ export default function CommonMultiSelectField({
                   />
                   <span
                     style={{
-                      fontSize: optionsFontSize || "13px",
+                      fontSize: optionsFontSize || "12px",
                       fontFamily: "Poppins, sans-serif",
                     }}
                   >

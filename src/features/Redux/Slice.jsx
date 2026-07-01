@@ -372,6 +372,8 @@ const leadFilterValues = {
   end_date: null,
   user_id: null,
   lead_source: null,
+  lead_sub_source: null,
+  origin: null,
   lead_status_id: null,
   bucket: "all",
   call_getraapi: true,

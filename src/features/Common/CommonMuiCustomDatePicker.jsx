@@ -19,6 +19,7 @@ export default function CommonMuiCustomDatePicker({
   onDateChange,
   value,
   isDashboard,
+  width,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [option, setOption] = useState("last7days");
@@ -187,6 +188,7 @@ export default function CommonMuiCustomDatePicker({
           <Button
             className="common_muicustomdatepicker_daterange_button"
             onClick={handleOpen}
+            style={{ width: width ? width : "320px" }}
           >
             <Box
               sx={{
@@ -195,11 +197,11 @@ export default function CommonMuiCustomDatePicker({
                 width: "100%",
               }}
             >
-              <span style={{ marginLeft: "4px" }}>
+              <span style={{ marginLeft: "4px", marginTop: "1px" }}>
                 {startDate ? startDate.format("YYYY-MM-DD") : ""}
               </span>
               <span>→</span>
-              <span style={{ marginRight: "4px" }}>
+              <span style={{ marginRight: "4px", marginTop: "1px" }}>
                 {endDate ? endDate.format("YYYY-MM-DD") : ""}
               </span>
             </Box>

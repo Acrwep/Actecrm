@@ -103,8 +103,7 @@ export default function Courses() {
       key: "total_leads",
       dataIndex: "total_leads",
       width: 120,
-      sorter: (a, b) =>
-        (a.total_leads || "").localeCompare(b.total_leads || ""),
+      sorter: (a, b) => (a.total_leads || 0) - (b.total_leads || 0),
       sortDirections: ["ascend", "descend"],
     },
     {

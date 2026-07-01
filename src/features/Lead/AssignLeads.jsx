@@ -735,8 +735,9 @@ export default function AssignLeads({
     }, 300);
   };
 
-  const getUsersData = async () => {
+  const getUsersData = async (branch_id = null) => {
     const payload = {
+      ...(branch_id && { branch_id: branch_id }),
       page: 1,
       limit: 1000,
     };
@@ -847,6 +848,9 @@ export default function AssignLeads({
 
   const handleMoveToJunk = async () => {
     console.log("selectedRowKeys", selectedRowKeys);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const commentsValidate = addressValidator(junkComments);
 
     setJunkCommentsError(commentsValidate);
@@ -858,6 +862,7 @@ export default function AssignLeads({
       lead_ids: selectedRows.length >= 1 ? selectedRowKeys : [liveLeadId],
       is_junk: true,
       reason: junkComments,
+      junk_by: convertAsJson?.user_id,
     };
     try {
       await moveLiveLeadToJunk(payload);

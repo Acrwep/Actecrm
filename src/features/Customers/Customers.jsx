@@ -14,6 +14,7 @@ import {
   Upload,
   Skeleton,
   Popover,
+  Badge,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
@@ -113,9 +114,11 @@ export default function Customers() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [dateFilterType, setDateFilterType] = useState("Updated");
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [selectedOrigin, setSelectedOrigin] = useState("");
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [customerStatusCount, setCustomerStatusCount] = useState(null);
@@ -1364,6 +1367,8 @@ export default function Customers() {
       receivedEndDateFromDashboard
         ? receivedEndDateFromDashboard
         : PreviousAndCurrentDate[1],
+      "Updated",
+      null,
       null,
       receivedValueFromDashboard
         ? receivedValueFromDashboard === "Trainer Rejected"
@@ -1402,7 +1407,9 @@ export default function Customers() {
   const getCustomersData = async (
     startDate,
     endDate,
+    date_type,
     searchvalue,
+    origin,
     customerStatus,
     downliners,
     branch_options,
@@ -1428,6 +1435,8 @@ export default function Customers() {
               : {}),
       from_date: startDate,
       to_date: endDate,
+      date_type: date_type,
+      ...(origin && { domain: origin }),
       ...(customerStatus && {
         status: customerStatus,
       }),
@@ -2768,7 +2777,9 @@ export default function Customers() {
     getCustomersData(
       selectedDates[0],
       selectedDates[1],
+      dateFilterType,
       searchValue,
+      selectedOrigin,
       status,
       allDownliners,
       branchOptions,
@@ -2805,7 +2816,9 @@ export default function Customers() {
       getCustomersData(
         selectedDates[0],
         selectedDates[1],
+        dateFilterType,
         e.target.value,
+        selectedOrigin,
         status,
         allDownliners,
         branchOptions,
@@ -2832,7 +2845,9 @@ export default function Customers() {
       getCustomersData(
         selectedDates[0],
         selectedDates[1],
+        dateFilterType,
         searchValue,
+        selectedOrigin,
         status,
         downliners_ids,
         branchOptions,
@@ -2860,6 +2875,8 @@ export default function Customers() {
     setStatus("");
     setSearchValue("");
     setSelectedUserId(null);
+    setSelectedOrigin("");
+    setDateFilterType("Updated");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
@@ -2963,9 +2980,9 @@ export default function Customers() {
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
-          <Row gutter={16}>
-            <Col span={7}>
+        <Col xs={24} sm={24} md={24} lg={20}>
+          <Row gutter={12}>
+            <Col flex="24%">
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
@@ -2995,7 +3012,9 @@ export default function Customers() {
                           getCustomersData(
                             selectedDates[0],
                             selectedDates[1],
+                            dateFilterType,
                             null,
+                            selectedOrigin,
                             status,
                             allDownliners,
                             branchOptions,
@@ -3046,7 +3065,9 @@ export default function Customers() {
                               getCustomersData(
                                 selectedDates[0],
                                 selectedDates[1],
+                                dateFilterType,
                                 null,
+                                selectedOrigin,
                                 status,
                                 allDownliners,
                                 branchOptions,
@@ -3083,7 +3104,7 @@ export default function Customers() {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col span={7}>
+              <Col flex="25%">
                 <CommonMultiSelectField
                   height="34px"
                   label="Select User"
@@ -3095,26 +3116,247 @@ export default function Customers() {
                 />
               </Col>
             )}
-            <Col span={10}>
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  getCustomersData(
-                    dates[0],
-                    dates[1],
-                    searchValue,
-                    status,
-                    allDownliners,
-                    branchOptions,
-                    1,
-                    pagination.limit,
-                  );
+            <Col flex="none">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexWrap: "nowrap",
                 }}
-              />
+              >
+                <div style={{ flex: "0 0 120px" }}>
+                  <CommonMuiCustomDatePicker
+                    width="280px"
+                    value={selectedDates}
+                    onDateChange={(dates) => {
+                      setSelectedDates(dates);
+                      setPagination({
+                        page: 1,
+                      });
+                      getCustomersData(
+                        dates[0],
+                        dates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedOrigin,
+                        status,
+                        allDownliners,
+                        branchOptions,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={dateFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setDateFilterType(e.target.value);
+                            setPagination({
+                              page: 1,
+                            });
+                            getCustomersData(
+                              selectedDates[0],
+                              selectedDates[1],
+                              e.target.value,
+                              searchValue,
+                              selectedOrigin,
+                              status,
+                              allDownliners,
+                              branchOptions,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                        >
+                          <Radio
+                            value="Updated"
+                            className="customers_datetypefilter_radio"
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                              fontSize: "12px",
+                            }}
+                          >
+                            Search by Updated By
+                          </Radio>
+                          <Radio
+                            value="Created"
+                            style={{ marginBottom: "12px", fontSize: "12px" }}
+                          >
+                            Search by Created By
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+
+            <Col flex="none">
+              <Popover
+                placement="bottomLeft"
+                trigger="click"
+                overlayInnerStyle={{
+                  padding: 0,
+                  borderRadius: "12px",
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e2e8f0",
+                }}
+                content={
+                  <div
+                    style={{
+                      width: "320px",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "10px 20px",
+                        borderBottom: "1px solid #f1f5f9",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        backgroundColor: "#f8fafc",
+                        borderTopLeftRadius: "12px",
+                        borderTopRightRadius: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: "600",
+                          fontSize: "13px",
+                          color: "#0f172a",
+                        }}
+                      >
+                        Advanced Filters
+                      </span>
+                      <Badge
+                        count={1}
+                        style={{
+                          backgroundColor: "#3b82f6",
+                          boxShadow: "0 0 0 2px #f8fafc",
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "20px",
+                        maxHeight: "420px",
+                        overflowY: "auto",
+                        padding: "20px",
+                      }}
+                    >
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Select Origin"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={[
+                            {
+                              id: "acte.in",
+                              name: "acte.in",
+                            },
+                            {
+                              id: "acte.co.in",
+                              name: "acte.co.in",
+                            },
+                            {
+                              id: "learnovita.com",
+                              name: "learnovita.com",
+                            },
+                            {
+                              id: "acte.courses",
+                              name: "placement7.com",
+                            },
+                            {
+                              id: "linkplux.com",
+                              name: "linkplux.com",
+                            },
+                            {
+                              id: "careerfast.in",
+                              name: "careerfast.in",
+                            },
+                            {
+                              id: "Google Ads",
+                              name: "Google Ads",
+                            },
+                          ]}
+                          onChange={(e) => {
+                            setSelectedOrigin(e.target.value);
+                            setPagination({
+                              page: 1,
+                            });
+                            getCustomersData(
+                              selectedDates[0],
+                              selectedDates[1],
+                              dateFilterType,
+                              searchValue,
+                              e.target.value,
+                              status,
+                              allDownliners,
+                              branchOptions,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                          value={selectedOrigin}
+                          disableClearable={false}
+                        />{" "}
+                      </div>
+                    </div>
+                  </div>
+                }
+              >
+                <Button
+                  // type="primary"
+                  icon={<IoFilter size={15} />}
+                  className="leads_advancefilter_button"
+                  style={{
+                    background: "#fff",
+                    borderRadius: "6px",
+                    height: "35px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontWeight: "500",
+                    fontSize: "12px",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  Filters
+                </Button>
+              </Popover>
             </Col>
           </Row>
         </Col>
@@ -3122,7 +3364,7 @@ export default function Customers() {
           xs={24}
           sm={24}
           md={24}
-          lg={7}
+          lg={4}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -3236,7 +3478,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 null,
                 allDownliners,
                 branchOptions,
@@ -3273,7 +3517,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Form Pending",
                 allDownliners,
                 branchOptions,
@@ -3325,7 +3571,9 @@ export default function Customers() {
                 getCustomersData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   searchValue,
+                  selectedOrigin,
                   isSwap ? "Payment Rejected" : "Awaiting Finance",
                   allDownliners,
                   branchOptions,
@@ -3378,7 +3626,9 @@ export default function Customers() {
                   getCustomersData(
                     selectedDates[0],
                     selectedDates[1],
+                    dateFilterType,
                     searchValue,
+                    selectedOrigin,
                     newStatus,
                     allDownliners,
                     branchOptions,
@@ -3407,7 +3657,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Awaiting Verify",
                 allDownliners,
                 branchOptions,
@@ -3462,7 +3714,9 @@ export default function Customers() {
                 getCustomersData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   searchValue,
+                  selectedOrigin,
                   isAssignTrainerSwap ? "Trainer Rejected" : "Awaiting Trainer",
                   allDownliners,
                   branchOptions,
@@ -3517,7 +3771,9 @@ export default function Customers() {
                   getCustomersData(
                     selectedDates[0],
                     selectedDates[1],
+                    dateFilterType,
                     searchValue,
+                    selectedOrigin,
                     newStatus,
                     allDownliners,
                     branchOptions,
@@ -3547,7 +3803,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Awaiting Trainer Verify",
                 allDownliners,
                 branchOptions,
@@ -3586,7 +3844,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Awaiting Class",
                 allDownliners,
                 branchOptions,
@@ -3625,7 +3885,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Class Scheduled",
                 allDownliners,
                 branchOptions,
@@ -3663,7 +3925,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Class Going",
                 allDownliners,
                 branchOptions,
@@ -3702,7 +3966,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Passedout Process",
                 allDownliners,
                 branchOptions,
@@ -3740,7 +4006,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Completed",
                 allDownliners,
                 branchOptions,
@@ -3779,7 +4047,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Escalated",
                 allDownliners,
                 branchOptions,
@@ -3818,7 +4088,9 @@ export default function Customers() {
               getCustomersData(
                 selectedDates[0],
                 selectedDates[1],
+                dateFilterType,
                 searchValue,
+                selectedOrigin,
                 "Others",
                 allDownliners,
                 branchOptions,
@@ -3914,7 +4186,9 @@ export default function Customers() {
             getCustomersData(
               selectedDates[0],
               selectedDates[1],
+              dateFilterType,
               searchValue,
+              selectedOrigin,
               status,
               allDownliners,
               branchOptions,
@@ -4434,7 +4708,9 @@ export default function Customers() {
                   getCustomersData(
                     selectedDates[0],
                     selectedDates[1],
+                    dateFilterType,
                     searchValue,
+                    selectedOrigin,
                     status,
                     allDownliners,
                     branchOptions,
@@ -4457,7 +4733,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4484,7 +4762,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4509,7 +4789,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4535,7 +4817,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4569,7 +4853,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4594,7 +4880,9 @@ export default function Customers() {
                     getCustomersData(
                       selectedDates[0],
                       selectedDates[1],
+                      dateFilterType,
                       searchValue,
+                      selectedOrigin,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4896,7 +5184,9 @@ export default function Customers() {
                 getCustomersData(
                   selectedDates[0],
                   selectedDates[1],
+                  dateFilterType,
                   searchValue,
+                  selectedOrigin,
                   status,
                   allDownliners,
                   duplicateBranchOptions,

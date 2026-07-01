@@ -391,7 +391,6 @@
 .common_muicustomdatepicker_daterange_button {
   border: 1px solid #d9d9d9 !important;
   /* padding: 4px 40px !important; */
-  width: 320px !important;
   height: 35px !important;
   color: rgba(0, 0, 0, 0.88) !important;
   font-weight: 400 !important;

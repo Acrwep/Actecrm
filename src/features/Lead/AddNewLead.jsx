@@ -37,7 +37,6 @@ import {
   getUsersByRole,
   leadEmailAndMobileValidator,
   leadReEntry,
-  moveLiveLeadToJunk,
   updateLead,
   updateLiveLeadStatus,
 } from "../ApiService/action";
