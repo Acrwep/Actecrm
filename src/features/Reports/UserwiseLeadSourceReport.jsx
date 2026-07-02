@@ -171,6 +171,7 @@ export default function UserwiseLeadsourceReport() {
   };
 
   const getTransactionReportData = async (startDate, endDate, user_id) => {
+    console.log("user_id", user_id);
     setLoading(true);
     const payload = {
       start_date: startDate,
@@ -388,7 +389,9 @@ export default function UserwiseLeadsourceReport() {
                     page: 1,
                     limit: pagination.limit,
                   });
-                  getTransactionReportData(dates[0], dates[1], selectedUserId);
+                  getTransactionReportData(dates[0], dates[1], [
+                    selectedUserId,
+                  ]);
                 }}
               />
             </Col>

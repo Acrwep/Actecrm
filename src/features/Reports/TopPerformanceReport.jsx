@@ -23,6 +23,32 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
+const nameMapping = {
+  "IVR (Call)": "Call (IVR)",
+  "Branch (Call)": "Call (Branch)",
+  "Direct": "Direct",
+  "Enquiry Form (Website)": "Website (Enquiry Form)",
+  "Whatsapp (Website)": "Website (Whatsapp)",
+  "Instant Form (SMO)": "SMO (Instant Form)",
+  "Call (SMO)": "SMO (Call)",
+  "Whatsapp (SMO)": "SMO (Whatsapp)",
+  "Live Chat": "Live Chat",
+  "Reference": "Reference"
+};
+
+const desiredOrder = [
+  "Call (IVR)",
+  "Call (Branch)",
+  "Direct",
+  "Website (Enquiry Form)",
+  "Website (Whatsapp)",
+  "SMO (Instant Form)",
+  "SMO (Call)",
+  "SMO (Whatsapp)",
+  "Live Chat",
+  "Reference"
+];
+
 export default function TopPerformanceReport() {
   const mounted = useRef(false);
   //permissions
@@ -224,8 +250,25 @@ export default function TopPerformanceReport() {
     try {
       const response = await topPerformingChannelReport(payload);
       console.log("top performance report response", response);
-      const data = response?.data?.data?.data || [];
+      let data = response?.data?.data?.data || [];
       if (data.length >= 1) {
+        data = data.map(item => ({
+          ...item,
+          name: nameMapping[item.name] || item.name
+        }));
+
+        data.sort((a, b) => {
+          let indexA = desiredOrder.indexOf(a.name);
+          let indexB = desiredOrder.indexOf(b.name);
+          if (indexA === -1) indexA = desiredOrder.length;
+          if (indexB === -1) indexB = desiredOrder.length;
+          
+          if (indexA !== indexB) {
+            return indexA - indexB;
+          }
+          return new Date(b.date) - new Date(a.date);
+        });
+
         const tableData = prepareTableData(data);
         setReportData(tableData);
       } else {
@@ -239,7 +282,8 @@ export default function TopPerformanceReport() {
       let total_result = null;
       if (countArray.length >= 1) {
         const result = countArray.reduce((acc, item) => {
-          acc[item.name.toLowerCase().replace(/\s+/g, "_")] = item.lead_count;
+          const mappedName = nameMapping[item.name] || item.name;
+          acc[mappedName] = item.lead_count;
           return acc;
         }, {});
         total_result = result;
@@ -523,83 +567,19 @@ export default function TopPerformanceReport() {
                           lineHeight: "24px",
                         }}
                       >
-                        <p className="leadsmanager_executivecount_text">
-                          {`${1}. Call - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.call != undefined ||
-                              totalSourceCounts.call != null)
-                              ? Number(totalSourceCounts.call).toLocaleString(
-                                  "en-IN",
-                                )
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${2}. Direct - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.direct != undefined ||
-                              totalSourceCounts.direct != null)
-                              ? Number(totalSourceCounts.direct).toLocaleString(
-                                  "en-IN",
-                                )
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${3}. Website - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.website != undefined ||
-                              totalSourceCounts.website != null)
-                              ? Number(
-                                  totalSourceCounts.website,
-                                ).toLocaleString("en-IN")
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${4}. IVR - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.ivr != undefined ||
-                              totalSourceCounts.ivr != null)
-                              ? Number(totalSourceCounts.ivr).toLocaleString(
-                                  "en-IN",
-                                )
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${5}. Live Chat - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.live_chat != undefined ||
-                              totalSourceCounts.live_chat != null)
-                              ? Number(
-                                  totalSourceCounts.live_chat,
-                                ).toLocaleString("en-IN")
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${6}. Reference - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.reference != undefined ||
-                              totalSourceCounts.reference != null)
-                              ? Number(
-                                  totalSourceCounts.reference,
-                                ).toLocaleString("en-IN")
-                              : "-"
-                          }`}
-                        </p>
-                        <p className="leadsmanager_executivecount_text">
-                          {`${7}. SMO - ${
-                            totalSourceCounts &&
-                            (totalSourceCounts.smo != undefined ||
-                              totalSourceCounts.smo != null)
-                              ? Number(totalSourceCounts.smo).toLocaleString(
-                                  "en-IN",
-                                )
-                              : "-"
-                          }`}
-                        </p>
+                        {desiredOrder.map((name, index) => (
+                          <p key={index} className="leadsmanager_executivecount_text">
+                            {`${index + 1}. ${name} - ${
+                              totalSourceCounts &&
+                              (totalSourceCounts[name] !== undefined &&
+                                totalSourceCounts[name] !== null)
+                                ? Number(totalSourceCounts[name]).toLocaleString(
+                                    "en-IN",
+                                  )
+                                : "-"
+                            }`}
+                          </p>
+                        ))}
                       </div>
                     </>
                   }

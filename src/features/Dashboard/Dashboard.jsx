@@ -1388,12 +1388,12 @@ export default function Dashboard() {
       const data = response?.data?.data || [];
       if (data.length >= 1) {
         const order = [
-          "Hot Follow Up",
-          "Cold Follow Up",
+          "Sales Ready",
+          "Highly Interested",
           "Interested",
-          "Only Enquiry",
-          "Hold",
-          "No Response",
+          "Exploring",
+          "Not Responding",
+          "Not Interested",
         ];
         const sortedData = order
           .map((name) => data.find((item) => item.action_name === name))
