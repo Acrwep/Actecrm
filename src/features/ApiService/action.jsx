@@ -227,7 +227,45 @@ export const sendTrainerFormEmail = async (payload) => {
 // trainer payment api's
 export const insertTrainerPaymentRequest = async (payload) => {
   try {
-    const response = await api.post("/api/requestPayment", payload);
+    const response = await api.post("/api/requestPaymentV1", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateTrainerPaymentRequestForm = async (payload) => {
+  try {
+    const response = await api.post("/api/requestForUnpaid", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendTrainerPaymentRequestMail = async (payload) => {
+  try {
+    const response = await api.post("/api/sendTrainerPaymentMail", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTrainerPaymentRequestForm = async (payment_id) => {
+  try {
+    const response = await api.get(
+      `/api/getPaymentById?payment_id=${payment_id}`,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const acknowledgeClassCompletion = async (payload) => {
+  try {
+    const response = await api.post("/api/acknowledgeClassCompletion", payload);
     return response;
   } catch (error) {
     throw error;

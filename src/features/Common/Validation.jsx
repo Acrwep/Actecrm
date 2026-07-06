@@ -9,6 +9,9 @@ const domainRegex =
   /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:[a-zA-Z]{2,})$/;
 const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[^\s]*)?$/i;
 const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+const googleSheetRegex =
+  /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[a-zA-Z0-9-_]+/;
+
 import dayjs from "dayjs";
 import moment from "moment";
 
@@ -100,6 +103,15 @@ export const selectValidator = (name) => {
   let error = "";
 
   if (!name || name.length <= 0) error = " is required";
+
+  return error;
+};
+
+export const googleSheetValidator = (sheet_link) => {
+  let error = "";
+
+  if (!sheet_link || sheet_link.length <= 0) error = " is required";
+  else if (!googleSheetRegex.test(sheet_link)) error = " is not valid";
 
   return error;
 };

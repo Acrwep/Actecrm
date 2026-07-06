@@ -585,24 +585,22 @@
 }
 .customer-popover-header {
   padding-bottom: 12px;
-  margin-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
   color: #1f1f1f;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 .customer-item-wrapper {
-  padding: 10px 12px;
+  padding: 10px 0px;
   border-radius: 10px;
   /* cursor: pointer; */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 6px;
   background: transparent;
 }
 .customer-item-wrapper:hover {
@@ -618,13 +616,149 @@
 .customer-info-name {
   font-weight: 600;
   color: #1a1a1a;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.2;
 }
 .customer-info-detail {
-  font-size: 12px;
+  font-size: 11px;
   color: #8c8c8c;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.trainerregistrationform_submitbuttom_container {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 32px;
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+/* payment requestform styles */
+.trainer_paymentrequestform_headings {
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+}
+.trainer_paymentrequestform_add_button {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 65px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.trainer_paymentrequestform_remove_button {
+  background-color: #d32f2f;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #d32f2f0a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 80px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.trainer_paymentrequestform_dynamic_section {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 24px;
+  padding-top: 16px;
+  margin-bottom: 20px;
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); */
+}
+
+@media (min-width: 992px) {
+  .trainer_paymentrequestform_five_col {
+    flex: 0 0 20% !important;
+    max-width: 20% !important;
+  }
+}
+
+/* --- Trainer Payment Page Layout --- */
+.trainer_payment_page_container {
+  min-height: 100vh;
+  background-color: #f4f7fa; /* Clean modern background */
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Poppins", sans-serif;
+}
+
+.trainer_payment_page_card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 1200px; /* Limits width on ultra-wide screens */
+  padding: 40px 48px 0px 48px;
+  box-sizing: border-box;
+}
+
+.trainer_payment_page_header {
+  margin-bottom: 24px;
+}
+
+.trainer_payment_page_logo {
+  width: 120px;
+  margin-bottom: 8px;
+}
+
+.trainer_payment_page_logotext {
+  color: #1b538c;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.trainer_payment_page_logosubtext {
+  color: #1b538c;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.trainer_payment_page_heading {
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+.trainer_payment_page_divider {
+  height: 1px;
+  background-color: #eaeaea;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .trainer_payment_page_container {
+    padding: 20px 10px;
+  }
+
+  .trainer_payment_page_card {
+    padding: 24px 20px;
+    border-radius: 8px;
+  }
+
+  .trainer_payment_page_heading {
+    font-size: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: left;
+  }
 }

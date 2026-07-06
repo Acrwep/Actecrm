@@ -374,6 +374,7 @@
 .imgcrop_label {
   position: absolute;
   top: -48%;
+  color: #333;
 }
 .imgcrop_label_withvalue {
   position: absolute;
@@ -385,6 +386,21 @@
 .imgcrop_uploadbutton:hover {
   border-color: #5b69ca !important;
   color: #5b69ca !important;
+}
+
+.imgcrop_uploadbutton_subtext {
+  font-size: 10px;
+}
+
+@media (max-width: 1024px) {
+  .imgcrop_uploadbutton {
+    font-size: 9px !important;
+    padding: 2px 4px !important;
+    white-space: nowrap !important;
+  }
+  .imgcrop_uploadbutton_subtext {
+    font-size: 8px !important;
+  }
 }
 
 /* common mui custom datepicker styles */

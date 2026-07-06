@@ -907,7 +907,7 @@ const AddNewLead = forwardRef(
     }));
 
     const handleSubmit = async (saveType) => {
-      console.log(branch, defaultBranch, "checkkk");
+      console.log(branch, defaultBranch, "checkkk", "leadOwner", leadOwner);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setValidationTrigger(true);
@@ -1143,8 +1143,8 @@ const AddNewLead = forwardRef(
           : false,
         assigned_manager_id: regionManagerId,
         branch_manager_id: branchManagerId,
-        consigned_id: defaultBranch == branch ? null : leadOwner,
-        assigned_to: defaultBranch == branch ? leadOwner : null,
+        consigned_id: defaultBranch == branch ? null : convertAsJson?.user_id,
+        assigned_to: defaultBranch == branch ? convertAsJson?.user_id : null,
         assigned_branch_id: branch,
       };
 

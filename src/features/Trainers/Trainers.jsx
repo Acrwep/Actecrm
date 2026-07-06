@@ -16,6 +16,7 @@ import {
   Popover,
   Avatar,
 } from "antd";
+import { LuSend } from "react-icons/lu";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
@@ -71,6 +72,7 @@ import { FaRegCopy } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import TrainerPaymentRequestForm from "./TrainerPaymentRequestForm";
 
 const CustomerList = ({ trainerId, isClassTaken }) => {
   const [data, setData] = useState([]);
@@ -117,7 +119,7 @@ const CustomerList = ({ trainerId, isClassTaken }) => {
         maxWidth: "350px",
         maxHeight: "240px",
         overflowY: "auto",
-        padding: "16px",
+        padding: "12px 14px",
       }}
     >
       <div className="customer-popover-header">
@@ -162,6 +164,7 @@ const CustomerList = ({ trainerId, isClassTaken }) => {
 };
 
 export default function Trainers() {
+  const paymentRequestFormRef = useRef();
   const scrollRef = useRef();
 
   const scroll = (scrollOffset) => {
@@ -180,6 +183,10 @@ export default function Trainers() {
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [trainersData, setTrainersData] = useState([]);
   const [status, setStatus] = useState("");
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -253,6 +260,8 @@ export default function Trainers() {
   //hr filter
   const [hrUsers, setHrUsers] = useState([]);
   const [hrId, setHrId] = useState(null);
+  // payment request form
+  const [isOpenRequestFormDrawer, setIsOpenRequestFormDrawer] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -604,6 +613,7 @@ export default function Trainers() {
       setHrUsers([]);
       console.log("get hr users error", error);
     } finally {
+      setStatus("");
       getTrainersData(null, null, null, 1, 10, true);
     }
   };
@@ -1067,6 +1077,26 @@ export default function Trainers() {
                           handleEdit(record);
                         }}
                       />
+                      {statusRef.current === "OnGoing" ||
+                      statusRef.current === "Onboarded" ? (
+                        <Tooltip
+                          placement="top"
+                          title="Send Payment Claim Form"
+                          trigger={["hover", "click"]}
+                        >
+                          <LuSend
+                            size={15}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setEditTrainerId(record?.id || null);
+                              setIsOpenRequestFormDrawer(true);
+                              // getParticularCustomerDetails(record?.id);
+                            }}
+                          />
+                        </Tooltip>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   );
                 },
@@ -1375,6 +1405,11 @@ export default function Trainers() {
     setIsOpenAddDrawer(false);
     setValidationTrigger(false);
     setIsOpenFilterDrawer(false);
+  };
+
+  const paymentRequestFormReset = () => {
+    setEditTrainerId(null);
+    setIsOpenRequestFormDrawer(false);
   };
 
   const handleSubmit = async () => {
@@ -2693,6 +2728,64 @@ export default function Trainers() {
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
+
+      {/* trainer payment request form drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Payment Claim Form
+          </div>
+        }
+        open={isOpenRequestFormDrawer}
+        onClose={paymentRequestFormReset}
+        width="85.5%"
+        style={{ position: "relative", paddingBottom: 65 }}
+      >
+        {editTrainerId && isOpenRequestFormDrawer ? (
+          <TrainerPaymentRequestForm
+            ref={paymentRequestFormRef}
+            trainer_id={editTrainerId}
+            isTrainer={false}
+            setButtonLoading={setButtonLoading}
+            onFormRefresh={() => {
+              setIsOpenRequestFormDrawer(false);
+              setEditTrainerId(null);
+              getTrainersData(
+                searchValue,
+                status,
+                hrId,
+                pagination.page,
+                pagination.limit,
+              );
+            }}
+          />
+        ) : (
+          ""
+        )}
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            {buttonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={() =>
+                  paymentRequestFormRef.current?.handlePaymentRequestFormSubmit()
+                }
+              >
+                Send
+              </button>
+            )}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

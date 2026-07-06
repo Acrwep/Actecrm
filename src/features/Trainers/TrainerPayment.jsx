@@ -1457,6 +1457,40 @@ export default function TrainerPayment() {
               </div>
               <div
                 className={
+                  status === "Link Sent"
+                    ? "customers_active_awaitingclass_container"
+                    : "customers_awaitingclass_container"
+                }
+                onClick={() => {
+                  if (status === "Link Sent") {
+                    return;
+                  }
+                  setStatus("Link Sent");
+                  setPagination({ ...pagination, page: 1 });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    "Link Sent",
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Link Sent{" "}
+                  {`( ${
+                    statusCounts &&
+                    statusCounts.link_sent !== undefined &&
+                    statusCounts.link_sent !== null
+                      ? statusCounts.link_sent
+                      : "-"
+                  } )`}
+                </p>
+              </div>
+              <div
+                className={
                   status === "Requested"
                     ? "trainers_active_formpending_container"
                     : "customers_feedback_container"
@@ -1678,7 +1712,7 @@ export default function TrainerPayment() {
             gap: "12px",
           }}
         >
-          {permissions.includes("Add Trainer Payment Request") ? (
+          {/* {permissions.includes("Add Trainer Payment Request") ? (
             <button
               className="leadmanager_addleadbutton"
               onClick={() => {
@@ -1690,7 +1724,7 @@ export default function TrainerPayment() {
             </button>
           ) : (
             ""
-          )}
+          )} */}
 
           {selectedRows.length >= 1 ? (
             <button

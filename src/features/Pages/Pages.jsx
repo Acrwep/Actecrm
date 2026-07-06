@@ -46,6 +46,10 @@ import "./styles.css";
 import WorkSheet from "../WorkSheet/WorkSheet";
 import Helpdesk from "../Helpdesk/Helpdesk";
 import Tickets from "../Helpdesk/Tickets";
+import TrainerPaymentRequestPage from "../Trainers/TrainerPaymentRequestPage";
+import TrainerPaymentRequestForm from "../Trainers/TrainerPaymentRequestForm";
+import RequestSuccess from "../Trainers/RequestSuccess";
+import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
 
 const { Sider, Content, Header } = Layout;
 
@@ -61,13 +65,17 @@ export default function Pages() {
   } = theme.useToken();
 
   // Helper to detect public routes
+
   const isPublicRoute = (path) => {
     const lowerPath = path.toLowerCase();
     return (
       lowerPath === "/login" ||
       lowerPath.startsWith("/trainer-registration") ||
+      lowerPath.startsWith("/trainer-payment-claim") ||
       lowerPath.startsWith("/customer-registration") ||
       lowerPath === "/success" ||
+      lowerPath === "/claim-success" ||
+      lowerPath.startsWith("/acknowledge-class-completion") ||
       lowerPath === "/helpdesk"
     );
   };
@@ -159,10 +167,19 @@ export default function Pages() {
           element={<TrainerRegistration />}
         />
         <Route
+          path="/trainer-payment-claim/:trainer_id/:payment_master_id"
+          element={<TrainerPaymentRequestPage />}
+        />
+        <Route
           path="/customer-registration/:customer_id"
           element={<CustomerRegistration />}
         />
         <Route path="/success" element={<Success />} />
+        <Route path="/claim-success" element={<RequestSuccess />} />
+        <Route
+          path="/acknowledge-class-completion/:customer_id/:status"
+          element={<AcknowledgeClassCompletion />}
+        />
         <Route path="/helpdesk" element={<Helpdesk />} />
       </Routes>
     );
@@ -262,6 +279,10 @@ export default function Pages() {
             <Route
               element={<TrainerRegistration />}
               path="/trainer-registration"
+            />
+            <Route
+              element={<TrainerPaymentRequestPage />}
+              path="/trainer-payment-claim/:trainer_id/:payment_master_id"
             />
             <Route element={<Tickets />} path="/tickets" />
             <Route element={<WorkSheet />} path="/react-worksheet" />

@@ -75,7 +75,7 @@ export default function ImageUploadCrop({
     <div style={{ position: "relative" }}>
       <p
         className={value ? "imgcrop_label_withvalue" : "imgcrop_label"}
-        style={{ fontSize: "12px" }}
+        style={{ fontSize: "12px", color: "#333" }}
       >
         {label} {required && <span style={{ color: "#d32f2f" }}>*</span>}
       </p>
@@ -129,7 +129,9 @@ export default function ImageUploadCrop({
           style={{ width: "100%", marginTop: 8 }}
         >
           Choose file{" "}
-          <span style={{ fontSize: "10px" }}>(PNG, JPEG & JPG)</span>
+          <span className="imgcrop_uploadbutton_subtext">
+            (PNG, JPEG & JPG)
+          </span>
         </Button>
       </Upload>
       {/* </ImgCrop> */}

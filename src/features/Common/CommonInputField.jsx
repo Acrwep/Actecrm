@@ -5,6 +5,7 @@ import { capitalizeWords } from "./Validation";
 
 export default function CommonInputField({
   label,
+  placeholder,
   value,
   onChange,
   error,
@@ -90,6 +91,7 @@ export default function CommonInputField({
         className="common_inputfield"
         label={label}
         value={value}
+        placeholder={placeholder}
         rows={rows}
         onChange={handleChange}
         multiline={multiline}
@@ -129,6 +131,12 @@ export default function CommonInputField({
             height: height || "36px",
             boxSizing: "border-box",
             fontSize: fontSize || "13px",
+
+            "&::placeholder": {
+              fontSize: "12px",
+              color: "gray",
+              opacity: 1,
+            },
           },
           "& .MuiOutlinedInput-root.Mui-disabled": {
             backgroundColor: "#f5f5f5",
