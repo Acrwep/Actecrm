@@ -55,6 +55,7 @@ import TrainerPayslip from "./TrainerPayslip";
 export default function TrainerPayment() {
   const location = useLocation();
   const scrollRef = useRef();
+  const trainerPayslipRef = useRef();
   const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
   const permissions = useSelector((state) => state.userpermissions);
@@ -69,7 +70,6 @@ export default function TrainerPayment() {
   const [trainersDataList, setTrainersDataList] = useState([]);
   // ✅ IMPORTANT: keep IDs & Objects separately
   const [selectedTrainerId, setSelectedTrainerId] = useState(null);
-  const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
   const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
   const [trainerSearchText, setTrainerSearchText] = useState("");
   /* ---------------- PAGINATION ---------------- */
@@ -80,13 +80,8 @@ export default function TrainerPayment() {
   const [dateFilterType, setDateFilterType] = useState("RaiseDate");
   const [selectedDates, setSelectedDates] = useState([]);
   const [status, setStatus] = useState("");
-  const [isOpenAddRequestDrawer, setIsOpenAddRequestDrawer] = useState(false);
   const [allBranchesData, setAllBranchesData] = useState([]);
-  //select trainer usestates
-  const [isOpenAddRequestComponent, setIsOpenAddRequestComponent] =
-    useState(false);
   //form usestates
-  const [editRequestItem, setEditRequestItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   //view
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
@@ -543,7 +538,7 @@ export default function TrainerPayment() {
         return {
           children: (
             <div className="trainers_actionbuttonContainer">
-              <AiOutlineEdit
+              {/* <AiOutlineEdit
                 size={18}
                 className="trainers_action_icons"
                 onClick={() => {
@@ -556,7 +551,7 @@ export default function TrainerPayment() {
                     );
                   }
                 }}
-              />
+              /> */}
               <Tooltip
                 placement="top"
                 title="View Details"
@@ -572,7 +567,7 @@ export default function TrainerPayment() {
                 />
               </Tooltip>
 
-              {record?.paid_amount == "0.00" && (
+              {/* {record?.paid_amount == "0.00" && (
                 <RiDeleteBinLine
                   size={18}
                   color="#d32f2f"
@@ -582,7 +577,7 @@ export default function TrainerPayment() {
                     setIsOpenRequestDeleteModal(true);
                   }}
                 />
-              )}
+              )} */}
             </div>
           ),
           props: { rowSpan: flatRecord.rowSpan },
@@ -847,12 +842,6 @@ export default function TrainerPayment() {
     }
   };
 
-  const handleEdit = (item) => {
-    setIsOpenAddRequestDrawer(true);
-    setIsOpenAddRequestComponent(true);
-    setEditRequestItem(item);
-  };
-
   const getTrainerByIdData = async (trainerId) => {
     try {
       const response = await getTrainerById(trainerId);
@@ -1027,7 +1016,7 @@ export default function TrainerPayment() {
                 onDropdownScroll={handleTrainerScroll}
                 loading={trainerSelectloading}
                 // renderOption={renderTrainerOption}
-                error={selectedTrainerIdError}
+                error={""}
                 disableClearable={false}
               />
             </Col>
@@ -1372,8 +1361,8 @@ export default function TrainerPayment() {
               <div
                 className={
                   status === "Paid"
-                    ? "customers_active_classgoing_container"
-                    : "customers_classgoing_container"
+                    ? "customers_active_completed_container"
+                    : "customers_completed_container"
                 }
                 onClick={() => {
                   if (status === "Paid") {
@@ -1498,65 +1487,6 @@ export default function TrainerPayment() {
         />
       </div>
 
-      <Drawer
-        title="Add Request"
-        open={isOpenAddRequestDrawer}
-        onClose={() => {
-          setIsOpenAddRequestDrawer(false);
-          setEditRequestItem(null);
-          setIsOpenAddRequestComponent(false);
-        }}
-        width="50%"
-        className="customer_statusupdate_drawer"
-        style={{ position: "relative", paddingBottom: 65 }}
-      >
-        {isOpenAddRequestComponent && (
-          <AddTrainerPaymentRequest
-            ref={addTrainerPaymentRequestUseRef}
-            editRequestItem={editRequestItem}
-            allBranchesData={allBranchesData}
-            setButtonLoading={setButtonLoading}
-            callgetTrainerPaymentsApi={() => {
-              setIsOpenAddRequestDrawer(false);
-              setEditRequestItem(null);
-              setIsOpenAddRequestComponent(false);
-              setPagination({
-                page: 1,
-              });
-              setButtonLoading(false);
-              getTrainerPaymentsData(
-                selectedTrainerId,
-                dateFilterType,
-                selectedDates[0],
-                selectedDates[1],
-                status || null,
-                1,
-                pagination.limit,
-              );
-            }}
-          />
-        )}
-
-        <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
-            {buttonLoading ? (
-              <button className="users_adddrawer_loadingcreatebutton">
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className="users_adddrawer_createbutton"
-                onClick={() =>
-                  addTrainerPaymentRequestUseRef.current?.handleRequestSubmit()
-                }
-              >
-                {editRequestItem ? "Update" : "Submit"}
-              </button>
-            )}
-          </div>
-        </div>
-      </Drawer>
-
       {/* Payment Details Drawer */}
       <Drawer
         title="Update Status"
@@ -1576,12 +1506,31 @@ export default function TrainerPayment() {
             <div className="customer_statusupdate_adddetailsContainer">
               {drawerContentStatus == "Awaiting Finance" ? (
                 <div>
-                  <TrainerPayslip />
+                  <TrainerPayslip
+                    ref={trainerPayslipRef}
+                    selectedPaymentDetails={selectedPaymentDetails}
+                  />
                 </div>
               ) : (
                 ""
               )}
             </div>
+            <div className="leadmanager_tablefiler_footer">
+              <div className="leadmanager_submitlead_buttoncontainer">
+                {buttonLoading ? (
+                  <button className="users_adddrawer_loadingcreatebutton">
+                    <CommonSpinner />
+                  </button>
+                ) : (
+                  <button
+                    className="users_adddrawer_createbutton"
+                    onClick={() => trainerPayslipRef.current?.handlePaid()}
+                  >
+                    Submit
+                  </button>
+                )}
+              </div>
+            </div>{" "}
           </>
         )}
       </Drawer>

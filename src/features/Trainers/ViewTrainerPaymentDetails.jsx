@@ -418,7 +418,11 @@ export default function ViewTrainerPaymentDetails({
                                   </Col>
                                   <Col span={12}>
                                     <EllipsisTooltip
-                                      text={item.email ? item.email : "-"}
+                                      text={
+                                        item.customer_email
+                                          ? item.customer_email
+                                          : "-"
+                                      }
                                       smallText={true}
                                     />
                                   </Col>
@@ -747,7 +751,7 @@ export default function ViewTrainerPaymentDetails({
                             </Row>
                           </div>
 
-                          <Divider className="customer_statusupdate_divider" />
+                          {/* <Divider className="customer_statusupdate_divider" />
 
                           <div style={{ padding: "0px 16px" }}>
                             <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
@@ -976,7 +980,7 @@ export default function ViewTrainerPaymentDetails({
                                 </Col>
                               </Row>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                       </Collapse.Panel>
                     );
