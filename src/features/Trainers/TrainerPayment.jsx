@@ -21,7 +21,10 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { RedoOutlined } from "@ant-design/icons";
+import { GiCheckMark } from "react-icons/gi";
+import { FaXmark } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
+import { FaRegCopy } from "react-icons/fa6";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTable from "../Common/CommonTable";
@@ -31,6 +34,7 @@ import {
   createTrainerPaymentTransaction,
   deleteTrainerPaymentRequest,
   getAllBranches,
+  getTrainerById,
   getTrainerPayments,
   getTrainers,
   rejectTrainerPayment,
@@ -64,6 +68,7 @@ import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { useSelector } from "react-redux";
 import CustomerEmailTemplate from "../Customers/CustomerEmailTemplate";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
+import TrainerFullDetailsModal from "./TrainerFullDetailsModal";
 
 export default function TrainerPayment() {
   const location = useLocation();
@@ -111,6 +116,9 @@ export default function TrainerPayment() {
   const [buttonLoading, setButtonLoading] = useState(false);
   //view
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
+  const [isOpenTrainerFullDetailsModal, setIsOpenTrainerFullDetailsModal] =
+    useState(false);
+  const [trainerFullDetails, setTrainerFullDetails] = useState([]);
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +164,32 @@ export default function TrainerPayment() {
   const [approveType, setApproveType] = useState("");
   const [approveButtonLoading, setApproveButtonLoading] = useState(false);
   const [rejectbuttonLoader, setRejectbuttonLoader] = useState(false);
+  const renderCellWithBackground = (status, extraProps = {}) => {
+    return {
+      children: (
+        <div
+          style={{
+            color: status ? "#2e7d32" : "#c62828",
+            fontWeight: "bold",
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+          }}
+        >
+          {status ? <GiCheckMark size={14} /> : <FaXmark size={14} />}
+        </div>
+      ),
+      props: {
+        ...extraProps,
+        style: {
+          backgroundColor: status ? "#e8f5e9" : "#ffebee",
+          ...(extraProps.style || {}),
+        },
+      },
+    };
+  };
 
   // Table columns definition
   const columns = [
@@ -164,8 +198,11 @@ export default function TrainerPayment() {
       key: "bill_raisedate",
       dataIndex: "bill_raisedate",
       width: 130,
-      render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      render: (text, record) => {
+        return {
+          children: <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>,
+          props: { rowSpan: record.rowSpan },
+        };
       },
     },
     {
@@ -173,44 +210,136 @@ export default function TrainerPayment() {
       key: "trainer_name",
       dataIndex: "trainer_name",
       width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
+      render: (text, record) => {
+        return {
+          children: (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <EllipsisTooltip text={text || "-"} />
+              <FaRegEye
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setIsOpenTrainerFullDetailsModal(true);
+                  getTrainerByIdData(record?.trainer_id);
+                }}
+              />
+            </div>
+          ),
+          props: { rowSpan: record.rowSpan },
+        };
       },
     },
     {
-      title: "Trainer Email",
-      key: "trainer_email",
-      dataIndex: "trainer_email",
-      width: 180,
-      render: (text) => {
-        return <EllipsisTooltip text={text || "-"} />;
-      },
+      title: "Student Name",
+      key: "student_id",
+      dataIndex: ["student_details", "customer_name"],
+      width: 150,
+      render: (text) => <EllipsisTooltip text={text || "-"} />,
     },
     {
-      title: "Trainer Mobile",
-      key: "trainer_mobile",
-      dataIndex: "trainer_mobile",
+      title: "Tech",
+      key: "tech",
+      dataIndex: ["student_details", "course_name"],
+      width: 150,
+      render: (text) => <EllipsisTooltip text={text || "-"} />,
+    },
+    {
+      title: "RA",
+      key: "ra",
+      dataIndex: ["student_details", "ra_user_id"],
+      width: 110,
+      render: (text, record) => (
+        <EllipsisTooltip
+          text={
+            text ? `${text} - ${record?.student_details?.ra_user_name}` : "-"
+          }
+        />
+      ),
+    },
+    {
+      title: "HR",
+      key: "hr",
+      dataIndex: ["student_details", "hr_user_id"],
+      width: 110,
+      render: (text, record) => (
+        <EllipsisTooltip
+          text={
+            text ? `${text} - ${record?.student_details?.hr_user_name}` : "-"
+          }
+        />
+      ),
+    },
+    {
+      title: "Mode of Training",
+      key: "training_mode",
+      dataIndex: ["student_details", "training_mode"],
       width: 130,
-      render: (text) => {
-        return <p>{text || "-"}</p>;
-      },
+      render: (text) => <p>{text || "-"}</p>,
     },
+    {
+      title: "Payment Cleared",
+      key: "is_payment_cleared",
+      dataIndex: ["student_details", "is_payment_cleared"],
+      width: 130,
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: "Completion 100%",
+      key: "is_class_percentage",
+      dataIndex: ["student_details", "is_class_percentage"],
+      width: 140,
+      render: (text) => renderCellWithBackground(parseFloat(text || 0) === 100),
+    },
+    {
+      title: "Google Review",
+      key: "is_google",
+      dataIndex: ["student_details", "is_google"],
+      width: 120,
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: "LinkedIn Review",
+      key: "is_linkedin",
+      dataIndex: ["student_details", "is_linkedin"],
+      width: 130,
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: "Student Acknowledgement",
+      key: "is_acknowledged",
+      dataIndex: ["student_details", "is_acknowledged"],
+      width: 190,
+      render: (text) => renderCellWithBackground(text),
+    },
+    // {
+    //   title: "Feedback Submitted",
+    //   key: "feedback",
+    //   dataIndex: "feedback",
+    //   width: 160,
+    //   render: (text, record) => renderCellWithBackground(text),
+    // },
     {
       title: "Request Amount",
       key: "request_amount",
       dataIndex: "request_amount",
       width: 140,
-      render: (text) => {
-        return <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>;
+      render: (text, record) => {
+        return {
+          children: <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>,
+          props: { rowSpan: record.rowSpan },
+        };
       },
     },
     {
       title: "Days Taken To Pay",
       key: "days_taken_topay",
       dataIndex: "days_taken_topay",
-      width: 150,
-      render: (text) => {
-        return <p>{text !== null && text !== undefined ? text : "-"}</p>;
+      width: 140,
+      render: (text, record) => {
+        return {
+          children: <p>{text !== null && text !== undefined ? text : "-"}</p>,
+          props: { rowSpan: record.rowSpan },
+        };
       },
     },
     {
@@ -218,8 +347,11 @@ export default function TrainerPayment() {
       key: "deadline_date",
       dataIndex: "deadline_date",
       width: 130,
-      render: (text) => {
-        return <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>;
+      render: (text, record) => {
+        return {
+          children: <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>,
+          props: { rowSpan: record.rowSpan },
+        };
       },
     },
     {
@@ -228,261 +360,292 @@ export default function TrainerPayment() {
       dataIndex: "status",
       width: 195,
       fixed: "right",
-      render: (text, record) => {
-        return (
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              alignItems: "center",
-            }}
-          >
-            <Tooltip
-              placement="bottomLeft"
-              className="customers_statustooltip"
-              color="#fff"
-              styles={{
-                body: {
-                  width: "290px",
-                  maxWidth: "none",
-                  whiteSpace: "normal",
-                },
-              }}
-              title={
-                <>
-                  <Row>
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Requested" ? (
-                        <Checkbox
-                          className="server_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (
-                              record.status == "Requested" ||
-                              record.status == "Rejected"
-                            ) {
+      render: (text, flatRecord) => {
+        const record = flatRecord.request_details;
+        return {
+          children: (
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <Tooltip
+                placement="bottomLeft"
+                className="customers_statustooltip"
+                color="#fff"
+                styles={{
+                  body: {
+                    width: "290px",
+                    maxWidth: "none",
+                    whiteSpace: "normal",
+                  },
+                }}
+                title={
+                  <>
+                    <Row>
+                      {/* <Col span={12} style={{ marginBottom: "8px" }}>
+                        {record?.status == "Requested" ||
+                        record?.status == "Link Sent" ? (
+                          <Checkbox
+                            className="server_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
                               if (
                                 permissions.includes("Raise Trainer Payment")
                               ) {
                                 setIsOpenDetailsDrawer(true);
                                 setDrawerContentStatus("Requested");
                                 setSelectedPaymentDetails(record);
-                                setPaymentHistory(record.transactions);
+                                setPaymentHistory(record?.transactions || []);
                                 setCollapseDefaultKey(["1"]);
                               } else {
                                 CommonMessage("error", "Access Denied");
                               }
-                            }
-                          }}
-                        >
-                          Raise Payment
-                        </Checkbox>
-                      ) : record.status === "Payment Rejected" ||
-                        record.status == "Approval Rejected" ? (
-                        <button
-                          className="customers_finance_updatepayment_button"
-                          onClick={() => {
-                            if (permissions.includes("Raise Trainer Payment")) {
-                              setDrawerContentStatus("Update Payment");
-                              setIsOpenDetailsDrawer(true);
-                              setSelectedPaymentDetails(record);
-                              setPaymentHistory(record.payments);
-                              setPaidNow(record.payments[0].paid_amount);
-                              setPaymentType(record.payments[0].payment_type);
-                              setCollapseDefaultKey(["1"]);
-                              setBalanceAmount(
-                                getBalanceAmount(
-                                  isNaN(record.balance_amount)
-                                    ? 0
-                                    : record.balance_amount,
-                                  isNaN(record.payments[0].paid_amount)
-                                    ? 0
-                                    : record.payments[0].paid_amount,
-                                ),
-                              );
-                            } else {
-                              CommonMessage("error", "Access Denied");
-                            }
-                          }}
-                        >
-                          Update Payment
-                        </button>
-                      ) : (
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Payment Raised
-                          </p>
-                        </div>
-                      )}
-                    </Col>
-
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Requested" ||
-                      record.status == "Payment Rejected" ||
-                      record.status == "Approval Rejected" ||
-                      record.status == "Awaiting Approval" ? (
-                        <Checkbox
-                          className="server_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status == "Awaiting Approval") {
-                              if (permissions.includes("Payment Approval")) {
+                            }}
+                          >
+                            Raise Payment
+                          </Checkbox>
+                        ) : record?.status === "Payment Rejected" ||
+                          record?.status == "Approval Rejected" ? (
+                          <button
+                            className="customers_finance_updatepayment_button"
+                            onClick={() => {
+                              if (
+                                permissions.includes("Raise Trainer Payment")
+                              ) {
+                                setDrawerContentStatus("Update Payment");
                                 setIsOpenDetailsDrawer(true);
-                                setDrawerContentStatus("Approve");
                                 setSelectedPaymentDetails(record);
-                                setPaymentHistory(record.transactions);
+                                setPaymentHistory(record?.payments || []);
+                                setPaidNow(record?.payments?.[0]?.paid_amount);
+                                setPaymentType(
+                                  record?.payments?.[0]?.payment_type,
+                                );
                                 setCollapseDefaultKey(["1"]);
-                              } else {
-                                CommonMessage("error", "Access Denied");
-                              }
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Payment not raised yet",
-                              );
-                            }
-                          }}
-                        >
-                          Approve
-                        </Checkbox>
-                      ) : (
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Approved
-                          </p>
-                        </div>
-                      )}
-                    </Col>
-
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Requested" ||
-                      record.status == "Awaiting Finance" ||
-                      record.status == "Awaiting Approval" ||
-                      record.status == "Approval Rejected" ||
-                      record.status == "Payment Rejected" ? (
-                        <Checkbox
-                          className="server_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status == "Awaiting Finance") {
-                              if (permissions.includes("Payment Approval")) {
-                                // setDrawerContentStatus("Awaiting Finance");
-                                setSelectedPaymentDetails(record);
-                                // setPaymentHistory(record.transactions);
-                                // setCollapseDefaultKey(["1"]);
-                                CommonMessage(
-                                  "warning",
-                                  "Please Select Rows to Verify",
+                                setBalanceAmount(
+                                  getBalanceAmount(
+                                    isNaN(record?.balance_amount)
+                                      ? 0
+                                      : record?.balance_amount,
+                                    isNaN(record?.payments?.[0]?.paid_amount)
+                                      ? 0
+                                      : record?.payments?.[0]?.paid_amount,
+                                  ),
                                 );
                               } else {
                                 CommonMessage("error", "Access Denied");
                               }
-                              // getCustomerData(record.customer_id);
-                            } else if (record.status == "Awaiting Approval") {
-                              CommonMessage(
-                                "warning",
-                                "Payment not approved yet",
-                              );
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Payment not raised yet",
-                              );
-                            }
-                          }}
-                        >
-                          Ready to Pay{" "}
-                        </Checkbox>
-                      ) : (
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Paid
-                          </p>
-                        </div>
-                      )}
-                    </Col>
+                            }}
+                          >
+                            Update Payment
+                          </button>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Payment Raised
+                            </p>
+                          </div>
+                        )}
+                      </Col> */}
 
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Requested" ||
-                      record.status == "Awaiting Finance" ||
-                      record.status == "Payment Rejected" ||
-                      record.status == "Approval Rejected" ||
-                      record.status == "Awaiting Approval" ||
-                      record.status == "Paid" ? (
-                        <Checkbox
-                          className="server_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status == "Paid") {
-                              if (permissions.includes("Payment Completion")) {
-                                setIsOpenDetailsDrawer(true);
-                                setDrawerContentStatus("Complete");
-                                setSelectedPaymentDetails(record);
-                                setPaymentHistory(record.transactions);
-                                setCollapseDefaultKey(["1"]);
+                      <Col span={12} style={{ marginBottom: "8px" }}>
+                        {record?.status == "Requested" ||
+                        record?.status == "Link Sent" ||
+                        record?.status == "Payment Rejected" ||
+                        record?.status == "Approval Rejected" ||
+                        record?.status == "Awaiting Approval" ? (
+                          <Checkbox
+                            className="server_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record?.status == "Awaiting Approval") {
+                                if (permissions.includes("Payment Approval")) {
+                                  setIsOpenDetailsDrawer(true);
+                                  setDrawerContentStatus("Approve");
+                                  setSelectedPaymentDetails(record);
+                                  setPaymentHistory(record?.transactions || []);
+                                  setCollapseDefaultKey(["1"]);
+                                } else {
+                                  CommonMessage("error", "Access Denied");
+                                }
                               } else {
-                                CommonMessage("error", "Access Denied");
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not raised yet",
+                                );
                               }
-                              // getCustomerData(record.customer_id);
-                            } else if (record.status == "Awaiting Approval") {
-                              CommonMessage(
-                                "warning",
-                                "Payment not approved yet",
-                              );
-                            } else {
-                              CommonMessage("warning", "Not Paid Yet");
-                            }
-                          }}
-                        >
-                          Complete{" "}
-                        </Checkbox>
-                      ) : (
-                        <div className="customers_classcompleted_container">
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Completed
-                          </p>
-                        </div>
-                      )}
-                    </Col>
-                  </Row>
-                </>
-              }
-            >
-              {text === "Requested" ? (
-                <Button className="customers_status_formpending_button">
-                  Requested
-                </Button>
-              ) : text === "Awaiting Approval" ? (
-                <Button className="customers_status_classscheduled_button">
-                  Awaiting Approval
-                </Button>
-              ) : text === "Awaiting Finance" ? (
-                <Button className="trainers_pending_button">
-                  Ready to Pay
-                </Button>
-              ) : text === "Paid" ? (
-                <div className="trainers_verifieddiv">
-                  <Button className="trainers_verified_button">Paid</Button>
-                </div>
-              ) : text === "Completed" ? (
-                <Button className="customers_status_completed_button">
-                  Completed
-                </Button>
-              ) : text === "Payment Rejected" ||
-                text === "Approval Rejected" ? (
-                <div className="trainers_verifieddiv">
-                  <Button className="trainers_rejected_button">{text}</Button>
-                </div>
+                            }}
+                          >
+                            Approve
+                          </Checkbox>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Approved
+                            </p>
+                          </div>
+                        )}
+                      </Col>
+
+                      <Col span={12} style={{ marginBottom: "8px" }}>
+                        {record?.status == "Requested" ||
+                        record?.status == "Link Sent" ||
+                        record?.status == "Awaiting Finance" ||
+                        record?.status == "Awaiting Approval" ||
+                        record?.status == "Approval Rejected" ||
+                        record?.status == "Payment Rejected" ? (
+                          <Checkbox
+                            className="server_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record?.status == "Awaiting Finance") {
+                                if (permissions.includes("Payment Approval")) {
+                                  setSelectedPaymentDetails(record);
+                                  CommonMessage(
+                                    "warning",
+                                    "Please Select Rows to Verify",
+                                  );
+                                } else {
+                                  CommonMessage("error", "Access Denied");
+                                }
+                              } else if (
+                                record?.status == "Awaiting Approval"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not approved yet",
+                                );
+                              } else {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not raised yet",
+                                );
+                              }
+                            }}
+                          >
+                            Ready to Pay{" "}
+                          </Checkbox>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Paid
+                            </p>
+                          </div>
+                        )}
+                      </Col>
+
+                      <Col span={12} style={{ marginBottom: "8px" }}>
+                        {record?.status == "Requested" ||
+                        record?.status == "Link Sent" ||
+                        record?.status == "Awaiting Finance" ||
+                        record?.status == "Payment Rejected" ||
+                        record?.status == "Approval Rejected" ||
+                        record?.status == "Awaiting Approval" ||
+                        record?.status == "Paid" ? (
+                          <Checkbox
+                            className="server_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record?.status == "Paid") {
+                                if (
+                                  permissions.includes("Payment Completion")
+                                ) {
+                                  setIsOpenDetailsDrawer(true);
+                                  setDrawerContentStatus("Complete");
+                                  setSelectedPaymentDetails(record);
+                                  setPaymentHistory(record?.transactions || []);
+                                  setCollapseDefaultKey(["1"]);
+                                } else {
+                                  CommonMessage("error", "Access Denied");
+                                }
+                              } else if (
+                                record?.status == "Awaiting Approval"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not approved yet",
+                                );
+                              } else {
+                                CommonMessage("warning", "Not Paid Yet");
+                              }
+                            }}
+                          >
+                            Complete{" "}
+                          </Checkbox>
+                        ) : (
+                          <div className="customers_classcompleted_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Completed
+                            </p>
+                          </div>
+                        )}
+                      </Col>
+                    </Row>
+                  </>
+                }
+              >
+                {text === "Link Sent" ? (
+                  <Button className="customers_status_awaitingclass_button">
+                    Link Sent
+                  </Button>
+                ) : text === "Requested" ? (
+                  <Button className="customers_status_formpending_button">
+                    Claim
+                  </Button>
+                ) : text === "Awaiting Approval" ? (
+                  <Button className="customers_status_classscheduled_button">
+                    Awaiting Approval
+                  </Button>
+                ) : text === "Awaiting Finance" ? (
+                  <Button className="trainers_pending_button">
+                    Ready to Pay
+                  </Button>
+                ) : text === "Paid" ? (
+                  <div className="trainers_verifieddiv">
+                    <Button className="trainers_verified_button">Paid</Button>
+                  </div>
+                ) : text === "Completed" ? (
+                  <Button className="customers_status_completed_button">
+                    Completed
+                  </Button>
+                ) : text === "Payment Rejected" ||
+                  text === "Approval Rejected" ? (
+                  <div className="trainers_verifieddiv">
+                    <Button className="trainers_rejected_button">{text}</Button>
+                  </div>
+                ) : (
+                  <p style={{ marginLeft: "6px" }}>-</p>
+                )}
+              </Tooltip>
+
+              {record?.status == "Link Sent" ? (
+                <Tooltip
+                  placement="top"
+                  title="Copy form link"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegCopy
+                    size={14}
+                    className="customers_formlink_copybutton"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${
+                          import.meta.env.VITE_EMAIL_URL
+                        }/trainer-payment-claim/${record.trainer_id}/${record.id}`,
+                      );
+                      CommonMessage("success", "Link Copied");
+                      console.log("Copied: eeee");
+                    }}
+                  />
+                </Tooltip>
               ) : (
-                <p style={{ marginLeft: "6px" }}>-</p>
+                ""
               )}
-            </Tooltip>
-          </div>
-        );
+            </div>
+          ),
+          props: { rowSpan: flatRecord.rowSpan },
+        };
       },
     },
     {
@@ -491,51 +654,55 @@ export default function TrainerPayment() {
       dataIndex: "action",
       fixed: "right",
       width: 100,
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={18}
-              className="trainers_action_icons"
-              onClick={() => {
-                if (record.status == "Requested") {
-                  handleEdit(record);
-                } else {
-                  CommonMessage(
-                    "error",
-                    `Unable to update in ${record.status} status`,
-                  );
-                }
-              }}
-            />
-            <Tooltip
-              placement="top"
-              title="View Details"
-              trigger={["hover", "click"]}
-            >
-              <FaRegEye
-                size={15}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsOpenViewDrawer(true);
-                  setSelectedPaymentDetails(record);
-                }}
-              />
-            </Tooltip>
-
-            {record.paid_amount == "0.00" && (
-              <RiDeleteBinLine
+      render: (text, flatRecord) => {
+        const record = flatRecord.request_details;
+        return {
+          children: (
+            <div className="trainers_actionbuttonContainer">
+              <AiOutlineEdit
                 size={18}
-                color="#d32f2f"
                 className="trainers_action_icons"
                 onClick={() => {
-                  setSelectedPaymentDetails(record);
-                  setIsOpenRequestDeleteModal(true);
+                  if (record?.status == "Requested") {
+                    handleEdit(record);
+                  } else {
+                    CommonMessage(
+                      "error",
+                      `Unable to update in ${record?.status} status`,
+                    );
+                  }
                 }}
               />
-            )}
-          </div>
-        );
+              <Tooltip
+                placement="top"
+                title="View Details"
+                trigger={["hover", "click"]}
+              >
+                <FaRegEye
+                  size={15}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenViewDrawer(true);
+                    setSelectedPaymentDetails(record);
+                  }}
+                />
+              </Tooltip>
+
+              {record?.paid_amount == "0.00" && (
+                <RiDeleteBinLine
+                  size={18}
+                  color="#d32f2f"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setSelectedPaymentDetails(record);
+                    setIsOpenRequestDeleteModal(true);
+                  }}
+                />
+              )}
+            </div>
+          ),
+          props: { rowSpan: flatRecord.rowSpan },
+        };
       },
     },
   ];
@@ -832,6 +999,17 @@ export default function TrainerPayment() {
       setPaidNowError(
         priceValidator(isNaN(value) ? 0 : value, parseFloat(amt), true),
       );
+    }
+  };
+
+  const getTrainerByIdData = async (trainerId) => {
+    try {
+      const response = await getTrainerById(trainerId);
+      const trainerDetails = response?.data?.data;
+      setTrainerFullDetails([trainerDetails]);
+    } catch (error) {
+      setTrainerFullDetails([]);
+      console.log("get trainer by id error", error);
     }
   };
 
@@ -1257,11 +1435,36 @@ export default function TrainerPayment() {
   };
 
   const handleSelectedRow = (row) => {
-    console.log("selected rowwww", row);
     setSelectedRows(row);
-    const keys = row.map((item) => item.id); // or your unique row key
+    const keys = row.map((item) => item.row_num); // use row_num since we fallback to it for unique keys
     setSelectedRowKeys(keys);
   };
+
+  const flattenedTableData = useMemo(() => {
+    const flatData = [];
+    paymentRequestsData.forEach((request) => {
+      if (request.students && request.students.length > 0) {
+        request.students.forEach((student, index) => {
+          flatData.push({
+            ...request, // spreads id, which is fine since handleMoveToPaidNow expects item.id to be the request id
+            student_details: student,
+            rowSpan: index === 0 ? request.students.length : 0,
+            request_details: request, // Keep original request handy
+            row_num: `${request.id}_${student.customer_id || index}`,
+          });
+        });
+      } else {
+        flatData.push({
+          ...request,
+          student_details: null,
+          rowSpan: 1,
+          request_details: request,
+          row_num: `${request.id}_no_student`,
+        });
+      }
+    });
+    return flatData;
+  }, [paymentRequestsData]);
 
   return (
     <div>
@@ -1513,7 +1716,7 @@ export default function TrainerPayment() {
                 }}
               >
                 <p>
-                  Requested{" "}
+                  Claim{" "}
                   {`( ${
                     statusCounts &&
                     statusCounts.requested !== undefined &&
@@ -1749,10 +1952,11 @@ export default function TrainerPayment() {
             x: columns.reduce((total, col) => total + (col.width || 150), 0),
           }}
           columns={columns}
-          dataSource={paymentRequestsData}
+          dataSource={flattenedTableData}
           dataPerPage={10}
           loading={loading}
-          checkBox={permissions.includes("Payment Approval") ? "true" : "false"}
+          // checkBox={permissions.includes("Payment Approval") ? "true" : "false"}
+          checkBox={"false"}
           size="small"
           className="questionupload_table"
           selectedDatas={handleSelectedRow}
@@ -1761,6 +1965,11 @@ export default function TrainerPayment() {
           limit={pagination.limit}
           page_number={pagination.page}
           totalPageNumber={pagination.total}
+          getCheckboxProps={(record) => ({
+            disabled: record.rowSpan === 0,
+            style: { display: record.rowSpan === 0 ? "none" : "block" },
+          })}
+          rowKey="row_num"
         />
       </div>
 
@@ -2784,6 +2993,14 @@ export default function TrainerPayment() {
         content="Are you sure want to delete the Request?"
         loading={buttonLoading}
         onClick={handleRequestDelete}
+      />
+      <TrainerFullDetailsModal
+        open={isOpenTrainerFullDetailsModal}
+        onClose={() => {
+          setIsOpenTrainerFullDetailsModal(false);
+          setTrainerFullDetails([]);
+        }}
+        trainerDetails={trainerFullDetails}
       />
     </div>
   );

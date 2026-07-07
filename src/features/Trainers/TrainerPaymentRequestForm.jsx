@@ -1247,6 +1247,7 @@ const TrainerPaymentRequestForm = forwardRef(
                       color: "#f59e0b",
                       marginTop: "4px",
                     }}
+                    allowHalf={true}
                     disabled={isTrainer ? false : true}
                   />
                 </Col>
@@ -1269,6 +1270,7 @@ const TrainerPaymentRequestForm = forwardRef(
                       color: "#f59e0b",
                       marginTop: "4px",
                     }}
+                    allowHalf={true}
                     disabled={isTrainer ? false : true}
                   />
                 </Col>

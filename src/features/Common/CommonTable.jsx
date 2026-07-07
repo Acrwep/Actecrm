@@ -24,6 +24,7 @@ const CommonTable = ({
   summary,
   sticky = { offsetHeader: 64 },
   getCheckboxProps,
+  rowKey,
 }) => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -171,7 +172,7 @@ const CommonTable = ({
       rowClassName={rowClassName}
       sticky={sticky}
       summary={summary}
-      rowKey={(record) => record.id || record.row_num || record.question_id}
+      rowKey={rowKey || ((record) => record.id || record.row_num || record.question_id)}
     />
   );
 };

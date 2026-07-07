@@ -377,7 +377,7 @@ export default function LiveLead({
       },
     },
     {
-      title: "Junk Reason",
+      title: "Reason",
       key: "junk_reason",
       dataIndex: "junk_reason",
       fixed: "right",
@@ -387,7 +387,7 @@ export default function LiveLead({
       },
     },
     {
-      title: "Junk By",
+      title: "Moved By",
       key: "junk_by",
       dataIndex: "junk_by",
       fixed: "right",
@@ -869,7 +869,7 @@ export default function LiveLead({
             case "junk_reason":
               return {
                 ...col,
-                title: "Junk Reason",
+                title: "Reason",
                 width: 140,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
@@ -878,6 +878,7 @@ export default function LiveLead({
             case "junk_by":
               return {
                 ...col,
+                title: "Moved By",
                 width: 120,
                 render: (text, record) => {
                   return (

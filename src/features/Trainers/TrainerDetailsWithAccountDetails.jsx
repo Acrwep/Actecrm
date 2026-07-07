@@ -8,7 +8,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 
-const TrainerFullDetailsModal = ({
+const TrainerDetailsWithAccountDetails = ({
   open,
   onClose,
   trainerDetails = [],
@@ -217,4 +217,4 @@ const TrainerFullDetailsModal = ({
   );
 };
 
-export default TrainerFullDetailsModal;
+export default TrainerDetailsWithAccountDetails;
