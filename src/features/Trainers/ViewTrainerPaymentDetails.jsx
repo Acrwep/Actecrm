@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Row, Col, Modal, Divider, Collapse, Drawer } from "antd";
+import { Row, Col, Modal, Divider, Collapse, Drawer, Rate } from "antd";
 import moment from "moment";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { FaRegEye } from "react-icons/fa";
@@ -21,6 +21,23 @@ import {
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import CommonSpinner from "../Common/CommonSpinner";
+import CommonInputField from "../Common/CommonInputField";
+import CommonSelectField from "../Common/CommonSelectField";
+
+const InfoText = ({ label, value }) => (
+  <div
+    style={{
+      display: "flex",
+      gap: "8px",
+      fontSize: "14px",
+      color: "#333",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: 600 }}>{label}:</span>
+    <span>{value}</span>
+  </div>
+);
 
 export default function ViewTrainerPaymentDetails({
   selectedPaymentDetails,
@@ -293,7 +310,7 @@ export default function ViewTrainerPaymentDetails({
               style={{
                 fontWeight: 600,
                 color: "#333",
-                fontSize: "16px",
+                fontSize: "15px",
               }}
             >
               Customer Details
@@ -330,424 +347,623 @@ export default function ViewTrainerPaymentDetails({
                           </div>
                         }
                       >
-                        <div style={{ padding: "4px 12px 6px 12px" }}>
-                          <Row>
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Name
-                                    </p>
+                        <div style={{ padding: "9px 0px" }}>
+                          <div style={{ padding: "0px 16px" }}>
+                            <p
+                              className="trainer_paymentrequestform_headings"
+                              style={{ fontSize: "14px" }}
+                            >
+                              Student Details
+                            </p>
+                            <Row
+                              gutter={12}
+                              style={{
+                                marginTop: "12px",
+                                marginBottom: "22px",
+                              }}
+                            >
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Name
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.customer_name
+                                          ? item.customer_name
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Commercial
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.commercial ? item.commercial : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Mobile
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.customer_mobile
+                                          ? item.customer_mobile
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Email
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={item.email ? item.email : "-"}
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+                          </div>
+                          <Divider className="customer_statusupdate_divider" />
+
+                          <div style={{ padding: "0px 16px" }}>
+                            <p
+                              className="trainer_paymentrequestform_headings"
+                              style={{ fontSize: "14px" }}
+                            >
+                              Training Details
+                            </p>
+                            <Row
+                              gutter={12}
+                              style={{
+                                marginTop: "12px",
+                                marginBottom: "22px",
+                              }}
+                            >
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Course
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.course_name
+                                          ? item.course_name
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Branch
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.branch_id
+                                          ? allBranchesData?.find(
+                                              (b) => b.id === item.branch_id,
+                                            )?.name || item.branch_id
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Plt Guidance
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.placement_guidance
+                                          ? item.placement_guidance
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Cord Ratings
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col
+                                    span={12}
+                                    style={{ whiteSpace: "nowrap" }}
+                                  >
+                                    <Rate
+                                      value={item.coordinator_rating || 1}
+                                      disabled={true}
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "#f59e0b",
+                                      }}
+                                      allowHalf={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Duration Hrs
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.duration_in_hours
+                                          ? item.duration_in_hours
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Study Mtrl.
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.study_material
+                                          ? item.study_material
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Att. Type
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.attendance_type ||
+                                        (item.attendance_sheetlink
+                                          ? "Link"
+                                          : "Screenshot")
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+
+                              <Col span={8}>
+                                <Row>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Tr.Mode
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.training_mode
+                                          ? item.training_mode
+                                          : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Assessment
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <EllipsisTooltip
+                                      text={
+                                        item.assessment ? item.assessment : "-"
+                                      }
+                                      smallText={true}
+                                    />
+                                  </Col>
+                                </Row>
+
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        HR Ratings
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col
+                                    span={12}
+                                    style={{ whiteSpace: "nowrap" }}
+                                  >
+                                    <Rate
+                                      value={item.hr_rating || 1}
+                                      disabled={true}
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "#f59e0b",
+                                      }}
+                                      allowHalf={true}
+                                    />
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            <p
+                              className="trainer_paymentrequestform_headings"
+                              style={{ fontSize: "14px" }}
+                            >
+                              Upload Documents
+                            </p>
+                            <Row
+                              gutter={[16, 16]}
+                              style={{
+                                marginTop: "12px",
+                                marginBottom: "22px",
+                              }}
+                            >
+                              <Col xs={24} sm={12} md={8} lg={8}>
+                                {item.attendance_type === "Link" ||
+                                item.attendance_sheetlink ? (
+                                  <InfoText
+                                    label="Attendance Sheet Link"
+                                    value={item.attendance_sheetlink || "-"}
+                                  />
+                                ) : (
+                                  <div>
+                                    <div
+                                      style={{
+                                        fontSize: "13px",
+                                        fontWeight: 500,
+                                        color: "#333",
+                                        marginBottom: "4px",
+                                      }}
+                                    >
+                                      Attendance Screenshot:
+                                    </div>
+                                    {item.attendance_screenshot ? (
+                                      <button
+                                        className="pendingcustomer_paymentscreenshot_viewbutton"
+                                        onClick={() => {
+                                          setIsOpenAttendanceScreenshotModal(
+                                            true,
+                                          );
+                                          setViewAttendanceScreenshot(
+                                            item.attendance_screenshot,
+                                          );
+                                        }}
+                                      >
+                                        <FaRegEye size={16} /> View screenshot
+                                      </button>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          fontSize: "14px",
+                                          color: "#666",
+                                        }}
+                                      >
+                                        -
+                                      </span>
+                                    )}
                                   </div>
-                                </Col>
-                                <Col span={12}>
-                                  {/* <EllipsisTooltip
-                                    text={item.customer_name}
-                                    smallText={true}
-                                  /> */}
+                                )}
+                              </Col>
+                            </Row>
+                          </div>
+
+                          <Divider className="customer_statusupdate_divider" />
+
+                          <div style={{ padding: "0px 16px" }}>
+                            <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
+                              <Row gutter={12}>
+                                <Col flex="20%">
                                   <div
                                     style={{
                                       display: "flex",
-                                      gap: "6px",
                                       alignItems: "center",
+                                      gap: "6px",
+                                      flex: 1,
                                     }}
                                   >
-                                    <EllipsisTooltip
-                                      text={item.customer_name}
-                                      smallText={true}
-                                    />
-                                    <FaRegEye
-                                      size={15}
-                                      className="trainers_action_icons"
-                                      onClick={() => {
-                                        getParticularCustomerDetails(
-                                          item.customer_id,
-                                        );
-                                      }}
-                                    />
+                                    <div className="trainerpaymentrequest_balanceamount_badge" />
+                                    <p className="customer_trainer_onboardcount_badgecount">
+                                      Balance Amount{" "}
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div className="trainerpaymentrequest_classpercentage_badge" />
+                                    <p className="customer_trainer_onboardcount_badgecount">
+                                      Class Pct
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div className="trainerpaymentrequest_linkedin_badge" />
+                                    <p className="customer_trainer_onboardcount_badgecount">
+                                      L-Review{" "}
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div className="trainerpaymentrequest_google_badge" />
+                                    <p className="customer_trainer_onboardcount_badgecount">
+                                      G-Review
+                                    </p>
+                                  </div>
+                                </Col>
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div className="trainerpaymentrequest_certificate_badge" />
+                                    <p className="customer_trainer_onboardcount_badgecount">
+                                      Certificate
+                                    </p>
                                   </div>
                                 </Col>
                               </Row>
 
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Commercial
-                                    </p>
-                                  </div>
+                              <Row gutter={12} style={{ marginTop: "2px" }}>
+                                <Col flex="20%">
+                                  <p
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "11px",
+                                      padding: "2px 9px",
+                                    }}
+                                  >
+                                    {"₹" + item.balance_amount}
+                                  </p>{" "}
                                 </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.commercial}
-                                  </p>
+                                <Col flex="20%">
+                                  <p
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "11px",
+                                      padding: "2px 9px",
+                                    }}
+                                  >
+                                    {item.class_percentage
+                                      ? parseFloat(item.class_percentage) + "%"
+                                      : "0" + "%"}
+                                  </p>{" "}
                                 </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Commercial%
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.commercial_percentage + "%"}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Place Of Supply
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={getPlaceOfSupplyOrPlaceOfSaleName(
-                                      item.place_of_supply
-                                        ? item.place_of_supply
-                                        : 0,
-                                    )}
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
-                            </Col>
-
-                            {/* ------------right------------ */}
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      {item.attendance_sheetlink
-                                        ? "Attendance Sheet"
-                                        : "Attendance SS"}
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  {/* <p className="customerdetails_text">
-                                    {item.customer_name}
-                                  </p> */}
-                                  {item.attendance_screenshot ? (
-                                    <button
-                                      className="pendingcustomer_paymentscreenshot_viewbutton"
-                                      onClick={() => {
-                                        setIsOpenAttendanceScreenshotModal(
-                                          true,
-                                        );
-                                        setViewAttendanceScreenshot(
-                                          item.attendance_screenshot,
-                                        );
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: "0px",
+                                    }}
+                                  >
+                                    <p
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "11px",
+                                        padding: "2px 9px",
                                       }}
                                     >
-                                      <FaRegEye size={16} /> View screenshot
-                                    </button>
-                                  ) : (
-                                    <EllipsisTooltip
-                                      text={item.attendance_sheetlink}
-                                      smallText={true}
-                                    />
-                                  )}
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Attendance Status
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.attendance_status}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Place Of Sale
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={getPlaceOfSupplyOrPlaceOfSaleName(
-                                      item.place_of_sale
-                                        ? item.place_of_sale
-                                        : 0,
+                                      {item.linkedin_review
+                                        ? "Collected"
+                                        : "Not Collected"}
+                                    </p>{" "}
+                                    {item.linkedin_review ? (
+                                      <FaRegEye
+                                        size={12}
+                                        style={{
+                                          cursor: "pointer",
+                                          marginTop: "4px",
+                                        }}
+                                        onClick={() => {
+                                          setIsOpenReviewModal(true);
+                                          setReviewType("Linkedin Review");
+                                          setReviewScreenshot(
+                                            item.linkedin_review,
+                                          );
+                                        }}
+                                      />
+                                    ) : (
+                                      ""
                                     )}
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Screenshot
-                                    </p>
                                   </div>
                                 </Col>
-                                <Col span={12}>
-                                  {item.screenshot ? (
-                                    <button
-                                      className="pendingcustomer_paymentscreenshot_viewbutton"
-                                      onClick={() => {
-                                        setIsOpenReviewModal(true);
-                                        setReviewType(
-                                          "Verification Screenshot",
-                                        );
-                                        setReviewScreenshot(item.screenshot);
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: "0px",
+                                    }}
+                                  >
+                                    <p
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "11px",
+                                        padding: "2px 9px",
                                       }}
                                     >
-                                      <FaRegEye size={16} /> View screenshot
-                                    </button>
-                                  ) : (
-                                    "-"
-                                  )}
+                                      {item.google_review
+                                        ? "Collected"
+                                        : "Not Collected"}
+                                    </p>{" "}
+                                    {item.google_review ? (
+                                      <FaRegEye
+                                        size={12}
+                                        style={{
+                                          cursor: "pointer",
+                                          marginTop: "4px",
+                                        }}
+                                        onClick={() => {
+                                          setIsOpenReviewModal(true);
+                                          setReviewType("Google Review");
+                                          setReviewScreenshot(
+                                            item.google_review,
+                                          );
+                                        }}
+                                      />
+                                    ) : (
+                                      ""
+                                    )}
+                                  </div>
+                                </Col>
+
+                                <Col flex="20%">
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: "0px",
+                                    }}
+                                  >
+                                    <p
+                                      style={{
+                                        fontWeight: 600,
+                                        fontSize: "11px",
+                                        padding: "2px 9px",
+                                      }}
+                                    >
+                                      {item.is_certificate_generated == 1
+                                        ? "Generated"
+                                        : "Not Generated"}
+                                    </p>{" "}
+                                    {item.is_certificate_generated == 1 ? (
+                                      <>
+                                        {generateCertLoading ? (
+                                          <CommonSpinner color="#333" />
+                                        ) : (
+                                          <FaRegEye
+                                            size={12}
+                                            style={{
+                                              cursor: "pointer",
+                                              marginTop: "4px",
+                                            }}
+                                            onClick={() => {
+                                              handleViewCert(item.customer_id);
+                                              setCertificateName(
+                                                item.customer_name,
+                                              );
+                                            }}
+                                          />
+                                        )}
+                                      </>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </div>
                                 </Col>
                               </Row>
-                            </Col>
-                          </Row>
-
-                          <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
-                            <Row gutter={12}>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_balanceamount_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    Balance Amount{" "}
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_classpercentage_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    Class Pct
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_linkedin_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    L-Review{" "}
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_google_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    G-Review
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div className="trainerpaymentrequest_certificate_badge" />
-                                  <p className="customer_trainer_onboardcount_badgecount">
-                                    Certificate
-                                  </p>
-                                </div>
-                              </Col>
-                            </Row>
-
-                            <Row gutter={12} style={{ marginTop: "2px" }}>
-                              <Col flex="20%">
-                                <p
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "11px",
-                                    padding: "2px 9px",
-                                  }}
-                                >
-                                  {"₹" + item.balance_amount}
-                                </p>{" "}
-                              </Col>
-                              <Col flex="20%">
-                                <p
-                                  style={{
-                                    fontWeight: 600,
-                                    fontSize: "11px",
-                                    padding: "2px 9px",
-                                  }}
-                                >
-                                  {item.class_percentage
-                                    ? parseFloat(item.class_percentage) + "%"
-                                    : "0" + "%"}
-                                </p>{" "}
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: "0px",
-                                  }}
-                                >
-                                  <p
-                                    style={{
-                                      fontWeight: 600,
-                                      fontSize: "11px",
-                                      padding: "2px 9px",
-                                    }}
-                                  >
-                                    {item.linkedin_review
-                                      ? "Collected"
-                                      : "Not Collected"}
-                                  </p>{" "}
-                                  {item.linkedin_review ? (
-                                    <FaRegEye
-                                      size={12}
-                                      style={{
-                                        cursor: "pointer",
-                                        marginTop: "4px",
-                                      }}
-                                      onClick={() => {
-                                        setIsOpenReviewModal(true);
-                                        setReviewType("Linkedin Review");
-                                        setReviewScreenshot(
-                                          item.linkedin_review,
-                                        );
-                                      }}
-                                    />
-                                  ) : (
-                                    ""
-                                  )}
-                                </div>
-                              </Col>
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: "0px",
-                                  }}
-                                >
-                                  <p
-                                    style={{
-                                      fontWeight: 600,
-                                      fontSize: "11px",
-                                      padding: "2px 9px",
-                                    }}
-                                  >
-                                    {item.google_review
-                                      ? "Collected"
-                                      : "Not Collected"}
-                                  </p>{" "}
-                                  {item.google_review ? (
-                                    <FaRegEye
-                                      size={12}
-                                      style={{
-                                        cursor: "pointer",
-                                        marginTop: "4px",
-                                      }}
-                                      onClick={() => {
-                                        setIsOpenReviewModal(true);
-                                        setReviewType("Google Review");
-                                        setReviewScreenshot(item.google_review);
-                                      }}
-                                    />
-                                  ) : (
-                                    ""
-                                  )}
-                                </div>
-                              </Col>
-
-                              <Col flex="20%">
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: "0px",
-                                  }}
-                                >
-                                  <p
-                                    style={{
-                                      fontWeight: 600,
-                                      fontSize: "11px",
-                                      padding: "2px 9px",
-                                    }}
-                                  >
-                                    {item.is_certificate_generated == 1
-                                      ? "Generated"
-                                      : "Not Generated"}
-                                  </p>{" "}
-                                  {item.is_certificate_generated == 1 ? (
-                                    <>
-                                      {generateCertLoading ? (
-                                        <CommonSpinner color="#333" />
-                                      ) : (
-                                        <FaRegEye
-                                          size={12}
-                                          style={{
-                                            cursor: "pointer",
-                                            marginTop: "4px",
-                                          }}
-                                          onClick={() => {
-                                            handleViewCert(item.customer_id);
-                                            setCertificateName(
-                                              item.customer_name,
-                                            );
-                                          }}
-                                        />
-                                      )}
-                                    </>
-                                  ) : (
-                                    ""
-                                  )}
-                                </div>
-                              </Col>
-                            </Row>
+                            </div>
                           </div>
                         </div>
                       </Collapse.Panel>
