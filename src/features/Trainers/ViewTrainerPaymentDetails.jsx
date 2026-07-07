@@ -24,21 +24,6 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 
-const InfoText = ({ label, value }) => (
-  <div
-    style={{
-      display: "flex",
-      gap: "8px",
-      fontSize: "14px",
-      color: "#333",
-      alignItems: "center",
-    }}
-  >
-    <span style={{ fontWeight: 600 }}>{label}:</span>
-    <span>{value}</span>
-  </div>
-);
-
 export default function ViewTrainerPaymentDetails({
   selectedPaymentDetails,
   allBranchesData,
@@ -256,7 +241,7 @@ export default function ViewTrainerPaymentDetails({
 
       <Divider className="customer_statusupdate_divider" />
 
-      <div
+      {/* <div
         className="customerdetails_coursecard"
         style={{ margin: "24px 24px" }}
       >
@@ -301,7 +286,7 @@ export default function ViewTrainerPaymentDetails({
             </Col>
           </Row>
         </div>
-      </div>
+      </div> */}
 
       <div className="customer_statusupdate_adddetailsContainer">
         {selectedPaymentDetails.students.length >= 1 ? (
@@ -533,7 +518,11 @@ export default function ViewTrainerPaymentDetails({
                                     style={{ whiteSpace: "nowrap" }}
                                   >
                                     <Rate
-                                      value={item.coordinator_rating || 1}
+                                      value={
+                                        item.coordinator_rating
+                                          ? parseFloat(item.coordinator_rating)
+                                          : 1
+                                      }
                                       disabled={true}
                                       style={{
                                         fontSize: "12px",
@@ -660,7 +649,11 @@ export default function ViewTrainerPaymentDetails({
                                     style={{ whiteSpace: "nowrap" }}
                                   >
                                     <Rate
-                                      value={item.hr_rating || 1}
+                                      value={
+                                        item.hr_rating
+                                          ? parseFloat(item.hr_rating)
+                                          : 1
+                                      }
                                       disabled={true}
                                       style={{
                                         fontSize: "12px",
@@ -689,10 +682,29 @@ export default function ViewTrainerPaymentDetails({
                               <Col xs={24} sm={12} md={8} lg={8}>
                                 {item.attendance_type === "Link" ||
                                 item.attendance_sheetlink ? (
-                                  <InfoText
-                                    label="Attendance Sheet Link"
-                                    value={item.attendance_sheetlink || "-"}
-                                  />
+                                  // <InfoText
+                                  //   label="Attendance Sheet Link"
+                                  //   value={item.attendance_sheetlink || "-"}
+                                  // />
+                                  <Row>
+                                    <Col span={12}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p className="customerdetails_rowheading">
+                                          Attendance Sheet Link
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <EllipsisTooltip
+                                        text={
+                                          item.attendance_sheetlink
+                                            ? item.attendance_sheetlink
+                                            : "-"
+                                        }
+                                        smallText={true}
+                                      />
+                                    </Col>
+                                  </Row>
                                 ) : (
                                   <div>
                                     <div
@@ -972,7 +984,7 @@ export default function ViewTrainerPaymentDetails({
                 </Collapse>
               </div>
 
-              {isShowPaymentDetails && (
+              {/* {isShowPaymentDetails && (
                 <>
                   {selectedPaymentDetails.payments.length >= 1 ? (
                     <div>
@@ -1204,7 +1216,6 @@ export default function ViewTrainerPaymentDetails({
                                             </Col>
                                           </Row>
 
-                                          {/* ----------individual screenshot---------------- */}
                                           {item.approved_screenshot && (
                                             <Row
                                               gutter={16}
@@ -1257,7 +1268,7 @@ export default function ViewTrainerPaymentDetails({
                     ""
                   )}
                 </>
-              )}
+              )} */}
             </div>
           </div>
         ) : (
