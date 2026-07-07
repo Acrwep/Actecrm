@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useRef } from "react";
+import Draggable from "react-draggable";
 import { Modal, Row, Col } from "antd";
 import moment from "moment";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -14,14 +15,80 @@ const TrainerFullDetailsModal = ({
   trainerDetails = [],
   width = "50%",
 }) => {
+  const [disabled, setDisabled] = useState(true);
+  const [zIndex, setZIndex] = useState(1000);
+  const [bounds, setBounds] = useState({
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+  });
+  const draggleRef = useRef(null);
+
+  const bringToFront = () => {
+    window.highestModalZIndex = (window.highestModalZIndex || 1000) + 1;
+    setZIndex(window.highestModalZIndex);
+  };
+
+  const onStart = (_event, uiData) => {
+    const { clientWidth, clientHeight } = window.document.documentElement;
+    const targetRect = draggleRef.current?.getBoundingClientRect();
+    if (!targetRect) {
+      return;
+    }
+    setBounds({
+      left: -targetRect.left + uiData.x,
+      right: clientWidth - (targetRect.right - uiData.x),
+      top: -targetRect.top + uiData.y,
+      bottom: clientHeight - (targetRect.bottom - uiData.y),
+    });
+  };
+
   return (
     <Modal
-      title={<span style={{ padding: "0px 24px" }}>Trainer Full Details</span>}
+      title={
+        <div
+          style={{ width: "100%", cursor: "move", padding: "0px 24px" }}
+          onMouseOver={() => {
+            if (disabled) {
+              setDisabled(false);
+            }
+          }}
+          onMouseOut={() => {
+            setDisabled(true);
+          }}
+          onFocus={() => {}}
+          onBlur={() => {}}
+          onMouseDownCapture={bringToFront}
+        >
+          Trainer Full Details
+        </div>
+      }
       open={open}
       onCancel={onClose}
       footer={false}
       width={width}
+      mask={false}
+      maskClosable={false}
+      zIndex={zIndex}
+      styles={{
+        wrapper: { pointerEvents: "none", overflow: "hidden" },
+        content: { pointerEvents: "auto" },
+      }}
       className="trainerpaymentrequest_trainerfulldetails_modal"
+      modalRender={(modal) => (
+        <Draggable
+          disabled={disabled}
+          bounds={bounds}
+          nodeRef={draggleRef}
+          onStart={(event, uiData) => {
+            bringToFront();
+            onStart(event, uiData);
+          }}
+        >
+          <div ref={draggleRef} onMouseDownCapture={bringToFront}>{modal}</div>
+        </Draggable>
+      )}
     >
       {trainerDetails.map((item, index) => (
         <>

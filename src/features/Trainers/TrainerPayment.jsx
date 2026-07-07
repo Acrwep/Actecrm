@@ -34,6 +34,7 @@ import {
   createTrainerPaymentTransaction,
   deleteTrainerPaymentRequest,
   getAllBranches,
+  getCustomerById,
   getTrainerById,
   getTrainerPayments,
   getTrainers,
@@ -58,6 +59,7 @@ import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
+import DraggableStudentModal from "../Common/DraggableStudentModal";
 import PrismaZoom from "react-prismazoom";
 import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
 import CommonTextArea from "../Common/CommonTextArea";
@@ -119,6 +121,9 @@ export default function TrainerPayment() {
   const [isOpenTrainerFullDetailsModal, setIsOpenTrainerFullDetailsModal] =
     useState(false);
   const [trainerFullDetails, setTrainerFullDetails] = useState([]);
+  const [isOpenStudentDetailsModal, setIsOpenStudentDetailsModal] =
+    useState(false);
+  const [selectedStudentDetails, setSelectedStudentDetails] = useState(null);
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -216,7 +221,7 @@ export default function TrainerPayment() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <EllipsisTooltip text={text || "-"} />
               <FaRegEye
-                size={15}
+                size={14}
                 className="trainers_action_icons"
                 onClick={() => {
                   setIsOpenTrainerFullDetailsModal(true);
@@ -234,7 +239,23 @@ export default function TrainerPayment() {
       key: "student_id",
       dataIndex: ["student_details", "customer_name"],
       width: 150,
-      render: (text) => <EllipsisTooltip text={text || "-"} />,
+      render: (text, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <EllipsisTooltip text={text || "-"} />
+          {text && (
+            <FaRegEye
+              size={14}
+              className="trainers_action_icons"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                getParticularCustomerDetails(
+                  record.student_details?.customer_id,
+                );
+              }}
+            />
+          )}
+        </div>
+      ),
     },
     {
       title: "Tech",
@@ -358,7 +379,7 @@ export default function TrainerPayment() {
       title: "Status",
       key: "status",
       dataIndex: "status",
-      width: 195,
+      width: 140,
       fixed: "right",
       render: (text, flatRecord) => {
         const record = flatRecord.request_details;
@@ -371,7 +392,7 @@ export default function TrainerPayment() {
                 color="#fff"
                 styles={{
                   body: {
-                    width: "290px",
+                    width: "240px",
                     maxWidth: "none",
                     whiteSpace: "normal",
                   },
@@ -456,8 +477,9 @@ export default function TrainerPayment() {
                             checked={false}
                             onChange={(e) => {
                               if (permissions.includes("Payment Approval")) {
-                                setIsOpenDetailsDrawer(true);
-                                setDrawerContentStatus("Approve");
+                                // setIsOpenDetailsDrawer(true);
+                                // setDrawerContentStatus("Approve");
+                                setIsOpenApproveModal(true);
                                 setSelectedPaymentDetails(record);
                                 setPaymentHistory(record?.transactions || []);
                                 setCollapseDefaultKey(["1"]);
@@ -492,24 +514,13 @@ export default function TrainerPayment() {
                               if (record?.status == "Awaiting Finance") {
                                 if (permissions.includes("Payment Approval")) {
                                   setSelectedPaymentDetails(record);
-                                  CommonMessage(
-                                    "warning",
-                                    "Please Select Rows to Verify",
-                                  );
                                 } else {
                                   CommonMessage("error", "Access Denied");
                                 }
-                              } else if (
-                                record?.status == "Awaiting Approval"
-                              ) {
-                                CommonMessage(
-                                  "warning",
-                                  "Payment not approved yet",
-                                );
                               } else {
                                 CommonMessage(
                                   "warning",
-                                  "Payment not raised yet",
+                                  "Claim not approved yet",
                                 );
                               }
                             }}
@@ -526,7 +537,7 @@ export default function TrainerPayment() {
                         )}
                       </Col>
 
-                      <Col span={12} style={{ marginBottom: "8px" }}>
+                      {/* <Col span={12} style={{ marginBottom: "8px" }}>
                         {record?.status == "Requested" ||
                         record?.status == "Link Sent" ||
                         record?.status == "Awaiting Finance" ||
@@ -572,7 +583,7 @@ export default function TrainerPayment() {
                             </p>
                           </div>
                         )}
-                      </Col>
+                      </Col> */}
                     </Row>
                   </>
                 }
@@ -1003,6 +1014,19 @@ export default function TrainerPayment() {
     } catch (error) {
       setTrainerFullDetails([]);
       console.log("get trainer by id error", error);
+    }
+  };
+
+  const getParticularCustomerDetails = async (customer_id) => {
+    try {
+      const response = await getCustomerById(customer_id);
+      const customer_details = response?.data?.data || null;
+      console.log("customer full details", customer_details);
+      setSelectedStudentDetails(customer_details);
+      setIsOpenStudentDetailsModal(true);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setSelectedStudentDetails(null);
     }
   };
 
@@ -1609,12 +1633,12 @@ export default function TrainerPayment() {
       <Row>
         <Col span={18}>
           <div className="customers_scroll_wrapper">
-            <button
+            {/* <button
               onClick={() => scroll(-600)}
               className="customer_statusscroll_button"
             >
               <IoMdArrowDropleft size={25} />
-            </button>
+            </button> */}
             <div className="customers_status_mainContainer" ref={scrollRef}>
               {" "}
               <div
@@ -1719,7 +1743,7 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div>
-              <div
+              {/* <div
                 className={
                   status === "Awaiting Approval"
                     ? "customers_active_classschedule_container"
@@ -1752,7 +1776,7 @@ export default function TrainerPayment() {
                       : "-"
                   } )`}
                 </p>
-              </div>
+              </div> */}
               <div
                 className={
                   status === "Awaiting Finance"
@@ -1787,7 +1811,7 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div>
-              <div
+              {/* <div
                 className={
                   status === "Payment Rejected"
                     ? "customers_active_escalated_container"
@@ -1820,7 +1844,7 @@ export default function TrainerPayment() {
                       : "-"
                   } )`}
                 </p>
-              </div>
+              </div> */}
               <div
                 className={
                   status === "Paid"
@@ -1855,7 +1879,7 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div>
-              <div
+              {/* <div
                 className={
                   status === "Completed"
                     ? "trainers_active_verifiedtrainers_container"
@@ -1888,14 +1912,14 @@ export default function TrainerPayment() {
                       : "-"
                   } )`}
                 </p>
-              </div>
+              </div> */}
             </div>
-            <button
+            {/* <button
               onClick={() => scroll(900)}
               className="customer_statusscroll_button"
             >
               <IoMdArrowDropright size={25} />
-            </button>
+            </button> */}
           </div>
         </Col>
 
@@ -2798,6 +2822,7 @@ export default function TrainerPayment() {
           setIsOpenApproveModal(false);
           setApproveType("");
           setApprovePaymentDetails(null);
+          setSelectedPaymentDetails(null);
         }}
         footer={false}
         width="30%"
@@ -2808,8 +2833,8 @@ export default function TrainerPayment() {
         <p className="customer_classcompletemodal_text">
           You Want To Approve The Amount Of{" "}
           <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
-            {approvePaymentDetails && approvePaymentDetails.paid_amount
-              ? "₹" + approvePaymentDetails.paid_amount
+            {selectedPaymentDetails && selectedPaymentDetails.request_amount
+              ? "₹" + selectedPaymentDetails.request_amount
               : "-"}{" "}
           </span>
           for trainer{" "}
@@ -2825,6 +2850,7 @@ export default function TrainerPayment() {
             onClick={() => {
               setIsOpenApproveModal(false);
               setApproveType("");
+              setSelectedPaymentDetails(null);
               setApprovePaymentDetails(null);
             }}
           >
@@ -2994,6 +3020,12 @@ export default function TrainerPayment() {
           setTrainerFullDetails([]);
         }}
         trainerDetails={trainerFullDetails}
+      />
+
+      <DraggableStudentModal
+        open={isOpenStudentDetailsModal}
+        onClose={() => setIsOpenStudentDetailsModal(false)}
+        customerDetails={selectedStudentDetails}
       />
     </div>
   );
