@@ -15,6 +15,7 @@ import {
   Checkbox,
   Popover,
   Avatar,
+  Collapse,
 } from "antd";
 import { LuSend } from "react-icons/lu";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -58,6 +59,7 @@ import {
   trainerStatusUpdate,
   updateTableColumns,
   updateTrainer,
+  getTrainerBanks,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -240,6 +242,7 @@ export default function Trainers() {
   const [branchName, setBranchName] = useState("");
   const [ifscCode, setIfscCode] = useState("");
   const [signatureImage, setSignatureImage] = useState("");
+  const [trainerBanksList, setTrainerBanksList] = useState([]);
   //status count usestates
   const [allTrainersCount, setAllTrainersCount] = useState(0);
   const [formPendingCount, setFormPendingCount] = useState(0);
@@ -1154,7 +1157,7 @@ export default function Trainers() {
     }
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setIsShowBankTab(true);
     console.log("clicked item", item);
     // const skillsAsJson = JSON.parse(item.skills);
@@ -1214,6 +1217,21 @@ export default function Trainers() {
     setBranchName(item.branch_name);
     setIfscCode(item.ifsc_code);
     setSignatureImage(item.signature_image);
+
+    try {
+      const response = await getTrainerBanks(item?.id);
+      console.log("trainer banks", response);
+      const bank_details = response.data?.data || [];
+      if (bank_details.length >= 1) {
+        const updateData = bank_details.filter((f) => f.account_number != "");
+        setTrainerBanksList(updateData);
+      } else {
+        setTrainerBanksList([]);
+      }
+    } catch (error) {
+      console.log("trainer bank error", error);
+      setTrainerBanksList([]);
+    }
   };
 
   const handleSearch = (e) => {
@@ -1965,83 +1983,117 @@ export default function Trainers() {
 
   const renderBankDetails = () => {
     return (
-      <div>
-        <Row gutter={16}>
-          <Col span={8}>
-            <CommonInputField
-              label="Account Holder Name"
-              required={true}
-              onChange={(e) => {
-                setAccountHolderName(e.target.value);
-              }}
-              value={accountHolderName}
-              errorFontSize="9px"
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Account Number"
-              required={true}
-              onChange={(e) => {
-                setAccountNumber(e.target.value);
-              }}
-              value={accountNumber}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Bank Name"
-              required={true}
-              onChange={(e) => {
-                setBankName(e.target.value);
-              }}
-              value={bankName}
-            />
-          </Col>
-        </Row>
+      <div style={{ marginTop: "16px" }}>
+        {trainerBanksList && trainerBanksList.length > 0 ? (
+          <>
+            <Collapse accordion>
+              {trainerBanksList.map((bank, index) => (
+                <Collapse.Panel
+                  key={bank.id || index}
+                  header={
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span style={{ fontSize: "13px", fontWeight: 500 }}>
+                        {bank.bank_name || `Bank Account ${index + 1}`}
+                      </span>
 
-        <Row gutter={16} style={{ marginTop: "20px" }}>
-          <Col span={8}>
-            <CommonInputField
-              label="Branch Name"
-              required={true}
-              onChange={(e) => {
-                setBranchName(e.target.value);
+                      {trainerBanksList.length > 1 && index === 0 && (
+                        <span
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+                            color: "#ffffff",
+                            fontSize: "9px",
+                            padding: "2px 10px",
+                            borderRadius: "20px",
+                            fontWeight: 600,
+                            boxShadow: "0 2px 6px rgba(82, 196, 26, 0.3)",
+                            letterSpacing: "0.3px",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Recently Used
+                        </span>
+                      )}
+                    </div>
+                  }
+                >
+                  <Row gutter={[16, 16]}>
+                    <Col span={8}>
+                      <p className="trainer_bankdetails_title_names">
+                        Account Holder Name
+                      </p>
+                      <p style={{ fontSize: "13px" }}>
+                        {bank.account_holder_name || "-"}
+                      </p>
+                    </Col>
+                    <Col span={8}>
+                      <p className="trainer_bankdetails_title_names">
+                        Account Number
+                      </p>
+                      <p style={{ fontSize: "13px" }}>
+                        {bank.account_number || "-"}
+                      </p>
+                    </Col>
+                    <Col span={8}>
+                      <p className="trainer_bankdetails_title_names">
+                        Bank Name
+                      </p>
+                      <p style={{ fontSize: "13px" }}>
+                        {bank.bank_name || "-"}
+                      </p>
+                    </Col>
+                    <Col span={8}>
+                      <p className="trainer_bankdetails_title_names">
+                        Branch Name
+                      </p>
+                      <p style={{ fontSize: "13px" }}>
+                        {bank.branch_name || "-"}
+                      </p>
+                    </Col>
+                    <Col span={8}>
+                      <p className="trainer_bankdetails_title_names">
+                        IFSC Code
+                      </p>
+                      <p style={{ fontSize: "13px" }}>
+                        {bank.ifsc_code || "-"}
+                      </p>
+                    </Col>
+                  </Row>
+                </Collapse.Panel>
+              ))}
+            </Collapse>
+            <div
+              style={{
+                marginTop: "24px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
               }}
-              value={branchName}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="IFSC Code"
-              required={true}
-              onChange={(e) => {
-                setIfscCode(e.target.value.toUpperCase());
-              }}
-              value={ifscCode}
-            />
-          </Col>
-          <Col
-            span={8}
-            style={{ display: "flex", gap: "4px", alignItems: "center" }}
-          >
-            <p className="leadmanager_paymentdrawer_userheadings">
-              Signature:{" "}
-            </p>
-
-            {signatureImage ? (
-              <img
-                src={`${signatureImage}`}
-                alt="Trainer Signature"
-                className="trainer_signature_image"
-              />
-            ) : (
-              "-"
-            )}
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "20px" }}></Row>
+            >
+              <p className="trainer_bankdetails_title_names">
+                Trainer Signature
+              </p>
+              {trainerBanksList[0]?.signature_image ? (
+                <img
+                  src={`${trainerBanksList[0].signature_image}`}
+                  alt="Trainer Signature"
+                  className="trainer_signature_image"
+                  style={{ maxWidth: "150px", marginTop: "8px" }}
+                />
+              ) : (
+                <p style={{ textAlign: "center" }}>-</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p>No bank details available.</p>
+        )}
       </div>
     );
   };

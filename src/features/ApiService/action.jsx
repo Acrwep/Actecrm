@@ -188,6 +188,17 @@ export const getTrainerById = async (trainer_id) => {
   }
 };
 
+export const getTrainerBanks = async (trainer_id) => {
+  try {
+    const response = await api.get(
+      `/api/getTrainerBanks?trainer_id=${trainer_id}`,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const createTrainer = async (payload) => {
   try {
     const response = await api.post("/api/addTrainer", payload);

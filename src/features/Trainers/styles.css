@@ -230,6 +230,10 @@
   border-color: #d32f2f !important;
   box-shadow: none !important;
 }
+.trainer_bankdetails_title_names {
+  font-size: 13px;
+  font-weight: 600;
+}
 /* trainer registration form styles */
 .logincard_innerContainer {
   padding: 0px 35px 0px 35px !important;

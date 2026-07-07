@@ -926,7 +926,13 @@ const TrainerPaymentRequestForm = forwardRef(
                     <CommonSelectField
                       label={"Student"}
                       required={true}
-                      options={studentsData}
+                      options={studentsData.filter(
+                        (student) =>
+                          student.id == item.customer_id ||
+                          !formFields.some(
+                            (f, i) => i !== index && f.customer_id == student.id
+                          )
+                      )}
                       value={item.customer_id}
                       onChange={(e) => {
                         const selectedStudent = studentsData.find(

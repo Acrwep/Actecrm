@@ -455,21 +455,14 @@ export default function TrainerPayment() {
                             className="server_statuscheckbox"
                             checked={false}
                             onChange={(e) => {
-                              if (record?.status == "Awaiting Approval") {
-                                if (permissions.includes("Payment Approval")) {
-                                  setIsOpenDetailsDrawer(true);
-                                  setDrawerContentStatus("Approve");
-                                  setSelectedPaymentDetails(record);
-                                  setPaymentHistory(record?.transactions || []);
-                                  setCollapseDefaultKey(["1"]);
-                                } else {
-                                  CommonMessage("error", "Access Denied");
-                                }
+                              if (permissions.includes("Payment Approval")) {
+                                setIsOpenDetailsDrawer(true);
+                                setDrawerContentStatus("Approve");
+                                setSelectedPaymentDetails(record);
+                                setPaymentHistory(record?.transactions || []);
+                                setCollapseDefaultKey(["1"]);
                               } else {
-                                CommonMessage(
-                                  "warning",
-                                  "Payment not raised yet",
-                                );
+                                CommonMessage("error", "Access Denied");
                               }
                             }}
                           >

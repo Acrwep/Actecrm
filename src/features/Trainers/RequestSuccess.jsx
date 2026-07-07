@@ -42,13 +42,10 @@ export default function RequestSuccess() {
             className="congrats_icon"
           />
         </div>
-        <p className="success_headingtext">
-          {" "}
-          Payment Request Sent Successfully{" "}
-        </p>
+        <p className="success_headingtext"> Payment Claim Sent Successfully </p>
         <p className="success_descriptiontext">
-          Your payment request has been submitted successfully. The request is
-          now under review and will be processed shortly.
+          Your payment claim has been submitted successfully. The claim is now
+          under review and will be processed shortly.
         </p>
       </div>
     </div>
