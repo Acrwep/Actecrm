@@ -341,6 +341,7 @@ export default function TrainerPayment() {
       key: "request_amount",
       dataIndex: "request_amount",
       width: 140,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
         return {
           children: <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>,
@@ -353,6 +354,7 @@ export default function TrainerPayment() {
       key: "days_taken_topay",
       dataIndex: "days_taken_topay",
       width: 140,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
         return {
           children: <p>{text !== null && text !== undefined ? text : "-"}</p>,
@@ -365,6 +367,7 @@ export default function TrainerPayment() {
       key: "deadline_date",
       dataIndex: "deadline_date",
       width: 130,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
         return {
           children: <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>,
@@ -592,7 +595,12 @@ export default function TrainerPayment() {
         };
       },
     },
-  ];
+  ].filter((col) => {
+    if (!permissions.includes("View Financial Details")) {
+      return !["request_amount", "days_taken_topay", "deadline_date"].includes(col.key);
+    }
+    return true;
+  });
 
   const [columns, setColumns] = useState(
     nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
@@ -784,6 +792,7 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 140,
+                hidden: !permissions.includes("View Financial Details") ? true : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -797,6 +806,7 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 140,
+                hidden: !permissions.includes("View Financial Details") ? true : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -810,6 +820,7 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 130,
+                hidden: !permissions.includes("View Financial Details") ? true : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -1044,9 +1055,16 @@ export default function TrainerPayment() {
 
       setUpdateTableId(filterPage.id);
 
-      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const filteredBackendColumns = filterPage.column_names.filter((col) => {
+        if (!permissions.includes("View Financial Details")) {
+          return !["request_amount", "days_taken_topay", "deadline_date"].includes(col.key);
+        }
+        return true;
+      });
+
+      const allColumns = attachRenderFunctions(filteredBackendColumns);
       const visibleColumns = attachRenderFunctions(
-        filterPage.column_names.filter((col) => col.isChecked),
+        filteredBackendColumns.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
