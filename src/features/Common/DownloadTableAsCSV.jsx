@@ -185,6 +185,19 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           return row[column.dataIndex] ? row[column.dataIndex] + "%" : "-";
         }
 
+        //assign lead table handling
+        if (column.dataIndex === "assigned_by_user") {
+          const Name = row[column.dataIndex];
+          if (!Name) return "-";
+          return row.assigned_by ? `${row.assigned_by} - ${Name}` : Name;
+        }
+
+        if (column.dataIndex === "assigned_to_user") {
+          const Name = row[column.dataIndex];
+          if (!Name) return "-";
+          return row.assigned_to ? `${row.assigned_to} - ${Name}` : Name;
+        }
+
         return row[column.dataIndex]; // other fields
       }),
     ), // data rows

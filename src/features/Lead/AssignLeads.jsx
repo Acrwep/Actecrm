@@ -7,12 +7,14 @@ import {
   Radio,
   Button,
   Badge,
-  Drawer,
+  Spin,
   Modal,
 } from "antd";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
+import { LoadingOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { GiCardPickup } from "react-icons/gi";
 import { PiShareFatBold } from "react-icons/pi";
@@ -47,6 +49,7 @@ import CommonTextArea from "../Common/CommonTextArea";
 import moment from "moment";
 import { storeAssignLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function AssignLeads({
   leadTypeOptions,
@@ -76,6 +79,7 @@ export default function AssignLeads({
   const [leadData, setLeadData] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
   const [saleUsers, setSaleUsers] = useState([]);
+  const [downloadButtonLoader, setDownloadButtonLoader] = useState(false);
   //pick lead drawer
   const [pickLeadItem, setPickLeadItem] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -893,6 +897,56 @@ export default function AssignLeads({
     }
   };
 
+  const handleDownload = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      ...(searchValue && filterType == 1
+        ? { phone: searchValue }
+        : searchValue && filterType == 2
+          ? { name: searchValue }
+          : searchValue && filterType == 3
+            ? { email: searchValue }
+            : searchValue && filterType == 4
+              ? { course: searchValue }
+              : {}),
+      // start_date: startDate,
+      // end_date: endDate,
+      ...(!permissions.includes("View All Assigned Leads")
+        ? { user_ids: [convertAsJson?.user_id] }
+        : {}),
+      ...(selectedBucket ? { bucket: selectedBucket } : {}),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getManualAssignLeads(payload);
+      console.log("get manual assign leads response", response);
+      const download_data = response?.data?.data?.data || [];
+      const alterColumns = columns.filter(
+        (f) => f.title !== "Action" && f.title !== "Assigned Before",
+      );
+      DownloadTableAsCSV(
+        download_data,
+        alterColumns,
+        `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+          selectedDates[1],
+        ).format("DD-MM-YYYY")} Assign Leads.csv`,
+      );
+      setTimeout(() => {
+        setDownloadButtonLoader(false);
+      }, 300);
+    } catch (error) {
+      setDownloadButtonLoader(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
   return (
     <div>
       <Row>
@@ -1057,7 +1111,7 @@ export default function AssignLeads({
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>
           <div className="livelead_junkbutton_container">
-            {selectedRows.length >= 1 && (
+            {selectedRows.length >= 1 ? (
               <>
                 {permissions.includes("Assign Lead") && (
                   <button
@@ -1079,6 +1133,33 @@ export default function AssignLeads({
                 >
                   Move to Trash
                 </Button>
+              </>
+            ) : (
+              <>
+                {permissions.includes("Download Leads") && (
+                  <Tooltip placement="top" title="Download">
+                    <Button
+                      className={
+                        downloadButtonLoader
+                          ? "customer_loading_download_button"
+                          : "customer_download_button"
+                      }
+                      style={{ padding: "2px 10px" }}
+                      onClick={handleDownload}
+                      disabled={downloadButtonLoader}
+                    >
+                      {downloadButtonLoader ? (
+                        <Spin
+                          indicator={<LoadingOutlined spin />}
+                          style={{ color: "#333" }}
+                          size="small"
+                        />
+                      ) : (
+                        <DownloadOutlined className="download_icon" />
+                      )}
+                    </Button>
+                  </Tooltip>
+                )}
               </>
             )}
           </div>
