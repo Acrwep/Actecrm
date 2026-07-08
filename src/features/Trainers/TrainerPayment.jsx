@@ -32,6 +32,8 @@ import {
   getTrainerPayments,
   getTrainers,
   updateTrainerPaymentStatus,
+  getTableColumns,
+  updateTableColumns,
 } from "../ApiService/action";
 import {
   formatToBackendIST,
@@ -48,6 +50,7 @@ import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
 import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { useSelector } from "react-redux";
+import CommonDnd from "../Common/CommonDnd";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import TrainerFullDetailsModal from "./TrainerFullDetailsModal";
 import TrainerPayslip from "./TrainerPayslip";
@@ -59,6 +62,11 @@ export default function TrainerPayment() {
   const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
   const permissions = useSelector((state) => state.userpermissions);
+
+  const [loginUserId, setLoginUserId] = useState("");
+  const [updateTableId, setUpdateTableId] = useState(null);
+  const [checkAll, setCheckAll] = useState(false);
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
 
   const scroll = (scrollOffset) => {
     scrollRef.current.scrollBy({
@@ -170,7 +178,7 @@ export default function TrainerPayment() {
   };
 
   // Table columns definition
-  const columns = [
+  const nonChangeColumns = [
     {
       title: "Bill Raise Date",
       key: "bill_raisedate",
@@ -586,6 +594,484 @@ export default function TrainerPayment() {
     },
   ];
 
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
+  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+
+  useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        return updateTableColumnsData();
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Trainer Payment");
+      if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          switch (col.key) {
+            case "bill_raisedate":
+              return {
+                ...col,
+                width: 130,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "trainer_name":
+              return {
+                ...col,
+                width: 150,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <EllipsisTooltip text={text || "-"} />
+                        <FaRegEye
+                          size={14}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            setIsOpenTrainerFullDetailsModal(true);
+                            getTrainerByIdData(record?.trainer_id);
+                          }}
+                        />
+                      </div>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "student_id":
+              return {
+                ...col,
+                width: 150,
+                render: (text, record) => (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <EllipsisTooltip text={text || "-"} />
+                    {text && (
+                      <FaRegEye
+                        size={14}
+                        className="trainers_action_icons"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          getParticularCustomerDetails(
+                            record.student_details?.customer_id,
+                          );
+                        }}
+                      />
+                    )}
+                  </div>
+                ),
+              };
+            case "tech":
+              return {
+                ...col,
+                width: 150,
+                render: (text) => <EllipsisTooltip text={text || "-"} />,
+              };
+            case "ra":
+              return {
+                ...col,
+                width: 110,
+                render: (text, record) => (
+                  <EllipsisTooltip
+                    text={
+                      text
+                        ? `${text} - ${record?.student_details?.ra_user_name}`
+                        : "-"
+                    }
+                  />
+                ),
+              };
+            case "hr":
+              return {
+                ...col,
+                width: 110,
+                render: (text, record) => (
+                  <EllipsisTooltip
+                    text={
+                      text
+                        ? `${text} - ${record?.student_details?.hr_user_name}`
+                        : "-"
+                    }
+                  />
+                ),
+              };
+            case "training_mode":
+              return {
+                ...col,
+                width: 130,
+                render: (text) => <p>{text || "-"}</p>,
+              };
+            case "is_payment_cleared":
+              return {
+                ...col,
+                width: 130,
+                render: (text) => renderCellWithBackground(text),
+              };
+            case "is_class_percentage":
+              return {
+                ...col,
+                width: 140,
+                render: (text) =>
+                  renderCellWithBackground(parseFloat(text || 0) === 100),
+              };
+            case "is_google":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => renderCellWithBackground(text),
+              };
+            case "is_linkedin":
+              return {
+                ...col,
+                width: 130,
+                render: (text) => renderCellWithBackground(text),
+              };
+            case "is_acknowledged":
+              return {
+                ...col,
+                width: 190,
+                render: (text, record) =>
+                  renderCellWithBackground(
+                    text,
+                    {},
+                    {
+                      showCopy: true,
+                      onCopy: () => {
+                        navigator.clipboard.writeText(
+                          `${
+                            import.meta.env.VITE_EMAIL_URL
+                          }/trainer-registration/${record.id}`,
+                        );
+                        CommonMessage("success", "Link Copied");
+                        console.log("Copied: eeee");
+                      },
+                    },
+                  ),
+              };
+            case "request_amount":
+              return {
+                ...col,
+                width: 140,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "days_taken_topay":
+              return {
+                ...col,
+                width: 140,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>{text !== null && text !== undefined ? text : "-"}</p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "deadline_date":
+              return {
+                ...col,
+                width: 130,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "status":
+              return {
+                ...col,
+                width: 140,
+                fixed: "right",
+                render: (text, flatRecord) => {
+                  const record = flatRecord.request_details;
+                  return {
+                    children: (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Tooltip
+                          placement="bottomLeft"
+                          className="customers_statustooltip"
+                          color="#fff"
+                          styles={{
+                            body: {
+                              width: "240px",
+                              maxWidth: "none",
+                              whiteSpace: "normal",
+                            },
+                          }}
+                          title={
+                            <>
+                              <Row>
+                                <Col span={12} style={{ marginBottom: "8px" }}>
+                                  {record?.status == "Requested" ||
+                                  record?.status == "Link Sent" ||
+                                  record?.status == "Payment Rejected" ||
+                                  record?.status == "Approval Rejected" ||
+                                  record?.status == "Awaiting Approval" ? (
+                                    <Checkbox
+                                      className="server_statuscheckbox"
+                                      checked={false}
+                                      onChange={(e) => {
+                                        if (
+                                          permissions.includes(
+                                            "Payment Approval",
+                                          )
+                                        ) {
+                                          setIsOpenApproveModal(true);
+                                          setSelectedPaymentDetails(record);
+                                        } else {
+                                          CommonMessage(
+                                            "error",
+                                            "Access Denied",
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      Approve
+                                    </Checkbox>
+                                  ) : (
+                                    <div className="customers_classcompleted_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p className="customers_classgoing_completedtext">
+                                        Approved
+                                      </p>
+                                    </div>
+                                  )}
+                                </Col>
+
+                                <Col span={12} style={{ marginBottom: "8px" }}>
+                                  {record?.status == "Requested" ||
+                                  record?.status == "Link Sent" ||
+                                  record?.status == "Awaiting Finance" ||
+                                  record?.status == "Awaiting Approval" ||
+                                  record?.status == "Approval Rejected" ||
+                                  record?.status == "Payment Rejected" ? (
+                                    <Checkbox
+                                      className="server_statuscheckbox"
+                                      checked={false}
+                                      onChange={(e) => {
+                                        if (
+                                          record?.status == "Awaiting Finance"
+                                        ) {
+                                          if (
+                                            permissions.includes(
+                                              "Payment Approval",
+                                            )
+                                          ) {
+                                            setSelectedPaymentDetails(record);
+                                            setDrawerContentStatus(
+                                              "Awaiting Finance",
+                                            );
+                                            setIsOpenDetailsDrawer(true);
+                                          } else {
+                                            CommonMessage(
+                                              "error",
+                                              "Access Denied",
+                                            );
+                                          }
+                                        } else {
+                                          CommonMessage(
+                                            "warning",
+                                            "Claim not approved yet",
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      Ready to Pay{" "}
+                                    </Checkbox>
+                                  ) : (
+                                    <div className="customers_classcompleted_container">
+                                      <BsPatchCheckFill color="#3c9111" />
+                                      <p className="customers_classgoing_completedtext">
+                                        Paid
+                                      </p>
+                                    </div>
+                                  )}
+                                </Col>
+                              </Row>
+                            </>
+                          }
+                        >
+                          {text === "Link Sent" ? (
+                            <Button className="customers_status_awaitingclass_button">
+                              Link Sent
+                            </Button>
+                          ) : text === "Requested" ? (
+                            <Button className="customers_status_formpending_button">
+                              Claim
+                            </Button>
+                          ) : text === "Awaiting Approval" ? (
+                            <Button className="customers_status_classscheduled_button">
+                              Awaiting Approval
+                            </Button>
+                          ) : text === "Awaiting Finance" ? (
+                            <Button className="trainers_pending_button">
+                              Ready to Pay
+                            </Button>
+                          ) : text === "Paid" ? (
+                            <div className="trainers_verifieddiv">
+                              <Button className="trainers_verified_button">
+                                Paid
+                              </Button>
+                            </div>
+                          ) : text === "Completed" ? (
+                            <Button className="customers_status_completed_button">
+                              Completed
+                            </Button>
+                          ) : text === "Payment Rejected" ||
+                            text === "Approval Rejected" ? (
+                            <div className="trainers_verifieddiv">
+                              <Button className="trainers_rejected_button">
+                                {text}
+                              </Button>
+                            </div>
+                          ) : (
+                            <p style={{ marginLeft: "6px" }}>-</p>
+                          )}
+                        </Tooltip>
+
+                        {record?.status == "Link Sent" ? (
+                          <Tooltip
+                            placement="top"
+                            title="Copy form link"
+                            trigger={["hover", "click"]}
+                          >
+                            <FaRegCopy
+                              size={14}
+                              className="customers_formlink_copybutton"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${
+                                    import.meta.env.VITE_EMAIL_URL
+                                  }/trainer-payment-claim/${record.trainer_id}/${record.id}`,
+                                );
+                                CommonMessage("success", "Link Copied");
+                                console.log("Copied: eeee");
+                              }}
+                            />
+                          </Tooltip>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    ),
+                    props: { rowSpan: flatRecord.rowSpan },
+                  };
+                },
+              };
+            case "action":
+              return {
+                ...col,
+                width: 100,
+                fixed: "right",
+                render: (text, flatRecord) => {
+                  const record = flatRecord.request_details;
+                  return {
+                    children: (
+                      <div className="trainers_actionbuttonContainer">
+                        <Tooltip
+                          placement="top"
+                          title="View Details"
+                          trigger={["hover", "click"]}
+                        >
+                          <FaRegEye
+                            size={15}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsOpenViewDrawer(true);
+                              setSelectedPaymentDetails(record);
+                            }}
+                          />
+                        </Tooltip>
+                      </div>
+                    ),
+                    props: { rowSpan: flatRecord.rowSpan },
+                  };
+                },
+              };
+            default:
+              return col;
+          }
+        });
+
+      setUpdateTableId(filterPage.id);
+
+      const allColumns = attachRenderFunctions(filterPage.column_names);
+      const visibleColumns = attachRenderFunctions(
+        filterPage.column_names.filter((col) => col.isChecked),
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+    } catch (error) {
+      console.error("get table columns error", error);
+    }
+  };
+
+  const updateTableColumnsData = async () => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Trainer Payment",
+      column_names: columns,
+    };
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
+    }
+  };
+
   useEffect(() => {
     if (permissions.length >= 1) {
       if (!permissions.includes("Trainer Payment Page")) {
@@ -593,11 +1079,17 @@ export default function TrainerPayment() {
         return;
       }
       rerunTrainerPaymentFilters(location.state);
+
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      if (getLoginUserDetails) {
+        const convertAsJson = JSON.parse(getLoginUserDetails);
+        setLoginUserId(convertAsJson?.user_id);
+        setTimeout(() => {
+          getTableColumnsData(convertAsJson?.user_id);
+        }, 300);
+      }
+      setTableColumns(nonChangeColumns);
     }
-    // Set loading to false initially - will be true when fetching real data
-    // setTimeout(() => {
-    //   setLoading(false);
-    // }, 300);
   }, [permissions]);
 
   /* ---------------- FETCH TRAINERS ---------------- */
@@ -1122,16 +1614,6 @@ export default function TrainerPayment() {
             alignItems: "center",
           }}
         >
-          {/* <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ marginRight: "16px", cursor: "pointer" }}
-            onClick={() => {
-              setIsOpenFilterDrawer(true);
-              getTableColumnsData(loginUserId);
-            }}
-          /> */}
-
           <Tooltip placement="top" title="Refresh">
             <Button
               className="leadmanager_refresh_button"
@@ -1458,6 +1940,15 @@ export default function TrainerPayment() {
           ) : (
             ""
           )} */}
+          <FiFilter
+            size={20}
+            color="#5b69ca"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              getTableColumnsData(loginUserId);
+            }}
+          />
         </Col>
       </Row>
 
@@ -1465,9 +1956,12 @@ export default function TrainerPayment() {
       <div style={{ marginTop: "12px" }}>
         <CommonTable
           scroll={{
-            x: columns.reduce((total, col) => total + (col.width || 150), 0),
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0,
+            ),
           }}
-          columns={columns}
+          columns={tableColumns}
           dataSource={flattenedTableData}
           dataPerPage={10}
           loading={loading}
@@ -1667,6 +2161,80 @@ export default function TrainerPayment() {
         onClose={() => setIsOpenStudentDetailsModal(false)}
         customerDetails={selectedStudentDetails}
       />
+
+      {/* table filter drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
+        open={isOpenFilterDrawer}
+        onClose={() => setIsOpenFilterDrawer(false)}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: 50 }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd data={columns} setColumns={setColumns} />
+            </div>
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={async () => {
+                const visibleColumns = columns.filter((col) => col.isChecked);
+                setTableColumns(visibleColumns);
+                setIsOpenFilterDrawer(false);
+
+                const payload = {
+                  user_id: loginUserId,
+                  id: updateTableId,
+                  page_name: "Trainer Payment",
+                  column_names: columns,
+                };
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(loginUserId);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }
