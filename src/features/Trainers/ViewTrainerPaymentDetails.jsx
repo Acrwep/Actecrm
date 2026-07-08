@@ -1,5 +1,14 @@
-import React, { useState } from "react";
-import { Row, Col, Modal, Divider, Collapse, Drawer, Rate } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Row,
+  Col,
+  Modal,
+  Divider,
+  Collapse,
+  Drawer,
+  Rate,
+  Skeleton,
+} from "antd";
 import moment from "moment";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { FaRegEye } from "react-icons/fa";
@@ -16,6 +25,7 @@ import PrismaZoom from "react-prismazoom";
 import {
   getCustomerById,
   getTrainerById,
+  getTrainerPaymentsById,
   viewCertForCustomer,
 } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
@@ -25,10 +35,11 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 
 export default function ViewTrainerPaymentDetails({
-  selectedPaymentDetails,
+  trainer_payment_id = null,
   allBranchesData,
   isShowPaymentDetails = true,
 }) {
+  const [selectedPaymentDetails, setSelectedPaymentDetails] = useState(null);
   //trainer details
   const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
     React.useState(false);
@@ -54,6 +65,27 @@ export default function ViewTrainerPaymentDetails({
   const [certHtmlContent, setCertHtmlContent] = useState("");
   const [certificateName, setCertificateName] = useState("");
   const [generateCertLoading, setGenerateCertLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (trainer_payment_id) {
+      getTrainerPaymentByIdData();
+    }
+  }, []);
+
+  const getTrainerPaymentByIdData = async () => {
+    setLoading(true);
+    try {
+      const response = await getTrainerPaymentsById(trainer_payment_id);
+      console.log("particular trainer payment response", response);
+      setSelectedPaymentDetails(response?.data?.data || null);
+    } catch (error) {
+      setSelectedPaymentDetails(null);
+      console.log("get trainer payment by id error", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTrainerByIdData = async (trainerId) => {
     try {
@@ -113,135 +145,168 @@ export default function ViewTrainerPaymentDetails({
   };
   return (
     <div>
-      <Row
-        gutter={16}
-        style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-      >
-        <Col span={12}>
-          <Row>
+      {loading ? (
+        <div style={{ padding: "24px", minHeight: "100vh" }}>
+          <Skeleton active avatar paragraph={{ rows: 4 }} />
+          <Skeleton
+            active
+            paragraph={{ rows: 6 }}
+            style={{ marginTop: "24px" }}
+          />
+          <Skeleton
+            active
+            paragraph={{ rows: 6 }}
+            style={{ marginTop: "24px" }}
+          />
+          <Skeleton
+            active
+            paragraph={{ rows: 6 }}
+            style={{ marginTop: "24px" }}
+          />
+        </div>
+      ) : selectedPaymentDetails ? (
+        <>
+          <Row
+            gutter={16}
+            style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+          >
             <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Bill Raise Date</p>
-              </div>
+              <Row>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">
+                      Bill Raise Date
+                    </p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p className="customerdetails_text">
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.bill_raisedate
+                      ? moment(selectedPaymentDetails.bill_raisedate).format(
+                          "DD/MM/YYYY",
+                        )
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Trainer Name</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "6px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <EllipsisTooltip
+                      text={
+                        selectedPaymentDetails &&
+                        selectedPaymentDetails.trainer_name
+                          ? selectedPaymentDetails.trainer_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                    <FaRegEye
+                      size={15}
+                      className="trainers_action_icons"
+                      onClick={() => {
+                        setIsOpenTrainerDetailModal(true);
+                        getTrainerByIdData(selectedPaymentDetails.trainer_id);
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Request Amount</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p className="customerdetails_text">
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.request_amount !== undefined &&
+                    selectedPaymentDetails.request_amount !== null
+                      ? "₹" + selectedPaymentDetails.request_amount
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
             </Col>
+
             <Col span={12}>
-              <p className="customerdetails_text">
-                {moment(selectedPaymentDetails.bill_raisedate).format(
-                  "DD/MM/YYYY",
-                )}
-              </p>
+              <Row>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Balance Amount</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p
+                    className="customerdetails_text"
+                    style={{ color: "#d32f2f", fontWeight: 700 }}
+                  >
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.balance_amount !== undefined &&
+                    selectedPaymentDetails.balance_amount !== null
+                      ? "₹" + selectedPaymentDetails.balance_amount
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">
+                      Days Taken To Pay
+                    </p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p className="customerdetails_text">
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.days_taken_topay !== undefined &&
+                    selectedPaymentDetails.days_taken_topay !== null
+                      ? selectedPaymentDetails.days_taken_topay
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <div className="customerdetails_rowheadingContainer">
+                    <p className="customerdetails_rowheading">Deadline Date</p>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <p className="customerdetails_text">
+                    {selectedPaymentDetails &&
+                    selectedPaymentDetails.deadline_date
+                      ? moment(selectedPaymentDetails.deadline_date).format(
+                          "DD/MM/YYYY",
+                        )
+                      : "-"}
+                  </p>
+                </Col>
+              </Row>
             </Col>
           </Row>
 
-          <Row style={{ marginTop: "12px" }}>
-            <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Trainer Name</p>
-              </div>
-            </Col>
-            <Col span={12}>
-              <div
-                style={{ display: "flex", gap: "6px", alignItems: "center" }}
-              >
-                <EllipsisTooltip
-                  text={
-                    selectedPaymentDetails &&
-                    selectedPaymentDetails.trainer_name
-                      ? selectedPaymentDetails.trainer_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-                <FaRegEye
-                  size={15}
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setIsOpenTrainerDetailModal(true);
-                    getTrainerByIdData(selectedPaymentDetails.trainer_id);
-                  }}
-                />
-              </div>
-            </Col>
-          </Row>
+          <Divider className="customer_statusupdate_divider" />
 
-          <Row style={{ marginTop: "12px" }}>
-            <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Request Amount</p>
-              </div>
-            </Col>
-            <Col span={12}>
-              <p className="customerdetails_text">
-                {selectedPaymentDetails &&
-                selectedPaymentDetails.request_amount !== undefined &&
-                selectedPaymentDetails.request_amount !== null
-                  ? "₹" + selectedPaymentDetails.request_amount
-                  : "-"}
-              </p>
-            </Col>
-          </Row>
-        </Col>
-
-        <Col span={12}>
-          <Row>
-            <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Balance Amount</p>
-              </div>
-            </Col>
-            <Col span={12}>
-              <p
-                className="customerdetails_text"
-                style={{ color: "#d32f2f", fontWeight: 700 }}
-              >
-                {selectedPaymentDetails &&
-                selectedPaymentDetails.balance_amount !== undefined &&
-                selectedPaymentDetails.balance_amount !== null
-                  ? "₹" + selectedPaymentDetails.balance_amount
-                  : "-"}
-              </p>
-            </Col>
-          </Row>
-
-          <Row style={{ marginTop: "12px" }}>
-            <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Days Taken To Pay</p>
-              </div>
-            </Col>
-            <Col span={12}>
-              <p className="customerdetails_text">
-                {selectedPaymentDetails &&
-                selectedPaymentDetails.days_taken_topay !== undefined &&
-                selectedPaymentDetails.days_taken_topay !== null
-                  ? selectedPaymentDetails.days_taken_topay
-                  : "-"}
-              </p>
-            </Col>
-          </Row>
-
-          <Row style={{ marginTop: "12px" }}>
-            <Col span={12}>
-              <div className="customerdetails_rowheadingContainer">
-                <p className="customerdetails_rowheading">Deadline Date</p>
-              </div>
-            </Col>
-            <Col span={12}>
-              <p className="customerdetails_text">
-                {selectedPaymentDetails && selectedPaymentDetails.deadline_date
-                  ? moment(selectedPaymentDetails.deadline_date).format(
-                      "DD/MM/YYYY",
-                    )
-                  : "-"}
-              </p>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-
-      <Divider className="customer_statusupdate_divider" />
-
-      {/* <div
+          {/* <div
         className="customerdetails_coursecard"
         style={{ margin: "24px 24px" }}
       >
@@ -288,470 +353,477 @@ export default function ViewTrainerPaymentDetails({
         </div>
       </div> */}
 
-      <div className="customer_statusupdate_adddetailsContainer">
-        {selectedPaymentDetails.students.length >= 1 ? (
-          <div>
-            <p
-              style={{
-                fontWeight: 600,
-                color: "#333",
-                fontSize: "15px",
-              }}
-            >
-              Customer Details
-            </p>
-
-            <div>
-              <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-                <Collapse
-                  activeKey={collapseDefaultKey}
-                  onChange={(keys) => setCollapseDefaultKey(keys)}
-                  className="customer_updatepayment_history_collapse"
+          <div className="customer_statusupdate_adddetailsContainer">
+            {selectedPaymentDetails?.students?.length >= 1 ? (
+              <div>
+                <p
+                  style={{
+                    fontWeight: 600,
+                    color: "#333",
+                    fontSize: "15px",
+                  }}
                 >
-                  {selectedPaymentDetails.students.map((item, index) => {
-                    const panelKey = String(index + 1); // convert to string
-                    return (
-                      <Collapse.Panel
-                        key={panelKey} // unique key
-                        header={
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              width: "100%",
-                              fontSize: "13px",
-                              alignItems: "center",
-                            }}
+                  Customer Details
+                </p>
+
+                <div>
+                  <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+                    <Collapse
+                      activeKey={collapseDefaultKey}
+                      onChange={(keys) => setCollapseDefaultKey(keys)}
+                      className="customer_updatepayment_history_collapse"
+                    >
+                      {selectedPaymentDetails?.students?.map((item, index) => {
+                        const panelKey = String(index + 1); // convert to string
+                        return (
+                          <Collapse.Panel
+                            key={panelKey} // unique key
+                            header={
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  width: "100%",
+                                  fontSize: "13px",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <span>
+                                  Name -{" "}
+                                  <span style={{ fontWeight: "500" }}>
+                                    {item.customer_name}
+                                  </span>
+                                </span>
+                              </div>
+                            }
                           >
-                            <span>
-                              Name -{" "}
-                              <span style={{ fontWeight: "500" }}>
-                                {item.customer_name}
-                              </span>
-                            </span>
-                          </div>
-                        }
-                      >
-                        <div style={{ padding: "9px 0px" }}>
-                          <div style={{ padding: "0px 16px" }}>
-                            <p
-                              className="trainer_paymentrequestform_headings"
-                              style={{ fontSize: "14px" }}
-                            >
-                              Student Details
-                            </p>
-                            <Row
-                              gutter={12}
-                              style={{
-                                marginTop: "12px",
-                                marginBottom: "22px",
-                              }}
-                            >
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Name
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.customer_name
-                                          ? item.customer_name
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
+                            <div style={{ padding: "9px 0px 0px 0px" }}>
+                              <div style={{ padding: "0px 16px" }}>
+                                <p
+                                  className="trainer_paymentrequestform_headings"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  Student Details
+                                </p>
+                                <Row
+                                  gutter={12}
+                                  style={{
+                                    marginTop: "12px",
+                                    marginBottom: "22px",
+                                  }}
+                                >
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Name
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.customer_name
+                                              ? item.customer_name
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
 
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Commercial
-                                      </p>
-                                    </div>
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Commercial
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.commercial
+                                              ? item.commercial
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
                                   </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.commercial ? item.commercial : "-"
-                                      }
-                                      smallText={true}
-                                    />
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Mobile
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.customer_phone ??
+                                            item.customer_mobile ??
+                                            "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Col>
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Email
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.customer_email
+                                              ? item.customer_email
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
                                   </Col>
                                 </Row>
-                              </Col>
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Mobile
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.customer_mobile
-                                          ? item.customer_mobile
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Email
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.customer_email
-                                          ? item.customer_email
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
-                            </Row>
-                          </div>
-                          <Divider className="customer_statusupdate_divider" />
+                              </div>
+                              <Divider className="customer_statusupdate_divider" />
 
-                          <div style={{ padding: "0px 16px" }}>
-                            <p
-                              className="trainer_paymentrequestform_headings"
-                              style={{ fontSize: "14px" }}
-                            >
-                              Training Details
-                            </p>
-                            <Row
-                              gutter={12}
-                              style={{
-                                marginTop: "12px",
-                                marginBottom: "22px",
-                              }}
-                            >
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Course
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.course_name
-                                          ? item.course_name
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
+                              <div style={{ padding: "0px 16px" }}>
+                                <p
+                                  className="trainer_paymentrequestform_headings"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  Training Details
+                                </p>
+                                <Row
+                                  gutter={12}
+                                  style={{
+                                    marginTop: "12px",
+                                    marginBottom: "22px",
+                                  }}
+                                >
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Course
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.course_name
+                                              ? item.course_name
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
 
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Branch
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.branch_id
-                                          ? allBranchesData?.find(
-                                              (b) => b.id === item.branch_id,
-                                            )?.name || item.branch_id
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Branch
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.branch_id
+                                              ? allBranchesData?.find(
+                                                  (b) =>
+                                                    b.id === item.branch_id,
+                                                )?.name || item.branch_id
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
 
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Plt Guidance
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.placement_guidance
-                                          ? item.placement_guidance
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Plt Guidance
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.placement_guidance
+                                              ? item.placement_guidance
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
 
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Cord Ratings
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col
-                                    span={12}
-                                    style={{ whiteSpace: "nowrap" }}
-                                  >
-                                    <Rate
-                                      value={
-                                        item.coordinator_rating
-                                          ? parseFloat(item.coordinator_rating)
-                                          : 1
-                                      }
-                                      disabled={true}
-                                      style={{
-                                        fontSize: "12px",
-                                        color: "#f59e0b",
-                                      }}
-                                      allowHalf={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
-
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Duration Hrs
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.duration_in_hours
-                                          ? item.duration_in_hours
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Study Mtrl.
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.study_material
-                                          ? item.study_material
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Att. Type
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.attendance_type ||
-                                        (item.attendance_sheetlink
-                                          ? "Link"
-                                          : "Screenshot")
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
-
-                              <Col span={8}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Tr.Mode
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.training_mode
-                                          ? item.training_mode
-                                          : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Assessment
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <EllipsisTooltip
-                                      text={
-                                        item.assessment ? item.assessment : "-"
-                                      }
-                                      smallText={true}
-                                    />
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        HR Ratings
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col
-                                    span={12}
-                                    style={{ whiteSpace: "nowrap" }}
-                                  >
-                                    <Rate
-                                      value={
-                                        item.hr_rating
-                                          ? parseFloat(item.hr_rating)
-                                          : 1
-                                      }
-                                      disabled={true}
-                                      style={{
-                                        fontSize: "12px",
-                                        color: "#f59e0b",
-                                      }}
-                                      allowHalf={true}
-                                    />
-                                  </Col>
-                                </Row>
-                              </Col>
-                            </Row>
-
-                            <p
-                              className="trainer_paymentrequestform_headings"
-                              style={{ fontSize: "14px" }}
-                            >
-                              Upload Documents
-                            </p>
-                            <Row
-                              gutter={[16, 16]}
-                              style={{
-                                marginTop: "12px",
-                                marginBottom: "22px",
-                              }}
-                            >
-                              <Col xs={24} sm={12} md={8} lg={8}>
-                                {item.attendance_type === "Link" ||
-                                item.attendance_sheetlink ? (
-                                  // <InfoText
-                                  //   label="Attendance Sheet Link"
-                                  //   value={item.attendance_sheetlink || "-"}
-                                  // />
-                                  <Row>
-                                    <Col span={12}>
-                                      <div className="customerdetails_rowheadingContainer">
-                                        <p className="customerdetails_rowheading">
-                                          Attendance Sheet Link
-                                        </p>
-                                      </div>
-                                    </Col>
-                                    <Col span={12}>
-                                      <EllipsisTooltip
-                                        text={
-                                          item.attendance_sheetlink
-                                            ? item.attendance_sheetlink
-                                            : "-"
-                                        }
-                                        smallText={true}
-                                      />
-                                    </Col>
-                                  </Row>
-                                ) : (
-                                  <div>
-                                    <div
-                                      style={{
-                                        fontSize: "13px",
-                                        fontWeight: 500,
-                                        color: "#333",
-                                        marginBottom: "4px",
-                                      }}
-                                    >
-                                      Attendance Screenshot:
-                                    </div>
-                                    {item.attendance_screenshot ? (
-                                      <button
-                                        className="pendingcustomer_paymentscreenshot_viewbutton"
-                                        onClick={() => {
-                                          setIsOpenAttendanceScreenshotModal(
-                                            true,
-                                          );
-                                          setViewAttendanceScreenshot(
-                                            item.attendance_screenshot,
-                                          );
-                                        }}
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Cord Ratings
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col
+                                        span={12}
+                                        style={{ whiteSpace: "nowrap" }}
                                       >
-                                        <FaRegEye size={16} /> View screenshot
-                                      </button>
+                                        <Rate
+                                          value={
+                                            item.coordinator_rating
+                                              ? parseFloat(
+                                                  item.coordinator_rating,
+                                                )
+                                              : 1
+                                          }
+                                          disabled={true}
+                                          style={{
+                                            fontSize: "12px",
+                                            color: "#f59e0b",
+                                          }}
+                                          allowHalf={true}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Col>
+
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Duration Hrs
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.duration_in_hours
+                                              ? item.duration_in_hours
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Study Mtrl.
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.study_material
+                                              ? item.study_material
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Att. Type
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.attendance_type ||
+                                            (item.attendance_sheetlink
+                                              ? "Link"
+                                              : "Screenshot")
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Col>
+
+                                  <Col span={8}>
+                                    <Row>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Tr.Mode
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.training_mode
+                                              ? item.training_mode
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            Assessment
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col span={12}>
+                                        <EllipsisTooltip
+                                          text={
+                                            item.assessment
+                                              ? item.assessment
+                                              : "-"
+                                          }
+                                          smallText={true}
+                                        />
+                                      </Col>
+                                    </Row>
+
+                                    <Row style={{ marginTop: "12px" }}>
+                                      <Col span={12}>
+                                        <div className="customerdetails_rowheadingContainer">
+                                          <p className="customerdetails_rowheading">
+                                            HR Ratings
+                                          </p>
+                                        </div>
+                                      </Col>
+                                      <Col
+                                        span={12}
+                                        style={{ whiteSpace: "nowrap" }}
+                                      >
+                                        <Rate
+                                          value={
+                                            item.hr_rating
+                                              ? parseFloat(item.hr_rating)
+                                              : 1
+                                          }
+                                          disabled={true}
+                                          style={{
+                                            fontSize: "12px",
+                                            color: "#f59e0b",
+                                          }}
+                                          allowHalf={true}
+                                        />
+                                      </Col>
+                                    </Row>
+                                  </Col>
+                                </Row>
+
+                                <p
+                                  className="trainer_paymentrequestform_headings"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  Upload Documents
+                                </p>
+                                <Row
+                                  gutter={12}
+                                  style={{
+                                    marginTop: "12px",
+                                    marginBottom: "22px",
+                                  }}
+                                >
+                                  <Col span={14}>
+                                    {item.attendance_type === "Link" ||
+                                    item.attendance_sheetlink ? (
+                                      // <InfoText
+                                      //   label="Attendance Sheet Link"
+                                      //   value={item.attendance_sheetlink || "-"}
+                                      // />
+                                      <Row>
+                                        <Col span={9}>
+                                          <div className="customerdetails_rowheadingContainer">
+                                            <p className="customerdetails_rowheading">
+                                              Att. Sheet Link
+                                            </p>
+                                          </div>
+                                        </Col>
+                                        <Col span={15}>
+                                          <EllipsisTooltip
+                                            text={
+                                              item.attendance_sheetlink
+                                                ? item.attendance_sheetlink
+                                                : "-"
+                                            }
+                                            smallText={true}
+                                          />
+                                        </Col>
+                                      </Row>
                                     ) : (
-                                      <span
-                                        style={{
-                                          fontSize: "14px",
-                                          color: "#666",
-                                        }}
-                                      >
-                                        -
-                                      </span>
+                                      <Row>
+                                        <Col span={9}>
+                                          <div className="customerdetails_rowheadingContainer">
+                                            <p className="customerdetails_rowheading">
+                                              Att. Screenshot
+                                            </p>
+                                          </div>
+                                        </Col>
+                                        <Col span={15}>
+                                          {item.attendance_screenshot ? (
+                                            <button
+                                              className="pendingcustomer_paymentscreenshot_viewbutton"
+                                              onClick={() => {
+                                                setIsOpenAttendanceScreenshotModal(
+                                                  true,
+                                                );
+                                                setViewAttendanceScreenshot(
+                                                  item.attendance_screenshot,
+                                                );
+                                              }}
+                                            >
+                                              <FaRegEye size={16} /> View
+                                              screenshot
+                                            </button>
+                                          ) : (
+                                            <span
+                                              style={{
+                                                fontSize: "14px",
+                                                color: "#666",
+                                              }}
+                                            >
+                                              -
+                                            </span>
+                                          )}
+                                        </Col>
+                                      </Row>
                                     )}
-                                  </div>
-                                )}
-                              </Col>
-                            </Row>
-                          </div>
+                                  </Col>
+                                </Row>
+                              </div>
 
-                          {/* <Divider className="customer_statusupdate_divider" />
+                              {/* <Divider className="customer_statusupdate_divider" />
 
                           <div style={{ padding: "0px 16px" }}>
                             <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
@@ -981,16 +1053,16 @@ export default function ViewTrainerPaymentDetails({
                               </Row>
                             </div>
                           </div> */}
-                        </div>
-                      </Collapse.Panel>
-                    );
-                  })}
-                </Collapse>
-              </div>
+                            </div>
+                          </Collapse.Panel>
+                        );
+                      })}
+                    </Collapse>
+                  </div>
 
-              {/* {isShowPaymentDetails && (
+                  {/* {isShowPaymentDetails && (
                 <>
-                  {selectedPaymentDetails.payments.length >= 1 ? (
+                  {selectedPaymentDetails?.payments?.length >= 1 ? (
                     <div>
                       <p
                         style={{
@@ -1011,7 +1083,7 @@ export default function ViewTrainerPaymentDetails({
                             onChange={(keys) => setCollapseDefaultKey(keys)}
                             className="customer_updatepayment_history_collapse"
                           >
-                            {selectedPaymentDetails.payments.map(
+                            {selectedPaymentDetails?.payments?.map(
                               (item, index) => {
                                 const panelKey = String(index + 1); // convert to string
                                 return (
@@ -1273,12 +1345,18 @@ export default function ViewTrainerPaymentDetails({
                   )}
                 </>
               )} */}
-            </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
           </div>
-        ) : (
-          ""
-        )}
-      </div>
+        </>
+      ) : (
+        <div style={{ padding: "24px", textAlign: "center" }}>
+          <p>No details found</p>
+        </div>
+      )}
 
       {/* trainer fulldetails modal */}
       <Modal

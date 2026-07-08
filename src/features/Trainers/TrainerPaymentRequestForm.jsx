@@ -13,6 +13,7 @@ import PhoneWithCountry from "../Common/PhoneWithCountry";
 import {
   getAllBranches,
   getCustomersByTrainerId,
+  getNonClaimBatches,
   getTrainerById,
   getTrainerPaymentRequestForm,
   insertTrainerPaymentRequest,
@@ -31,6 +32,7 @@ import {
 } from "../Common/Validation";
 import CommonTextArea from "../Common/CommonTextArea";
 import { CommonMessage } from "../Common/CommonMessage";
+import { AiOutlineEdit } from "react-icons/ai";
 
 const TrainerPaymentRequestForm = forwardRef(
   (
@@ -54,8 +56,13 @@ const TrainerPaymentRequestForm = forwardRef(
     //commercial info useStates
     const [commercialType, setCommercialType] = useState("");
     const [commercialTypeError, setCommercialTypeError] = useState("");
+    const [batchData, setBatchData] = useState([]);
+    const [batchId, setBatchId] = useState(null);
+    const [batchIdError, setBatchIdError] = useState("");
     const [totalPayable, setTotalPayable] = useState("");
+    const [totalPayableError, setTotalPayableError] = useState("");
     //bank details usestates
+    const [isBankEdit, setIsBankEdit] = useState(false);
     const [trainerBankId, setTrainerBankId] = useState(null);
     const [accountHolderName, setAccountHolderName] = useState("");
     const [accountHolderNameError, setAccountHolderNameError] = useState("");
@@ -164,24 +171,99 @@ const TrainerPaymentRequestForm = forwardRef(
         setAllBranchesData([]);
         console.log(error);
       } finally {
-        getCustomerByTrainerIdData(trainerId);
-      }
-    };
-
-    const getCustomerByTrainerIdData = async (trainerId) => {
-      try {
-        const response = await getCustomersByTrainerId(trainerId);
-        console.log("get customers response", response);
-        setStudentsData(response?.data?.data || []);
-      } catch (error) {
-        setStudentsData([]);
-        console.log("get students error", error);
-      } finally {
         if (payment_master_id) {
           getTrainerPaymentRequestFormData();
         } else {
           setLoading(false);
         }
+      }
+    };
+
+    const getCustomerByTrainerIdData = async (
+      trainerId,
+      commercial_type,
+      batchId = null,
+    ) => {
+      const payload = {
+        ...(batchId ? { batch_id: batchId } : { trainer_id: trainerId }),
+        commercial_type: commercial_type,
+        ...(batchId && { batch_id: batchId }),
+      };
+      try {
+        const response = await getCustomersByTrainerId(payload);
+        console.log("get customers response", response);
+        const fetchedStudents = response?.data?.data || [];
+        setStudentsData(fetchedStudents);
+
+        if (fetchedStudents.length > 0 && batchId) {
+          const newFormFields = fetchedStudents.map((student) => ({
+            customer_id: student.id,
+            customer_id_error: "",
+            customer_name: student.name || student.customer_name || "",
+            customer_mobile: student.customer_mobile || "",
+            customer_email: student.customer_email || "",
+            commercial: student.commercial || "",
+            course_name: student.course_name || "",
+            duration_in_hours: student.duration_in_hours || "",
+            duration_error: "",
+            training_mode: student.training_mode || "",
+            trainer_mode_error: "",
+            branch_id: student.branch_id || "",
+            branch_error: "",
+            study_material: student.study_material || "",
+            study_material_error: "",
+            assessment: student.assessment || "",
+            assessment_error: "",
+            placement_guidance: student.placement_guidance || "",
+            placement_guidance_error: "",
+            attendance_type: "Screenshot",
+            attendance_sheetlink: student.attendance_sheetlink || "",
+            attendance_sheetlink_error: "",
+            attendance_screenshot: student.attendance_screenshot || "",
+            attendance_screenshot_error: "",
+            hr_rating: student.hr_rating || "",
+            coordinator_rating: student.coordinator_rating || "",
+            commercial_percentage: student.commercial_percentage || "",
+            trainer_mapping_id: student.trainer_mapping_id || 0,
+          }));
+          setFormFields(newFormFields);
+        } else {
+          setFormFields([
+            {
+              customer_id: null,
+              customer_id_error: "",
+              customer_name: "",
+              customer_mobile: "",
+              customer_email: "",
+              commercial: "",
+              course_name: "",
+              duration_in_hours: "",
+              duration_error: "",
+              training_mode: "",
+              trainer_mode_error: "",
+              branch_id: "",
+              branch_error: "",
+              study_material: "",
+              study_material_error: "",
+              assessment: "",
+              assessment_error: "",
+              placement_guidance: "",
+              placement_guidance_error: "",
+              attendance_type: "Screenshot",
+              attendance_sheetlink: "",
+              attendance_sheetlink_error: "",
+              attendance_screenshot: "",
+              attendance_screenshot_error: "",
+              hr_rating: "",
+              coordinator_rating: "",
+              commercial_percentage: "",
+              trainer_mapping_id: 0,
+            },
+          ]);
+        }
+      } catch (error) {
+        setStudentsData([]);
+        console.log("get students error", error);
       }
     };
 
@@ -207,12 +289,16 @@ const TrainerPaymentRequestForm = forwardRef(
 
           setFormFields(updatedStudents);
 
-          const request_amount = updatedStudents.reduce((sum, item) => {
-            const value = parseFloat(item.commercial || 0);
-            return sum + (isNaN(value) ? 0 : value);
-          }, 0);
+          if (payment_details?.commercial_type == "Batch") {
+            setTotalPayable(payment_details?.request_amount);
+          } else {
+            const request_amount = updatedStudents.reduce((sum, item) => {
+              const value = parseFloat(item.commercial || 0);
+              return sum + (isNaN(value) ? 0 : value);
+            }, 0);
 
-          setTotalPayable(request_amount);
+            setTotalPayable(request_amount);
+          }
         }
       } catch (error) {
         console.log("get trainer requst form error", error);
@@ -404,6 +490,16 @@ const TrainerPaymentRequestForm = forwardRef(
       setFormFields(updatedFormFields);
     };
 
+    const getNonClaimBatchesData = async () => {
+      try {
+        const response = await getNonClaimBatches(trainer_id);
+        console.log("non claim batches response", response);
+        setBatchData(response?.data?.data || []);
+      } catch (error) {
+        console.log("non claim batch error", error);
+      }
+    };
+
     useImperativeHandle(ref, () => ({
       handlePaymentRequestFormSubmit,
     }));
@@ -423,6 +519,16 @@ const TrainerPaymentRequestForm = forwardRef(
       const branchNameValidate = isTrainer ? nameValidator(branchName) : "";
       const ifscCodeValidate = isTrainer ? ifscValidator(ifscCode) : "";
       const commercialTypeValidate = selectValidator(commercialType);
+      const batchIdValidate = isTrainer
+        ? ""
+        : commercialType != "Batch"
+          ? ""
+          : selectValidator(batchId);
+      const totalPayableValidate = isTrainer
+        ? ""
+        : commercialType != "Batch"
+          ? ""
+          : selectValidator(totalPayable);
 
       let checkFormFieldsErrors = [];
       if (formFields.length >= 1) {
@@ -501,6 +607,8 @@ const TrainerPaymentRequestForm = forwardRef(
       setBranchNameError(branchNameValidate);
       setIfscCodeError(ifscCodeValidate);
       setCommercialTypeError(commercialTypeValidate);
+      setBatchIdError(batchIdValidate);
+      setTotalPayableError(totalPayableValidate);
 
       if (
         accountHolderNameValidate ||
@@ -509,6 +617,8 @@ const TrainerPaymentRequestForm = forwardRef(
         branchNameValidate ||
         ifscCodeValidate ||
         commercialTypeValidate ||
+        batchIdValidate ||
+        totalPayableValidate ||
         checkFormFieldsErrors.length >= 1
       )
         return;
@@ -553,14 +663,18 @@ const TrainerPaymentRequestForm = forwardRef(
       } else {
         const payload = {
           trainer_id: trainer_id,
-          request_amount: request_amount,
+          request_amount:
+            commercialType == "Batch" ? totalPayable : request_amount,
           bank_id: lastTransactionBankId,
           commercial_type: commercialType,
           created_by: convertAsJson?.user_id,
           created_date: formatToBackendIST(new Date()),
           feedback: feedBack,
           students: formFields,
-          email_link: import.meta.env.VITE_EMAIL_URL,
+          email_link: `${
+            import.meta.env.VITE_EMAIL_URL
+          }/acknowledge-class-completion`,
+          batch_id: batchId,
         };
 
         console.log("update payload", payload);
@@ -707,7 +821,30 @@ const TrainerPaymentRequestForm = forwardRef(
           </Col>
         </Row>
 
-        <p className="trainer_paymentrequestform_headings">Bank Details</p>
+        {/* <p className="trainer_paymentrequestform_headings">Bank Details</p> */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p className="trainer_paymentrequestform_headings">Bank Details</p>
+          {isTrainer && (
+            <div
+              style={{
+                display: "flex",
+                gap: "4px",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => setIsBankEdit(true)}
+            >
+              <AiOutlineEdit />
+              <p style={{ fontSize: "13px", fontWeight: 500 }}>Edit</p>
+            </div>
+          )}
+        </div>
         <Row
           gutter={[16, 22]}
           style={{ marginTop: "12px", marginBottom: "22px" }}
@@ -730,7 +867,7 @@ const TrainerPaymentRequestForm = forwardRef(
               value={bankName}
               errorFontSize={"10px"}
               error={isTrainer ? bankNameError : ""}
-              disabled={isTrainer ? false : true}
+              disabled={!isBankEdit}
             />
           </Col>
           <Col
@@ -751,7 +888,7 @@ const TrainerPaymentRequestForm = forwardRef(
               value={accountHolderName}
               error={isTrainer ? accountHolderNameError : ""}
               errorFontSize={"10px"}
-              disabled={isTrainer ? false : true}
+              disabled={!isBankEdit}
             />
           </Col>
           <Col
@@ -772,7 +909,7 @@ const TrainerPaymentRequestForm = forwardRef(
               value={accountNumber}
               error={isTrainer ? accountNumberError : ""}
               errorFontSize={"10px"}
-              disabled={isTrainer ? false : true}
+              disabled={!isBankEdit}
             />
           </Col>
           <Col
@@ -793,7 +930,7 @@ const TrainerPaymentRequestForm = forwardRef(
               value={ifscCode}
               error={isTrainer ? ifscCodeError : ""}
               errorFontSize={"10px"}
-              disabled={isTrainer ? false : true}
+              disabled={!isBankEdit}
             />
           </Col>
           <Col
@@ -814,7 +951,7 @@ const TrainerPaymentRequestForm = forwardRef(
               value={branchName}
               error={isTrainer ? branchNameError : ""}
               errorFontSize={"10px"}
-              disabled={isTrainer ? false : true}
+              disabled={!isBankEdit}
             />
           </Col>
         </Row>
@@ -838,9 +975,53 @@ const TrainerPaymentRequestForm = forwardRef(
                 { id: "Batch", name: "Batch" },
               ]}
               onChange={(e) => {
-                setCommercialType(e.target.value);
+                const value = e.target.value;
+                setCommercialType(value);
+                setStudentsData([]);
+                setTotalPayable("");
+                setTotalPayableError("");
+                setFormFields([
+                  {
+                    customer_id: null,
+                    customer_id_error: "",
+                    customer_name: "",
+                    customer_mobile: "",
+                    customer_email: "",
+                    commercial: "",
+                    course_name: "",
+                    duration_in_hours: "",
+                    duration_error: "",
+                    training_mode: "",
+                    trainer_mode_error: "",
+                    branch_id: "",
+                    branch_error: "",
+                    study_material: "",
+                    study_material_error: "",
+                    assessment: "",
+                    assessment_error: "",
+                    placement_guidance: "",
+                    placement_guidance_error: "",
+                    attendance_type: "Screenshot",
+                    attendance_sheetlink: "",
+                    attendance_sheetlink_error: "",
+                    attendance_screenshot: "",
+                    attendance_screenshot_error: "",
+                    hr_rating: "",
+                    coordinator_rating: "",
+                    commercial_percentage: "",
+                    trainer_mapping_id: 0,
+                  },
+                ]);
+
+                if (value == "Batch") {
+                  getNonClaimBatchesData();
+                } else {
+                  setBatchId(null);
+                  setBatchIdError("");
+                  getCustomerByTrainerIdData(trainer_id, value, null);
+                }
                 if (validationTrigger) {
-                  setCommercialTypeError(selectValidator(e.target.value));
+                  setCommercialTypeError(selectValidator(value));
                 }
               }}
               value={commercialType}
@@ -849,6 +1030,37 @@ const TrainerPaymentRequestForm = forwardRef(
               disabled={isTrainer}
             />
           </Col>
+
+          {!isTrainer && commercialType == "Batch" && (
+            <Col
+              xs={24}
+              sm={24}
+              md={12}
+              className="trainer_paymentrequestform_five_col"
+            >
+              <CommonSelectField
+                label={"Select Batch"}
+                required={true}
+                options={batchData?.map((item) => ({
+                  id: item.id,
+                  name: item.batch_name,
+                }))}
+                // options={batchData}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setBatchId(value);
+                  getCustomerByTrainerIdData(null, commercialType, value);
+                  if (validationTrigger) {
+                    setBatchIdError(selectValidator(value));
+                  }
+                }}
+                value={batchId}
+                error={batchIdError}
+                errorFontSize={"9px"}
+              />
+            </Col>
+          )}
+
           <Col
             xs={24}
             sm={24}
@@ -857,8 +1069,20 @@ const TrainerPaymentRequestForm = forwardRef(
           >
             <CommonInputField
               label={"Total Payable"}
+              required={commercialType == "Batch" ? true : false}
+              type={"number"}
+              onChange={(e) => {
+                setTotalPayable(e.target.value);
+                if (validationTrigger) {
+                  setTotalPayableError(selectValidator(e.target.value));
+                }
+              }}
               value={totalPayable}
-              disabled={true}
+              error={totalPayableError}
+              errorFontSize={"9px"}
+              disabled={
+                isTrainer ? true : commercialType == "Batch" ? false : true
+              }
             />
           </Col>
           <Col className="trainer_paymentrequestform_five_col"></Col>
@@ -883,24 +1107,28 @@ const TrainerPaymentRequestForm = forwardRef(
                   Student Details
                 </p>
                 <div style={{ display: "flex", gap: "10px" }}>
-                  {index === 0 && isTrainer == false && (
-                    <button
-                      type="button"
-                      className="trainer_paymentrequestform_add_button"
-                      onClick={handleAdd}
-                    >
-                      Add
-                    </button>
-                  )}
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      className="trainer_paymentrequestform_remove_button"
-                      onClick={() => handleRemove(index)}
-                    >
-                      Remove
-                    </button>
-                  )}
+                  {index === 0 &&
+                    isTrainer == false &&
+                    commercialType != "Batch" && (
+                      <button
+                        type="button"
+                        className="trainer_paymentrequestform_add_button"
+                        onClick={handleAdd}
+                      >
+                        Add
+                      </button>
+                    )}
+                  {index > 0 &&
+                    isTrainer == false &&
+                    commercialType != "Batch" && (
+                      <button
+                        type="button"
+                        className="trainer_paymentrequestform_remove_button"
+                        onClick={() => handleRemove(index)}
+                      >
+                        Remove
+                      </button>
+                    )}
                 </div>
               </div>
               <Row
@@ -930,8 +1158,9 @@ const TrainerPaymentRequestForm = forwardRef(
                         (student) =>
                           student.id == item.customer_id ||
                           !formFields.some(
-                            (f, i) => i !== index && f.customer_id == student.id
-                          )
+                            (f, i) =>
+                              i !== index && f.customer_id == student.id,
+                          ),
                       )}
                       value={item.customer_id}
                       onChange={(e) => {
@@ -965,18 +1194,20 @@ const TrainerPaymentRequestForm = forwardRef(
                           selectedStudent?.course_name || "",
                         );
 
-                        // calculate total payable
-                        const updatedFields = [...formFields];
+                        if (commercialType != "Batch") {
+                          // calculate total payable
+                          const updatedFields = [...formFields];
 
-                        updatedFields[index].commercial = Number(
-                          selectedStudent?.commercial || 0,
-                        );
+                          updatedFields[index].commercial = Number(
+                            selectedStudent?.commercial || 0,
+                          );
 
-                        const total = updatedFields.reduce((sum, item) => {
-                          return sum + Number(item.commercial || 0);
-                        }, 0);
+                          const total = updatedFields.reduce((sum, item) => {
+                            return sum + Number(item.commercial || 0);
+                          }, 0);
 
-                        setTotalPayable(total);
+                          setTotalPayable(total);
+                        }
                       }}
                       error={item.customer_id_error}
                       errorFontSize={
@@ -985,6 +1216,7 @@ const TrainerPaymentRequestForm = forwardRef(
                           ? "7.9px"
                           : "9px"
                       }
+                      disabled={commercialType == "Batch"}
                       disableClearable={false}
                     />
                   )}
@@ -1019,21 +1251,23 @@ const TrainerPaymentRequestForm = forwardRef(
                     disabled={true}
                   />
                 </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={12}
-                  className="trainer_paymentrequestform_five_col"
-                >
-                  <CommonInputField
-                    label={"Commercial"}
-                    value={item.commercial}
-                    onChange={(e) =>
-                      handleFormFields("commercial", index, e.target.value)
-                    }
-                    disabled={true}
-                  />
-                </Col>
+                {commercialType != "Batch" && (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={12}
+                    className="trainer_paymentrequestform_five_col"
+                  >
+                    <CommonInputField
+                      label={"Commercial"}
+                      value={item.commercial}
+                      onChange={(e) =>
+                        handleFormFields("commercial", index, e.target.value)
+                      }
+                      disabled={true}
+                    />
+                  </Col>
+                )}
                 <Col className="trainer_paymentrequestform_five_col"></Col>
               </Row>
 
@@ -1156,7 +1390,7 @@ const TrainerPaymentRequestForm = forwardRef(
                       )
                     }
                     error={item.study_material_error}
-                    errorFontSize={"10px"}
+                    errorFontSize={"9px"}
                     disabled={isTrainer ? false : true}
                   />
                 </Col>
@@ -1182,7 +1416,7 @@ const TrainerPaymentRequestForm = forwardRef(
                       )
                     }
                     error={item.assessment_error}
-                    errorFontSize={"10px"}
+                    errorFontSize={"9px"}
                     disabled={isTrainer ? false : true}
                   />
                 </Col>

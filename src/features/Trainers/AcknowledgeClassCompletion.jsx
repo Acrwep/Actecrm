@@ -14,8 +14,8 @@ export default function AcknowledgeClassCompletion() {
     "confetti--animation-fast",
   ];
 
-  const customer_id = useParams();
-  const status = useParams();
+  const { customer_id } = useParams();
+  const { status } = useParams();
 
   const [confettiArray, setConfettiArray] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +84,7 @@ export default function AcknowledgeClassCompletion() {
   return (
     <div className="login_mainContainer">
       {/* Confetti */}
-      {isSuccess &&
+      {/* {isSuccess &&
         confettiArray.map((confetti) => (
           <div
             key={confetti.id}
@@ -97,7 +97,7 @@ export default function AcknowledgeClassCompletion() {
               animationDelay: confetti.animationDelay,
             }}
           />
-        ))}
+        ))} */}
 
       <div className="congrats_card">
         <div className="success_logoContainer">

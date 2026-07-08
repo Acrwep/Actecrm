@@ -197,7 +197,7 @@ const AddBatch = forwardRef(
     const getTrainersData = async (searchvalue, pageNumber = 1) => {
       setTrainerSelectloading(true);
       const payload = {
-        status: "Verified",
+        // status: "Verified",
         ...buildCustomerSearchPayload(searchvalue),
         page: pageNumber,
         limit: 10,

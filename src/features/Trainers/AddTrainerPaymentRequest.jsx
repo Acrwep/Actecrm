@@ -421,9 +421,12 @@ const AddTrainerPaymentRequest = forwardRef(
       );
     };
 
-    const getCustomerByTrainerIdData = async (trainer_id) => {
+    const getCustomerByTrainerIdData = async (trainerId) => {
+      const payload = {
+        trainer_id: trainerId,
+      };
       try {
-        const response = await getCustomersByTrainerId(trainer_id);
+        const response = await getCustomersByTrainerId(payload);
         console.log("get customers response", response);
         setCustomersData(response?.data?.data || []);
       } catch (error) {

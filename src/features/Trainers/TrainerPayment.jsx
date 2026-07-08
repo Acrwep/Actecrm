@@ -10,11 +10,13 @@ import {
   Radio,
   Modal,
   Checkbox,
+  Divider,
 } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
 import { IoFilter } from "react-icons/io5";
+import { MdGroups } from "react-icons/md";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -54,6 +56,7 @@ import CommonDnd from "../Common/CommonDnd";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import TrainerFullDetailsModal from "./TrainerFullDetailsModal";
 import TrainerPayslip from "./TrainerPayslip";
+import { TagOutlined } from "@ant-design/icons";
 
 export default function TrainerPayment() {
   const location = useLocation();
@@ -186,7 +189,37 @@ export default function TrainerPayment() {
       width: 130,
       render: (text, record) => {
         return {
-          children: <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>,
+          children: (
+            <div
+              style={{
+                position: "relative",
+                display: "inline-block",
+                width: "100%",
+              }}
+            >
+              {record?.batch_number && (
+                <Tooltip
+                  placement="top"
+                  title={`Batch Code: ${record?.batch_number}`}
+                  trigger={["hover", "click"]}
+                >
+                  <MdGroups
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      fontSize: 12,
+                      color: "#5b69ca",
+                    }}
+                  />
+                </Tooltip>
+              )}
+
+              <p style={{ margin: 0 }}>
+                {text ? moment(text).format("DD/MM/YYYY") : "-"}
+              </p>
+            </div>
+          ),
           props: { rowSpan: record.rowSpan },
         };
       },
@@ -290,7 +323,7 @@ export default function TrainerPayment() {
       key: "is_class_percentage",
       dataIndex: ["student_details", "is_class_percentage"],
       width: 140,
-      render: (text) => renderCellWithBackground(parseFloat(text || 0) === 100),
+      render: (text) => renderCellWithBackground(text),
     },
     {
       title: "Google Review",
@@ -544,6 +577,7 @@ export default function TrainerPayment() {
       dataIndex: "action",
       fixed: "right",
       width: 100,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, flatRecord) => {
         const record = flatRecord.request_details;
         return {
@@ -597,7 +631,12 @@ export default function TrainerPayment() {
     },
   ].filter((col) => {
     if (!permissions.includes("View Financial Details")) {
-      return !["request_amount", "days_taken_topay", "deadline_date"].includes(col.key);
+      return ![
+        "request_amount",
+        "days_taken_topay",
+        "deadline_date",
+        "action",
+      ].includes(col.key);
     }
     return true;
   });
@@ -638,7 +677,36 @@ export default function TrainerPayment() {
                 render: (text, record) => {
                   return {
                     children: (
-                      <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>
+                      <div
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                          width: "100%",
+                        }}
+                      >
+                        {record?.batch_number && (
+                          <Tooltip
+                            placement="top"
+                            title={`Batch Code: ${record?.batch_number}`}
+                            trigger={["hover", "click"]}
+                          >
+                            <MdGroups
+                              size={18}
+                              style={{
+                                position: "absolute",
+                                top: 0,
+                                right: 0,
+                                fontSize: 12,
+                                color: "#5b69ca",
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+
+                        <p style={{ margin: 0 }}>
+                          {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                        </p>
+                      </div>
                     ),
                     props: { rowSpan: record.rowSpan },
                   };
@@ -751,8 +819,7 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 140,
-                render: (text) =>
-                  renderCellWithBackground(parseFloat(text || 0) === 100),
+                render: (text) => renderCellWithBackground(text),
               };
             case "is_google":
               return {
@@ -792,7 +859,9 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 140,
-                hidden: !permissions.includes("View Financial Details") ? true : false,
+                hidden: !permissions.includes("View Financial Details")
+                  ? true
+                  : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -806,7 +875,9 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 140,
-                hidden: !permissions.includes("View Financial Details") ? true : false,
+                hidden: !permissions.includes("View Financial Details")
+                  ? true
+                  : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -820,7 +891,9 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 130,
-                hidden: !permissions.includes("View Financial Details") ? true : false,
+                hidden: !permissions.includes("View Financial Details")
+                  ? true
+                  : false,
                 render: (text, record) => {
                   return {
                     children: (
@@ -1022,6 +1095,7 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 100,
+                hidden: !permissions.includes("View Financial Details"),
                 fixed: "right",
                 render: (text, flatRecord) => {
                   const record = flatRecord.request_details;
@@ -1057,7 +1131,12 @@ export default function TrainerPayment() {
 
       const filteredBackendColumns = filterPage.column_names.filter((col) => {
         if (!permissions.includes("View Financial Details")) {
-          return !["request_amount", "days_taken_topay", "deadline_date"].includes(col.key);
+          return ![
+            "request_amount",
+            "days_taken_topay",
+            "deadline_date",
+            "action",
+          ].includes(col.key);
         }
         return true;
       });
@@ -2011,16 +2090,18 @@ export default function TrainerPayment() {
         {selectedPaymentDetails && (
           <>
             <ViewTrainerPaymentDetails
-              selectedPaymentDetails={selectedPaymentDetails}
+              trainer_payment_id={selectedPaymentDetails?.id}
               allBranchesData={allBranchesData}
               isShowPaymentDetails={false}
             />
+            <Divider className="customer_statusupdate_divider" />
             <div className="customer_statusupdate_adddetailsContainer">
               {drawerContentStatus == "Awaiting Finance" ? (
                 <div>
                   <TrainerPayslip
                     ref={trainerPayslipRef}
                     selectedPaymentDetails={selectedPaymentDetails}
+                    setButtonLoading={setButtonLoading}
                   />
                 </div>
               ) : (
@@ -2061,7 +2142,7 @@ export default function TrainerPayment() {
       >
         {isOpenViewDrawer ? (
           <ViewTrainerPaymentDetails
-            selectedPaymentDetails={selectedPaymentDetails}
+            trainer_payment_id={selectedPaymentDetails?.id}
             allBranchesData={allBranchesData}
           />
         ) : (

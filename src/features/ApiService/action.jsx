@@ -292,9 +292,9 @@ export const updateTrainerPaymentRequest = async (payload) => {
   }
 };
 
-export const getCustomersByTrainerId = async (trainer_id) => {
+export const getCustomersByTrainerId = async (payload) => {
   try {
-    const response = await api.get(`/api/getStudents?trainer_id=${trainer_id}`);
+    const response = await api.post(`/api/getStudents`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -304,6 +304,17 @@ export const getCustomersByTrainerId = async (trainer_id) => {
 export const getTrainerPayments = async (payload) => {
   try {
     const response = await api.post("/api/getPayments", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTrainerPaymentsById = async (trainer_payment_id) => {
+  try {
+    const response = await api.get(
+      `/api/getPaymentById?payment_id=${trainer_payment_id}`,
+    );
     return response;
   } catch (error) {
     throw error;
@@ -394,6 +405,26 @@ export const updateTrainerPaymentTransaction = async (payload) => {
 export const completeTrainerPaymentTransaction = async (payload) => {
   try {
     const response = await api.put("/api/completeRequest", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const moveTrainerPaymentToPaid = async (payload) => {
+  try {
+    const response = await api.put("/api/moveToPaid", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getNonClaimBatches = async (trainer_id) => {
+  try {
+    const response = await api.get(
+      `/api/getNonClaimBatches?trainer_id=${trainer_id}`,
+    );
     return response;
   } catch (error) {
     throw error;
