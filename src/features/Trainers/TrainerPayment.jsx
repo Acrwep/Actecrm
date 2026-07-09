@@ -208,7 +208,7 @@ export default function TrainerPayment() {
                       position: "absolute",
                       top: 0,
                       right: 0,
-                      fontSize: 12,
+                      fontSize: 17,
                       color: "#5b69ca",
                     }}
                   />
@@ -477,7 +477,9 @@ export default function TrainerPayment() {
                             checked={false}
                             onChange={(e) => {
                               if (record?.status == "Awaiting Finance") {
-                                if (permissions.includes("Payment Approval")) {
+                                if (
+                                  permissions.includes("Payment Completion")
+                                ) {
                                   setSelectedPaymentDetails(record);
                                   setDrawerContentStatus("Awaiting Finance");
                                   setIsOpenDetailsDrawer(true);
@@ -662,7 +664,20 @@ export default function TrainerPayment() {
       }
 
       const filterPage = data.find((f) => f.page_name === "Trainer Payment");
+      console.log("filterPage", filterPage);
+
       if (!filterPage) {
+        setUpdateTableId(null);
+        return updateTableColumnsData();
+      }
+
+      const hasPermission = permissions?.includes("View Financial Details");
+      const hasRequestAmount = filterPage.column_names?.some(
+        (item) =>
+          item.title === "Request Amount" || item.title === "Days Taken To Pay",
+      );
+
+      if (hasPermission && !hasRequestAmount) {
         setUpdateTableId(null);
         return updateTableColumnsData();
       }
@@ -696,7 +711,7 @@ export default function TrainerPayment() {
                                 position: "absolute",
                                 top: 0,
                                 right: 0,
-                                fontSize: 12,
+                                fontSize: 17,
                                 color: "#5b69ca",
                               }}
                             />
@@ -986,7 +1001,7 @@ export default function TrainerPayment() {
                                         ) {
                                           if (
                                             permissions.includes(
-                                              "Payment Approval",
+                                              "Payment Completion",
                                             )
                                           ) {
                                             setSelectedPaymentDetails(record);
@@ -1869,40 +1884,79 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div> */}
-              <div
-                className={
-                  status === "Awaiting Finance"
-                    ? "trainers_active_verifypending_container"
-                    : "customers_studentvefity_container"
-                }
-                onClick={() => {
-                  if (status === "Awaiting Finance") {
-                    return;
-                  }
-                  setStatus("Awaiting Finance");
-                  setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Awaiting Finance",
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>
-                  Ready to Pay{" "}
-                  {`( ${
-                    statusCounts &&
-                    statusCounts.awaiting_finance !== undefined &&
-                    statusCounts.awaiting_finance !== null
-                      ? statusCounts.awaiting_finance
-                      : "-"
-                  } )`}
-                </p>
-              </div>
+              {permissions.includes("Show Ready to Pay & Paid Buckets") && (
+                <>
+                  <div
+                    className={
+                      status === "Awaiting Finance"
+                        ? "trainers_active_verifypending_container"
+                        : "customers_studentvefity_container"
+                    }
+                    onClick={() => {
+                      if (status === "Awaiting Finance") {
+                        return;
+                      }
+                      setStatus("Awaiting Finance");
+                      setPagination({ ...pagination, page: 1 });
+                      getTrainerPaymentsData(
+                        selectedTrainerId,
+                        dateFilterType,
+                        selectedDates[0],
+                        selectedDates[1],
+                        "Awaiting Finance",
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    <p>
+                      Ready to Pay{" "}
+                      {`( ${
+                        statusCounts &&
+                        statusCounts.awaiting_finance !== undefined &&
+                        statusCounts.awaiting_finance !== null
+                          ? statusCounts.awaiting_finance
+                          : "-"
+                      } )`}
+                    </p>
+                  </div>
+
+                  <div
+                    className={
+                      status === "Paid"
+                        ? "customers_active_completed_container"
+                        : "customers_completed_container"
+                    }
+                    onClick={() => {
+                      if (status === "Paid") {
+                        return;
+                      }
+                      setStatus("Paid");
+                      setPagination({ ...pagination, page: 1 });
+                      getTrainerPaymentsData(
+                        selectedTrainerId,
+                        dateFilterType,
+                        selectedDates[0],
+                        selectedDates[1],
+                        "Paid",
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    <p>
+                      Paid{" "}
+                      {`( ${
+                        statusCounts &&
+                        statusCounts.paid !== undefined &&
+                        statusCounts.paid !== null
+                          ? statusCounts.paid
+                          : "-"
+                      } )`}
+                    </p>
+                  </div>
+                </>
+              )}
               {/* <div
                 className={
                   status === "Payment Rejected"
@@ -1937,40 +1991,6 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div> */}
-              <div
-                className={
-                  status === "Paid"
-                    ? "customers_active_completed_container"
-                    : "customers_completed_container"
-                }
-                onClick={() => {
-                  if (status === "Paid") {
-                    return;
-                  }
-                  setStatus("Paid");
-                  setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Paid",
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>
-                  Paid{" "}
-                  {`( ${
-                    statusCounts &&
-                    statusCounts.paid !== undefined &&
-                    statusCounts.paid !== null
-                      ? statusCounts.paid
-                      : "-"
-                  } )`}
-                </p>
-              </div>
               {/* <div
                 className={
                   status === "Completed"
@@ -2102,6 +2122,18 @@ export default function TrainerPayment() {
                     ref={trainerPayslipRef}
                     selectedPaymentDetails={selectedPaymentDetails}
                     setButtonLoading={setButtonLoading}
+                    isOnRefresh={() => {
+                      paymentformReset();
+                      getTrainerPaymentsData(
+                        selectedTrainerId,
+                        dateFilterType,
+                        selectedDates[0],
+                        selectedDates[1],
+                        status || null,
+                        pagination.page,
+                        pagination.limit,
+                      );
+                    }}
                   />
                 </div>
               ) : (

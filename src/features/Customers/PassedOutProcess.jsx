@@ -551,6 +551,10 @@ const PassesOutProcess = forwardRef(
                     customerDetails?.is_certificate_generated === 1 &&
                     !permissions.includes("Update Certificate Details")
                   }
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1.5px"}
+                  errorFontSize={"9px"}
                 />
               </Col>
               <Col span={12}>

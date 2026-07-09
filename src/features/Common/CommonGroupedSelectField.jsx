@@ -46,17 +46,17 @@ export default function CommonGroupedSelectField({
         flex: 1,
         width: "100%",
         "& .MuiInputLabel-root": {
-          fontSize: labelFontSize ? labelFontSize : "14px",
+          fontSize: labelFontSize ? labelFontSize : "12px",
           padding: "0px 0px",
-          marginTop: "1px",
+          marginTop: "0px",
           fontFamily: "Poppins,  sans-serif",
         },
         "& .MuiOutlinedInput-root": {
-          height: height || "42px",
+          height: "36px",
         },
         "& .MuiAutocomplete-input": {
-          fontSize: fontSize || "14px",
-          marginTop: "0px",
+          fontSize: fontSize || "12px",
+          marginTop: "-1px",
         },
         "& .Mui-disabled": {
           backgroundColor: "#f5f5f5", // change background

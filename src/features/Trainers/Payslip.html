@@ -119,7 +119,16 @@
 
     <!-- General Details -->
 
-    <table>
+    <!-- General Details -->
+
+    <table style="table-layout: fixed; width: 100%">
+      <colgroup>
+        <col style="width: 22%" />
+        <col style="width: 28%" />
+        <col style="width: 28%" />
+        <col style="width: 22%" />
+      </colgroup>
+
       <tr>
         <td class="td-header">Freelancer Name:</td>
         <td class="td-value">{{trainer_name}}</td>
@@ -222,7 +231,11 @@
 
     <table>
       <tr>
-        <td rowspan="4" class="td-header section-title" style="width: 25%">
+        <td
+          rowspan="5"
+          class="td-header section-title"
+          style="width: 25%; line-height: 1.4"
+        >
           Payment Information
         </td>
 

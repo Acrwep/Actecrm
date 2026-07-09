@@ -10,7 +10,7 @@ import CommonDatePicker from "../Common/CommonDatePicker";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 
 const TrainerPayslip = forwardRef(
-  ({ selectedPaymentDetails, setButtonLoading }, ref) => {
+  ({ selectedPaymentDetails, setButtonLoading, isOnRefresh }, ref) => {
     //details states
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
@@ -65,6 +65,7 @@ const TrainerPayslip = forwardRef(
         CommonMessage("success", "Moved to Paid Successfully");
 
         setButtonLoading(false);
+        isOnRefresh();
       } catch (error) {
         setButtonLoading(false);
         console.log("move to paid error", error);

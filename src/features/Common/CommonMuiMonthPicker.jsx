@@ -97,13 +97,13 @@ export default function CommonMuiMonthPicker({
             sx: {
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "40px !important",
+                height: "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                marginTop: labelMarginTop ? labelMarginTop : "3px",
+                fontSize: "11px",
+                marginTop: labelMarginTop ? labelMarginTop : "1px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color

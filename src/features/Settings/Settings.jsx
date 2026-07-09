@@ -350,7 +350,22 @@ export default function Settings() {
       const trainerPaymentModule = allPermissions.filter(
         (f) => f.section === "Trainer Payment Module",
       );
-      const updateTrainerPaymentModule = trainerPaymentModule.map((u) => {
+
+      const trainerPaymentCustomOrder = [
+        "Trainer Payment Page",
+        "Show Ready to Pay & Paid Buckets",
+        "View Financial Details",
+        "Payment Approval",
+        "Payment Completion",
+      ];
+
+      const trainerPaymentSortedArray = trainerPaymentModule.sort(
+        (a, b) =>
+          trainerPaymentCustomOrder.indexOf(a.permission_name) -
+          trainerPaymentCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateTrainerPaymentModule = trainerPaymentSortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(

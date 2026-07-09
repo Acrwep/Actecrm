@@ -58,7 +58,8 @@ export default function CommonInputField({
       label === "Address" ||
       label == "Brouchures Link" ||
       label == "Syllabus" ||
-      label === "Attendance Sheet Link"
+      label === "Attendance Sheet Link" ||
+      label === "Reference Id"
     ) {
       if (onChange) {
         onChange({ target: { value: rawValue } });

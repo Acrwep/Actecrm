@@ -119,9 +119,18 @@
 
     <!-- General Details -->
 
-    <table>
+    <!-- General Details -->
+
+    <table style="table-layout: fixed; width: 100%">
+      <colgroup>
+        <col style="width: 22%" />
+        <col style="width: 28%" />
+        <col style="width: 28%" />
+        <col style="width: 22%" />
+      </colgroup>
+
       <tr>
-        <td class="td-header">Freelancer Name:</td>
+        <td class="td-header">Freelancer Name</td>
         <td class="td-value">{{trainer_name}}</td>
 
         <td class="td-value" style="text-align: right">Course Name</td>
@@ -129,7 +138,7 @@
       </tr>
 
       <tr>
-        <td class="td-header">Trainer ID:</td>
+        <td class="td-header">Trainer ID</td>
         <td class="td-value">TR0001</td>
 
         <td class="td-value" style="text-align: right">Bat001</td>
@@ -170,6 +179,7 @@
         <td class="td-header">Earnings</td>
       </tr>
 
+      <!-- Student Info Full Width -->
       <tr>
         <td class="td-header">Student Info</td>
         <td class="td-value" colspan="3">
@@ -231,7 +241,11 @@
 
     <table>
       <tr>
-        <td rowspan="4" class="td-header section-title" style="width: 25%">
+        <td
+          rowspan="5"
+          class="td-header section-title"
+          style="width: 25%; line-height: 1.4"
+        >
           Payment Information
         </td>
 
