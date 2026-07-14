@@ -2157,8 +2157,9 @@ const AddNewLead = forwardRef(
                     value={contactMode}
                     error={contactModeError}
                     disabled={
-                      updateLeadItem?.completed_followup_count != null &&
-                      updateLeadItem?.completed_followup_count !== 0
+                      (updateLeadItem?.completed_followup_count != null &&
+                        updateLeadItem?.completed_followup_count !== 0) ||
+                      !communicationStatus
                     }
                     height={"35px"}
                     fontSize={"13px"}
@@ -2191,7 +2192,11 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
+                    disabled={
+                      contactMode == 5 ||
+                      contactMode == 6 ||
+                      !communicationStatus
+                    }
                   />
                 </div>
 
@@ -2213,7 +2218,8 @@ const AddNewLead = forwardRef(
                     disabled={
                       contactMode == 5 ||
                       contactMode == 6 ||
-                      responseStatus == "Not-Received"
+                      responseStatus == "Not-Received" ||
+                      !communicationStatus
                     }
                   />
                 </div>
@@ -2292,7 +2298,11 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
-                    disabled={contactMode == 5 || contactMode == 6}
+                    disabled={
+                      contactMode == 5 ||
+                      contactMode == 6 ||
+                      !communicationStatus
+                    }
                   />
                 </div>
 
@@ -2312,7 +2322,7 @@ const AddNewLead = forwardRef(
                     labelFontSize={"12px"}
                     labelMarginTop={"0.5px"}
                     iconSize={"16px"}
-                    disabled={contactMode == 6}
+                    disabled={contactMode == 6 || !communicationStatus}
                   />
                 </div>
                 <div style={{ marginBottom: "6px" }}>

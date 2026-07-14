@@ -180,6 +180,10 @@ export default function Pages() {
           path="/acknowledge-class-completion/:customer_id/:status"
           element={<AcknowledgeClassCompletion />}
         />
+        <Route
+          path="/acknowledge-class-completion/:customer_id"
+          element={<AcknowledgeClassCompletion />}
+        />
         <Route path="/helpdesk" element={<Helpdesk />} />
       </Routes>
     );

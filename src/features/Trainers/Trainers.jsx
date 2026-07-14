@@ -21,6 +21,7 @@ import { LuSend } from "react-icons/lu";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
+import { FaRegEye } from "react-icons/fa";
 import { AiOutlineEdit, AiOutlineInfoCircle } from "react-icons/ai";
 import {
   RedoOutlined,
@@ -75,6 +76,7 @@ import { useSelector } from "react-redux";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import TrainerPaymentRequestForm from "./TrainerPaymentRequestForm";
+import ViewTrainerDetails from "./ViewTrainerDetails";
 
 const CustomerList = ({ trainerId, isClassTaken }) => {
   const [data, setData] = useState([]);
@@ -183,6 +185,8 @@ export default function Trainers() {
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+  const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
+  const [viewTrainerData, setViewTrainerData] = useState(null);
   const [trainersData, setTrainersData] = useState([]);
   const [status, setStatus] = useState("");
   const statusRef = useRef(status);
@@ -553,17 +557,31 @@ export default function Trainers() {
       dataIndex: "action",
       fixed: "right",
       width: 120,
-      hidden: !permissions.includes("Update Trainer") ? true : false,
       render: (text, record) => {
         return (
-          <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={20}
+          <div
+            className="trainers_actionbuttonContainer"
+            style={{ display: "flex", gap: "10px", alignItems: "center" }}
+          >
+            <FaRegEye
+              size={15}
               className="trainers_action_icons"
               onClick={() => {
-                handleEdit(record);
+                setViewTrainerData(record);
+                setIsOpenViewDrawer(true);
               }}
+              title="View Details"
             />
+            {permissions.includes("Update Trainer") && (
+              <AiOutlineEdit
+                size={15}
+                className="trainers_action_icons"
+                onClick={() => {
+                  handleEdit(record);
+                }}
+                title="Edit"
+              />
+            )}
           </div>
         );
       },
@@ -1069,19 +1087,38 @@ export default function Trainers() {
             case "action":
               return {
                 ...col,
-                hidden: !permissions.includes("Update Trainer") ? true : false,
                 render: (text, record) => {
                   return (
-                    <div className="trainers_actionbuttonContainer">
-                      <AiOutlineEdit
-                        size={20}
+                    <div
+                      className="trainers_actionbuttonContainer"
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <FaRegEye
+                        size={15}
                         className="trainers_action_icons"
                         onClick={() => {
-                          handleEdit(record);
+                          setViewTrainerData(record);
+                          setIsOpenViewDrawer(true);
                         }}
+                        title="View Details"
                       />
-                      {statusRef.current === "OnGoing" ||
-                      statusRef.current === "Onboarded" ? (
+                      {permissions.includes("Update Trainer") && (
+                        <AiOutlineEdit
+                          size={16}
+                          className="trainers_action_icons"
+                          onClick={() => {
+                            handleEdit(record);
+                          }}
+                          title="Edit"
+                        />
+                      )}
+                      {(statusRef.current === "OnGoing" ||
+                        statusRef.current === "Onboarded") &&
+                      permissions.includes("Update Trainer") ? (
                         <Tooltip
                           placement="top"
                           title="Send Payment Claim Form"
@@ -1093,13 +1130,10 @@ export default function Trainers() {
                             onClick={() => {
                               setEditTrainerId(record?.id || null);
                               setIsOpenRequestFormDrawer(true);
-                              // getParticularCustomerDetails(record?.id);
                             }}
                           />
                         </Tooltip>
-                      ) : (
-                        ""
-                      )}
+                      ) : null}
                     </div>
                   );
                 },
@@ -1158,7 +1192,6 @@ export default function Trainers() {
   };
 
   const handleEdit = async (item) => {
-    setIsShowBankTab(true);
     console.log("clicked item", item);
     // const skillsAsJson = JSON.parse(item.skills);
     // const skillsOutput = skillsAsJson[0].split(",").map((item) => item.trim());
@@ -1383,7 +1416,6 @@ export default function Trainers() {
   const formReset = () => {
     setButtonLoading(false);
     setEditTrainerId(null);
-    setIsShowBankTab(false);
     setName("");
     setNameError("");
     setEmail("");
@@ -1636,7 +1668,10 @@ export default function Trainers() {
     return (
       <div style={{ marginBottom: "60px" }}>
         {editTrainerId && (
-          <div className="customerupdate_profilepicture_container">
+          <div
+            className="customerupdate_profilepicture_container"
+            style={{ marginTop: "20px" }}
+          >
             <Upload
               listType="picture-circle"
               fileList={profilePictureArray}
@@ -1980,136 +2015,6 @@ export default function Trainers() {
       </div>
     );
   };
-
-  const renderBankDetails = () => {
-    return (
-      <div style={{ marginTop: "16px" }}>
-        {trainerBanksList && trainerBanksList.length > 0 ? (
-          <>
-            <Collapse accordion>
-              {trainerBanksList.map((bank, index) => (
-                <Collapse.Panel
-                  key={bank.id || index}
-                  header={
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", fontWeight: 500 }}>
-                        {bank.bank_name || `Bank Account ${index + 1}`}
-                      </span>
-
-                      {trainerBanksList.length > 1 && index === 0 && (
-                        <span
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
-                            color: "#ffffff",
-                            fontSize: "9px",
-                            padding: "2px 10px",
-                            borderRadius: "20px",
-                            fontWeight: 600,
-                            boxShadow: "0 2px 6px rgba(82, 196, 26, 0.3)",
-                            letterSpacing: "0.3px",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Recently Used
-                        </span>
-                      )}
-                    </div>
-                  }
-                >
-                  <Row gutter={[16, 16]}>
-                    <Col span={8}>
-                      <p className="trainer_bankdetails_title_names">
-                        Account Holder Name
-                      </p>
-                      <p style={{ fontSize: "13px" }}>
-                        {bank.account_holder_name || "-"}
-                      </p>
-                    </Col>
-                    <Col span={8}>
-                      <p className="trainer_bankdetails_title_names">
-                        Account Number
-                      </p>
-                      <p style={{ fontSize: "13px" }}>
-                        {bank.account_number || "-"}
-                      </p>
-                    </Col>
-                    <Col span={8}>
-                      <p className="trainer_bankdetails_title_names">
-                        Bank Name
-                      </p>
-                      <p style={{ fontSize: "13px" }}>
-                        {bank.bank_name || "-"}
-                      </p>
-                    </Col>
-                    <Col span={8}>
-                      <p className="trainer_bankdetails_title_names">
-                        Branch Name
-                      </p>
-                      <p style={{ fontSize: "13px" }}>
-                        {bank.branch_name || "-"}
-                      </p>
-                    </Col>
-                    <Col span={8}>
-                      <p className="trainer_bankdetails_title_names">
-                        IFSC Code
-                      </p>
-                      <p style={{ fontSize: "13px" }}>
-                        {bank.ifsc_code || "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Collapse.Panel>
-              ))}
-            </Collapse>
-            <div
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-              }}
-            >
-              <p className="trainer_bankdetails_title_names">
-                Trainer Signature
-              </p>
-              {trainerBanksList[0]?.signature_image ? (
-                <img
-                  src={`${trainerBanksList[0].signature_image}`}
-                  alt="Trainer Signature"
-                  className="trainer_signature_image"
-                  style={{ maxWidth: "150px", marginTop: "8px" }}
-                />
-              ) : (
-                <p style={{ textAlign: "center" }}>-</p>
-              )}
-            </div>
-          </>
-        ) : (
-          <p>No bank details available.</p>
-        )}
-      </div>
-    );
-  };
-
-  const tabItems = [
-    {
-      key: "1",
-      label: "Personal Details",
-      children: renderPersonalDetails(),
-    },
-    {
-      key: "2",
-      label: "Bank Details",
-      children: renderBankDetails(),
-    },
-  ];
 
   return (
     <div>
@@ -2517,23 +2422,14 @@ export default function Trainers() {
       </div>
 
       <Drawer
-        title="Add Trainer"
+        title={editTrainerId ? "Update Trainer Details" : "Add Trainer"}
         open={isOpenAddDrawer}
         onClose={formReset}
         width="50%"
         style={{ position: "relative", paddingBottom: 65 }}
-        className={isShowBankTab ? "trainers_addtrainerdrawer" : ""}
+        className={"trainers_addtrainerdrawer"}
       >
-        {isShowBankTab ? (
-          <Tabs
-            // activeKey={activeKey}
-            // onTabClick={handleTabClick}
-            items={tabItems}
-            // className="trainer_registration_tabs"
-          />
-        ) : (
-          renderPersonalDetails()
-        )}
+        {renderPersonalDetails()}
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {buttonLoading ? (
@@ -2837,6 +2733,24 @@ export default function Trainers() {
             )}
           </div>
         </div>
+      </Drawer>
+
+      {/* View Trainer Drawer */}
+      <Drawer
+        title={
+          <div style={{ fontSize: "16px", fontWeight: 600 }}>
+            Trainer Details
+          </div>
+        }
+        open={isOpenViewDrawer}
+        onClose={() => {
+          setIsOpenViewDrawer(false);
+          setViewTrainerData(null);
+        }}
+        width={"50%"}
+        styles={{ body: { padding: 0 } }}
+      >
+        <ViewTrainerDetails trainerData={viewTrainerData} />
       </Drawer>
     </div>
   );

@@ -58,6 +58,175 @@ import TrainerFullDetailsModal from "./TrainerFullDetailsModal";
 import TrainerPayslip from "./TrainerPayslip";
 import { TagOutlined } from "@ant-design/icons";
 
+export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
+  if (!updatedDate) return null;
+
+  let onlineCount = 0;
+  let classroomCount = 0;
+
+  if (students && students.length > 0) {
+    students.forEach((student) => {
+      if (student.training_mode === "Online") onlineCount++;
+      else if (student.training_mode === "Classroom") classroomCount++;
+    });
+  }
+
+  const majorityMode = onlineCount >= classroomCount ? "Online" : "Classroom";
+
+  let workingDaysToAdd = 0;
+  if (majorityMode === "Online") {
+    workingDaysToAdd = hasPermission ? 14 : 7;
+  } else {
+    workingDaysToAdd = hasPermission ? 5 : 2;
+  }
+
+  let current = moment(updatedDate);
+  let daysAdded = 0;
+
+  while (daysAdded < workingDaysToAdd) {
+    current.add(1, "days");
+    if (current.day() !== 0) {
+      daysAdded++;
+    }
+  }
+
+  return current;
+};
+
+export const TimerPill = ({ updatedDate, deadlineDate, status, paidDate }) => {
+  const [elapsedString, setElapsedString] = useState("");
+  const [pillColor, setPillColor] = useState("");
+
+  useEffect(() => {
+    if (!updatedDate || !deadlineDate) {
+      setElapsedString("-");
+      return;
+    }
+
+    const start = moment(updatedDate);
+    const end = moment(deadlineDate);
+    const totalMs = end.diff(start);
+
+    const calculateTimer = () => {
+      const isPaid = status === "Paid" || status === "Completed";
+      const current = isPaid && paidDate ? moment(paidDate) : moment();
+
+      const elapsedMs = Math.max(current.diff(start), 0);
+
+      // ---------------- Timer Format ----------------
+      const duration = moment.duration(elapsedMs);
+
+      const totalSeconds = Math.floor(duration.asSeconds());
+      const totalDays = Math.floor(duration.asDays());
+
+      let timeString = "";
+
+      // if (totalDays < 1) {
+      //   // Less than 24 Hours -> HH:MM:SS
+      //   const hours = Math.floor(totalSeconds / 3600);
+      //   const minutes = Math.floor((totalSeconds % 3600) / 60);
+      //   const seconds = totalSeconds % 60;
+
+      //   timeString = `${String(hours).padStart(2, "0")}h:${String(
+      //     minutes,
+      //   ).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`;
+      // }
+      if (totalDays < 7) {
+        // Days
+        timeString = `${totalDays} ${totalDays === 1 ? "Day" : "Days"}`;
+      } else if (totalDays < 30) {
+        // Weeks + Days
+        const weeks = Math.floor(totalDays / 7);
+        const days = totalDays % 7;
+
+        timeString = `${weeks} ${weeks === 1 ? "Week" : "Weeks"}${
+          days ? ` ${days} ${days === 1 ? "Day" : "Days"}` : ""
+        }`;
+      } else {
+        // Months + Weeks + Days
+        const months = Math.floor(totalDays / 30);
+        const remainingDays = totalDays % 30;
+
+        const weeks = Math.floor(remainingDays / 7);
+        const days = remainingDays % 7;
+
+        timeString = `${months} ${months === 1 ? "Month" : "Months"}`;
+
+        if (weeks) {
+          timeString += ` ${weeks} ${weeks === 1 ? "Week" : "Weeks"}`;
+        }
+
+        if (days) {
+          timeString += ` ${days} ${days === 1 ? "Day" : "Days"}`;
+        }
+      }
+
+      setElapsedString(timeString);
+
+      // ---------------- Color Logic ----------------
+      let percentage = 0;
+
+      if (totalMs > 0) {
+        percentage = elapsedMs / totalMs;
+      }
+
+      if (percentage >= 0.9) {
+        setPillColor("#fce4e4"); // Red
+      } else if (percentage >= 0.5) {
+        setPillColor("#fff3e0"); // Orange
+      } else {
+        setPillColor("#e8f5e9"); // Green
+      }
+    };
+
+    calculateTimer();
+
+    const isPaid = status === "Paid" || status === "Completed";
+
+    let intervalId;
+
+    if (!isPaid) {
+      // Update every second so HH:MM:SS is live
+      intervalId = setInterval(calculateTimer, 1000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [updatedDate, deadlineDate, status, paidDate]);
+
+  let textColor = "#2e7d32";
+
+  if (pillColor === "#fce4e4") {
+    textColor = "#c62828";
+  } else if (pillColor === "#fff3e0") {
+    textColor = "#ef6c00";
+  }
+
+  if (elapsedString === "-") {
+    return <p>-</p>;
+  }
+
+  return (
+    <div
+      style={{
+        backgroundColor: pillColor,
+        color: textColor,
+        padding: "3px 12px",
+        borderRadius: "20px",
+        display: "inline-block",
+        fontWeight: "bold",
+        fontSize: "11px",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {elapsedString}
+    </div>
+  );
+};
+
 export default function TrainerPayment() {
   const location = useLocation();
   const scrollRef = useRef();
@@ -129,7 +298,7 @@ export default function TrainerPayment() {
   const renderCellWithBackground = (
     status,
     extraProps = {},
-    showCopy = false,
+    { showCopy = false, onCopy } = {},
   ) => {
     return {
       children: (
@@ -149,23 +318,23 @@ export default function TrainerPayment() {
           ) : (
             <>
               <FaXmark size={14} />
-              {/* {showCopy && (
-                 <Tooltip
-                                  placement="top"
-                                  title="Copy acknowledgement link"
-                                  trigger={["hover", "click"]}
-                                >
-                <FaRegCopy
-                  size={13}
-                  color="#333"
-                  style={{ cursor: "pointer", marginLeft: "6px" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCopy?.();
-                  }}
-                />
+              {showCopy && (
+                <Tooltip
+                  placement="top"
+                  title="Copy Acknowledgement Link"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegCopy
+                    size={13}
+                    color="#33333398"
+                    style={{ cursor: "pointer", marginLeft: "6px" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCopy?.();
+                    }}
+                  />
                 </Tooltip>
-              )} */}
+              )}
             </>
           )}
         </div>
@@ -354,7 +523,7 @@ export default function TrainerPayment() {
               navigator.clipboard.writeText(
                 `${
                   import.meta.env.VITE_EMAIL_URL
-                }/trainer-registration/${record.id}`,
+                }/acknowledge-class-completion/${record.student_details?.customer_id}`,
               );
               CommonMessage("success", "Link Copied");
               console.log("Copied: eeee");
@@ -383,14 +552,28 @@ export default function TrainerPayment() {
       },
     },
     {
-      title: "Days Taken To Pay",
+      title: permissions.includes("View Financial Details")
+        ? "Days Taken To Pay"
+        : "Days Taken To Complete",
       key: "days_taken_topay",
       dataIndex: "days_taken_topay",
-      width: 140,
-      hidden: !permissions.includes("View Financial Details") ? true : false,
+      width: permissions.includes("View Financial Details") ? 140 : 175,
       render: (text, record) => {
+        const hasPermission = permissions.includes("View Financial Details");
+        const deadlineDate = calculateDeadlineDate(
+          record?.updated_date,
+          record?.students,
+          hasPermission,
+        );
         return {
-          children: <p>{text !== null && text !== undefined ? text : "-"}</p>,
+          children: (
+            <TimerPill
+              updatedDate={record?.updated_date}
+              deadlineDate={deadlineDate}
+              status={record?.status}
+              paidDate={record?.paid_date}
+            />
+          ),
           props: { rowSpan: record.rowSpan },
         };
       },
@@ -400,10 +583,15 @@ export default function TrainerPayment() {
       key: "deadline_date",
       dataIndex: "deadline_date",
       width: 130,
-      hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
+        const hasPermission = permissions.includes("View Financial Details");
+        const calcDate = calculateDeadlineDate(
+          record?.updated_date,
+          record?.students,
+          hasPermission,
+        );
         return {
-          children: <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>,
+          children: <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>,
           props: { rowSpan: record.rowSpan },
         };
       },
@@ -444,6 +632,13 @@ export default function TrainerPayment() {
                             checked={false}
                             onChange={(e) => {
                               if (permissions.includes("Payment Approval")) {
+                                if (record?.status == "Link Sent") {
+                                  CommonMessage(
+                                    "error",
+                                    "This payment has not been claimed yet.",
+                                  );
+                                  return;
+                                }
                                 // setIsOpenDetailsDrawer(true);
                                 // setDrawerContentStatus("Approve");
                                 setIsOpenApproveModal(true);
@@ -633,12 +828,7 @@ export default function TrainerPayment() {
     },
   ].filter((col) => {
     if (!permissions.includes("View Financial Details")) {
-      return ![
-        "request_amount",
-        "days_taken_topay",
-        "deadline_date",
-        "action",
-      ].includes(col.key);
+      return !["request_amount", "action"].includes(col.key);
     }
     return true;
   });
@@ -862,7 +1052,7 @@ export default function TrainerPayment() {
                         navigator.clipboard.writeText(
                           `${
                             import.meta.env.VITE_EMAIL_URL
-                          }/trainer-registration/${record.id}`,
+                          }/acknowledge-class-completion/${record.student_details?.customer_id}`,
                         );
                         CommonMessage("success", "Link Copied");
                         console.log("Copied: eeee");
@@ -889,14 +1079,29 @@ export default function TrainerPayment() {
             case "days_taken_topay":
               return {
                 ...col,
-                width: 140,
-                hidden: !permissions.includes("View Financial Details")
-                  ? true
-                  : false,
+                title: permissions.includes("View Financial Details")
+                  ? "Days Taken To Pay"
+                  : "Days Taken To Complete",
+                width: permissions.includes("View Financial Details")
+                  ? 140
+                  : 175,
                 render: (text, record) => {
+                  const hasPermission = permissions.includes(
+                    "View Financial Details",
+                  );
+                  const deadlineDate = calculateDeadlineDate(
+                    record?.updated_date,
+                    record?.students,
+                    hasPermission,
+                  );
                   return {
                     children: (
-                      <p>{text !== null && text !== undefined ? text : "-"}</p>
+                      <TimerPill
+                        updatedDate={record?.updated_date}
+                        deadlineDate={deadlineDate}
+                        status={record?.status}
+                        paidDate={record?.paid_date}
+                      />
                     ),
                     props: { rowSpan: record.rowSpan },
                   };
@@ -906,13 +1111,18 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 130,
-                hidden: !permissions.includes("View Financial Details")
-                  ? true
-                  : false,
                 render: (text, record) => {
+                  const hasPermission = permissions.includes(
+                    "View Financial Details",
+                  );
+                  const calcDate = calculateDeadlineDate(
+                    record?.updated_date,
+                    record?.students,
+                    hasPermission,
+                  );
                   return {
                     children: (
-                      <p>{text ? moment(text).format("DD-MM-YYYY") : "-"}</p>
+                      <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>
                     ),
                     props: { rowSpan: record.rowSpan },
                   };
@@ -1146,12 +1356,7 @@ export default function TrainerPayment() {
 
       const filteredBackendColumns = filterPage.column_names.filter((col) => {
         if (!permissions.includes("View Financial Details")) {
-          return ![
-            "request_amount",
-            "days_taken_topay",
-            "deadline_date",
-            "action",
-          ].includes(col.key);
+          return !["request_amount", "action"].includes(col.key);
         }
         return true;
       });
@@ -1472,9 +1677,14 @@ export default function TrainerPayment() {
 
   const handleTrainerPaymentStatus = async (updateStatus) => {
     setApproveButtonLoading(true);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     const payload = {
       status: updateStatus,
       trainer_payment_id: selectedPaymentDetails?.id,
+      updated_by: convertAsJson?.user_id,
+      updated_date: formatToBackendIST(new Date()),
     };
     try {
       await updateTrainerPaymentStatus(payload);
@@ -1602,141 +1812,6 @@ export default function TrainerPayment() {
 
   return (
     <div>
-      <Row style={{ marginBottom: "12px" }}>
-        <Col xs={24} sm={24} md={24} lg={17}>
-          <Row gutter={16}>
-            <Col span={8}>
-              <CommonCustomerSingleSelectField
-                label="Trainer"
-                height="30px"
-                labelMarginTop="0px"
-                required={false}
-                options={mergedTrainersList}
-                value={selectedTrainerId}
-                inputValue={trainerSearchText}
-                onChange={handleTrainerSelect}
-                onInputChange={handleTrainerSearch}
-                onDropdownOpen={handleTrainerDropdownOpen}
-                onDropdownScroll={handleTrainerScroll}
-                loading={trainerSelectloading}
-                // renderOption={renderTrainerOption}
-                error={""}
-                disableClearable={false}
-              />
-            </Col>
-            <Col span={10}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  flexWrap: "nowrap",
-                }}
-              >
-                <div style={{ flex: "0 0 260px" }}>
-                  <CommonMuiCustomDatePicker
-                    value={selectedDates}
-                    onDateChange={(dates) => {
-                      setSelectedDates(dates);
-                      setPagination({
-                        page: 1,
-                      });
-                      getTrainerPaymentsData(
-                        selectedTrainerId,
-                        dateFilterType,
-                        dates[0],
-                        dates[1],
-                        status || null,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={dateFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setDateFilterType(e.target.value);
-                            getTrainerPaymentsData(
-                              selectedTrainerId,
-                              e.target.value,
-                              selectedDates[0],
-                              selectedDates[1],
-                              status || null,
-                              1,
-                              pagination.limit,
-                            );
-                          }}
-                        >
-                          <Radio
-                            value="RaiseDate"
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            Search by Bill Raise Date
-                          </Radio>
-                          <Radio
-                            value="Deadline"
-                            style={{ marginBottom: "12px" }}
-                          >
-                            Search by Deadline Date
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                          height: "35px",
-                        }}
-                      >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Col>
-
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={7}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <Tooltip placement="top" title="Refresh">
-            <Button
-              className="leadmanager_refresh_button"
-              onClick={handleRefresh}
-            >
-              <RedoOutlined className="refresh_icon" />
-            </Button>
-          </Tooltip>
-        </Col>
-      </Row>
-
       <Row>
         <Col span={18}>
           <div className="customers_scroll_wrapper">
@@ -2036,7 +2111,142 @@ export default function TrainerPayment() {
         </Col>
 
         <Col
-          span={6}
+          xs={24}
+          sm={24}
+          md={24}
+          lg={6}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col xs={24} sm={24} md={24} lg={17}>
+          <Row gutter={16}>
+            <Col span={8}>
+              <CommonCustomerSingleSelectField
+                label="Trainer"
+                height="30px"
+                labelMarginTop="0px"
+                required={false}
+                options={mergedTrainersList}
+                value={selectedTrainerId}
+                inputValue={trainerSearchText}
+                onChange={handleTrainerSelect}
+                onInputChange={handleTrainerSearch}
+                onDropdownOpen={handleTrainerDropdownOpen}
+                onDropdownScroll={handleTrainerScroll}
+                loading={trainerSelectloading}
+                // renderOption={renderTrainerOption}
+                error={""}
+                disableClearable={false}
+              />
+            </Col>
+            <Col span={10}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexWrap: "nowrap",
+                }}
+              >
+                <div style={{ flex: "0 0 260px" }}>
+                  <CommonMuiCustomDatePicker
+                    value={selectedDates}
+                    onDateChange={(dates) => {
+                      setSelectedDates(dates);
+                      setPagination({
+                        page: 1,
+                      });
+                      getTrainerPaymentsData(
+                        selectedTrainerId,
+                        dateFilterType,
+                        dates[0],
+                        dates[1],
+                        status || null,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    <Tooltip
+                      placement="bottomLeft"
+                      color="#fff"
+                      title={
+                        <Radio.Group
+                          value={dateFilterType}
+                          onChange={(e) => {
+                            console.log(e.target.value);
+                            setDateFilterType(e.target.value);
+                            getTrainerPaymentsData(
+                              selectedTrainerId,
+                              e.target.value,
+                              selectedDates[0],
+                              selectedDates[1],
+                              status || null,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                        >
+                          <Radio
+                            value="RaiseDate"
+                            style={{
+                              marginTop: "6px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            Search by Bill Raise Date
+                          </Radio>
+                          <Radio
+                            value="Deadline"
+                            style={{ marginBottom: "12px" }}
+                          >
+                            Search by Deadline Date
+                          </Radio>
+                        </Radio.Group>
+                      }
+                    >
+                      <Button
+                        className="customer_trainermappingfilter_container"
+                        style={{
+                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                          height: "35px",
+                        }}
+                      >
+                        <IoFilter size={16} />
+                      </Button>
+                    </Tooltip>
+                  </Flex>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Col>
+
+        <Col
+          span={7}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -2070,7 +2280,7 @@ export default function TrainerPayment() {
       </Row>
 
       {/* Payment Requests Table */}
-      <div style={{ marginTop: "12px" }}>
+      <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{
             x: tableColumns.reduce(

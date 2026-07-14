@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Row,
   Col,
@@ -33,12 +34,16 @@ import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
+import { TimerPill, calculateDeadlineDate } from "./TrainerPayment";
 
 export default function ViewTrainerPaymentDetails({
   trainer_payment_id = null,
   allBranchesData,
   isShowPaymentDetails = true,
 }) {
+  const permissions = useSelector((state) => state.userpermissions || []);
+  const hasPermission = permissions.includes("View Financial Details");
+
   const [selectedPaymentDetails, setSelectedPaymentDetails] = useState(null);
   //trainer details
   const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
@@ -269,17 +274,28 @@ export default function ViewTrainerPaymentDetails({
                 <Col span={12}>
                   <div className="customerdetails_rowheadingContainer">
                     <p className="customerdetails_rowheading">
-                      Days Taken To Pay
+                      {hasPermission
+                        ? "Days Taken To Pay"
+                        : "Days Taken To Complete"}
                     </p>
                   </div>
                 </Col>
                 <Col span={12}>
                   <p className="customerdetails_text">
-                    {selectedPaymentDetails &&
-                    selectedPaymentDetails.days_taken_topay !== undefined &&
-                    selectedPaymentDetails.days_taken_topay !== null
-                      ? selectedPaymentDetails.days_taken_topay
-                      : "-"}
+                    {selectedPaymentDetails ? (
+                      <TimerPill
+                        updatedDate={selectedPaymentDetails?.updated_date}
+                        deadlineDate={calculateDeadlineDate(
+                          selectedPaymentDetails?.updated_date,
+                          selectedPaymentDetails?.students,
+                          hasPermission
+                        )}
+                        status={selectedPaymentDetails?.status}
+                        paidDate={selectedPaymentDetails?.paid_date}
+                      />
+                    ) : (
+                      "-"
+                    )}
                   </p>
                 </Col>
               </Row>
@@ -293,10 +309,15 @@ export default function ViewTrainerPaymentDetails({
                 <Col span={12}>
                   <p className="customerdetails_text">
                     {selectedPaymentDetails &&
-                    selectedPaymentDetails.deadline_date
-                      ? moment(selectedPaymentDetails.deadline_date).format(
-                          "DD/MM/YYYY",
-                        )
+                    selectedPaymentDetails.updated_date
+                      ? (() => {
+                          const calcDate = calculateDeadlineDate(
+                            selectedPaymentDetails.updated_date,
+                            selectedPaymentDetails.students,
+                            hasPermission
+                          );
+                          return calcDate ? calcDate.format("DD/MM/YYYY") : "-";
+                        })()
                       : "-"}
                   </p>
                 </Col>

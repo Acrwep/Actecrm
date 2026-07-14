@@ -178,6 +178,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       item.status.includes("Verified") ||
       item.status.includes("Down") ||
       item.status.includes("Assigned") ||
+      item.status.includes("Claim") ||
       item.status.includes("Added") ||
       item.status.includes("Completed") ||
       item.status.includes("created") ||
@@ -211,8 +212,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <button
               className="customer_history_viewproofbutton"
@@ -230,8 +235,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
 
             <Row style={{ marginTop: "12px" }}>
@@ -263,8 +272,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
@@ -359,8 +372,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
@@ -470,8 +487,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
               <p className="customer_history_comments">Schedule Date:</p>
@@ -486,8 +507,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
               <p className="customer_history_comments">Class Going:</p>
@@ -506,8 +531,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
               <p className="customer_history_comments">Comments:</p>
@@ -524,8 +553,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
               <p className="customer_history_comments">100% Class Completed</p>
@@ -537,8 +570,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <button
               className="customer_history_viewproofbutton"
@@ -558,8 +595,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
             <button
               className="customer_history_viewproofbutton"
@@ -576,8 +617,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
 
             <button
@@ -601,10 +646,13 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
-
             <Row style={{ marginTop: "12px" }}>
               <Col span={5}>
                 <p className="customer_history_comments">Comments: </p>
@@ -633,8 +681,12 @@ export default function CustomerHistory({ data = [], customerDetails }) {
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
             </p>
             <p className="customer_history_updateddate">
-              Updated By:{" "}
-              <span style={{ color: "gray" }}>{item.updated_by}</span>
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
             </p>
           </div>
         )}

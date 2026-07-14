@@ -374,10 +374,18 @@
   box-shadow: 0px 2px 30px #ccc6;
   background-color: #ffffff;
   border-radius: 8px;
-  width: 40%;
-  padding: 35px 90px;
-  margin: 20px 0px 60px 0px;
+  width: 90%;
+  max-width: 550px;
+  padding: 30px 20px;
+  margin: 20px auto 60px auto;
   position: relative;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .congrats_card {
+    padding: 35px 60px;
+  }
 }
 .congrats_text {
   color: gray;
@@ -765,4 +773,58 @@
     margin-bottom: 10px;
     text-align: left;
   }
+}
+
+/* Acknowledgement Class Completion Buttons */
+.ack_buttons_container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  margin: 30px 0 10px 0;
+}
+
+@media (min-width: 576px) {
+  .ack_buttons_container {
+    flex-direction: row;
+  }
+}
+
+.ack_btn {
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 260px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ack_btn:active {
+  transform: translateY(2px);
+}
+
+.ack_btn_success {
+  background-color: #28a745;
+  color: #ffffff;
+}
+.ack_btn_success:hover {
+  background-color: #218838;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+.ack_btn_danger {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+.ack_btn_danger:hover {
+  background-color: #c82333;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
 }
