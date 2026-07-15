@@ -2184,7 +2184,7 @@ export default function TrainerPayment() {
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <Flex
                     justify="center"
                     align="center"
@@ -2239,7 +2239,7 @@ export default function TrainerPayment() {
                       </Button>
                     </Tooltip>
                   </Flex>
-                </div>
+                </div> */}
               </div>
             </Col>
           </Row>

@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Row, Col, Upload, Button, Modal, Tabs, Checkbox } from "antd";
+import {
+  Row,
+  Col,
+  Upload,
+  Button,
+  Modal,
+  Tabs,
+  Checkbox,
+  Skeleton,
+} from "antd";
 import Logo from "../../assets/acte-logo.png";
 import { PlusOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -53,19 +62,27 @@ export default function CustomerRegistration() {
   const [otpLoading, setOtpLoading] = useState(false);
 
   const handleSendOtp = async () => {
-    if (!otpEmail) {
-      setOtpEmailError(" is required");
-      return;
-    }
+    // if (!otpEmail) {
+    //   setOtpEmailError(" is required");
+    //   return;
+    // }
     const err = emailValidator(otpEmail);
     if (err) {
       setOtpEmailError(err);
+      return;
+    }
+
+    if (otpEmail != email) {
+      setOtpEmailError(
+        " is not registered. Please use your registered email address",
+      );
       return;
     }
     setOtpLoading(true);
     try {
       await sendOtpToCustomer({ email: otpEmail });
       CommonMessage("success", "OTP sent successfully");
+      setOtpEmailError("");
       setIsOtpSent(true);
     } catch (error) {
       console.log("send OTP error", error);
@@ -88,6 +105,7 @@ export default function CustomerRegistration() {
       await verifyCustomerOtp({ email: otpEmail, otp: otpCode });
       CommonMessage("success", "OTP verified successfully");
       setIsOtpVerified(true);
+      setIsOpenTermsModal(true);
     } catch (error) {
       console.log("verify OTP error", error);
       CommonMessage("error", error?.response?.data?.message || "Invalid OTP");
@@ -148,6 +166,7 @@ export default function CustomerRegistration() {
   const [isOpenTermsModal, setIsOpenTermsModal] = useState(false);
   const [isCheckedTerms, setIsCheckedTerms] = useState(false);
   const [isCheckedTermsError, setIsCheckedTermsError] = useState("");
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
@@ -602,344 +621,41 @@ export default function CustomerRegistration() {
     }
   };
 
-  const renderPersonalDetails = () => {
-    return (
-      <div style={{ height: "300px", position: "relative" }}>
-        <div className="logincard_innerContainer">
-          <Row gutter={12} style={{ marginTop: "8px" }}>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (validationTrigger) {
-                    setNameError(nameValidator(e.target.value));
-                  }
-                }}
-                error={nameError}
-                required={true}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Email"
-                required={true}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (validationTrigger) {
-                    setEmailError(emailValidator(e.target.value));
-                  }
-                }}
-                value={email}
-                error={emailError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Mobile"
-                required={true}
-                maxLength={13}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const cleanedMobile = value
-                    .replace(/\D/g, "")
-                    .replace(/^0+/, "");
-                  setMobile(cleanedMobile);
-                  if (validationTrigger) {
-                    setMobileError(mobileValidator(cleanedMobile));
-                  }
-                }}
-                value={mobile}
-                error={mobileError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonOutlinedInput
-                label="Whatsapp Number"
-                icon={<SiWhatsapp color="#39AE41" />}
-                required={true}
-                maxLength={13}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const cleanedMobile = value
-                    .replace(/\D/g, "")
-                    .replace(/^0+/, "");
-                  setWhatsApp(cleanedMobile);
-                  if (validationTrigger) {
-                    setWhatsAppError(mobileValidator(cleanedMobile));
-                  }
-                }}
-                value={whatsApp}
-                error={whatsAppError}
-                errorFontSize="10px"
-              />{" "}
-            </Col>
-          </Row>
-
-          <Row gutter={12} style={{ marginTop: "30px" }}>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonMuiDatePicker
-                label="Date Of Birth"
-                required={true}
-                onChange={(value) => {
-                  console.log("vallll", value);
-                  setDateOfBirth(value);
-                  if (validationTrigger) {
-                    setDateOfBirthError(selectValidator(value));
-                  }
-                }}
-                value={dateOfBirth}
-                error={dateOfBirthError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
-                label="Gender"
-                required={true}
-                options={[
-                  { id: "Male", name: "Male" },
-                  { id: "Female", name: "Female" },
-                ]}
-                onChange={(e) => {
-                  setGender(e.target.value);
-                  if (validationTrigger) {
-                    setGenderError(selectValidator(e.target.value));
-                  }
-                }}
-                value={gender}
-                error={genderError}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonMuiDatePicker
-                label="Date Of Joining"
-                required={true}
-                maxLength={10}
-                onChange={(value) => {
-                  console.log("vallll", value);
-                  setDateOfJoining(value);
-                  if (validationTrigger) {
-                    setDateOfJoiningError(selectValidator(value));
-                  }
-                }}
-                value={dateOfJoining}
-                error={dateOfJoiningError}
-              />
-            </Col>
-
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonInputField
-                label="Location"
-                required={true}
-                onChange={(e) => {
-                  setLocation(e.target.value);
-                  if (validationTrigger) {
-                    setLocationError(addressValidator(e.target.value));
-                  }
-                }}
-                value={location}
-                error={locationError}
-              />
-            </Col>
-          </Row>
-        </div>
-
-        <div className="trainer_registration_submitbuttonContainer">
-          <button
-            className="trainer_registration_submitbutton"
-            onClick={handlePersonalDetails}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCourseDetails = () => {
-    return (
-      <div style={{ height: "300px", position: "relative" }}>
-        <div className="logincard_innerContainer">
-          <Row gutter={12} style={{ marginTop: "8px" }}>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
-                label="Enrolled Course"
-                required={true}
-                options={courseOptions}
-                onChange={(e) => {
-                  setCourse(e.target.value);
-                  if (validationTrigger) {
-                    setCourseError(selectValidator(e.target.value));
-                  }
-                }}
-                value={course}
-                error={courseError}
-                disabled={true}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
-                label="Batch Track"
-                required={true}
-                options={batchTrackOptions}
-                onChange={(e) => {
-                  setBatchTrack(e.target.value);
-                  if (validationTrigger) {
-                    setBatchTrackError(selectValidator(e.target.value));
-                  }
-                }}
-                value={batchTrack}
-                error={batchTrackError}
-                disabled={true}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
-                label="Batch Timing"
-                required={true}
-                options={batchTimingOptions}
-                onChange={(e) => {
-                  setBatchTiming(e.target.value);
-                  if (validationTrigger) {
-                    setBatchTimingError(selectValidator(e.target.value));
-                  }
-                }}
-                value={batchTiming}
-                error={batchTimingError}
-                disabled={true}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={24} lg={6}>
-              <CommonSelectField
-                label="Placement Support"
-                required={true}
-                options={[
-                  { id: "Need", name: "Need" },
-                  { id: "Not Need", name: "Not Need" },
-                ]}
-                onChange={(e) => {
-                  setPlacementSupport(e.target.value);
-                  if (validationTrigger) {
-                    setPlacementSupportError(selectValidator(e.target.value));
-                  }
-                }}
-                value={placementSupport}
-                error={placementSupportError}
-                disabled={true}
-              />
-            </Col>
-          </Row>
-
-          <Row gutter={12} style={{ marginTop: courseError ? "40px" : "30px" }}>
-            <Col span={6} style={{ position: "relative", display: "flex" }}>
-              <p className="trainer_registration_signaturelabel">
-                Signature <span style={{ color: "#d32f2f" }}>*</span>
-              </p>
-              <Upload
-                style={{ width: "100%", marginTop: "6px" }}
-                beforeUpload={(file) => {
-                  return false; // Prevent auto-upload
-                }}
-                accept=".png"
-                onChange={handleSignature}
-                fileList={signatureArray}
-                multiple={false}
-              >
-                <Button
-                  icon={<UploadOutlined />}
-                  className="leadmanager_payment_screenshotbutton"
-                  style={{ borderRadius: "4px" }}
-                >
-                  Choose file
-                  <span style={{ fontSize: "10px" }}>(PNG)</span>
-                </Button>
-              </Upload>{" "}
-              <button
-                className="trainer_registration_signature_createbutton"
-                onClick={() => setIsOpenSignatureModal(true)}
-              >
-                <IoIosAdd size={18} /> Create
-              </button>
-              {signatureError && (
-                <p className="trainer_registration_signatureerror">
-                  {signatureError}
-                </p>
-              )}
-            </Col>
-          </Row>
-
-          <div
-            className="customer_registration_terms_container"
-            style={{
-              marginBottom: signatureBase64 ? "20px" : "0px",
-            }}
-          >
-            <Checkbox
-              onChange={(e) => {
-                setIsCheckedTerms(e.target.checked);
-                if (validationTrigger) {
-                  if (e.target.checked === true) {
-                    setIsCheckedTermsError("");
-                  } else {
-                    setIsCheckedTermsError(" is required");
-                  }
-                }
-              }}
-              value={isCheckedTerms}
-            >
-              I have read and agree to the
-            </Checkbox>
-            <p
-              className="customer_registration_terms_text"
-              onClick={() => setIsOpenTermsModal(true)}
-            >
-              Terms and Conditions
-            </p>
-          </div>
-          {isCheckedTermsError && (
-            <p className="customer_registration_terms_error">
-              Please accept the terms and conditions
-            </p>
-          )}
-        </div>{" "}
-        <div className="trainer_registration_submitbuttonContainer">
-          {buttonLoading ? (
-            <button className="trainer_registration_loadingsubmitbutton">
-              <CommonSpinner />
-            </button>
-          ) : (
-            <button
-              className="trainer_registration_submitbutton"
-              onClick={handleSubmit}
-            >
-              Submit
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const tabItems = [
-    {
-      key: "1",
-      label: "Personal Details",
-      children: renderPersonalDetails(),
-    },
-    {
-      key: "2",
-      label: "Course Details",
-      children: renderCourseDetails(),
-    },
-  ];
-
   const handleSignatureBase64 = (base64) => {
     console.log(base64, "base64");
     setSignatureBase64(base64);
     setSignatureError("");
     setIsOpenSignatureModal(false);
   };
+
+  if (loading) {
+    return (
+      <div
+        className="customerregistration_mainContainer"
+        style={{
+          padding: "40px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <div
+          className="customerregistration_card"
+          style={{
+            width: "100%",
+            maxWidth: "800px",
+            padding: "40px",
+            backgroundColor: "#fff",
+            borderRadius: "12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          }}
+        >
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="customerregistration_mainContainer">
@@ -975,7 +691,7 @@ export default function CustomerRegistration() {
             <h2
               style={{
                 color: "#1b538c",
-                fontSize: "22px",
+                fontSize: "19px",
                 fontWeight: "600",
                 margin: "0 0 8px 0",
               }}
@@ -985,7 +701,7 @@ export default function CustomerRegistration() {
             <p
               style={{
                 color: "#6c757d",
-                fontSize: "14px",
+                fontSize: "12px",
                 margin: 0,
                 textAlign: "center",
               }}
@@ -1004,6 +720,7 @@ export default function CustomerRegistration() {
               }}
               error={otpEmailError}
               disabled={isOtpSent}
+              errorFontSize={"9px"}
               required={true}
             />
           </div>
@@ -1040,7 +757,7 @@ export default function CustomerRegistration() {
                   width: "100%",
                   borderRadius: "6px",
                   padding: "10px 0",
-                  fontSize: "16px",
+                  fontSize: "13.5px",
                 }}
                 onClick={handleVerifyOtp}
               >
@@ -1053,7 +770,7 @@ export default function CustomerRegistration() {
                   width: "100%",
                   borderRadius: "6px",
                   padding: "10px 0",
-                  fontSize: "16px",
+                  fontSize: "13.5px",
                 }}
                 onClick={handleSendOtp}
               >
@@ -1400,7 +1117,7 @@ export default function CustomerRegistration() {
                       </Col>
                     </Row>
 
-                    <Row style={{ marginTop: "20px", marginBottom: "30px" }}>
+                    <Row style={{ marginTop: "20px" }}>
                       <Col
                         span={6}
                         style={{ position: "relative", display: "flex" }}
@@ -1443,7 +1160,7 @@ export default function CustomerRegistration() {
                         )}
                       </Col>
                     </Row>
-                    <div
+                    {/* <div
                       className="customer_registration_terms_container"
                       style={{
                         marginBottom: signatureBase64 ? "20px" : "0px",
@@ -1460,7 +1177,7 @@ export default function CustomerRegistration() {
                             }
                           }
                         }}
-                        value={isCheckedTerms}
+                        checked={isCheckedTerms}
                       >
                         I have read and agree to the
                       </Checkbox>
@@ -1470,7 +1187,7 @@ export default function CustomerRegistration() {
                       >
                         Terms and Conditions
                       </p>
-                    </div>
+                    </div> */}
                     {/* {isCheckedTermsError && (
                   <p className="customer_registration_terms_error">
                     Please accept the terms and conditions
@@ -1516,11 +1233,26 @@ export default function CustomerRegistration() {
             open={isOpenTermsModal}
             onCancel={() => setIsOpenTermsModal(false)}
             footer={false}
-            width="50%"
+            maskClosable={false}
+            closeIcon={false}
+            className="customerregistration_termsmodal"
             style={{ top: 20 }} // 👈 distance from top
             centered
           >
-            <div className="customer_registration_terms_contentContainer">
+            <div
+              className="customer_registration_terms_contentContainer"
+              onScroll={(e) => {
+                const { scrollTop, scrollHeight, clientHeight } = e.target;
+                if (scrollHeight - scrollTop <= clientHeight + 2) {
+                  setIsScrolledToBottom(true);
+                }
+              }}
+              style={{
+                maxHeight: "60vh",
+                overflowY: "auto",
+                paddingRight: "10px",
+              }}
+            >
               <ol className="terms-list">
                 <li>
                   Acte Technologies has the right to postpone/cancel classes due
@@ -1629,6 +1361,43 @@ export default function CustomerRegistration() {
                   without dispute.
                 </li>
               </ol>
+            </div>
+            <div
+              style={{
+                marginTop: "20px",
+                borderTop: "1px solid #e8e8e8",
+                paddingTop: "15px",
+              }}
+            >
+              <Checkbox
+                disabled={!isScrolledToBottom}
+                checked={isCheckedTerms}
+                onChange={(e) => {
+                  setIsCheckedTerms(e.target.checked);
+                  if (e.target.checked) {
+                    setIsCheckedTermsError("");
+                  } else {
+                    setIsCheckedTermsError(" is required");
+                  }
+                }}
+              >
+                I have read and agree to the Terms and Conditions
+              </Checkbox>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: "15px",
+                }}
+              >
+                <Button
+                  type="primary"
+                  disabled={!isCheckedTerms}
+                  onClick={() => setIsOpenTermsModal(false)}
+                >
+                  Continue
+                </Button>
+              </div>
             </div>
           </Modal>
 

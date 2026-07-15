@@ -1365,6 +1365,12 @@
   margin-top: 40px;
   padding: 0px 35px 0px 35px !important;
 }
+@media (max-width: 767px) {
+  .customerregistration_innerContainer {
+    padding: 0px 15px !important;
+    margin-top: 20px;
+  }
+}
 
 .customerregistration_profileimage_container {
   display: flex;
@@ -1400,12 +1406,16 @@
   height: 300px;
 }
 .customerregistration_formcontainer {
-  height: 390px;
+  height: auto;
   position: relative;
+  padding: 0 0 20px 0;
 }
-@media (min-width: 260px) and (max-width: 1023px) {
+@media (max-width: 767px) {
   .customerregistration_formcontainer {
-    height: auto;
+    padding: 0 0 20px 0;
+  }
+  .logincard_innerContainer {
+    padding: 0px 15px !important;
   }
 }
 .customer_registration_terms_container {
@@ -1464,25 +1474,24 @@
   border-color: #5b69ca !important ;
 }
 .customer_registration_submitbuttonContainer {
-  position: absolute;
-  bottom: 2px;
-  right: 32px;
+  position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
+  padding: 0 35px 8px 0;
 }
-@media (min-width: 260px) and (max-width: 767px) {
+@media (max-width: 767px) {
   .customer_registration_submitbuttonContainer {
-    position: relative;
-    margin-top: 20px;
+    justify-content: center;
+    padding: 0 0 8px 0;
   }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
-  .customer_registration_submitbuttonContainer {
-    position: relative;
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
+.customerregistration_termsmodal.ant-modal {
+  width: 50% !important;
+}
+@media (max-width: 767px) {
+  .customerregistration_termsmodal.ant-modal {
+    width: 90% !important;
   }
 }
 .customerregistration_signaturemodal.ant-modal {

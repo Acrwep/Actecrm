@@ -1087,6 +1087,7 @@ export default function Trainers() {
             case "action":
               return {
                 ...col,
+                hidden: false,
                 render: (text, record) => {
                   return (
                     <div
@@ -1693,7 +1694,7 @@ export default function Trainers() {
             </Upload>
           </div>
         )}
-        <Row gutter={16}>
+        <Row gutter={16} style={{ marginTop: editTrainerId ? "0px" : "20px" }}>
           <Col span={8}>
             <CommonInputField
               label="Trainer Name"
