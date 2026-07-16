@@ -115,6 +115,78 @@
   color: #d32f2f;
 }
 
+/* Stage 1 - Blue */
+.trainers_stage1_container {
+  border: 1px solid #0984e37a;
+  background-color: #0985e30e;
+  color: #0984e3;
+}
+.trainers_active_stage1_container {
+  border: 1px solid #0984e3;
+  background-color: #0984e3;
+  color: #fff;
+}
+
+/* Stage 2 - Indigo */
+.trainers_stage2_container {
+  border: 1px solid #6c5ce77a;
+  background-color: #6c5ce70e;
+  color: #6c5ce7;
+}
+.trainers_active_stage2_container {
+  border: 1px solid #6c5ce7;
+  background-color: #6c5ce7;
+  color: #fff;
+}
+
+/* Stage 3 - Teal */
+.trainers_stage3_container {
+  border: 1px solid #00cec97a;
+  background-color: #00cec90e;
+  color: #00cec9;
+}
+.trainers_active_stage3_container {
+  border: 1px solid #00cec9;
+  background-color: #00cec9;
+  color: #fff;
+}
+
+/* Stage 4 - Rose */
+.trainers_stage4_container {
+  border: 1px solid #e843937a;
+  background-color: #e843930e;
+  color: #e84393;
+}
+.trainers_active_stage4_container {
+  border: 1px solid #e84393;
+  background-color: #e84393;
+  color: #fff;
+}
+
+/* OnGoing - Existing - Violet */
+.trainers_ongoing_existing_container {
+  border: 1px solid #8e44ad7a;
+  background-color: #8e44ad0e;
+  color: #8e44ad;
+}
+.trainers_active_ongoing_existing_container {
+  border: 1px solid #8e44ad;
+  background-color: #8e44ad;
+  color: #fff;
+}
+
+/* OnGoing - New - Coral */
+.trainers_ongoing_new_container {
+  border: 1px solid #ff7f507a;
+  background-color: #ff7f500e;
+  color: #ff7f50;
+}
+.trainers_active_ongoing_new_container {
+  border: 1px solid #ff7f50;
+  background-color: #ff7f50;
+  color: #fff;
+}
+
 .trainer_registration_signatureerror {
   position: absolute;
   bottom: -22px;

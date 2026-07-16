@@ -34,6 +34,7 @@ import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import { IoCaretDownSharp } from "react-icons/io5";
 import {
   addressValidator,
@@ -169,14 +170,7 @@ const CustomerList = ({ trainerId, isClassTaken }) => {
 
 export default function Trainers() {
   const paymentRequestFormRef = useRef();
-  const scrollRef = useRef();
 
-  const scroll = (scrollOffset) => {
-    scrollRef.current.scrollBy({
-      left: scrollOffset,
-      behavior: "smooth",
-    });
-  };
   const navigate = useNavigate();
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -256,6 +250,12 @@ export default function Trainers() {
   const [rejectedCount, setRejectedCount] = useState(0);
   const [onBoardingCount, setOnboardingCount] = useState("");
   const [onGoingCount, setOnGoingCount] = useState("");
+  const [newOngoingCount, setNewOngoingCount] = useState("");
+  const [existingOngoingCount, setExistingOngoingCount] = useState("");
+  const [firstStageCount, setFirstStageCount] = useState("");
+  const [secondStageCount, setSecondStageCount] = useState("");
+  const [thirdStageCount, setThirdStageCount] = useState("");
+  const [fourthStageCount, setFourthStageCount] = useState("");
   //add course usestates
   const [isOpenAddCourseModal, setIsOpenAddCourseModal] = useState(false);
   const [courseName, setCourseName] = useState("");
@@ -649,6 +649,41 @@ export default function Trainers() {
     callTechnologiesApi,
   ) => {
     setLoading(true);
+    let bucket = "";
+    let statusPayload = "";
+    let is_form_sent = null;
+
+    if (!trainerStatus || trainerStatus === "") {
+      bucket = "All";
+    } else if (trainerStatus === "Form Pending") {
+      bucket = "All";
+      is_form_sent = 1;
+    } else if (trainerStatus === "Verify Pending") {
+      bucket = "All";
+      statusPayload = "Verify Pending";
+    } else if (trainerStatus === "Verified") {
+      bucket = "Verified";
+      statusPayload = "Verified";
+    } else if (trainerStatus === "Onboarded") {
+      bucket = "onboarding";
+    } else if (
+      trainerStatus === "1" ||
+      trainerStatus === "5" ||
+      trainerStatus === "10" ||
+      trainerStatus === "10+"
+    ) {
+      bucket = "onboarding";
+      statusPayload = trainerStatus;
+    } else if (trainerStatus === "OnGoing" || trainerStatus === "Ongoing") {
+      bucket = "ongoing";
+    } else if (trainerStatus === "New" || trainerStatus === "Existing") {
+      bucket = "ongoing";
+      statusPayload = trainerStatus;
+    } else if (trainerStatus === "Rejected") {
+      bucket = "All";
+      statusPayload = "Rejected";
+    }
+
     const payload = {
       ...(searchvalue && filterType == 1
         ? { mobile: searchvalue }
@@ -657,13 +692,9 @@ export default function Trainers() {
           : searchvalue && filterType == 3
             ? { email: searchvalue }
             : {}),
-      ...(trainerStatus && trainerStatus == "Form Pending"
-        ? { is_form_sent: 1 }
-        : trainerStatus == "Onboarded"
-          ? { is_onboarding: 1 }
-          : trainerStatus == "Ongoing" || trainerStatus == "OnGoing"
-            ? { ongoing: "Ongoing" }
-            : trainerStatus && { status: trainerStatus }),
+      ...(bucket && { bucket: bucket }),
+      ...(statusPayload && { status: statusPayload }),
+      ...(is_form_sent && { is_form_sent }),
       ...(hr_id && { created_by: hr_id }),
       page: pageNumber,
       limit: limit,
@@ -671,12 +702,24 @@ export default function Trainers() {
     try {
       const response = await getTrainers(payload);
       console.log("trainers response", response);
-      setTrainersData(response?.data?.data?.trainers || []);
-      setOnboardingCount(response?.data?.data?.on_boarding ?? "-");
-      setOnGoingCount(response?.data?.data?.on_going ?? "-");
+      const data = response?.data?.data || {};
+      setTrainersData(data.trainers || []);
+      setOnboardingCount(data.on_boarding ?? "-");
+      setOnGoingCount(data.on_going ?? "-");
+      setNewOngoingCount(data.new_ongoing ?? "-");
+      setExistingOngoingCount(data.existing_ongoing ?? "-");
+      setFirstStageCount(data.first_stage ?? "-");
+      setSecondStageCount(data.second_stage ?? "-");
+      setThirdStageCount(data.third_stage ?? "-");
+      setFourthStageCount(data.fourth_stage ?? "-");
 
-      const statusCountList = response?.data?.data?.trainer_status_count || [];
-      const pagination = response?.data?.data?.pagination;
+      const statusCountList = data.trainer_status_count || [];
+      const pagination = data.pagination || {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      };
 
       setPagination({
         page: pagination.page,
@@ -2041,162 +2084,154 @@ export default function Trainers() {
 
   return (
     <div>
-      <Row style={{ marginTop: "8px" }}>
+      <Row gutter={16} style={{ marginTop: "8px" }}>
         <Col span={23}>
-          <div className="customers_scroll_wrapper">
-            <button
-              onClick={() => scroll(-600)}
-              className="customer_statusscroll_button"
+          <ScrollableTabContainer>
+            {permissions.includes("Add Trainer") && (
+              <div
+                className={
+                  status === "AddTrainer"
+                    ? "addlead_tab_activebutton"
+                    : "addlead_tab_inactivebutton"
+                }
+                onClick={() => {
+                  if (status === "AddTrainer") return;
+                  setStatus("AddTrainer");
+                  setEditTrainerId(null);
+                  formReset();
+                }}
+              >
+                <p>Add Trainer</p>
+              </div>
+            )}
+            <div
+              className={
+                status === "" ||
+                status === "Form Pending" ||
+                status === "Verify Pending"
+                  ? "trainers_active_all_container"
+                  : "trainers_all_container"
+              }
+              onClick={() => {
+                if (status === "") {
+                  return;
+                }
+                setStatus("");
+                setPagination({
+                  page: 1,
+                });
+                getTrainersData(searchValue, null, hrId, 1, pagination.limit);
+              }}
             >
-              <IoMdArrowDropleft size={25} />
-            </button>
-            <div className="customers_status_mainContainer" ref={scrollRef}>
-              {permissions.includes("Add Trainer") && (
-                <div
-                  className={
-                    status === "AddTrainer"
-                      ? "addlead_tab_activebutton"
-                      : "addlead_tab_inactivebutton"
-                  }
-                  onClick={() => {
-                    if (status === "AddTrainer") return;
-                    setStatus("AddTrainer");
-                    setEditTrainerId(null);
-                    formReset();
-                  }}
-                >
-                  <p>Add Trainer</p>
-                </div>
-              )}
-              <div
-                className={
-                  status === "" ||
-                  status === "Form Pending" ||
-                  status === "Verify Pending"
-                    ? "trainers_active_all_container"
-                    : "trainers_all_container"
-                }
-                onClick={() => {
-                  if (status === "") {
-                    return;
-                  }
-                  setStatus("");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(searchValue, null, hrId, 1, pagination.limit);
-                }}
-              >
-                <p>All {`( ${allTrainersCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Verified"
-                    ? "trainers_active_verifiedtrainers_container"
-                    : "customers_completed_container"
-                }
-                onClick={() => {
-                  if (status === "Verified") {
-                    return;
-                  }
-                  setStatus("Verified");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Verified",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>Eligible Trainers {`( ${verifiedCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Onboarded"
-                    ? "customers_active_classschedule_container"
-                    : "customers_classschedule_container"
-                }
-                onClick={() => {
-                  if (status === "Onboarded") {
-                    return;
-                  }
-                  setStatus("Onboarded");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Onboarded",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>Onboarded Trainers {`( ${onBoardingCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "OnGoing"
-                    ? "customers_active_classgoing_container"
-                    : "customers_classgoing_container"
-                }
-                onClick={() => {
-                  if (status === "OnGoing") {
-                    return;
-                  }
-                  setStatus("OnGoing");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Ongoing",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>On-Going Trainers {`( ${onGoingCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Rejected"
-                    ? "trainers_active_rejectedtrainers_container"
-                    : "trainers_rejected_container"
-                }
-                onClick={() => {
-                  if (status === "Rejected") {
-                    return;
-                  }
-                  setStatus("Rejected");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Rejected",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
-              </div>
+              <p>All {`( ${allTrainersCount} )`}</p>
             </div>
-            <button
-              onClick={() => scroll(600)}
-              className="customer_statusscroll_button"
+            <div
+              className={
+                status === "Verified"
+                  ? "trainers_active_verifiedtrainers_container"
+                  : "customers_completed_container"
+              }
+              onClick={() => {
+                if (status === "Verified") {
+                  return;
+                }
+                setStatus("Verified");
+                setPagination({
+                  page: 1,
+                });
+                getTrainersData(
+                  searchValue,
+                  "Verified",
+                  hrId,
+                  1,
+                  pagination.limit,
+                );
+              }}
             >
-              <IoMdArrowDropright size={25} />
-            </button>
-          </div>
+              <p>Eligible Trainers {`( ${verifiedCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "Onboarded" ||
+                status === "1" ||
+                status === "5" ||
+                status === "10" ||
+                status === "10+"
+                  ? "customers_active_classschedule_container"
+                  : "customers_classschedule_container"
+              }
+              onClick={() => {
+                if (status === "Onboarded") {
+                  return;
+                }
+                setStatus("Onboarded");
+                setPagination({
+                  page: 1,
+                });
+                getTrainersData(
+                  searchValue,
+                  "Onboarded",
+                  hrId,
+                  1,
+                  pagination.limit,
+                );
+              }}
+            >
+              <p>Onboarded Trainers {`( ${onBoardingCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "OnGoing" ||
+                status === "New" ||
+                status === "Existing"
+                  ? "customers_active_classgoing_container"
+                  : "customers_classgoing_container"
+              }
+              onClick={() => {
+                if (status === "OnGoing") {
+                  return;
+                }
+                setStatus("OnGoing");
+                setPagination({
+                  page: 1,
+                });
+                getTrainersData(
+                  searchValue,
+                  "Ongoing",
+                  hrId,
+                  1,
+                  pagination.limit,
+                );
+              }}
+            >
+              <p>On-Going Trainers {`( ${onGoingCount} )`}</p>
+            </div>
+            <div
+              className={
+                status === "Rejected"
+                  ? "trainers_active_rejectedtrainers_container"
+                  : "trainers_rejected_container"
+              }
+              onClick={() => {
+                if (status === "Rejected") {
+                  return;
+                }
+                setStatus("Rejected");
+                setPagination({
+                  page: 1,
+                });
+                getTrainersData(
+                  searchValue,
+                  "Rejected",
+                  hrId,
+                  1,
+                  pagination.limit,
+                );
+              }}
+            >
+              <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
+            </div>
+          </ScrollableTabContainer>
         </Col>
 
         <Col
@@ -2446,6 +2481,150 @@ export default function Trainers() {
                 style={{ cursor: "pointer" }}
               >
                 <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
+              </div>
+            </Row>
+          )}
+
+          {(status === "Onboarded" ||
+            status === "1" ||
+            status === "5" ||
+            status === "10" ||
+            status === "10+") && (
+            <Row
+              style={{
+                marginTop: "16px",
+                marginBottom: "24px",
+                gap: "12px",
+                paddingLeft: "12px",
+              }}
+            >
+              <div
+                className={
+                  status === "1"
+                    ? "trainers_active_stage1_container"
+                    : "trainers_stage1_container"
+                }
+                onClick={() => {
+                  if (status === "1") return;
+                  setStatus("1");
+                  setPagination({ page: 1 });
+                  getTrainersData(searchValue, "1", hrId, 1, pagination.limit);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>1 {`( ${firstStageCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "5"
+                    ? "trainers_active_stage2_container"
+                    : "trainers_stage2_container"
+                }
+                onClick={() => {
+                  if (status === "5") return;
+                  setStatus("5");
+                  setPagination({ page: 1 });
+                  getTrainersData(searchValue, "5", hrId, 1, pagination.limit);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>2 to 5 {`( ${secondStageCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "10"
+                    ? "trainers_active_stage3_container"
+                    : "trainers_stage3_container"
+                }
+                onClick={() => {
+                  if (status === "10") return;
+                  setStatus("10");
+                  setPagination({ page: 1 });
+                  getTrainersData(searchValue, "10", hrId, 1, pagination.limit);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>6 to 10 {`( ${thirdStageCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "10+"
+                    ? "trainers_active_stage4_container"
+                    : "trainers_stage4_container"
+                }
+                onClick={() => {
+                  if (status === "10+") return;
+                  setStatus("10+");
+                  setPagination({ page: 1 });
+                  getTrainersData(
+                    searchValue,
+                    "10+",
+                    hrId,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>10+ {`( ${fourthStageCount} )`}</p>
+              </div>
+            </Row>
+          )}
+
+          {(status === "OnGoing" ||
+            status === "New" ||
+            status === "Existing") && (
+            <Row
+              style={{
+                marginTop: "16px",
+                marginBottom: "24px",
+                gap: "12px",
+                paddingLeft: "12px",
+              }}
+            >
+              <div
+                className={
+                  status === "Existing"
+                    ? "trainers_active_ongoing_existing_container"
+                    : "trainers_ongoing_existing_container"
+                }
+                onClick={() => {
+                  if (status === "Existing") return;
+                  setStatus("Existing");
+                  setPagination({ page: 1 });
+                  getTrainersData(
+                    searchValue,
+                    "Existing",
+                    hrId,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>Existing {`( ${existingOngoingCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "New"
+                    ? "trainers_active_ongoing_new_container"
+                    : "trainers_ongoing_new_container"
+                }
+                onClick={() => {
+                  if (status === "New") return;
+                  setStatus("New");
+                  setPagination({ page: 1 });
+                  getTrainersData(
+                    searchValue,
+                    "New",
+                    hrId,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>New {`( ${newOngoingCount} )`}</p>
               </div>
             </Row>
           )}
