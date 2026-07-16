@@ -27,10 +27,14 @@ export default function CommonMuiDatePicker({
       <DatePicker
         label={label}
         value={value ? dayjs(value) : null} // convert JS Date to Dayjs
-        onChange={(newValue) => {
+        onChange={(newValue, context) => {
           // Convert Dayjs to JS Date
           const jsDate = newValue ? newValue.toDate() : null;
           onChange(jsDate);
+          
+          if (context?.validationError == null) {
+            setOpen(false);
+          }
         }}
         open={!disabled && open} // ✅ only open if not disabled
         format="DD/MM/YYYY"

@@ -188,7 +188,8 @@ export default function Trainers() {
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   const [viewTrainerData, setViewTrainerData] = useState(null);
   const [trainersData, setTrainersData] = useState([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("AddTrainer");
+  const [previousStatus, setPreviousStatus] = useState(null);
   const statusRef = useRef(status);
   useEffect(() => {
     statusRef.current = status;
@@ -205,16 +206,16 @@ export default function Trainers() {
   const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
   const [whatsAppError, setWhatsAppError] = useState("");
-  const [technologyOptions, setTechnologyOptions] = useState("");
+  const [technologyOptions, setTechnologyOptions] = useState([]);
   const [technology, setTechnology] = useState("");
   const [technologyError, setTechnologyError] = useState("");
   const [isTechnologyFocused, setIsTechnologyFocused] = useState(false);
-  const [experienceOptions, setExperienceOptions] = useState("");
+  const [experienceOptions, setExperienceOptions] = useState([]);
   const [experience, setExperience] = useState("");
   const [experienceError, setExperienceError] = useState("");
   const [relevantExperience, setRelevantExperience] = useState("");
   const [relevantExperienceError, setRelevantExperienceError] = useState("");
-  const [batchOptions, setBatchOptions] = useState("");
+  const [batchOptions, setBatchOptions] = useState([]);
   const [batch, setBatch] = useState("");
   const [batchError, setBatchError] = useState("");
   const [avaibilityTime, setAvaibilityTime] = useState(null);
@@ -634,7 +635,7 @@ export default function Trainers() {
       setHrUsers([]);
       console.log("get hr users error", error);
     } finally {
-      setStatus("");
+      setStatus("AddTrainer");
       getTrainersData(null, null, null, 1, 10, true);
     }
   };
@@ -1196,8 +1197,9 @@ export default function Trainers() {
     console.log("clicked item", item);
     // const skillsAsJson = JSON.parse(item.skills);
     // const skillsOutput = skillsAsJson[0].split(",").map((item) => item.trim());
-
-    setIsOpenAddDrawer(true);
+    console.log("prevvv storeee", statusRef.current);
+    setPreviousStatus(statusRef.current);
+    setStatus("AddTrainer");
     setEditTrainerId(item.id);
     if (item.profile_image) {
       setProfilePictureArray([
@@ -1561,13 +1563,25 @@ export default function Trainers() {
         setTimeout(() => {
           setButtonLoading(false);
           formReset();
-          getTrainersData(
-            searchValue,
-            status,
-            hrId,
-            pagination.page,
-            pagination.limit,
-          );
+          if (previousStatus !== null) {
+            setStatus(previousStatus);
+            getTrainersData(
+              searchValue,
+              previousStatus,
+              hrId,
+              pagination.page,
+              pagination.limit,
+            );
+            setPreviousStatus(null);
+          } else {
+            getTrainersData(
+              searchValue,
+              status,
+              hrId,
+              pagination.page,
+              pagination.limit,
+            );
+          }
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -1636,13 +1650,13 @@ export default function Trainers() {
   };
 
   const handleRefresh = () => {
-    setStatus("");
+    // setStatus("");
     setSearchValue("");
     setHrId(null);
     setPagination({
       page: 1,
     });
-    getTrainersData(null, null, null, 1, pagination.limit);
+    getTrainersData(null, status, null, 1, pagination.limit);
   };
 
   const handleSendFormLink = async (trainerEmail, trainerId) => {
@@ -1695,7 +1709,7 @@ export default function Trainers() {
           </div>
         )}
         <Row gutter={16} style={{ marginTop: editTrainerId ? "0px" : "20px" }}>
-          <Col span={8}>
+          <Col span={6}>
             <CommonInputField
               label="Trainer Name"
               value={name}
@@ -1707,9 +1721,10 @@ export default function Trainers() {
               }}
               error={nameError}
               required={true}
+              errorFontSize={"9px"}
             />
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <CommonInputField
               label="Trainer Email"
               required={true}
@@ -1721,9 +1736,10 @@ export default function Trainers() {
               }}
               value={email}
               error={emailError}
+              errorFontSize={"9px"}
             />
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <PhoneWithCountry
               label="Mobile Number"
               onChange={(value, countryIso2) => {
@@ -1739,7 +1755,7 @@ export default function Trainers() {
                 setMobileCountryCode(code);
               }}
               error={mobileError}
-              errorFontSize={mobileError.length >= 10 ? "9.5px" : "13px"}
+              errorFontSize={"9px"}
               onCountryChange={(iso2) => {
                 setSelectedCountry(iso2);
                 setWhatsAppCountry(iso2);
@@ -1747,10 +1763,7 @@ export default function Trainers() {
               value={mobile}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
+          <Col span={6}>
             <PhoneWithCountry
               label="WhatsApp Number"
               onChange={(value, countryIso2) => {
@@ -1766,14 +1779,16 @@ export default function Trainers() {
               selectedCountry={whatsAppCountry}
               value={whatsApp}
               error={whatsAppError}
-              errorFontSize={whatsAppError.length >= 10 ? "9.5px" : "13px"}
+              errorFontSize={"9px"}
               onCountryChange={(iso2) => {
                 setWhatsAppCountry(iso2);
               }}
             />
           </Col>
+        </Row>
 
-          <Col span={8}>
+        <Row gutter={16} style={{ marginTop: "35px" }}>
+          <Col span={6}>
             <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
               <div style={{ flex: 1 }}>
                 <CommonSelectField
@@ -1788,6 +1803,7 @@ export default function Trainers() {
                   }}
                   value={technology}
                   error={technologyError}
+                  errorFontSize={"9px"}
                   valueMarginTop="-4px"
                   borderRightNone={true}
                   onFocus={() => setIsTechnologyFocused(true)}
@@ -1820,7 +1836,7 @@ export default function Trainers() {
             </div>
           </Col>
 
-          <Col span={8}>
+          <Col span={6}>
             <CommonSelectField
               label="Experience"
               required={true}
@@ -1833,13 +1849,11 @@ export default function Trainers() {
               }}
               value={experience}
               error={experienceError}
+              errorFontSize={"9px"}
               valueMarginTop="-4px"
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "30px" }}>
-          <Col span={8}>
+          <Col span={6}>
             <CommonSelectField
               label="Relevant Experience"
               options={experienceOptions}
@@ -1853,10 +1867,10 @@ export default function Trainers() {
               value={relevantExperience}
               error={relevantExperienceError}
               valueMarginTop="-4px"
-              errorFontSize="10px"
+              errorFontSize="9px"
             />
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             <CommonSelectField
               label="Batch"
               required={true}
@@ -1872,8 +1886,13 @@ export default function Trainers() {
               valueMarginTop="-4px"
             />
           </Col>
+        </Row>
 
-          <Col span={8}>
+        <Row
+          gutter={16}
+          style={{ marginTop: relevantExperienceError ? "40px" : "35px" }}
+        >
+          <Col span={6}>
             <CommonMuiTimePicker
               label="Avaibility Time"
               required={false}
@@ -1885,10 +1904,7 @@ export default function Trainers() {
               allowClear={true}
             />
           </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: batchError ? "45px" : "35px" }}>
-          <Col span={8}>
+          <Col span={6}>
             <CommonMuiTimePicker
               label="Secondary Time"
               required={false}
@@ -1900,7 +1916,7 @@ export default function Trainers() {
             />
           </Col>
 
-          <Col span={8}>
+          <Col span={6}>
             <div style={{ position: "relative", height: "auto" }}>
               <p className={"trainer_skillslabel"}>Skills</p>
               <div
@@ -1998,7 +2014,7 @@ export default function Trainers() {
             </div>
           </Col>
 
-          <Col span={8}>
+          <Col span={6}>
             <CommonInputField
               label="Location"
               required={true}
@@ -2010,187 +2026,23 @@ export default function Trainers() {
               }}
               value={location}
               error={locationError}
+              errorFontSize={"9px"}
             />
           </Col>
         </Row>
+
+        {/* <Row
+          gutter={16}
+          style={{ marginTop: batchError ? "45px" : "35px" }}
+        ></Row> */}
       </div>
     );
   };
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
-          <Row gutter={16}>
-            <Col span={10}>
-              <div className="overallduecustomers_filterContainer">
-                <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : ""
-                  }
-                  width="100%"
-                  height="32px"
-                  labelFontSize="11px"
-                  icon={
-                    searchValue ? (
-                      <div
-                        className="users_filter_closeIconContainer"
-                        onClick={() => {
-                          setSearchValue("");
-                          setPagination({
-                            page: 1,
-                          });
-                          getTrainersData(
-                            null,
-                            status,
-                            hrId,
-                            1,
-                            pagination.limit,
-                          );
-                        }}
-                      >
-                        <IoIosClose size={11} />
-                      </div>
-                    ) : (
-                      <CiSearch size={16} />
-                    )
-                  }
-                  labelMarginTop="0px"
-                  style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
-                    padding: searchValue
-                      ? "0px 26px 0px 0px"
-                      : "0px 8px 0px 0px",
-                  }}
-                  onChange={handleSearch}
-                  value={searchValue}
-                />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setFilterType(e.target.value);
-                            if (searchValue === "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              setPagination({
-                                page: 1,
-                              });
-                              getTrainersData(
-                                null,
-                                status,
-                                hrId,
-                                1,
-                                pagination.limit,
-                              );
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "6px" }}>
-                            Search by Email
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
-              </div>
-            </Col>
-            <Col span={9}>
-              <div className="overallduecustomers_filterContainer">
-                <CommonSelectField
-                  label="HR"
-                  options={hrUsers}
-                  width="100%"
-                  height="34px"
-                  labelFontSize={"12px"}
-                  labelMarginTop="-1px"
-                  style={{ width: "100%" }}
-                  value={hrId}
-                  onChange={(e) => {
-                    setHrId(e.target.value);
-                    getTrainersData(
-                      searchValue,
-                      status,
-                      e.target.value,
-                      1,
-                      pagination.limit,
-                    );
-                  }}
-                  disableClearable={false}
-                />
-              </div>
-            </Col>
-          </Row>
-        </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={12}
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          {permissions.includes("Add Trainer") && (
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAddDrawer(true);
-              }}
-            >
-              Add Trainer
-            </button>
-          )}
-
-          <Tooltip placement="top" title="Refresh">
-            <Button
-              className="leadmanager_refresh_button"
-              onClick={handleRefresh}
-            >
-              <RedoOutlined className="refresh_icon" />
-            </Button>
-          </Tooltip>
-        </Col>
-      </Row>
-
       <Row style={{ marginTop: "8px" }}>
-        <Col span={22}>
+        <Col span={23}>
           <div className="customers_scroll_wrapper">
             <button
               onClick={() => scroll(-600)}
@@ -2199,10 +2051,28 @@ export default function Trainers() {
               <IoMdArrowDropleft size={25} />
             </button>
             <div className="customers_status_mainContainer" ref={scrollRef}>
-              {" "}
+              {permissions.includes("Add Trainer") && (
+                <div
+                  className={
+                    status === "AddTrainer"
+                      ? "addlead_tab_activebutton"
+                      : "addlead_tab_inactivebutton"
+                  }
+                  onClick={() => {
+                    if (status === "AddTrainer") return;
+                    setStatus("AddTrainer");
+                    setEditTrainerId(null);
+                    formReset();
+                  }}
+                >
+                  <p>Add Trainer</p>
+                </div>
+              )}
               <div
                 className={
-                  status === ""
+                  status === "" ||
+                  status === "Form Pending" ||
+                  status === "Verify Pending"
                     ? "trainers_active_all_container"
                     : "trainers_all_container"
                 }
@@ -2218,56 +2088,6 @@ export default function Trainers() {
                 }}
               >
                 <p>All {`( ${allTrainersCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Form Pending"
-                    ? "trainers_active_formpending_container"
-                    : "customers_feedback_container"
-                }
-                onClick={() => {
-                  if (status === "Form Pending") {
-                    return;
-                  }
-                  setStatus("Form Pending");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Form Pending",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>Form Pending {`( ${formPendingCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Verify Pending"
-                    ? "trainers_active_verifypending_container"
-                    : "customers_studentvefity_container"
-                }
-                onClick={() => {
-                  if (status === "Verify Pending") {
-                    return;
-                  }
-                  setStatus("Verify Pending");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Verify Pending",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
               </div>
               <div
                 className={
@@ -2292,7 +2112,7 @@ export default function Trainers() {
                   );
                 }}
               >
-                <p>Verified Trainers {`( ${verifiedCount} )`}</p>
+                <p>Eligible Trainers {`( ${verifiedCount} )`}</p>
               </div>
               <div
                 className={
@@ -2378,61 +2198,336 @@ export default function Trainers() {
             </button>
           </div>
         </Col>
+
         <Col
-          span={2}
+          span={1}
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
-            marginTop: "-8px",
           }}
         >
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ marginLeft: "12px", cursor: "pointer" }}
-            onClick={() => {
-              setIsOpenFilterDrawer(true);
-              getTableColumnsData(loginUserId);
-            }}
-          />
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
         </Col>
       </Row>
 
-      <div style={{ marginTop: "12px" }}>
-        <CommonTable
-          // scroll={{ x: 2700 }}
-          scroll={{
-            x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
-              0,
-            ),
-          }}
-          columns={tableColumns}
-          dataSource={trainersData}
-          dataPerPage={10}
-          loading={loading}
-          checkBox="false"
-          size="small"
-          className="questionupload_table"
-          onPaginationChange={handlePaginationChange} // callback to fetch new data
-          limit={pagination.limit} // page size
-          page_number={pagination.page} // current page
-          totalPageNumber={pagination.total} // total rows
-        />
-      </div>
+      {status == "AddTrainer" ? (
+        ""
+      ) : (
+        <>
+          <Row>
+            <Col xs={24} sm={24} md={24} lg={12}>
+              <Row gutter={16}>
+                <Col span={10}>
+                  <div className="overallduecustomers_filterContainer">
+                    <CommonOutlinedInput
+                      label={
+                        filterType == 1
+                          ? "Search By Mobile"
+                          : filterType == 2
+                            ? "Search By Name"
+                            : filterType == 3
+                              ? "Search by Email"
+                              : ""
+                      }
+                      width="100%"
+                      height="32px"
+                      labelFontSize="11px"
+                      icon={
+                        searchValue ? (
+                          <div
+                            className="users_filter_closeIconContainer"
+                            onClick={() => {
+                              setSearchValue("");
+                              setPagination({
+                                page: 1,
+                              });
+                              getTrainersData(
+                                null,
+                                status,
+                                hrId,
+                                1,
+                                pagination.limit,
+                              );
+                            }}
+                          >
+                            <IoIosClose size={11} />
+                          </div>
+                        ) : (
+                          <CiSearch size={16} />
+                        )
+                      }
+                      labelMarginTop="0px"
+                      style={{
+                        borderTopRightRadius: "0px",
+                        borderBottomRightRadius: "0px",
+                        padding: searchValue
+                          ? "0px 26px 0px 0px"
+                          : "0px 8px 0px 0px",
+                      }}
+                      onChange={handleSearch}
+                      value={searchValue}
+                    />
+                    {/* Filter Button */}
+                    <div>
+                      <Flex
+                        justify="center"
+                        align="center"
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        <Tooltip
+                          placement="bottomLeft"
+                          color="#fff"
+                          title={
+                            <Radio.Group
+                              value={filterType}
+                              onChange={(e) => {
+                                console.log(e.target.value);
+                                setFilterType(e.target.value);
+                                if (searchValue === "") {
+                                  return;
+                                } else {
+                                  setSearchValue("");
+                                  setPagination({
+                                    page: 1,
+                                  });
+                                  getTrainersData(
+                                    null,
+                                    status,
+                                    hrId,
+                                    1,
+                                    pagination.limit,
+                                  );
+                                }
+                              }}
+                            >
+                              <Radio
+                                value={1}
+                                style={{
+                                  marginTop: "6px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                Search by Mobile
+                              </Radio>
+                              <Radio value={2} style={{ marginBottom: "12px" }}>
+                                Search by Name
+                              </Radio>
+                              <Radio value={3} style={{ marginBottom: "6px" }}>
+                                Search by Email
+                              </Radio>
+                            </Radio.Group>
+                          }
+                        >
+                          <Button className="users_filterbutton">
+                            <IoFilter size={16} />
+                          </Button>
+                        </Tooltip>
+                      </Flex>
+                    </div>
+                  </div>
+                </Col>
+                <Col span={9}>
+                  <div className="overallduecustomers_filterContainer">
+                    <CommonSelectField
+                      label="HR"
+                      options={hrUsers}
+                      width="100%"
+                      height="34px"
+                      labelFontSize={"12px"}
+                      labelMarginTop="-1px"
+                      style={{ width: "100%" }}
+                      value={hrId}
+                      onChange={(e) => {
+                        setHrId(e.target.value);
+                        getTrainersData(
+                          searchValue,
+                          status,
+                          e.target.value,
+                          1,
+                          pagination.limit,
+                        );
+                      }}
+                      disableClearable={false}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={12}
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <FiFilter
+                size={20}
+                color="#5b69ca"
+                style={{ marginLeft: "12px", cursor: "pointer" }}
+                onClick={() => {
+                  setIsOpenFilterDrawer(true);
+                  getTableColumnsData(loginUserId);
+                }}
+              />
+            </Col>
+          </Row>
+          {(status === "" ||
+            status === "Form Pending" ||
+            status === "Verify Pending") && (
+            <Row
+              style={{
+                marginTop: "16px",
+                marginBottom: "24px",
+                gap: "12px",
+                paddingLeft: "12px",
+              }}
+            >
+              <div
+                className={
+                  status === "Form Pending"
+                    ? "trainers_active_formpending_container"
+                    : "customers_feedback_container"
+                }
+                onClick={() => {
+                  if (status === "Form Pending") {
+                    return;
+                  }
+                  setStatus("Form Pending");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(
+                    searchValue,
+                    "Form Pending",
+                    hrId,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>Form Pending {`( ${formPendingCount} )`}</p>
+              </div>
+              <div
+                className={
+                  status === "Verify Pending"
+                    ? "trainers_active_verifypending_container"
+                    : "customers_studentvefity_container"
+                }
+                onClick={() => {
+                  if (status === "Verify Pending") {
+                    return;
+                  }
+                  setStatus("Verify Pending");
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainersData(
+                    searchValue,
+                    "Verify Pending",
+                    hrId,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
+              </div>
+            </Row>
+          )}
+        </>
+      )}
 
-      <Drawer
-        title={editTrainerId ? "Update Trainer Details" : "Add Trainer"}
-        open={isOpenAddDrawer}
-        onClose={formReset}
-        width="50%"
-        style={{ position: "relative", paddingBottom: 65 }}
-        className={"trainers_addtrainerdrawer"}
-      >
-        {renderPersonalDetails()}
-        <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
+      {status === "AddTrainer" ? (
+        <div
+          style={{
+            marginTop: "12px",
+            minHeight: "calc(100vh - 180px)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ flex: 1, paddingBottom: "40px" }}>
+            {renderPersonalDetails()}
+          </div>
+          {/* <div
+            className="leadmanager_tablefiler_footer"
+            style={{ marginTop: "20px", position: "relative" }}
+          >
+            <div className="leadmanager_submitlead_buttoncontainer">
+              {buttonLoading ? (
+                <button className="users_adddrawer_loadingcreatebutton">
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className="users_adddrawer_createbutton"
+                  onClick={handleSubmit}
+                >
+                  {editTrainerId ? "Update" : "Create"}
+                </button>
+              )}
+            </div>
+          </div> */}
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "12px",
+              padding: "16px 24px",
+              borderTop: "1px solid rgba(226, 232, 240, 0.6)",
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(12px)",
+              position: "sticky",
+              bottom: 0,
+              zIndex: 1000,
+              boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.05)",
+              margin: "0 -24px",
+              borderRadius: "16px 16px 0 0",
+            }}
+          >
+            <Button
+              className="animated-cancel-btn"
+              onClick={() => {
+                formReset();
+                if (previousStatus !== null) {
+                  setStatus(previousStatus);
+                  getTrainersData(
+                    searchValue,
+                    previousStatus,
+                    hrId,
+                    pagination.page,
+                    pagination.limit,
+                  );
+                  setPreviousStatus(null);
+                }
+              }}
+              style={{
+                borderRadius: "6px",
+                fontWeight: 500,
+                borderColor: "#cbd5e1",
+                color: "#334155",
+                fontSize: "13px",
+              }}
+            >
+              Cancel
+            </Button>
             {buttonLoading ? (
               <button className="users_adddrawer_loadingcreatebutton">
                 <CommonSpinner />
@@ -2447,7 +2542,30 @@ export default function Trainers() {
             )}
           </div>
         </div>
-      </Drawer>
+      ) : (
+        <div style={{ marginTop: "20px" }}>
+          <CommonTable
+            // scroll={{ x: 2700 }}
+            scroll={{
+              x: tableColumns.reduce(
+                (total, col) => total + (col.width || 150),
+                0,
+              ),
+            }}
+            columns={tableColumns}
+            dataSource={trainersData}
+            dataPerPage={10}
+            loading={loading}
+            checkBox="false"
+            size="small"
+            className="questionupload_table"
+            onPaginationChange={handlePaginationChange} // callback to fetch new data
+            limit={pagination.limit} // page size
+            page_number={pagination.page} // current page
+            totalPageNumber={pagination.total} // total rows
+          />
+        </div>
+      )}
 
       {/* table filter drawer */}
 

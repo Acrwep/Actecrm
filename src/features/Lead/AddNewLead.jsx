@@ -2794,26 +2794,10 @@ const AddNewLead = forwardRef(
         </Row>
 
         <div
+          className="addnewlead_form_footer_container"
           style={{
-            position: "sticky",
-            bottom: "0",
-            zIndex: 1000,
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            marginTop: "32px",
-            padding: "16px 24px",
-            background: "rgba(255, 255, 255, 0.85)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            borderRadius: "16px 16px 0 0",
-            borderTop: "1px solid rgba(226, 232, 240, 0.6)",
-            boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.05)",
-            gap: "12px",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             transform: showActionBar ? "translateY(0)" : "translateY(-4px)",
             opacity: showActionBar ? 1 : 0.8,
-            margin: "0 -24px -24px -24px",
           }}
         >
           <Button
