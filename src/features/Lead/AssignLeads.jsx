@@ -540,8 +540,8 @@ export default function AssignLeads({
             : searchvalue && filterType == 4
               ? { course: searchvalue }
               : {}),
-      // start_date: startDate,
-      // end_date: endDate,
+      start_date: startDate,
+      end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
         ? { user_ids: [convertAsJson?.user_id] }
         : {}),
@@ -562,7 +562,7 @@ export default function AssignLeads({
         consigned: consigned,
       });
       setLeadData(data);
-      setAssignLeadCount(assigned + consigned);
+      setAssignLeadCount(assigned);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -1081,7 +1081,7 @@ export default function AssignLeads({
                 </div>
               </div>
             </Col>
-            {/* <Col span={10}>
+            <Col span={10}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -1106,7 +1106,7 @@ export default function AssignLeads({
                   );
                 }}
               />
-            </Col> */}
+            </Col>
           </Row>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7}>

@@ -190,7 +190,7 @@
 .trainer_registration_signatureerror {
   position: absolute;
   bottom: -22px;
-  font-size: 11px;
+  font-size: 9px;
   color: #d32f2f;
 }
 .trainers_addtrainerdrawer .ant-drawer-body {
@@ -899,4 +899,52 @@
 .ack_btn_danger:hover {
   background-color: #c82333;
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* Custom Flight-Style Search Bar for Trainers */
+.trainers-search-pill-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 50px;
+  padding: 4px 8px 4px 24px;
+  background-color: #fff;
+  width: fit-content;
+}
+
+.trainers-search-input {
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: #333;
+  font-family: inherit;
+}
+
+.trainers-search-input-keyword {
+  width: 250px;
+}
+
+.trainers-search-input-location {
+  width: 120px;
+}
+
+.trainers-search-divider {
+  width: 1px;
+  height: 20px;
+  background-color: #e5e7eb;
+  margin: 0 16px;
+}
+
+.trainers-search-button {
+  font-size: 12px !important;
+  border-radius: 40px !important;
+  padding: 0 16px !important;
+  height: 30px !important;
+  margin-left: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-weight: 500 !important;
+  background-color: #5b69ca !important;
+  border: none !important;
 }

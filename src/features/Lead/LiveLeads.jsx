@@ -639,7 +639,7 @@ export default function LiveLead({
       paginationRef.current = paginations;
 
       setLiveLeadAllCounts(count);
-      setLiveLeadCount(liveLeads + trashLeads);
+      setLiveLeadCount(liveLeads);
       setPagination({
         page: paginations.page,
         limit: paginations.limit,

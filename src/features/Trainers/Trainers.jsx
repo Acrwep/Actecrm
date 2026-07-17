@@ -14,6 +14,7 @@ import {
   Select,
   Checkbox,
   Popover,
+  Popconfirm,
   Avatar,
   Collapse,
 } from "antd";
@@ -165,6 +166,108 @@ const CustomerList = ({ trainerId, isClassTaken }) => {
         </div>
       )}
     </div>
+  );
+};
+
+const StatusSelectionDropdown = ({
+  text,
+  record,
+  permissions,
+  handleStatusChange,
+}) => {
+  const [confirmStatus, setConfirmStatus] = useState(null);
+
+  if (confirmStatus) {
+    return (
+      <div style={{ padding: "4px" }}>
+        <div
+          style={{
+            marginBottom: "12px",
+            fontSize: "13px",
+            fontWeight: 500,
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            color: "#333",
+          }}
+        >
+          <AiOutlineInfoCircle style={{ color: "#faad14" }} size={16} />
+          Confirm Status Change
+        </div>
+        <p style={{ margin: "0 0 16px", fontSize: "12px", color: "#555" }}>
+          Are you sure you want to change the status to <b>{confirmStatus}</b>?
+        </p>
+        <Flex
+          justify="flex-end"
+          style={{ marginTop: "9px", marginBottom: "6px", gap: "10px" }}
+        >
+          <Button size="small" onClick={() => setConfirmStatus(null)}>
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => {
+              handleStatusChange(record.id, confirmStatus);
+              setConfirmStatus(null);
+            }}
+          >
+            OK
+          </Button>
+        </Flex>
+      </div>
+    );
+  }
+
+  return (
+    <Radio.Group value={text}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <Radio
+          value="Verify Pending"
+          style={{ marginTop: "6px", marginBottom: "12px" }}
+          onClick={(e) => {
+            if (!permissions.includes("Update Trainer")) {
+              CommonMessage("error", "Access Denied");
+              return;
+            }
+            e.preventDefault();
+            setConfirmStatus("Verify Pending");
+          }}
+        >
+          Pending
+        </Radio>
+        <Radio
+          value="Verified"
+          disabled={record?.is_bank_updated == 0}
+          style={{ marginBottom: "12px" }}
+          onClick={(e) => {
+            if (!permissions.includes("Update Trainer")) {
+              CommonMessage("error", "Access Denied");
+              return;
+            }
+            if (record?.is_bank_updated == 0) return;
+            e.preventDefault();
+            setConfirmStatus("Verified");
+          }}
+        >
+          Verified
+        </Radio>
+        <Radio
+          value="Rejected"
+          style={{ marginBottom: "6px" }}
+          onClick={(e) => {
+            if (!permissions.includes("Update Trainer")) {
+              CommonMessage("error", "Access Denied");
+              return;
+            }
+            e.preventDefault();
+            setConfirmStatus("Rejected");
+          }}
+        >
+          Rejected
+        </Radio>
+      </div>
+    </Radio.Group>
   );
 };
 
@@ -329,16 +432,20 @@ export default function Trainers() {
         return (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <p style={{ margin: 0 }}>{text + " Customers"}</p>
-            <Popover
-              placement="right"
-              content={<CustomerList trainerId={record.id} isClassTaken={1} />}
-              trigger="click"
-            >
-              <AiOutlineInfoCircle
-                size={14}
-                style={{ color: "#1890ff", cursor: "pointer" }}
-              />
-            </Popover>
+            {text >= 1 && (
+              <Popover
+                placement="right"
+                content={
+                  <CustomerList trainerId={record.id} isClassTaken={1} />
+                }
+                trigger="click"
+              >
+                <AiOutlineInfoCircle
+                  size={14}
+                  style={{ color: "#1890ff", cursor: "pointer" }}
+                />
+              </Popover>
+            )}
           </div>
         );
       },
@@ -352,16 +459,20 @@ export default function Trainers() {
         return (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <p style={{ margin: 0 }}>{text + " Customers"}</p>
-            <Popover
-              placement="bottom"
-              content={<CustomerList trainerId={record.id} isClassTaken={0} />}
-              trigger="click"
-            >
-              <AiOutlineInfoCircle
-                size={14}
-                style={{ color: "#5b69ca", cursor: "pointer" }}
-              />
-            </Popover>
+            {text >= 1 && (
+              <Popover
+                placement="bottom"
+                content={
+                  <CustomerList trainerId={record.id} isClassTaken={0} />
+                }
+                trigger="click"
+              >
+                <AiOutlineInfoCircle
+                  size={14}
+                  style={{ color: "#5b69ca", cursor: "pointer" }}
+                />
+              </Popover>
+            )}
           </div>
         );
       },
@@ -504,34 +615,15 @@ export default function Trainers() {
         return (
           <Flex style={{ whiteSpace: "nowrap" }}>
             <Tooltip
-              placement="bottomLeft"
+              placement="bottomRight"
               color="#fff"
               title={
-                <Radio.Group
-                  value={text}
-                  onChange={(e) => {
-                    if (!permissions.includes("Update Trainer")) {
-                      CommonMessage("error", "Access Denied");
-                      return;
-                    }
-                    handleStatusChange(record.id, e.target.value);
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <Radio
-                      value="Verify Pending"
-                      style={{ marginTop: "6px", marginBottom: "12px" }}
-                    >
-                      Pending
-                    </Radio>
-                    <Radio value="Verified" style={{ marginBottom: "12px" }}>
-                      Verified
-                    </Radio>
-                    <Radio value="Rejected" style={{ marginBottom: "6px" }}>
-                      Rejected
-                    </Radio>
-                  </div>
-                </Radio.Group>
+                <StatusSelectionDropdown
+                  text={text}
+                  record={record}
+                  permissions={permissions}
+                  handleStatusChange={handleStatusChange}
+                />
               }
             >
               {text === "Pending" ||
@@ -868,21 +960,23 @@ export default function Trainers() {
                       }}
                     >
                       <p style={{ margin: 0 }}>{text + " Customers"}</p>
-                      <Popover
-                        placement="bottom"
-                        content={
-                          <CustomerList
-                            trainerId={record.id}
-                            isClassTaken={1}
+                      {text >= 1 && (
+                        <Popover
+                          placement="bottom"
+                          content={
+                            <CustomerList
+                              trainerId={record.id}
+                              isClassTaken={1}
+                            />
+                          }
+                          trigger="click"
+                        >
+                          <AiOutlineInfoCircle
+                            size={14}
+                            style={{ color: "#5b69ca", cursor: "pointer" }}
                           />
-                        }
-                        trigger="click"
-                      >
-                        <AiOutlineInfoCircle
-                          size={14}
-                          style={{ color: "#5b69ca", cursor: "pointer" }}
-                        />
-                      </Popover>
+                        </Popover>
+                      )}
                     </div>
                   );
                 },
@@ -902,21 +996,23 @@ export default function Trainers() {
                       }}
                     >
                       <p style={{ margin: 0 }}>{text + " Customers"}</p>
-                      <Popover
-                        placement="bottom"
-                        content={
-                          <CustomerList
-                            trainerId={record.id}
-                            isClassTaken={0}
+                      {text >= 1 && (
+                        <Popover
+                          placement="bottom"
+                          content={
+                            <CustomerList
+                              trainerId={record.id}
+                              isClassTaken={0}
+                            />
+                          }
+                          trigger="click"
+                        >
+                          <AiOutlineInfoCircle
+                            size={14}
+                            style={{ color: "#5b69ca", cursor: "pointer" }}
                           />
-                        }
-                        trigger="click"
-                      >
-                        <AiOutlineInfoCircle
-                          size={14}
-                          style={{ color: "#5b69ca", cursor: "pointer" }}
-                        />
-                      </Popover>
+                        </Popover>
+                      )}
                     </div>
                   );
                 },
@@ -1060,48 +1156,15 @@ export default function Trainers() {
                   return (
                     <Flex style={{ whiteSpace: "nowrap" }}>
                       <Tooltip
-                        placement="bottomLeft"
+                        placement="bottomRight"
                         color="#fff"
                         title={
-                          <Radio.Group
-                            value={text}
-                            onChange={(e) => {
-                              if (!permissions.includes("Update Trainer")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              handleStatusChange(record.id, e.target.value);
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <Radio
-                                value="Verify Pending"
-                                style={{
-                                  marginTop: "6px",
-                                  marginBottom: "12px",
-                                }}
-                              >
-                                Pending
-                              </Radio>
-                              <Radio
-                                value="Verified"
-                                style={{ marginBottom: "12px" }}
-                              >
-                                Verified
-                              </Radio>
-                              <Radio
-                                value="Rejected"
-                                style={{ marginBottom: "6px" }}
-                              >
-                                Rejected
-                              </Radio>
-                            </div>
-                          </Radio.Group>
+                          <StatusSelectionDropdown
+                            text={text}
+                            record={record}
+                            permissions={permissions}
+                            handleStatusChange={handleStatusChange}
+                          />
                         }
                       >
                         {text === "Pending" ||
@@ -2258,8 +2321,88 @@ export default function Trainers() {
       ) : (
         <>
           <Row>
-            <Col xs={24} sm={24} md={24} lg={12}>
-              <Row gutter={16}>
+            <Col xs={24} sm={24} md={24} lg={21}>
+              <Row gutter={12} align="middle">
+                <Col flex="70%">
+                  <div className="trainers-search-pill-container">
+                    <input
+                      placeholder="Enter keyword / designation / companies"
+                      className="trainers-search-input trainers-search-input-keyword"
+                    />
+
+                    <div className="trainers-search-divider"></div>
+
+                    <Select
+                      bordered={false}
+                      placeholder={
+                        <span style={{ fontSize: "13px", color: "#8c94a3" }}>
+                          Select experience
+                        </span>
+                      }
+                      style={{ width: "150px" }}
+                      suffixIcon={
+                        <IoCaretDownSharp size={12} color="#8c94a3" />
+                      }
+                      popupMatchSelectWidth={false}
+                      dropdownStyle={{ minWidth: "200px" }}
+                      options={[
+                        {
+                          value: "1",
+                          label: (
+                            <span style={{ fontSize: "13px", color: "#333" }}>
+                              1 year
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "2",
+                          label: (
+                            <span style={{ fontSize: "13px", color: "#333" }}>
+                              2 years
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "3",
+                          label: (
+                            <span style={{ fontSize: "13px", color: "#333" }}>
+                              3 years
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "4",
+                          label: (
+                            <span style={{ fontSize: "13px", color: "#333" }}>
+                              4 years
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "5",
+                          label: (
+                            <span style={{ fontSize: "13px", color: "#333" }}>
+                              5 years
+                            </span>
+                          ),
+                        },
+                      ]}
+                    />
+
+                    <div className="trainers-search-divider"></div>
+
+                    <input
+                      placeholder="Enter location"
+                      className="trainers-search-input trainers-search-input-location"
+                    />
+
+                    <Button type="primary" className="trainers-search-button">
+                      <CiSearch size={12} strokeWidth={1} /> Search
+                    </Button>
+                  </div>
+                </Col>
+
+                {/* 
                 <Col span={10}>
                   <div className="overallduecustomers_filterContainer">
                     <CommonOutlinedInput
@@ -2310,7 +2453,6 @@ export default function Trainers() {
                       onChange={handleSearch}
                       value={searchValue}
                     />
-                    {/* Filter Button */}
                     <div>
                       <Flex
                         justify="center"
@@ -2369,7 +2511,8 @@ export default function Trainers() {
                     </div>
                   </div>
                 </Col>
-                <Col span={9}>
+                */}
+                <Col flex="auto">
                   <div className="overallduecustomers_filterContainer">
                     <CommonSelectField
                       label="HR"
@@ -2400,7 +2543,7 @@ export default function Trainers() {
               xs={24}
               sm={24}
               md={24}
-              lg={12}
+              lg={3}
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
@@ -2634,7 +2777,6 @@ export default function Trainers() {
       {status === "AddTrainer" ? (
         <div
           style={{
-            marginTop: "12px",
             minHeight: "calc(100vh - 180px)",
             display: "flex",
             flexDirection: "column",

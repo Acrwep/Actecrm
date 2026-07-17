@@ -1013,6 +1013,7 @@ export default function TrainerRegistration() {
                     }}
                     value={accountNumber}
                     error={accountNumberError}
+                    errorFontSize={"9px"}
                   />
                 </Col>
                 <Col
@@ -1033,6 +1034,7 @@ export default function TrainerRegistration() {
                     }}
                     value={bankName}
                     error={bankNameError}
+                    errorFontSize={"9px"}
                   />
                 </Col>
                 <Col
@@ -1053,6 +1055,7 @@ export default function TrainerRegistration() {
                     }}
                     value={branchName}
                     error={branchNameError}
+                    errorFontSize={"9px"}
                   />
                 </Col>
               </Row>
@@ -1076,6 +1079,7 @@ export default function TrainerRegistration() {
                     }}
                     value={ifscCode}
                     error={ifscCodeError}
+                    errorFontSize={"9px"}
                   />
                 </Col>
                 <Col

@@ -293,6 +293,7 @@ const AssignAndVerifyTrainer = forwardRef(
 
       const payload = {
         ...buildCustomerSearchPayload(searchvalue),
+        status: "Verified",
         page: pageNumber,
         limit: 10,
       };
