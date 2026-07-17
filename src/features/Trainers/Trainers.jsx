@@ -329,6 +329,9 @@ export default function Trainers() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchExperience, setSearchExperience] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
   const [trainerCurrentStatus, setTrainerCurrentStatus] =
     useState("Verify Pending");
   //bank details usestates
@@ -739,6 +742,9 @@ export default function Trainers() {
     pageNumber,
     limit,
     callTechnologiesApi,
+    keyword_val = searchKeyword,
+    experience_val = searchExperience,
+    location_val = searchLocation,
   ) => {
     setLoading(true);
     let bucket = "";
@@ -788,6 +794,9 @@ export default function Trainers() {
       ...(statusPayload && { status: statusPayload }),
       ...(is_form_sent && { is_form_sent }),
       ...(hr_id && { created_by: hr_id }),
+      ...(keyword_val && { keyword: keyword_val }),
+      ...(experience_val && { experience: experience_val }),
+      ...(location_val && { location: location_val }),
       page: pageNumber,
       limit: limit,
     };
@@ -2321,13 +2330,15 @@ export default function Trainers() {
       ) : (
         <>
           <Row>
-            <Col xs={24} sm={24} md={24} lg={21}>
+            <Col xs={24} sm={24} md={24} lg={19}>
               <Row gutter={12} align="middle">
-                <Col flex="70%">
+                <Col xs={24} md={16} lg={18} xl={18}>
                   <div className="trainers-search-pill-container">
                     <input
-                      placeholder="Enter keyword / designation / companies"
+                      placeholder="Enter keyword / skills / course"
                       className="trainers-search-input trainers-search-input-keyword"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
                     />
 
                     <div className="trainers-search-divider"></div>
@@ -2339,54 +2350,22 @@ export default function Trainers() {
                           Select experience
                         </span>
                       }
-                      style={{ width: "150px" }}
+                      className="trainers-search-select"
                       suffixIcon={
                         <IoCaretDownSharp size={12} color="#8c94a3" />
                       }
                       popupMatchSelectWidth={false}
                       dropdownStyle={{ minWidth: "200px" }}
-                      options={[
-                        {
-                          value: "1",
-                          label: (
-                            <span style={{ fontSize: "13px", color: "#333" }}>
-                              1 year
-                            </span>
-                          ),
-                        },
-                        {
-                          value: "2",
-                          label: (
-                            <span style={{ fontSize: "13px", color: "#333" }}>
-                              2 years
-                            </span>
-                          ),
-                        },
-                        {
-                          value: "3",
-                          label: (
-                            <span style={{ fontSize: "13px", color: "#333" }}>
-                              3 years
-                            </span>
-                          ),
-                        },
-                        {
-                          value: "4",
-                          label: (
-                            <span style={{ fontSize: "13px", color: "#333" }}>
-                              4 years
-                            </span>
-                          ),
-                        },
-                        {
-                          value: "5",
-                          label: (
-                            <span style={{ fontSize: "13px", color: "#333" }}>
-                              5 years
-                            </span>
-                          ),
-                        },
-                      ]}
+                      value={searchExperience || undefined}
+                      onChange={(val) => setSearchExperience(val)}
+                      options={experienceOptions?.map((opt) => ({
+                        value: opt.id,
+                        label: (
+                          <span style={{ fontSize: "13px", color: "#333" }}>
+                            {opt.exp_range}
+                          </span>
+                        ),
+                      }))}
                     />
 
                     <div className="trainers-search-divider"></div>
@@ -2394,10 +2373,55 @@ export default function Trainers() {
                     <input
                       placeholder="Enter location"
                       className="trainers-search-input trainers-search-input-location"
+                      value={searchLocation}
+                      onChange={(e) => setSearchLocation(e.target.value)}
                     />
 
-                    <Button type="primary" className="trainers-search-button">
-                      <CiSearch size={12} strokeWidth={1} /> Search
+                    {(searchKeyword || searchExperience || searchLocation) && (
+                      <div
+                        className="trainers-search-clear"
+                        title="Clear search"
+                        onClick={() => {
+                          setSearchKeyword("");
+                          setSearchExperience("");
+                          setSearchLocation("");
+                          setPagination({ ...pagination, page: 1 });
+                          getTrainersData(
+                            searchValue,
+                            status,
+                            hrId,
+                            1,
+                            pagination.limit,
+                            false,
+                            "",
+                            "",
+                            "",
+                          );
+                        }}
+                      >
+                        <IoIosClose size={20} />
+                      </div>
+                    )}
+
+                    <Button
+                      type="primary"
+                      className="trainers-search-button"
+                      onClick={() => {
+                        setPagination({ ...pagination, page: 1 });
+                        getTrainersData(
+                          searchValue,
+                          status,
+                          hrId,
+                          1,
+                          pagination.limit,
+                          false,
+                          searchKeyword,
+                          searchExperience,
+                          searchLocation,
+                        );
+                      }}
+                    >
+                      <CiSearch size={14} strokeWidth={1} /> Search
                     </Button>
                   </div>
                 </Col>
@@ -2512,7 +2536,7 @@ export default function Trainers() {
                   </div>
                 </Col>
                 */}
-                <Col flex="auto">
+                <Col xs={24} md={8} lg={6} xl={6}>
                   <div className="overallduecustomers_filterContainer">
                     <CommonSelectField
                       label="HR"
@@ -2543,7 +2567,7 @@ export default function Trainers() {
               xs={24}
               sm={24}
               md={24}
-              lg={3}
+              lg={5}
               style={{
                 display: "flex",
                 justifyContent: "flex-end",

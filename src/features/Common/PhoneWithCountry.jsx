@@ -8,6 +8,7 @@ import {
   Select,
   TextField,
   Typography,
+  ListSubheader,
 } from "@mui/material";
 import {
   defaultCountries,
@@ -15,6 +16,7 @@ import {
   parseCountry,
   usePhoneInput,
 } from "react-international-phone";
+import CommonInputField from "./CommonInputField";
 
 export default function PhoneWithCountry({
   onChange,
@@ -35,7 +37,7 @@ export default function PhoneWithCountry({
   ...restProps
 }) {
   const [internalValue, setInternalValue] = React.useState("");
-
+  const [searchQuery, setSearchQuery] = React.useState("");
   const { inputRef, country, setCountry } = usePhoneInput({
     defaultCountry: selectedCountry || "in",
     countries: defaultCountries,
@@ -130,6 +132,18 @@ export default function PhoneWithCountry({
     countryCode?.(newDialCode);
   };
 
+  const filteredCountries = React.useMemo(() => {
+    if (!searchQuery) return defaultCountries;
+    return defaultCountries.filter((c) => {
+      const countryItem = parseCountry(c);
+      return (
+        countryItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        `+${countryItem.dialCode}`.includes(searchQuery) ||
+        countryItem.dialCode.includes(searchQuery.replace("+", ""))
+      );
+    });
+  }, [searchQuery]);
+
   return (
     <FormControl
       sx={{
@@ -197,10 +211,16 @@ export default function PhoneWithCountry({
                   disabled={disableCountrySelect}
                   tabIndex={-1}
                   inputProps={{ tabIndex: -1 }}
+                  onClose={() => setSearchQuery("")}
                   MenuProps={{
+                    autoFocus: false,
+                    PaperProps: {
+                      style: {
+                        maxHeight: "300px",
+                        width: "280px",
+                      },
+                    },
                     style: {
-                      height: "300px",
-                      width: "360px",
                       top: "10px",
                       left: "-34px",
                     },
@@ -223,35 +243,78 @@ export default function PhoneWithCountry({
                     />
                   )}
                 >
-                  {defaultCountries.map((c) => {
-                    const countryItem = parseCountry(c);
-                    return (
-                      <MenuItem key={countryItem.iso2} value={countryItem.iso2}>
-                        <FlagImage
-                          iso2={countryItem.iso2}
-                          style={{ marginRight: "8px" }}
-                        />
-                        <Typography
-                          marginRight="8px"
-                          sx={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontSize: "13px",
-                          }}
+                  <ListSubheader
+                    sx={{
+                      padding: "8px 12px 0px 12px",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 2,
+                      backgroundColor: "#fff",
+                    }}
+                    onKeyDownCapture={(e) => e.stopPropagation()}
+                  >
+                    <CommonInputField
+                      label={"Search country..."}
+                      // autoFocus
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      autoComplete="off"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: "4px",
+                        },
+                        "& .MuiInputBase-input": {
+                          padding: "8px 12px",
+                          fontSize: "14px",
+                        },
+                      }}
+                    />
+                  </ListSubheader>
+                  {filteredCountries.length > 0 ? (
+                    filteredCountries.map((c) => {
+                      const countryItem = parseCountry(c);
+                      return (
+                        <MenuItem
+                          key={countryItem.iso2}
+                          value={countryItem.iso2}
                         >
-                          {countryItem.name}
-                        </Typography>
-                        <Typography
-                          color="gray"
-                          sx={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontSize: "13px",
-                          }}
-                        >
-                          +({countryItem.dialCode})
-                        </Typography>
-                      </MenuItem>
-                    );
-                  })}
+                          <FlagImage
+                            iso2={countryItem.iso2}
+                            style={{ marginRight: "8px" }}
+                          />
+                          <Typography
+                            marginRight="8px"
+                            sx={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontSize: "13px",
+                            }}
+                          >
+                            {countryItem.name}
+                          </Typography>
+                          <Typography
+                            color="gray"
+                            sx={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontSize: "13px",
+                            }}
+                          >
+                            +({countryItem.dialCode})
+                          </Typography>
+                        </MenuItem>
+                      );
+                    })
+                  ) : (
+                    <MenuItem
+                      disabled
+                      style={{ fontSize: "12px", color: "#000" }}
+                    >
+                      No countries found
+                    </MenuItem>
+                  )}
                 </Select>
               </InputAdornment>
             ),

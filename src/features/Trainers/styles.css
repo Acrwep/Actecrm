@@ -909,30 +909,38 @@
   border-radius: 50px;
   padding: 4px 8px 4px 24px;
   background-color: #fff;
-  width: fit-content;
+  width: 100%;
 }
 
 .trainers-search-input {
   border: none;
   outline: none;
-  font-size: 12px;
+  font-size: 13px;
   color: #333;
   font-family: inherit;
+  flex: 1;
+  min-width: 50px;
+  text-overflow: ellipsis;
 }
 
 .trainers-search-input-keyword {
-  width: 250px;
+  flex: 1.5;
 }
 
 .trainers-search-input-location {
-  width: 120px;
+  flex: 1;
+}
+
+.trainers-search-select {
+  flex: 1;
+  min-width: 110px;
 }
 
 .trainers-search-divider {
   width: 1px;
   height: 20px;
   background-color: #e5e7eb;
-  margin: 0 16px;
+  margin: 0 12px;
 }
 
 .trainers-search-button {
@@ -940,11 +948,52 @@
   border-radius: 40px !important;
   padding: 0 16px !important;
   height: 30px !important;
-  margin-left: 16px !important;
+  margin-left: 8px !important;
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
   font-weight: 500 !important;
   background-color: #5b69ca !important;
   border: none !important;
+  flex-shrink: 0;
+}
+
+.trainers-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  color: #8c94a3;
+  border-radius: 50%;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.trainers-search-clear:hover {
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .trainers-search-pill-container {
+    border-radius: 8px;
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .trainers-search-divider {
+    display: none;
+  }
+  .trainers-search-button {
+    margin-left: 0 !important;
+    justify-content: center;
+  }
+  .trainers-search-clear {
+    align-self: flex-end;
+    margin-top: -30px;
+    margin-right: 8px;
+  }
 }
