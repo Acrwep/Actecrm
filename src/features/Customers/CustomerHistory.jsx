@@ -176,6 +176,8 @@ export default function CustomerHistory({ data = [], customerDetails }) {
     key: item.id,
     dot:
       item.status.includes("Verified") ||
+      item.status.includes("Form Submitted") ||
+      item.status.includes("Class Completion Acknowledged") ||
       item.status.includes("Down") ||
       item.status.includes("Assigned") ||
       item.status.includes("Claim") ||
@@ -202,11 +204,31 @@ export default function CustomerHistory({ data = [], customerDetails }) {
         item.status.includes("Passedout") ? (
         <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
       ) : undefined,
-    label: <span style={{ whiteSpace: "nowrap" }}>{item.status}</span>,
+    label: (
+      <span
+        style={{
+          whiteSpace: "nowrap",
+          textWrap: "auto",
+        }}
+      >
+        {item.status}
+      </span>
+    ),
     children: (
       <>
-        {item.status === "Payment Verified" ||
-        item.status === "Part Payment Verified" ? (
+        {item.status == "Form Submitted" ||
+        item.status == "Class Completion Acknowledged" ? (
+          <div>
+            <p className="customer_history_updateddate">
+              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+            </p>
+            <p className="customer_history_updateddate">
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>Customer</span>
+            </p>
+          </div>
+        ) : item.status === "Payment Verified" ||
+          item.status === "Part Payment Verified" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}

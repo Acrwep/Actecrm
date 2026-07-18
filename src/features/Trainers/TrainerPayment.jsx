@@ -11,20 +11,28 @@ import {
   Modal,
   Checkbox,
   Divider,
+  Upload,
 } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { FaRegUser } from "react-icons/fa";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
 import { IoFilter } from "react-icons/io5";
+import { FaUserAlt } from "react-icons/fa";
 import { MdGroups } from "react-icons/md";
-import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
-import { AiOutlineEdit } from "react-icons/ai";
-import { RiDeleteBinLine } from "react-icons/ri";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineEmail } from "react-icons/md";
+import { IoCallOutline } from "react-icons/io5";
+import { FaWhatsapp } from "react-icons/fa";
+import { LuCircleUser } from "react-icons/lu";
+import { FiFileText } from "react-icons/fi";
+import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
 import { GiCheckMark } from "react-icons/gi";
 import { FaXmark } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCopy } from "react-icons/fa6";
+import { LuFileClock } from "react-icons/lu";
 import CommonTable from "../Common/CommonTable";
 import {
   deleteTrainerPaymentRequest,
@@ -36,6 +44,7 @@ import {
   updateTrainerPaymentStatus,
   getTableColumns,
   updateTableColumns,
+  getCustomerFullHistory,
 } from "../ApiService/action";
 import {
   formatToBackendIST,
@@ -51,6 +60,7 @@ import PrismaZoom from "react-prismazoom";
 import AddTrainerPaymentRequest from "./AddTrainerPaymentRequest";
 import ViewTrainerPaymentDetails from "./ViewTrainerPaymentDetails";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
+import CustomerHistory from "../Customers/CustomerHistory";
 import { useSelector } from "react-redux";
 import CommonDnd from "../Common/CommonDnd";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
@@ -271,6 +281,74 @@ export default function TrainerPayment() {
   const [isOpenStudentDetailsModal, setIsOpenStudentDetailsModal] =
     useState(false);
   const [selectedStudentDetails, setSelectedStudentDetails] = useState(null);
+
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [customerHistory, setCustomerHistory] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+
+  const getCustomerHistoryData = async (customerid) => {
+    setIsOpenCustomerHistoryDrawer(true);
+    setCustomerHistoryLoading(true);
+    try {
+      const response = await getCustomerFullHistory(customerid);
+      const customer_history = response?.data?.data || [];
+      const reverse_data = customer_history.reverse();
+      setCustomerHistory(reverse_data);
+      setTimeout(() => {
+        setCustomerHistoryLoading(false);
+      }, 300);
+    } catch (error) {
+      setCustomerHistoryLoading(false);
+      console.log("history response", error);
+    }
+  };
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
+  };
+
+  const getHistoryStatusColor = (status) => {
+    if (
+      [
+        "Verified",
+        "Assigned",
+        "Completed",
+        "Going",
+        "Added",
+        "created",
+        "Generated",
+        "Scheduled",
+      ].some((s) => status.includes(s))
+    ) {
+      return "green";
+    }
+    if (status.includes("Awaiting")) return "gray";
+    if (
+      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
+        status.includes(s),
+      )
+    ) {
+      return "red";
+    }
+    return "blue";
+  };
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -359,38 +437,49 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return {
           children: (
-            <div
-              style={{
-                position: "relative",
-                display: "inline-block",
-                width: "100%",
-              }}
-            >
-              {record?.batch_number && (
+            <p style={{ margin: 0 }}>
+              {text ? moment(text).format("DD/MM/YYYY") : "-"}
+            </p>
+          ),
+          props: { rowSpan: record.rowSpan },
+        };
+      },
+    },
+    {
+      title: "Commercial Type",
+      key: "commercial_type",
+      dataIndex: "commercial_type",
+      width: 130,
+      render: (text, record) => {
+        if (text == "Pay Per Head") {
+          return {
+            children: (
+              <div
+                style={{ display: "flex", gap: "6px", alignItems: "center" }}
+              >
+                <FaUserAlt size={11} color="#5b69ca" />
+                <p>Pay Per Head</p>
+              </div>
+            ),
+            props: { rowSpan: record.rowSpan },
+          };
+        } else {
+          return {
+            children: (
+              <div style={{ display: "flex", gap: "6px" }}>
                 <Tooltip
                   placement="top"
                   title={`Batch Code: ${record?.batch_number}`}
                   trigger={["hover", "click"]}
                 >
-                  <MdGroups
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      fontSize: 17,
-                      color: "#5b69ca",
-                    }}
-                  />
+                  <MdGroups size={17.5} color="#5b69ca" />
                 </Tooltip>
-              )}
-
-              <p style={{ margin: 0 }}>
-                {text ? moment(text).format("DD/MM/YYYY") : "-"}
-              </p>
-            </div>
-          ),
-          props: { rowSpan: record.rowSpan },
-        };
+                <p>Batch</p>
+              </div>
+            ),
+            props: { rowSpan: record.rowSpan },
+          };
+        }
       },
     },
     {
@@ -808,6 +897,44 @@ export default function TrainerPayment() {
                   }}
                 />
               </Tooltip>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                  justifyContent: "center",
+                }}
+              >
+                {record?.students?.map((student, index) => (
+                  <Tooltip
+                    key={index}
+                    placement="left"
+                    title={`View History: ${student.customer_name || "Student"}`}
+                    trigger={["hover", "click"]}
+                  >
+                    <LuFileClock
+                      size={15}
+                      className="trainers_action_icons"
+                      style={{ cursor: "pointer", marginLeft: "4px" }}
+                      onClick={() => {
+                        getParticularCustomerDetails(student.customer_id, true);
+                        getCustomerHistoryData(student.customer_id);
+                        setTimeout(() => {
+                          const container = document.getElementById(
+                            "customer_history_profilecontainer",
+                          );
+                          if (container) {
+                            container.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          }
+                        }, 300);
+                      }}
+                    />
+                  </Tooltip>
+                ))}
+              </div>
 
               {/* {record?.paid_amount == "0.00" && (
                 <RiDeleteBinLine
@@ -882,39 +1009,52 @@ export default function TrainerPayment() {
                 render: (text, record) => {
                   return {
                     children: (
-                      <div
-                        style={{
-                          position: "relative",
-                          display: "inline-block",
-                          width: "100%",
-                        }}
-                      >
-                        {record?.batch_number && (
+                      <p style={{ margin: 0 }}>
+                        {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                      </p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "commercial_type":
+              return {
+                ...col,
+                width: 130,
+                render: (text, record) => {
+                  if (text == "Pay Per Head") {
+                    return {
+                      children: (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <FaUserAlt size={11} color="#5b69ca" />
+                          <p>Pay Per Head</p>
+                        </div>
+                      ),
+                      props: { rowSpan: record.rowSpan },
+                    };
+                  } else {
+                    return {
+                      children: (
+                        <div style={{ display: "flex", gap: "6px" }}>
                           <Tooltip
                             placement="top"
                             title={`Batch Code: ${record?.batch_number}`}
                             trigger={["hover", "click"]}
                           >
-                            <MdGroups
-                              size={18}
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                right: 0,
-                                fontSize: 17,
-                                color: "#5b69ca",
-                              }}
-                            />
+                            <MdGroups size={18} color="#5b69ca" />
                           </Tooltip>
-                        )}
-
-                        <p style={{ margin: 0 }}>
-                          {text ? moment(text).format("DD/MM/YYYY") : "-"}
-                        </p>
-                      </div>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
+                          <p>Batch</p>
+                        </div>
+                      ),
+                      props: { rowSpan: record.rowSpan },
+                    };
+                  }
                 },
               };
             case "trainer_name":
@@ -967,6 +1107,7 @@ export default function TrainerPayment() {
                         onClick={() => {
                           getParticularCustomerDetails(
                             record.student_details?.customer_id,
+                            true,
                           );
                         }}
                       />
@@ -1662,13 +1803,20 @@ export default function TrainerPayment() {
     }
   };
 
-  const getParticularCustomerDetails = async (customer_id) => {
+  const getParticularCustomerDetails = async (
+    customer_id,
+    is_customer_history = false,
+  ) => {
+    console.log("is_customer_history", is_customer_history);
+
     try {
       const response = await getCustomerById(customer_id);
       const customer_details = response?.data?.data || null;
       console.log("customer full details", customer_details);
       setSelectedStudentDetails(customer_details);
-      setIsOpenStudentDetailsModal(true);
+      if (is_customer_history == false) {
+        setIsOpenStudentDetailsModal(true);
+      }
     } catch (error) {
       console.log("getcustomer by id error", error);
       setSelectedStudentDetails(null);
@@ -2576,6 +2724,331 @@ export default function TrainerPayment() {
           </div>
         </div>
       </Drawer>
+
+      {/* Customer History Drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Customer History</span>
+            <div className="customer_history_drawer_totalcount_container">
+              <span style={{ fontWeight: 600 }}>
+                Total Activity: {customerHistory?.length || 0}
+              </span>
+              <span style={{ fontWeight: 600 }}>
+                Current Status:{" "}
+                <span
+                  style={{
+                    color: getHistoryStatusColor(
+                      customerHistory?.[0]?.status || "N/A",
+                    ),
+                  }}
+                >
+                  {" "}
+                  {customerHistory && customerHistory.length > 0
+                    ? customerHistory[0].status
+                    : "N/A"}
+                </span>
+              </span>
+            </div>
+          </div>
+        }
+        open={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setSelectedStudentDetails(null);
+        }}
+        width="50%"
+        style={{ position: "relative" }}
+        className="customer_history_drawer"
+      >
+        <div
+          className="customer_statusupdate_drawer_profileContainer"
+          id="customer_history_profilecontainer"
+        >
+          {selectedStudentDetails && selectedStudentDetails.profile_image ? (
+            <Upload
+              listType="picture-circle"
+              fileList={[
+                {
+                  uid: "-1",
+                  name: "profile.jpg",
+                  status: "done",
+                  url: selectedStudentDetails.profile_image, // Base64 string directly usable
+                },
+              ]}
+              onPreview={handlePreview}
+              onRemove={false}
+              showUploadList={{
+                showRemoveIcon: false,
+              }}
+              beforeUpload={() => false} // prevent auto upload
+              style={{ width: 90, height: 90 }} // reduce size
+              accept=".png,.jpg,.jpeg"
+            ></Upload>
+          ) : (
+            <FaRegUser size={50} color="#333" />
+          )}
+
+          <div>
+            <p className="customer_nametext">
+              {" "}
+              {selectedStudentDetails && selectedStudentDetails.name
+                ? selectedStudentDetails.name
+                : "-"}
+            </p>
+            <p className="customer_coursenametext">
+              {" "}
+              {selectedStudentDetails && selectedStudentDetails.course_name
+                ? selectedStudentDetails.course_name
+                : "-"}
+            </p>
+          </div>
+        </div>
+
+        <Row
+          gutter={16}
+          style={{
+            marginTop: "20px",
+            padding: "0px 0px 0px 24px",
+          }}
+        >
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <FaRegCircleUser size={15} color="gray" />
+
+                  <p className="customerdetails_rowheading">Name</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <EllipsisTooltip
+                  text={
+                    selectedStudentDetails && selectedStudentDetails.name
+                      ? selectedStudentDetails.name
+                      : "-"
+                  }
+                  smallText={true}
+                />
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <MdOutlineEmail size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Email</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <EllipsisTooltip
+                  text={
+                    selectedStudentDetails && selectedStudentDetails.email
+                      ? selectedStudentDetails.email
+                      : "-"
+                  }
+                  smallText={true}
+                />
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoCallOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Mobile</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {selectedStudentDetails && selectedStudentDetails.phone
+                    ? selectedStudentDetails.phone
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <IoLocationOutline size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Area</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {" "}
+                  {selectedStudentDetails &&
+                  selectedStudentDetails.current_location
+                    ? selectedStudentDetails.current_location
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <LuCircleUser size={15} color="gray" />
+                  <p className="customerdetails_rowheading">Lead Executive</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <EllipsisTooltip
+                  text={`${
+                    selectedStudentDetails &&
+                    selectedStudentDetails.lead_assigned_to_id
+                      ? selectedStudentDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    selectedStudentDetails &&
+                    selectedStudentDetails.lead_assigned_to_name
+                      ? selectedStudentDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
+                  smallText={true}
+                />
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span={12}>
+            <Row>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <EllipsisTooltip
+                  text={
+                    selectedStudentDetails && selectedStudentDetails.course_name
+                      ? selectedStudentDetails.course_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Course Fees</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {selectedStudentDetails && selectedStudentDetails.primary_fees
+                    ? "₹" + selectedStudentDetails.primary_fees
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">
+                    Course Fees
+                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                  </p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
+                  {selectedStudentDetails && selectedStudentDetails.total_amount
+                    ? "₹" + selectedStudentDetails.total_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Balance Amount</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "#d32f2f", fontWeight: 700 }}
+                >
+                  {selectedStudentDetails &&
+                  selectedStudentDetails.balance_amount !== undefined &&
+                  selectedStudentDetails.balance_amount !== null
+                    ? "₹" + selectedStudentDetails.balance_amount
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <EllipsisTooltip
+                  text={
+                    selectedStudentDetails && selectedStudentDetails.branch_name
+                      ? selectedStudentDetails.branch_name
+                      : "-"
+                  }
+                  smallText={true}
+                />
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Batch Track</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {selectedStudentDetails &&
+                  selectedStudentDetails.batch_tracking
+                    ? selectedStudentDetails.batch_tracking
+                    : "-"}
+                </p>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+
+        <Divider className="customer_statusupdate_divider" />
+
+        <div style={{ marginTop: "30px" }}>
+          {customerHistoryLoading ? (
+            <CommonSpinner />
+          ) : (
+            <CustomerHistory
+              data={customerHistory}
+              customerDetails={selectedStudentDetails}
+            />
+          )}
+        </div>
+      </Drawer>
+
+      {/* profile image modal */}
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
     </div>
   );
 }
