@@ -389,7 +389,7 @@
   font-size: 13px;
   font-weight: 500;
   height: 33px;
-  cursor: default;
+  cursor: not-allowed;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -70,7 +70,7 @@ export default function CommonCustomerMultiSelectField({
             fontFamily: "Poppins, sans-serif",
           },
           "& .MuiOutlinedInput-root": {
-            minHeight: height || "42px",
+            minHeight: height || "32px",
             alignItems: "flex-start",
           },
         }}
