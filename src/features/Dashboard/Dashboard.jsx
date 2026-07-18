@@ -1547,29 +1547,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleSelectUser = async (e) => {
+  const handleSelectUser = (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
 
-    // if (permissions.includes("Score Board")) {
-    //   getScoreBoardData(
-    //     allDashboardCardsDates,
-    //     PreviousAndCurrentDate[0],
-    //     PreviousAndCurrentDate[1],
-    //     value,
-    //     true
-    //   );
-    // } else {
-    //   getSaleDetailsData(
-    //     allDashboardCardsDates,
-    //     PreviousAndCurrentDate[0],
-    //     PreviousAndCurrentDate[1],
-    //     value,
-    //     true
-    //   );
-    // }
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(value && value.length > 0 ? value : loginUserId);
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1763,10 +1750,10 @@ export default function Dashboard() {
                   <div style={{ flex: 1 }}>
                     <CommonSelectField
                       width="90%"
-                      height="35px"
+                      height="33px"
                       label="Select Region"
                       labelMarginTop="0px"
-                      labelFontSize="12px"
+                      labelFontSize="11px"
                       options={[
                         {
                           id: "All",
@@ -1810,12 +1797,13 @@ export default function Dashboard() {
                       disableClearable={false}
                     /> */}
                     <CommonMultiSelectField
-                      height="35px"
+                      height="34px"
                       label="Select User"
-                      labelMarginTop="0px"
-                      labelFontSize="13px"
+                      labelMarginTop="1px"
+                      labelFontSize="11px"
                       options={subUsers}
                       onChange={handleSelectUser}
+                      onBlur={handleSelectUserBlur}
                       value={selectedUserId}
                     />
                   </div>

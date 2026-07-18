@@ -112,7 +112,6 @@ export default function Users({
   // const [usersData, setUsersData] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
   const [searchValue, setSearchValue] = useState("");
-  const [filterType, setFilterType] = useState(1);
   const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
   const [isOpenProfileModal, setIsOpenProfileModal] = useState("");
   //set target usestates
@@ -424,11 +423,7 @@ export default function Users({
   const getUsersData = async (searchvalue, pageNumber, limit) => {
     setUserTableLoading(true);
     const payload = {
-      ...(searchvalue && filterType == 1
-        ? { user_id: searchvalue }
-        : searchvalue && filterType == 2
-          ? { user_name: searchvalue }
-          : {}),
+      ...(searchvalue && { keyword: searchvalue }),
       page: pageNumber,
       limit: limit,
       include_profile_image: true,
@@ -908,89 +903,37 @@ export default function Users({
       </div> */}
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
-          <div
-            className="leadmanager_filterContainer"
-            style={{ position: "relative" }}
-          >
-            <CommonOutlinedInput
-              label={filterType == 1 ? "Search By User Id" : "Search By Name"}
-              width="40%"
-              height="33px"
-              labelFontSize="12px"
-              icon={
-                searchValue ? (
-                  <div
-                    className="users_filter_closeIconContainer"
-                    onClick={() => {
-                      setSearchValue("");
-                      dispatch(storeUserSearchValue(null));
-                      setPagination({
-                        page: 1,
-                      });
-                      getUsersData(null, 1, pagination.limit);
-                    }}
-                  >
-                    <IoIosClose size={11} />
-                  </div>
-                ) : (
-                  <CiSearch size={16} />
-                )
-              }
-              labelMarginTop="-1px"
-              style={{
-                borderTopRightRadius: "0px",
-                borderBottomRightRadius: "0px",
-                padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-              }}
-              onChange={handleSearch}
-              value={searchValue}
-            />
-            <div className="users_filterContainer">
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={filterType}
-                      onChange={(e) => {
-                        console.log(e.target.value);
-                        setFilterType(e.target.value);
-                        if (searchValue === "") {
-                          return;
-                        } else {
-                          setSearchValue("");
-                          dispatch(storeUserSearchValue(null));
-                          setPagination({
-                            page: 1,
-                          });
-                          getUsersData(null, 1, pagination.limit);
-                        }
-                      }}
-                    >
-                      <Radio
-                        value={1}
-                        style={{ marginTop: "6px", marginBottom: "12px" }}
-                      >
-                        Search by User Id
-                      </Radio>
-                      <Radio value={2} style={{ marginBottom: "6px" }}>
-                        Search by Name
-                      </Radio>
-                    </Radio.Group>
-                  }
+          <CommonOutlinedInput
+            label="Search"
+            width="40%"
+            height="33px"
+            labelFontSize="12px"
+            icon={
+              searchValue ? (
+                <div
+                  className="users_filter_closeIconContainer"
+                  onClick={() => {
+                    setSearchValue("");
+                    dispatch(storeUserSearchValue(null));
+                    setPagination({
+                      page: 1,
+                    });
+                    getUsersData(null, 1, pagination.limit);
+                  }}
                 >
-                  <Button className="users_filterbutton">
-                    <IoFilter size={18} />
-                  </Button>
-                </Tooltip>
-              </Flex>
-            </div>
-          </div>
+                  <IoIosClose size={11} />
+                </div>
+              ) : (
+                <CiSearch size={16} />
+              )
+            }
+            labelMarginTop="-1px"
+            style={{
+              padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
+            }}
+            onChange={handleSearch}
+            value={searchValue}
+          />
         </Col>
         <Col
           xs={24}

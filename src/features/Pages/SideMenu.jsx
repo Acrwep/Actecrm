@@ -209,7 +209,7 @@ export default function SideMenu() {
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
       const firstPayload = {
-        user_id: convertAsJson?.user_id,
+        keyword: convertAsJson?.user_id,
         include_profile_image: true,
       };
       const loginUserResponse = await getUsers(firstPayload);

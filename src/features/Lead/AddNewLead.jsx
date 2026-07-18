@@ -484,7 +484,7 @@ const AddNewLead = forwardRef(
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       const payload = {
-        user_id: convertAsJson?.user_id,
+        keyword: convertAsJson?.user_id,
       };
       try {
         const response = await getUsers(payload);

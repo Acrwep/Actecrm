@@ -1107,7 +1107,6 @@ export default function TrainerPayment() {
                         onClick={() => {
                           getParticularCustomerDetails(
                             record.student_details?.customer_id,
-                            true,
                           );
                         }}
                       />
@@ -1468,6 +1467,20 @@ export default function TrainerPayment() {
                   return {
                     children: (
                       <div className="trainers_actionbuttonContainer">
+                        {/* <AiOutlineEdit
+                size={18}
+                className="trainers_action_icons"
+                onClick={() => {
+                  if (record?.status == "Requested") {
+                    handleEdit(record);
+                  } else {
+                    CommonMessage(
+                      "error",
+                      `Unable to update in ${record?.status} status`,
+                    );
+                  }
+                }}
+              /> */}
                         <Tooltip
                           placement="top"
                           title="View Details"
@@ -1482,6 +1495,59 @@ export default function TrainerPayment() {
                             }}
                           />
                         </Tooltip>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "16px",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {record?.students?.map((student, index) => (
+                            <Tooltip
+                              key={index}
+                              placement="left"
+                              title={`View History: ${student.customer_name || "Student"}`}
+                              trigger={["hover", "click"]}
+                            >
+                              <LuFileClock
+                                size={15}
+                                className="trainers_action_icons"
+                                style={{ cursor: "pointer", marginLeft: "4px" }}
+                                onClick={() => {
+                                  getParticularCustomerDetails(
+                                    student.customer_id,
+                                    true,
+                                  );
+                                  getCustomerHistoryData(student.customer_id);
+                                  setTimeout(() => {
+                                    const container = document.getElementById(
+                                      "customer_history_profilecontainer",
+                                    );
+                                    if (container) {
+                                      container.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "start",
+                                      });
+                                    }
+                                  }, 300);
+                                }}
+                              />
+                            </Tooltip>
+                          ))}
+                        </div>
+
+                        {/* {record?.paid_amount == "0.00" && (
+                <RiDeleteBinLine
+                  size={18}
+                  color="#d32f2f"
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setSelectedPaymentDetails(record);
+                    setIsOpenRequestDeleteModal(true);
+                  }}
+                />
+              )} */}
                       </div>
                     ),
                     props: { rowSpan: flatRecord.rowSpan },

@@ -75,6 +75,8 @@ export default function AssignLeads({
   const [bucketCounts, setBucketCounts] = useState({
     assigned: 0,
     consigned: 0,
+    awaiting: 0,
+    reassigned: 0,
   });
   const [leadData, setLeadData] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
@@ -248,48 +250,54 @@ export default function AssignLeads({
       width: 200,
       render: (text, record) => {
         return (
-          <Badge
-            size="small"
-            count={
-              record.lead_type == "New" || record.lead_type == null
-                ? "New"
-                : "Existing"
-            }
-            offset={
-              record.lead_type == "New" || record.lead_type == null
-                ? [22, 0]
-                : [30, 0]
-            }
-            color={
-              record.lead_type == "New" || record.lead_type == null
-                ? "#1e90ff"
-                : "#d32f2f"
-            }
-            style={{ fontSize: "9px" }}
-          >
-            {text.length > 16 ? (
-              <Tooltip
-                color="#fff"
-                placement="bottom"
-                title={text}
-                className="leadtable_comments_tooltip"
-                styles={{
-                  body: {
-                    backgroundColor: "#fff", // Tooltip background
-                    color: "#333", // Tooltip text color
-                    fontWeight: 500,
-                    fontSize: "12px",
-                  },
-                }}
+          <>
+            {record.lead_type == "New" || record.lead_type == null ? (
+              <Badge
+                size="small"
+                count={
+                  record.lead_type == "New" || record.lead_type == null
+                    ? "New"
+                    : "Existing"
+                }
+                offset={
+                  record.lead_type == "New" || record.lead_type == null
+                    ? [22, 0]
+                    : [30, 0]
+                }
+                color={
+                  record.lead_type == "New" || record.lead_type == null
+                    ? "#1e90ff"
+                    : "#d32f2f"
+                }
+                style={{ fontSize: "9px" }}
               >
-                <p style={{ cursor: "pointer", fontSize: "12px" }}>
-                  {text.slice(0, 15) + "..."}
-                </p>
-              </Tooltip>
+                {text.length > 16 ? (
+                  <Tooltip
+                    color="#fff"
+                    placement="bottom"
+                    title={text}
+                    className="leadtable_comments_tooltip"
+                    styles={{
+                      body: {
+                        backgroundColor: "#fff", // Tooltip background
+                        color: "#333", // Tooltip text color
+                        fontWeight: 500,
+                        fontSize: "12px",
+                      },
+                    }}
+                  >
+                    <p style={{ cursor: "pointer", fontSize: "12px" }}>
+                      {text.slice(0, 15) + "..."}
+                    </p>
+                  </Tooltip>
+                ) : (
+                  <p style={{ fontSize: "12px" }}>{text}</p>
+                )}
+              </Badge>
             ) : (
-              <p style={{ fontSize: "12px" }}>{text}</p>
+              <p>{text}</p>
             )}
-          </Badge>
+          </>
         );
       },
     },
@@ -381,7 +389,9 @@ export default function AssignLeads({
         return <EllipsisTooltip text={text} />;
       },
     },
-    ...(selectedBucket === "Assigned"
+    ...(selectedBucket === "Assigned" ||
+    selectedBucket === "Reassigned" ||
+    selectedBucket === "Awaiting"
       ? [
           {
             title: "Action",
@@ -557,9 +567,13 @@ export default function AssignLeads({
 
       const assigned = response?.data?.data?.assigned || 0;
       const consigned = response?.data?.data?.consigned || 0;
+      const awaiting = response?.data?.data?.awaiting || 0;
+      const reassigned = response?.data?.data?.reassigned || 0;
       setBucketCounts({
         assigned: assigned,
         consigned: consigned,
+        awaiting: awaiting,
+        reassigned: reassigned,
       });
       setLeadData(data);
       setAssignLeadCount(assigned);
@@ -1197,7 +1211,56 @@ export default function AssignLeads({
             minWidth: "max-content",
           }}
         >
-          Assigned {`( ${bucketCounts.assigned || 0} )`}
+          Fresh {`( ${bucketCounts.assigned || 0} )`}
+        </div>
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Reassigned" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket =
+              selectedBucket === "Reassigned" ? "" : "Reassigned";
+            setSelectedBucket(newBucket);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              1,
+              pagination.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Reassigned" ? "#722ed1" : "#722ed166"}`,
+            backgroundColor:
+              selectedBucket === "Reassigned" ? "#722ed1" : "#722ed115",
+            color: selectedBucket === "Reassigned" ? "#fff" : "#722ed1",
+            minWidth: "max-content",
+          }}
+        >
+          Reassigned {`( ${bucketCounts.reassigned || 0} )`}
+        </div>
+        <div
+          className={`leadmanager_bucket ${selectedBucket === "Awaiting" ? "active" : ""}`}
+          onClick={() => {
+            const newBucket = selectedBucket === "Awaiting" ? "" : "Awaiting";
+            setSelectedBucket(newBucket);
+            getManualAssignLeadsData(
+              searchValue,
+              selectedDates[0],
+              selectedDates[1],
+              1,
+              pagination.limit,
+              newBucket,
+            );
+          }}
+          style={{
+            border: `1px solid ${selectedBucket === "Awaiting" ? "#faad14" : "#faad1466"}`,
+            backgroundColor:
+              selectedBucket === "Awaiting" ? "#faad14" : "#faad1415",
+            color: selectedBucket === "Awaiting" ? "#fff" : "#faad14",
+            minWidth: "max-content",
+          }}
+        >
+          Awaiting {`( ${bucketCounts.awaiting || 0} )`}
         </div>
         <div
           className={`leadmanager_bucket ${selectedBucket === "Consigned" ? "active" : ""}`}
