@@ -198,7 +198,7 @@ const AddBatch = forwardRef(
       setTrainerSelectloading(true);
       const payload = {
         status: "Verified",
-        ...buildCustomerSearchPayload(searchvalue),
+        keyword: searchvalue,
         page: pageNumber,
         limit: 10,
       };

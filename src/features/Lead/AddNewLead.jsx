@@ -166,12 +166,13 @@ const AddNewLead = forwardRef(
     const [expectDateJoin, setExpectDateJoin] = useState(null);
 
     const [regionId, setRegionId] = useState(null);
+    const [leadOwnerBranch, setLeadOwnerBranch] = useState(null);
     const [regionError, setRegionError] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
     const [defaultBranch, setDefaultBranch] = useState("");
     const [hasSetAssignmentDefaults, setHasSetAssignmentDefaults] =
       useState(false);
-    const [branch, setBranch] = useState("");
+    const [assignedBranchId, setAssignedBranchId] = useState("");
     const [branchError, setBranchError] = useState("");
     const batchTrackOptions = [
       {
@@ -302,7 +303,7 @@ const AddNewLead = forwardRef(
           whatsApp ||
           leadSource ||
           primaryCourse ||
-          branch
+          assignedBranchId
         ) {
           const getLoginUserDetails = localStorage.getItem("loginUserDetails");
           const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -322,7 +323,7 @@ const AddNewLead = forwardRef(
       whatsApp,
       leadSource,
       primaryCourse,
-      branch,
+      assignedBranchId,
       hasSetAssignmentDefaults,
       updateLeadItem,
       liveLeadItem,
@@ -450,9 +451,20 @@ const AddNewLead = forwardRef(
         setCounsel(updateLeadItem?.counsel);
         setExpectDateJoin(updateLeadItem.expected_join_date);
         setRegionId(updateLeadItem.region_id);
-        getBranchManagersData(updateLeadItem?.branch_id);
+        setLeadOwnerBranch(updateLeadItem?.branch_id);
         // getBranchesData(updateLeadItem.region_id);
-        setBranch(updateLeadItem.branch_id);
+        if (
+          updateLeadItem.assigned_branch_id === null ||
+          updateLeadItem.assigned_branch_id === undefined
+        ) {
+          getBranchManagersData(updateLeadItem?.branch_id);
+          setDefaultBranch(updateLeadItem.branch_id);
+          setAssignedBranchId(updateLeadItem.branch_id);
+        } else {
+          getBranchManagersData(updateLeadItem?.assigned_branch_id);
+          setDefaultBranch(updateLeadItem.assigned_branch_id);
+          setAssignedBranchId(updateLeadItem.assigned_branch_id);
+        }
         setBatchTrack(updateLeadItem.batch_track_id);
         setInterestRate(updateLeadItem?.interest_rate || 5);
         setComments(updateLeadItem.comments);
@@ -493,7 +505,8 @@ const AddNewLead = forwardRef(
         console.log("loginUserDetails", loginUserFullDetails);
         if (loginUserFullDetails) {
           setRegionId(loginUserFullDetails?.region_id);
-          setBranch(loginUserFullDetails?.branch_id);
+          setLeadOwnerBranch(loginUserFullDetails?.branch_id);
+          setAssignedBranchId(loginUserFullDetails?.branch_id);
           setBranchError("");
           setDefaultBranch(loginUserFullDetails?.branch_id);
           getBranchManagersData(loginUserFullDetails?.branch_id);
@@ -907,7 +920,13 @@ const AddNewLead = forwardRef(
     }));
 
     const handleSubmit = async (saveType) => {
-      console.log(branch, defaultBranch, "checkkk", "leadOwner", leadOwner);
+      console.log(
+        assignedBranchId,
+        defaultBranch,
+        "checkkk",
+        "leadOwner",
+        leadOwner,
+      );
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setValidationTrigger(true);
@@ -929,7 +948,9 @@ const AddNewLead = forwardRef(
           ? ""
           : selectValidator(leadSubSource);
       const regionIdValidate = selectValidator(regionId);
-      const branchValidate = updateLeadItem ? "" : selectValidator(branch);
+      const branchValidate = updateLeadItem
+        ? ""
+        : selectValidator(assignedBranchId);
       const batchTrackValidate = selectValidator(batchTrack);
       const contactModeValidate = communicationStatus
         ? selectValidator(contactMode)
@@ -1129,7 +1150,7 @@ const AddNewLead = forwardRef(
           ? formatToBackendIST(expectDateJoin)
           : null,
         region_id: regionId,
-        branch_id: branch,
+        branch_id: leadOwnerBranch,
         batch_track_id: batchTrack,
         comments: comments,
         ...(isReAssign && isReAssign == true
@@ -1143,9 +1164,11 @@ const AddNewLead = forwardRef(
           : false,
         assigned_manager_id: regionManagerId,
         branch_manager_id: branchManagerId,
-        consigned_id: defaultBranch == branch ? null : convertAsJson?.user_id,
-        assigned_to: defaultBranch == branch ? convertAsJson?.user_id : null,
-        assigned_branch_id: branch,
+        consigned_id:
+          defaultBranch == assignedBranchId ? null : convertAsJson?.user_id,
+        assigned_to:
+          defaultBranch == assignedBranchId ? convertAsJson?.user_id : null,
+        assigned_branch_id: assignedBranchId,
       };
 
       console.log("add leadd payload", payload);
@@ -1168,7 +1191,8 @@ const AddNewLead = forwardRef(
         }
       } else if (isReAssign) {
         //---------------lead re-assign--------------
-        const isBranchChanged = defaultBranch == branch ? false : true;
+        const isBranchChanged =
+          defaultBranch == assignedBranchId ? false : true;
 
         const today = new Date();
         const reEntryPayload = {
@@ -1186,7 +1210,7 @@ const AddNewLead = forwardRef(
           is_branch_changed: isBranchChanged ? 1 : 0,
           assigned_manager: isBranchChanged ? regionManagerId : null,
           branch_manager_id: isBranchChanged ? branchManagerId : null,
-          assigned_branch_id: branch,
+          assigned_branch_id: assignedBranchId,
         };
 
         try {
@@ -1214,7 +1238,7 @@ const AddNewLead = forwardRef(
           await createLead(payload);
           CommonMessage("success", "Lead created");
           setTimeout(() => {
-            formReset(true, defaultBranch == branch ? false : true);
+            formReset(true, defaultBranch == assignedBranchId ? false : true);
             if (liveLeadItem) {
               handleAssignLiveLead();
             }
@@ -1327,7 +1351,7 @@ const AddNewLead = forwardRef(
       setResponseStatus(null);
       setResponseStatusError("");
       setAssignExecutiveId(leadOwner);
-      setBranch("");
+      setAssignedBranchId("");
       setDefaultBranch("");
       setBranchError("");
       setHasSetAssignmentDefaults(false);
@@ -2374,9 +2398,9 @@ const AddNewLead = forwardRef(
                   <CommonSelectField
                     label="Assigned Branch"
                     required={false}
-                    value={branch}
+                    value={assignedBranchId}
                     onChange={(e) => {
-                      setBranch(e.target.value);
+                      setAssignedBranchId(e.target.value);
                       setAssignExecutiveId("");
                       setRegionManagerId("");
                       setRegionManagerName("");
@@ -2432,7 +2456,7 @@ const AddNewLead = forwardRef(
                   />
                 </div>
 
-                {isReAssign && defaultBranch == branch && (
+                {isReAssign && defaultBranch == assignedBranchId && (
                   <div style={{ marginBottom: "20px" }}>
                     <CommonSelectField
                       label="Assigned Executive"

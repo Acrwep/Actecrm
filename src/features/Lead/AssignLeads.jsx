@@ -216,7 +216,7 @@ export default function AssignLeads({
         return <EllipsisTooltip text={lead_executive} />;
       },
     },
-    ...(selectedBucket === "Assigned"
+    ...(selectedBucket === "Assigned" || selectedBucket === "Reassigned"
       ? [
           {
             title: "Assigned Branch",
@@ -662,6 +662,9 @@ export default function AssignLeads({
         pagination.page,
         pagination.limit,
       );
+      if (refreshLeads) {
+        refreshLeads();
+      }
     } catch (error) {
       CommonMessage(
         "error",
@@ -1192,15 +1195,17 @@ export default function AssignLeads({
         <div
           className={`leadmanager_bucket ${selectedBucket === "Assigned" ? "active" : ""}`}
           onClick={() => {
-            const newBucket = selectedBucket === "Assigned" ? "" : "Assigned";
-            setSelectedBucket(newBucket);
+            if (selectedBucket == "Assigned") {
+              return;
+            }
+            setSelectedBucket("Assigned");
             getManualAssignLeadsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               1,
               pagination.limit,
-              newBucket,
+              "Assigned",
             );
           }}
           style={{
@@ -1216,16 +1221,17 @@ export default function AssignLeads({
         <div
           className={`leadmanager_bucket ${selectedBucket === "Reassigned" ? "active" : ""}`}
           onClick={() => {
-            const newBucket =
-              selectedBucket === "Reassigned" ? "" : "Reassigned";
-            setSelectedBucket(newBucket);
+            if (selectedBucket == "Reassigned") {
+              return;
+            }
+            setSelectedBucket("Reassigned");
             getManualAssignLeadsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               1,
               pagination.limit,
-              newBucket,
+              "Reassigned",
             );
           }}
           style={{
@@ -1241,15 +1247,17 @@ export default function AssignLeads({
         <div
           className={`leadmanager_bucket ${selectedBucket === "Awaiting" ? "active" : ""}`}
           onClick={() => {
-            const newBucket = selectedBucket === "Awaiting" ? "" : "Awaiting";
-            setSelectedBucket(newBucket);
+            if (selectedBucket == "Awaiting") {
+              return;
+            }
+            setSelectedBucket("Awaiting");
             getManualAssignLeadsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               1,
               pagination.limit,
-              newBucket,
+              "Awaiting",
             );
           }}
           style={{
@@ -1265,15 +1273,17 @@ export default function AssignLeads({
         <div
           className={`leadmanager_bucket ${selectedBucket === "Consigned" ? "active" : ""}`}
           onClick={() => {
-            const newBucket = selectedBucket === "Consigned" ? "" : "Consigned";
-            setSelectedBucket(newBucket);
+            if (selectedBucket == "Consigned") {
+              return;
+            }
+            setSelectedBucket("Consigned");
             getManualAssignLeadsData(
               searchValue,
               selectedDates[0],
               selectedDates[1],
               1,
               pagination.limit,
-              newBucket,
+              "Consigned",
             );
           }}
           style={{
