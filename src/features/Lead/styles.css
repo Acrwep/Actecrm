@@ -458,6 +458,21 @@
   border-top-right-radius: 4px !important;
 }
 
+.leads_hovercourse_addcontainer {
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 6px;
+  margin-left: -3px;
+  border-left: none !important;
+  border: 1px solid rgba(128, 128, 128, 0.705);
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+  border-bottom-right-radius: 4px !important;
+  border-top-right-radius: 4px !important;
+}
+
 .leads_focusedcourse_addcontainer {
   height: 35px;
   display: flex;

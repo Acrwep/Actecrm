@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Typography, Avatar, Collapse, Spin, Badge, Upload, Modal } from "antd";
+import {
+  Row,
+  Col,
+  Typography,
+  Avatar,
+  Collapse,
+  Spin,
+  Badge,
+  Upload,
+  Modal,
+} from "antd";
 import { UserOutlined, EyeOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { MdPerson, MdBook, MdAssignment } from "react-icons/md";
@@ -207,7 +217,12 @@ export default function ViewTrainerDetails({ trainerData: initialData }) {
                 : "-",
             )}
           </Col>
-          <Col span={8}>{renderField("Location", trainerData.location)}</Col>
+          <Col span={8}>
+            {renderField(
+              "Location",
+              trainerData.location ? trainerData.location : "-",
+            )}
+          </Col>
           <Col span={8}>
             {renderField(
               "Created At",
@@ -248,6 +263,33 @@ export default function ViewTrainerDetails({ trainerData: initialData }) {
           </Col>
           <Col span={8}>
             {renderField(
+              "Skills",
+              trainerData.skills && trainerData.skills.length > 0
+                ? trainerData.skills.map((s) => s.name).join(", ")
+                : "-",
+            )}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Certifications",
+              trainerData.certifications &&
+                trainerData.certifications.length > 0
+                ? trainerData.certifications.join(", ")
+                : "-",
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      {/* Availability Details */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdBook size={18} color="#2563eb" />}
+          title="Availability Details"
+        />
+        <Row gutter={24}>
+          <Col span={8}>
+            {renderField(
               "Availability Time",
               trainerData.availability_time
                 ? moment(trainerData.availability_time, "HH:mm:ss").format(
@@ -266,12 +308,67 @@ export default function ViewTrainerDetails({ trainerData: initialData }) {
                 : "-",
             )}
           </Col>
-          <Col span={24}>
+          <Col span={8}>
             {renderField(
-              "Skills",
-              trainerData.skills && trainerData.skills.length > 0
-                ? trainerData.skills.map((s) => s.name).join(", ")
+              "Preferred Days",
+              trainerData.preferred_days &&
+                trainerData.preferred_days.length > 0
+                ? trainerData.preferred_days.join(", ")
                 : "-",
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      {/* Additional Information */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdBook size={18} color="#2563eb" />}
+          title="Additional Information"
+        />
+        <Row gutter={24}>
+          <Col span={8}>
+            {renderField("Trainer Type", trainerData.trainer_type || "-")}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Preferred Mode",
+              trainerData.preferred_mode &&
+                trainerData.preferred_mode.length > 0
+                ? trainerData.preferred_mode.join(", ")
+                : "-",
+            )}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Salary Expectation",
+              trainerData.salary_expectation
+                ? `${trainerData.salary_expectation} (${trainerData.salary_type || "Per session"})`
+                : "-",
+            )}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Languages Known",
+              (trainerData.language_known || trainerData.languages_known) &&
+                (trainerData.language_known?.length > 0 ||
+                  trainerData.languages_known?.length > 0)
+                ? (
+                    trainerData.language_known || trainerData.languages_known
+                  ).join(", ")
+                : "-",
+            )}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Current Trainer Status",
+              trainerData.trainer_status || "-",
+            )}
+          </Col>
+          <Col span={8}>
+            {renderField(
+              "Additional Notes",
+              trainerData.additional_notes || "-",
             )}
           </Col>
         </Row>
@@ -372,11 +469,7 @@ export default function ViewTrainerDetails({ trainerData: initialData }) {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img
-          alt="Profile"
-          style={{ width: "100%" }}
-          src={previewImage}
-        />
+        <img alt="Profile" style={{ width: "100%" }} src={previewImage} />
       </Modal>
     </div>
   );

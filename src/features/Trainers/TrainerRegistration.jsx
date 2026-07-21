@@ -80,6 +80,16 @@ export default function TrainerRegistration() {
   const [location, setLocation] = useState("");
   const [locationError, setLocationError] = useState("");
   const [trainerStatus, setTrainerstatus] = useState("");
+  const [secondarySkills, setSecondarySkills] = useState([]);
+  const [certifications, setCertifications] = useState([]);
+  const [preferredDays, setPreferredDays] = useState([]);
+  const [trainerType, setTrainerType] = useState("Freelancer");
+  const [preferredMode, setPreferredMode] = useState([]);
+  const [salaryExpectation, setSalaryExpectation] = useState("");
+  const [salaryType, setSalaryType] = useState("Per session");
+  const [languagesKnown, setLanguagesKnown] = useState([]);
+  const [trainerCurrentStatus, setTrainerCurrentStatus] = useState("Active");
+  const [additionalNotes, setAdditionalNotes] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   //bank details usestates
   const [trainerBankId, setTrainerBankId] = useState(null);
@@ -238,6 +248,16 @@ export default function TrainerRegistration() {
       setSkills(getSkillsIds);
       setLocation(trainerDetails.location);
       setTrainerstatus(trainerDetails.status);
+      setSecondarySkills(trainerDetails.secondary_skills || []);
+      setCertifications(trainerDetails.certifications || []);
+      setPreferredDays(trainerDetails.preferred_days || []);
+      setTrainerType(trainerDetails.trainer_type || "");
+      setPreferredMode(trainerDetails.preferred_mode || []);
+      setSalaryExpectation(trainerDetails.salary_expectation || "");
+      setSalaryType(trainerDetails.salary_type || "Per session");
+      setLanguagesKnown(trainerDetails.language_known || trainerDetails.languages_known || []);
+      setTrainerCurrentStatus(trainerDetails.trainer_status || "Active");
+      setAdditionalNotes(trainerDetails.additional_notes || "");
       setTrainerBankId(trainerDetails.trainer_bank_id);
       setAccountHolderName(trainerDetails.account_holder_name);
       setAccountNumber(trainerDetails.account_number);
@@ -432,6 +452,16 @@ export default function TrainerRegistration() {
       skills: skills,
       location: location,
       status: trainerStatus,
+      secondary_skills: secondarySkills,
+      certifications: certifications,
+      preferred_days: preferredDays,
+      trainer_type: trainerType,
+      preferred_mode: preferredMode,
+      salary_expectation: salaryExpectation,
+      salary_type: salaryType,
+      language_known: languagesKnown,
+      trainer_status: trainerCurrentStatus,
+      additional_notes: additionalNotes,
       profile_image: profilePicture,
       account_holder_name: accountHolderName,
       account_number: accountNumber,

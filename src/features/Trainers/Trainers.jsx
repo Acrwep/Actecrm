@@ -79,6 +79,7 @@ import PhoneWithCountry from "../Common/PhoneWithCountry";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import TrainerPaymentRequestForm from "./TrainerPaymentRequestForm";
 import ViewTrainerDetails from "./ViewTrainerDetails";
+import AddTrainer from "./AddTrainer";
 
 const CustomerList = ({ trainerId, isClassTaken }) => {
   const [data, setData] = useState([]);
@@ -272,6 +273,7 @@ const StatusSelectionDropdown = ({
 };
 
 export default function Trainers() {
+  const addTrainerRef = useRef();
   const paymentRequestFormRef = useRef();
 
   const navigate = useNavigate();
@@ -291,39 +293,11 @@ export default function Trainers() {
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [mobileCountryCode, setMobileCountryCode] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("in");
-  const [mobile, setMobile] = useState("");
-  const [mobileError, setMobileError] = useState("");
-  const [whatsAppCountry, setWhatsAppCountry] = useState("in");
-  const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
-  const [whatsApp, setWhatsApp] = useState("");
-  const [whatsAppError, setWhatsAppError] = useState("");
+  const [editTrainerData, setEditTrainerData] = useState(null);
   const [technologyOptions, setTechnologyOptions] = useState([]);
-  const [technology, setTechnology] = useState("");
-  const [technologyError, setTechnologyError] = useState("");
-  const [isTechnologyFocused, setIsTechnologyFocused] = useState(false);
   const [experienceOptions, setExperienceOptions] = useState([]);
-  const [experience, setExperience] = useState("");
-  const [experienceError, setExperienceError] = useState("");
-  const [relevantExperience, setRelevantExperience] = useState("");
-  const [relevantExperienceError, setRelevantExperienceError] = useState("");
   const [batchOptions, setBatchOptions] = useState([]);
-  const [batch, setBatch] = useState("");
-  const [batchError, setBatchError] = useState("");
-  const [avaibilityTime, setAvaibilityTime] = useState(null);
-  const [secondaryTime, setSecondaryTime] = useState("");
   const [skillsOptions, setSkillsOptions] = useState([]);
-  const [skills, setSkills] = useState([]);
-  const [skillsError, setSkillsError] = useState("");
-  const [isSkillFocused, setIsSkillFocused] = useState(false);
-  const [location, setLocation] = useState("");
-  const [locationError, setLocationError] = useState("");
-  const [validationTrigger, setValidationTrigger] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editTrainerId, setEditTrainerId] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -334,20 +308,6 @@ export default function Trainers() {
   const [searchLocation, setSearchLocation] = useState("");
   const [trainerCurrentStatus, setTrainerCurrentStatus] =
     useState("Verify Pending");
-  //bank details usestates
-  const [isShowBankTab, setIsShowBankTab] = useState(false);
-  const [trainerBankId, setTrainerBankId] = useState(null);
-  const [profilePictureArray, setProfilePictureArray] = useState([]);
-  const [profilePictureBase64, setProfilePictureBase64] = useState("");
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
-  const [accountHolderName, setAccountHolderName] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [branchName, setBranchName] = useState("");
-  const [ifscCode, setIfscCode] = useState("");
-  const [signatureImage, setSignatureImage] = useState("");
-  const [trainerBanksList, setTrainerBanksList] = useState([]);
   //status count usestates
   const [allTrainersCount, setAllTrainersCount] = useState(0);
   const [formPendingCount, setFormPendingCount] = useState(0);
@@ -1310,79 +1270,11 @@ export default function Trainers() {
 
   const handleEdit = async (item) => {
     console.log("clicked item", item);
-    // const skillsAsJson = JSON.parse(item.skills);
-    // const skillsOutput = skillsAsJson[0].split(",").map((item) => item.trim());
     console.log("prevvv storeee", statusRef.current);
     setPreviousStatus(statusRef.current);
     setStatus("AddTrainer");
     setEditTrainerId(item.id);
-    if (item.profile_image) {
-      setProfilePictureArray([
-        {
-          uid: "-1",
-          name: "profile.jpg",
-          status: "done",
-          url: item.profile_image, // Base64 string directly usable
-        },
-      ]);
-    } else {
-      setProfilePictureArray([]);
-    }
-    setProfilePictureBase64(item.profile_image);
-    setName(item.name);
-    setEmail(item.email);
-    //mobile fetch
-    setMobileCountryCode(item.mobile_phone_code ? item.mobile_phone_code : "");
-    const selected_mobile_country = getCountryFromDialCode(
-      `+${item.mobile_phone_code ? item.mobile_phone_code : ""}`,
-    );
-    setSelectedCountry(selected_mobile_country);
-    setMobile(item.mobile);
-    //whatsapp fetch
-    setWhatsAppCountryCode(
-      item.whatsapp_phone_code ? item.whatsapp_phone_code : "",
-    );
-    const selected_whatsapp_country = getCountryFromDialCode(
-      `+${item.whatsapp_phone_code ? item.whatsapp_phone_code : ""}`,
-    );
-    setWhatsAppCountry(selected_whatsapp_country);
-    setWhatsApp(item.whatsapp);
-    //-----------
-    setTrainerCurrentStatus(item.status);
-    setTechnology(item.technology_id);
-    setExperience(parseInt(item.overall_exp_year));
-    setRelevantExperience(parseInt(item.relavant_exp_year));
-    setBatch(item.batch_id);
-    setLocation(item.location);
-    setAvaibilityTime(item.availability_time ? item.availability_time : "");
-    setSecondaryTime(item.secondary_time ? item.secondary_time : "");
-    const getSkillsIds = item.skills.map((s) => {
-      return s.id;
-    });
-    setSkills(getSkillsIds);
-    //fetch bank details
-    setTrainerBankId(item.trainer_bank_id);
-    setAccountHolderName(item.account_holder_name);
-    setAccountNumber(item.account_number);
-    setBankName(item.bank_name);
-    setBranchName(item.branch_name);
-    setIfscCode(item.ifsc_code);
-    setSignatureImage(item.signature_image);
-
-    try {
-      const response = await getTrainerBanks(item?.id);
-      console.log("trainer banks", response);
-      const bank_details = response.data?.data || [];
-      if (bank_details.length >= 1) {
-        const updateData = bank_details.filter((f) => f.account_number != "");
-        setTrainerBanksList(updateData);
-      } else {
-        setTrainerBanksList([]);
-      }
-    } catch (error) {
-      console.log("trainer bank error", error);
-      setTrainerBanksList([]);
-    }
+    setEditTrainerData(item);
   };
 
   const handleSearch = (e) => {
@@ -1394,75 +1286,6 @@ export default function Trainers() {
       });
       getTrainersData(e.target.value, status, hrId, 1, pagination.limit);
     }, 300);
-  };
-
-  //onchange function
-  const handleProfileAttachment = ({ fileList: newFileList }) => {
-    console.log("newww", newFileList);
-
-    if (newFileList.length <= 0) {
-      setProfilePictureArray([]);
-      setProfilePictureBase64("");
-      return;
-    }
-
-    const file = newFileList[0].originFileObj; // actual File object
-
-    // ✅ Check file type
-    const isValidType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/jpg";
-
-    // ✅ Check file size (1MB = 1,048,576 bytes)
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", newFileList);
-      setProfilePictureArray(newFileList);
-      CommonMessage("success", "Profile uploaded");
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result; // Extract Base64 content
-        setProfilePictureBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setProfilePictureArray([]);
-      setProfilePictureBase64("");
-    }
-  };
-
-  const handlePreview = async (file) => {
-    if (file.url) {
-      setPreviewImage(file.url);
-      setPreviewOpen(true);
-      return;
-    }
-    setPreviewOpen(true);
-    const rawFile = file.originFileObj || file;
-    const reader = new FileReader();
-    reader.readAsDataURL(rawFile);
-    reader.onload = () => {
-      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
-      console.log("urlllll", dataUrl);
-      setPreviewImage(dataUrl); // Show in Modal
-      setPreviewOpen(true);
-    };
-  };
-
-  const handleRemoveProfile = (fileToRemove) => {
-    const newFileList = profilePictureArray.filter(
-      (file) => file.uid !== fileToRemove.uid,
-    );
-    setProfilePictureArray(newFileList);
-    // CommonToaster("Profile removed");
   };
 
   const handleCreateCourse = async () => {
@@ -1534,207 +1357,14 @@ export default function Trainers() {
   const formReset = () => {
     setButtonLoading(false);
     setEditTrainerId(null);
-    setName("");
-    setNameError("");
-    setEmail("");
-    setEmailError("");
-    setSelectedCountry("in");
-    setMobileCountryCode("");
-    setWhatsAppCountry("in");
-    setWhatsAppCountryCode("");
-    setMobile("");
-    setMobileError("");
-    setWhatsApp("");
-    setWhatsAppError("");
-    setTrainerCurrentStatus("Verify Pending");
-    setTechnology("");
-    setTechnologyError("");
-    setExperience("");
-    setExperienceError("");
-    setRelevantExperience("");
-    setRelevantExperienceError("");
-    setBatch("");
-    setBatchError("");
-    setAvaibilityTime("");
-    setSecondaryTime("");
-    setSkills([]);
-    setSkillsError("");
-    setLocation("");
-    setLocationError("");
-    setTrainerBankId(null);
-    setAccountHolderName("");
-    setAccountNumber("");
-    setBankName("");
-    setBranchName("");
-    setIfscCode("");
-    setProfilePictureArray([]);
-    setProfilePictureBase64("");
-    setSignatureImage("");
+    setEditTrainerData(null);
     setIsOpenAddDrawer(false);
-    setValidationTrigger(false);
     setIsOpenFilterDrawer(false);
   };
 
   const paymentRequestFormReset = () => {
     setEditTrainerId(null);
     setIsOpenRequestFormDrawer(false);
-  };
-
-  const handleSubmit = async () => {
-    console.log("avaibilityTime", skills);
-    const getloginUserDetails = localStorage.getItem("loginUserDetails");
-    const converAsJson = JSON.parse(getloginUserDetails);
-    console.log(converAsJson);
-
-    setValidationTrigger(true);
-    const nameValidate = nameValidator(name);
-    const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile, selectedCountry);
-    const whatsAppValidate = mobileValidator(whatsApp, whatsAppCountry);
-    const technologyValidate = selectValidator(technology);
-    const experienceValidate = selectValidator(experience);
-    const relevantExperienceValidate = selectValidator(relevantExperience);
-    const batchValidate = selectValidator(batch);
-    const skillsValidate = selectValidator(skills);
-    const locationValidate = addressValidator(location);
-
-    setNameError(nameValidate);
-    setEmailError(emailValidate);
-    setMobileError(mobileValidate);
-    setWhatsAppError(whatsAppValidate);
-    setTechnologyError(technologyValidate);
-    setExperienceError(experienceValidate);
-    setRelevantExperienceError(relevantExperienceValidate);
-    setBatchError(batchValidate);
-    setSkillsError(skillsValidate);
-    setLocationError(locationValidate);
-
-    // const formatAvaibilityTime = formatToBackendIST(avaibilityTime);
-    // let formatSecondaryTime;
-    // if (secondaryTime) {
-    //   formatSecondaryTime = formatToBackendIST(secondaryTime);
-    // } else {
-    //   formatSecondaryTime = null;
-    // }
-    // console.log(formatAvaibilityTime, "sendFormatrr");
-
-    if (
-      nameValidate ||
-      emailValidate ||
-      mobileValidate ||
-      whatsAppValidate ||
-      technologyValidate ||
-      experienceValidate ||
-      relevantExperienceValidate ||
-      batchValidate ||
-      skillsValidate ||
-      locationValidate
-    )
-      return;
-
-    setButtonLoading(true);
-
-    const today = new Date();
-    const payload = {
-      ...(editTrainerId && { id: editTrainerId }),
-      trainer_name: name,
-      email: email,
-      mobile_phone_code: mobileCountryCode,
-      mobile: mobile,
-      whatsapp_phone_code: whatsAppCountryCode,
-      whatsapp: whatsApp,
-      technology_id: technology,
-      overall_exp_year: experience,
-      relevant_exp_year: relevantExperience,
-      batch_id: batch,
-      availability_time: avaibilityTime,
-      secondary_time: secondaryTime,
-      skills: skills,
-      location: location,
-      status: trainerCurrentStatus,
-      profile_image: profilePictureBase64,
-      trainer_bank_id: trainerBankId,
-      account_holder_name: accountHolderName,
-      account_number: accountNumber,
-      bank_name: bankName,
-      branch_name: branchName,
-      ifsc_code: ifscCode,
-      signature_image: signatureImage,
-      ...(!editTrainerId
-        ? {
-            created_by:
-              converAsJson && converAsJson.user_id ? converAsJson.user_id : "",
-          }
-        : {}),
-      created_date: formatToBackendIST(today),
-    };
-
-    console.log("payload", payload);
-
-    if (editTrainerId) {
-      try {
-        await updateTrainer(payload);
-        CommonMessage("success", "Trainer Updated");
-        setTimeout(() => {
-          setButtonLoading(false);
-          formReset();
-          if (previousStatus !== null) {
-            setStatus(previousStatus);
-            getTrainersData(
-              searchValue,
-              previousStatus,
-              hrId,
-              pagination.page,
-              pagination.limit,
-            );
-            setPreviousStatus(null);
-          } else {
-            getTrainersData(
-              searchValue,
-              status,
-              hrId,
-              pagination.page,
-              pagination.limit,
-            );
-          }
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
-      }
-    } else {
-      try {
-        const response = await createTrainer(payload);
-        const createdTrainerDetails = response?.data?.data;
-        CommonMessage("success", "Trainer Created");
-        setTimeout(() => {
-          setButtonLoading(false);
-          formReset();
-          getTrainersData(
-            searchValue,
-            status,
-            hrId,
-            pagination.page,
-            pagination.limit,
-          );
-          handleSendFormLink(
-            createdTrainerDetails.email,
-            createdTrainerDetails.insertId,
-          );
-        }, 300);
-      } catch (error) {
-        setButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
-      }
-    }
   };
 
   const handleStatusChange = async (trainerId, trainerStatus) => {
@@ -1792,366 +1422,6 @@ export default function Trainers() {
           "Something went wrong. Try again later",
       );
     }
-  };
-
-  const renderPersonalDetails = () => {
-    return (
-      <div style={{ marginBottom: "60px" }}>
-        {editTrainerId && (
-          <div
-            className="customerupdate_profilepicture_container"
-            style={{ marginTop: "20px" }}
-          >
-            <Upload
-              listType="picture-circle"
-              fileList={profilePictureArray}
-              onPreview={handlePreview}
-              onChange={handleProfileAttachment}
-              onRemove={(file) => handleRemoveProfile(file)}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              accept=".png,.jpg,.jpeg"
-            >
-              {profilePictureArray.length >= 1 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8, fontSize: "12px" }}>
-                    Upload <br /> Profile
-                  </div>
-                </div>
-              )}
-            </Upload>
-          </div>
-        )}
-        <Row gutter={16} style={{ marginTop: editTrainerId ? "0px" : "20px" }}>
-          <Col span={6}>
-            <CommonInputField
-              label="Trainer Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (validationTrigger) {
-                  setNameError(nameValidator(e.target.value));
-                }
-              }}
-              error={nameError}
-              required={true}
-              errorFontSize={"9px"}
-            />
-          </Col>
-          <Col span={6}>
-            <CommonInputField
-              label="Trainer Email"
-              required={true}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (validationTrigger) {
-                  setEmailError(emailValidator(e.target.value));
-                }
-              }}
-              value={email}
-              error={emailError}
-              errorFontSize={"9px"}
-            />
-          </Col>
-          <Col span={6}>
-            <PhoneWithCountry
-              label="Mobile Number"
-              onChange={(value, countryIso2) => {
-                console.log("mobbbb", value);
-                setMobile(value);
-                const activeCountry = countryIso2 || selectedCountry;
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(value, activeCountry));
-                }
-              }}
-              selectedCountry={selectedCountry}
-              countryCode={(code) => {
-                setMobileCountryCode(code);
-              }}
-              error={mobileError}
-              errorFontSize={"9px"}
-              onCountryChange={(iso2) => {
-                setSelectedCountry(iso2);
-                setWhatsAppCountry(iso2);
-              }}
-              value={mobile}
-            />
-          </Col>
-          <Col span={6}>
-            <PhoneWithCountry
-              label="WhatsApp Number"
-              onChange={(value, countryIso2) => {
-                setWhatsApp(value);
-                const activeCountry = countryIso2 || whatsAppCountry;
-                if (validationTrigger) {
-                  setWhatsAppError(mobileValidator(value, activeCountry));
-                }
-              }}
-              countryCode={(code) => {
-                setWhatsAppCountryCode(code);
-              }}
-              selectedCountry={whatsAppCountry}
-              value={whatsApp}
-              error={whatsAppError}
-              errorFontSize={"9px"}
-              onCountryChange={(iso2) => {
-                setWhatsAppCountry(iso2);
-              }}
-            />
-          </Col>
-        </Row>
-
-        <Row gutter={16} style={{ marginTop: "35px" }}>
-          <Col span={6}>
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-              <div style={{ flex: 1 }}>
-                <CommonSelectField
-                  label="Course"
-                  required={true}
-                  options={technologyOptions}
-                  onChange={(e) => {
-                    setTechnology(e.target.value);
-                    if (validationTrigger) {
-                      setTechnologyError(selectValidator(e.target.value));
-                    }
-                  }}
-                  value={technology}
-                  error={technologyError}
-                  errorFontSize={"9px"}
-                  valueMarginTop="-4px"
-                  borderRightNone={true}
-                  onFocus={() => setIsTechnologyFocused(true)}
-                  onBlur={() => setIsTechnologyFocused(false)}
-                />
-              </div>
-
-              <div
-                className={
-                  technologyError
-                    ? "leads_errorcourse_addcontainer"
-                    : isTechnologyFocused
-                      ? "leads_focusedcourse_addcontainer"
-                      : "leads_course_addcontainer"
-                }
-                style={{ height: "36px" }}
-              >
-                <Tooltip
-                  placement="bottom"
-                  title="Add Course"
-                  className="leadtable_customertooltip"
-                >
-                  <MdAdd
-                    size={19}
-                    style={{ color: "#333333af", cursor: "pointer" }}
-                    onClick={() => setIsOpenAddCourseModal(true)}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          </Col>
-
-          <Col span={6}>
-            <CommonSelectField
-              label="Experience"
-              required={true}
-              options={experienceOptions}
-              onChange={(e) => {
-                setExperience(e.target.value);
-                if (validationTrigger) {
-                  setExperienceError(selectValidator(e.target.value));
-                }
-              }}
-              value={experience}
-              error={experienceError}
-              errorFontSize={"9px"}
-              valueMarginTop="-4px"
-            />
-          </Col>
-          <Col span={6}>
-            <CommonSelectField
-              label="Relevant Experience"
-              options={experienceOptions}
-              required={true}
-              onChange={(e) => {
-                setRelevantExperience(e.target.value);
-                if (validationTrigger) {
-                  setRelevantExperienceError(selectValidator(e.target.value));
-                }
-              }}
-              value={relevantExperience}
-              error={relevantExperienceError}
-              valueMarginTop="-4px"
-              errorFontSize="9px"
-            />
-          </Col>
-          <Col span={6}>
-            <CommonSelectField
-              label="Batch"
-              required={true}
-              options={batchOptions}
-              onChange={(e) => {
-                setBatch(e.target.value);
-                if (validationTrigger) {
-                  setBatchError(selectValidator(e.target.value));
-                }
-              }}
-              value={batch}
-              error={batchError}
-              valueMarginTop="-4px"
-            />
-          </Col>
-        </Row>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: relevantExperienceError ? "40px" : "35px" }}
-        >
-          <Col span={6}>
-            <CommonMuiTimePicker
-              label="Avaibility Time"
-              required={false}
-              onChange={(value) => {
-                setAvaibilityTime(value);
-                console.log("timeeeeeeee", value);
-              }}
-              value={avaibilityTime}
-              allowClear={true}
-            />
-          </Col>
-          <Col span={6}>
-            <CommonMuiTimePicker
-              label="Secondary Time"
-              required={false}
-              onChange={(value) => {
-                setSecondaryTime(value);
-              }}
-              value={secondaryTime}
-              allowClear={true}
-            />
-          </Col>
-
-          <Col span={6}>
-            <div style={{ position: "relative", height: "auto" }}>
-              <p className={"trainer_skillslabel"}>Skills</p>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "3px",
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Select
-                    className={
-                      skills.length <= 0 && !skillsError
-                        ? "trainer_skills_multiselect"
-                        : skills.length >= 1 && !skillsError
-                          ? "trainer_skills_multiselect_two"
-                          : skills.length <= 0 && skillsError
-                            ? "trainer_skills_multiselect_error"
-                            : "trainer_skills_multiselect"
-                    }
-                    style={{ width: "100%" }}
-                    suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
-                    mode="multiple"
-                    allowClear
-                    showSearch
-                    value={skills} // Only real selected values
-                    onChange={(value) => {
-                      setSkills(value);
-                      if (validationTrigger) {
-                        setSkillsError(selectValidator(value));
-                      }
-                    }}
-                    status={skillsError ? "error" : ""}
-                    optionLabelProp="label"
-                    filterOption={(input, option) =>
-                      option.label.toLowerCase().includes(input.toLowerCase())
-                    }
-                  >
-                    {skillsOptions.map((item) => {
-                      const itemValue = item.id;
-                      const itemLabel = item.name;
-
-                      return (
-                        <Select.Option
-                          key={itemValue}
-                          value={itemValue}
-                          label={itemLabel}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              textWrap: "wrap",
-                            }}
-                          >
-                            <Checkbox
-                              checked={skills.includes(itemValue)}
-                              style={{ marginRight: 8 }}
-                              className="common_antdmultiselect_checkbox"
-                            />
-                            {itemLabel}
-                          </div>
-                        </Select.Option>
-                      );
-                    })}
-                  </Select>
-                </div>
-
-                <div
-                  className={
-                    skillsError
-                      ? "leads_errorcourse_addcontainer"
-                      : isSkillFocused
-                        ? "leads_focusedcourse_addcontainer"
-                        : "leads_course_addcontainer"
-                  }
-                  style={{ height: "36px" }}
-                >
-                  <Tooltip
-                    placement="bottom"
-                    title="Add Skill"
-                    className="leadtable_customertooltip"
-                  >
-                    <MdAdd
-                      size={19}
-                      style={{ color: "#333333af", cursor: "pointer" }}
-                      onClick={() => setIsOpenAddSkillModal(true)}
-                    />
-                  </Tooltip>
-                </div>
-              </div>
-              {skillsError && (
-                <p className="trainer_skills_error">Skills {skillsError}</p>
-              )}
-            </div>
-          </Col>
-
-          <Col span={6}>
-            <CommonInputField
-              label="Location"
-              required={true}
-              onChange={(e) => {
-                setLocation(e.target.value);
-                if (validationTrigger) {
-                  setLocationError(addressValidator(e.target.value));
-                }
-              }}
-              value={location}
-              error={locationError}
-              errorFontSize={"9px"}
-            />
-          </Col>
-        </Row>
-
-        {/* <Row
-          gutter={16}
-          style={{ marginTop: batchError ? "45px" : "35px" }}
-        ></Row> */}
-      </div>
-    );
   };
 
   return (
@@ -2806,9 +2076,30 @@ export default function Trainers() {
             flexDirection: "column",
           }}
         >
-          <div style={{ flex: 1, paddingBottom: "40px" }}>
-            {renderPersonalDetails()}
-          </div>
+          <AddTrainer
+            ref={addTrainerRef}
+            editTrainerId={editTrainerId}
+            editTrainerData={editTrainerData}
+            technologyOptions={technologyOptions}
+            experienceOptions={experienceOptions}
+            batchOptions={batchOptions}
+            skillsOptions={skillsOptions}
+            setIsOpenAddCourseModal={setIsOpenAddCourseModal}
+            setIsOpenAddSkillModal={setIsOpenAddSkillModal}
+            callgetTrainersApi={() => {
+              getTrainersData(
+                searchValue,
+                status,
+                hrId,
+                pagination.page,
+                pagination.limit,
+              );
+            }}
+            setButtonLoading={setButtonLoading}
+            previousStatus={previousStatus}
+            setStatus={setStatus}
+            setPreviousStatus={setPreviousStatus}
+          />
           {/* <div
             className="leadmanager_tablefiler_footer"
             style={{ marginTop: "20px", position: "relative" }}
@@ -2850,7 +2141,7 @@ export default function Trainers() {
             <Button
               className="animated-cancel-btn"
               onClick={() => {
-                formReset();
+                addTrainerRef.current.resetForm();
                 if (previousStatus !== null) {
                   setStatus(previousStatus);
                   getTrainersData(
@@ -2880,7 +2171,7 @@ export default function Trainers() {
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={handleSubmit}
+                onClick={() => addTrainerRef.current.handleSubmit()}
               >
                 {editTrainerId ? "Update" : "Create"}
               </button>
@@ -3130,15 +2421,6 @@ export default function Trainers() {
             <li>Python</li>
           </ul>
         </div>
-      </Modal>
-
-      <Modal
-        open={previewOpen}
-        title="Preview Profile"
-        footer={null}
-        onCancel={() => setPreviewOpen(false)}
-      >
-        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
 
       {/* trainer payment request form drawer */}

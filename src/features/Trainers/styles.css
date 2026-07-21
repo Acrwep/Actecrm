@@ -246,14 +246,22 @@
   border-bottom-right-radius: 0px !important;
   border-right: none !important;
 }
-.trainer_skills_multiselect .ant-select-selector:focus {
-  box-shadow: none !important;
-}
 .trainer_skills_multiselect:hover.ant-select:not(.ant-select-disabled):not(
     .ant-select-customize-input
   ):not(.ant-pagination-size-changer)
   .ant-select-selector {
   border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect.ant-select-focused.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector,
+.trainer_skills_multiselect.ant-select-open.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #5b69ca !important;
   box-shadow: none !important;
 }
 .trainer_skills_multiselect_two .ant-select-selector {
@@ -268,14 +276,22 @@
   border-top-right-radius: 0px !important;
   border-bottom-right-radius: 0px !important;
 }
-.trainer_skills_multiselect_two .ant-select-selector:focus {
-  box-shadow: none !important;
-}
 .trainer_skills_multiselect_two:hover.ant-select:not(.ant-select-disabled):not(
     .ant-select-customize-input
   ):not(.ant-pagination-size-changer)
   .ant-select-selector {
   border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+.trainer_skills_multiselect_two.ant-select-focused.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector,
+.trainer_skills_multiselect_two.ant-select-open.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #5b69ca !important;
   box-shadow: none !important;
 }
 /* skill error field */
@@ -305,6 +321,91 @@
 .trainer_bankdetails_title_names {
   font-size: 13px;
   font-weight: 600;
+}
+
+.trainer_certificate_field .ant-select-selector {
+  min-height: 36px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+}
+.trainer_certificate_field.ant-select-multiple
+  .ant-select-selection-placeholder {
+  font-size: 12px !important;
+  top: 54% !important;
+}
+.trainer_certificate_field:hover.ant-select:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+.trainer_certificate_field.ant-select-focused.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector,
+.trainer_certificate_field.ant-select-open.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #5b69ca !important;
+  box-shadow: none !important;
+}
+.trainer_certificate_multiselect_two .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+}
+.trainer_certificate_multiselect_two:hover.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+
+.trainer_certificate_field_error .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: rgba(128, 128, 128, 0.56) !important;
+  box-shadow: none !important;
+}
+.trainer_certificate_field_error .ant-select-selector:focus {
+  box-shadow: none !important;
+}
+.trainer_certificate_field_error:hover.ant-select:not(.ant-select-disabled):not(
+    .ant-select-customize-input
+  ):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
+.addtrainer_trainertype_label {
+  color: gray;
+  font-size: 12px;
+  margin-bottom: 6px !important;
+}
+.small-radio-group .ant-radio {
+  transform: scale(0.9); /* Reduce circle size */
+}
+
+.small-radio-group .ant-radio-wrapper {
+  font-size: 13px;
+  align-items: center;
 }
 /* trainer registration form styles */
 .logincard_innerContainer {
@@ -996,4 +1097,20 @@
     margin-top: -30px;
     margin-right: 8px;
   }
+}
+
+/* Salary Expectation styles */
+.salary_expectation_input .ant-input-affix-wrapper > input.ant-input {
+  font-size: 13px !important;
+}
+.salary_expectation_input .ant-input-outlined:hover {
+  border-color: #5b69ca !important;
+}
+
+.salary_type_select .ant-select-selection-item {
+  font-size: 11px !important;
+}
+
+.salary_type_select_dropdown .ant-select-item-option-content {
+  font-size: 11px !important;
 }
