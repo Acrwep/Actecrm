@@ -138,6 +138,12 @@ export default function Leads({
   const [updateLeadItem, setUpdateLeadItem] = useState(null);
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   const [viewLeadItem, setViewLeadItem] = useState(null);
+  const [allLeadsRegionCounts, setAllLeadsRegionCounts] = useState({
+    hub_leads: 0,
+    chennai_leads: 0,
+    bangalore_leads: 0,
+    total: 0,
+  });
   const batchTrackOptions = [
     {
       id: 1,
@@ -1533,6 +1539,13 @@ export default function Leads({
           joinings: bucket_counts["joinings"] || 0,
         });
       }
+
+      setAllLeadsRegionCounts({
+        hub_leads: bucket_counts["hub_leads"] || 0,
+        chennai_leads: bucket_counts["chennai_leads"] || 0,
+        bangalore_leads: bucket_counts["bangalore_leads"] || 0,
+        total: bucket_counts["all"] || 0,
+      });
 
       const leadStatusOptionsWithCount = [
         {
@@ -2988,6 +3001,64 @@ export default function Leads({
           </div>
         </Col>
       </Row>
+
+      {leadBucketName === "All" && (
+        <div className="livelead_today_summary_container">
+          <p className="livelead_today_label">Region Summary</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {allLeadsRegionCounts?.hub_leads ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {allLeadsRegionCounts?.chennai_leads ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#607d8b" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {allLeadsRegionCounts?.bangalore_leads ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          {/* <div className="livelead_badge_item total">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Total{" "}
+              <span className="livelead_badge_count">
+                {allLeadsRegionCounts?.total || 0}
+              </span>
+            </p>
+          </div> */}
+        </div>
+      )}
 
       {leadBucketName === "Interested Leads" &&
         Object.keys(interestedLeadActions).length > 0 && (
