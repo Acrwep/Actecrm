@@ -2499,6 +2499,7 @@ export default function TrainerPayment() {
           limit={pagination.limit}
           page_number={pagination.page}
           totalPageNumber={pagination.total}
+          disableLocalPagination={true}
           getCheckboxProps={(record) => ({
             disabled: record.rowSpan === 0,
             style: { display: record.rowSpan === 0 ? "none" : "block" },

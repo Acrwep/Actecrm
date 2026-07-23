@@ -14,6 +14,7 @@ export default function CommonMuiTimePicker({
   value,
   error,
   errorFontSize,
+  errorLabel,
   allowClear = false,
   disabled = false,
 }) {
@@ -93,7 +94,7 @@ export default function CommonMuiTimePicker({
               <span
                 style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
               >
-                {label + error}
+                {(errorLabel || label || "") + (errorLabel || label ? " " : "") + error}
               </span>
             ) : null,
             onClick: () => {

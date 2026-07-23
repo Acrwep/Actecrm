@@ -444,7 +444,7 @@
 }
 
 .leads_course_addcontainer {
-  height: 35px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -459,7 +459,7 @@
 }
 
 .leads_hovercourse_addcontainer {
-  height: 35px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -474,7 +474,7 @@
 }
 
 .leads_focusedcourse_addcontainer {
-  height: 35px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -489,7 +489,7 @@
 }
 
 .leads_errorcourse_addcontainer {
-  height: 35px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -549,7 +549,7 @@
 .leads_advancefilter_button {
   background-color: #fff;
   border-radius: 6px;
-  height: 35px;
+  height: 36px;
   display: flex;
   align-items: center;
   gap: 8px;

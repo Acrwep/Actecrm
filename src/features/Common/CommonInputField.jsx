@@ -23,6 +23,8 @@ export default function CommonInputField({
   borderLeftNone,
   rows,
   multiline = false,
+  outsideLabel,
+  errorLabel,
 }) {
   const inputRef = useRef(null);
   const cursorRef = useRef(null);
@@ -102,11 +104,12 @@ export default function CommonInputField({
         helperText={
           error ? (
             <span
+              className="common_inputfield_errortext"
               style={{
                 fontSize: errorFontSize ? errorFontSize : "11px",
               }}
             >
-              {label === "Paid Now" ? "" : label}
+              {errorLabel || label}
               {error}
             </span>
           ) : null

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table } from "antd";
+import { Table, Pagination } from "antd";
 import { GrFormPrevious, GrFormNext } from "react-icons/gr";
 import "./commonstyles.css";
 
@@ -25,6 +25,7 @@ const CommonTable = ({
   sticky = { offsetHeader: 64 },
   getCheckboxProps,
   rowKey,
+  disableLocalPagination,
 }) => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -157,23 +158,35 @@ const CommonTable = ({
   };
 
   return (
-    <Table
-      rowSelection={rowSelection}
-      columns={columns}
-      dataSource={dataSource}
-      scroll={scroll}
-      pagination={paginationConfig}
-      onChange={handleTableChange}
-      tableLayout="fixed"
-      bordered={bordered === "true"}
-      loading={loading}
-      size={size}
-      className={className}
-      rowClassName={rowClassName}
-      sticky={sticky}
-      summary={summary}
-      rowKey={rowKey || ((record) => record.id || record.row_num || record.question_id)}
-    />
+    <>
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={dataSource}
+        scroll={scroll}
+        pagination={disableLocalPagination ? false : paginationConfig}
+        onChange={handleTableChange}
+        tableLayout="fixed"
+        bordered={bordered === "true"}
+        loading={loading}
+        size={size}
+        className={className}
+        rowClassName={rowClassName}
+        sticky={sticky}
+        summary={summary}
+        rowKey={rowKey || ((record) => record.id || record.row_num || record.question_id)}
+      />
+      {disableLocalPagination && (totalPageNumber || 0) > 0 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+          <Pagination
+            {...paginationConfig}
+            onChange={(page, pageSize) => {
+              handleTableChange({ current: page, pageSize }, {}, {});
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

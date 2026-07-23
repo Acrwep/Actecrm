@@ -159,7 +159,7 @@ const AddTrainer = forwardRef(
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            marginBottom: "20px",
+            marginBottom: "32px",
           }}
         >
           <div className="addnewlead_card_heading_circleicon">{number}</div>
@@ -174,7 +174,7 @@ const AddTrainer = forwardRef(
       borderRadius: "10px",
       border: "1px solid #e2e8f0",
       boxShadow: "rgba(0, 0, 0, 0.04) 0px 1px 3px",
-      marginBottom: "20px",
+      marginBottom: "12px",
     };
 
     useEffect(() => {
@@ -579,79 +579,102 @@ const AddTrainer = forwardRef(
               <SectionHeader number="1" text="Personal Information" />
               <Row gutter={16}>
                 <Col span={6}>
-                  <CommonInputField
-                    label="Trainer Name"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (validationTrigger) {
-                        setNameError(nameValidator(e.target.value));
-                      }
-                    }}
-                    error={nameError}
-                    required={true}
-                    errorFontSize={"9px"}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Trainer Name<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonInputField
+                      errorLabel="Trainer Name"
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (validationTrigger) {
+                          setNameError(nameValidator(e.target.value));
+                        }
+                      }}
+                      error={nameError}
+                      required={true}
+                      errorFontSize={"9px"}
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <CommonInputField
-                    label="Trainer Email"
-                    required={true}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (validationTrigger) {
-                        setEmailError(emailValidator(e.target.value));
-                      }
-                    }}
-                    value={email}
-                    error={emailError}
-                    errorFontSize={"9px"}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Trainer Email<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonInputField
+                      errorLabel="Trainer Email"
+                      required={true}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (validationTrigger) {
+                          setEmailError(emailValidator(e.target.value));
+                        }
+                      }}
+                      value={email}
+                      error={emailError}
+                      errorFontSize={"9px"}
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <PhoneWithCountry
-                    label="Mobile Number"
-                    onChange={(value, countryIso2) => {
-                      setMobile(value);
-                      const activeCountry = countryIso2 || selectedCountry;
-                      if (validationTrigger) {
-                        setMobileError(mobileValidator(value, activeCountry));
-                      }
-                    }}
-                    selectedCountry={selectedCountry}
-                    countryCode={(code) => {
-                      setMobileCountryCode(code);
-                    }}
-                    error={mobileError}
-                    errorFontSize={"9px"}
-                    onCountryChange={(iso2) => {
-                      setSelectedCountry(iso2);
-                      setWhatsAppCountry(iso2);
-                    }}
-                    value={mobile}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Mobile Number<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <PhoneWithCountry
+                      errorLabel="Mobile Number"
+                      onChange={(value, countryIso2) => {
+                        setMobile(value);
+                        const activeCountry = countryIso2 || selectedCountry;
+                        if (validationTrigger) {
+                          setMobileError(mobileValidator(value, activeCountry));
+                        }
+                      }}
+                      selectedCountry={selectedCountry}
+                      countryCode={(code) => {
+                        setMobileCountryCode(code);
+                      }}
+                      error={mobileError}
+                      errorFontSize={"9px"}
+                      onCountryChange={(iso2) => {
+                        setSelectedCountry(iso2);
+                        setWhatsAppCountry(iso2);
+                      }}
+                      value={mobile}
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <PhoneWithCountry
-                    label="WhatsApp Number"
-                    onChange={(value, countryIso2) => {
-                      setWhatsApp(value);
-                      const activeCountry = countryIso2 || whatsAppCountry;
-                      if (validationTrigger) {
-                        setWhatsAppError(mobileValidator(value, activeCountry));
-                      }
-                    }}
-                    countryCode={(code) => {
-                      setWhatsAppCountryCode(code);
-                    }}
-                    selectedCountry={whatsAppCountry}
-                    value={whatsApp}
-                    error={whatsAppError}
-                    errorFontSize={"9px"}
-                    onCountryChange={(iso2) => {
-                      setWhatsAppCountry(iso2);
-                    }}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      WhatsApp Number
+                      <span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <PhoneWithCountry
+                      errorLabel="WhatsApp Number"
+                      onChange={(value, countryIso2) => {
+                        setWhatsApp(value);
+                        const activeCountry = countryIso2 || whatsAppCountry;
+                        if (validationTrigger) {
+                          setWhatsAppError(
+                            mobileValidator(value, activeCountry),
+                          );
+                        }
+                      }}
+                      countryCode={(code) => {
+                        setWhatsAppCountryCode(code);
+                      }}
+                      selectedCountry={whatsAppCountry}
+                      value={whatsApp}
+                      error={whatsAppError}
+                      errorFontSize={"9px"}
+                      onCountryChange={(iso2) => {
+                        setWhatsAppCountry(iso2);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </div>
@@ -661,112 +684,135 @@ const AddTrainer = forwardRef(
               <SectionHeader number="2" text="Professional Information" />
               <Row gutter={16}>
                 <Col span={6}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "3px",
-                    }}
-                    onMouseEnter={() => setIsTechnologyHovered(true)}
-                    onMouseLeave={() => setIsTechnologyHovered(false)}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <CommonSelectField
-                        label="Technology"
-                        required={true}
-                        options={technologyOptions}
-                        onChange={(e) => {
-                          setTechnology(e.target.value);
-                          if (validationTrigger) {
-                            setTechnologyError(selectValidator(e.target.value));
-                          }
-                        }}
-                        value={technology}
-                        error={technologyError}
-                        errorFontSize={"9px"}
-                        valueMarginTop="-4px"
-                        borderRightNone={true}
-                        onFocus={() => setIsTechnologyFocused(true)}
-                        onBlur={() => setIsTechnologyFocused(false)}
-                      />
-                    </div>
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Technology<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
                     <div
-                      className={
-                        technologyError
-                          ? "leads_errorcourse_addcontainer"
-                          : isTechnologyFocused
-                            ? "leads_focusedcourse_addcontainer"
-                            : isTechnologyHovered
-                              ? "leads_hovercourse_addcontainer"
-                              : "leads_course_addcontainer"
-                      }
-                      style={{ height: "36px" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "3px",
+                      }}
+                      onMouseEnter={() => setIsTechnologyHovered(true)}
+                      onMouseLeave={() => setIsTechnologyHovered(false)}
                     >
-                      <Tooltip
-                        placement="bottom"
-                        title="Add Course"
-                        className="leadtable_customertooltip"
-                      >
-                        <MdAdd
-                          size={19}
-                          style={{ color: "#333333af", cursor: "pointer" }}
-                          onClick={() => setIsOpenAddCourseModal(true)}
+                      <div style={{ flex: 1 }}>
+                        <CommonSelectField
+                          errorLabel="Technology"
+                          required={true}
+                          options={technologyOptions}
+                          onChange={(e) => {
+                            setTechnology(e.target.value);
+                            if (validationTrigger) {
+                              setTechnologyError(
+                                selectValidator(e.target.value),
+                              );
+                            }
+                          }}
+                          value={technology}
+                          error={technologyError}
+                          errorFontSize={"9px"}
+                          valueMarginTop="-4px"
+                          borderRightNone={true}
+                          onFocus={() => setIsTechnologyFocused(true)}
+                          onBlur={() => setIsTechnologyFocused(false)}
                         />
-                      </Tooltip>
+                      </div>
+                      <div
+                        className={
+                          technologyError
+                            ? "leads_errorcourse_addcontainer"
+                            : isTechnologyFocused
+                              ? "leads_focusedcourse_addcontainer"
+                              : isTechnologyHovered
+                                ? "leads_hovercourse_addcontainer"
+                                : "leads_course_addcontainer"
+                        }
+                        style={{ height: "auto", minHeight: "36px" }}
+                      >
+                        <Tooltip
+                          placement="bottom"
+                          title="Add Course"
+                          className="leadtable_customertooltip"
+                        >
+                          <MdAdd
+                            size={19}
+                            style={{ color: "#333333af", cursor: "pointer" }}
+                            onClick={() => setIsOpenAddCourseModal(true)}
+                          />
+                        </Tooltip>
+                      </div>
                     </div>
                   </div>
                 </Col>
                 <Col span={6}>
-                  <CommonSelectField
-                    label="Experience"
-                    required={true}
-                    options={experienceOptions}
-                    onChange={(e) => {
-                      setExperience(e.target.value);
-                      if (validationTrigger) {
-                        setExperienceError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={experience}
-                    error={experienceError}
-                    errorFontSize={"9px"}
-                    valueMarginTop="-4px"
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Experience<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonSelectField
+                      errorLabel="Experience"
+                      required={true}
+                      options={experienceOptions}
+                      onChange={(e) => {
+                        setExperience(e.target.value);
+                        if (validationTrigger) {
+                          setExperienceError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={experience}
+                      error={experienceError}
+                      errorFontSize={"9px"}
+                      valueMarginTop="-4px"
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <CommonSelectField
-                    label="Relevant Experience"
-                    options={experienceOptions}
-                    required={true}
-                    onChange={(e) => {
-                      setRelevantExperience(e.target.value);
-                      if (validationTrigger) {
-                        setRelevantExperienceError(
-                          selectValidator(e.target.value),
-                        );
-                      }
-                    }}
-                    value={relevantExperience}
-                    error={relevantExperienceError}
-                    valueMarginTop="-4px"
-                    errorFontSize="9px"
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Relevant Experience
+                      <span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonSelectField
+                      errorLabel="Relevant Experience"
+                      options={experienceOptions}
+                      required={true}
+                      onChange={(e) => {
+                        setRelevantExperience(e.target.value);
+                        if (validationTrigger) {
+                          setRelevantExperienceError(
+                            selectValidator(e.target.value),
+                          );
+                        }
+                      }}
+                      value={relevantExperience}
+                      error={relevantExperienceError}
+                      valueMarginTop="-4px"
+                      errorFontSize="9px"
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <CommonSelectField
-                    label="Batch"
-                    required={true}
-                    options={batchOptions}
-                    onChange={(e) => {
-                      setBatch(e.target.value);
-                      if (validationTrigger) {
-                        setBatchError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={batch}
-                    error={batchError}
-                    valueMarginTop="-4px"
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Batch<span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonSelectField
+                      errorLabel="Batch"
+                      required={true}
+                      options={batchOptions}
+                      onChange={(e) => {
+                        setBatch(e.target.value);
+                        if (validationTrigger) {
+                          setBatchError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={batch}
+                      error={batchError}
+                      valueMarginTop="-4px"
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row gutter={16} style={{ marginTop: "40px" }}>
@@ -857,7 +903,7 @@ const AddTrainer = forwardRef(
                                 ? "leads_hovercourse_addcontainer"
                                 : "leads_course_addcontainer"
                         }
-                        style={{ height: "36px" }}
+                        style={{ height: "auto", minHeight: "36px" }}
                       >
                         <Tooltip
                           placement="bottom"
@@ -920,26 +966,35 @@ const AddTrainer = forwardRef(
               <SectionHeader number="3" text="Availability Details" />
               <Row gutter={16}>
                 <Col span={6}>
-                  <CommonMuiTimePicker
-                    label="Availability Time"
-                    required={false}
-                    onChange={(value) => {
-                      setAvaibilityTime(value);
-                    }}
-                    value={avaibilityTime}
-                    allowClear={true}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>
+                      Availability Time
+                      <span style={{ color: "#d32f2f" }}> *</span>
+                    </p>
+                    <CommonMuiTimePicker
+                      errorLabel="Availability Time"
+                      required={false}
+                      onChange={(value) => {
+                        setAvaibilityTime(value);
+                      }}
+                      value={avaibilityTime}
+                      allowClear={true}
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
-                  <CommonMuiTimePicker
-                    label="Secondary Time"
-                    required={false}
-                    onChange={(value) => {
-                      setSecondaryTime(value);
-                    }}
-                    value={secondaryTime}
-                    allowClear={true}
-                  />
+                  <div style={{ position: "relative", height: "auto" }}>
+                    <p className={"trainer_skillslabel"}>Secondary Time</p>
+                    <CommonMuiTimePicker
+                      errorLabel="Secondary Time"
+                      required={false}
+                      onChange={(value) => {
+                        setSecondaryTime(value);
+                      }}
+                      value={secondaryTime}
+                      allowClear={true}
+                    />
+                  </div>
                 </Col>
                 <Col span={6}>
                   <div style={{ position: "relative", height: "auto" }}>
@@ -1029,204 +1084,231 @@ const AddTrainer = forwardRef(
             {/* Card 4: Additional Information */}
             <div style={cardStyle}>
               <SectionHeader number="4" text="Additional Information" />
-              <Row gutter={16}>
-                <Col span={6}>
-                  <p className="addtrainer_trainertype_label">Trainer Type</p>
-                  <Radio.Group
-                    className="small-radio-group"
-                    onChange={(e) => setTrainerType(e.target.value)}
-                    value={trainerType}
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      rowGap: "6px",
-                    }}
-                  >
-                    <Radio value="Freelancer" style={{ fontSize: "13px" }}>
-                      Freelancer
-                    </Radio>
-                    <Radio value="Full Time" style={{ fontSize: "13px" }}>
-                      Full Time
-                    </Radio>
-                    <Radio value="Part Time" style={{ fontSize: "13px" }}>
-                      Part Time
-                    </Radio>
-                  </Radio.Group>
-                </Col>
-                <Col span={6}>
-                  <p className="addtrainer_trainertype_label">Preferred Mode</p>
-                  <Checkbox.Group
-                    value={preferredMode}
-                    onChange={(checkedValues) =>
-                      setPreferredMode(checkedValues)
-                    }
-                    style={{ paddingTop: "6px" }}
-                  >
-                    <Checkbox value="Online" style={{ fontSize: "13px" }}>
-                      Online
-                    </Checkbox>
-                    <Checkbox value="Offline" style={{ fontSize: "13px" }}>
-                      Offline
-                    </Checkbox>
-                    <Checkbox value="Hybrid" style={{ fontSize: "13px" }}>
-                      Hybrid
-                    </Checkbox>
-                  </Checkbox.Group>
-                </Col>
-                <Col span={6}>
-                  <p className="addtrainer_trainertype_label">
-                    Salary Expectation
-                  </p>
-                  <Input
-                    className="salary_expectation_input"
-                    prefix="₹"
-                    addonAfter={
-                      <Select
-                        className="salary_type_select"
-                        popupClassName="salary_type_select_dropdown"
-                        value={salaryType}
-                        onChange={(val) => setSalaryType(val)}
-                        style={{ width: 110 }}
-                        bordered={false}
-                        dropdownStyle={{ minWidth: 120 }}
+              <Row gutter={16} align="stretch">
+                <Col span={12}>
+                  <Row gutter={12}>
+                    <Col span={12}>
+                      <p className="trainer_skillslabel">Trainer Type</p>
+                      <Radio.Group
+                        className="small-radio-group"
+                        onChange={(e) => setTrainerType(e.target.value)}
+                        value={trainerType}
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          rowGap: "6px",
+                        }}
                       >
-                        <Select.Option value="Per session">
-                          Per Session
-                        </Select.Option>
-                        <Select.Option value="Per head">Per Head</Select.Option>
-                        <Select.Option value="Batch">Batch</Select.Option>
-                      </Select>
-                    }
-                    placeholder="Enter amount"
-                    value={salaryExpectation}
-                    onChange={(e) => setSalaryExpectation(e.target.value)}
-                    style={{ height: "36px" }}
-                  />
-                </Col>
-                <Col span={6} style={{ marginTop: "22px" }}>
-                  <CommonInputField
-                    label="Location"
-                    required={true}
-                    onChange={(e) => {
-                      setLocation(e.target.value);
-                      if (validationTrigger) {
-                        setLocationError(addressValidator(e.target.value));
-                      }
-                    }}
-                    value={location}
-                    error={locationError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-              </Row>
-              <Row gutter={16} style={{ marginTop: "40px" }}>
-                <Col span={6}>
-                  <div style={{ position: "relative", height: "auto" }}>
-                    <p className={"trainer_skillslabel"}>
-                      Languages Known
-                      <span style={{ color: "#d32f2f" }}> *</span>
-                    </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "3px",
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Select
-                          className={
-                            languagesKnown.length <= 0 && !languagesKnownError
-                              ? "trainer_certificate_field"
-                              : languagesKnown.length >= 1 &&
-                                  !languagesKnownError
-                                ? "trainer_certificate_multiselect_two"
-                                : languagesKnown.length <= 0 &&
-                                    languagesKnownError
-                                  ? "trainer_certificate_field_error"
-                                  : "trainer_certificate_field"
-                          }
-                          style={{ width: "100%" }}
-                          suffixIcon={
-                            <IoCaretDownSharp color="rgba(0,0,0,0.54)" />
-                          }
-                          mode="multiple"
-                          allowClear
-                          showSearch
-                          value={languagesKnown}
-                          onChange={(value) => {
-                            setLanguagesKnown(value);
+                        <Radio value="Freelancer" style={{ fontSize: "13px" }}>
+                          Freelancer
+                        </Radio>
+                        <Radio value="Full Time" style={{ fontSize: "13px" }}>
+                          Full Time
+                        </Radio>
+                        <Radio value="Part Time" style={{ fontSize: "13px" }}>
+                          Part Time
+                        </Radio>
+                      </Radio.Group>
+                    </Col>
+                    <Col span={12}>
+                      <p className="trainer_skillslabel">Preferred Mode</p>
+                      <Checkbox.Group
+                        value={preferredMode}
+                        onChange={(checkedValues) =>
+                          setPreferredMode(checkedValues)
+                        }
+                        style={{ paddingTop: "6px" }}
+                      >
+                        <Checkbox value="Online" style={{ fontSize: "13px" }}>
+                          Online
+                        </Checkbox>
+                        <Checkbox value="Offline" style={{ fontSize: "13px" }}>
+                          Offline
+                        </Checkbox>
+                        <Checkbox value="Hybrid" style={{ fontSize: "13px" }}>
+                          Hybrid
+                        </Checkbox>
+                      </Checkbox.Group>
+                    </Col>
+                  </Row>
+
+                  <Row gutter={12} style={{ marginTop: "40px" }}>
+                    <Col span={12}>
+                      <div style={{ position: "relative", height: "auto" }}>
+                        <p className={"trainer_skillslabel"}>
+                          Languages Known
+                          <span style={{ color: "#d32f2f" }}> *</span>
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <Select
+                              className={
+                                languagesKnown.length <= 0 &&
+                                !languagesKnownError
+                                  ? "trainer_certificate_field"
+                                  : languagesKnown.length >= 1 &&
+                                      !languagesKnownError
+                                    ? "trainer_certificate_multiselect_two"
+                                    : languagesKnown.length <= 0 &&
+                                        languagesKnownError
+                                      ? "trainer_certificate_field_error"
+                                      : "trainer_certificate_field"
+                              }
+                              style={{ width: "100%" }}
+                              suffixIcon={
+                                <IoCaretDownSharp color="rgba(0,0,0,0.54)" />
+                              }
+                              mode="multiple"
+                              allowClear
+                              showSearch
+                              value={languagesKnown}
+                              onChange={(value) => {
+                                setLanguagesKnown(value);
+                                if (validationTrigger) {
+                                  setLanguagesKnownError(
+                                    selectValidator(value),
+                                  );
+                                }
+                              }}
+                              status={languagesKnownError ? "error" : ""}
+                              optionLabelProp="label"
+                              filterOption={(input, option) =>
+                                option.label
+                                  .toLowerCase()
+                                  .includes(input.toLowerCase())
+                              }
+                            >
+                              {languagesKnownOptions.map((item) => {
+                                const itemValue = item.id;
+                                const itemLabel = item.name;
+                                return (
+                                  <Select.Option
+                                    key={itemValue}
+                                    value={itemValue}
+                                    label={itemLabel}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        textWrap: "wrap",
+                                      }}
+                                    >
+                                      <Checkbox
+                                        checked={languagesKnown.includes(
+                                          itemValue,
+                                        )}
+                                        style={{ marginRight: 8 }}
+                                        className="common_antdmultiselect_checkbox"
+                                      />
+                                      {itemLabel}
+                                    </div>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          </div>
+                        </div>
+                        {languagesKnownError && (
+                          <p className="trainer_skills_error">
+                            Languages {languagesKnownError}
+                          </p>
+                        )}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div style={{ position: "relative", height: "auto" }}>
+                        <p className={"trainer_skillslabel"}>
+                          Current Trainer Status
+                          <span style={{ color: "#d32f2f" }}> *</span>
+                        </p>
+                        <CommonSelectField
+                          errorLabel="Current Trainer Status"
+                          required={true}
+                          options={[
+                            { id: "Active", name: "Active" },
+                            { id: "In-Active", name: "In-Active" },
+                          ]}
+                          onChange={(e) => {
+                            setTrainerCurrentStatus(e.target.value);
+                          }}
+                          value={trainerCurrentStatus}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+
+                  <Row gutter={12} style={{ marginTop: "40px" }}>
+                    <Col span={12}>
+                      <p className="trainer_skillslabel">Salary Expectation</p>
+                      <Input
+                        className="salary_expectation_input"
+                        prefix="₹"
+                        addonAfter={
+                          <Select
+                            className="salary_type_select"
+                            popupClassName="salary_type_select_dropdown"
+                            value={salaryType}
+                            onChange={(val) => setSalaryType(val)}
+                            style={{ width: 110 }}
+                            bordered={false}
+                            dropdownStyle={{ minWidth: 120 }}
+                          >
+                            <Select.Option value="Per session">
+                              Per Session
+                            </Select.Option>
+                            <Select.Option value="Per head">
+                              Per Head
+                            </Select.Option>
+                            <Select.Option value="Batch">Batch</Select.Option>
+                          </Select>
+                        }
+                        placeholder="Enter amount"
+                        value={salaryExpectation}
+                        onChange={(e) => setSalaryExpectation(e.target.value)}
+                        style={{ height: "auto", minHeight: "36px" }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <div style={{ position: "relative", height: "auto" }}>
+                        <p className={"trainer_skillslabel"}>
+                          Location<span style={{ color: "#d32f2f" }}> *</span>
+                        </p>
+                        <CommonInputField
+                          errorLabel="Location"
+                          required={true}
+                          onChange={(e) => {
+                            setLocation(e.target.value);
                             if (validationTrigger) {
-                              setLanguagesKnownError(selectValidator(value));
+                              setLocationError(
+                                addressValidator(e.target.value),
+                              );
                             }
                           }}
-                          status={languagesKnownError ? "error" : ""}
-                          optionLabelProp="label"
-                          filterOption={(input, option) =>
-                            option.label
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
-                        >
-                          {languagesKnownOptions.map((item) => {
-                            const itemValue = item.id;
-                            const itemLabel = item.name;
-                            return (
-                              <Select.Option
-                                key={itemValue}
-                                value={itemValue}
-                                label={itemLabel}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    textWrap: "wrap",
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={languagesKnown.includes(itemValue)}
-                                    style={{ marginRight: 8 }}
-                                    className="common_antdmultiselect_checkbox"
-                                  />
-                                  {itemLabel}
-                                </div>
-                              </Select.Option>
-                            );
-                          })}
-                        </Select>
+                          value={location}
+                          error={locationError}
+                          errorFontSize={"9px"}
+                        />
                       </div>
-                    </div>
-                    {languagesKnownError && (
-                      <p className="trainer_skills_error">
-                        Languages {languagesKnownError}
-                      </p>
-                    )}
-                  </div>
+                    </Col>
+                  </Row>
                 </Col>
-                <Col span={6}>
-                  <CommonSelectField
-                    label={"Current Trainer Status"}
-                    required={true}
-                    options={[
-                      { id: "Active", name: "Active" },
-                      { id: "In-Active", name: "In-Active" },
-                    ]}
-                    onChange={(e) => {
-                      setTrainerCurrentStatus(e.target.value);
-                    }}
-                    value={trainerCurrentStatus}
-                  />
-                </Col>
-                <Col span={12}>
+
+                <Col span={12} style={{ display: "flex", flexDirection: "column" }}>
                   <p className={"trainer_skillslabel"}>Additional Notes</p>
                   <CommonTextArea
                     placeholder="Enter any additional notes..."
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
-                    rows={3}
                     maxLength={300}
-                    showCount
+                    style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                    textAreaStyle={{ flex: 1, resize: "none" }}
                   />
                 </Col>
               </Row>

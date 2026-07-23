@@ -292,7 +292,16 @@ export default function Settings() {
       const feesPendingModule = allPermissions.filter(
         (f) => f.section === "Fees Pending Module",
       );
-      const updateFeesPendingModule = feesPendingModule.map((u) => {
+
+      const feesPendingCustomOrder = ["Fees Pending Page", "Add Part Payment"];
+
+      const feesPendingSortedArray = feesPendingModule.sort(
+        (a, b) =>
+          feesPendingCustomOrder.indexOf(a.permission_name) -
+          feesPendingCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateFeesPendingModule = feesPendingSortedArray.map((u) => {
         return { ...u, checked: false };
       });
       dispatch(storeFeesPendingModulePermissionList(updateFeesPendingModule));

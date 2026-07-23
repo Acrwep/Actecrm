@@ -33,6 +33,7 @@ export default function CommonSelectField({
   borderLeftNone,
   onFocus,
   onBlur,
+  errorLabel,
 }) {
   return (
     <div style={style}>
@@ -161,7 +162,7 @@ export default function CommonSelectField({
                 fontSize: errorFontSize ? errorFontSize : "10px",
               }}
             >
-              {label + " " + error}
+              {(errorLabel || label || "") + (errorLabel || label ? " " : "") + error}
             </FormHelperText>
           </div>
         )}

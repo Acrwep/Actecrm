@@ -34,6 +34,7 @@ export default function PhoneWithCountry({
   disabled = false,
   disableCountrySelect = false,
   errorFontSize,
+  errorLabel,
   ...restProps
 }) {
   const [internalValue, setInternalValue] = React.useState("");
@@ -179,7 +180,7 @@ export default function PhoneWithCountry({
         helperText={
           error && (
             <span style={{ fontSize: errorFontSize || "11px" }}>
-              {label !== "Paid Now" && label}
+              {(errorLabel || label) !== "Paid Now" && (errorLabel || label)}
               {error}
             </span>
           )
