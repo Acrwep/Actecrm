@@ -1059,6 +1059,15 @@ export const updatefeedbackForCustomer = async (payload) => {
   }
 };
 
+export const verifyReview = async (payload) => {
+  try {
+    const response = await api.put("/api/verifyReview", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const generateCertForCustomer = async (payload) => {
   try {
     const response = await api.post("/api/generateCertificate", payload);

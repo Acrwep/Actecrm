@@ -14,20 +14,13 @@ import {
   Upload,
 } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { FaRegUser } from "react-icons/fa";
+import { PiSealCheckFill } from "react-icons/pi";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
-import { IoFilter } from "react-icons/io5";
 import { FaUserAlt } from "react-icons/fa";
 import { MdGroups } from "react-icons/md";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
-import { LuCircleUser } from "react-icons/lu";
+import { FaLinkedinIn } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { FiFileText } from "react-icons/fi";
-import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
 import { GiCheckMark } from "react-icons/gi";
 import { FaXmark } from "react-icons/fa6";
@@ -286,7 +279,8 @@ export default function TrainerPayment() {
 
   const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
     useState(false);
-  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] = useState(null);
+  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
+    useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   //review modal
@@ -294,8 +288,6 @@ export default function TrainerPayment() {
     useState(false);
   const [reviewScreenshot, setReviewScreenshot] = useState("");
   const [reviewModalTitle, setReviewModalTitle] = useState("");
-
-
 
   const handlePreview = async (file) => {
     if (file.url) {
@@ -589,6 +581,9 @@ export default function TrainerPayment() {
                 }}
               >
                 <FcGoogle size={15} />
+                {record?.student_details?.is_google_verified === 1 && (
+                  <PiSealCheckFill size={13} className="google_verified_icon" />
+                )}
               </div>
             ) : (
               <Tooltip title="Google Review Not Collected">
@@ -607,6 +602,9 @@ export default function TrainerPayment() {
                 }}
               >
                 <FaLinkedinIn size={14} color="#0a66c2" />
+                {record?.student_details?.is_linkedin_verified === 1 && (
+                  <PiSealCheckFill size={13} className="google_verified_icon" />
+                )}
               </div>
             ) : (
               <Tooltip title="LinkedIn Review Not Collected">
@@ -1147,6 +1145,13 @@ export default function TrainerPayment() {
                           }}
                         >
                           <FcGoogle size={15} />
+                          {record?.student_details?.is_google_verified ===
+                            1 && (
+                            <PiSealCheckFill
+                              size={13}
+                              className="google_verified_icon"
+                            />
+                          )}
                         </div>
                       ) : (
                         <Tooltip title="Google Review Not Collected">
@@ -1170,6 +1175,13 @@ export default function TrainerPayment() {
                           }}
                         >
                           <FaLinkedinIn size={14} color="#0a66c2" />
+                          {record?.student_details?.is_linkedin_verified ===
+                            1 && (
+                            <PiSealCheckFill
+                              size={13}
+                              className="google_verified_icon"
+                            />
+                          )}
                         </div>
                       ) : (
                         <Tooltip title="LinkedIn Review Not Collected">
@@ -1517,7 +1529,9 @@ export default function TrainerPayment() {
                                 className="trainers_action_icons"
                                 style={{ cursor: "pointer", marginLeft: "4px" }}
                                 onClick={() => {
-                                  setSelectedHistoryCustomerId(student.customer_id);
+                                  setSelectedHistoryCustomerId(
+                                    student.customer_id,
+                                  );
                                   setIsOpenCustomerHistoryDrawer(true);
                                   setTimeout(() => {
                                     const container = document.getElementById(

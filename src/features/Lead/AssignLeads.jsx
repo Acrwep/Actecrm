@@ -122,7 +122,8 @@ export default function AssignLeads({
   const [junkCommentsError, setJunkCommentsError] = useState("");
   const [liveLeadId, setLiveLeadId] = useState(null);
   //customer history usestates
-  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] = useState(false);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   //loading

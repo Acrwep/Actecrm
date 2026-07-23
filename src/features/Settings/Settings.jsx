@@ -273,6 +273,7 @@ export default function Settings() {
         "Passedout Process",
         "Update Passedout Process",
         "Update Certificate Details",
+        "Review Verify",
         "Others Checkbox",
         "Download Customers Data",
       ];

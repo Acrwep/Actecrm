@@ -28,14 +28,15 @@ import "./styles.css";
 import {
   getAllDownlineUsers,
   getCustomerById,
-  getCustomerFullHistory,
   getCustomers,
   getTableColumns,
   updateTableColumns,
+  verifyReview,
   viewCertForCustomer,
 } from "../ApiService/action";
 import {
   customersStatusDisplay,
+  formatToBackendIST,
   getCurrentandPreviousweekDate,
   isWithin30Days,
 } from "../Common/Validation";
@@ -63,7 +64,7 @@ import { MdOutlineSwapVert } from "react-icons/md";
 import CommonDnd from "../Common/CommonDnd";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCopy } from "react-icons/fa6";
-import { LuCircleUser } from "react-icons/lu";
+import { PiSealCheckFill } from "react-icons/pi";
 import { GrCertificate } from "react-icons/gr";
 import { CloseOutlined } from "@ant-design/icons";
 import { LuFileClock } from "react-icons/lu";
@@ -156,10 +157,13 @@ export default function Customers() {
   const [certificateName, setCertificateName] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [linkedinLoading, setLinkedinLoading] = useState(false);
+  const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
 
   //customer history usestates
-  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] = useState(false);
-  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] = useState(null);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
+    useState(null);
 
   const prev = () => setStepIndex(stepIndex - 1);
   const [loading, setLoading] = useState(true);
@@ -1638,11 +1642,18 @@ export default function Customers() {
                           className="customers_review_google_active"
                           onClick={() => {
                             setReviewModalTitle("Google Review");
+                            setCustomerDetails(record);
                             setReviewScreenshot(record?.google_review);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
                           <FcGoogle size={15} />
+                          {record?.is_google_verified === 1 && (
+                            <PiSealCheckFill
+                              size={13}
+                              className="google_verified_icon"
+                            />
+                          )}
                         </div>
                       ) : (
                         <Tooltip title="Google Review Not Collected">
@@ -1659,11 +1670,18 @@ export default function Customers() {
                           className="customers_review_linkedin_active"
                           onClick={() => {
                             setReviewModalTitle("LinkedIn Review");
+                            setCustomerDetails(record);
                             setReviewScreenshot(record?.linkedin_review);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
                           <FaLinkedinIn size={14} color="#0a66c2" />
+                          {record?.is_linkedin_verified === 1 && (
+                            <PiSealCheckFill
+                              size={13}
+                              className="google_verified_icon"
+                            />
+                          )}
                         </div>
                       ) : (
                         <Tooltip title="LinkedIn Review Not Collected">
@@ -2768,8 +2786,6 @@ export default function Customers() {
     );
   };
 
-
-
   const handleSearch = (e) => {
     setSearchValue(e.target.value);
     setLoading(true);
@@ -2891,32 +2907,6 @@ export default function Customers() {
     };
   };
 
-  const getHistoryStatusColor = (status) => {
-    if (
-      [
-        "Verified",
-        "Assigned",
-        "Completed",
-        "Going",
-        "Added",
-        "created",
-        "Generated",
-        "Scheduled",
-      ].some((s) => status.includes(s))
-    ) {
-      return "green";
-    }
-    if (status.includes("Awaiting")) return "gray";
-    if (
-      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
-        status.includes(s),
-      )
-    ) {
-      return "#d32f2f";
-    }
-    return "#000"; // default black
-  };
-
   const handleStatusMismatch = () => {
     CommonMessage("error", "Status Mismatch. Contact Support Team");
   };
@@ -2939,6 +2929,46 @@ export default function Customers() {
     //cert usestaes
     setIsCertGenerated(false);
     setCertificateName("");
+  };
+
+  const handleVerifyReview = async () => {
+    setVerifyButtonLoading(true);
+    const payload = {
+      customer_id: customerDetails?.id,
+      type: reviewModalTitle.includes("Google") ? "Google" : "Linkedin",
+      is_verified: 1,
+      verified_by: loginUserId,
+      verified_date: formatToBackendIST(new Date()),
+    };
+    try {
+      await verifyReview(payload);
+      setTimeout(() => {
+        setIsOpenReviewScreenshotModal(false);
+        setReviewScreenshot("");
+        setReviewModalTitle("");
+        setVerifyButtonLoading(false);
+        CommonMessage("success", "Review Verified");
+        getCustomersData(
+          selectedDates[0],
+          selectedDates[1],
+          dateFilterType,
+          searchValue,
+          selectedOrigin,
+          status,
+          allDownliners,
+          branchOptions,
+          pagination.page,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setVerifyButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
   };
 
   return (
@@ -5308,8 +5338,46 @@ export default function Customers() {
           setIsOpenReviewScreenshotModal(false);
           setReviewScreenshot("");
           setReviewModalTitle("");
+          setVerifyButtonLoading(false);
+          setCustomerDetails(null);
         }}
-        footer={false}
+        // footer={false}
+        footer={
+          permissions.includes("Review Verify")
+            ? [
+                <div style={{ marginTop: "20px" }}>
+                  {verifyButtonLoading ? (
+                    <Button
+                      key="create"
+                      type="primary"
+                      className="leads_coursemodal_loading_createbutton"
+                    >
+                      <CommonSpinner />
+                    </Button>
+                  ) : (
+                    <>
+                      {reviewModalTitle.includes("Google") &&
+                      customerDetails?.is_google_verified == 1 ? (
+                        ""
+                      ) : reviewModalTitle.includes("LinkedIn") &&
+                        customerDetails?.is_linkedin_verified == 1 ? (
+                        ""
+                      ) : (
+                        <Button
+                          key="create"
+                          type="primary"
+                          className="leads_coursemodal_createbutton"
+                          onClick={handleVerifyReview}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>,
+              ]
+            : false
+        }
         width="32%"
         className="customer_paymentscreenshot_modal"
       >
