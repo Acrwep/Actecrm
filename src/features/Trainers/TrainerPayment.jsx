@@ -23,8 +23,9 @@ import { MdGroups } from "react-icons/md";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
 import { LuCircleUser } from "react-icons/lu";
+import { FcGoogle } from "react-icons/fc";
 import { FiFileText } from "react-icons/fi";
 import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
@@ -288,6 +289,11 @@ export default function TrainerPayment() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+  //review modal
+  const [isOpenReviewScreenshotModal, setIsOpenReviewScreenshotModal] =
+    useState(false);
+  const [reviewScreenshot, setReviewScreenshot] = useState("");
+  const [reviewModalTitle, setReviewModalTitle] = useState("");
 
   const getCustomerHistoryData = async (customerid) => {
     setIsOpenCustomerHistoryDrawer(true);
@@ -584,20 +590,6 @@ export default function TrainerPayment() {
       render: (text) => renderCellWithBackground(text),
     },
     {
-      title: "Google Review",
-      key: "is_google",
-      dataIndex: ["student_details", "is_google"],
-      width: 120,
-      render: (text) => renderCellWithBackground(text),
-    },
-    {
-      title: "LinkedIn Review",
-      key: "is_linkedin",
-      dataIndex: ["student_details", "is_linkedin"],
-      width: 130,
-      render: (text) => renderCellWithBackground(text),
-    },
-    {
       title: "Student Acknowledgement",
       key: "is_acknowledged",
       dataIndex: ["student_details", "is_acknowledged"],
@@ -619,6 +611,53 @@ export default function TrainerPayment() {
             },
           },
         ),
+    },
+    {
+      title: "Review Status",
+      key: "review_status",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <div className="customers_review_container">
+            {record?.student_details?.google_review ? (
+              <div
+                className="customers_review_google_active"
+                onClick={() => {
+                  setReviewModalTitle("Google Review");
+                  setReviewScreenshot(record?.student_details?.google_review);
+                  setIsOpenReviewScreenshotModal(true);
+                }}
+              >
+                <FcGoogle size={15} />
+              </div>
+            ) : (
+              <Tooltip title="Google Review Not Collected">
+                <div className="customers_review_inactive">
+                  <FcGoogle size={15} className="customers_review_grayscale" />
+                </div>
+              </Tooltip>
+            )}
+            {record?.student_details?.linkedin_review ? (
+              <div
+                className="customers_review_linkedin_active"
+                onClick={() => {
+                  setReviewModalTitle("LinkedIn Review");
+                  setReviewScreenshot(record?.student_details?.linkedin_review);
+                  setIsOpenReviewScreenshotModal(true);
+                }}
+              >
+                <FaLinkedinIn size={14} color="#0a66c2" />
+              </div>
+            ) : (
+              <Tooltip title="LinkedIn Review Not Collected">
+                <div className="customers_review_inactive">
+                  <FaLinkedinIn size={14} color="#8c8c8c" />
+                </div>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     // {
     //   title: "Feedback Submitted",
@@ -1165,6 +1204,60 @@ export default function TrainerPayment() {
                 ...col,
                 width: 140,
                 render: (text) => renderCellWithBackground(text),
+              };
+            case "review_status":
+              return {
+                ...col,
+                width: 120,
+                render: (text, record) => {
+                  return (
+                    <div className="customers_review_container">
+                      {record?.student_details?.google_review ? (
+                        <div
+                          className="customers_review_google_active"
+                          onClick={() => {
+                            setReviewModalTitle("Google Review");
+                            setReviewScreenshot(
+                              record?.student_details?.google_review,
+                            );
+                            setIsOpenReviewScreenshotModal(true);
+                          }}
+                        >
+                          <FcGoogle size={15} />
+                        </div>
+                      ) : (
+                        <Tooltip title="Google Review Not Collected">
+                          <div className="customers_review_inactive">
+                            <FcGoogle
+                              size={15}
+                              className="customers_review_grayscale"
+                            />
+                          </div>
+                        </Tooltip>
+                      )}
+                      {record?.student_details?.linkedin_review ? (
+                        <div
+                          className="customers_review_linkedin_active"
+                          onClick={() => {
+                            setReviewModalTitle("LinkedIn Review");
+                            setReviewScreenshot(
+                              record?.student_details?.linkedin_review,
+                            );
+                            setIsOpenReviewScreenshotModal(true);
+                          }}
+                        >
+                          <FaLinkedinIn size={14} color="#0a66c2" />
+                        </div>
+                      ) : (
+                        <Tooltip title="LinkedIn Review Not Collected">
+                          <div className="customers_review_inactive">
+                            <FaLinkedinIn size={14} color="#8c8c8c" />
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
+                  );
+                },
               };
             case "is_google":
               return {
@@ -3100,6 +3193,34 @@ export default function TrainerPayment() {
         onCancel={() => setPreviewOpen(false)}
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
+
+      {/* review screenshot modal */}
+      <Modal
+        title={reviewModalTitle}
+        open={isOpenReviewScreenshotModal}
+        onCancel={() => {
+          setIsOpenReviewScreenshotModal(false);
+          setReviewScreenshot("");
+          setReviewModalTitle("");
+        }}
+        footer={false}
+        width="32%"
+        className="customer_paymentscreenshot_modal"
+      >
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {reviewScreenshot ? (
+              <img
+                src={`data:image/png;base64,${reviewScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
+        </div>
       </Modal>
     </div>
   );
