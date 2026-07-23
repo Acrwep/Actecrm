@@ -122,12 +122,9 @@ export default function AssignLeads({
   const [junkCommentsError, setJunkCommentsError] = useState("");
   const [liveLeadId, setLiveLeadId] = useState(null);
   //customer history usestates
-  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
-    useState(false);
-  const [customerDetails, setCustomerDetails] = useState(null);
-  const [customerHistory, setCustomerHistory] = useState([]);
-  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
-  const [viewCustomerLoading, setViewCustomerLoading] = useState(false);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   //loading
   const [loading, setLoading] = useState(true);
   //pagination
@@ -165,73 +162,6 @@ export default function AssignLeads({
     }
 
     return { text, hours: totalHours };
-  };
-
-  const getCustomerData = async (customer_id) => {
-    setViewCustomerLoading(true);
-    try {
-      const response = await getCustomerById(customer_id);
-      console.log("customer response", response);
-      const customerDetails = response?.data?.data || null;
-      setCustomerDetails(customerDetails);
-      setTimeout(() => {
-        getCustomerHistoryData(customer_id ? customer_id : null);
-      }, 300);
-    } catch (error) {
-      setViewCustomerLoading(false);
-      console.log("getcustomer by id error", error);
-      setCustomerDetails(null);
-    }
-  };
-
-  const getCustomerHistoryData = async (customerid) => {
-    setTimeout(() => {
-      setIsOpenCustomerHistoryDrawer(true);
-    }, 300);
-    setCustomerHistoryLoading(true);
-    try {
-      const response = await getCustomerFullHistory(customerid);
-      const customer_history = response?.data?.data || [];
-      const reverse_data = customer_history.reverse();
-      setCustomerHistory(reverse_data);
-      console.log("history response", response);
-      setTimeout(() => {
-        setCustomerHistoryLoading(false);
-      }, 300);
-    } catch (error) {
-      setCustomerHistoryLoading(false);
-      console.log("history response", error);
-    } finally {
-      setTimeout(() => {
-        setViewCustomerLoading(false);
-      }, 300);
-    }
-  };
-
-  const getHistoryStatusColor = (status) => {
-    if (
-      [
-        "Verified",
-        "Assigned",
-        "Completed",
-        "Going",
-        "Added",
-        "created",
-        "Generated",
-        "Scheduled",
-      ].some((s) => status.includes(s))
-    ) {
-      return "green";
-    }
-    if (status.includes("Awaiting")) return "gray";
-    if (
-      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
-        status.includes(s),
-      )
-    ) {
-      return "#d32f2f";
-    }
-    return "#000"; // default black
   };
 
   const nonChangeColumns = [
@@ -597,13 +527,12 @@ export default function AssignLeads({
                       size={14}
                       style={{
                         marginTop: "3px",
-                        cursor: viewCustomerLoading ? "default" : "pointer",
-                        opacity: viewCustomerLoading ? 0.7 : 1,
+                        cursor: "pointer",
                       }}
-                      onClick={() =>
-                        !viewCustomerLoading &&
-                        getCustomerData(record?.customer_id ?? null)
-                      }
+                      onClick={() => {
+                        setSelectedCustomerId(record?.customer_id ?? null);
+                        setIsOpenCustomerHistoryDrawer(true);
+                      }}
                     />
                   </Tooltip>
                 </div>
@@ -1960,298 +1889,14 @@ export default function AssignLeads({
       </Drawer>
 
       {/* customer history drawer */}
-      <Drawer
-        title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>Customer History</span>
-            <div className="customer_history_drawer_totalcount_container">
-              <span style={{ fontWeight: 600 }}>
-                Total Activity: {customerHistory?.length || 0}
-              </span>
-              <span style={{ fontWeight: 600 }}>
-                Current Status:{" "}
-                <span
-                  style={{
-                    color: getHistoryStatusColor(
-                      customerHistory?.[0]?.status || "N/A",
-                    ),
-                  }}
-                >
-                  {" "}
-                  {customerHistory && customerHistory.length > 0
-                    ? customerHistory[0].status
-                    : "N/A"}
-                </span>
-              </span>
-            </div>
-          </div>
-        }
-        open={isOpenCustomerHistoryDrawer}
+      <CustomerHistory
+        customerId={selectedCustomerId}
+        isOpen={isOpenCustomerHistoryDrawer}
         onClose={() => {
           setIsOpenCustomerHistoryDrawer(false);
-          setCustomerDetails(null);
+          setSelectedCustomerId(null);
         }}
-        width="50%"
-        style={{ position: "relative" }}
-        className="customer_history_drawer"
-      >
-        <div
-          className="customer_statusupdate_drawer_profileContainer"
-          id="customer_history_profilecontainer"
-        >
-          {customerDetails && customerDetails.profile_image ? (
-            // <img
-            //   src={customerDetails.profile_image}
-            //   className="cutomer_profileimage"
-            // />
-            <Upload
-              listType="picture-circle"
-              fileList={[
-                {
-                  uid: "-1",
-                  name: "profile.jpg",
-                  status: "done",
-                  url: customerDetails && customerDetails.profile_image, // Base64 string directly usable
-                },
-              ]}
-              onPreview={handlePreview}
-              onRemove={false}
-              showUploadList={{
-                showRemoveIcon: false,
-              }}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              accept=".png,.jpg,.jpeg"
-            ></Upload>
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
-
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {customerDetails && customerDetails.course_name
-                ? customerDetails.course_name
-                : "-"}
-            </p>
-          </div>
-        </div>
-
-        <Row
-          gutter={16}
-          style={{
-            marginTop: "20px",
-            padding: "0px 0px 0px 24px",
-          }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.name
-                      ? customerDetails.name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.email
-                      ? customerDetails.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.phone
-                    ? customerDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Area</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {" "}
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={`${
-                    customerDetails && customerDetails.lead_assigned_to_id
-                      ? customerDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    customerDetails && customerDetails.lead_assigned_to_name
-                      ? customerDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.course_name
-                      ? customerDetails.course_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <div style={{ marginTop: "30px" }}>
-          {customerHistoryLoading ? (
-            <CommonSpinner />
-          ) : (
-            <CustomerHistory
-              data={customerHistory}
-              customerDetails={customerDetails}
-            />
-          )}
-        </div>
-      </Drawer>
+      />
     </div>
   );
 }

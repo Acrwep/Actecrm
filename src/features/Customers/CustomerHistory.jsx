@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Col, Modal, Row, Timeline, Divider } from "antd";
+import {
+  Col,
+  Modal,
+  Row,
+  Timeline,
+  Divider,
+  Drawer,
+  Upload,
+  Skeleton,
+} from "antd";
 import moment from "moment";
-import { FaRegEye } from "react-icons/fa";
+import { FaRegEye, FaRegUser } from "react-icons/fa";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { MdOutlineEmail } from "react-icons/md";
+import { IoCallOutline, IoLocationOutline } from "react-icons/io5";
 import PrismaZoom from "react-prismazoom";
 import { LuCircleCheck } from "react-icons/lu";
 import { FaRegCircleXmark } from "react-icons/fa6";
@@ -17,11 +29,20 @@ import {
   getCustomersPaymentHistory,
   viewCertForCustomer,
   viewPaymentInvoice,
+  getCustomerById,
+  getCustomerFullHistory,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonSpinner from "../Common/CommonSpinner";
 
-export default function CustomerHistory({ data = [], customerDetails }) {
+export default function CustomerHistory({ customerId, isOpen, onClose }) {
+  const [customerDetails, setCustomerDetails] = useState(null);
+  const [customerHistory, setCustomerHistory] = useState([]);
+  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+  const [viewCustomerLoading, setViewCustomerLoading] = useState(false);
+
   const [isOpenProofViewModal, setIsOpenProofViewModal] = useState(false);
   const [proofScreenshotBase64, setProofScreenshotBase64] = useState("");
   const [imgType, setImgType] = useState("");
@@ -30,20 +51,52 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [certificateName, setCertificateName] = useState("");
   const [certHtmlContent, setCertHtmlContent] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   //payment usestates
   const [paymentFullDetails, setPaymentFullDetails] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
 
   useEffect(() => {
-    getPaymentHistoryData();
-  }, []);
+    if (isOpen && customerId) {
+      getCustomerData(customerId);
+    } else {
+      setCustomerDetails(null);
+      setCustomerHistory([]);
+      setPaymentFullDetails(null);
+      setPaymentHistory([]);
+    }
+  }, [isOpen, customerId]);
 
-  const getPaymentHistoryData = async () => {
+  const getCustomerData = async (id) => {
+    setViewCustomerLoading(true);
+    setCustomerHistoryLoading(true);
     try {
-      const response = await getCustomersPaymentHistory(
-        customerDetails?.lead_id,
-      );
-      console.log("particular customer payment history", response);
+      const response = await getCustomerById(id);
+      const details = response?.data?.data || null;
+      setCustomerDetails(details);
+
+      const historyResponse = await getCustomerFullHistory(id);
+      const history = historyResponse?.data?.data || [];
+      setCustomerHistory(history.reverse());
+
+      if (details?.lead_id) {
+        getPaymentHistoryData(details.lead_id);
+      }
+    } catch (error) {
+      console.log("Error fetching customer history:", error);
+      setCustomerDetails(null);
+      setCustomerHistory([]);
+    } finally {
+      setViewCustomerLoading(false);
+      setCustomerHistoryLoading(false);
+    }
+  };
+
+  const getPaymentHistoryData = async (leadId) => {
+    if (!leadId) return;
+    try {
+      const response = await getCustomersPaymentHistory(leadId);
       const payment_full_details = response?.data?.data || null;
       const payment_history = response?.data?.data?.payment_trans || [];
 
@@ -54,6 +107,50 @@ export default function CustomerHistory({ data = [], customerDetails }) {
       setPaymentHistory([]);
       console.log("particular customer payment history error", error);
     }
+  };
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+      console.log("urlllll", dataUrl);
+      setPreviewImage(dataUrl); // Show in Modal
+      setPreviewOpen(true);
+    };
+  };
+
+  const getHistoryStatusColor = (status) => {
+    if (
+      [
+        "Verified",
+        "Assigned",
+        "Completed",
+        "Going",
+        "Added",
+        "created",
+        "Generated",
+        "Scheduled",
+      ].some((s) => status.includes(s))
+    ) {
+      return "green";
+    }
+    if (status.includes("Awaiting")) return "gray";
+    if (
+      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
+        status.includes(s),
+      )
+    ) {
+      return "#d32f2f";
+    }
+    return "#000"; // default black
   };
 
   const getImageTypeFromBase64 = (base64) => {
@@ -172,7 +269,7 @@ export default function CustomerHistory({ data = [], customerDetails }) {
     }
   };
 
-  const items = data.map((item) => ({
+  const items = customerHistory.map((item) => ({
     key: item.id,
     dot:
       item.status.includes("Verified") ||
@@ -717,8 +814,379 @@ export default function CustomerHistory({ data = [], customerDetails }) {
   }));
 
   return (
-    <div>
-      <Timeline mode="left" items={items} />
+    <Drawer
+      title={
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>Customer History</span>
+          <div className="customer_history_drawer_totalcount_container">
+            <span style={{ fontWeight: 600 }}>
+              Total Activity: {customerHistory?.length || 0}
+            </span>
+            <span style={{ fontWeight: 600 }}>
+              Current Status:{" "}
+              <span
+                style={{
+                  color: getHistoryStatusColor(
+                    customerHistory?.[0]?.status || "N/A",
+                  ),
+                }}
+              >
+                {" "}
+                {customerHistory && customerHistory.length > 0
+                  ? customerHistory[0].status
+                  : "N/A"}
+              </span>
+            </span>
+          </div>
+        </div>
+      }
+      open={isOpen}
+      onClose={onClose}
+      width="50%"
+      style={{ position: "relative" }}
+      className="customer_history_drawer"
+    >
+      <div style={{ padding: viewCustomerLoading ? "24px" : "0" }}>
+        {viewCustomerLoading ? (
+          <>
+            <div className="customer_profileContainer">
+              <Skeleton.Avatar active size={90} shape="circle" />
+              <div style={{ marginLeft: "20px", flex: 1 }}>
+                <Skeleton
+                  active
+                  paragraph={{ rows: 2 }}
+                  title={{ width: 150 }}
+                />
+              </div>
+            </div>
+
+            <Row
+              gutter={16}
+              style={{ marginTop: "30px", padding: "0px 0px 0px 24px" }}
+            >
+              <Col span={12}>
+                {[1, 2, 3].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </Col>
+              <Col span={12}>
+                {[1, 2, 3].map((i) => (
+                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "80%" }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </Col>
+            </Row>
+          </>
+        ) : (
+          <>
+            <div
+              className="customer_statusupdate_drawer_profileContainer"
+              id="customer_history_profilecontainer"
+            >
+              {customerDetails && customerDetails.profile_image ? (
+                <Upload
+                  listType="picture-circle"
+                  fileList={[
+                    {
+                      uid: "-1",
+                      name: "profile.jpg",
+                      status: "done",
+                      url: customerDetails && customerDetails.profile_image,
+                    },
+                  ]}
+                  onPreview={handlePreview}
+                  onRemove={false}
+                  showUploadList={{
+                    showRemoveIcon: false,
+                  }}
+                  beforeUpload={() => false}
+                  style={{ width: 90, height: 90 }}
+                  accept=".png,.jpg,.jpeg"
+                ></Upload>
+              ) : (
+                <FaRegUser size={50} color="#333" />
+              )}
+
+              <div>
+                <p className="customer_nametext">
+                  {" "}
+                  {customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"}
+                </p>
+                <p className="customer_coursenametext">
+                  {" "}
+                  {customerDetails && customerDetails.course_name
+                    ? customerDetails.course_name
+                    : "-"}
+                </p>
+                <p className="customer_coursenametext">
+                  {" "}
+                  Created At:{" "}
+                  {customerDetails && customerDetails.created_date
+                    ? moment(customerDetails.created_date).format("DD/MM/YYYY")
+                    : "-"}
+                </p>
+              </div>
+            </div>
+
+            <Row
+              gutter={16}
+              style={{
+                marginTop: "20px",
+                padding: "0px 0px 0px 24px",
+              }}
+            >
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegCircleUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Name</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.name
+                          ? customerDetails.name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <MdOutlineEmail size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Email</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.email
+                          ? customerDetails.email
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoCallOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Mobile</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.phone
+                        ? customerDetails.phone
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <IoLocationOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Area</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {" "}
+                      {customerDetails && customerDetails.current_location
+                        ? customerDetails.current_location
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <FaRegUser size={15} color="gray" />
+                      <p className="customerdetails_rowheading">
+                        Lead Executive
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={`${
+                        customerDetails && customerDetails.lead_assigned_to_id
+                          ? customerDetails.lead_assigned_to_id
+                          : "-"
+                      } (${
+                        customerDetails && customerDetails.lead_assigned_to_name
+                          ? customerDetails.lead_assigned_to_name
+                          : "-"
+                      })`}
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col span={12}>
+                <Row>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.course_name
+                          ? customerDetails.course_name
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Branch</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.branch_name
+                        ? customerDetails.branch_name
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Batch Track</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails && customerDetails.batch_tracking
+                        ? customerDetails.batch_tracking
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          </>
+        )}
+      </div>
+
+      <Divider className="customer_statusupdate_divider" />
+
+      <div style={{ marginTop: "30px", padding: "0 24px" }}>
+        <Skeleton
+          loading={customerHistoryLoading || viewCustomerLoading}
+          active
+          paragraph={{ rows: 4 }}
+        >
+          <Timeline mode="left" items={items} />
+        </Skeleton>
+      </div>
 
       <Modal
         title="Preview"
@@ -803,6 +1271,15 @@ export default function CustomerHistory({ data = [], customerDetails }) {
           }
         />
       </Modal>
-    </div>
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
+    </Drawer>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -240,6 +240,7 @@ export const TimerPill = ({ updatedDate, deadlineDate, status, paidDate }) => {
 
 export default function TrainerPayment() {
   const location = useLocation();
+  const navigate = useNavigate();
   const scrollRef = useRef();
   const trainerPayslipRef = useRef();
   const emailTemplateRef = useRef();
@@ -285,32 +286,16 @@ export default function TrainerPayment() {
 
   const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
     useState(false);
-  const [customerHistory, setCustomerHistory] = useState([]);
+  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
   //review modal
   const [isOpenReviewScreenshotModal, setIsOpenReviewScreenshotModal] =
     useState(false);
   const [reviewScreenshot, setReviewScreenshot] = useState("");
   const [reviewModalTitle, setReviewModalTitle] = useState("");
 
-  const getCustomerHistoryData = async (customerid) => {
-    setIsOpenCustomerHistoryDrawer(true);
-    setCustomerHistoryLoading(true);
-    try {
-      const response = await getCustomerFullHistory(customerid);
-      const customer_history = response?.data?.data || [];
-      const reverse_data = customer_history.reverse();
-      setCustomerHistory(reverse_data);
-      setTimeout(() => {
-        setCustomerHistoryLoading(false);
-      }, 300);
-    } catch (error) {
-      setCustomerHistoryLoading(false);
-      console.log("history response", error);
-    }
-  };
+
 
   const handlePreview = async (file) => {
     if (file.url) {
@@ -330,31 +315,6 @@ export default function TrainerPayment() {
     };
   };
 
-  const getHistoryStatusColor = (status) => {
-    if (
-      [
-        "Verified",
-        "Assigned",
-        "Completed",
-        "Going",
-        "Added",
-        "created",
-        "Generated",
-        "Scheduled",
-      ].some((s) => status.includes(s))
-    ) {
-      return "green";
-    }
-    if (status.includes("Awaiting")) return "gray";
-    if (
-      ["Escalated", "Rejected", "Partially", "Discontinued"].some((s) =>
-        status.includes(s),
-      )
-    ) {
-      return "red";
-    }
-    return "blue";
-  };
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -908,20 +868,6 @@ export default function TrainerPayment() {
         return {
           children: (
             <div className="trainers_actionbuttonContainer">
-              {/* <AiOutlineEdit
-                size={18}
-                className="trainers_action_icons"
-                onClick={() => {
-                  if (record?.status == "Requested") {
-                    handleEdit(record);
-                  } else {
-                    CommonMessage(
-                      "error",
-                      `Unable to update in ${record?.status} status`,
-                    );
-                  }
-                }}
-              /> */}
               <Tooltip
                 placement="top"
                 title="View Details"
@@ -948,7 +894,7 @@ export default function TrainerPayment() {
                   <Tooltip
                     key={index}
                     placement="left"
-                    title={`View History: ${student.customer_name || "Student"}`}
+                    title="View Customer Track"
                     trigger={["hover", "click"]}
                   >
                     <LuFileClock
@@ -956,36 +902,13 @@ export default function TrainerPayment() {
                       className="trainers_action_icons"
                       style={{ cursor: "pointer", marginLeft: "4px" }}
                       onClick={() => {
-                        getParticularCustomerDetails(student.customer_id, true);
-                        getCustomerHistoryData(student.customer_id);
-                        setTimeout(() => {
-                          const container = document.getElementById(
-                            "customer_history_profilecontainer",
-                          );
-                          if (container) {
-                            container.scrollIntoView({
-                              behavior: "smooth",
-                              block: "start",
-                            });
-                          }
-                        }, 300);
+                        setSelectedHistoryCustomerId(student.customer_id);
+                        setIsOpenCustomerHistoryDrawer(true);
                       }}
                     />
                   </Tooltip>
                 ))}
               </div>
-
-              {/* {record?.paid_amount == "0.00" && (
-                <RiDeleteBinLine
-                  size={18}
-                  color="#d32f2f"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setSelectedPaymentDetails(record);
-                    setIsOpenRequestDeleteModal(true);
-                  }}
-                />
-              )} */}
             </div>
           ),
           props: { rowSpan: flatRecord.rowSpan },
@@ -1560,20 +1483,6 @@ export default function TrainerPayment() {
                   return {
                     children: (
                       <div className="trainers_actionbuttonContainer">
-                        {/* <AiOutlineEdit
-                size={18}
-                className="trainers_action_icons"
-                onClick={() => {
-                  if (record?.status == "Requested") {
-                    handleEdit(record);
-                  } else {
-                    CommonMessage(
-                      "error",
-                      `Unable to update in ${record?.status} status`,
-                    );
-                  }
-                }}
-              /> */}
                         <Tooltip
                           placement="top"
                           title="View Details"
@@ -1600,7 +1509,7 @@ export default function TrainerPayment() {
                             <Tooltip
                               key={index}
                               placement="left"
-                              title={`View History: ${student.customer_name || "Student"}`}
+                              title="View Customer Track"
                               trigger={["hover", "click"]}
                             >
                               <LuFileClock
@@ -1608,11 +1517,8 @@ export default function TrainerPayment() {
                                 className="trainers_action_icons"
                                 style={{ cursor: "pointer", marginLeft: "4px" }}
                                 onClick={() => {
-                                  getParticularCustomerDetails(
-                                    student.customer_id,
-                                    true,
-                                  );
-                                  getCustomerHistoryData(student.customer_id);
+                                  setSelectedHistoryCustomerId(student.customer_id);
+                                  setIsOpenCustomerHistoryDrawer(true);
                                   setTimeout(() => {
                                     const container = document.getElementById(
                                       "customer_history_profilecontainer",
@@ -2871,319 +2777,14 @@ export default function TrainerPayment() {
       </Drawer>
 
       {/* Customer History Drawer */}
-      <Drawer
-        title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>Customer History</span>
-            <div className="customer_history_drawer_totalcount_container">
-              <span style={{ fontWeight: 600 }}>
-                Total Activity: {customerHistory?.length || 0}
-              </span>
-              <span style={{ fontWeight: 600 }}>
-                Current Status:{" "}
-                <span
-                  style={{
-                    color: getHistoryStatusColor(
-                      customerHistory?.[0]?.status || "N/A",
-                    ),
-                  }}
-                >
-                  {" "}
-                  {customerHistory && customerHistory.length > 0
-                    ? customerHistory[0].status
-                    : "N/A"}
-                </span>
-              </span>
-            </div>
-          </div>
-        }
-        open={isOpenCustomerHistoryDrawer}
+      <CustomerHistory
+        customerId={selectedHistoryCustomerId}
+        isOpen={isOpenCustomerHistoryDrawer}
         onClose={() => {
           setIsOpenCustomerHistoryDrawer(false);
-          setSelectedStudentDetails(null);
+          setSelectedHistoryCustomerId(null);
         }}
-        width="50%"
-        style={{ position: "relative" }}
-        className="customer_history_drawer"
-      >
-        <div
-          className="customer_statusupdate_drawer_profileContainer"
-          id="customer_history_profilecontainer"
-        >
-          {selectedStudentDetails && selectedStudentDetails.profile_image ? (
-            <Upload
-              listType="picture-circle"
-              fileList={[
-                {
-                  uid: "-1",
-                  name: "profile.jpg",
-                  status: "done",
-                  url: selectedStudentDetails.profile_image, // Base64 string directly usable
-                },
-              ]}
-              onPreview={handlePreview}
-              onRemove={false}
-              showUploadList={{
-                showRemoveIcon: false,
-              }}
-              beforeUpload={() => false} // prevent auto upload
-              style={{ width: 90, height: 90 }} // reduce size
-              accept=".png,.jpg,.jpeg"
-            ></Upload>
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
-
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {selectedStudentDetails && selectedStudentDetails.name
-                ? selectedStudentDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {selectedStudentDetails && selectedStudentDetails.course_name
-                ? selectedStudentDetails.course_name
-                : "-"}
-            </p>
-          </div>
-        </div>
-
-        <Row
-          gutter={16}
-          style={{
-            marginTop: "20px",
-            padding: "0px 0px 0px 24px",
-          }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    selectedStudentDetails && selectedStudentDetails.name
-                      ? selectedStudentDetails.name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    selectedStudentDetails && selectedStudentDetails.email
-                      ? selectedStudentDetails.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {selectedStudentDetails && selectedStudentDetails.phone
-                    ? selectedStudentDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Area</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {" "}
-                  {selectedStudentDetails &&
-                  selectedStudentDetails.current_location
-                    ? selectedStudentDetails.current_location
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <LuCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={`${
-                    selectedStudentDetails &&
-                    selectedStudentDetails.lead_assigned_to_id
-                      ? selectedStudentDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    selectedStudentDetails &&
-                    selectedStudentDetails.lead_assigned_to_name
-                      ? selectedStudentDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    selectedStudentDetails && selectedStudentDetails.course_name
-                      ? selectedStudentDetails.course_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {selectedStudentDetails && selectedStudentDetails.primary_fees
-                    ? "₹" + selectedStudentDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">
-                    Course Fees
-                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                  </p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {selectedStudentDetails && selectedStudentDetails.total_amount
-                    ? "₹" + selectedStudentDetails.total_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {selectedStudentDetails &&
-                  selectedStudentDetails.balance_amount !== undefined &&
-                  selectedStudentDetails.balance_amount !== null
-                    ? "₹" + selectedStudentDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    selectedStudentDetails && selectedStudentDetails.branch_name
-                      ? selectedStudentDetails.branch_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {selectedStudentDetails &&
-                  selectedStudentDetails.batch_tracking
-                    ? selectedStudentDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <div style={{ marginTop: "30px" }}>
-          {customerHistoryLoading ? (
-            <CommonSpinner />
-          ) : (
-            <CustomerHistory
-              data={customerHistory}
-              customerDetails={selectedStudentDetails}
-            />
-          )}
-        </div>
-      </Drawer>
+      />
 
       {/* profile image modal */}
       <Modal
