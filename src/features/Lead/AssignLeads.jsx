@@ -9,13 +9,18 @@ import {
   Badge,
   Spin,
   Modal,
+  Drawer,
+  Checkbox,
 } from "antd";
 import { IoIosClose } from "react-icons/io";
-import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
+import { CiSearch } from "react-icons/ci";
+import { FiFilter } from "react-icons/fi";
+import { FaRegEye } from "react-icons/fa";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import CommonDnd from "../Common/CommonDnd";
 import { GiCardPickup } from "react-icons/gi";
 import { PiShareFatBold } from "react-icons/pi";
 import { LiaUserClockSolid } from "react-icons/lia";
@@ -34,6 +39,8 @@ import {
   moveLiveLeadToJunk,
   getUsersByRole,
   leadReEntry,
+  getTableColumns,
+  updateTableColumns,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -105,6 +112,13 @@ export default function AssignLeads({
   const [junkComments, setJunkComments] = useState("");
   const [junkCommentsError, setJunkCommentsError] = useState("");
   const [liveLeadId, setLiveLeadId] = useState(null);
+  //customer history usestates
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [customerDetails, setCustomerDetails] = useState(null);
+  const [customerHistory, setCustomerHistory] = useState([]);
+  const [customerHistoryLoading, setCustomerHistoryLoading] = useState(false);
+  const [viewCustomerLoading, setViewCustomerLoading] = useState(false);
   //loading
   const [loading, setLoading] = useState(true);
   //pagination
@@ -144,7 +158,9 @@ export default function AssignLeads({
     return { text, hours: totalHours };
   };
 
-  const columns = [
+  const getCustomerData = () => {};
+
+  const nonChangeColumns = [
     // { title: "Sl. No", key: "row_num", dataIndex: "row_num", width: 60 },
     {
       title: "Assigned At",
@@ -159,7 +175,7 @@ export default function AssignLeads({
     },
     {
       title: "Assigned Before",
-      key: "assigned_date_ist",
+      key: "assigned_before_ist",
       dataIndex: "assigned_date_ist",
       width: 130,
       render: (text) => {
@@ -478,7 +494,196 @@ export default function AssignLeads({
           },
         ]
       : []),
+
+    ...(selectedBucket === "Consigned"
+      ? [
+          {
+            title: "Is Customer",
+            key: "converted",
+            dataIndex: "converted",
+            fixed: "right",
+            width: 110,
+            render: (text, record) =>
+              text ? (
+                <div
+                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                >
+                  <p
+                    className="customerdetails_text"
+                    style={{ fontWeight: 700, color: "#3c9111" }}
+                  >
+                    Yes
+                  </p>
+
+                  <Tooltip
+                    placement="bottom"
+                    title="View Customer Track"
+                    className="leadtable_comments_tooltip"
+                  >
+                    <FaRegEye
+                      color="#333"
+                      style={{
+                        marginTop: "2px",
+                        cursor: viewCustomerLoading ? "default" : "pointer",
+                        opacity: viewCustomerLoading ? 0.7 : 1,
+                      }}
+                      onClick={() =>
+                        !viewCustomerLoading &&
+                        getCustomerData(record?.customer_id ?? null)
+                      }
+                    />
+                  </Tooltip>
+                </div>
+              ) : (
+                <p
+                  className="customerdetails_text"
+                  style={{ color: "rgb(211, 47, 47)", fontWeight: 700 }}
+                >
+                  No
+                </p>
+              ),
+          },
+        ]
+      : []),
   ];
+
+  const [columns, setColumns] = useState(
+    nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
+  );
+  const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+  const [updateTableId, setUpdateTableId] = useState(null);
+  const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
+  const [checkAll, setCheckAll] = useState(true);
+
+  useEffect(() => {
+    if (columns.length > 0) {
+      const allChecked = columns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    }
+  }, [columns]);
+
+  const updateTableColumnsData = async (defaultColumns) => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const payload = {
+      user_id: convertAsJson?.user_id,
+      page_name: "Assign Leads",
+      column_names: defaultColumns || columns,
+    };
+    try {
+      await updateTableColumns(payload);
+    } catch (error) {
+      console.log("update table columns error", error);
+    }
+  };
+
+  const getTableColumnsData = async (user_id) => {
+    try {
+      const response = await getTableColumns(user_id);
+      const data = response?.data?.data || [];
+      if (data.length === 0) {
+        setUpdateTableId(null);
+        const newCols = nonChangeColumns.map((c) => ({
+          ...c,
+          isChecked: true,
+        }));
+        setColumns(newCols);
+        setTableColumns(nonChangeColumns);
+        return updateTableColumnsData(newCols);
+      }
+
+      const filterPage = data.find((f) => f.page_name === "Assign Leads");
+
+      if (!filterPage) {
+        setUpdateTableId(null);
+        const newCols = nonChangeColumns.map((c) => ({
+          ...c,
+          isChecked: true,
+        }));
+        setColumns(newCols);
+        setTableColumns(nonChangeColumns);
+        return updateTableColumnsData(newCols);
+      }
+
+      setUpdateTableId(filterPage.id);
+
+      const filteredBackendColumns = filterPage.column_names || [];
+
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          const original = nonChangeColumns.find((c) => c.key === col.key);
+          if (original) {
+            return {
+              ...col,
+              width: original.width,
+              fixed: original.fixed,
+              hidden: original.hidden,
+              render: original.render,
+            };
+          }
+          return col;
+        });
+
+      nonChangeColumns.forEach((c) => {
+        if (!filteredBackendColumns.some((b) => b.key === c.key)) {
+          filteredBackendColumns.push({ ...c, isChecked: true });
+        }
+      });
+
+      const allColumns = attachRenderFunctions(filteredBackendColumns);
+      const visibleColumns = attachRenderFunctions(
+        filteredBackendColumns.filter((col) => col.isChecked),
+      );
+
+      setColumns(allColumns);
+      setTableColumns(visibleColumns);
+    } catch (error) {
+      console.log("get table columns error", error);
+    }
+  };
+
+  useEffect(() => {
+    if (columns.length > 0) {
+      let currentColumns = columns;
+      const missingColumns = nonChangeColumns.filter(
+        (c) => !columns.some((col) => col.key === c.key)
+      );
+
+      if (missingColumns.length > 0) {
+        const newCols = missingColumns.map((c) => ({ ...c, isChecked: true }));
+        currentColumns = [...columns, ...newCols];
+        setColumns(currentColumns);
+      }
+
+      const visibleColumns = currentColumns
+        .filter((col) => col.isChecked)
+        .map((col) => {
+          const original = nonChangeColumns.find((c) => c.key === col.key);
+          if (original) {
+            return {
+              ...col,
+              width: original.width,
+              fixed: original.fixed,
+              hidden: original.hidden,
+              render: original.render,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      setTableColumns(visibleColumns);
+    }
+  }, [selectedBucket]);
+
+  useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+    if (convertAsJson?.user_id) {
+      getTableColumnsData(convertAsJson.user_id);
+    }
+  }, [permissions]);
 
   useEffect(() => {
     if (permissions.length >= 1) {
@@ -941,7 +1146,7 @@ export default function AssignLeads({
       const response = await getManualAssignLeads(payload);
       console.log("get manual assign leads response", response);
       const download_data = response?.data?.data?.data || [];
-      const alterColumns = columns.filter(
+      const alterColumns = tableColumns.filter(
         (f) => f.title !== "Action" && f.title !== "Assigned Before",
       );
       DownloadTableAsCSV(
@@ -962,6 +1167,25 @@ export default function AssignLeads({
           "Something went wrong. Try again later",
       );
     }
+  };
+
+  const drawerColumns = columns.filter((col) =>
+    nonChangeColumns.some((c) => c.key === col.key),
+  );
+
+  const handleSetDrawerColumns = (updatedDrawerColumnsOrUpdater) => {
+    setColumns((prevColumns) => {
+      const updatedDrawerColumns =
+        typeof updatedDrawerColumnsOrUpdater === "function"
+          ? updatedDrawerColumnsOrUpdater(drawerColumns)
+          : updatedDrawerColumnsOrUpdater;
+
+      const hiddenColumns = prevColumns.filter(
+        (col) => !nonChangeColumns.some((c) => c.key === col.key),
+      );
+
+      return [...updatedDrawerColumns, ...hiddenColumns];
+    });
   };
 
   return (
@@ -1177,6 +1401,18 @@ export default function AssignLeads({
                     </Button>
                   </Tooltip>
                 )}
+
+                {permissions.includes("Download Leads") && (
+                  <FiFilter
+                    size={20}
+                    color="#5b69ca"
+                    style={{ cursor: "pointer", marginLeft: "10px" }}
+                    onClick={() => {
+                      setIsOpenFilterDrawer(true);
+                      // getTableColumnsData is already called in useEffect on mount/deps change
+                    }}
+                  />
+                )}
               </>
             )}
           </div>
@@ -1301,7 +1537,7 @@ export default function AssignLeads({
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 1500 }}
-          columns={columns}
+          columns={tableColumns}
           dataSource={leadData}
           dataPerPage={10}
           checkBox={permissions.includes("Assign Lead") ? "true" : "false"}
@@ -1550,6 +1786,105 @@ export default function AssignLeads({
           />
         </div>
       </Modal>
+
+      <Drawer
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Manage Table</span>
+            <div className="managetable_checkbox_container">
+              <p style={{ fontWeight: 400, fontSize: "13px" }}> Check All</p>
+              <Checkbox
+                className="settings_pageaccess_checkbox"
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCheckAll(checked);
+                  // Update all checkboxes
+                  const updated = columns.map((col) => ({
+                    ...col,
+                    isChecked: checked,
+                  }));
+                  setColumns(updated);
+                }}
+                checked={checkAll}
+              />
+            </div>
+          </div>
+        }
+        open={isOpenFilterDrawer}
+        onClose={() => setIsOpenFilterDrawer(false)}
+        width="35%"
+        className="leadmanager_tablefilterdrawer"
+        style={{ position: "relative", paddingBottom: 50 }}
+      >
+        <Row>
+          <Col span={24}>
+            <div className="leadmanager_tablefiler_container">
+              <CommonDnd
+                data={drawerColumns}
+                setColumns={handleSetDrawerColumns}
+              />
+            </div>
+          </Col>
+        </Row>
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            <button
+              className="leadmanager_tablefilter_applybutton"
+              onClick={async () => {
+                const visibleColumns = columns
+                  .filter((col) => col.isChecked)
+                  .map((col) => {
+                    const original = nonChangeColumns.find(
+                      (c) => c.key === col.key,
+                    );
+                    if (original) {
+                      return {
+                        ...col,
+                        width: original.width,
+                        fixed: original.fixed,
+                        hidden: original.hidden,
+                        render: original.render,
+                      };
+                    }
+                    return null;
+                  })
+                  .filter(Boolean);
+
+                setTableColumns(visibleColumns);
+                setIsOpenFilterDrawer(false);
+
+                const getLoginUserDetails =
+                  localStorage.getItem("loginUserDetails");
+                const convertAsJson = JSON.parse(getLoginUserDetails);
+
+                const payload = {
+                  user_id: convertAsJson?.user_id,
+                  id: updateTableId,
+                  page_name: "Assign Leads",
+                  column_names: columns,
+                };
+
+                try {
+                  await updateTableColumns(payload);
+                  setTimeout(() => {
+                    getTableColumnsData(convertAsJson?.user_id);
+                  }, 300);
+                } catch (error) {
+                  console.log("update table columns error", error);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }
