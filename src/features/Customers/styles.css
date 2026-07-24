@@ -388,6 +388,27 @@
   box-shadow: none !important;
   opacity: 1;
 }
+.customers_status_trainerapproval_button {
+  background: #8e44ad11;
+  color: #8e44ad;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_trainerapproval_button:hover {
+  background-color: #8e44ad11 !important;
+  color: #8e44ad !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
 .customers_status_awaitingclass_button {
   background: #607d8b17;
   color: #607d8b;

@@ -1228,6 +1228,12 @@ export default function Customers() {
                     {text}
                   </Button>
                 </div>
+              ) : text === "Trainer Approval" ? (
+                <div>
+                  <Button className="customers_status_trainerapproval_button">
+                    {text}
+                  </Button>
+                </div>
               ) : text === "Awaiting Class" ? (
                 <div>
                   <Button className="customers_status_awaitingclass_button">
@@ -1256,6 +1262,7 @@ export default function Customers() {
                 text === "REJECTED" ||
                 text === "Payment Rejected" ||
                 text === "Trainer Rejected" ||
+                text === "Approval Rejected" ||
                 text === "Escalated" ||
                 text === "Hold" ||
                 text === "Partially Closed" ||
@@ -2762,9 +2769,16 @@ export default function Customers() {
 
           <div
             className={
+              // status === "Awaiting Trainer Verify"
+              //   ? "customers_active_verifytrainers_container"
+              //   : "customers_verifytrainers_container"
               status === "Awaiting Trainer Verify"
                 ? "customers_active_verifytrainers_container"
-                : "customers_verifytrainers_container"
+                : status === "Approval Rejected"
+                  ? "customers_active_paymentreject_container"
+                  : isApprovalTrainerSwap
+                    ? "customers_paymentreject_container"
+                    : "customers_verifytrainers_container"
             }
             onClick={() => {
               if (status === "Awaiting Trainer Verify") {
@@ -2788,57 +2802,6 @@ export default function Customers() {
               );
             }}
           >
-            <p>
-              Verify Trainer{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_trainer_verify !== undefined &&
-                customerStatusCount.awaiting_trainer_verify !== null
-                  ? customerStatusCount.awaiting_trainer_verify
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              // status === "Trainer Approval"
-              //   ? "customers_active_trainerapproval_container"
-              //   : "customers_trainerapproval_container"
-              status === "Trainer Approval"
-                ? "customers_active_trainerapproval_container"
-                : status === "Approval Rejected"
-                  ? "customers_active_paymentreject_container"
-                  : isApprovalTrainerSwap
-                    ? "customers_paymentreject_container"
-                    : "customers_trainerapproval_container"
-            }
-            onClick={() => {
-              if (
-                status === "Trainer Approval" ||
-                status === "Approval Rejected"
-              ) {
-                return;
-              }
-              setStatus("Trainer Approval");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Trainer Approval",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
             {isApprovalTrainerSwap ? (
               <p>
                 Approval Rejected{" "}
@@ -2853,17 +2816,18 @@ export default function Customers() {
               </p>
             ) : (
               <p>
-                Trainer Approval{" "}
+                Verify Trainer{" "}
                 {`(  ${
                   customerStatusCount &&
-                  customerStatusCount.trainer_approval !== undefined &&
-                  customerStatusCount.trainer_approval !== null
-                    ? customerStatusCount.trainer_approval
+                  customerStatusCount.awaiting_trainer_verify !== undefined &&
+                  customerStatusCount.awaiting_trainer_verify !== null
+                    ? customerStatusCount.awaiting_trainer_verify
                     : "-"
                 }
  )`}
               </p>
             )}
+
             <MdOutlineSwapVert
               size={19}
               style={{
@@ -2897,6 +2861,50 @@ export default function Customers() {
                 });
               }}
             />
+          </div>
+
+          <div
+            className={
+              status === "Trainer Approval"
+                ? "customers_active_trainerapproval_container"
+                : "customers_trainerapproval_container"
+            }
+            onClick={() => {
+              if (
+                status === "Trainer Approval" ||
+                status === "Approval Rejected"
+              ) {
+                return;
+              }
+              setStatus("Trainer Approval");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                "Trainer Approval",
+                allDownliners,
+                branchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Trainer Approval{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.trainer_approval !== undefined &&
+                customerStatusCount.trainer_approval !== null
+                  ? customerStatusCount.trainer_approval
+                  : "-"
+              }
+ )`}
+            </p>
           </div>
 
           <div
