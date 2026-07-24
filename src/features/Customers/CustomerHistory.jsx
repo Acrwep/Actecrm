@@ -280,6 +280,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
       item.status.includes("Claim") ||
       item.status.includes("Added") ||
       item.status.includes("Completed") ||
+      item.status.includes("Approved") ||
       item.status.includes("created") ||
       item.status.includes("Generated") ||
       item.status.includes("Scheduled") ? (
@@ -644,7 +645,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               </p>
             </div>
           </div>
-        ) : item.status === "Hold" ? (
+        ) : item.status === "Hold" ||
+          item.status === "Trainer Approval Rejected" ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -656,13 +658,18 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                   ? `${item.updated_by_id} - ${item.updated_by}`
                   : ""}
               </span>
+              :
             </p>
             <div style={{ display: "flex", gap: "6px" }}>
-              <p className="customer_history_comments">Comments:</p>
+              <p className="customer_history_comments">
+                {item.status === "Hold" ? "Comments:" : "Rejected Reason:"}
+              </p>
               <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
                 {item.details && item.details.comments
                   ? item.details.comments
-                  : "-"}
+                  : item.details.rejected_reason
+                    ? item.details.rejected_reason
+                    : "-"}
               </p>
             </div>
           </div>

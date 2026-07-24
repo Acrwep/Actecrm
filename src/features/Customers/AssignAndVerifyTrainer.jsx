@@ -228,7 +228,10 @@ const AssignAndVerifyTrainer = forwardRef(
         console.log("trainer history error", error);
       } finally {
         setTimeout(() => {
-          if (drawerContentStatus == "Trainer Verify") {
+          if (
+            drawerContentStatus == "Trainer Verify" ||
+            drawerContentStatus == "Trainer Approval"
+          ) {
             getAssignTrainerData();
           }
         }, 100);
@@ -563,7 +566,9 @@ const AssignAndVerifyTrainer = forwardRef(
       };
 
       try {
-        await verifyTrainerForCustomer(payload);
+        if (drawerContentStatus !== "Trainer Approval") {
+          await verifyTrainerForCustomer(payload);
+        }
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           setButtonLoading(false);
@@ -571,7 +576,10 @@ const AssignAndVerifyTrainer = forwardRef(
             customer_ids: [
               {
                 customer_id: customerDetails.id,
-                status: "Awaiting Class",
+                status:
+                  drawerContentStatus === "Trainer Approval"
+                    ? "Awaiting Class"
+                    : "Trainer Approval",
                 updated_at: formatToBackendIST(new Date()),
                 updated_by: converAsJson?.user_id || "",
               },
@@ -579,9 +587,17 @@ const AssignAndVerifyTrainer = forwardRef(
           };
           try {
             await updateCustomerStatus(payload);
-            handleCustomerTrack("Trainer Verified");
+            handleCustomerTrack(
+              drawerContentStatus === "Trainer Approval"
+                ? "Trainer Approved"
+                : "Trainer Verified",
+            );
             setTimeout(() => {
-              handleSecondCustomerTrack("Awaiting Class");
+              handleSecondCustomerTrack(
+                drawerContentStatus === "Trainer Approval"
+                  ? "Awaiting Class"
+                  : "Awaiting Trainer Approval",
+              );
             }, 300);
           } catch (error) {
             CommonMessage(
@@ -629,14 +645,19 @@ const AssignAndVerifyTrainer = forwardRef(
       };
 
       try {
-        await rejectTrainerForCustomer(payload);
+        if (drawerContentStatus !== "Trainer Approval") {
+          await rejectTrainerForCustomer(payload);
+        }
         CommonMessage("success", "Updated Successfully");
         setTimeout(async () => {
           const payload = {
             customer_ids: [
               {
                 customer_id: customerDetails.id,
-                status: "Trainer Rejected",
+                status:
+                  drawerContentStatus === "Trainer Approval"
+                    ? "Approval Rejected"
+                    : "Trainer Rejected",
                 updated_at: formatToBackendIST(new Date()),
                 updated_by: converAsJson?.user_id || "",
               },
@@ -644,9 +665,17 @@ const AssignAndVerifyTrainer = forwardRef(
           };
           try {
             await updateCustomerStatus(payload);
-            handleCustomerTrack("Trainer Rejected");
+            handleCustomerTrack(
+              drawerContentStatus === "Trainer Approval"
+                ? "Trainer Approval Rejected"
+                : "Trainer Rejected",
+            );
             setTimeout(() => {
-              handleSecondCustomerTrack("Awaiting Trainer");
+              handleSecondCustomerTrack(
+                drawerContentStatus === "Trainer Approval"
+                  ? "Awaiting Trainer Verify"
+                  : "Awaiting Trainer",
+              );
             }, 300);
           } catch (error) {
             CommonMessage(
@@ -716,6 +745,10 @@ const AssignAndVerifyTrainer = forwardRef(
           : {}),
       };
 
+      const approvalRejectedDetails = {
+        rejected_reason: rejectTrainerComments,
+      };
+
       const payload = {
         customers: [
           {
@@ -727,7 +760,9 @@ const AssignAndVerifyTrainer = forwardRef(
             // details: assignTrainerDetails,
             ...(updatestatus && updatestatus === "Trainer Assigned"
               ? { details: assignTrainerDetails }
-              : { details: verifyOrRejectTrainerDetails }),
+              : updatestatus === "Trainer Approval Rejected"
+                ? { details: approvalRejectedDetails }
+                : { details: verifyOrRejectTrainerDetails }),
           },
         ],
       };
@@ -1580,31 +1615,31 @@ const AssignAndVerifyTrainer = forwardRef(
                       }}
                     >
                       <p className="customers_classtaken_customerscount">
-                        {customerDetails &&
-                        customerDetails.completed_student_count
-                          ? customerDetails.completed_student_count +
-                            " Customers"
+                        {customerDetails?.completed_student_count !== null &&
+                        customerDetails?.completed_student_count !== undefined
+                          ? `${customerDetails.completed_student_count} Customers`
                           : "-"}
                       </p>
-                      <Tooltip
-                        placement="top"
-                        title="View Customer Details"
-                        trigger={["hover", "click"]}
-                      >
-                        <FaRegEye
-                          size={12}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setIsOpenTrainerCustomersModal(true);
-                            getCustomerByTrainerIdData(
-                              customerDetails && customerDetails.trainer_id
-                                ? customerDetails.trainer_id
-                                : null,
-                              1,
-                            );
-                          }}
-                        />
-                      </Tooltip>
+
+                      {customerDetails?.completed_student_count > 0 && (
+                        <Tooltip
+                          placement="top"
+                          title="View Customer Details"
+                          trigger={["hover", "click"]}
+                        >
+                          <FaRegEye
+                            size={12}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsOpenTrainerCustomersModal(true);
+                              getCustomerByTrainerIdData(
+                                customerDetails?.trainer_id ?? null,
+                                1,
+                              );
+                            }}
+                          />
+                        </Tooltip>
+                      )}
                     </Col>
                   </Row>
 
@@ -1625,30 +1660,33 @@ const AssignAndVerifyTrainer = forwardRef(
                       }}
                     >
                       <p className="customers_classtaken_customerscount">
-                        {customerDetails &&
-                        customerDetails.ongoing_student_count
-                          ? customerDetails.ongoing_student_count + " Customers"
+                        {customerDetails?.ongoing_student_count !== null &&
+                        customerDetails?.ongoing_student_count !== undefined
+                          ? `${customerDetails.ongoing_student_count} Customers`
                           : "-"}
                       </p>
-                      <Tooltip
-                        placement="top"
-                        title="View Customer Details"
-                        trigger={["hover", "click"]}
-                      >
-                        <FaRegEye
-                          size={12}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setIsOpenTrainerCustomersModal(true);
-                            getCustomerByTrainerIdData(
-                              customerDetails && customerDetails.trainer_id
-                                ? customerDetails.trainer_id
-                                : null,
-                              0,
-                            );
-                          }}
-                        />
-                      </Tooltip>
+
+                      {customerDetails?.ongoing_student_count > 0 && (
+                        <Tooltip
+                          placement="top"
+                          title="View Customer Details"
+                          trigger={["hover", "click"]}
+                        >
+                          <FaRegEye
+                            size={12}
+                            className="trainers_action_icons"
+                            onClick={() => {
+                              setIsOpenTrainerCustomersModal(true);
+                              getCustomerByTrainerIdData(
+                                customerDetails && customerDetails.trainer_id
+                                  ? customerDetails.trainer_id
+                                  : null,
+                                0,
+                              );
+                            }}
+                          />
+                        </Tooltip>
+                      )}
                     </Col>
                   </Row>
                 </Col>

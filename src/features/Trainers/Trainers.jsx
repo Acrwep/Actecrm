@@ -343,6 +343,23 @@ export default function Trainers() {
     total: 0,
     totalPages: 0,
   });
+  
+  const paginationRef = useRef(pagination);
+  const searchValueRef = useRef(searchValue);
+  const hrIdRef = useRef(hrId);
+
+  useEffect(() => {
+    paginationRef.current = pagination;
+  }, [pagination]);
+
+  useEffect(() => {
+    searchValueRef.current = searchValue;
+  }, [searchValue]);
+
+  useEffect(() => {
+    hrIdRef.current = hrId;
+  }, [hrId]);
+
   //table dnd
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
@@ -775,18 +792,13 @@ export default function Trainers() {
       setFourthStageCount(data.fourth_stage ?? "-");
 
       const statusCountList = data.trainer_status_count || [];
-      const pagination = data.pagination || {
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0,
-      };
+      const paginations = data?.pagination;
 
       setPagination({
-        page: pagination.page,
-        limit: pagination.limit,
-        total: pagination.total,
-        totalPages: pagination.totalPages,
+        page: paginations.page,
+        limit: paginations.limit,
+        total: paginations.total,
+        totalPages: paginations.totalPages,
       });
 
       if (statusCountList.length >= 1) {
@@ -1368,6 +1380,7 @@ export default function Trainers() {
   };
 
   const handleStatusChange = async (trainerId, trainerStatus) => {
+    console.log(paginationRef.current, "paggggg");
     const payload = {
       trainer_id: trainerId,
       status: trainerStatus,
@@ -1377,11 +1390,11 @@ export default function Trainers() {
       CommonMessage("success", "Status Updated");
       setTimeout(() => {
         getTrainersData(
-          searchValue,
-          status,
-          hrId,
-          pagination.page,
-          pagination.limit,
+          searchValueRef.current,
+          statusRef.current,
+          hrIdRef.current,
+          paginationRef.current.page,
+          paginationRef.current.limit,
         );
       });
     } catch (error) {

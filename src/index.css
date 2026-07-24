@@ -486,6 +486,8 @@ button:focus-visible {
 .customers_active_assigntrainers_container,
 .customers_verifytrainers_container,
 .customers_active_verifytrainers_container,
+.customers_trainerapproval_container,
+.customers_active_trainerapproval_container,
 .customers_awaitingclass_container,
 .customers_active_awaitingclass_container,
 .customers_classschedule_container,
