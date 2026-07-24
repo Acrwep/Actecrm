@@ -2769,9 +2769,6 @@ export default function Customers() {
 
           <div
             className={
-              // status === "Awaiting Trainer Verify"
-              //   ? "customers_active_verifytrainers_container"
-              //   : "customers_verifytrainers_container"
               status === "Awaiting Trainer Verify"
                 ? "customers_active_verifytrainers_container"
                 : status === "Approval Rejected"
@@ -2781,10 +2778,17 @@ export default function Customers() {
                     : "customers_verifytrainers_container"
             }
             onClick={() => {
-              if (status === "Awaiting Trainer Verify") {
+              if (
+                status === "Awaiting Trainer Verify" ||
+                status === "Approval Rejected"
+              ) {
                 return;
               }
-              setStatus("Awaiting Trainer Verify");
+              setStatus(
+                isApprovalTrainerSwap
+                  ? "Approval Rejected"
+                  : "Awaiting Trainer Verify",
+              );
               setPagination({
                 page: 1,
               });
@@ -2794,7 +2798,9 @@ export default function Customers() {
                 dateFilterType,
                 searchValue,
                 selectedOrigin,
-                "Awaiting Trainer Verify",
+                isApprovalTrainerSwap
+                  ? "Approval Rejected"
+                  : "Awaiting Trainer Verify",
                 allDownliners,
                 branchOptions,
                 1,
@@ -2842,7 +2848,7 @@ export default function Customers() {
                   const newSwap = !prev;
                   const newStatus = newSwap
                     ? "Approval Rejected"
-                    : "Trainer Approval";
+                    : "Awaiting Trainer Verify";
                   console.log("newStatus", newStatus);
                   setStatus(newStatus);
                   getCustomersData(
@@ -2870,10 +2876,7 @@ export default function Customers() {
                 : "customers_trainerapproval_container"
             }
             onClick={() => {
-              if (
-                status === "Trainer Approval" ||
-                status === "Approval Rejected"
-              ) {
+              if (status === "Trainer Approval") {
                 return;
               }
               setStatus("Trainer Approval");

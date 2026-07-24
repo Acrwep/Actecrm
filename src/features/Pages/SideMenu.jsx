@@ -171,6 +171,10 @@ export default function SideMenu() {
       delete updatedMenu[5];
     }
 
+    if (!permissions.includes("Server Page")) {
+      delete updatedMenu[6];
+    }
+
     if (!permissions.includes("Trainers Page")) {
       delete updatedMenu[7];
     }
@@ -257,6 +261,10 @@ export default function SideMenu() {
 
       if (!permissions.includes("Fees Pending Page")) {
         delete updatedMenu[5];
+      }
+
+      if (!permissions.includes("Server Page")) {
+        delete updatedMenu[6];
       }
 
       if (!updateData.includes("Trainers Page")) {

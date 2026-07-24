@@ -329,6 +329,7 @@ export default function Settings() {
         (f) => f.section === "Server Module",
       );
       const serverCustomOrder = [
+        "Server Page",
         "Server Details Update",
         "Server Verify",
         "Server Approve",
