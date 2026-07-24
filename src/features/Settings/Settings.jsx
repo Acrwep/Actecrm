@@ -268,6 +268,7 @@ export default function Settings() {
         "Student Verify",
         "Trainer Assign",
         "Trainer Verify",
+        "Approve Trainer",
         "Class Schedule",
         "Update Class Going",
         "Passedout Process",

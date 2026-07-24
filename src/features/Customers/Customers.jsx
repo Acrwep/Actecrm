@@ -844,7 +844,7 @@ export default function Customers() {
                               );
                               return;
                             } else if (record.status === "Trainer Approval") {
-                              if (!permissions.includes("Trainer Verify")) {
+                              if (!permissions.includes("Approve Trainer")) {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
