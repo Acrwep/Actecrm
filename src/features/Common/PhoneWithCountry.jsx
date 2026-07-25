@@ -23,6 +23,7 @@ export default function PhoneWithCountry({
   value, // raw number from parent
   label,
   error,
+  placeholder,
   labelFontSize,
   height,
   borderLeftNone,
@@ -57,7 +58,7 @@ export default function PhoneWithCountry({
   // Sync internal value when parent value changes
   React.useEffect(() => {
     if (!typingRef.current && value !== undefined) {
-      const newValue = `+${country.dialCode} ${value || ""}`;
+      const newValue = value || "";
       if (newValue !== internalValue) {
         setInternalValue(newValue);
       }
@@ -74,38 +75,19 @@ export default function PhoneWithCountry({
 
   const handleInputChange = (e) => {
     typingRef.current = true;
-
-    const dialCode = `+${country.dialCode} `;
     let userInput = e.target.value;
 
-    // If user deletes everything, ensure we keep only dial code
-    if (userInput.length <= dialCode.length) {
-      setInternalValue(dialCode);
-      onChange?.("", country.iso2);
-      setTimeout(() => (typingRef.current = false), 0);
-      return;
+    let onlyDigits = userInput.replace(/\D/g, "").replace(/^0+/, "");
+
+    if (userInput.startsWith(`+${country.dialCode}`)) {
+      onlyDigits = userInput
+        .slice(`+${country.dialCode}`.length)
+        .replace(/\D/g, "")
+        .replace(/^0+/, "");
     }
 
-    // Extract after code part and remove any leading zeros
-    let afterCode = userInput
-      .slice(dialCode.length)
-      .replace(/\D/g, "")
-      .replace(/^0+/, "");
-
-    // ✅ If it already starts with the dial code, just clean after part
-    if (userInput.startsWith(dialCode)) {
-      const valueToSet = dialCode + afterCode;
-      setInternalValue(valueToSet);
-      e.target.value = valueToSet;
-      onChange?.(afterCode, country.iso2);
-    } else {
-      // If user tries to delete dial code or modify it, re-add it and clean the rest
-      const onlyDigits = userInput.replace(/\D/g, "").replace(/^0+/, "");
-      const valueToSet = dialCode + onlyDigits;
-      setInternalValue(valueToSet);
-      e.target.value = valueToSet;
-      onChange?.(onlyDigits, country.iso2);
-    }
+    setInternalValue(onlyDigits);
+    onChange?.(onlyDigits, country.iso2);
 
     setTimeout(() => {
       typingRef.current = false;
@@ -124,12 +106,9 @@ export default function PhoneWithCountry({
     if (!countryObj) return;
 
     const newDialCode = parseCountry(countryObj).dialCode;
-    const rawNumber = internalValue.replace(`+${prevDialCodeRef.current} `, "");
-    const newInternalValue = `+${newDialCode} ${rawNumber || ""}`;
-    setInternalValue(newInternalValue);
 
     prevDialCodeRef.current = newDialCode;
-    onChange?.(rawNumber || "", newCountryIso2);
+    onChange?.(internalValue || "", newCountryIso2);
     countryCode?.(newDialCode);
   };
 
@@ -159,6 +138,7 @@ export default function PhoneWithCountry({
       <TextField
         variant="outlined"
         label={label}
+        placeholder={placeholder}
         required
         value={internalValue}
         onChange={handleInputChange}
@@ -197,7 +177,13 @@ export default function PhoneWithCountry({
           "& .MuiInputBase-input": {
             height: height || "36px",
             boxSizing: "border-box",
-            fontSize: "13px",
+            fontSize: "12px",
+
+            "&::placeholder": {
+              fontSize: "12px",
+              color: "gray",
+              opacity: 1,
+            },
           },
         }}
         slotProps={{
@@ -206,7 +192,7 @@ export default function PhoneWithCountry({
             startAdornment: (
               <InputAdornment
                 position="start"
-                style={{ marginRight: "-10px", marginLeft: "-8px" }}
+                style={{ marginRight: "0px", marginLeft: "-8px" }}
               >
                 <Select
                   disabled={disableCountrySelect}
@@ -232,17 +218,46 @@ export default function PhoneWithCountry({
                     fieldset: { display: "none" },
                     ".MuiSelect-select": {
                       padding: countrySelectPadding || "8px 0px 8px 8px",
+                      display: "flex",
+                      alignItems: "center",
                     },
                   }}
                   value={country.iso2}
                   onChange={handleCountryChange}
-                  renderValue={(v) => (
-                    <FlagImage
-                      iso2={v}
-                      style={{ display: "flex" }}
-                      size={countryFlagSize || 22}
-                    />
-                  )}
+                  renderValue={(v) => {
+                    const countryItem = defaultCountries.find(
+                      (c) => parseCountry(c).iso2 === v,
+                    );
+                    const dialCode = countryItem
+                      ? parseCountry(countryItem).dialCode
+                      : "";
+                    return (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <FlagImage
+                          iso2={v}
+                          style={{ display: "flex" }}
+                          size={countryFlagSize || 22}
+                        />
+                        <Typography
+                          sx={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontSize: "12.5px",
+                            marginTop: "1px",
+                            fontWeight: 500,
+                            color: "#333",
+                          }}
+                        >
+                          +{dialCode}
+                        </Typography>
+                      </div>
+                    );
+                  }}
                 >
                   <ListSubheader
                     sx={{
@@ -271,6 +286,12 @@ export default function PhoneWithCountry({
                         "& .MuiInputBase-input": {
                           padding: "8px 12px",
                           fontSize: "14px",
+
+                          "&::placeholder": {
+                            fontSize: "12px",
+                            color: "gray",
+                            opacity: 1,
+                          },
                         },
                       }}
                     />

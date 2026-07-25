@@ -1379,7 +1379,6 @@ const FinanceVerify = forwardRef(
                       { id: 5, name: "No Tax" },
                     ]}
                     value={taxType}
-                    height="41px"
                     disabled={true}
                   />
                 </Col>

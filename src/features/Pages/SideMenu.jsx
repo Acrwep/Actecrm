@@ -11,6 +11,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { TbReport } from "react-icons/tb";
+import { TbSchool } from "react-icons/tb";
 import { IoTicketOutline } from "react-icons/io5";
 import {
   getTableColumns,
@@ -94,6 +95,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    13: {
+      title: "Admissions",
+      icon: <TbSchool size={17} />,
+      path: "admissions",
+    },
   });
 
   const nonChangeMenuOptions = {
@@ -157,6 +163,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    13: {
+      title: "Admissions",
+      icon: <TbSchool size={17} />,
+      path: "admissions",
+    },
   };
 
   useEffect(() => {
@@ -193,6 +204,10 @@ export default function SideMenu() {
 
     if (!permissions.includes("Settings Page")) {
       delete updatedMenu[12];
+    }
+
+    if (!permissions.includes("Admissions Page")) {
+      delete updatedMenu[13];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -285,6 +300,10 @@ export default function SideMenu() {
 
       if (!updateData.includes("Settings Page")) {
         delete updatedMenu[12];
+      }
+
+      if (!permissions.includes("Admissions Page")) {
+        delete updatedMenu[13];
       }
 
       setSideMenuOptions(updatedMenu);

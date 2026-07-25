@@ -110,7 +110,7 @@ export default function CommonGroupedSelectField({
             error={error}
             className="common_inputfield"
             sx={{
-              "& .MuiInputBase-input": { fontSize: "14px" },
+              "& .MuiInputBase-input": { fontSize: "12px" },
             }}
           />
         )}

@@ -172,6 +172,17 @@ const leadFollowupModulePermissionListSlice = createSlice({
   },
 });
 
+const admissionsModulePermissionListSlice = createSlice({
+  name: "admissionsmodulepermissionlist",
+  initialState,
+  reducers: {
+    storeAdmissionsModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const customersModulePermissionListSlice = createSlice({
   name: "customersmodulepermissionlist",
   initialState,
@@ -510,6 +521,8 @@ export const { storeLeadFollowupModulePermissionList } =
   leadFollowupModulePermissionListSlice.actions;
 export const { storeCustomersModulePermissionList } =
   customersModulePermissionListSlice.actions;
+export const { storeAdmissionsModulePermissionList } =
+  admissionsModulePermissionListSlice.actions;
 export const { storeFeesPendingModulePermissionList } =
   feesPendingModulePermissionListSlice.actions;
 export const { storeBulkSearchModulePermissionList } =
@@ -570,6 +583,8 @@ export const leadFollowupModulePermissionListReducer =
   leadFollowupModulePermissionListSlice.reducer;
 export const customersModulePermissionListReducer =
   customersModulePermissionListSlice.reducer;
+export const admissionsModulePermissionListReducer =
+  admissionsModulePermissionListSlice.reducer;
 export const feesPendingModulePermissionListReducer =
   feesPendingModulePermissionListSlice.reducer;
 export const bulkSearchModulePermissionListReducer =

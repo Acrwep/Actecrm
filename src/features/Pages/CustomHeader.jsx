@@ -272,7 +272,6 @@ export default function CustomHeader() {
     }
   };
 
-
   const getCourseData = async (searchvalue) => {
     const payload = {
       ...(searchvalue && { name: searchvalue }),
@@ -318,8 +317,6 @@ export default function CustomHeader() {
     }, 300);
   };
 
-
-
   const handlePreview = async (file) => {
     if (file.url) {
       setPreviewImage(file.url);
@@ -337,8 +334,6 @@ export default function CustomHeader() {
       setPreviewOpen(true);
     };
   };
-
-
 
   const handleChangePassword = async () => {
     setPasswordValidationTrigger(true);
@@ -739,25 +734,27 @@ Course Advisor
                       ? "Lead Followup"
                       : location.pathname === "/customers"
                         ? "Customers"
-                        : location.pathname === "/fee-pending-customers"
-                          ? "Fee Pending Customers"
-                          : location.pathname === "/batches"
-                            ? "Batches"
-                            : location.pathname === "/bulk-search"
-                              ? "Bulk Search"
-                              : location.pathname === "/trainers"
-                                ? "Trainers"
-                                : location.pathname === "/trainer-payment"
-                                  ? "Trainer Payment"
-                                  : location.pathname === "/server"
-                                    ? "Server"
-                                    : location.pathname === "/tickets"
-                                      ? "Tickets"
-                                      : location.pathname === "/settings"
-                                        ? "Settings"
-                                        : location.pathname === "/reports"
-                                          ? "Reports"
-                                          : ""}
+                        : location.pathname === "/admissions"
+                          ? "Admissions"
+                          : location.pathname === "/fee-pending-customers"
+                            ? "Fee Pending Customers"
+                            : location.pathname === "/batches"
+                              ? "Batches"
+                              : location.pathname === "/bulk-search"
+                                ? "Bulk Search"
+                                : location.pathname === "/trainers"
+                                  ? "Trainers"
+                                  : location.pathname === "/trainer-payment"
+                                    ? "Trainer Payment"
+                                    : location.pathname === "/server"
+                                      ? "Server"
+                                      : location.pathname === "/tickets"
+                                        ? "Tickets"
+                                        : location.pathname === "/settings"
+                                          ? "Settings"
+                                          : location.pathname === "/reports"
+                                            ? "Reports"
+                                            : ""}
           </p>
         </div>
 

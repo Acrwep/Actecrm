@@ -40,6 +40,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   storeBulkSearchModulePermissionList,
   storeChildUsers,
+  storeAdmissionsModulePermissionList,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
   storeEmailTemplateModulePermissionList,
@@ -84,6 +85,9 @@ export default function PageAccess({
   );
   const customersModulePermissionData = useSelector(
     (state) => state.customersmodulepermissionlist,
+  );
+  const admissionsModulePermissionData = useSelector(
+    (state) => state.admissionsmodulepermissionlist,
   );
   const feesPendingModulePermissionData = useSelector(
     (state) => state.feespendingmodulepermissionlist,
@@ -423,6 +427,19 @@ export default function PageAccess({
         storeLeadFollowupModulePermissionList(updatedLeadFollowupPermissions),
       );
 
+      //admissions module
+      const updatedAdmissionPermissions = (
+        admissionsModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id,
+        ),
+      }));
+      dispatch(
+        storeAdmissionsModulePermissionList(updatedAdmissionPermissions),
+      );
+
       //customers module
       const updatedCustomersPermissions = (
         customersModulePermissionData || []
@@ -560,6 +577,7 @@ export default function PageAccess({
       ...dashboardModulePermissionData,
       ...leadsModulePermissionData,
       ...leadFollowupModulePermissionData,
+      ...admissionsModulePermissionData,
       ...customersModulePermissionData,
       ...feesPendingModulePermissionData,
       ...bulkSearchModulePermissionData,
@@ -1471,6 +1489,46 @@ export default function PageAccess({
                         console.log("updateItem", updateItem);
                         dispatch(
                           storeBulkSearchModulePermissionList(updateItem),
+                        );
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Admissions Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {admissionsModulePermissionData.map((item, index) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = admissionsModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          },
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeAdmissionsModulePermissionList(updateItem),
                         );
                       }}
                     >

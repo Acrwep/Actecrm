@@ -956,12 +956,13 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     ? customerDetails.name
                     : "-"}
                 </p>
-                <p className="customer_coursenametext">
-                  {" "}
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
+                {customerDetails?.student_id && (
+                  <p className="customer_coursenametext">
+                    {customerDetails && customerDetails.student_id
+                      ? customerDetails.student_id
+                      : "-"}
+                  </p>
+                )}
                 <p className="customer_coursenametext">
                   {" "}
                   Created At:{" "}

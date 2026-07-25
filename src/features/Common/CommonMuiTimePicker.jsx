@@ -94,7 +94,9 @@ export default function CommonMuiTimePicker({
               <span
                 style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
               >
-                {(errorLabel || label || "") + (errorLabel || label ? " " : "") + error}
+                {(errorLabel || label || "") +
+                  (errorLabel || label ? " " : "") +
+                  error}
               </span>
             ) : null,
             onClick: () => {
@@ -123,6 +125,11 @@ export default function CommonMuiTimePicker({
               ),
             },
             sx: {
+              "& .MuiInputBase-input::placeholder": {
+                fontSize: "12px !important",
+                color: "gray !important",
+                opacity: "1 !important",
+              },
               // label font
               "& .MuiPickersInputBase-root": {
                 height: "36px !important",
@@ -139,12 +146,12 @@ export default function CommonMuiTimePicker({
               // value font
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
-                marginTop: "3px",
+                fontSize: "12px",
+                marginTop: "1px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
+                fontSize: "12px",
               },
               "& .MuiSvgIcon-root": {
                 fontSize: "20px",

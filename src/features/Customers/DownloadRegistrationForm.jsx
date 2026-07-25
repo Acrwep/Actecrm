@@ -218,7 +218,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
     }
 
     .form-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
       text-align: center;
       text-transform: uppercase;
@@ -247,25 +247,26 @@ export default function DownloadRegistrationForm({ customerDetails }) {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 18px;
+      margin-top: 6px;
       margin-bottom: 15px;
     }
 
     .field-box p.label {
       font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 13px;
+      margin-bottom: 3px !important;
+      font-size: 12px;
     }
 
     .field-value-box {
       border: 1px solid #bdbdbd;
-      padding: 8px 10px;
+      padding: 7px 10px;
       background: #fafafa;
       min-height: 32px;
       border-radius: 6px;
     }
 
     .field-value {
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .terms-list li {

@@ -272,6 +272,17 @@
   border-color: #5b69ca !important;
   box-shadow: none !important;
 }
+.trainer_skills_multiselect .ant-select-selection-placeholder,
+.trainer_skills_multiselect_two .ant-select-selection-placeholder,
+.trainer_skills_multiselect_error .ant-select-selection-placeholder,
+.trainer_certificate_field .ant-select-selection-placeholder,
+.trainer_certificate_multiselect_two .ant-select-selection-placeholder {
+  color: gray !important;
+  font-size: 12px;
+  margin-top: 1.3px !important;
+  font-family: "Poppins", sans-serif;
+  opacity: 1;
+}
 .trainer_skills_multiselect_two .ant-select-selector {
   min-height: 36px;
   max-height: 80px;
@@ -1112,6 +1123,11 @@
 /* Salary Expectation styles */
 .salary_expectation_input .ant-input-affix-wrapper > input.ant-input {
   font-size: 13px !important;
+}
+.salary_expectation_input input::placeholder {
+  font-size: 12px !important;
+  color: gray !important;
+  opacity: 1 !important;
 }
 .salary_expectation_input .ant-input-outlined:hover {
   border-color: #5b69ca !important;

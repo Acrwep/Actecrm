@@ -12,6 +12,7 @@ import {
   getUsers,
 } from "../ApiService/action";
 import {
+  storeAdmissionsModulePermissionList,
   storeAllUsersList,
   storeBulkSearchModulePermissionList,
   storeCustomersModulePermissionList,
@@ -254,6 +255,23 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeLeadFollowupModulePermissionList(updateLeadFollowupModule));
+
+      //filter admissions module
+      const admissionsModule = allPermissions.filter(
+        (f) => f.section === "Admissions Module",
+      );
+      const admissionsCustomOrder = ["Admissions Page"];
+
+      const admissionsSortedArray = admissionsModule.sort(
+        (a, b) =>
+          admissionsCustomOrder.indexOf(a.permission_name) -
+          admissionsCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateAdmissionsModule = admissionsSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeAdmissionsModulePermissionList(updateAdmissionsModule));
 
       //filter customers module
       const customersModule = allPermissions.filter(

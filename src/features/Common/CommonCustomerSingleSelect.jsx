@@ -63,7 +63,7 @@ export default function CommonCustomerSingleSelectField({
           width: width || "100%",
           "& .MuiInputLabel-root": {
             fontSize: labelFontSize || "12px",
-            marginTop: labelMarginTop || "1px",
+            marginTop: labelMarginTop || "0px",
             fontFamily: "Poppins, sans-serif",
           },
           "& .MuiOutlinedInput-root": {
@@ -110,7 +110,7 @@ export default function CommonCustomerSingleSelectField({
               onScroll: onDropdownScroll,
               sx: {
                 "& .MuiAutocomplete-option": {
-                  fontSize: optionsFontSize || "13px",
+                  fontSize: optionsFontSize || "12px",
                 },
                 "& .MuiAutocomplete-option[aria-selected='true']": {
                   backgroundColor: "#5b69ca26",
@@ -129,7 +129,7 @@ export default function CommonCustomerSingleSelectField({
               onBlur={onBlur}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: fontSize || "13px",
+                  fontSize: fontSize || "12px",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "",

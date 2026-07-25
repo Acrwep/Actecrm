@@ -65,7 +65,7 @@ export default function CommonCustomerMultiSelectField({
         sx={{
           width: width || "100%",
           "& .MuiInputLabel-root": {
-            fontSize: labelFontSize || "14px",
+            fontSize: labelFontSize || "12px",
             marginTop: labelMarginTop || "1px",
             fontFamily: "Poppins, sans-serif",
           },
@@ -167,8 +167,8 @@ export default function CommonCustomerMultiSelectField({
               onBlur={onBlur}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: fontSize || "14px",
-                  marginTop: "2px",
+                  fontSize: fontSize || "12px",
+                  marginTop: "3px",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "",

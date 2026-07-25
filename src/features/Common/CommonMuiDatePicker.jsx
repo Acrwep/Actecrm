@@ -31,7 +31,7 @@ export default function CommonMuiDatePicker({
           // Convert Dayjs to JS Date
           const jsDate = newValue ? newValue.toDate() : null;
           onChange(jsDate);
-          
+
           if (context?.validationError == null) {
             setOpen(false);
           }
@@ -159,7 +159,7 @@ export default function CommonMuiDatePicker({
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: fontSize || "13px",
+                fontSize: fontSize || "12px",
               },
               "& .MuiSvgIcon-root": {
                 fontSize: iconSize || "16px",

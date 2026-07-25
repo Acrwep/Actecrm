@@ -136,6 +136,7 @@
 }
 .commontextarea {
   border-radius: 5px !important;
+  font-size: 12px !important;
 }
 .commontextarea:hover {
   border-color: rgba(128, 128, 128, 0.712) !important;
@@ -144,6 +145,12 @@
 .commontextarea:focus {
   border-color: #5b69ca !important;
   box-shadow: none !important;
+}
+.commontextarea::placeholder,
+.commontextarea_error::placeholder {
+  font-size: 12px !important;
+  color: gray !important;
+  opacity: 1 !important;
 }
 /* common table styles */
 .commontable_paginationlabel {

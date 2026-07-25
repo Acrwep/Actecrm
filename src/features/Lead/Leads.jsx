@@ -3925,7 +3925,7 @@ export default function Leads({
                 value={taxType}
                 error={taxTypeError}
                 height={"36px"}
-                fontSize={"13px"}
+                fontSize={"12px"}
                 labelFontSize={"12px"}
                 labelMarginTop={"0px"}
               />
@@ -4026,7 +4026,7 @@ export default function Leads({
                 value={placeOfPayment}
                 error={placeOfPaymentError}
                 height={"36px"}
-                fontSize={"13px"}
+                fontSize={"12px"}
                 labelFontSize={"12px"}
                 labelMarginTop={"0px"}
               />

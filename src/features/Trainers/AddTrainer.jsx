@@ -585,6 +585,7 @@ const AddTrainer = forwardRef(
                     </p>
                     <CommonInputField
                       errorLabel="Trainer Name"
+                      placeholder={"Enter full name"}
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
@@ -605,6 +606,7 @@ const AddTrainer = forwardRef(
                     </p>
                     <CommonInputField
                       errorLabel="Trainer Email"
+                      placeholder={"Enter email address"}
                       required={true}
                       onChange={(e) => {
                         setEmail(e.target.value);
@@ -625,6 +627,7 @@ const AddTrainer = forwardRef(
                     </p>
                     <PhoneWithCountry
                       errorLabel="Mobile Number"
+                      placeholder={"Enter mobile number"}
                       onChange={(value, countryIso2) => {
                         setMobile(value);
                         const activeCountry = countryIso2 || selectedCountry;
@@ -654,6 +657,7 @@ const AddTrainer = forwardRef(
                     </p>
                     <PhoneWithCountry
                       errorLabel="WhatsApp Number"
+                      placeholder={"Enter whatsapp number"}
                       onChange={(value, countryIso2) => {
                         setWhatsApp(value);
                         const activeCountry = countryIso2 || whatsAppCountry;
@@ -701,6 +705,7 @@ const AddTrainer = forwardRef(
                         <CommonSelectField
                           errorLabel="Technology"
                           required={true}
+                          placeholder={"Select Technology"}
                           options={technologyOptions}
                           onChange={(e) => {
                             setTechnology(e.target.value);
@@ -753,6 +758,7 @@ const AddTrainer = forwardRef(
                     </p>
                     <CommonSelectField
                       errorLabel="Experience"
+                      placeholder={"Select Experience"}
                       required={true}
                       options={experienceOptions}
                       onChange={(e) => {
@@ -777,6 +783,7 @@ const AddTrainer = forwardRef(
                     <CommonSelectField
                       errorLabel="Relevant Experience"
                       options={experienceOptions}
+                      placeholder={"Select Relevant Experience"}
                       required={true}
                       onChange={(e) => {
                         setRelevantExperience(e.target.value);
@@ -801,6 +808,7 @@ const AddTrainer = forwardRef(
                     <CommonSelectField
                       errorLabel="Batch"
                       required={true}
+                      placeholder={"Select Batch"}
                       options={batchOptions}
                       onChange={(e) => {
                         setBatch(e.target.value);
@@ -842,6 +850,7 @@ const AddTrainer = forwardRef(
                                   : "trainer_skills_multiselect"
                           }
                           style={{ width: "100%" }}
+                          placeholder={"Select Skills"}
                           onFocus={() => setIsSkillFocused(true)}
                           onBlur={() => setIsSkillFocused(false)}
                           suffixIcon={
@@ -1027,6 +1036,7 @@ const AddTrainer = forwardRef(
                           mode="multiple"
                           allowClear
                           showSearch
+                          placeholder={"Select Days"}
                           value={preferredDays}
                           onChange={(value) => {
                             setPreferredDays(value);
@@ -1165,6 +1175,7 @@ const AddTrainer = forwardRef(
                                 <IoCaretDownSharp color="rgba(0,0,0,0.54)" />
                               }
                               mode="multiple"
+                              placeholder={"Select Language"}
                               allowClear
                               showSearch
                               value={languagesKnown}
@@ -1246,7 +1257,9 @@ const AddTrainer = forwardRef(
 
                   <Row gutter={12} style={{ marginTop: "40px" }}>
                     <Col span={12}>
-                      <p className="trainer_skillslabel">Salary Expectation</p>
+                      <p className="trainer_skillslabel">
+                        Commercial Expectation
+                      </p>
                       <Input
                         className="salary_expectation_input"
                         prefix="₹"
@@ -1283,6 +1296,7 @@ const AddTrainer = forwardRef(
                         <CommonInputField
                           errorLabel="Location"
                           required={true}
+                          placeholder={"Enter location"}
                           onChange={(e) => {
                             setLocation(e.target.value);
                             if (validationTrigger) {
@@ -1300,14 +1314,21 @@ const AddTrainer = forwardRef(
                   </Row>
                 </Col>
 
-                <Col span={12} style={{ display: "flex", flexDirection: "column" }}>
+                <Col
+                  span={12}
+                  style={{ display: "flex", flexDirection: "column" }}
+                >
                   <p className={"trainer_skillslabel"}>Additional Notes</p>
                   <CommonTextArea
                     placeholder="Enter any additional notes..."
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     maxLength={300}
-                    style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
                     textAreaStyle={{ flex: 1, resize: "none" }}
                   />
                 </Col>

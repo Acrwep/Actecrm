@@ -1133,7 +1133,6 @@ const CustomerUpdate = forwardRef(
                   onChange={handleTaxType}
                   value={taxType}
                   error={taxTypeError}
-                  height="41px"
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>

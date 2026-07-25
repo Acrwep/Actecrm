@@ -9,6 +9,7 @@ import "./commonstyles.css";
 export default function CommonSelectField({
   label,
   value,
+  placeholder,
   onChange,
   error,
   required,
@@ -112,12 +113,21 @@ export default function CommonSelectField({
           renderInput={(params) => (
             <TextField
               {...params}
+              placeholder={placeholder}
               size="small"
               label={label}
               required={required}
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: fontSize || "13px",
+                  fontSize: fontSize || "12px",
+                  transform: "translateY(-0.8px)",
+
+                  "&::placeholder": {
+                    fontSize: "12px",
+                    color: "gray",
+                    transform: "translateY(-0.5px)",
+                    opacity: 1,
+                  },
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "", // ⬅️ removes the right border
@@ -138,7 +148,7 @@ export default function CommonSelectField({
             listbox: {
               sx: {
                 "& .MuiAutocomplete-option": {
-                  fontSize: optionsFontSize || "13px",
+                  fontSize: optionsFontSize || "12px",
                 },
                 "& .MuiAutocomplete-option[aria-selected='true']": {
                   backgroundColor: "#5b69ca26",
@@ -162,7 +172,9 @@ export default function CommonSelectField({
                 fontSize: errorFontSize ? errorFontSize : "10px",
               }}
             >
-              {(errorLabel || label || "") + (errorLabel || label ? " " : "") + error}
+              {(errorLabel || label || "") +
+                (errorLabel || label ? " " : "") +
+                error}
             </FormHelperText>
           </div>
         )}

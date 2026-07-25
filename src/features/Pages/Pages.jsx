@@ -50,6 +50,7 @@ import TrainerPaymentRequestPage from "../Trainers/TrainerPaymentRequestPage";
 import TrainerPaymentRequestForm from "../Trainers/TrainerPaymentRequestForm";
 import RequestSuccess from "../Trainers/RequestSuccess";
 import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
+import Admissions from "../Admissions/Admissions";
 
 const { Sider, Content, Header } = Layout;
 
@@ -269,6 +270,7 @@ export default function Pages() {
             <Route element={<LeadManager />} path="/presales" />
             <Route element={<LeadFollowUp />} path="/lead-followup" />
             <Route element={<BulkSearch />} path="/bulk-search" />
+            <Route element={<Admissions />} path="/admissions" />
             <Route element={<Customers />} path="/customers" />
             <Route
               element={<PendingFeesCustomers />}

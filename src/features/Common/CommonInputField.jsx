@@ -54,6 +54,7 @@ export default function CommonInputField({
       label === "Email Address" ||
       label === "Profile Name" ||
       label === "Trainer Email" ||
+      errorLabel === "Trainer Email" ||
       label === "User Id" ||
       label === "Role Name" ||
       label === "IFSC Code" ||
@@ -134,7 +135,7 @@ export default function CommonInputField({
           "& .MuiInputBase-input": {
             height: height || "36px",
             boxSizing: "border-box",
-            fontSize: fontSize || "13px",
+            fontSize: fontSize || "12px",
 
             "&::placeholder": {
               fontSize: "12px",
