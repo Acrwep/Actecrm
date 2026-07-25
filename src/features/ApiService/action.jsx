@@ -442,6 +442,15 @@ export const deleteTrainerPaymentRequest = async (trainer_payment_id) => {
   }
 };
 
+export const viewTrainerPayslip = async (payload) => {
+  try {
+    const response = await api.post(`/api/viewPayslip`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // lead api's
 export const getAllAreas = async (payload) => {
   try {

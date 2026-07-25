@@ -1140,3 +1140,18 @@
 .salary_type_select_dropdown .ant-select-item-option-content {
   font-size: 11px !important;
 }
+.trainer_payslips_container {
+  /* margin: 12px 0px 0px; */
+  margin-top: 12px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  margin-bottom: 40px;
+}

@@ -8,6 +8,8 @@ import {
   Collapse,
   Drawer,
   Rate,
+  Button,
+  Tooltip,
   Skeleton,
 } from "antd";
 import moment from "moment";
@@ -18,9 +20,8 @@ import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
-import { FaRegCircleXmark } from "react-icons/fa6";
-import { BsPatchCheckFill } from "react-icons/bs";
-import { PiClockCounterClockwiseBold } from "react-icons/pi";
+import { IoReceiptOutline } from "react-icons/io5";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 import { CloseOutlined } from "@ant-design/icons";
 import PrismaZoom from "react-prismazoom";
 import {
@@ -28,6 +29,7 @@ import {
   getTrainerById,
   getTrainerPaymentsById,
   viewCertForCustomer,
+  viewTrainerPayslip,
 } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
@@ -35,6 +37,8 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import { TimerPill, calculateDeadlineDate } from "./TrainerPayment";
+import { CommonMessage } from "../Common/CommonMessage";
+import CommonPayslipViewer from "../Common/CommonPayslipViewer";
 
 export default function ViewTrainerPaymentDetails({
   trainer_payment_id = null,
@@ -71,6 +75,11 @@ export default function ViewTrainerPaymentDetails({
   const [certificateName, setCertificateName] = useState("");
   const [generateCertLoading, setGenerateCertLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  //payslip usestates
+  const [payslipLoading, setPayslipLoading] = useState(false);
+  const [currentPayslipName, setCurrentPayslipName] = useState("");
+  const [isOpenViewPayslipModal, setIsOpenViewPayslipModal] = useState(false);
+  const [payslipHtmlContent, setPayslipHtmlContent] = useState("");
 
   useEffect(() => {
     if (trainer_payment_id) {
@@ -148,6 +157,77 @@ export default function ViewTrainerPaymentDetails({
       return "";
     }
   };
+
+  const totalCommercial =
+    selectedPaymentDetails?.students?.reduce(
+      (sum, student) => sum + Number(student.commercial || 0),
+      0,
+    ) || 0;
+
+  const totalHours =
+    selectedPaymentDetails?.students?.reduce(
+      (sum, student) => sum + Number(student.duration_in_hours || 0),
+      0,
+    ) || 0;
+
+  const handleViewPayslip = async (item) => {
+    setPayslipLoading(true);
+    setCurrentPayslipName(selectedPaymentDetails?.trainer_name || "Trainer");
+    const payload = {
+      trainer_name: selectedPaymentDetails?.trainer_name,
+      trainer_id: selectedPaymentDetails?.trainer_code,
+      course:
+        selectedPaymentDetails?.commercial_type === "Batch"
+          ? selectedPaymentDetails?.students[0]?.course_name
+          : item?.course_name,
+      payment_date: selectedPaymentDetails?.paid_date,
+      batch_code: selectedPaymentDetails?.batch_number,
+      training_mode:
+        selectedPaymentDetails?.commercial_type === "Batch"
+          ? selectedPaymentDetails?.students[0]?.mode_of_training
+          : item?.mode_of_training,
+      total_hours_taken:
+        selectedPaymentDetails?.commercial_type === "Batch"
+          ? totalHours
+          : Number(item?.duration_in_hours),
+      payment_mode: selectedPaymentDetails?.payment_mode,
+      transaction_id: selectedPaymentDetails?.transaction_id,
+      payment_status: selectedPaymentDetails?.payment_status,
+      commercial:
+        selectedPaymentDetails?.commercial_type === "Batch"
+          ? totalCommercial
+          : item?.commercial,
+      count_of_candidates:
+        selectedPaymentDetails?.commercial_type == "Batch"
+          ? selectedPaymentDetails?.students?.length
+          : "1",
+      account_number: selectedPaymentDetails?.account_number,
+      commercial_type: selectedPaymentDetails?.commercial_type,
+      students:
+        selectedPaymentDetails?.commercial_type === "Batch"
+          ? `Batch ID: ${selectedPaymentDetails?.batch_number}`
+          : selectedPaymentDetails?.students
+              ?.map((student) => student.student_id || student.customer_name)
+              .join(", ") || "",
+    };
+
+    try {
+      const response = await viewTrainerPayslip(payload);
+      console.log("payslip response", response);
+      const htmlTemplate = response?.data?.data || response?.data;
+      setPayslipHtmlContent(htmlTemplate);
+      setIsOpenViewPayslipModal(true);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later",
+      );
+    } finally {
+      setPayslipLoading(false);
+    }
+  };
+
   return (
     <div>
       {loading ? (
@@ -288,7 +368,7 @@ export default function ViewTrainerPaymentDetails({
                         deadlineDate={calculateDeadlineDate(
                           selectedPaymentDetails?.updated_date,
                           selectedPaymentDetails?.students,
-                          hasPermission
+                          hasPermission,
                         )}
                         status={selectedPaymentDetails?.status}
                         paidDate={selectedPaymentDetails?.paid_date}
@@ -314,7 +394,7 @@ export default function ViewTrainerPaymentDetails({
                           const calcDate = calculateDeadlineDate(
                             selectedPaymentDetails.updated_date,
                             selectedPaymentDetails.students,
-                            hasPermission
+                            hasPermission,
                           );
                           return calcDate ? calcDate.format("DD/MM/YYYY") : "-";
                         })()
@@ -381,7 +461,7 @@ export default function ViewTrainerPaymentDetails({
                   style={{
                     fontWeight: 600,
                     color: "#333",
-                    fontSize: "15px",
+                    fontSize: "14px",
                   }}
                 >
                   Customer Details
@@ -843,534 +923,165 @@ export default function ViewTrainerPaymentDetails({
                                   </Col>
                                 </Row>
                               </div>
-
-                              {/* <Divider className="customer_statusupdate_divider" />
-
-                          <div style={{ padding: "0px 16px" }}>
-                            <div className="trainerpaymentrequest_viewdrawer_customerbadge_container">
-                              <Row gutter={12}>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                      flex: 1,
-                                    }}
-                                  >
-                                    <div className="trainerpaymentrequest_balanceamount_badge" />
-                                    <p className="customer_trainer_onboardcount_badgecount">
-                                      Balance Amount{" "}
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                      flex: 1,
-                                    }}
-                                  >
-                                    <div className="trainerpaymentrequest_classpercentage_badge" />
-                                    <p className="customer_trainer_onboardcount_badgecount">
-                                      Class Pct
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                      flex: 1,
-                                    }}
-                                  >
-                                    <div className="trainerpaymentrequest_linkedin_badge" />
-                                    <p className="customer_trainer_onboardcount_badgecount">
-                                      L-Review{" "}
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                      flex: 1,
-                                    }}
-                                  >
-                                    <div className="trainerpaymentrequest_google_badge" />
-                                    <p className="customer_trainer_onboardcount_badgecount">
-                                      G-Review
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                      flex: 1,
-                                    }}
-                                  >
-                                    <div className="trainerpaymentrequest_certificate_badge" />
-                                    <p className="customer_trainer_onboardcount_badgecount">
-                                      Certificate
-                                    </p>
-                                  </div>
-                                </Col>
-                              </Row>
-
-                              <Row gutter={12} style={{ marginTop: "2px" }}>
-                                <Col flex="20%">
-                                  <p
-                                    style={{
-                                      fontWeight: 600,
-                                      fontSize: "11px",
-                                      padding: "2px 9px",
-                                    }}
-                                  >
-                                    {"₹" + item.balance_amount}
-                                  </p>{" "}
-                                </Col>
-                                <Col flex="20%">
-                                  <p
-                                    style={{
-                                      fontWeight: 600,
-                                      fontSize: "11px",
-                                      padding: "2px 9px",
-                                    }}
-                                  >
-                                    {item.class_percentage
-                                      ? parseFloat(item.class_percentage) + "%"
-                                      : "0" + "%"}
-                                  </p>{" "}
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: "0px",
-                                    }}
-                                  >
-                                    <p
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "11px",
-                                        padding: "2px 9px",
-                                      }}
-                                    >
-                                      {item.linkedin_review
-                                        ? "Collected"
-                                        : "Not Collected"}
-                                    </p>{" "}
-                                    {item.linkedin_review ? (
-                                      <FaRegEye
-                                        size={12}
-                                        style={{
-                                          cursor: "pointer",
-                                          marginTop: "4px",
-                                        }}
-                                        onClick={() => {
-                                          setIsOpenReviewModal(true);
-                                          setReviewType("Linkedin Review");
-                                          setReviewScreenshot(
-                                            item.linkedin_review,
-                                          );
-                                        }}
-                                      />
-                                    ) : (
-                                      ""
-                                    )}
-                                  </div>
-                                </Col>
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: "0px",
-                                    }}
-                                  >
-                                    <p
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "11px",
-                                        padding: "2px 9px",
-                                      }}
-                                    >
-                                      {item.google_review
-                                        ? "Collected"
-                                        : "Not Collected"}
-                                    </p>{" "}
-                                    {item.google_review ? (
-                                      <FaRegEye
-                                        size={12}
-                                        style={{
-                                          cursor: "pointer",
-                                          marginTop: "4px",
-                                        }}
-                                        onClick={() => {
-                                          setIsOpenReviewModal(true);
-                                          setReviewType("Google Review");
-                                          setReviewScreenshot(
-                                            item.google_review,
-                                          );
-                                        }}
-                                      />
-                                    ) : (
-                                      ""
-                                    )}
-                                  </div>
-                                </Col>
-
-                                <Col flex="20%">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: "0px",
-                                    }}
-                                  >
-                                    <p
-                                      style={{
-                                        fontWeight: 600,
-                                        fontSize: "11px",
-                                        padding: "2px 9px",
-                                      }}
-                                    >
-                                      {item.is_certificate_generated == 1
-                                        ? "Generated"
-                                        : "Not Generated"}
-                                    </p>{" "}
-                                    {item.is_certificate_generated == 1 ? (
-                                      <>
-                                        {generateCertLoading ? (
-                                          <CommonSpinner color="#333" />
-                                        ) : (
-                                          <FaRegEye
-                                            size={12}
-                                            style={{
-                                              cursor: "pointer",
-                                              marginTop: "4px",
-                                            }}
-                                            onClick={() => {
-                                              handleViewCert(item.customer_id);
-                                              setCertificateName(
-                                                item.customer_name,
-                                              );
-                                            }}
-                                          />
-                                        )}
-                                      </>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </div>
-                                </Col>
-                              </Row>
-                            </div>
-                          </div> */}
                             </div>
                           </Collapse.Panel>
                         );
                       })}
                     </Collapse>
                   </div>
-
-                  {/* {isShowPaymentDetails && (
-                <>
-                  {selectedPaymentDetails?.payments?.length >= 1 ? (
-                    <div>
-                      <p
-                        style={{
-                          fontWeight: 600,
-                          color: "#333",
-                          fontSize: "16px",
-                        }}
-                      >
-                        Payment History
-                      </p>
-
-                      <div>
-                        <div
-                          style={{ marginTop: "12px", marginBottom: "20px" }}
-                        >
-                          <Collapse
-                            activeKey={collapseDefaultKey}
-                            onChange={(keys) => setCollapseDefaultKey(keys)}
-                            className="customer_updatepayment_history_collapse"
-                          >
-                            {selectedPaymentDetails?.payments?.map(
-                              (item, index) => {
-                                const panelKey = String(index + 1); // convert to string
-                                return (
-                                  <Collapse.Panel
-                                    key={panelKey} // unique key
-                                    header={
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "space-between",
-                                          width: "100%",
-                                          fontSize: "13px",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <span>
-                                          Bill Raise Date -{" "}
-                                          <span style={{ fontWeight: "500" }}>
-                                            {moment(
-                                              selectedPaymentDetails.bill_raisedate,
-                                            ).format("DD/MM/YYYY")}
-                                          </span>
-                                        </span>
-
-                                        {item.status === "Rejected" ? (
-                                          <div className="customer_trans_statustext_container">
-                                            <FaRegCircleXmark color="#d32f2f" />
-                                            <p
-                                              style={{
-                                                color: "#d32f2f",
-                                              }}
-                                            >
-                                              Rejected
-                                            </p>
-                                          </div>
-                                        ) : item.status === "Pending" ? (
-                                          <div className="customer_trans_statustext_container">
-                                            <PiClockCounterClockwiseBold
-                                              size={16}
-                                              color="gray"
-                                            />
-                                            <p
-                                              style={{
-                                                color: "gray",
-                                                fontWeight: 500,
-                                              }}
-                                            >
-                                              {selectedPaymentDetails.status ==
-                                              "Awaiting Approval"
-                                                ? "Waiting for Approval"
-                                                : "Waiting for Pay"}{" "}
-                                            </p>
-                                          </div>
-                                        ) : (
-                                          <div className="customer_trans_statustext_container">
-                                            <BsPatchCheckFill color="#3c9111" />
-                                            <p
-                                              style={{
-                                                color: "#3c9111",
-                                              }}
-                                            >
-                                              Paid
-                                            </p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    }
-                                  >
-                                    <div style={{ padding: "0px 12px" }}>
-                                      <Row
-                                        gutter={16}
-                                        style={{
-                                          marginTop: "6px",
-                                          marginBottom: "8px",
-                                        }}
-                                      >
-                                        <Col span={12}>
-                                          <Row>
-                                            <Col span={12}>
-                                              <div className="customerdetails_rowheadingContainer">
-                                                <p className="customerdetails_rowheading">
-                                                  {item.status == "Paid" ||
-                                                  item.status == "Completed"
-                                                    ? "Paid Amount"
-                                                    : "Requested Amount"}
-                                                </p>
-                                              </div>
-                                            </Col>
-                                            <Col span={12}>
-                                              <p className="customerdetails_text">
-                                                {"₹" + item.paid_amount}
-                                              </p>
-                                            </Col>
-                                          </Row>
-                                        </Col>
-
-                                        <Col span={12}>
-                                          <Row>
-                                            <Col span={12}>
-                                              <div className="customerdetails_rowheadingContainer">
-                                                <p className="customerdetails_rowheading">
-                                                  Payment Type
-                                                </p>
-                                              </div>
-                                            </Col>
-                                            <Col span={12}>
-                                              <p className="customerdetails_text">
-                                                {item.payment_type}
-                                              </p>
-                                            </Col>
-                                          </Row>
-                                        </Col>
-                                      </Row>
-
-                                      {item.status == "Pending" ? (
-                                        ""
-                                      ) : item.status == "Rejected" ? (
-                                        <>
-                                          <Divider className="customer_statusupdate_divider" />
-                                          <div
-                                            style={{
-                                              padding: "0px 12px 6px 0px",
-                                            }}
-                                          >
-                                            <Row>
-                                              <Col span={24}>
-                                                <Row>
-                                                  <Col span={6}>
-                                                    <div className="customerdetails_rowheadingContainer">
-                                                      <p
-                                                        className="customerdetails_rowheading"
-                                                        style={{
-                                                          color: "#d32f2f",
-                                                        }}
-                                                      >
-                                                        Rejection Reason:
-                                                      </p>
-                                                    </div>
-                                                  </Col>
-                                                  <Col span={18}>
-                                                    <p className="customerdetails_text">
-                                                      {item.reason}
-                                                    </p>
-                                                  </Col>
-                                                </Row>
-                                              </Col>
-                                            </Row>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Row
-                                            gutter={16}
-                                            style={{
-                                              marginTop: "16px",
-                                              marginBottom: "12px",
-                                            }}
-                                          >
-                                            <Col span={12}>
-                                              <Row>
-                                                <Col span={12}>
-                                                  <div className="customerdetails_rowheadingContainer">
-                                                    <p className="customerdetails_rowheading">
-                                                      Paid Date
-                                                    </p>
-                                                  </div>
-                                                </Col>
-                                                <Col span={12}>
-                                                  <p className="customerdetails_text">
-                                                    {item.paid_date
-                                                      ? moment(
-                                                          item.paid_date,
-                                                        ).format("DD/MM/YYYY")
-                                                      : "-"}
-                                                  </p>
-                                                </Col>
-                                              </Row>
-                                            </Col>
-
-                                            <Col span={12}>
-                                              <Row>
-                                                <Col span={12}>
-                                                  <div className="customerdetails_rowheadingContainer">
-                                                    <p className="customerdetails_rowheading">
-                                                      Bulk Payment SS
-                                                    </p>
-                                                  </div>
-                                                </Col>
-                                                <Col span={12}>
-                                                  <button
-                                                    className="pendingcustomer_paymentscreenshot_viewbutton"
-                                                    onClick={() => {
-                                                      setIsOpenPaymentScreenshotModal(
-                                                        true,
-                                                      );
-                                                      setTransactionScreenshot(
-                                                        item.payment_screenshot,
-                                                      );
-                                                    }}
-                                                  >
-                                                    <FaRegEye size={16} /> View
-                                                    screenshot
-                                                  </button>
-                                                </Col>
-                                              </Row>
-                                            </Col>
-                                          </Row>
-
-                                          {item.approved_screenshot && (
-                                            <Row
-                                              gutter={16}
-                                              style={{
-                                                marginTop: "16px",
-                                                marginBottom: "12px",
-                                              }}
-                                            >
-                                              <Col span={12}>
-                                                <Row>
-                                                  <Col span={12}>
-                                                    <div className="customerdetails_rowheadingContainer">
-                                                      <p className="customerdetails_rowheading">
-                                                        Ind. Payment SS
-                                                      </p>
-                                                    </div>
-                                                  </Col>
-                                                  <Col span={12}>
-                                                    <button
-                                                      className="pendingcustomer_paymentscreenshot_viewbutton"
-                                                      onClick={() => {
-                                                        setIsOpenPaymentScreenshotModal(
-                                                          true,
-                                                        );
-                                                        setTransactionScreenshot(
-                                                          item.approved_screenshot,
-                                                        );
-                                                      }}
-                                                    >
-                                                      <FaRegEye size={16} />{" "}
-                                                      View screenshot
-                                                    </button>
-                                                  </Col>
-                                                </Row>
-                                              </Col>
-                                            </Row>
-                                          )}
-                                        </>
-                                      )}
-                                    </div>
-                                  </Collapse.Panel>
-                                );
-                              },
-                            )}
-                          </Collapse>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                </>
-              )} */}
                 </div>
               </div>
             ) : (
               ""
             )}
+          </div>
+
+          <Divider className="customer_statusupdate_divider" />
+          <div style={{ padding: "0px 0px 0px 24px" }}>
+            <p
+              style={{
+                fontWeight: 600,
+                color: "#333",
+                fontSize: "14px",
+              }}
+            >
+              Payslip Details
+            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "20px",
+                marginTop: "20px",
+              }}
+            >
+              {selectedPaymentDetails &&
+              selectedPaymentDetails?.students?.length > 0 ? (
+                <>
+                  <div className="customer_registrationform_invoice_icon_container">
+                    <FaFileInvoiceDollar size={24} />
+                  </div>
+
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <p className="customer_registrationform_invoice_heading">
+                        Available Invoices
+                      </p>
+                      <span className="customer_registrationform_invoice_count_batch">
+                        {selectedPaymentDetails?.commercial_type === "Batch"
+                          ? "1 Batch Payslip"
+                          : `${selectedPaymentDetails.students.length} ${
+                              selectedPaymentDetails.students.length === 1
+                                ? "Payslip"
+                                : "Payslips"
+                            }`}
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {selectedPaymentDetails?.commercial_type === "Batch" ? (
+                        <Tooltip
+                          title={
+                            <div style={{ padding: "4px" }}>
+                              <p style={{ margin: 0, fontWeight: 600 }}>
+                                Payslip: Batch -{" "}
+                                {selectedPaymentDetails?.batch_number}
+                              </p>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  opacity: 0.8,
+                                  fontSize: "12px",
+                                }}
+                              >
+                                Amount: ₹{totalCommercial}
+                              </p>
+                            </div>
+                          }
+                        >
+                          <Button
+                            onClick={() =>
+                              handleViewPayslip({
+                                ...selectedPaymentDetails,
+                                commercial:
+                                  selectedPaymentDetails.students.reduce(
+                                    (sum, student) =>
+                                      sum + Number(student.commercial || 0),
+                                    0,
+                                  ),
+                              })
+                            }
+                            className="customer_registrationform_invoice_view_button"
+                          >
+                            <IoReceiptOutline
+                              size={18}
+                              style={{ color: "#5b69ca" }}
+                            />
+                            ₹{totalCommercial}
+                          </Button>
+                        </Tooltip>
+                      ) : (
+                        selectedPaymentDetails.students.map((item, index) => (
+                          <Tooltip
+                            key={index}
+                            title={
+                              <div style={{ padding: "4px" }}>
+                                <p style={{ margin: 0, fontWeight: 600 }}>
+                                  Payslip: {item.customer_name || "Student"}
+                                </p>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    opacity: 0.8,
+                                    fontSize: "12px",
+                                  }}
+                                >
+                                  Amount: ₹{item.commercial}
+                                </p>
+                              </div>
+                            }
+                          >
+                            <Button
+                              onClick={() => handleViewPayslip(item)}
+                              className="customer_registrationform_invoice_view_button"
+                            >
+                              <IoReceiptOutline
+                                size={18}
+                                style={{ color: "#5b69ca" }}
+                              />
+                              ₹{item.commercial}
+                            </Button>
+                          </Tooltip>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <span
+                  style={{
+                    fontSize: "13px",
+                    color: "#d1d5db",
+                    fontStyle: "italic",
+                  }}
+                >
+                  No verified invoices found.
+                </span>
+              )}
+            </div>
           </div>
         </>
       ) : (
@@ -1819,6 +1530,25 @@ export default function ViewTrainerPaymentDetails({
                 ? customerDetails.name
                 : "-"
           }
+        />
+      </Modal>
+
+      {/* view payslip modal */}
+      <Modal
+        open={isOpenViewPayslipModal}
+        onCancel={() => {
+          setIsOpenViewPayslipModal(false);
+          setCurrentPayslipName("");
+        }}
+        footer={false}
+        width="64%"
+        style={{ marginBottom: "20px" }}
+        zIndex={1100}
+        centered
+      >
+        <CommonPayslipViewer
+          htmlTemplate={payslipHtmlContent}
+          trainerName={currentPayslipName}
         />
       </Modal>
     </div>
