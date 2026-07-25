@@ -98,7 +98,10 @@ export default function CommonPayslipViewer({ htmlTemplate, trainerName }) {
 
   const scopedHtmlTemplate = htmlTemplate
     ? htmlTemplate
-        .replace(/body\s*\{/gi, ".payslip-wrapper { box-sizing: border-box; margin: 0 !important; padding: 20px; ")
+        .replace(
+          /body\s*\{/gi,
+          ".payslip-wrapper { box-sizing: border-box; margin: 0 !important; padding: 20px; ",
+        )
         .replace(/table\s*\{/gi, ".payslip-wrapper table {")
     : "";
 
@@ -127,7 +130,7 @@ export default function CommonPayslipViewer({ htmlTemplate, trainerName }) {
         }}
       >
         {loading ? (
-          <Button type="primary" style={{ width: 160, cursor: "default" }}>
+          <Button type="primary" style={{ width: 160, cursor: "not-allowed" }}>
             <CommonSpinner />
           </Button>
         ) : (

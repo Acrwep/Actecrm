@@ -936,153 +936,164 @@ export default function ViewTrainerPaymentDetails({
             )}
           </div>
 
-          <Divider className="customer_statusupdate_divider" />
-          <div style={{ padding: "0px 0px 0px 24px" }}>
-            <p
-              style={{
-                fontWeight: 600,
-                color: "#333",
-                fontSize: "14px",
-              }}
-            >
-              Payslip Details
-            </p>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "20px",
-                marginTop: "20px",
-              }}
-            >
-              {selectedPaymentDetails &&
-              selectedPaymentDetails?.students?.length > 0 ? (
-                <>
-                  <div className="customer_registrationform_invoice_icon_container">
-                    <FaFileInvoiceDollar size={24} />
-                  </div>
-
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <p className="customer_registrationform_invoice_heading">
-                        Available Invoices
-                      </p>
-                      <span className="customer_registrationform_invoice_count_batch">
-                        {selectedPaymentDetails?.commercial_type === "Batch"
-                          ? "1 Batch Payslip"
-                          : `${selectedPaymentDetails.students.length} ${
-                              selectedPaymentDetails.students.length === 1
-                                ? "Payslip"
-                                : "Payslips"
-                            }`}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {selectedPaymentDetails?.commercial_type === "Batch" ? (
-                        <Tooltip
-                          title={
-                            <div style={{ padding: "4px" }}>
-                              <p style={{ margin: 0, fontWeight: 600 }}>
-                                Payslip: Batch -{" "}
-                                {selectedPaymentDetails?.batch_number}
-                              </p>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  opacity: 0.8,
-                                  fontSize: "12px",
-                                }}
-                              >
-                                Amount: ₹{totalCommercial}
-                              </p>
-                            </div>
-                          }
-                        >
-                          <Button
-                            onClick={() =>
-                              handleViewPayslip({
-                                ...selectedPaymentDetails,
-                                commercial:
-                                  selectedPaymentDetails.students.reduce(
-                                    (sum, student) =>
-                                      sum + Number(student.commercial || 0),
-                                    0,
-                                  ),
-                              })
-                            }
-                            className="customer_registrationform_invoice_view_button"
-                          >
-                            <IoReceiptOutline
-                              size={18}
-                              style={{ color: "#5b69ca" }}
-                            />
-                            ₹{totalCommercial}
-                          </Button>
-                        </Tooltip>
-                      ) : (
-                        selectedPaymentDetails.students.map((item, index) => (
-                          <Tooltip
-                            key={index}
-                            title={
-                              <div style={{ padding: "4px" }}>
-                                <p style={{ margin: 0, fontWeight: 600 }}>
-                                  Payslip: {item.customer_name || "Student"}
-                                </p>
-                                <p
-                                  style={{
-                                    margin: 0,
-                                    opacity: 0.8,
-                                    fontSize: "12px",
-                                  }}
-                                >
-                                  Amount: ₹{item.commercial}
-                                </p>
-                              </div>
-                            }
-                          >
-                            <Button
-                              onClick={() => handleViewPayslip(item)}
-                              className="customer_registrationform_invoice_view_button"
-                            >
-                              <IoReceiptOutline
-                                size={18}
-                                style={{ color: "#5b69ca" }}
-                              />
-                              ₹{item.commercial}
-                            </Button>
-                          </Tooltip>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <span
+          {selectedPaymentDetails?.status == "Paid" &&
+          permissions.includes("View Financial Details") ? (
+            <>
+              <Divider className="customer_statusupdate_divider" />
+              <div style={{ padding: "0px 0px 0px 24px" }}>
+                <p
                   style={{
-                    fontSize: "13px",
-                    color: "#d1d5db",
-                    fontStyle: "italic",
+                    fontWeight: 600,
+                    color: "#333",
+                    fontSize: "14px",
                   }}
                 >
-                  No verified invoices found.
-                </span>
-              )}
-            </div>
-          </div>
+                  Payslip Details
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "20px",
+                    marginTop: "20px",
+                  }}
+                >
+                  {selectedPaymentDetails &&
+                  selectedPaymentDetails?.students?.length > 0 ? (
+                    <>
+                      <div className="customer_registrationform_invoice_icon_container">
+                        <FaFileInvoiceDollar size={24} />
+                      </div>
+
+                      <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <p className="customer_registrationform_invoice_heading">
+                            Available Payslips
+                          </p>
+                          <span className="customer_registrationform_invoice_count_batch">
+                            {selectedPaymentDetails?.commercial_type === "Batch"
+                              ? "1 Batch Payslip"
+                              : `${selectedPaymentDetails.students.length} ${
+                                  selectedPaymentDetails.students.length === 1
+                                    ? "Payslip"
+                                    : "Payslips"
+                                }`}
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "10px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {selectedPaymentDetails?.commercial_type ===
+                          "Batch" ? (
+                            <Tooltip
+                              title={
+                                <div style={{ padding: "4px" }}>
+                                  <p style={{ margin: 0, fontWeight: 600 }}>
+                                    Payslip: Batch -{" "}
+                                    {selectedPaymentDetails?.batch_number}
+                                  </p>
+                                  <p
+                                    style={{
+                                      margin: 0,
+                                      opacity: 0.8,
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    Amount: ₹{totalCommercial}
+                                  </p>
+                                </div>
+                              }
+                            >
+                              <Button
+                                onClick={() =>
+                                  handleViewPayslip({
+                                    ...selectedPaymentDetails,
+                                    commercial:
+                                      selectedPaymentDetails.students.reduce(
+                                        (sum, student) =>
+                                          sum + Number(student.commercial || 0),
+                                        0,
+                                      ),
+                                  })
+                                }
+                                className="customer_registrationform_invoice_view_button"
+                              >
+                                <IoReceiptOutline
+                                  size={18}
+                                  style={{ color: "#5b69ca" }}
+                                />
+                                ₹{totalCommercial}
+                              </Button>
+                            </Tooltip>
+                          ) : (
+                            selectedPaymentDetails.students.map(
+                              (item, index) => (
+                                <Tooltip
+                                  key={index}
+                                  title={
+                                    <div style={{ padding: "4px" }}>
+                                      <p style={{ margin: 0, fontWeight: 600 }}>
+                                        Payslip:{" "}
+                                        {item.customer_name || "Student"}
+                                      </p>
+                                      <p
+                                        style={{
+                                          margin: 0,
+                                          opacity: 0.8,
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        Amount: ₹{item.commercial}
+                                      </p>
+                                    </div>
+                                  }
+                                >
+                                  <Button
+                                    onClick={() => handleViewPayslip(item)}
+                                    className="customer_registrationform_invoice_view_button"
+                                  >
+                                    <IoReceiptOutline
+                                      size={18}
+                                      style={{ color: "#5b69ca" }}
+                                    />
+                                    ₹{item.commercial}
+                                  </Button>
+                                </Tooltip>
+                              ),
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        color: "#d1d5db",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      No verified invoices found.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            ""
+          )}
         </>
       ) : (
         <div style={{ padding: "24px", textAlign: "center" }}>
