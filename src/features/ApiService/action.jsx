@@ -1001,6 +1001,15 @@ export const assignTrainerForCustomer = async (payload) => {
   }
 };
 
+export const updateTrainerForCustomer = async (payload) => {
+  try {
+    const response = await api.put("/api/updateCustomerTrainer", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAssignTrainerHistoryForCustomer = async (payload) => {
   try {
     const response = await api.get("/api/getTrainerHistory", {

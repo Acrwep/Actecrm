@@ -59,7 +59,7 @@
   font-weight: 500;
   padding: 5px 0px;
   width: 95px;
-  cursor: default;
+  cursor: not-allowed;
   display: flex;
   justify-content: center;
   align-items: center;

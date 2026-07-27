@@ -663,15 +663,47 @@ export default function Customers() {
                           Assign Trainer
                         </Checkbox>
                       ) : (
-                        <div
-                          className="customers_classcompleted_container"
-                          style={{ marginBottom: "6px" }}
-                        >
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Trainer Assigned
-                          </p>
-                        </div>
+                        <>
+                          {permissions.includes("Update Assigned Trainer") ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <button
+                                className="customers_update_trainer_button"
+                                onClick={() => {
+                                  if (
+                                    !permissions.includes(
+                                      "Update Assigned Trainer",
+                                    )
+                                  ) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  getParticularCustomerDetails(record?.id);
+                                  setDrawerContentStatus(
+                                    "Update Assigned Trainer",
+                                  );
+                                  setIsStatusUpdateDrawer(true);
+                                }}
+                              >
+                                Update Trainer
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              className="customers_classcompleted_container"
+                              style={{ marginBottom: "6px" }}
+                            >
+                              <BsPatchCheckFill color="#3c9111" />
+                              <p className="customers_classgoing_completedtext">
+                                Trainer Assigned
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </Col>
 
@@ -3867,7 +3899,8 @@ export default function Customers() {
               </>
             ) : drawerContentStatus === "Assign Trainer" ||
               drawerContentStatus === "Trainer Verify" ||
-              drawerContentStatus === "Trainer Approval" ? (
+              drawerContentStatus === "Trainer Approval" ||
+              drawerContentStatus === "Update Assigned Trainer" ? (
               <>
                 <AssignAndVerifyTrainer
                   ref={assignAndVerifyTrainerRef}
@@ -4146,17 +4179,28 @@ export default function Customers() {
               ) : (
                 <>
                   {updateButtonLoading ? (
-                    <button className="users_adddrawer_loadingcreatebutton">
+                    <button
+                      className={
+                        drawerContentStatus === "Update Assigned Trainer"
+                          ? "customers_drawer_update_trainer_loading_button"
+                          : "users_adddrawer_loadingcreatebutton"
+                      }
+                    >
                       <CommonSpinner />
                     </button>
                   ) : (
                     <button
-                      className="users_adddrawer_createbutton"
+                      className={
+                        drawerContentStatus === "Update Assigned Trainer"
+                          ? "customers_drawer_update_trainer_button"
+                          : "users_adddrawer_createbutton"
+                      }
                       onClick={
                         drawerContentStatus === "Student Verify"
                           ? () =>
                               studentVerifyRef.current?.handleStudentVerify()
-                          : drawerContentStatus === "Assign Trainer"
+                          : drawerContentStatus === "Assign Trainer" ||
+                              drawerContentStatus === "Update Assigned Trainer"
                             ? () =>
                                 assignAndVerifyTrainerRef.current?.handleAssignTrainer()
                             : drawerContentStatus === "Re-Assign Trainer"
@@ -4187,18 +4231,20 @@ export default function Customers() {
                     >
                       {drawerContentStatus === "Assign Trainer"
                         ? "Assign"
-                        : drawerContentStatus === "Trainer Approval"
-                          ? "Approve"
-                          : drawerContentStatus === "Re-Assign Trainer"
-                            ? "Re-Assign"
-                            : drawerContentStatus === "Class Going" ||
-                                drawerContentStatus === "Class Schedule" ||
-                                drawerContentStatus === "Add G-Review" ||
-                                drawerContentStatus === "Others"
-                              ? "Update"
-                              : drawerContentStatus == "Pre Certificate"
-                                ? "Generate"
-                                : "Verify"}
+                        : drawerContentStatus === "Update Assigned Trainer"
+                          ? "Update Trainer"
+                          : drawerContentStatus === "Trainer Approval"
+                            ? "Approve"
+                            : drawerContentStatus === "Re-Assign Trainer"
+                              ? "Re-Assign"
+                              : drawerContentStatus === "Class Going" ||
+                                  drawerContentStatus === "Class Schedule" ||
+                                  drawerContentStatus === "Add G-Review" ||
+                                  drawerContentStatus === "Others"
+                                ? "Update"
+                                : drawerContentStatus == "Pre Certificate"
+                                  ? "Generate"
+                                  : "Verify"}
                     </button>
                   )}
                 </>

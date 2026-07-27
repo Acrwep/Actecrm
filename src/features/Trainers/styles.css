@@ -703,8 +703,33 @@
     transform 0.4s ease-in-out,
     opacity 0.4s ease-in-out;
 }
+.customer_trainer_badge_mainconatiner {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.customer_trainer_onboardcount_badgecount_container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border: 1px solid #a29bfe82;
+  background-color: #a29bfe15;
+  color: #a29bfe;
+  border-radius: 5px;
+}
 .customer_trainer_onboardcount_badgecount {
   font-size: 12px !important;
+}
+.customer_trainer_ongoingcount_badgecount_container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border: 1px solid #00cecb5e;
+  background-color: #00cecb10;
+  color: #00cec9;
+  border-radius: 5px;
 }
 .trainerpaymentrequest_balanceamount_badge {
   border-radius: 50%;

@@ -743,6 +743,18 @@
   border-color: rgb(128 128 128 / 38%) !important;
   outline: none !important;
 }
+.customers_update_trainer_button {
+  background-color: #1e90ff !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
 .customers_classgoing_updatebutton {
   background-color: #00cec9 !important;
   color: #fff !important;
@@ -1132,7 +1144,7 @@
 }
 .customer_trainer_cusomer_heading {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   color: #333;
   margin-bottom: 12px !important;
 }
@@ -1944,4 +1956,34 @@
   font-weight: 800;
   color: #e11d48;
   letter-spacing: 0.5px;
+}
+.customers_drawer_update_trainer_button {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 125px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.customers_drawer_update_trainer_loading_button {
+  background-color: #5b69ca;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #5805ff0f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 0px;
+  width: 125px;
+  cursor: not-allowed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.7;
 }

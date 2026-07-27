@@ -4,7 +4,16 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Tooltip, Checkbox, Modal, Button, Rate } from "antd";
+import {
+  Row,
+  Col,
+  Tooltip,
+  Checkbox,
+  Modal,
+  Button,
+  Rate,
+  Skeleton,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import { Country, State } from "country-state-city";
 import { MdAdd, MdPerson, MdCheck } from "react-icons/md";
@@ -224,7 +233,8 @@ const AddNewLead = forwardRef(
     const [leadOwnerName, setLeadOwnerName] = useState("");
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
-
+    //loading
+    const [loading, setLoading] = useState(false);
     // Action bar scroll animation
     const [showActionBar, setShowActionBar] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
@@ -331,6 +341,7 @@ const AddNewLead = forwardRef(
 
     const fetchLeadDetails = async () => {
       if (updateLeadItem) {
+        setLoading(true);
         console.log("updateLeadItem", updateLeadItem);
         // setTimeout(() => {
         //   const drawerBody = document.querySelector(
@@ -517,6 +528,7 @@ const AddNewLead = forwardRef(
     };
 
     const getBranchManagersData = async (branchId) => {
+      setLoading(true);
       const payload = {
         branch_id: branchId,
       };
@@ -548,6 +560,8 @@ const AddNewLead = forwardRef(
         }
       } catch (error) {
         console.log("get branch managers error", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -634,6 +648,7 @@ const AddNewLead = forwardRef(
     };
 
     const getSaleUsersData = async () => {
+      setLoading(true);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
@@ -664,6 +679,8 @@ const AddNewLead = forwardRef(
       } catch (error) {
         setSaleUsers([]);
         console.log("get sale users error", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -1405,38 +1422,6 @@ const AddNewLead = forwardRef(
       );
     };
 
-    const ReadOnlyField = ({ label, value }) => (
-      <div style={{ marginBottom: "16px" }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: "12px",
-            color: "#475569",
-            marginBottom: "6px",
-            fontWeight: 500,
-          }}
-        >
-          {label}
-        </label>
-        <div
-          style={{
-            padding: "0 12px",
-            background: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            borderRadius: "6px",
-            fontSize: "13px",
-            color: "#64748b",
-            minHeight: "36px",
-            display: "flex",
-            alignItems: "center",
-            fontWeight: 500,
-          }}
-        >
-          {value}
-        </div>
-      </div>
-    );
-
     const cardStyle = {
       background: "#fff",
       padding: "16px 12px",
@@ -1446,61 +1431,29 @@ const AddNewLead = forwardRef(
       marginBottom: "14px",
     };
 
-    const StatusTimelineItem = ({ status, color, isSmall, isLast, icon }) => (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          marginBottom: isLast ? "0" : "6px",
-          position: "relative",
-        }}
-      >
-        {!isLast && (
+    if (loading) {
+      return (
+        <div
+          style={{
+            minHeight: "100%",
+            padding: "24px",
+            fontFamily: "'Inter', sans-serif",
+            margin: "-24px",
+          }}
+        >
           <div
             style={{
-              position: "absolute",
-              left: "8px",
-              top: "20px",
-              bottom: "-10px",
-              width: "2px",
-              borderLeft: "2px dotted #cbd5e1",
-              zIndex: 0,
+              background: "#fff",
+              padding: "24px",
+              borderRadius: "8px",
+              height: "100%",
             }}
-          ></div>
-        )}
-        <div
-          style={{
-            width: "16px",
-            height: "16px",
-            borderRadius: "50%",
-            background: color,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1,
-            transform: isSmall ? "scale(0.4)" : "none",
-            color: "#fff",
-            fontSize: "1px",
-            fontWeight: "bold",
-            boxShadow: "0 0 0 4px #fff",
-          }}
-        >
-          {icon}
+          >
+            <Skeleton active paragraph={{ rows: 15 }} />
+          </div>
         </div>
-        <div
-          style={{
-            marginLeft: "12px",
-            fontSize: "12px",
-            fontWeight: 700,
-            color: "#1e293b",
-            paddingTop: "2px",
-            letterSpacing: "0.2px",
-          }}
-        >
-          {status}
-        </div>
-      </div>
-    );
+      );
+    }
 
     return (
       <div
@@ -2068,7 +2021,7 @@ const AddNewLead = forwardRef(
                   ...cardStyle,
                   ...(isReAssign ||
                   (updateLeadItem?.completed_followup_count != null &&
-                    updateLeadItem?.completed_followup_count !== 0)
+                    updateLeadItem?.completed_followup_count != 0)
                     ? {
                         background: "#eff6ff",
                         pointerEvents: "none",
@@ -2115,7 +2068,7 @@ const AddNewLead = forwardRef(
                     error={""}
                     disabled={
                       updateLeadItem?.completed_followup_count != null &&
-                      updateLeadItem?.completed_followup_count !== 0
+                      updateLeadItem?.completed_followup_count != 0
                     }
                     height={"35px"}
                     fontSize={"13px"}
@@ -2182,7 +2135,7 @@ const AddNewLead = forwardRef(
                     error={contactModeError}
                     disabled={
                       (updateLeadItem?.completed_followup_count != null &&
-                        updateLeadItem?.completed_followup_count !== 0) ||
+                        updateLeadItem?.completed_followup_count != 0) ||
                       !communicationStatus
                     }
                     height={"35px"}
@@ -2499,7 +2452,7 @@ const AddNewLead = forwardRef(
                   ...(contactMode == 6 ||
                   leadTemperature == 6 ||
                   (updateLeadItem?.completed_followup_count != null &&
-                    updateLeadItem?.completed_followup_count !== 0)
+                    updateLeadItem?.completed_followup_count != 0)
                     ? {
                         background: "#eff6ff",
                         pointerEvents: "none",
@@ -2593,7 +2546,7 @@ const AddNewLead = forwardRef(
                       leadTemperature == null ||
                       leadTemperature == 6 ||
                       (updateLeadItem?.completed_followup_count != null &&
-                        updateLeadItem?.completed_followup_count !== 0 &&
+                        updateLeadItem?.completed_followup_count != 0 &&
                         isReAssign == false)
                     }
                   />

@@ -43,6 +43,7 @@ import {
   rejectTrainerForCustomer,
   sendNotification,
   updateCustomerStatus,
+  updateTrainerForCustomer,
   verifyTrainerForCustomer,
 } from "../ApiService/action";
 import {
@@ -56,6 +57,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
+import "./styles.css";
 
 const AssignAndVerifyTrainer = forwardRef(
   (
@@ -109,6 +111,14 @@ const AssignAndVerifyTrainer = forwardRef(
     const [customerByTrainerLoading, setCustomerByTrainerLoading] =
       useState(false);
     const [buttonLoading, setButtonLoading] = useState(false);
+
+    //pagination
+    const [pagination, setPagination] = useState({
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 0,
+    });
 
     /* ---------------- Trainer STATES ---------------- */
     const [trainersData, setTrainersData] = useState([]);
@@ -183,6 +193,9 @@ const AssignAndVerifyTrainer = forwardRef(
         dataIndex: "class_percentage",
         width: 115,
         fixed: "right",
+        render: (text) => {
+          return <p>{text ? `${parseInt(text)}%` : `0%`}</p>;
+        },
       },
       {
         title: "Trainer Commercial",
@@ -214,6 +227,22 @@ const AssignAndVerifyTrainer = forwardRef(
         if (historyData.length >= 1) {
           const reverseData = historyData.reverse();
           setTrainerHistory(reverseData);
+
+          if (drawerContentStatus === "Update Assigned Trainer") {
+            const currentTrainerDetails = reverseData[0];
+            console.log("currentTrainerDetails", currentTrainerDetails);
+
+            if (currentTrainerDetails) {
+              setSelectedTrainerId(currentTrainerDetails.trainer_id);
+              setCommercial(currentTrainerDetails.commercial);
+              setModeOfClass(currentTrainerDetails.mode_of_class);
+              setAssignTrainerComments(currentTrainerDetails.comments);
+              setAssignTrainerProofBase64(
+                currentTrainerDetails.proof_communication,
+              );
+              setTrainerType(currentTrainerDetails.trainer_type || "");
+            }
+          }
           setTimeout(() => {
             setHistoryLoading(false);
           }, 300);
@@ -230,7 +259,8 @@ const AssignAndVerifyTrainer = forwardRef(
         setTimeout(() => {
           if (
             drawerContentStatus == "Trainer Verify" ||
-            drawerContentStatus == "Trainer Approval"
+            drawerContentStatus == "Trainer Approval" ||
+            drawerContentStatus === "Update Assigned Trainer"
           ) {
             getAssignTrainerData();
           }
@@ -246,7 +276,12 @@ const AssignAndVerifyTrainer = forwardRef(
             : null,
         );
         const trainerDetails = response?.data?.data;
-        setAssignTrainerData(trainerDetails);
+        console.log("trainerDetailssssssssssssss", trainerDetails);
+        if (drawerContentStatus === "Update Assigned Trainer") {
+          setSelectedTrainerObject(trainerDetails);
+        } else {
+          setAssignTrainerData(trainerDetails);
+        }
       } catch (error) {
         setAssignTrainerData(null);
         console.log("get trainer by id error", error);
@@ -255,25 +290,19 @@ const AssignAndVerifyTrainer = forwardRef(
       }
     };
 
-    // const getTrainersData = async () => {
-    //     setLoading(true);
-    //     const payload = {
-    //       status: "Verified",
-    //       page: 1,
-    //       limit: 1000,
-    //     };
-    //     try {
-    //       const response = await getTrainers(payload);
-    //       setTrainersData(response?.data?.data?.trainers || []);
-    //     } catch (error) {
-    //       setTrainersData([]);
-    //       console.log(error);
-    //     } finally {
-    //       setTimeout(() => {
-    //         getAllDownlineUsersData(null);
-    //       }, 300);
-    //     }
-    //   };
+    const getTrainerByIdData = async (trainerId) => {
+      try {
+        const response = await getTrainerById(trainerId);
+        const trainerDetails = response?.data?.data;
+        setSelectedTrainerId(trainerId);
+        setClickedTrainerDetails([trainerDetails]);
+        setSelectedTrainerObject(trainerDetails);
+        setTrainerSearchText(trainerDetails.name);
+      } catch (error) {
+        setClickedTrainerDetails([]);
+        console.log("get trainer by id error", error);
+      }
+    };
 
     /* ---------------- FETCH TRAINERS ---------------- */
     const getTrainersData = async (searchvalue, pageNumber = 1) => {
@@ -509,43 +538,61 @@ const AssignAndVerifyTrainer = forwardRef(
         mode_of_class: modeOfClass,
         trainer_type: trainerType,
         created_date: formatToBackendIST(today),
+        ...(drawerContentStatus === "Update Assigned Trainer" && {
+          updated_by: converAsJson?.user_id,
+        }),
       };
 
-      try {
-        await assignTrainerForCustomer(payload);
-        CommonMessage("success", "Updated Successfully");
-        setTimeout(async () => {
-          const payload = {
-            customer_ids: [
-              {
-                customer_id: customerDetails.id,
-                status: "Awaiting Trainer Verify",
-                updated_at: formatToBackendIST(new Date()),
-                updated_by: converAsJson?.user_id || "",
-              },
-            ],
-          };
-          try {
-            await updateCustomerStatus(payload);
-            handleCustomerTrack("Trainer Assigned");
-            setTimeout(() => {
-              handleSecondCustomerTrack("Awaiting Trainer Verify");
-            }, 300);
-          } catch (error) {
-            CommonMessage(
-              "error",
-              error?.response?.data?.message ||
-                "Something went wrong. Try again later",
-            );
-          }
-        }, 300);
-      } catch (error) {
-        setUpdateButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
+      if (drawerContentStatus === "Update Assigned Trainer") {
+        try {
+          await updateTrainerForCustomer(payload);
+          CommonMessage("success", "Updated Successfully");
+          handleCustomerTrack("Trainer Updated");
+        } catch (error) {
+          setUpdateButtonLoading(false);
+          CommonMessage(
+            "error",
+            error?.response?.data?.details ||
+              "Something went wrong. Try again later",
+          );
+        }
+      } else {
+        try {
+          await assignTrainerForCustomer(payload);
+          CommonMessage("success", "Updated Successfully");
+          setTimeout(async () => {
+            const payload = {
+              customer_ids: [
+                {
+                  customer_id: customerDetails.id,
+                  status: "Awaiting Trainer Verify",
+                  updated_at: formatToBackendIST(new Date()),
+                  updated_by: converAsJson?.user_id || "",
+                },
+              ],
+            };
+            try {
+              await updateCustomerStatus(payload);
+              handleCustomerTrack("Trainer Assigned");
+              setTimeout(() => {
+                handleSecondCustomerTrack("Awaiting Trainer Verify");
+              }, 300);
+            } catch (error) {
+              CommonMessage(
+                "error",
+                error?.response?.data?.message ||
+                  "Something went wrong. Try again later",
+              );
+            }
+          }, 300);
+        } catch (error) {
+          setUpdateButtonLoading(false);
+          CommonMessage(
+            "error",
+            error?.response?.data?.details ||
+              "Something went wrong. Try again later",
+          );
+        }
       }
     };
 
@@ -758,7 +805,8 @@ const AssignAndVerifyTrainer = forwardRef(
               converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
             status_date: formatToBackendIST(today),
             // details: assignTrainerDetails,
-            ...(updatestatus && updatestatus === "Trainer Assigned"
+            ...((updatestatus && updatestatus === "Trainer Assigned") ||
+            updatestatus === "Trainer Updated"
               ? { details: assignTrainerDetails }
               : updatestatus === "Trainer Approval Rejected"
                 ? { details: approvalRejectedDetails }
@@ -846,6 +894,13 @@ const AssignAndVerifyTrainer = forwardRef(
       } catch (error) {
         console.log("send notification error", error);
       }
+    };
+
+    const handlePaginationChange = ({ page, limit }) => {
+      setPagination({
+        page: page,
+        limit: limit,
+      });
     };
 
     return (
@@ -1186,12 +1241,15 @@ const AssignAndVerifyTrainer = forwardRef(
           )}
         </div>
 
-        {drawerContentStatus == "Assign Trainer" ? (
+        {drawerContentStatus == "Assign Trainer" ||
+        drawerContentStatus === "Update Assigned Trainer" ? (
           <>
             <Divider className="customer_statusupdate_divider" />
             <div className="customer_statusupdate_adddetailsContainer">
               <p className="customer_statusupdate_adddetails_heading">
-                Assign New Trainer
+                {drawerContentStatus == "Assign Trainer"
+                  ? "Assign New Trainer"
+                  : "Update Trainer"}
               </p>
 
               <Row gutter={16} style={{ marginTop: "14px" }}>
@@ -1247,7 +1305,6 @@ const AssignAndVerifyTrainer = forwardRef(
                         required={true}
                         options={mergedTrainers}
                         value={selectedTrainerId}
-                        inputValue={trainerSearchText}
                         onChange={handleTrainerSelect}
                         onInputChange={handleTrainerSearch}
                         onDropdownOpen={handleTrainerDropdownOpen}
@@ -1267,7 +1324,7 @@ const AssignAndVerifyTrainer = forwardRef(
                         trigger={["hover", "click"]}
                       >
                         <FaRegEye
-                          size={17}
+                          size={14.5}
                           className="trainers_action_icons"
                           onClick={() => {
                             setIsOpenTrainerDetailModal(true);
@@ -1898,7 +1955,9 @@ const AssignAndVerifyTrainer = forwardRef(
                     </Col>
                     <Col span={12}>
                       <p className="customerdetails_text">
-                        {item.skills.map((item) => item.name).join(", ")}
+                        {item.skills && Array.isArray(item.skills)
+                          ? item.skills.map((skill) => skill.name).join(", ")
+                          : "-"}
                       </p>
                     </Col>
                   </Row>
@@ -1909,10 +1968,8 @@ const AssignAndVerifyTrainer = forwardRef(
 
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div className="customer_trainer_badge_mainconatiner">
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <div className="customer_trainer_onboardcount_badge" />
+              <div className="customer_trainer_onboardcount_badgecount_container">
+                {/* <div className="customer_trainer_onboardcount_badge" /> */}
                 <p className="customer_trainer_onboardcount_badgecount">
                   Class Taken{" "}
                   <span style={{ fontWeight: 600 }}>
@@ -1922,10 +1979,8 @@ const AssignAndVerifyTrainer = forwardRef(
                 </p>
               </div>
 
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <div className="customer_trainer_goingcount_badge" />
+              <div className="customer_trainer_ongoingcount_badgecount_container">
+                {/* <div className="customer_trainer_goingcount_badge" /> */}
                 <p className="customer_trainer_onboardcount_badgecount">
                   Class Going{" "}
                   <span style={{ fontWeight: 600 }}>
@@ -1970,6 +2025,10 @@ const AssignAndVerifyTrainer = forwardRef(
             checkBox="false"
             size="small"
             className="questionupload_table"
+            onPaginationChange={handlePaginationChange} // callback to fetch new data
+            limit={pagination.limit} // page size
+            page_number={pagination.page} // current page
+            totalPageNumber={pagination.total} // total rows
           />
         </Modal>
 

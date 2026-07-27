@@ -23,6 +23,7 @@ import { GrUpdate } from "react-icons/gr";
 import { BsStopCircle } from "react-icons/bs";
 import { IoBan } from "react-icons/io5";
 import { RiRefund2Fill } from "react-icons/ri";
+import { LuSend } from "react-icons/lu";
 import "./styles.css";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import {
@@ -276,6 +277,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
       item.status.includes("Form Submitted") ||
       item.status.includes("Class Completion Acknowledged") ||
       item.status.includes("Down") ||
+      item.status.includes("Paid") ||
       item.status.includes("Assigned") ||
       item.status.includes("Claim") ||
       item.status.includes("Added") ||
@@ -301,6 +303,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
       ) : item.status.includes("Awaiting") ||
         item.status.includes("Passedout") ? (
         <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
+      ) : item.status.includes("Class Completion Acknowledgement Sent") ||
+        item.status.includes("Class Completion Acknowledgeme") ? (
+        <LuSend size={16} style={{ color: "gray" }} />
       ) : undefined,
     label: (
       <span
@@ -386,6 +391,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
             </button>
           </div>
         ) : item.status === "Trainer Assigned" ||
+          item.status === "Trainer Updated" ||
           item.status === "Trainer Re-Assigned" ? (
           <div>
             <p className="customer_history_updateddate">

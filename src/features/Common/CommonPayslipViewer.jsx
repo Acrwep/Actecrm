@@ -88,7 +88,7 @@ export default function CommonPayslipViewer({ htmlTemplate, trainerName }) {
         "FAST",
       );
 
-      pdf.save(`${trainerName}_Acte_Payslip.pdf`);
+      pdf.save(`${trainerName}_Freelancer_Payslip.pdf`);
     } catch (error) {
       console.error("PDF Generation Error:", error);
     } finally {
