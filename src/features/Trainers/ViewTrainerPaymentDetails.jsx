@@ -184,8 +184,8 @@ export default function ViewTrainerPaymentDetails({
       batch_code: selectedPaymentDetails?.batch_number,
       training_mode:
         selectedPaymentDetails?.commercial_type === "Batch"
-          ? selectedPaymentDetails?.students[0]?.mode_of_training
-          : item?.mode_of_training,
+          ? selectedPaymentDetails?.students[0]?.training_mode
+          : item?.training_mode,
       total_hours_taken:
         selectedPaymentDetails?.commercial_type === "Batch"
           ? totalHours

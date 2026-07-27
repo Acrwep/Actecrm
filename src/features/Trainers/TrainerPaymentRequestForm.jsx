@@ -830,7 +830,7 @@ const TrainerPaymentRequestForm = forwardRef(
           }}
         >
           <p className="trainer_paymentrequestform_headings">Bank Details</p>
-          {isTrainer && (
+          {isTrainer && !isBankEdit && (
             <div
               style={{
                 display: "flex",
@@ -840,8 +840,10 @@ const TrainerPaymentRequestForm = forwardRef(
               }}
               onClick={() => setIsBankEdit(true)}
             >
-              <AiOutlineEdit />
-              <p style={{ fontSize: "13px", fontWeight: 500 }}>Edit</p>
+              <AiOutlineEdit color="#333" />
+              <p style={{ fontSize: "13px", fontWeight: 500, color: "#333" }}>
+                Edit
+              </p>
             </div>
           )}
         </div>
