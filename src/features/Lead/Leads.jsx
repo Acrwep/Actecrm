@@ -1491,7 +1491,7 @@ export default function Leads({
           "only_enquiry",
         ].includes(currentAction) && { lead_action: currentAction }),
       ...(bucket === "Valid Leads" &&
-        ["validated", "junk"].includes(currentAction) && {
+        ["validated", "need_screening", "junk"].includes(currentAction) && {
           lead_action: currentAction,
         }),
       ...(bucket === "Eligible Leads" &&
@@ -3156,13 +3156,16 @@ export default function Leads({
                   const displayName =
                     key === "validated"
                       ? "Validated"
-                      : key === "junk"
-                        ? "Junk"
-                        : key;
+                      : key === "need_screening"
+                        ? "Need Screening"
+                        : key === "junk"
+                          ? "Junk"
+                          : key;
                   const isActive = leadActionFilter === key;
                   const validColorMap = {
                     validated: "#16a34a",
                     junk: "#dc2626",
+                    need_screening: "#eab308",
                   };
                   const baseColor = validColorMap[key] || "#3b82f6";
 

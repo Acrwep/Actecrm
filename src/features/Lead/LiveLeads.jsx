@@ -93,6 +93,7 @@ export default function LiveLead({
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
   const [liveLeadAllCounts, setLiveLeadAllCounts] = useState(null);
+  const [trashLeadAllCounts, setTrashLeadAllCounts] = useState(null);
   const [loginUserId, setLoginUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   //pick lead drawer
@@ -636,9 +637,11 @@ export default function LiveLead({
 
       setLeadData(response?.data?.data?.data || []);
       const count = response?.data?.data?.lead_count || null;
+      const trashCount = response?.data?.data?.trash_count || null;
       paginationRef.current = paginations;
 
       setLiveLeadAllCounts(count);
+      setTrashLeadAllCounts(trashCount);
       setLiveLeadCount(liveLeads);
       setPagination({
         page: paginations.page,
@@ -649,6 +652,7 @@ export default function LiveLead({
     } catch (error) {
       setLeadData([]);
       setLiveLeadAllCounts(null);
+      setTrashLeadAllCounts(null);
       console.log("get live lead error", error);
     } finally {
       setTimeout(() => {
@@ -1478,62 +1482,6 @@ export default function LiveLead({
         </Col>
       </Row>
 
-      <div className="livelead_today_summary_container">
-        <p className="livelead_today_label">Today</p>
-
-        <div className="livelead_badge_item online">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#3c9111" }}
-          />
-          <p className="livelead_badge_text">
-            Online{" "}
-            <span className="livelead_badge_count">
-              {liveLeadAllCounts?.online_count ?? "-"}
-            </span>
-          </p>
-        </div>
-
-        <div className="livelead_badge_item classroom">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#1e90ff" }}
-          />
-          <p className="livelead_badge_text">
-            Classroom{" "}
-            <span className="livelead_badge_count">
-              {liveLeadAllCounts?.classroom_count ?? "-"}
-            </span>
-          </p>
-        </div>
-
-        <div className="livelead_badge_item corporate">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#607d8b" }}
-          />
-          <p className="livelead_badge_text">
-            Corporate{" "}
-            <span className="livelead_badge_count">
-              {liveLeadAllCounts?.corporate_count ?? "-"}
-            </span>
-          </p>
-        </div>
-
-        <div className="livelead_badge_item total">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#5b69ca" }}
-          />
-          <p className="livelead_badge_text">
-            Total{" "}
-            <span className="livelead_badge_count">
-              {liveLeadAllCounts?.total_count || 0}
-            </span>
-          </p>
-        </div>
-      </div>
-
       <div
         style={{
           marginTop: "15px",
@@ -1596,6 +1544,120 @@ export default function LiveLead({
           Trash {`( ${bucketCounts.trash_leads || 0} )`}
         </div>
       </div>
+
+      {selectedBucket === "Trash" ? (
+        <div className="livelead_today_summary_container">
+          <p className="livelead_today_label">Region Summary</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {trashLeadAllCounts?.hub ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {trashLeadAllCounts?.chennai ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#607d8b" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {trashLeadAllCounts?.bangalore ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item total">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Total{" "}
+              <span className="livelead_badge_count">
+                {trashLeadAllCounts?.total || 0}
+              </span>
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="livelead_today_summary_container">
+          <p className="livelead_today_label">Today</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Online{" "}
+              <span className="livelead_badge_count">
+                {liveLeadAllCounts?.online_count ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Classroom{" "}
+              <span className="livelead_badge_count">
+                {liveLeadAllCounts?.classroom_count ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#607d8b" }}
+            />
+            <p className="livelead_badge_text">
+              Corporate{" "}
+              <span className="livelead_badge_count">
+                {liveLeadAllCounts?.corporate_count ?? "-"}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item total">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Total{" "}
+              <span className="livelead_badge_count">
+                {liveLeadAllCounts?.total_count || 0}
+              </span>
+            </p>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
