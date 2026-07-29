@@ -773,6 +773,7 @@ export default function Leads({
         "valid_leads",
         "eligible_leads",
         "interested_leads",
+        "followup_leads",
         "joinings",
         "leads",
       ].includes(activePage) &&
@@ -817,6 +818,14 @@ export default function Leads({
         setSelectedUserId(filterValuesFromRedux.user_id);
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
 
+        const initialActionFilter = 
+          targetBucket === "Followup Leads"
+            ? "sale_ready_leads"
+            : targetBucket === "Interested Leads"
+              ? "super_hot"
+              : "all";
+        setLeadActionFilter(initialActionFilter);
+
         dispatch(
           storeLeadFilterValues({
             bucket: targetBucket === "all" ? "" : targetBucket,
@@ -834,6 +843,7 @@ export default function Leads({
             ? filterValuesFromRedux.user_id
             : convertAsJson?.user_id,
           targetBucket === "all" ? "" : targetBucket,
+          initialActionFilter
         );
       }
     }
@@ -1424,7 +1434,7 @@ export default function Leads({
     }
   };
 
-  const getAllDownlineUsersData = async (user_id, bucketOverride) => {
+  const getAllDownlineUsersData = async (user_id, bucketOverride, actionOverride) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -1454,6 +1464,7 @@ export default function Leads({
             : filterValuesFromRedux.bucket,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
+        actionOverride
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -1503,7 +1514,13 @@ export default function Leads({
           "exploring_leads",
           "not_responding_leads",
           "not_interested_leads",
-        ].includes(currentAction) && { lead_action: currentAction }),
+        ].includes(currentAction) && {
+          lead_action: currentAction
+            .split("_")
+            .filter((word) => word.toLowerCase() !== "leads")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+        }),
       ...(bucket === "Interested Leads" &&
         [
           "super_hot",
@@ -1513,10 +1530,20 @@ export default function Leads({
           "not_interested",
           "dormant",
           "only_enquiry",
-        ].includes(currentAction) && { lead_action: currentAction }),
+        ].includes(currentAction) && {
+          lead_action: currentAction
+            .split("_")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+        }),
       ...(bucket === "Valid Leads" &&
         ["validated", "need_screening", "junk"].includes(currentAction) && {
-          lead_action: currentAction,
+          lead_action:
+            currentAction === "validated"
+              ? "Validated"
+              : currentAction === "need_screening"
+                ? "Need Screening"
+                : "Junk",
         }),
       ...(bucket === "Eligible Leads" &&
         [
@@ -1528,10 +1555,10 @@ export default function Leads({
         ].includes(currentAction) && {
           lead_action:
             currentAction === "communicated"
-              ? "communicated"
+              ? "Communicated"
               : currentAction === "not_communicated"
-                ? "not communicated"
-                : "data correct but no response",
+                ? "Not Communicated"
+                : "Data Correct But No Response",
         }),
       page: pageNumber,
       limit: limit,

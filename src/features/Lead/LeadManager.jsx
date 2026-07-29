@@ -643,9 +643,9 @@ export default function LeadManager() {
         "valid_leads",
         "eligible_leads",
         "interested_leads",
-          "followup_leads",
-          "joinings",
-        ].includes(activePage);
+        "followup_leads",
+        "joinings",
+      ].includes(activePage);
 
       const keyToIncrement = isLeadBucket ? "leads" : activePage;
 
@@ -788,7 +788,6 @@ export default function LeadManager() {
               style={{ margin: 0 }}
             >{`Followup Leads (${bucketCounts.followup_leads || 0})`}</p>
           </div>
-
 
           <div
             className={
