@@ -342,6 +342,7 @@ const FinanceVerify = forwardRef(
         payment_trans_id: rejectTransItem?.id || "",
         reason: financeRejectComment,
         rejected_date: formatToBackendIST(today),
+        updated_by: converAsJson?.user_id || "",
       };
       const statusPayload = {
         customer_ids: [

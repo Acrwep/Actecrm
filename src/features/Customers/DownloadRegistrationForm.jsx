@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { Button, Modal, Row, Col } from "antd";
+import { Button, Modal, Row, Col, Skeleton } from "antd";
 import { LuDownload } from "react-icons/lu";
 import CommonSpinner from "../Common/CommonSpinner";
 import Logo from "../../assets/acte-logo.png";
@@ -33,6 +33,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
   //loading usestate
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [invoiceHtmlContent, setInvoiceHtmlContent] = useState("");
   const [isOpenViewInvoiceModal, setIsOpenViewInvoiceModal] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
@@ -45,6 +46,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
   }, [customerDetails]);
 
   const getPaymentHistoryData = async () => {
+    setFetchLoading(true);
     try {
       const response = await getCustomersPaymentHistory(
         customerDetails?.lead_id,
@@ -59,6 +61,8 @@ export default function DownloadRegistrationForm({ customerDetails }) {
       setPaymentFullDetails(null);
       setPaymentHistory([]);
       console.log("particular customer payment history error", error);
+    } finally {
+      setFetchLoading(false);
     }
   };
 
@@ -253,7 +257,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
 
     .field-box p.label {
       font-weight: bold;
-      margin-bottom: 3px !important;
+      margin-bottom: 2px !important;
       font-size: 12px;
     }
 
@@ -506,6 +510,14 @@ export default function DownloadRegistrationForm({ customerDetails }) {
 
   </div>
   `;
+
+  if (fetchLoading) {
+    return (
+      <div style={{ padding: "30px", backgroundColor: "#ffffff", minHeight: "820px", width: "100%" }}>
+        <Skeleton active paragraph={{ rows: 15 }} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "100%", overflowX: "auto" }}>

@@ -669,6 +669,7 @@ export default function Customers() {
                               style={{
                                 display: "flex",
                                 alignItems: "center",
+                                marginTop: "3px",
                               }}
                             >
                               <button
