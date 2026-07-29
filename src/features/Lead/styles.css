@@ -796,6 +796,67 @@
   background-color: #6b7280;
 }
 
+/* Followup Leads Sub-Buckets UI */
+.leadmanager_bucket.sale_ready_leads {
+  border: 1px solid #dc26266a;
+  background-color: #dc262615;
+  color: #dc2626;
+}
+
+.leadmanager_bucket.sale_ready_leads.active {
+  background-color: #dc2626;
+}
+
+.leadmanager_bucket.highly_interested_leads {
+  border: 1px solid #f9741661;
+  background-color: #f9741618;
+  color: #f97316;
+}
+
+.leadmanager_bucket.highly_interested_leads.active {
+  background-color: #f97316;
+}
+
+.leadmanager_bucket.interested_leads {
+  border: 1px solid #eab2086f;
+  background-color: #eab20814;
+  color: #eab308;
+}
+
+.leadmanager_bucket.interested_leads.active {
+  background-color: #eab308;
+}
+
+.leadmanager_bucket.exploring_leads {
+  border: 1px solid #3b83f668;
+  background-color: #3b83f616;
+  color: #3b82f6;
+}
+
+.leadmanager_bucket.exploring_leads.active {
+  background-color: #3b82f6;
+}
+
+.leadmanager_bucket.not_responding_leads {
+  border: 1px solid #4b556367;
+  background-color: #4b556313;
+  color: #4b5563;
+}
+
+.leadmanager_bucket.not_responding_leads.active {
+  background-color: #4b5563;
+}
+
+.leadmanager_bucket.not_interested_leads {
+  border: 1px solid #11182766;
+  background-color: #11182715;
+  color: #111827;
+}
+
+.leadmanager_bucket.not_interested_leads.active {
+  background-color: #111827;
+}
+
 /* Only Enquiry */
 .leadfollwup_status_container.only_enquiry {
   border: 1px solid #87e8de;
@@ -2025,4 +2086,34 @@
   border-top: 1px solid rgba(226, 232, 240, 0.6);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.followupleads_tab_inactivebutton {
+  border-radius: 6px;
+  border: 1px solid #0284c765;
+  background-color: #0284c71a;
+  color: #0284c7;
+  padding: 5px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.followupleads_tab_activebutton {
+  border-radius: 6px;
+  border: 1px solid #0284c7;
+  background-color: #0284c7;
+  color: #ffffff;
+  padding: 5px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }

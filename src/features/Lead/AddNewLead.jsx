@@ -468,10 +468,12 @@ const AddNewLead = forwardRef(
           updateLeadItem.assigned_branch_id === null ||
           updateLeadItem.assigned_branch_id === undefined
         ) {
+          setLoading(true);
           getBranchManagersData(updateLeadItem?.branch_id);
           setDefaultBranch(updateLeadItem.branch_id);
           setAssignedBranchId(updateLeadItem.branch_id);
         } else {
+          setLoading(true);
           getBranchManagersData(updateLeadItem?.assigned_branch_id);
           setDefaultBranch(updateLeadItem.assigned_branch_id);
           setAssignedBranchId(updateLeadItem.assigned_branch_id);
@@ -528,7 +530,7 @@ const AddNewLead = forwardRef(
     };
 
     const getBranchManagersData = async (branchId) => {
-      setLoading(true);
+      // setLoading(true);
       const payload = {
         branch_id: branchId,
       };
@@ -955,7 +957,8 @@ const AddNewLead = forwardRef(
       const countryValidate = selectValidator(countryId);
       const stateValidate = selectValidator(stateId);
       const cityValidate = selectValidator(areaId);
-      // const leadSourceValidate = selectValidator(leadSource);
+      const leadSourceValidate =
+        primaryCourse || communicationStatus ? selectValidator(leadSource) : "";
       const leadSubSourceValidate =
         leadSource == null ||
         leadSource == "" ||
@@ -965,6 +968,13 @@ const AddNewLead = forwardRef(
           ? ""
           : selectValidator(leadSubSource);
       const regionIdValidate = selectValidator(regionId);
+      const primaryCourseValidate = communicationStatus
+        ? selectValidator(primaryCourse)
+        : "";
+      const primaryFeesValidate =
+        primaryCourse || communicationStatus
+          ? selectValidator(Number(primaryFees))
+          : "";
       const branchValidate = updateLeadItem
         ? ""
         : selectValidator(assignedBranchId);
@@ -1023,8 +1033,10 @@ const AddNewLead = forwardRef(
       setCountryError(countryValidate);
       setStateError(stateValidate);
       setAreaError(cityValidate);
-      // setLeadSourceError(leadSourceValidate);
+      setLeadSourceError(leadSourceValidate);
       setLeadSubSourceError(leadSubSourceValidate);
+      setPrimaryCourseError(primaryCourseValidate);
+      setPrimaryFeesError(primaryFeesValidate);
       setContactModeError(contactModeValidate);
       setResponseStatusError(responseStatusValidate);
       setLeadTemperatureError(leadTemperatureValidate);
@@ -1042,7 +1054,10 @@ const AddNewLead = forwardRef(
         countryValidate ||
         stateValidate ||
         cityValidate ||
+        leadSourceValidate ||
         leadSubSourceValidate ||
+        primaryCourseValidate ||
+        primaryFeesValidate ||
         contactModeValidate ||
         responseStatusValidate ||
         leadTemperatureValidate ||
@@ -1060,7 +1075,10 @@ const AddNewLead = forwardRef(
           countryValidate,
           stateValidate,
           cityValidate,
+          leadSourceValidate,
           leadSubSourceValidate,
+          primaryCourseValidate,
+          primaryFeesValidate,
           contactModeValidate,
           responseStatusValidate,
           leadTemperatureValidate,
@@ -1104,7 +1122,7 @@ const AddNewLead = forwardRef(
         return;
       }
       console.log("success");
-      // return;
+      return;
       //-----------------
       setButtonLoading(true);
 
@@ -1351,6 +1369,7 @@ const AddNewLead = forwardRef(
       setAreaId(null);
       setAreaError("");
       setPrimaryCourse(null);
+      setPrimaryCourseError("");
       setPrimaryFees("");
       setPrimaryFeesError("");
       setIsShowSecondaryCourse(false);
@@ -1570,8 +1589,7 @@ const AddNewLead = forwardRef(
                   disabled={true}
                   error={""}
                   height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                 />
               </div>
               <div style={{ marginBottom: "26px" }}>
@@ -1586,8 +1604,7 @@ const AddNewLead = forwardRef(
                   }}
                   error={nameError}
                   height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   errorFontSize={"9px"}
                 />
               </div>
@@ -1604,7 +1621,7 @@ const AddNewLead = forwardRef(
                   error={mobileError}
                   errorFontSize={"9px"}
                   height={"34px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   countrySelectPadding={"6px 0px 8px 8px"}
                   countryFlagSize={20}
                   disabled={
@@ -1631,7 +1648,7 @@ const AddNewLead = forwardRef(
                   error={whatsAppError}
                   errorFontSize={"9px"}
                   height={"34px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   countrySelectPadding={"6px 0px 8px 8px"}
                   countryFlagSize={20}
                   disabled={
@@ -1653,8 +1670,7 @@ const AddNewLead = forwardRef(
                   onChange={handleEmail}
                   error={emailError}
                   height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   errorFontSize={"9px"}
                 />
               </div>
@@ -1667,8 +1683,7 @@ const AddNewLead = forwardRef(
                   value={countryId}
                   error={countryError}
                   height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   errorFontSize={"9px"}
                 />
               </div>
@@ -1681,8 +1696,7 @@ const AddNewLead = forwardRef(
                   error={stateError}
                   required={true}
                   height={"35px"}
-                  fontSize={"13px"}
-                  labelFontSize={"12px"}
+                  labelFontSize={"11.5px"}
                   errorFontSize={"9px"}
                 />
               </div>
@@ -1711,8 +1725,7 @@ const AddNewLead = forwardRef(
                       onFocus={() => setIsAreaFocused(true)}
                       onBlur={() => setIsAreaFocused(false)}
                       height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
+                      labelFontSize={"11.5px"}
                       errorFontSize={"9px"}
                       labelMarginTop={"-0.4px"}
                     />
@@ -1726,6 +1739,7 @@ const AddNewLead = forwardRef(
                           ? "leads_focusedcourse_addcontainer"
                           : "leads_course_addcontainer"
                     }
+                    style={{ height: "35px" }}
                   >
                     <Tooltip
                       placement="bottom"
@@ -1787,12 +1801,20 @@ const AddNewLead = forwardRef(
                       } else {
                         setLeadSubSourceError("");
                       }
+                      //validation
+                      if (
+                        (primaryCourse || communicationStatus) &&
+                        validationTrigger
+                      ) {
+                        setLeadSourceError(selectValidator(value));
+                      } else {
+                        setLeadSourceError("");
+                      }
                     }}
                     options={leadTypeOptions}
                     error={leadSourceError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disableClearable={false}
@@ -1828,8 +1850,7 @@ const AddNewLead = forwardRef(
                     }
                     disableClearable={false}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                   />
@@ -1850,8 +1871,7 @@ const AddNewLead = forwardRef(
                     value={regionId}
                     error={regionError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disabled={true}
@@ -1867,8 +1887,7 @@ const AddNewLead = forwardRef(
                       onChange={(e) => setReferralName(e.target.value)}
                       placeholder="Enter referral name"
                       height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
+                      labelFontSize={"11.5px"}
                       errorFontSize={"9px"}
                     />
                   </div>
@@ -1903,16 +1922,27 @@ const AddNewLead = forwardRef(
                         value={primaryCourse}
                         onChange={(e) => {
                           setPrimaryCourse(e.target.value);
+                          if (communicationStatus && validationTrigger) {
+                            setPrimaryCourseError(
+                              selectValidator(e.target.value),
+                            );
+                          } else {
+                            setPrimaryCourseError("");
+                          }
+
+                          if (!e.target.value) {
+                            setPrimaryFees("");
+                            setPrimaryFeesError("");
+                          }
                         }}
                         options={courseOptions}
-                        error={""}
+                        error={primaryCourseError}
                         required={false}
                         borderRightNone={true}
                         onFocus={() => setIsPrimaryCourseFocused(true)}
                         onBlur={() => setIsPrimaryCourseFocused(false)}
                         height={"35px"}
-                        fontSize={"13px"}
-                        labelFontSize={"12px"}
+                        labelFontSize={"11.5px"}
                         errorFontSize={"9px"}
                         labelMarginTop={"-0.4px"}
                         disableClearable={false}
@@ -1921,10 +1951,13 @@ const AddNewLead = forwardRef(
 
                     <div
                       className={
-                        isPrimaryCourseFocused
-                          ? "leads_focusedcourse_addcontainer"
-                          : "leads_course_addcontainer"
+                        primaryCourseError
+                          ? "leads_errorcourse_addcontainer"
+                          : isPrimaryCourseFocused
+                            ? "leads_focusedcourse_addcontainer"
+                            : "leads_course_addcontainer"
                       }
+                      style={{ height: "35px" }}
                     >
                       <Tooltip
                         placement="bottom"
@@ -1949,12 +1982,19 @@ const AddNewLead = forwardRef(
                     type={"number"}
                     onChange={(e) => {
                       setPrimaryFees(e.target.value);
+                      if (communicationStatus && validationTrigger) {
+                        setPrimaryFeesError(
+                          selectValidator(Number(e.target.value)),
+                        );
+                      } else {
+                        setPrimaryFeesError("");
+                      }
                     }}
-                    error={""}
+                    error={primaryFeesError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
+                    disabled={!primaryCourse}
                   />
                 </div>
 
@@ -1969,8 +2009,7 @@ const AddNewLead = forwardRef(
                     ]}
                     error={""}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                   />
@@ -1998,8 +2037,7 @@ const AddNewLead = forwardRef(
                     ]}
                     value={preferredBatch}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                   />
@@ -2053,12 +2091,20 @@ const AddNewLead = forwardRef(
                       setAddTodayFollowup(false);
                       setExpectDateJoin(null);
                       if (value && validationTrigger) {
+                        setLeadSourceError(selectValidator(leadSource));
+                        setPrimaryCourseError(selectValidator(primaryCourse));
+                        setPrimaryFeesError(
+                          selectValidator(Number(primaryFees)),
+                        );
                         setContactModeError(selectValidator(null));
                         setResponseStatusError(selectValidator(null));
                         setLeadTemperatureError(selectValidator(null));
                         setFollowUpStatusIdError(selectValidator(null));
                         setNxtFollowupDateError(selectValidator(null));
                       } else {
+                        setLeadSourceError("");
+                        setPrimaryCourseError("");
+                        setPrimaryFeesError("");
                         setContactModeError("");
                         setResponseStatusError("");
                         setNxtFollowupDateError("");
@@ -2071,8 +2117,7 @@ const AddNewLead = forwardRef(
                       updateLeadItem?.completed_followup_count != 0
                     }
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"7.7px"}
                     labelMarginTop={"0px"}
                     disableClearable={false}
@@ -2139,8 +2184,7 @@ const AddNewLead = forwardRef(
                       !communicationStatus
                     }
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                   />
@@ -2165,8 +2209,7 @@ const AddNewLead = forwardRef(
                     ]}
                     error={responseStatusError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disabled={
@@ -2188,8 +2231,7 @@ const AddNewLead = forwardRef(
                       { id: "Not Given", name: "Not Given" },
                     ]}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disabled={
@@ -2271,8 +2313,7 @@ const AddNewLead = forwardRef(
                     value={leadTemperature}
                     error={leadTemperatureError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     disabled={
@@ -2295,8 +2336,7 @@ const AddNewLead = forwardRef(
                     error=""
                     disablePreviousDates={true}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     labelMarginTop={"0.5px"}
                     iconSize={"16px"}
                     disabled={contactMode == 6 || !communicationStatus}
@@ -2367,8 +2407,7 @@ const AddNewLead = forwardRef(
                     options={allBranchesData}
                     error={branchError}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
                     // disabled={true}
@@ -2386,8 +2425,7 @@ const AddNewLead = forwardRef(
                       }
                       error={""}
                       height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
+                      labelFontSize={"11.5px"}
                       disabled={true}
                     />
                   </div>
@@ -2403,8 +2441,7 @@ const AddNewLead = forwardRef(
                     }
                     error={""}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     disabled={true}
                   />
                 </div>
@@ -2422,8 +2459,7 @@ const AddNewLead = forwardRef(
                       options={saleUsers}
                       error={""}
                       height={"35px"}
-                      fontSize={"13px"}
-                      labelFontSize={"12px"}
+                      labelFontSize={"11.5px"}
                       // disabled={
                       //   !permissions.includes("Assign Lead") ||
                       //   (isReAssign == false && updateLeadItem)
@@ -2439,8 +2475,7 @@ const AddNewLead = forwardRef(
                     value={leadOwner ? `${leadOwner} - ${leadOwnerName}` : ""}
                     error={""}
                     height={"35px"}
-                    fontSize={"13px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     disabled={true}
                   />
                 </div>
@@ -2506,9 +2541,8 @@ const AddNewLead = forwardRef(
                       </li>
                     )}
                     height={"35px"}
-                    fontSize={"13px"}
                     labelMarginTop={"0px"}
-                    labelFontSize={"12px"}
+                    labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     error={followUpStatusIdError}
                     disabled={
@@ -2536,8 +2570,7 @@ const AddNewLead = forwardRef(
                     error={nxtFollowupDateError}
                     height={"35px"}
                     errorFontSize={"10px"}
-                    labelFontSize={"12px"}
-                    fontSize={"13px"}
+                    labelFontSize={"11.5px"}
                     labelMarginTop={"0px"}
                     iconSize={"16px"}
                     disabled={
@@ -2560,8 +2593,7 @@ const AddNewLead = forwardRef(
                     error={""}
                     onlyTime={true}
                     height={"35px"}
-                    labelFontSize={"12px"}
-                    fontSize={"13px"}
+                    labelFontSize={"11.5px"}
                     labelMarginTop={"0px"}
                     iconSize={"16px"}
                     disabled={

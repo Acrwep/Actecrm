@@ -255,6 +255,7 @@ export default function LeadManager() {
           "valid_leads",
           "eligible_leads",
           "interested_leads",
+          "followup_leads",
           "joinings",
         ].includes(activePage)
       ) {
@@ -542,6 +543,7 @@ export default function LeadManager() {
         "valid_leads",
         "eligible_leads",
         "interested_leads",
+        "followup_leads",
         "joinings",
       ].includes(tab);
       return {
@@ -579,6 +581,7 @@ export default function LeadManager() {
         "valid_leads",
         "eligible_leads",
         "interested_leads",
+        "followup_leads",
         "joinings",
       ].includes(activePage)
     ) {
@@ -587,6 +590,7 @@ export default function LeadManager() {
         valid_leads: "Valid Leads",
         eligible_leads: "Eligible Leads",
         interested_leads: "Interested Leads",
+        followup_leads: "Followup Leads",
         joinings: "Joinings",
       };
       dispatch(
@@ -639,8 +643,9 @@ export default function LeadManager() {
         "valid_leads",
         "eligible_leads",
         "interested_leads",
-        "joinings",
-      ].includes(activePage);
+          "followup_leads",
+          "joinings",
+        ].includes(activePage);
 
       const keyToIncrement = isLeadBucket ? "leads" : activePage;
 
@@ -771,6 +776,19 @@ export default function LeadManager() {
               style={{ margin: 0 }}
             >{`Interested Leads (${bucketCounts.interested_leads})`}</p>
           </div>
+          <div
+            className={
+              activePage === "followup_leads"
+                ? "followupleads_tab_activebutton"
+                : "followupleads_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("followup_leads")}
+          >
+            <p
+              style={{ margin: 0 }}
+            >{`Followup Leads (${bucketCounts.followup_leads || 0})`}</p>
+          </div>
+
 
           <div
             className={
@@ -838,6 +856,7 @@ export default function LeadManager() {
               "valid_leads",
               "eligible_leads",
               "interested_leads",
+              "followup_leads",
               "joinings",
             ].includes(activePage)
               ? "block"

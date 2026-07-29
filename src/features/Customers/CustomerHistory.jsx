@@ -304,7 +304,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
         item.status.includes("Passedout") ? (
         <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
       ) : item.status.includes("Class Completion Acknowledgement Sent") ||
-        item.status.includes("Class Completion Acknowledgeme") ? (
+        item.status.includes("Class Completion Acknowledgeme") ||
+        item.status.includes("Trainer Payment Claim Form Sent") ? (
         <LuSend size={16} style={{ color: "gray" }} />
       ) : undefined,
     label: (
@@ -328,6 +329,16 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
             <p className="customer_history_updateddate">
               Updated By:{"  "}
               <span style={{ color: "gray" }}>Customer</span>
+            </p>
+          </div>
+        ) : item.status == "Trainer Payment Claim Submitted" ? (
+          <div>
+            <p className="customer_history_updateddate">
+              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+            </p>
+            <p className="customer_history_updateddate">
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>Trainer</span>
             </p>
           </div>
         ) : item.status === "Payment Verified" ||

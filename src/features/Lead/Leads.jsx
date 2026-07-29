@@ -112,6 +112,7 @@ export default function Leads({
   const [interestedLeadActions, setInterestedLeadActions] = useState({});
   const [validLeadActions, setValidLeadActions] = useState({});
   const [eligibleLeadActions, setEligibleLeadActions] = useState({});
+  const [followupLeadActions, setFollowupLeadActions] = useState({});
   const [leadActionFilter, setLeadActionFilter] = useState("super_hot");
   const statusClassMap = {
     all: "all",
@@ -334,7 +335,7 @@ export default function Leads({
           },
         ]
       : []),
-    ...(leadBucketName === "Interested Leads"
+    ...(leadBucketName === "Followup Leads"
       ? [
           {
             title: "Next Follow Up",
@@ -454,7 +455,7 @@ export default function Leads({
         return <p>{"₹" + text}</p>;
       },
     },
-    ...(leadBucketName === "Interested Leads"
+    ...(leadBucketName === "Followup Leads"
       ? [
           {
             title: "Followup Status",
@@ -587,7 +588,8 @@ export default function Leads({
               )}
 
             {(leadBucketName === "All" ||
-              leadBucketName === "Interested Leads") &&
+              leadBucketName === "Interested Leads" ||
+              leadBucketName === "Followup Leads") &&
               (record.is_customer_reg === 1 ? (
                 <Tooltip placement="bottom" title="Already a Customer">
                   <FaRegAddressCard
@@ -705,7 +707,7 @@ export default function Leads({
   }, [columns]);
 
   const prevTargetPageName = useRef(
-    leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads",
+    leadBucketName === "Followup Leads" ? "Followup Leads" : "Leads",
   );
 
   useEffect(() => {
@@ -719,7 +721,7 @@ export default function Leads({
   useEffect(() => {
     if (loginUserId) {
       const currentPage =
-        leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads";
+        leadBucketName === "Followup Leads" ? "Followup Leads" : "Leads";
       if (currentPage !== prevTargetPageName.current) {
         const updatedColumns = nonChangeColumns.map((col) => ({
           ...col,
@@ -793,6 +795,7 @@ export default function Leads({
           valid_leads: "Valid Leads",
           eligible_leads: "Eligible Leads",
           interested_leads: "Interested Leads",
+          followup_leads: "Followup Leads",
           joinings: "Joinings",
         };
         const targetBucket =
@@ -847,6 +850,7 @@ export default function Leads({
           "valid_leads",
           "eligible_leads",
           "interested_leads",
+          "followup_leads",
           "joinings",
         ].includes(activePage)
       ) {
@@ -856,13 +860,18 @@ export default function Leads({
           valid_leads: "Valid Leads",
           eligible_leads: "Eligible Leads",
           interested_leads: "Interested Leads",
+          followup_leads: "Followup Leads",
           joinings: "Joinings",
         };
         const targetBucket = bucketMapping[activePage];
 
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
         setLeadActionFilter(
-          targetBucket === "Interested Leads" ? "super_hot" : "all",
+          targetBucket === "Followup Leads"
+            ? "sale_ready_leads"
+            : targetBucket === "Interested Leads"
+              ? "super_hot"
+              : "all",
         );
         dispatch(
           storeLeadFilterValues({
@@ -883,7 +892,11 @@ export default function Leads({
           targetBucket === "all" ? "" : targetBucket,
           1,
           pagination.limit,
-          targetBucket === "Interested Leads" ? "super_hot" : "all",
+          targetBucket === "Followup Leads"
+            ? "sale_ready_leads"
+            : targetBucket === "Interested Leads"
+              ? "super_hot"
+              : "all",
         );
       }
     }
@@ -926,9 +939,7 @@ export default function Leads({
       const filterPage = data.find(
         (f) =>
           f.page_name ===
-          (leadBucketName === "Interested Leads"
-            ? "Interested Leads"
-            : "Leads"),
+          (leadBucketName === "Followup Leads" ? "Interested Leads" : "Leads"),
       );
       if (!filterPage) {
         setUpdateTableId(null);
@@ -975,7 +986,7 @@ export default function Leads({
               };
             case "next_follow_up_date":
             case "created_date":
-              return leadBucketName === "Interested Leads"
+              return leadBucketName === "Followup Leads"
                 ? {
                     ...col,
                     title: "Next Follow Up",
@@ -1105,7 +1116,7 @@ export default function Leads({
               };
             case "lead_status":
             case "lead_action_name":
-              return leadBucketName === "Interested Leads"
+              return leadBucketName === "Followup Leads"
                 ? {
                     ...col,
                     title: "Followup Status",
@@ -1232,7 +1243,8 @@ export default function Leads({
                         )}
 
                       {(leadBucketName === "All" ||
-                        leadBucketName === "Interested Leads") &&
+                        leadBucketName === "Interested Leads" ||
+                        leadBucketName === "Followup Leads") &&
                         (record.is_customer_reg === 1 ? (
                           <Tooltip
                             placement="bottom"
@@ -1361,7 +1373,7 @@ export default function Leads({
       ];
 
       const filteredColumns = completeColumns.filter((col) => {
-        if (leadBucketName === "Interested Leads") {
+        if (leadBucketName === "Followup Leads") {
           if (col.key === "lead_status") return false;
           if (col.key === "created_date") return false;
         } else {
@@ -1398,7 +1410,7 @@ export default function Leads({
     const payload = {
       user_id: convertAsJson?.user_id,
       page_name:
-        leadBucketName === "Interested Leads" ? "Interested Leads" : "Leads",
+        leadBucketName === "Followup Leads" ? "Followup Leads" : "Leads",
       column_names: latestColumns,
     };
     console.log("updateTableColumnsData", payload);
@@ -1480,6 +1492,15 @@ export default function Leads({
       ...(leadStatusId && { lead_status_id: leadStatusId }),
       ...(origin && { domain: origin }),
       ...(bucket && { bucket: bucket }),
+      ...(bucket === "Followup Leads" &&
+        [
+          "sale_ready_leads",
+          "highly_interested_leads",
+          "interested_leads",
+          "exploring_leads",
+          "not_responding_leads",
+          "not_interested_leads",
+        ].includes(currentAction) && { lead_action: currentAction }),
       ...(bucket === "Interested Leads" &&
         [
           "super_hot",
@@ -1524,11 +1545,13 @@ export default function Leads({
       const valid_actions = response?.data?.data?.valid_lead_actions || {};
       const eligible_actions =
         response?.data?.data?.eligible_lead_actions || {};
+      const followup_actions = response?.data?.data?.followup_actions || {};
       console.log("leads data", apiData);
 
       setInterestedLeadActions(interested_actions);
       setValidLeadActions(valid_actions);
       setEligibleLeadActions(eligible_actions);
+      setFollowupLeadActions(followup_actions);
 
       if (setBucketCounts) {
         setBucketCounts({
@@ -1536,6 +1559,7 @@ export default function Leads({
           valid_leads: bucket_counts["valid_leads"] || 0,
           eligible_leads: bucket_counts["eligible_leads"] || 0,
           interested_leads: bucket_counts["interested_leads"] || 0,
+          followup_leads: bucket_counts["followup_leads"] || 0,
           joinings: bucket_counts["joinings"] || 0,
         });
       }
@@ -1568,7 +1592,11 @@ export default function Leads({
           name: "Interested Leads",
           count: bucket_counts["interested_leads"] || 0,
         },
-
+        {
+          id: "followup_leads",
+          name: "Followup Leads",
+          count: bucket_counts["followup_leads"] || 0,
+        },
         {
           id: "joinings",
           name: "Joinings",
@@ -3145,6 +3173,92 @@ export default function Leads({
           </div>
         )}
 
+      {leadBucketName === "Followup Leads" &&
+        Object.keys(followupLeadActions).length > 0 && (
+          <div style={{ marginTop: "15px", padding: "0 5px" }}>
+            <ScrollableTabContainer>
+              {(() => {
+                const orderedKeys = [
+                  "sale_ready_leads",
+                  "highly_interested_leads",
+                  "interested_leads",
+                  "exploring_leads",
+                  "not_responding_leads",
+                  "not_interested_leads",
+                ];
+
+                const sortedKeys = Object.keys(followupLeadActions)
+                  .filter((k) => k !== "all")
+                  .sort((a, b) => {
+                    let indexA = orderedKeys.indexOf(a);
+                    let indexB = orderedKeys.indexOf(b);
+                    if (indexA === -1) indexA = 999;
+                    if (indexB === -1) indexB = 999;
+                    return indexA - indexB;
+                  });
+
+                return sortedKeys.map((key) => {
+                  const count = followupLeadActions[key];
+                  const displayName =
+                    key === "all"
+                      ? "All"
+                      : key
+                          .split("_")
+                          .filter((word) => word.toLowerCase() !== "leads")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1),
+                          )
+                          .join(" ");
+                  const isActive = leadActionFilter === key;
+                  const actionColorMap = {
+                    sale_ready_leads: "#dc2626",
+                    highly_interested_leads: "#f97316",
+                    interested_leads: "#eab308",
+                    exploring_leads: "#3b82f6",
+                    not_responding_leads: "#6b7280",
+                    not_interested_leads: "#991b1b",
+                  };
+                  const baseColor = actionColorMap[key] || "#475569";
+
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => {
+                        if (leadActionFilter === key) return;
+                        setLeadActionFilter(key);
+                        dispatch(
+                          storeLeadFilterValues({
+                            pageNumber: 1,
+                            pageLimit: pagination.limit,
+                          }),
+                        );
+                        getAllLeadData(
+                          searchValue,
+                          selectedDates[0],
+                          selectedDates[1],
+                          allDownliners,
+                          leadSourceFilterId,
+                          leadSubSourceFilterId,
+                          leadStatusId,
+                          selectedOrigin,
+                          "Followup Leads",
+                          1,
+                          pagination.limit,
+                          key,
+                        );
+                      }}
+                      className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
+                    >
+                      {displayName} {`( ${count} )`}
+                    </div>
+                  );
+                });
+              })()}
+            </ScrollableTabContainer>
+          </div>
+        )}
+
       {leadBucketName === "Valid Leads" &&
         Object.keys(validLeadActions).length > 0 && (
           <div style={{ marginTop: "15px", padding: "0 5px" }}>
@@ -3304,7 +3418,7 @@ export default function Leads({
                 return joiningsColumns.includes(col.key);
               }
 
-              if (leadBucketName === "Interested Leads") {
+              if (leadBucketName === "Followup Leads") {
                 if (col.key === "lead_status") return false;
               } else {
                 if (col.key === "lead_action_name") return false;
@@ -3351,7 +3465,8 @@ export default function Leads({
                           )}
 
                         {(leadBucketName === "All" ||
-                          leadBucketName === "Interested Leads") &&
+                          leadBucketName === "Interested Leads" ||
+                          leadBucketName === "Followup Leads") &&
                           (record.is_customer_reg === 1 ? (
                             <Tooltip
                               placement="bottom"
@@ -3646,7 +3761,7 @@ export default function Leads({
                   user_id: loginUserId,
                   id: updateTableId,
                   page_name:
-                    leadBucketName === "Interested Leads"
+                    leadBucketName === "Followup Leads"
                       ? "Interested Leads"
                       : "Leads",
                   column_names: columns,
