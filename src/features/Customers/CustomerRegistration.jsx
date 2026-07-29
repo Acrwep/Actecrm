@@ -516,7 +516,9 @@ export default function CustomerRegistration() {
       whatsapp: whatsApp,
       date_of_birth: formatToBackendIST(dateOfBirth),
       gender: gender,
-      date_of_joining: formatToBackendIST(dateOfJoining),
+      date_of_joining: dateOfJoining
+        ? formatToBackendIST(dateOfJoining)
+        : formatToBackendIST(customerFullDetails?.created_date),
       enrolled_course: course,
       region_id:
         customerFullDetails && customerFullDetails.region_id
