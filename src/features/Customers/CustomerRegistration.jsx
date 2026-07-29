@@ -133,7 +133,6 @@ export default function CustomerRegistration() {
   const [gender, setGender] = useState(null);
   const [genderError, setGenderError] = useState("");
   const [dateOfJoining, setDateOfJoining] = useState("");
-  const [dateOfJoiningError, setDateOfJoiningError] = useState("");
   const [countryId, setCountryId] = useState(null);
   const [stateId, setStateId] = useState(null);
   const [areaOptions, setAreaOptions] = useState([]);
@@ -274,6 +273,7 @@ export default function CustomerRegistration() {
       setCountryId(customerDetails.country);
       setStateId(customerDetails.state);
       setCourse(customerDetails.enrolled_course);
+      setDateOfJoining(customerDetails?.date_of_joining);
       setBatchTrack(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
       setPlacementSupport(customerDetails.placement_support);
@@ -406,7 +406,6 @@ export default function CustomerRegistration() {
     const whatsAppValidate = mobileValidator(whatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
-    const dateOfJoiningValidate = selectValidator(dateOfJoining);
     const locationValidate = addressValidator(location);
 
     setNameError(nameValidate);
@@ -415,7 +414,6 @@ export default function CustomerRegistration() {
     setWhatsAppError(whatsAppValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
-    setDateOfJoiningError(dateOfJoiningValidate);
     setLocationError(locationValidate);
 
     if (
@@ -425,7 +423,6 @@ export default function CustomerRegistration() {
       whatsAppValidate ||
       dateOfBirthValidate ||
       genderValidate ||
-      dateOfJoiningValidate ||
       locationValidate
     )
       return;
@@ -441,7 +438,6 @@ export default function CustomerRegistration() {
     const whatsAppValidate = mobileValidator(whatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
-    const dateOfJoiningValidate = selectValidator(dateOfJoining);
     const courseValidate = selectValidator(course);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
@@ -477,7 +473,6 @@ export default function CustomerRegistration() {
     setWhatsAppError(whatsAppValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
-    setDateOfJoiningError(dateOfJoiningValidate);
     setCourseError(courseValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
@@ -491,8 +486,7 @@ export default function CustomerRegistration() {
       mobileValidate ||
       whatsAppValidate ||
       dateOfBirthValidate ||
-      genderValidate ||
-      dateOfJoiningValidate
+      genderValidate
     ) {
       setActiveKey("1");
       return;
@@ -1000,28 +994,6 @@ export default function CustomerRegistration() {
                           }}
                           value={gender}
                           error={genderError}
-                        />
-                      </Col>
-                      <Col
-                        xs={24}
-                        sm={24}
-                        md={24}
-                        lg={6}
-                        style={{ marginTop: "30px" }}
-                      >
-                        <CommonMuiDatePicker
-                          label="Date Of Joining"
-                          required={true}
-                          maxLength={10}
-                          onChange={(value) => {
-                            console.log("vallll", value);
-                            setDateOfJoining(value);
-                            if (validationTrigger) {
-                              setDateOfJoiningError(selectValidator(value));
-                            }
-                          }}
-                          value={dateOfJoining}
-                          error={dateOfJoiningError}
                         />
                       </Col>
                       <Col

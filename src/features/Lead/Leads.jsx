@@ -206,6 +206,9 @@ export default function Leads({
   const [isQualityCommentSection, setIsQualityCommentSection] = useState(false);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
+  const [customerJoiningDate, setCustomerJoiningDate] = useState(null);
+  const [customerJoiningDateError, setCustomerJoiningDateError] =
+    useState(null);
   const [raUsers, setRaUsers] = useState([]);
   const [selectedRA, setSelectedRA] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);
@@ -1767,6 +1770,7 @@ export default function Leads({
     const taxTypeValidate = selectValidator(taxType);
     const paymentTypeValidate = selectValidator(paymentMode);
     const paymentDateValidate = selectValidator(paymentDate);
+    const customerJoiningDateValidate = selectValidator(customerJoiningDate);
     const placeOfPaymentValidate = selectValidator(placeOfPayment);
     const batchTimingValidate = selectValidator(customerBatchTimingId);
     const currentLocationValidate = addressValidator(currentLocation);
@@ -1789,6 +1793,7 @@ export default function Leads({
     setPaymentModeError(paymentTypeValidate);
     setPaidNowError(paidNowValidate);
     setPaymentDateError(paymentDateValidate);
+    setCustomerJoiningDateError(customerJoiningDateValidate);
     setPlaceOfPaymentError(placeOfPaymentValidate);
     setPaymentScreenShotError(screenshotValidate);
     setDueDateError(dueDateValidate);
@@ -1826,6 +1831,7 @@ export default function Leads({
       paidNowValidate ||
       taxTypeValidate ||
       paymentDateValidate ||
+      customerJoiningDateValidate ||
       placeOfPaymentValidate ||
       screenshotValidate ||
       dueDateValidate ||
@@ -1870,6 +1876,7 @@ export default function Leads({
       payment_screenshot: paymentScreenShotBase64,
       payment_status: "Verify Pending",
       next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
+      date_of_joining: formatToBackendIST(customerJoiningDate),
       ra_id: selectedRA,
       created_date: formatToBackendIST(today),
       paid_date: formatToBackendIST(paymentDate),
@@ -4217,6 +4224,23 @@ export default function Leads({
             style={{ marginTop: "20px", marginBottom: "50px" }}
             className="leadmanager_paymentdetails_drawer_rowdiv"
           >
+            <Col span={8}>
+              <CommonMuiDatePicker
+                label="Customer Joining Date"
+                required={true}
+                onChange={(value) => {
+                  console.log("vallll", value);
+                  setCustomerJoiningDate(value);
+                  if (paymentValidationTrigger) {
+                    setCustomerJoiningDateError(selectValidator(value));
+                  }
+                }}
+                value={customerJoiningDate}
+                error={customerJoiningDateError}
+                disablePreviousDates={false}
+              />
+            </Col>
+
             <Col span={8}>
               <CommonSelectField
                 width="100%"
