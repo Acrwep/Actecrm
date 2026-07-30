@@ -19,6 +19,7 @@ export default function CommonMuiCustomDatePicker({
   onDateChange,
   value,
   isDashboard,
+  dateFontSize,
   width,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -197,11 +198,23 @@ export default function CommonMuiCustomDatePicker({
                 width: "100%",
               }}
             >
-              <span style={{ marginLeft: "4px", marginTop: "1px" }}>
+              <span
+                style={{
+                  marginLeft: "4px",
+                  marginTop: "1px",
+                  fontSize: dateFontSize ? dateFontSize : "13px",
+                }}
+              >
                 {startDate ? startDate.format("YYYY-MM-DD") : ""}
               </span>
               <span>→</span>
-              <span style={{ marginRight: "4px", marginTop: "1px" }}>
+              <span
+                style={{
+                  marginRight: "4px",
+                  marginTop: "1px",
+                  fontSize: dateFontSize ? dateFontSize : "13px",
+                }}
+              >
                 {endDate ? endDate.format("YYYY-MM-DD") : ""}
               </span>
             </Box>

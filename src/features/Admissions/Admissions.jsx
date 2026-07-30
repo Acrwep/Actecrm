@@ -1218,11 +1218,14 @@ export default function Admissions() {
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={20}>
-          <Row gutter={12}>
-            <Col flex="24%">
-              <div className="overallduecustomers_filterContainer">
+      <Row align="middle">
+        <Col xs={24} sm={24} md={24} lg={16}>
+          <Row gutter={12} align="middle" wrap={false}>
+            <Col flex="28%">
+              <div
+                className="overallduecustomers_filterContainer"
+                style={{ marginBottom: "0px" }}
+              >
                 {/* Search Input */}
                 <CommonOutlinedInput
                   label={
@@ -1341,7 +1344,7 @@ export default function Admissions() {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="25%">
+              <Col flex="28%">
                 <CommonMultiSelectField
                   height="34px"
                   label="Select User"
@@ -1372,6 +1375,7 @@ export default function Admissions() {
                   <div style={{ flex: "0 0 120px" }}>
                     <CommonMuiCustomDatePicker
                       width="280px"
+                      dateFontSize="12.5px"
                       value={selectedDates}
                       onDateChange={(dates) => {
                         setSelectedDates(dates);
@@ -1542,7 +1546,7 @@ export default function Admissions() {
           xs={24}
           sm={24}
           md={24}
-          lg={4}
+          lg={8}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -1550,6 +1554,22 @@ export default function Admissions() {
             gap: "16px",
           }}
         >
+          <div className="admissions_progress_container">
+            <span className="admissions_progress_label">Overall Progress:</span>
+            <Progress
+              percent={65}
+              showInfo={false}
+              strokeWidth={6}
+              strokeColor={{
+                "0%": "#8a9bf8",
+                "100%": "#5b69ca",
+              }}
+              trailColor="#f1f5f9"
+              className="admissions_progress_bar"
+            />
+            <span className="admissions_progress_text">65%</span>
+          </div>
+
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -1560,7 +1580,7 @@ export default function Admissions() {
             }}
           />
 
-          {permissions.includes("Download Customers Data") && (
+          {/* {permissions.includes("Download Customers Data") && (
             <Tooltip placement="top" title="Download">
               <Button
                 className="reports_download_button"
@@ -1611,7 +1631,7 @@ export default function Admissions() {
                 <DownloadOutlined size={10} className="download_icon" />
               </Button>
             </Tooltip>
-          )}
+          )} */}
 
           <Tooltip placement="top" title="Refresh">
             <Button
@@ -1624,7 +1644,7 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      <div className="admissions_progress_container">
+      {/* <div className="admissions_progress_container">
         <span className="admissions_progress_label">Overall Progress</span>
         <Progress
           percent={65}
@@ -1638,7 +1658,7 @@ export default function Admissions() {
           className="admissions_progress_bar"
         />
         <span className="admissions_progress_text">65%</span>
-      </div>
+      </div> */}
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable

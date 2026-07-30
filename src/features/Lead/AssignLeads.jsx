@@ -808,6 +808,7 @@ export default function AssignLeads({
   };
 
   useEffect(() => {
+    if (tabName !== "assign_leads") return;
     if (permissions.length >= 1) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       getManualAssignLeadsData(
@@ -822,7 +823,7 @@ export default function AssignLeads({
         filterValuesFromRedux.pageLimit,
       );
     }
-  }, [refreshToggle]);
+  }, [refreshToggle, tabName]);
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);

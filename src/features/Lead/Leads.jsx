@@ -818,7 +818,7 @@ export default function Leads({
         setSelectedUserId(filterValuesFromRedux.user_id);
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
 
-        const initialActionFilter = 
+        const initialActionFilter =
           targetBucket === "Followup Leads"
             ? "sale_ready_leads"
             : targetBucket === "Interested Leads"
@@ -843,7 +843,7 @@ export default function Leads({
             ? filterValuesFromRedux.user_id
             : convertAsJson?.user_id,
           targetBucket === "all" ? "" : targetBucket,
-          initialActionFilter
+          initialActionFilter,
         );
       }
     }
@@ -1434,7 +1434,11 @@ export default function Leads({
     }
   };
 
-  const getAllDownlineUsersData = async (user_id, bucketOverride, actionOverride) => {
+  const getAllDownlineUsersData = async (
+    user_id,
+    bucketOverride,
+    actionOverride,
+  ) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -1464,7 +1468,7 @@ export default function Leads({
             : filterValuesFromRedux.bucket,
         filterValuesFromRedux.pageNumber,
         filterValuesFromRedux.pageLimit,
-        actionOverride
+        actionOverride,
       );
     } catch (error) {
       console.log("all downlines error", error);

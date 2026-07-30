@@ -7,6 +7,8 @@
     "dev": "vite",
     "version:update": "node version-update.js",
     "build": "npm run version:update && vite build",
+    "build:dev": "npm run version:update && vite build --mode development",
+    "build:prod": "npm run version:update && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview"
   },

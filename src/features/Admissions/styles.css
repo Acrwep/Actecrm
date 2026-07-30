@@ -1,20 +1,25 @@
 .admissions_progress_container {
-  margin-top: 10px;
-  width: 280px;
-  background: #ffffff;
-  padding: 6px 14px;
-  border-radius: 10px;
-  border: 1px solid #eef2f6;
-  box-shadow: 0 2px 8px rgba(91, 105, 202, 0.08);
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  padding: 9px 12px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-left: 5px solid #5b69ca;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .admissions_progress_label {
   font-size: 11px;
   font-weight: 600;
-  color: #475569;
+  color: #64748b;
+  text-transform: uppercase;
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
@@ -24,10 +29,15 @@
   flex: 1;
   display: flex;
   align-items: center;
+  min-width: 100px;
 }
 
 .admissions_progress_text {
   font-size: 12px;
   font-weight: 700;
   color: #5b69ca;
+}
+
+.admissions_datepicker_wrapper .common_muicustomdatepicker_daterange_button span {
+  font-size: 13px !important;
 }
