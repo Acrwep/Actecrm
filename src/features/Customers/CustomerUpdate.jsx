@@ -123,6 +123,7 @@ const CustomerUpdate = forwardRef(
     const [taxType, setTaxType] = useState("");
     const [taxTypeError, setTaxTypeError] = useState("");
     const [amount, setAmount] = useState();
+    const [discountAmount, setDiscountAmount] = useState("");
     const [paymentValidationTrigger, setPaymentValidationTrigger] =
       useState(false);
 
@@ -354,7 +355,11 @@ const CustomerUpdate = forwardRef(
                     ? 5
                     : "",
         );
-        setAmount(parseFloat(payment_full_details?.total_amount));
+        setAmount(
+          (parseFloat(payment_full_details?.total_amount) || 0) +
+            (parseFloat(payment_full_details?.discount_amount) || 0),
+        );
+        setDiscountAmount(payment_full_details?.discount_amount || "");
       } catch (error) {
         setPaymentFullDetails(null);
         console.log("particular customer payment history error", error);
@@ -659,7 +664,8 @@ const CustomerUpdate = forwardRef(
                   : "No Tax",
         gst_percentage: taxType == 5 ? "0%" : "18%",
         gst_amount: parseFloat(gstAmount).toFixed(2),
-        total_amount: amount,
+        discount_amount: parseFloat(discountAmount) || 0,
+        total_amount: amount - (parseFloat(discountAmount) || 0),
       };
       try {
         await paymentMasterUpdate(payload);
@@ -733,6 +739,7 @@ const CustomerUpdate = forwardRef(
       setTaxType("");
       setTaxTypeError("");
       setAmount();
+      setDiscountAmount("");
     };
 
     const renderPersonalDetails = () => {
@@ -1109,7 +1116,7 @@ const CustomerUpdate = forwardRef(
         <div>
           <div className="customerupdate_maincontainer">
             <Row gutter={12} style={{ marginTop: "8px" }}>
-              <Col xs={24} sm={24} md={24} lg={8}>
+              <Col xs={24} sm={24} md={24} lg={6}>
                 <CommonInputField
                   label="Fees"
                   value={subTotal}
@@ -1119,7 +1126,7 @@ const CustomerUpdate = forwardRef(
                   type="number"
                 />
               </Col>
-              <Col xs={24} sm={24} md={24} lg={8}>
+              <Col xs={24} sm={24} md={24} lg={6}>
                 <CommonSelectField
                   label="Tax Type"
                   required={true}
@@ -1135,12 +1142,24 @@ const CustomerUpdate = forwardRef(
                   error={taxTypeError}
                 />
               </Col>
-              <Col xs={24} sm={24} md={24} lg={8}>
+              <Col xs={24} sm={24} md={24} lg={6}>
+                <CommonInputField
+                  label="Discount Amount"
+                  value={discountAmount}
+                  onChange={(e) => setDiscountAmount(e.target.value)}
+                  required={false}
+                  type="number"
+                  disabled={!permissions.includes("Update Discount")}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={6}>
                 <CommonInputField
                   label="Total Amount"
                   required={true}
                   disabled
-                  value={amount}
+                  value={
+                    amount ? amount - (parseFloat(discountAmount) || 0) : ""
+                  }
                   type="number"
                 />
               </Col>
@@ -1153,12 +1172,12 @@ const CustomerUpdate = forwardRef(
     const tabItems = [
       {
         key: "1",
-        label: "Candidate Details",
+        label: <span style={{ fontSize: "13px" }}>Customer Details</span>,
         children: renderPersonalDetails(),
       },
       {
         key: "2",
-        label: "Payment Details",
+        label: <span style={{ fontSize: "13px" }}>Payment Details</span>,
         children: renderPaymentMaster(),
       },
     ];

@@ -282,6 +282,7 @@ export default function Settings() {
         "Update Customer",
         "Update Payment",
         "Update Payment Master",
+        "Update Discount",
         "Finance Verify",
         "Student Verify",
         "Trainer Assign",

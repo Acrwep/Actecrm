@@ -454,6 +454,27 @@ export default function ParticularCustomerDetails({
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
                         <p className="customerdetails_rowheading">
+                          Discount Amount
+                        </p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customerdetails_text"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {customerDetails &&
+                        customerDetails.discount_amount != null
+                          ? "₹" + customerDetails.discount_amount
+                          : "₹0.00"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">
                           Balance Amount
                         </p>
                       </div>
@@ -486,26 +507,6 @@ export default function ParticularCustomerDetails({
                         customerDetails.next_due_date !== undefined &&
                         customerDetails.next_due_date !== null
                           ? moment(customerDetails.next_due_date).format(
-                              "DD/MM/YYYY",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Joining Date
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {" "}
-                        {customerDetails && customerDetails.date_of_joining
-                          ? moment(customerDetails.date_of_joining).format(
                               "DD/MM/YYYY",
                             )
                           : "-"}
