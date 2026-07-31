@@ -1033,6 +1033,11 @@ export default function Leads({
                     title: "Created At",
                     key: "created_date",
                     dataIndex: "created_date",
+                    sorter: (a, b) =>
+                      moment(a.created_date).valueOf() -
+                      moment(b.created_date).valueOf(),
+                    sortDirections: ["ascend"],
+                    defaultSortOrder: "descend", // Optional
                     width: 170,
                     render: (text, record) => {
                       return (

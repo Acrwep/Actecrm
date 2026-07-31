@@ -1,6 +1,6 @@
 .admissions_progress_container {
   background: linear-gradient(135deg, #ffffff, #f9fafb);
-  padding: 9px 12px;
+  padding: 11px 12px;
   border-radius: 12px;
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
@@ -38,6 +38,8 @@
   color: #5b69ca;
 }
 
-.admissions_datepicker_wrapper .common_muicustomdatepicker_daterange_button span {
+.admissions_datepicker_wrapper
+  .common_muicustomdatepicker_daterange_button
+  span {
   font-size: 13px !important;
 }

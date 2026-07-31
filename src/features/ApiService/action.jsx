@@ -838,6 +838,15 @@ export const getCustomers = async (payload) => {
   }
 };
 
+export const getAdmissions = async (payload) => {
+  try {
+    const response = await api.post("/api/getAdmissions", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getPendingFeesCustomers = async (payload) => {
   try {
     const response = await api.post("/api/pendingFeesListV1", payload);

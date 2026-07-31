@@ -838,6 +838,7 @@
 .customer_classcompletemodal_loading_okbutton {
   opacity: 0.7;
   width: 90px;
+  cursor: not-allowed;
 }
 .customers_addfeedbackbutton {
   background-color: #fd79a8 !important;

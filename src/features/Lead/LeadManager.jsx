@@ -345,7 +345,7 @@ export default function LeadManager() {
     } finally {
       setTimeout(() => {
         // setUserTableLoading(false);
-        getRegionData();
+        loadInitialData();
       }, 150);
     }
   };
@@ -378,27 +378,30 @@ export default function LeadManager() {
     }
   };
 
-  const getRegionData = async () => {
+  const loadInitialData = async () => {
     try {
-      const response = await getRegions();
-      setRegionOptions(response?.data?.data || []);
-    } catch (error) {
-      setRegionOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getAllBranchesData();
-      }, 300);
-    }
-  };
+      const [
+        regionRes,
+        branchesRes,
+        leadTypeRes,
+        courseRes,
+        areaRes,
+        leadStatusRes,
+      ] = await Promise.allSettled([
+        getRegions(),
+        getAllBranches(),
+        getLeadType(),
+        getTechnologies(),
+        getAllAreas(),
+        getLeadStatus(),
+      ]);
 
-  const getAllBranchesData = async () => {
-    try {
-      const response = await getAllBranches();
+      // Regions
+      setRegionOptions(regionRes?.data?.data || []);
 
-      const branchData = response?.data?.result || [];
+      // Branches
+      const branchData = branchesRes?.data?.result || [];
 
-      // Custom order
       const branchOrder = [
         "BDC",
         "Velachery",
@@ -418,35 +421,21 @@ export default function LeadManager() {
         (a, b) => branchOrder.indexOf(a.name) - branchOrder.indexOf(b.name),
       );
 
-      console.log("all branches response", sortedBranches);
-
       setAllBranchesData(sortedBranches);
-    } catch (error) {
-      setAllBranchesData([]);
-      console.log(error);
-    } finally {
-      getLeadTypeData();
-    }
-  };
 
-  const getLeadTypeData = async () => {
-    try {
-      const response = await getLeadType();
-      const lead_status = response?.data?.result || [];
+      // Lead Types
+      const leadTypes = leadTypeRes?.data?.result || [];
 
-      const update_lead_status = lead_status.map((item) => {
-        let updatedItem = { ...item };
+      const updatedLeadTypes = leadTypes.map((item) => ({
+        ...item,
+        is_active:
+          item.name === "Whatsapp"
+            ? permissions.includes("Whatsapp Lead Source")
+              ? 1
+              : 0
+            : 1,
+      }));
 
-        if (item.name === "Whatsapp") {
-          updatedItem.is_active = permissions.includes("Whatsapp Lead Source")
-            ? 1
-            : 0;
-        } else {
-          updatedItem.is_active = 1;
-        }
-
-        return updatedItem;
-      });
       const order = [
         "Call",
         "Direct",
@@ -456,62 +445,32 @@ export default function LeadManager() {
         "Reference",
       ];
 
-      const sortedLeadTypes = [...update_lead_status].sort(
+      const sortedLeadTypes = [...updatedLeadTypes].sort(
         (a, b) => order.indexOf(a.name) - order.indexOf(b.name),
       );
-      console.log("sortedLeadTypes", sortedLeadTypes);
 
       setLeadTypeOptions(sortedLeadTypes);
-    } catch (error) {
-      setLeadTypeOptions([]);
-      console.log("lead type error", error);
-    } finally {
-      setTimeout(() => {
-        getCourseData();
-      }, 300);
-    }
-  };
 
-  const getCourseData = async () => {
-    try {
-      const response = await getTechnologies();
-      // setCourseOptions(response?.data?.data || []);
-      dispatch(storeCourseList(response?.data?.data || []));
-    } catch (error) {
-      dispatch(storeCourseList([]));
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getAreasData();
-      }, 300);
-    }
-  };
+      // Courses
+      dispatch(storeCourseList(courseRes?.data?.data || []));
 
-  const getAreasData = async () => {
-    try {
-      const response = await getAllAreas();
-      // setAreaOptions(response?.data?.data || []);
-      dispatch(storeAreaList(response?.data?.data || []));
-    } catch (error) {
-      dispatch(storeAreaList([]));
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        getLeadStatusData();
-      }, 300);
-    }
-  };
+      // Areas
+      dispatch(storeAreaList(areaRes?.data?.data || []));
 
-  const getLeadStatusData = async () => {
-    try {
-      const response = await getLeadStatus();
-      console.log("lead status response", response);
+      // Lead Status
       setLeadStatusOptions(
-        response?.data?.data || response?.data?.result || [],
+        leadStatusRes?.data?.data || leadStatusRes?.data?.result || [],
       );
     } catch (error) {
+      console.error("Error loading initial data:", error);
+
+      // Reset states on failure
+      setRegionOptions([]);
+      setAllBranchesData([]);
+      setLeadTypeOptions([]);
+      dispatch(storeCourseList([]));
+      dispatch(storeAreaList([]));
       setLeadStatusOptions([]);
-      console.log("lead status error", error);
     }
   };
 

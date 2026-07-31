@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
   Row,
   Col,
@@ -10,106 +9,38 @@ import {
   Radio,
   Divider,
   Checkbox,
-  Modal,
-  Upload,
-  Skeleton,
-  Popover,
-  Badge,
   Progress,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
-import { LuSend } from "react-icons/lu";
-import { FaLinkedinIn } from "react-icons/fa";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
-import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import "./styles.css";
 import {
   getAllDownlineUsers,
   getCustomerById,
-  getCustomers,
+  getAdmissions,
   getTableColumns,
   updateTableColumns,
-  verifyReview,
-  viewCertForCustomer,
 } from "../ApiService/action";
-import {
-  customersStatusDisplay,
-  formatToBackendIST,
-  getCurrentandPreviousweekDate,
-  isWithin30Days,
-} from "../Common/Validation";
-import { FcGoogle } from "react-icons/fc";
-import { FaLinkedin } from "react-icons/fa";
-import CommonSpinner from "../Common/CommonSpinner";
-import { DownloadOutlined } from "@ant-design/icons";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
-import { FiFileText } from "react-icons/fi";
-import { IoLocationOutline } from "react-icons/io5";
 import { RedoOutlined } from "@ant-design/icons";
-import { FaRegUser } from "react-icons/fa";
 import moment from "moment";
-import { AiOutlineEdit } from "react-icons/ai";
-import CustomerUpdate from "../Customers/CustomerUpdate";
 import { CommonMessage } from "../Common/CommonMessage";
-import CommonSelectField from "../Common/CommonSelectField";
 import { FiFilter } from "react-icons/fi";
-import { MdOutlineSwapVert } from "react-icons/md";
 import CommonDnd from "../Common/CommonDnd";
-import { BsPatchCheckFill } from "react-icons/bs";
-import { FaRegCopy } from "react-icons/fa6";
-import { PiSealCheckFill } from "react-icons/pi";
-import { GrCertificate } from "react-icons/gr";
-import { CloseOutlined } from "@ant-design/icons";
-import { LuFileClock } from "react-icons/lu";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import CommonCertificateViewer from "../Common/CommonCertificateViewer";
-import CustomerHistory from "../Customers/CustomerHistory";
 import { useSelector } from "react-redux";
-import FinanceVerify from "../Customers/FinanceVerify";
-import StudentVerify from "../Customers/StudentVerify";
-import AssignAndVerifyTrainer from "../Customers/AssignAndVerifyTrainer";
-import ClassSchedule from "../Customers/ClassSchedule";
-import PassesOutProcess from "../Customers/PassedOutProcess";
-import DownloadRegistrationForm from "../Customers/DownloadRegistrationForm";
-import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
-import CustomerEmailTemplate from "../Customers/CustomerEmailTemplate";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
-import OthersHandling from "../Customers/OthersHandling";
-import ReAssignTrainer from "../Customers/ReAssignTrainer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
-import PreCertificate from "../Customers/PreCertificate";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
-import PrismaZoom from "react-prismazoom";
+import DraggableStudentModal from "../Common/DraggableStudentModal";
 
 export default function Admissions() {
-  const scrollRef = useRef();
-  const customerUpdateRef = useRef();
-  const financeVerifyRef = useRef();
-  const studentVerifyRef = useRef();
-  const assignAndVerifyTrainerRef = useRef();
-  const reAssignTrainerRef = useRef();
-  const classScheduleRef = useRef();
-  const passedOutProcessRef = useRef();
-  const othersHandlingRef = useRef();
-  const preCertificateRef = useRef();
-  const emailTemplateRef = useRef();
   const mounted = useRef(false);
-  const location = useLocation();
 
-  const scroll = (scrollOffset) => {
-    scrollRef.current.scrollBy({
-      left: scrollOffset,
-      behavior: "smooth",
-    });
-  };
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -122,51 +53,15 @@ export default function Admissions() {
   const [selectedOrigin, setSelectedOrigin] = useState("");
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
-  const [customerStatusCount, setCustomerStatusCount] = useState(null);
-  const [isOpenEditDrawer, setIsOpenEditDrawer] = useState(false);
-  const [updateDrawerTabKey, setUpdateDrawerTabKey] = useState("1");
+  const [allAdmissionsRegionCounts, setAllAdmissionsRegionCounts] =
+    useState(null);
   const [customerId, setCustomerId] = useState(null);
-  const [updateButtonLoading, setUpdateButtonLoading] = useState(false);
   const [status, setStatus] = useState("");
-  const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
     useState(false);
-  const [drawerContentStatus, setDrawerContentStatus] = useState("");
-  //profile image usestates
-  const [profilePictureArray, setProfilePictureArray] = useState([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
-
-  //form usesates
-  const [isOpenFormModal, setIsOpenFormModal] = useState(false);
-  //awaiting finance
-  const [isSwap, setIsSwap] = useState(false);
-  //student verify usestates
-  //assign trainer usestates
-  const [isAssignTrainerSwap, setIsAssignTrainerSwap] = useState(false);
-  const [isApprovalTrainerSwap, setIsApprovalTrainerSwap] = useState(false);
-  const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
-  //trainer verify usestates
-  const [rejectbuttonLoader, setRejectButtonLoader] = useState(false);
-  //class schedule usestates
-  //class going usestates
-  //feedback usestates
-  const [isCertGenerated, setIsCertGenerated] = useState(false);
-  const [generateCertLoading, setGenerateCertLoading] = useState(false);
-  const [certHtmlContent, setCertHtmlContent] = useState("");
-  const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
-  const [certificateName, setCertificateName] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [linkedinLoading, setLinkedinLoading] = useState(false);
-  const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
-
-  //customer history usestates
-  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+  const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
-  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
-    useState(null);
-
-  const prev = () => setStepIndex(stepIndex - 1);
+  //feedback usestates
   const [loading, setLoading] = useState(true);
   //executive filter
   const [subUsers, setSubUsers] = useState([]);
@@ -181,11 +76,6 @@ export default function Admissions() {
     { id: 1, name: "Classroom", checked: true },
     { id: 1, name: "Online", checked: true },
   ]);
-  //review modal
-  const [isOpenReviewScreenshotModal, setIsOpenReviewScreenshotModal] =
-    useState(false);
-  const [reviewScreenshot, setReviewScreenshot] = useState("");
-  const [reviewModalTitle, setReviewModalTitle] = useState("");
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -218,43 +108,26 @@ export default function Admissions() {
       },
     },
     {
-      title: "Lead Executive",
-      key: "lead_assigned_to_name",
-      dataIndex: "lead_assigned_to_name",
-      width: 150,
-      render: (text, record) => {
-        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
-      },
-    },
-    {
       title: "Student Id",
       key: "student_id",
       dataIndex: "student_id",
       width: 100,
-      render: (text, record) => {
-        return <p>{text ? text : "-"}</p>;
-      },
+      render: (text, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <EllipsisTooltip text={text || "-"} />
+          {text && (
+            <FaRegEye
+              size={14}
+              className="trainers_action_icons"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                getParticularCustomerDetails(record?.customer_id);
+              }}
+            />
+          )}
+        </div>
+      ),
     },
-    {
-      title: "Candidate Name",
-      key: "name",
-      dataIndex: "name",
-      width: 170,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 200,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
     {
       title: "Course ",
       key: "course_name",
@@ -265,417 +138,41 @@ export default function Admissions() {
       },
     },
     {
-      title: "Fees",
-      key: "total_amount",
-      dataIndex: "total_amount",
-      width: 140,
-      render: (text) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Balance",
-      key: "balance_amount",
-      dataIndex: "balance_amount",
-      width: 140,
-      render: (text) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "HR Name",
-      key: "trainer_hr_name",
-      dataIndex: "trainer_hr_name",
-      width: 170,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Trainer",
-      key: "trainer_name",
-      dataIndex: "trainer_name",
-      width: 170,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Trainer Commercial%",
-      key: "commercial_percentage",
-      dataIndex: "commercial_percentage",
-      width: 170,
-      render: (text) => {
-        return (
-          <p
-            className="customerdetails_text"
-            style={{
-              fontWeight: 700,
-              color:
-                text && text !== null
-                  ? text < 18
-                    ? "#3c9111" // green
-                    : text > 18 && text <= 22
-                      ? "#ffa502" // yellow
-                      : text > 24
-                        ? "#d32f2f" // red
-                        : ""
-                  : "", // fallback color if null
-            }}
-          >
-            {text && text ? text + "%" : "-"}
-          </p>
-        );
-      },
-    },
-    {
-      title: "TR Number",
-      key: "trainer_mobile",
-      dataIndex: "trainer_mobile",
+      title: "Sale Executive",
+      key: "sale_executive",
+      dataIndex: "sale_executive",
       width: 150,
-    },
-    {
-      title: "Review Status",
-      key: "review_status",
-      dataIndex: "review_status",
-      width: 120,
       render: (text, record) => {
-        return (
-          <div className="customers_review_container">
-            {record?.google_review ? (
-              <div
-                className="customers_review_google_active"
-                onClick={() => {
-                  setReviewModalTitle("Google Review");
-                  setCustomerDetails(record);
-                  setReviewScreenshot(record?.google_review);
-                  setIsOpenReviewScreenshotModal(true);
-                }}
-              >
-                <FcGoogle size={15} />
-                {record?.is_google_verified === 1 && (
-                  <PiSealCheckFill size={13} className="google_verified_icon" />
-                )}
-              </div>
-            ) : (
-              <Tooltip title="Google Review Not Collected">
-                <div className="customers_review_inactive">
-                  <FcGoogle size={15} className="customers_review_grayscale" />
-                </div>
-              </Tooltip>
-            )}
-            {record?.linkedin_review ? (
-              <div
-                className="customers_review_linkedin_active"
-                onClick={() => {
-                  setReviewModalTitle("LinkedIn Review");
-                  setCustomerDetails(record);
-                  setReviewScreenshot(record?.linkedin_review);
-                  setIsOpenReviewScreenshotModal(true);
-                }}
-              >
-                <FaLinkedinIn size={14} color="#0a66c2" />
-                {record?.is_linkedin_verified === 1 && (
-                  <PiSealCheckFill size={13} className="google_verified_icon" />
-                )}
-              </div>
-            ) : (
-              <Tooltip title="LinkedIn Review Not Collected">
-                <div className="customers_review_inactive">
-                  <FaLinkedinIn size={14} color="#8c8c8c" />
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        );
+        const lead_executive = `${record.assigned_to} - ${text}`;
+        return <EllipsisTooltip text={lead_executive} />;
       },
     },
     {
-      title: "Form Status",
-      key: "is_customer_updated",
-      dataIndex: "is_customer_updated",
-      width: 120,
-      fixed: "right",
+      title: "RA",
+      key: "ra_user_name",
+      dataIndex: "ra_user_name",
+      width: 150,
       render: (text, record) => {
-        return (
-          <>
-            {record.is_customer_updated === 1 ? (
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p>Completed</p>
-                {permissions.includes("Download Registration Form") && (
-                  <Tooltip placement="top" title="Customer Registration Form">
-                    <FiFileText
-                      size={14}
-                      className="customers_formlink_copybutton"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setIsOpenFormModal(true);
-                        getParticularCustomerDetails(record?.id);
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            ) : (
-              <p>Pending</p>
-            )}
-          </>
-        );
-      },
-    },
-    {
-      title: "Status",
-      key: "status",
-      dataIndex: "status",
-      fixed: "right",
-      width: 182,
-      ...(status === "" || status === "Others"
-        ? {
-            sorter: (a, b) =>
-              customersStatusDisplay(a).localeCompare(
-                customersStatusDisplay(b),
-              ),
-            sortDirections: ["ascend", "descend"],
-          }
-        : {}),
-      render: (text, record) => {
-        let classPercent = 0;
-
-        if (
-          record.class_percentage !== null &&
-          record.class_percentage !== undefined
-        ) {
-          const parsed = parseFloat(record.class_percentage);
-          classPercent = isNaN(parsed) ? 0 : parsed;
+        if (text) {
+          const ra = `${record.ra_user_id} - ${text}`;
+          return <EllipsisTooltip text={ra} />;
+        } else {
+          return "-";
         }
-        return (
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              alignItems: "center",
-            }}
-          >
-            <Tooltip
-              placement="bottomLeft"
-              className="customers_statustooltip"
-              color="#fff"
-              styles={{
-                body: {
-                  width: "300px",
-                  maxWidth: "none",
-                  whiteSpace: "normal",
-                },
-              }}
-            >
-              {record.is_second_due === 1 && status == "Awaiting Finance" ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : record.is_second_due === 1 &&
-                permissions.includes("Finance Verify") ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : text === "Form Pending" ? (
-                <div>
-                  <Button className="customers_status_formpending_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : record.is_last_pay_rejected === 1 &&
-                isSwap == true &&
-                status == "Payment Rejected" ? (
-                <div>
-                  <Button className="trainers_rejected_button">
-                    Payment Rejected
-                  </Button>
-                </div>
-              ) : text === "Awaiting Finance" ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : text === "Awaiting Verify" ? (
-                <div>
-                  <Button className="customers_status_awaitverify_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Trainer" ? (
-                <div>
-                  <Button className="customers_status_awaittrainer_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Trainer Verify" ? (
-                <div>
-                  <Button className="customers_status_awaittrainerverify_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Trainer Approval" ? (
-                <div>
-                  <Button className="customers_status_trainerapproval_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Class" ? (
-                <div>
-                  <Button className="customers_status_awaitingclass_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Class Scheduled" ? (
-                <div>
-                  <Button className="customers_status_classscheduled_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Passedout process" ? (
-                <div>
-                  <Button className="customers_status_awaitfeedback_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Completed" ? (
-                <div>
-                  <Button className="customers_status_completed_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Rejected" ||
-                text === "REJECTED" ||
-                text === "Payment Rejected" ||
-                text === "Trainer Rejected" ||
-                text === "Approval Rejected" ||
-                text === "Escalated" ||
-                text === "Hold" ||
-                text === "Partially Closed" ||
-                text === "Discontinued" ||
-                text === "Demo Completed" ||
-                text === "Videos Given" ||
-                text === "Refund" ? (
-                <Button className="trainers_rejected_button">{text}</Button>
-              ) : text === "Class Going" ? (
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <Button className="customers_status_classgoing_button">
-                    {text}
-                  </Button>
-
-                  <p
-                    className="customer_classgoing_percentage"
-                    style={{ flexShrink: 0 }}
-                  >{`${parseFloat(classPercent)}%`}</p>
-                </div>
-              ) : (
-                <p style={{ marginLeft: "6px" }}>-</p>
-              )}
-            </Tooltip>
-            {record.status === "Form Pending" && (
-              <Tooltip placement="top" title="Copy form link">
-                <FaRegCopy
-                  size={14}
-                  className="customers_formlink_copybutton"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      `${
-                        import.meta.env.VITE_EMAIL_URL
-                      }/customer-registration/${record.id}`,
-                    );
-                    CommonMessage("success", "Link Copied");
-                  }}
-                />
-              </Tooltip>
-            )}
-            {record.status === "Completed" ? (
-              <Tooltip placement="top" title="View Certificate">
-                <GrCertificate
-                  size={14}
-                  color="#5a5858"
-                  className="customers_formlink_copybutton"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    handleViewCert(record.id);
-                    setCertificateName(record.name);
-                  }}
-                />
-              </Tooltip>
-            ) : (
-              ""
-            )}
-            {record.status == "Class Going" ? (
-              <Tooltip placement="top" title="Linkedin CheckIn">
-                <FaLinkedinIn
-                  size={14}
-                  color="#0a66c2"
-                  className="customers_formlink_copybutton"
-                  style={{
-                    cursor: "pointer",
-                    marginTop: "-2px",
-                    flexShrink: 0,
-                  }}
-                  onClick={() => {
-                    getParticularCustomerDetails(record?.id);
-                    setDrawerContentStatus("Pre Certificate");
-                    setIsStatusUpdateDrawer(true);
-                    return;
-                  }}
-                />
-              </Tooltip>
-            ) : (
-              ""
-            )}
-          </div>
-        );
       },
     },
     {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      width: 140,
-      fixed: "right",
+      title: "HR",
+      key: "hr_user_name",
+      dataIndex: "hr_user_name",
+      width: 150,
       render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            <Tooltip
-              placement="top"
-              title="View Details"
-              trigger={["hover", "click"]}
-            >
-              <FaRegEye
-                size={15}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsOpenDetailsDrawer(true);
-                  setCustomerId(record?.id);
-                }}
-              />
-            </Tooltip>
-
-            <Tooltip
-              placement="top"
-              title="View Customer History"
-              trigger={["hover", "click"]}
-            >
-              <LuFileClock
-                size={15}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setSelectedHistoryCustomerId(record?.id);
-                  setIsOpenCustomerHistoryDrawer(true);
-                }}
-              />
-            </Tooltip>
-          </div>
-        );
+        if (text) {
+          const hr = `${record.hr_user_id} - ${text}`;
+          return <EllipsisTooltip text={hr} />;
+        } else {
+          return "-";
+        }
       },
     },
   ];
@@ -703,7 +200,7 @@ export default function Admissions() {
     }, 300);
 
     setTableColumns(nonChangeColumns);
-  }, [permissions, isSwap, status]);
+  }, [permissions, status]);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -731,7 +228,6 @@ export default function Admissions() {
           return u.user_id;
         });
         setAllDownliners(downliners_ids);
-        rerunCustomerFilters(data, downliners_ids);
       } catch (error) {
         console.log("all downlines error", error);
       }
@@ -741,81 +237,12 @@ export default function Admissions() {
     return () => window.removeEventListener("notificationFilter", handler);
   }, []);
 
-  const rerunCustomerFilters = (stateData, downliners) => {
-    console.log("location state dataaa", stateData);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-
-    const receivedValueFromDashboard = stateData?.status || null;
-    const receivedStartDateFromDashboard = stateData?.startDate || null;
-    const receivedEndDateFromDashboard = stateData?.endDate || null;
-    const receivedSwapFromNotification = stateData?.payment_swap || null;
-
-    setStatus(
-      receivedValueFromDashboard
-        ? receivedValueFromDashboard === "Trainer Rejected"
-          ? "Awaiting Trainer"
-          : receivedValueFromDashboard
-        : "",
-    );
-
-    if (
-      receivedValueFromDashboard == "Awaiting Trainer" ||
-      receivedValueFromDashboard == "Trainer Rejected" ||
-      receivedValueFromDashboard == "Awaiting Class" ||
-      receivedValueFromDashboard == "Class Scheduled" ||
-      receivedValueFromDashboard == "Class Going"
-    ) {
-      scroll(600);
-    }
-    if (
-      receivedValueFromDashboard == "Passedout process" ||
-      receivedValueFromDashboard == "Escalated" ||
-      receivedValueFromDashboard == "Others" ||
-      receivedValueFromDashboard == "Completed"
-    ) {
-      scroll(1200);
-    }
-
-    if (receivedStartDateFromDashboard) {
-      setSelectedDates([
-        receivedStartDateFromDashboard,
-        receivedEndDateFromDashboard,
-      ]);
-    } else {
-      setSelectedDates(PreviousAndCurrentDate);
-    }
-
-    if (receivedSwapFromNotification) {
-      setIsSwap(receivedSwapFromNotification);
-    }
-
-    getCustomersData(
-      receivedStartDateFromDashboard
-        ? receivedStartDateFromDashboard
-        : PreviousAndCurrentDate[0],
-      receivedEndDateFromDashboard
-        ? receivedEndDateFromDashboard
-        : PreviousAndCurrentDate[1],
-      null,
-      null,
-      receivedValueFromDashboard
-        ? receivedValueFromDashboard === "Trainer Rejected"
-          ? ["Trainer Rejected"]
-          : receivedValueFromDashboard
-        : null,
-      downliners,
-      [
-        { id: 1, name: "Classroom", checked: true },
-        { id: 1, name: "Online", checked: true },
-      ],
-      1,
-      10,
-    );
-  };
-
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+
     try {
       const response = await getAllDownlineUsers(
         user_id ? user_id : convertAsJson.user_id,
@@ -826,13 +253,26 @@ export default function Admissions() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      rerunCustomerFilters(isRefresh ? null : location.state, downliners_ids);
+      getAdmissionsData(
+        PreviousAndCurrentDate[0],
+        PreviousAndCurrentDate[1],
+        null,
+        null,
+        null,
+        downliners_ids,
+        [
+          { id: 1, name: "Classroom", checked: true },
+          { id: 1, name: "Online", checked: true },
+        ],
+        1,
+        10,
+      );
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
-  const getCustomersData = async (
+  const getAdmissionsData = async (
     startDate,
     endDate,
     searchvalue,
@@ -880,8 +320,8 @@ export default function Admissions() {
     };
 
     try {
-      const response = await getCustomers(payload);
-      console.log("customers response", response);
+      const response = await getAdmissions(payload);
+      console.log("admissions response", response);
       const customers = response?.data?.data?.customers || [];
       const pagination = response?.data?.data?.pagination;
 
@@ -892,30 +332,12 @@ export default function Admissions() {
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
-      setCustomerStatusCount(
-        response?.data?.data?.customer_status_count || null,
-      );
-      if (is_generate_certificate === true) {
-        if (customers.length >= 1) {
-          const findCurrentCustomer = customers.find(
-            (f) => f.id === customerDetails.id,
-          );
-
-          if (findCurrentCustomer) {
-            setCustomerDetails(findCurrentCustomer);
-            setIsCertGenerated(
-              findCurrentCustomer.is_certificate_generated === 1 ? true : false,
-            );
-            setGenerateCertLoading(false);
-          } else {
-            setGenerateCertLoading(false);
-          }
-        } else {
-          setGenerateCertLoading(false);
-        }
-      }
+      setAllAdmissionsRegionCounts({
+        chennai_region: response?.data?.data?.chennai_region || 0,
+        bangalore_region: response?.data?.data?.bangalore_region || 0,
+        hub_region: response?.data?.data?.hub_region || 0,
+      });
     } catch (error) {
-      setCustomerStatusCount(null);
       setCustomersData([]);
       console.log("get customers error", error);
     } finally {
@@ -1013,6 +435,7 @@ export default function Admissions() {
       console.log("particular customer response", response);
       const customer_details = response?.data?.data;
       setCustomerDetails(customer_details);
+      setIsOpenCustomerDetailsModal(true);
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
@@ -1022,7 +445,7 @@ export default function Admissions() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getCustomersData(
+    getAdmissionsData(
       selectedDates[0],
       selectedDates[1],
       searchValue,
@@ -1042,7 +465,7 @@ export default function Admissions() {
       page: 1,
     });
     setTimeout(() => {
-      getCustomersData(
+      getAdmissionsData(
         selectedDates[0],
         selectedDates[1],
         e.target.value,
@@ -1070,7 +493,7 @@ export default function Admissions() {
       setPagination({
         page: 1,
       });
-      getCustomersData(
+      getAdmissionsData(
         selectedDates[0],
         selectedDates[1],
         searchValue,
@@ -1084,12 +507,6 @@ export default function Admissions() {
     } catch (error) {
       console.log("all downlines error", error);
     }
-  };
-
-  const handleEdit = (item) => {
-    setCustomerId(item?.id);
-    getParticularCustomerDetails(item?.id);
-    setIsOpenEditDrawer(true);
   };
 
   const formReset = () => {
@@ -1109,111 +526,6 @@ export default function Admissions() {
       page: 1,
     });
     getAllDownlineUsersData(null, true);
-  };
-
-  const handleViewCert = async (customer_id) => {
-    setGenerateCertLoading(true);
-    const payload = {
-      customer_id: customer_id ? customer_id : customerDetails.id,
-    };
-    try {
-      const response = await viewCertForCustomer(payload);
-      console.log("cert response", response);
-      const htmlTemplate = response?.data?.data?.html_template;
-      setCertHtmlContent(htmlTemplate);
-      setTimeout(() => {
-        setGenerateCertLoading(false);
-        setIsOpenViewCertModal(true);
-      }, 300);
-    } catch (error) {
-      setGenerateCertLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
-  const handlePreview = async (file) => {
-    if (file.url) {
-      setPreviewImage(file.url);
-      setPreviewOpen(true);
-      return;
-    }
-    setPreviewOpen(true);
-    const rawFile = file.originFileObj || file;
-    const reader = new FileReader();
-    reader.readAsDataURL(rawFile);
-    reader.onload = () => {
-      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
-      console.log("urlllll", dataUrl);
-      setPreviewImage(dataUrl); // Show in Modal
-      setPreviewOpen(true);
-    };
-  };
-
-  const handleStatusMismatch = () => {
-    CommonMessage("error", "Status Mismatch. Contact Support Team");
-  };
-
-  const updateStatusDrawerReset = () => {
-    setIsStatusUpdateDrawer(false);
-    setCustomerDetails(null);
-    setDrawerContentStatus("");
-    setTimeout(() => {
-      setUpdateButtonLoading(false);
-    }, 300);
-    //student verify
-    //assign trainer
-    //verify trainer
-    setRejectButtonLoader(false);
-    //class schedule
-    //class going
-    //feedback
-    setStepIndex(0);
-    //cert usestaes
-    setIsCertGenerated(false);
-    setCertificateName("");
-  };
-
-  const handleVerifyReview = async () => {
-    setVerifyButtonLoading(true);
-    const payload = {
-      customer_id: customerDetails?.id,
-      type: reviewModalTitle.includes("Google") ? "Google" : "Linkedin",
-      is_verified: 1,
-      verified_by: loginUserId,
-      verified_date: formatToBackendIST(new Date()),
-    };
-    try {
-      await verifyReview(payload);
-      setTimeout(() => {
-        setIsOpenReviewScreenshotModal(false);
-        setReviewScreenshot("");
-        setReviewModalTitle("");
-        setVerifyButtonLoading(false);
-        CommonMessage("success", "Review Verified");
-        getCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          selectedOrigin,
-          status,
-          allDownliners,
-          branchOptions,
-          pagination.page,
-          pagination.limit,
-        );
-      }, 300);
-    } catch (error) {
-      setVerifyButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
   };
 
   return (
@@ -1251,7 +563,7 @@ export default function Admissions() {
                           setPagination({
                             page: 1,
                           });
-                          getCustomersData(
+                          getAdmissionsData(
                             selectedDates[0],
                             selectedDates[1],
                             null,
@@ -1303,7 +615,7 @@ export default function Admissions() {
                               setPagination({
                                 page: 1,
                               });
-                              getCustomersData(
+                              getAdmissionsData(
                                 selectedDates[0],
                                 selectedDates[1],
                                 null,
@@ -1382,7 +694,7 @@ export default function Admissions() {
                         setPagination({
                           page: 1,
                         });
-                        getCustomersData(
+                        getAdmissionsData(
                           dates[0],
                           dates[1],
                           searchValue,
@@ -1399,147 +711,6 @@ export default function Admissions() {
                 </div>
               </div>
             </Col>
-
-            {/* <Col flex="none">
-              <Popover
-                placement="bottomLeft"
-                trigger="click"
-                overlayInnerStyle={{
-                  padding: 0,
-                  borderRadius: "12px",
-                  boxShadow:
-                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e2e8f0",
-                }}
-                content={
-                  <div
-                    style={{
-                      width: "320px",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <div
-                      style={{
-                        padding: "10px 20px",
-                        borderBottom: "1px solid #f1f5f9",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        backgroundColor: "#f8fafc",
-                        borderTopLeftRadius: "12px",
-                        borderTopRightRadius: "12px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: "600",
-                          fontSize: "13px",
-                          color: "#0f172a",
-                        }}
-                      >
-                        Advanced Filters
-                      </span>
-                      <Badge
-                        count={1}
-                        style={{
-                          backgroundColor: "#3b82f6",
-                          boxShadow: "0 0 0 2px #f8fafc",
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "20px",
-                        maxHeight: "420px",
-                        overflowY: "auto",
-                        padding: "20px",
-                      }}
-                    >
-                      <div style={{ width: "100%" }}>
-                        <CommonSelectField
-                          width="100%"
-                          height="35px"
-                          label="Select Origin"
-                          labelMarginTop="0px"
-                          labelFontSize="12px"
-                          options={[
-                            {
-                              id: "acte.in",
-                              name: "acte.in",
-                            },
-                            {
-                              id: "acte.co.in",
-                              name: "acte.co.in",
-                            },
-                            {
-                              id: "learnovita.com",
-                              name: "learnovita.com",
-                            },
-                            {
-                              id: "acte.courses",
-                              name: "placement7.com",
-                            },
-                            {
-                              id: "linkplux.com",
-                              name: "linkplux.com",
-                            },
-                            {
-                              id: "careerfast.in",
-                              name: "careerfast.in",
-                            },
-                            {
-                              id: "Google Ads",
-                              name: "Google Ads",
-                            },
-                          ]}
-                          onChange={(e) => {
-                            setSelectedOrigin(e.target.value);
-                            setPagination({
-                              page: 1,
-                            });
-                            getCustomersData(
-                              selectedDates[0],
-                              selectedDates[1],
-                              searchValue,
-                              e.target.value,
-                              status,
-                              allDownliners,
-                              branchOptions,
-                              1,
-                              pagination.limit,
-                            );
-                          }}
-                          value={selectedOrigin}
-                          disableClearable={false}
-                        />{" "}
-                      </div>
-                    </div>
-                  </div>
-                }
-              >
-                <Button
-                  // type="primary"
-                  icon={<IoFilter size={15} />}
-                  className="leads_advancefilter_button"
-                  style={{
-                    background: "#fff",
-                    borderRadius: "6px",
-                    height: "35px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontWeight: "500",
-                    fontSize: "12px",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                  }}
-                >
-                  Filters
-                </Button>
-              </Popover>
-            </Col> */}
           </Row>
         </Col>
         <Col
@@ -1644,21 +815,48 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      {/* <div className="admissions_progress_container">
-        <span className="admissions_progress_label">Overall Progress</span>
-        <Progress
-          percent={65}
-          showInfo={false}
-          strokeWidth={6}
-          strokeColor={{
-            "0%": "#8a9bf8",
-            "100%": "#5b69ca",
-          }}
-          trailColor="#f1f5f9"
-          className="admissions_progress_bar"
-        />
-        <span className="admissions_progress_text">65%</span>
-      </div> */}
+      <div className="livelead_today_summary_container">
+        <p className="livelead_today_label">REGION SUMMARY</p>
+
+        <div className="livelead_badge_item online">
+          <div
+            className="livelead_badge_dot"
+            style={{ backgroundColor: "#3c9111" }}
+          />
+          <p className="livelead_badge_text">
+            Hub{" "}
+            <span className="livelead_badge_count">
+              {allAdmissionsRegionCounts?.hub_region ?? 0}
+            </span>
+          </p>
+        </div>
+
+        <div className="livelead_badge_item classroom">
+          <div
+            className="livelead_badge_dot"
+            style={{ backgroundColor: "#1e90ff" }}
+          />
+          <p className="livelead_badge_text">
+            Chennai{" "}
+            <span className="livelead_badge_count">
+              {allAdmissionsRegionCounts?.chennai_region ?? 0}
+            </span>
+          </p>
+        </div>
+
+        <div className="livelead_badge_item classroom">
+          <div
+            className="livelead_badge_dot"
+            style={{ backgroundColor: "#5b69ca" }}
+          />
+          <p className="livelead_badge_text">
+            Bangalore{" "}
+            <span className="livelead_badge_count">
+              {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+            </span>
+          </p>
+        </div>
+      </div>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable
@@ -1697,734 +895,6 @@ export default function Admissions() {
           <ParticularCustomerDetails customerId={customerId} />
         ) : (
           ""
-        )}
-      </Drawer>
-
-      <Drawer
-        title="Update Customer"
-        open={isOpenEditDrawer}
-        onClose={() => {
-          setIsOpenEditDrawer(false);
-          setCustomerId(null);
-          setCustomerDetails(null);
-          customerUpdateRef.current?.formReset();
-        }}
-        width="50%"
-        className="customerupdate_drawer"
-        style={{ position: "relative", paddingBottom: 65 }}
-      >
-        <CustomerUpdate
-          ref={customerUpdateRef}
-          customerId={customerId}
-          setUpdateDrawerTabKey={setUpdateDrawerTabKey}
-          setUpdateButtonLoading={setUpdateButtonLoading}
-          setIsOpenEditDrawer={setIsOpenEditDrawer}
-          callgetCustomersApi={() => {
-            setPagination({
-              page: 1,
-            });
-            getCustomersData(
-              selectedDates[0],
-              selectedDates[1],
-              searchValue,
-              selectedOrigin,
-              status,
-              allDownliners,
-              branchOptions,
-              pagination.page,
-              pagination.limit,
-            );
-          }} // pass function as prop
-        />
-
-        <div className="leadmanager_tablefiler_footer">
-          <div className="leadmanager_submitlead_buttoncontainer">
-            {updateButtonLoading ? (
-              <button className="customerupdate_loadingsubmitbutton">
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className="customerupdate_submitbutton"
-                // onClick={handleSubmit}
-                onClick={() => {
-                  if (updateDrawerTabKey === "1") {
-                    customerUpdateRef.current?.handleCustomerUpdate();
-                  } else {
-                    customerUpdateRef.current?.handlePaymentUpdate();
-                  }
-                }}
-              >
-                {updateDrawerTabKey === "1"
-                  ? "Update Customer Details"
-                  : "Update Payment Master"}
-              </button>
-            )}
-          </div>
-        </div>
-      </Drawer>
-
-      <Drawer
-        title={
-          drawerContentStatus == "Re-Assign Trainer"
-            ? "Re-Assign Trainer"
-            : drawerContentStatus == "Pre Certificate"
-              ? "Generate Certificate"
-              : "Update Status"
-        }
-        open={isStatusUpdateDrawer}
-        onClose={updateStatusDrawerReset}
-        width="50%"
-        style={{
-          position: "relative",
-          paddingBottom:
-            drawerContentStatus === "Finance Verify" ||
-            drawerContentStatus === "Update Payment"
-              ? "0px"
-              : "65px",
-        }}
-        className="customer_statusupdate_drawer"
-      >
-        {isStatusUpdateDrawerLoading ? (
-          <div style={{ padding: "24px" }}>
-            <div className="customer_profileContainer">
-              <Skeleton.Avatar active size={90} shape="circle" />
-              <div style={{ marginLeft: "20px", flex: 1 }}>
-                <Skeleton
-                  active
-                  paragraph={{ rows: 2 }}
-                  title={{ width: 150 }}
-                />
-              </div>
-            </div>
-
-            <Row gutter={16} style={{ marginTop: "30px" }}>
-              <Col span={12}>
-                {[1, 2, 3, 4].map((i) => (
-                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                    <Col span={12}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "80%" }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "100%" }}
-                      />
-                    </Col>
-                  </Row>
-                ))}
-              </Col>
-              <Col span={12}>
-                {[1, 2, 3, 4].map((i) => (
-                  <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                    <Col span={12}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "80%" }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "100%" }}
-                      />
-                    </Col>
-                  </Row>
-                ))}
-              </Col>
-            </Row>
-
-            <div
-              className="customerdetails_coursecard"
-              style={{ marginTop: "30px" }}
-            >
-              <div className="customerdetails_coursecard_headercontainer">
-                <Skeleton.Input active size="small" style={{ width: 150 }} />
-              </div>
-              <div
-                className="customerdetails_coursecard_contentcontainer"
-                style={{ padding: "20px" }}
-              >
-                <Row gutter={16}>
-                  <Col span={12}>
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <Row
-                        key={i}
-                        style={{ marginTop: i === 1 ? "0" : "12px" }}
-                      >
-                        <Col span={12}>
-                          <Skeleton.Input
-                            active
-                            size="small"
-                            style={{ width: "80%" }}
-                          />
-                        </Col>
-                        <Col span={12}>
-                          <Skeleton.Input
-                            active
-                            size="small"
-                            style={{ width: "100%" }}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                  </Col>
-                  <Col span={12}>
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <Row
-                        key={i}
-                        style={{ marginTop: i === 1 ? "0" : "12px" }}
-                      >
-                        <Col span={12}>
-                          <Skeleton.Input
-                            active
-                            size="small"
-                            style={{ width: "80%" }}
-                          />
-                        </Col>
-                        <Col span={12}>
-                          <Skeleton.Input
-                            active
-                            size="small"
-                            style={{ width: "100%" }}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                  </Col>
-                </Row>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="customer_statusupdate_drawer_profileContainer">
-              {customerDetails && customerDetails.profile_image ? (
-                <Upload
-                  listType="picture-circle"
-                  fileList={[
-                    {
-                      uid: "-1",
-                      name: "profile.jpg",
-                      status: "done",
-                      url: customerDetails.profile_image, // Base64 string directly usable
-                    },
-                  ]}
-                  onPreview={handlePreview}
-                  onRemove={false}
-                  showUploadList={{
-                    showRemoveIcon: false,
-                  }}
-                  beforeUpload={() => false} // prevent auto upload
-                  style={{ width: 90, height: 90 }} // reduce size
-                  accept=".png,.jpg,.jpeg"
-                ></Upload>
-              ) : (
-                <FaRegUser size={50} color="#333" />
-              )}
-
-              <div>
-                <p className="customer_nametext">
-                  {" "}
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
-                <p className="customer_coursenametext">
-                  {" "}
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
-              </div>
-            </div>
-
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-            >
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.name
-                          ? customerDetails.name
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <MdOutlineEmail size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Email</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.email
-                          ? customerDetails.email
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoCallOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Mobile</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.phone
-                        ? customerDetails.phone
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaWhatsapp size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Whatsapp</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.whatsapp
-                        ? customerDetails.whatsapp
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      {customerDetails && customerDetails.gender === "Male" ? (
-                        <BsGenderMale size={15} color="gray" />
-                      ) : (
-                        <BsGenderFemale size={15} color="gray" />
-                      )}
-                      <p className="customerdetails_rowheading">Gender</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.gender
-                        ? customerDetails.gender
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.current_location
-                        ? customerDetails.current_location
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">
-                        Lead Executive
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={`${
-                        customerDetails && customerDetails.lead_assigned_to_id
-                          ? customerDetails.lead_assigned_to_id
-                          : "-"
-                      } (${
-                        customerDetails && customerDetails.lead_assigned_to_name
-                          ? customerDetails.lead_assigned_to_name
-                          : "-"
-                      })`}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.course_name
-                          ? customerDetails.course_name
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {customerDetails && customerDetails.primary_fees
-                        ? "₹" + customerDetails.primary_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Course Fees
-                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {customerDetails && customerDetails.total_amount
-                        ? "₹" + customerDetails.total_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Balance Amount
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: 700 }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Branch</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.branch_name
-                          ? customerDetails.branch_name
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Type</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_timing
-                        ? customerDetails.batch_timing
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            <Divider className="customer_statusupdate_divider" />
-
-            {drawerContentStatus === "Pre Certificate" ? (
-              <>
-                <PreCertificate
-                  ref={preCertificateRef}
-                  customerDetails={customerDetails}
-                  setUpdateButtonLoading={setUpdateButtonLoading}
-                  callgetCustomersApi={() => {
-                    updateStatusDrawerReset();
-                  }}
-                />
-              </>
-            ) : (
-              ""
-            )}
-          </>
-        )}
-
-        {/* footer */}
-        {drawerContentStatus === "Finance Verify" ||
-        drawerContentStatus === "Update Payment" ? (
-          ""
-        ) : (
-          <div className="leadmanager_tablefiler_footer">
-            <div className="leadmanager_submitlead_buttoncontainer">
-              {drawerContentStatus === "Trainer Verify" ||
-              drawerContentStatus === "Trainer Approval" ? (
-                <>
-                  {rejectbuttonLoader ? (
-                    <button className="customer_trainerreject_loadingbutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="customer_trainerreject_button"
-                      onClick={() =>
-                        assignAndVerifyTrainerRef.current?.handleRejectTrainer()
-                      }
-                    >
-                      Rejected
-                    </button>
-                  )}
-                </>
-              ) : (
-                ""
-              )}
-
-              {drawerContentStatus === "Add L-Review" ? (
-                <>
-                  {updateButtonLoading ? (
-                    <button className="customer_issuecert_loadingbutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="customer_issuecert_button"
-                      onClick={() =>
-                        passedOutProcessRef.current?.handleCompleteProcess()
-                      }
-                    >
-                      Update And Issue Certificate
-                    </button>
-                  )}
-                </>
-              ) : drawerContentStatus === "Add G-Review" ? (
-                <>
-                  {stepIndex > 0 && (
-                    <Button
-                      onClick={prev}
-                      style={{ marginRight: 12 }}
-                      className="customer_stepperbuttons"
-                    >
-                      Previous
-                    </Button>
-                  )}
-                  {stepIndex == 2 && (
-                    <>
-                      {linkedinLoading ? (
-                        <Button className="customer_loading_linkedin_update_button">
-                          <CommonSpinner />
-                        </Button>
-                      ) : (
-                        <Button
-                          className="customer_linkedin_update_button"
-                          onClick={() =>
-                            passedOutProcessRef.current?.handleLinkedinReview()
-                          }
-                        >
-                          Update Linkedin
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {stepIndex < 3 && (
-                    <>
-                      {updateButtonLoading ? (
-                        <Button
-                          className={
-                            stepIndex == 2
-                              ? "customer_complete_loadingpassedoutbutton"
-                              : "customer_stepperbuttons"
-                          }
-                        >
-                          <CommonSpinner />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={
-                            stepIndex == 0
-                              ? () =>
-                                  passedOutProcessRef.current?.handleGoogleReview()
-                              : stepIndex == 1
-                                ? () =>
-                                    passedOutProcessRef.current?.handleCertificateDetails()
-                                : stepIndex == 2
-                                  ? () =>
-                                      passedOutProcessRef.current?.handleCompleteProcess()
-                                  : ""
-                          }
-                          className={
-                            stepIndex == 2
-                              ? "customer_complete_passedoutbutton"
-                              : "customer_stepperbuttons"
-                          }
-                        >
-                          {stepIndex == 2 ? "Move to Completed" : "Next"}
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  {updateButtonLoading ? (
-                    <button className="users_adddrawer_loadingcreatebutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="users_adddrawer_createbutton"
-                      onClick={
-                        drawerContentStatus === "Student Verify"
-                          ? () =>
-                              studentVerifyRef.current?.handleStudentVerify()
-                          : drawerContentStatus === "Assign Trainer"
-                            ? () =>
-                                assignAndVerifyTrainerRef.current?.handleAssignTrainer()
-                            : drawerContentStatus === "Re-Assign Trainer"
-                              ? () =>
-                                  reAssignTrainerRef.current?.handleReAssignTrainer()
-                              : drawerContentStatus === "Trainer Verify" ||
-                                  drawerContentStatus === "Trainer Approval"
-                                ? () =>
-                                    assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
-                                : drawerContentStatus === "Class Schedule"
-                                  ? () =>
-                                      classScheduleRef.current?.handleClassSchedule()
-                                  : drawerContentStatus === "Class Going"
-                                    ? () =>
-                                        classScheduleRef.current?.handleUpdateClassGoing()
-                                    : drawerContentStatus === "Add G-Review"
-                                      ? () =>
-                                          passedOutProcessRef.current?.handleGoogleReview()
-                                      : drawerContentStatus ===
-                                          "Pre Certificate"
-                                        ? () =>
-                                            preCertificateRef.current?.handleGeneratePreCert()
-                                        : drawerContentStatus === "Others"
-                                          ? () =>
-                                              othersHandlingRef.current?.handleSubmit()
-                                          : handleStatusMismatch
-                      }
-                    >
-                      {drawerContentStatus === "Assign Trainer"
-                        ? "Assign"
-                        : drawerContentStatus === "Trainer Approval"
-                          ? "Approve"
-                          : drawerContentStatus === "Re-Assign Trainer"
-                            ? "Re-Assign"
-                            : drawerContentStatus === "Class Going" ||
-                                drawerContentStatus === "Class Schedule" ||
-                                drawerContentStatus === "Add G-Review" ||
-                                drawerContentStatus === "Others"
-                              ? "Update"
-                              : drawerContentStatus == "Pre Certificate"
-                                ? "Generate"
-                                : "Verify"}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
         )}
       </Drawer>
 
@@ -2525,7 +995,7 @@ export default function Admissions() {
                   column_names: columns,
                 };
                 setBranchOptions(duplicateBranchOptions);
-                getCustomersData(
+                getAdmissionsData(
                   selectedDates[0],
                   selectedDates[1],
                   searchValue,
@@ -2552,155 +1022,11 @@ export default function Admissions() {
         </div>
       </Drawer>
 
-      {/* view certificate modal */}
-      <Modal
-        open={isOpenViewCertModal}
-        onCancel={() => {
-          setIsOpenViewCertModal(false);
-          setCertificateName("");
-        }}
-        footer={false}
-        width="64%"
-        style={{ marginBottom: "20px", top: 10 }}
-        className="customer_certificate_viewmodal"
-        zIndex={1100}
-        // centered={true}
-        closeIcon={
-          <span
-            style={{
-              color: "#ffffff", // white color
-              fontSize: "18px",
-              fontWeight: "bold",
-            }}
-          >
-            <CloseOutlined />
-          </span>
-        }
-      >
-        <CommonCertificateViewer
-          htmlTemplate={certHtmlContent}
-          candidateName={
-            certificateName
-              ? certificateName
-              : customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"
-          }
-        />
-      </Modal>
-
-      {/* customer history drawer */}
-      <CustomerHistory
-        customerId={selectedHistoryCustomerId}
-        isOpen={isOpenCustomerHistoryDrawer}
-        onClose={() => {
-          setIsOpenCustomerHistoryDrawer(false);
-          setSelectedHistoryCustomerId(null);
-        }}
+      <DraggableStudentModal
+        open={isOpenCustomerDetailsModal}
+        onClose={() => setIsOpenCustomerDetailsModal(false)}
+        customerDetails={customerDetails}
       />
-
-      {/* profile image modal */}
-      <Modal
-        open={previewOpen}
-        title="Preview Profile"
-        footer={null}
-        onCancel={() => setPreviewOpen(false)}
-      >
-        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
-      </Modal>
-
-      {/* form modal */}
-      <Modal
-        open={isOpenFormModal}
-        onCancel={() => {
-          setIsOpenFormModal(false);
-          setCustomerDetails(null);
-        }}
-        footer={false}
-        width="64%"
-        style={{ marginBottom: "20px", top: 10 }}
-        className="customer_downloadform_modal"
-        zIndex={1100}
-        // centered={true}
-        closeIcon={
-          <span
-            style={{
-              fontSize: "18px",
-              fontWeight: "bold",
-            }}
-          >
-            <CloseOutlined />
-          </span>
-        }
-      >
-        <DownloadRegistrationForm customerDetails={customerDetails} />
-      </Modal>
-
-      {/* review screenshot modal */}
-      <Modal
-        title={reviewModalTitle}
-        open={isOpenReviewScreenshotModal}
-        onCancel={() => {
-          setIsOpenReviewScreenshotModal(false);
-          setReviewScreenshot("");
-          setReviewModalTitle("");
-          setVerifyButtonLoading(false);
-          setCustomerDetails(null);
-        }}
-        // footer={false}
-        footer={
-          permissions.includes("Review Verify")
-            ? [
-                <div style={{ marginTop: "20px" }}>
-                  {verifyButtonLoading ? (
-                    <Button
-                      key="create"
-                      type="primary"
-                      className="leads_coursemodal_loading_createbutton"
-                    >
-                      <CommonSpinner />
-                    </Button>
-                  ) : (
-                    <>
-                      {reviewModalTitle.includes("Google") &&
-                      customerDetails?.is_google_verified == 1 ? (
-                        ""
-                      ) : reviewModalTitle.includes("LinkedIn") &&
-                        customerDetails?.is_linkedin_verified == 1 ? (
-                        ""
-                      ) : (
-                        <Button
-                          key="create"
-                          type="primary"
-                          className="leads_coursemodal_createbutton"
-                          onClick={handleVerifyReview}
-                        >
-                          Verify
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </div>,
-              ]
-            : false
-        }
-        width="32%"
-        className="customer_paymentscreenshot_modal"
-      >
-        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
-          <PrismaZoom>
-            {reviewScreenshot ? (
-              <img
-                src={`data:image/png;base64,${reviewScreenshot}`}
-                alt="payment screenshot"
-                className="customer_paymentscreenshot_image"
-              />
-            ) : (
-              "-"
-            )}
-          </PrismaZoom>
-        </div>
-      </Modal>
     </div>
   );
 }

@@ -667,6 +667,8 @@ const CustomerUpdate = forwardRef(
         discount_amount: parseFloat(discountAmount) || 0,
         total_amount: amount - (parseFloat(discountAmount) || 0),
       };
+      console.log("payloaddd", payload);
+      // return;
       try {
         await paymentMasterUpdate(payload);
         CommonMessage("success", "Updated");
@@ -1144,7 +1146,7 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col xs={24} sm={24} md={24} lg={6}>
                 <CommonInputField
-                  label="Discount Amount"
+                  label="Add Discount"
                   value={discountAmount}
                   onChange={(e) => setDiscountAmount(e.target.value)}
                   required={false}
