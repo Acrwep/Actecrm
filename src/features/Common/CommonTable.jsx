@@ -102,6 +102,7 @@ const CommonTable = ({
       onPaginationChange({
         page: pagination.current,
         limit: pagination.pageSize,
+        sorter: sorter,
       });
     }
   };

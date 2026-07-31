@@ -295,6 +295,8 @@ export default function Leads({
   const [checkAll, setCheckAll] = useState(false);
   //re entry lead
   const [isReEntry, setIsReEntry] = useState(false);
+  const [sortField, setSortField] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
 
   const checkIsAfter45Days = (created_date) => {
     // Convert to JS Date (replace space with T for ISO format)
@@ -1493,9 +1495,13 @@ export default function Leads({
     pageNumber,
     limit,
     actionOverride,
+    sortFieldParam,
+    sortOrderParam
   ) => {
     const currentAction =
       actionOverride !== undefined ? actionOverride : leadActionFilter;
+    const finalSortField = sortFieldParam !== undefined ? sortFieldParam : sortField;
+    const finalSortOrder = sortOrderParam !== undefined ? sortOrderParam : sortOrder;
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
@@ -1571,6 +1577,8 @@ export default function Leads({
         }),
       page: pageNumber,
       limit: limit,
+      ...(finalSortField && { sort_by: finalSortField }),
+      ...(finalSortOrder && { sort_order: finalSortOrder === "ascend" ? "asc" : "desc" }),
     };
     try {
       const response = await getLeads(payload);
@@ -2214,7 +2222,23 @@ export default function Leads({
     }
   };
 
-  const handlePaginationChange = ({ page, limit }) => {
+  const handlePaginationChange = ({ page, limit, sorter }) => {
+    let currentSortField = sortField;
+    let currentSortOrder = sortOrder;
+
+    if (sorter && sorter.field) {
+      // sorter can be an array in some cases, but typically an object for single column sort
+      currentSortField = Array.isArray(sorter) ? sorter[0].field : sorter.field;
+      currentSortOrder = Array.isArray(sorter) ? sorter[0].order : sorter.order;
+      setSortField(currentSortField);
+      setSortOrder(currentSortOrder);
+    } else if (sorter && !sorter.order) {
+      currentSortField = null;
+      currentSortOrder = null;
+      setSortField(null);
+      setSortOrder(null);
+    }
+
     dispatch(
       storeLeadFilterValues({
         pageNumber: page,
@@ -2233,6 +2257,9 @@ export default function Leads({
       filterValuesFromRedux.bucket,
       page,
       limit,
+      undefined,
+      currentSortField,
+      currentSortOrder
     );
   };
 

@@ -397,10 +397,10 @@ export default function LeadManager() {
       ]);
 
       // Regions
-      setRegionOptions(regionRes?.data?.data || []);
+      setRegionOptions(regionRes?.value?.data?.data || []);
 
       // Branches
-      const branchData = branchesRes?.data?.result || [];
+      const branchData = branchesRes?.value?.data?.result || [];
 
       const branchOrder = [
         "BDC",
@@ -424,7 +424,7 @@ export default function LeadManager() {
       setAllBranchesData(sortedBranches);
 
       // Lead Types
-      const leadTypes = leadTypeRes?.data?.result || [];
+      const leadTypes = leadTypeRes?.value?.data?.result || [];
 
       const updatedLeadTypes = leadTypes.map((item) => ({
         ...item,
@@ -452,14 +452,14 @@ export default function LeadManager() {
       setLeadTypeOptions(sortedLeadTypes);
 
       // Courses
-      dispatch(storeCourseList(courseRes?.data?.data || []));
+      dispatch(storeCourseList(courseRes?.value?.data?.data || []));
 
       // Areas
-      dispatch(storeAreaList(areaRes?.data?.data || []));
+      dispatch(storeAreaList(areaRes?.value?.data?.data || []));
 
       // Lead Status
       setLeadStatusOptions(
-        leadStatusRes?.data?.data || leadStatusRes?.data?.result || [],
+        leadStatusRes?.value?.data?.data || leadStatusRes?.value?.data?.result || [],
       );
     } catch (error) {
       console.error("Error loading initial data:", error);
