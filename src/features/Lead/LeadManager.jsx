@@ -459,7 +459,9 @@ export default function LeadManager() {
 
       // Lead Status
       setLeadStatusOptions(
-        leadStatusRes?.value?.data?.data || leadStatusRes?.value?.data?.result || [],
+        leadStatusRes?.value?.data?.data ||
+          leadStatusRes?.value?.data?.result ||
+          [],
       );
     } catch (error) {
       console.error("Error loading initial data:", error);
@@ -839,6 +841,7 @@ export default function LeadManager() {
               handleTabClick("add_lead");
             }}
             allUsersList={allUsersList}
+            allBranchesData={allBranchesData}
           />
         </div>
       )}

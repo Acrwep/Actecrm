@@ -82,6 +82,13 @@ export default function CommonCustomerSingleSelectField({
           disabled={disabled}
           filterOptions={(x) => x}
           getOptionLabel={getLabel}
+          sx={{
+            "& .MuiAutocomplete-clearIndicator": {
+              "& .MuiSvgIcon-root": {
+                fontSize: "16px",
+              },
+            },
+          }}
           getOptionDisabled={(option) => option.is_active === false}
           isOptionEqualToValue={(o, v) =>
             String(o.id ?? o.user_id) === String(v.id ?? v.user_id)

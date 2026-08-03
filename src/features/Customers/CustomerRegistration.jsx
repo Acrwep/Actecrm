@@ -539,6 +539,14 @@ export default function CustomerRegistration() {
         customerFullDetails && customerFullDetails.place_of_supply
           ? customerFullDetails.place_of_supply
           : null,
+      place_of_service:
+        customerFullDetails && customerFullDetails.place_of_service
+          ? customerFullDetails.place_of_service
+          : null,
+      place_of_branch:
+        customerFullDetails && customerFullDetails.place_of_branch
+          ? customerFullDetails.place_of_branch
+          : null,
       address:
         customerFullDetails && customerFullDetails.address
           ? customerFullDetails.address

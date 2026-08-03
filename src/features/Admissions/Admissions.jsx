@@ -90,13 +90,11 @@ export default function Admissions() {
 
   const nonChangeColumns = [
     {
-      title: "Cr.Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 115,
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
+      title: "Sl. No",
+      key: "row_num",
+      dataIndex: "row_num",
+      width: 80,
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Joined Date",
@@ -725,22 +723,6 @@ export default function Admissions() {
             gap: "16px",
           }}
         >
-          <div className="admissions_progress_container">
-            <span className="admissions_progress_label">Overall Progress:</span>
-            <Progress
-              percent={65}
-              showInfo={false}
-              strokeWidth={6}
-              strokeColor={{
-                "0%": "#8a9bf8",
-                "100%": "#5b69ca",
-              }}
-              trailColor="#f1f5f9"
-              className="admissions_progress_bar"
-            />
-            <span className="admissions_progress_text">65%</span>
-          </div>
-
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -815,48 +797,76 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      <div className="livelead_today_summary_container">
-        <p className="livelead_today_label">REGION SUMMARY</p>
+      <Row>
+        <Col span={12}>
+          <div className="livelead_today_summary_container">
+            <p className="livelead_today_label">REGION SUMMARY</p>
 
-        <div className="livelead_badge_item online">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#3c9111" }}
-          />
-          <p className="livelead_badge_text">
-            Hub{" "}
-            <span className="livelead_badge_count">
-              {allAdmissionsRegionCounts?.hub_region ?? 0}
-            </span>
-          </p>
-        </div>
+            <div className="livelead_badge_item online">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#3c9111" }}
+              />
+              <p className="livelead_badge_text">
+                Hub{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.hub_region ?? 0}
+                </span>
+              </p>
+            </div>
 
-        <div className="livelead_badge_item classroom">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#1e90ff" }}
-          />
-          <p className="livelead_badge_text">
-            Chennai{" "}
-            <span className="livelead_badge_count">
-              {allAdmissionsRegionCounts?.chennai_region ?? 0}
-            </span>
-          </p>
-        </div>
+            <div className="livelead_badge_item classroom">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#1e90ff" }}
+              />
+              <p className="livelead_badge_text">
+                Chennai{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.chennai_region ?? 0}
+                </span>
+              </p>
+            </div>
 
-        <div className="livelead_badge_item classroom">
-          <div
-            className="livelead_badge_dot"
-            style={{ backgroundColor: "#5b69ca" }}
-          />
-          <p className="livelead_badge_text">
-            Bangalore{" "}
-            <span className="livelead_badge_count">
-              {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-            </span>
-          </p>
-        </div>
-      </div>
+            <div className="livelead_badge_item classroom">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#5b69ca" }}
+              />
+              <p className="livelead_badge_text">
+                Bangalore{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+                </span>
+              </p>
+            </div>
+          </div>
+        </Col>
+        <Col
+          span={12}
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <div className="admissions_progress_container">
+            <span className="admissions_progress_label">Overall Progress:</span>
+            <Progress
+              percent={65}
+              showInfo={false}
+              strokeWidth={6}
+              strokeColor={{
+                "0%": "#8a9bf8",
+                "100%": "#5b69ca",
+              }}
+              trailColor="#f1f5f9"
+              className="admissions_progress_bar"
+            />
+            <span className="admissions_progress_text">65%</span>
+          </div>
+        </Col>
+      </Row>
 
       <div style={{ marginTop: "20px" }}>
         <CommonTable

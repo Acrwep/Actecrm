@@ -243,6 +243,7 @@ export default function Batches() {
         getBatchesData(
           null,
           null,
+          null,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           true,
@@ -251,9 +252,16 @@ export default function Batches() {
     }
   };
 
-  const getBatchesData = async (regionId, branchId, startDate, endDate) => {
+  const getBatchesData = async (
+    trainerId,
+    regionId,
+    branchId,
+    startDate,
+    endDate,
+  ) => {
     setLoading(true);
     const payload = {
+      ...(trainerId && { trainer_id: trainerId }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       start_date: startDate,
@@ -294,11 +302,25 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
+      getBatchesData(
+        selectedId,
+        selectedRegionId,
+        selectedBranchId,
+        selectedDates[0],
+        selectedDates[1],
+      );
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
       setTrainerSearchText("");
       getTrainersData(null, 1);
+      getBatchesData(
+        null,
+        selectedRegionId,
+        selectedBranchId,
+        selectedDates[0],
+        selectedDates[1],
+      );
       setPagination({
         page: 1,
       });
@@ -352,7 +374,13 @@ export default function Batches() {
     const regionId = e.target.value;
     setSelectedRegionId(regionId);
     getBranchesData(regionId);
-    getBatchesData(regionId, null, selectedDates[0], selectedDates[1]);
+    getBatchesData(
+      selectedTrainerId,
+      regionId,
+      null,
+      selectedDates[0],
+      selectedDates[1],
+    );
   };
 
   const getBranchesData = async (regionid) => {
@@ -398,6 +426,7 @@ export default function Batches() {
     getBatchesData(
       null,
       null,
+      null,
       PreviousAndCurrentDate[0],
       PreviousAndCurrentDate[1],
     );
@@ -405,14 +434,15 @@ export default function Batches() {
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
-          <Row gutter={16}>
-            <Col span={7}>
-              {/*  <CommonCustomerSingleSelectField
-                label="Trainer"
-                height="32px"
-                labelMarginTop="-1px"
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={24} lg={19} xl={19}>
+          <Row gutter={12}>
+            <Col xs={24} sm={12} md={6} lg={5} xl={5}>
+              <CommonCustomerSingleSelectField
+                label="Select Trainer"
+                height="34px"
+                labelFontSize={"11px"}
+                labelMarginTop="0.5px"
                 required={false}
                 options={mergedTrainersList}
                 value={selectedTrainerId}
@@ -426,12 +456,13 @@ export default function Batches() {
                 error={selectedTrainerIdError}
                 disableClearable={false}
               />
-            */}
+            </Col>
+            <Col xs={24} sm={12} md={5} lg={5} xl={5}>
               <CommonSelectField
                 width="100%"
-                height="32px"
+                height="34px"
                 label="Select Region"
-                labelMarginTop="0px"
+                labelMarginTop="1px"
                 labelFontSize="11px"
                 options={regionOptions}
                 onChange={handleSelectRegionId}
@@ -439,17 +470,18 @@ export default function Batches() {
                 disableClearable={false}
               />
             </Col>
-            <Col span={7}>
+            <Col xs={24} sm={12} md={5} lg={5} xl={5}>
               <CommonSelectField
                 label="Branch"
-                height="32px"
-                labelMarginTop="0px"
+                height="34px"
+                labelMarginTop="1px"
                 labelFontSize="11px"
                 options={branchOptions}
                 value={selectedBranchId}
                 onChange={(e) => {
                   setSelectedBranchId(e.target.value);
                   getBatchesData(
+                    selectedTrainerId,
                     selectedRegionId,
                     e.target.value,
                     selectedDates[0],
@@ -461,7 +493,7 @@ export default function Batches() {
                 disabled={!selectedRegionId || selectedRegionId == 3}
               />
             </Col>
-            <Col span={10}>
+            <Col xs={24} sm={12} md={8} lg={9} xl={9}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -470,6 +502,7 @@ export default function Batches() {
                     page: 1,
                   });
                   getBatchesData(
+                    selectedTrainerId,
                     selectedRegionId,
                     selectedBranchId,
                     dates[0],
@@ -484,7 +517,8 @@ export default function Batches() {
           xs={24}
           sm={24}
           md={24}
-          lg={7}
+          lg={5}
+          xl={5}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -550,6 +584,7 @@ export default function Batches() {
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
+                selectedTrainerId,
                 selectedRegionId,
                 selectedBranchId,
                 selectedDates[0],
@@ -594,6 +629,7 @@ export default function Batches() {
             callgetBatchesApi={() => {
               formReset();
               getBatchesData(
+                selectedTrainerId,
                 selectedRegionId,
                 selectedBranchId,
                 selectedDates[0],

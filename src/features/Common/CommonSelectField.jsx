@@ -55,7 +55,7 @@ export default function CommonSelectField({
             height: height || "36px",
           },
           "& .MuiAutocomplete-input": {
-            fontSize: fontSize || "13px",
+            fontSize: fontSize || "12px",
             marginTop: "0px",
           },
           "& .Mui-disabled": {
@@ -99,6 +99,13 @@ export default function CommonSelectField({
           getOptionDisabled={(option) =>
             option.is_active === false || option.is_active === 0
           }
+          sx={{
+            "& .MuiAutocomplete-clearIndicator": {
+              "& .MuiSvgIcon-root": {
+                fontSize: "16px",
+              },
+            },
+          }}
           noOptionsText={
             <span
               style={{

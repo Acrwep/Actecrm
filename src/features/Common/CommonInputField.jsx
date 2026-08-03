@@ -13,6 +13,7 @@ export default function CommonInputField({
   height,
   fontSize,
   labelFontSize,
+  labelMarginTop,
   errorFontSize,
   ref: passedRef,
   maxLength,
@@ -123,6 +124,7 @@ export default function CommonInputField({
           width: "100%",
           "& .MuiInputLabel-root": {
             fontSize: labelFontSize ? labelFontSize : "12px",
+            marginTop: labelMarginTop ? labelMarginTop : "0px",
           },
           "& .MuiInputBase-root.MuiOutlinedInput-root": {
             borderLeft: "0px",

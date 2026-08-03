@@ -4,28 +4,20 @@ import {
   Row,
   Drawer,
   Tooltip,
-  Divider,
   Flex,
   Radio,
   Button,
   Checkbox,
   Modal,
-  Switch,
   Spin,
   Badge,
   Popover,
 } from "antd";
 import "./styles.css";
-import CommonInputField from "../Common/CommonInputField";
 import {
-  addressValidator,
-  calculateAmount,
   formatToBackendIST,
-  getBalanceAmount,
-  getConvenienceFees,
   getCurrentandPreviousweekDate,
   isWithin30Days,
-  priceValidator,
   selectValidator,
 } from "../Common/Validation";
 import { PiShareFatBold } from "react-icons/pi";
@@ -40,17 +32,11 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { IoLocationOutline } from "react-icons/io5";
 import { AiOutlineEdit } from "react-icons/ai";
 import { MdAutorenew } from "react-icons/md";
 import ViewLeadDetails from "./ViewLeadDetails";
 import FollowUpDrawerForm from "./FollowUpDrawerForm";
 import CommonDnd from "../Common/CommonDnd";
-import { Country, State } from "country-state-city";
 import { IoFilter } from "react-icons/io5";
 import {
   downloadLeads,
@@ -60,10 +46,6 @@ import {
   getLeadsCountByUserIds,
   getTableColumns,
   getUsers,
-  leadPayment,
-  sendCustomerFormEmail,
-  sendCustomerPaymentVerificationEmail,
-  sendCustomerWelcomeEmail,
   updateTableColumns,
   leadReEntry,
   getUsersByRole,
@@ -73,19 +55,16 @@ import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { FaRegAddressCard } from "react-icons/fa";
-import { SlGlobe } from "react-icons/sl";
-import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
-import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useDispatch, useSelector } from "react-redux";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import AddLead from "./AddLead";
-import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import { storeLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import ScrollableTabContainer from "../Common/ScrollableTabContainer";
+import MakeAsCustomer from "./MakeAsCustomer";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -94,6 +73,7 @@ export default function Leads({
   leadTypeOptions,
   regionOptions,
   allUsersList,
+  allBranchesData,
   setLeadCountLoading,
   refreshToggle,
   setRefreshToggle,
@@ -105,8 +85,8 @@ export default function Leads({
   const mounted = useRef(false);
   const isTriggerApiInitialMount = useRef(true);
   const addLeaduseRef = useRef();
+  const makeAsCustomerRef = useRef();
   const scrollRef = useRef();
-  const courseOptions = useSelector((state) => state.courselist);
 
   const [leadBucketOptions, setLeadBucketOptions] = useState([]);
   const [interestedLeadActions, setInterestedLeadActions] = useState({});
@@ -145,22 +125,7 @@ export default function Leads({
     bangalore_leads: 0,
     total: 0,
   });
-  const batchTrackOptions = [
-    {
-      id: 1,
-      name: "Normal",
-    },
-    {
-      id: 2,
-      name: "Fastrack",
-    },
-    {
-      id: 3,
-      name: "Custom",
-    },
-  ];
   const [loading, setLoading] = useState(true);
-  const [invoiceButtonLoading, setInvoiceButtonLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
   const [isOpenFollowUpDrawer, setIsOpenFollowUpDrawer] = useState(false);
@@ -206,59 +171,7 @@ export default function Leads({
   const [isQualityCommentSection, setIsQualityCommentSection] = useState(false);
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [clickedLeadItem, setClickedLeadItem] = useState(null);
-  const [customerJoiningDate, setCustomerJoiningDate] = useState(null);
-  const [customerJoiningDateError, setCustomerJoiningDateError] =
-    useState(null);
   const [raUsers, setRaUsers] = useState([]);
-  const [selectedRA, setSelectedRA] = useState(null);
-  const [paymentDate, setPaymentDate] = useState(null);
-  const [paymentDateError, setPaymentDateError] = useState("");
-  const [placeOfPayment, setPlaceOfPayment] = useState(null);
-  const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
-  const [paymentMode, setPaymentMode] = useState(null);
-  const [paymentModeError, setPaymentModeError] = useState(null);
-  const [subTotal, setSubTotal] = useState();
-  const [convenienceFees, setConvenienceFees] = useState("");
-  const [taxType, setTaxType] = useState("");
-  const [taxTypeError, setTaxTypeError] = useState("");
-  const [amount, setAmount] = useState();
-  const [paidNow, setPaidNow] = useState("");
-  const [paidNowError, setPaidNowError] = useState("");
-  const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
-  const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
-  const [paymentValidationTrigger, setPaymentValidationTrigger] =
-    useState(false);
-  const [balanceAmount, setBalanceAmount] = useState();
-  const [isShowDueDate, setIsShowDueDate] = useState(true);
-  const [dueDate, setDueDate] = useState(null);
-  const [dueDateError, setDueDateError] = useState("");
-  const [customerCourseId, setCustomerCourseId] = useState(null);
-  const [customerBatchTrackId, setCustomerBatchTrackId] = useState(null);
-  const batchTimingOptions = [
-    {
-      id: 1,
-      name: "Week Day",
-    },
-    {
-      id: 2,
-      name: "Week End",
-    },
-    {
-      id: 3,
-      name: "Fast Track",
-    },
-  ];
-  const [customerBatchTimingId, setCustomerBatchTimingId] = useState(null);
-  const [customerBatchTimingIdError, setCustomerBatchTimingIdError] =
-    useState("");
-  const [currentLocation, setCurrentLocation] = useState("");
-  const [currentLocationError, setCurrentLocationError] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
-  const [customerAddressError, setCustomerAddressError] = useState("");
-  const [gstNumber, setGstNumber] = useState("");
-  const [placementSupport, setPlacementSupport] = useState(null);
-  const [placementSupportError, setPlacementSupportError] = useState("");
-  const [serverRequired, setServerRequired] = useState(false);
   //assign lead usestates
   const [addCourseLoading, setAddCourseLoading] = useState(false);
   //assign lead
@@ -635,11 +548,6 @@ export default function Leads({
                           getRaUsers();
                         }
                         setIsOpenPaymentDrawer(true);
-                        setSubTotal(parseFloat(record.primary_fees));
-                        setAmount(parseFloat(record.primary_fees));
-                        setBalanceAmount(parseFloat(record.primary_fees));
-                        setCustomerCourseId(record.primary_course_id);
-                        setCustomerBatchTrackId(record.batch_track_id);
                         setClickedLeadItem(record);
 
                         setTimeout(() => {
@@ -822,7 +730,7 @@ export default function Leads({
 
         const initialActionFilter =
           targetBucket === "Followup Leads"
-            ? "sale_ready_leads"
+            ? "all"
             : targetBucket === "Interested Leads"
               ? "super_hot"
               : "all";
@@ -883,7 +791,7 @@ export default function Leads({
         setLeadBucketName(targetBucket === "all" ? "All" : targetBucket);
         setLeadActionFilter(
           targetBucket === "Followup Leads"
-            ? "sale_ready_leads"
+            ? "all"
             : targetBucket === "Interested Leads"
               ? "super_hot"
               : "all",
@@ -908,7 +816,7 @@ export default function Leads({
           1,
           pagination.limit,
           targetBucket === "Followup Leads"
-            ? "sale_ready_leads"
+            ? "all"
             : targetBucket === "Interested Leads"
               ? "super_hot"
               : "all",
@@ -1308,15 +1216,6 @@ export default function Leads({
                                     getRaUsers();
                                   }
                                   setIsOpenPaymentDrawer(true);
-                                  setSubTotal(parseFloat(record.primary_fees));
-                                  setAmount(parseFloat(record.primary_fees));
-                                  setBalanceAmount(
-                                    parseFloat(record.primary_fees),
-                                  );
-                                  setCustomerCourseId(record.primary_course_id);
-                                  setCustomerBatchTrackId(
-                                    record.batch_track_id,
-                                  );
                                   setClickedLeadItem(record);
 
                                   setTimeout(() => {
@@ -1496,12 +1395,14 @@ export default function Leads({
     limit,
     actionOverride,
     sortFieldParam,
-    sortOrderParam
+    sortOrderParam,
   ) => {
     const currentAction =
       actionOverride !== undefined ? actionOverride : leadActionFilter;
-    const finalSortField = sortFieldParam !== undefined ? sortFieldParam : sortField;
-    const finalSortOrder = sortOrderParam !== undefined ? sortOrderParam : sortOrder;
+    const finalSortField =
+      sortFieldParam !== undefined ? sortFieldParam : sortField;
+    const finalSortOrder =
+      sortOrderParam !== undefined ? sortOrderParam : sortOrder;
     setLoading(true);
     const payload = {
       ...(searchvalue && filterType == 1
@@ -1578,7 +1479,9 @@ export default function Leads({
       page: pageNumber,
       limit: limit,
       ...(finalSortField && { sort_by: finalSortField }),
-      ...(finalSortOrder && { sort_order: finalSortOrder === "ascend" ? "asc" : "desc" }),
+      ...(finalSortOrder && {
+        sort_order: finalSortOrder === "ascend" ? "asc" : "desc",
+      }),
     };
     try {
       const response = await getLeads(payload);
@@ -1703,343 +1606,8 @@ export default function Leads({
       );
     }
   };
-  //onchange functions
-  const handlePaidNow = (e) => {
-    const input = e.target.value;
-
-    // Allow numbers, decimal point, or empty string
-    if (!/^\d*\.?\d*$/.test(input)) return;
-
-    setPaidNow(input); // store as string for user input
-
-    const value = parseFloat(input); // parse for calculations
-    const amt = parseFloat(amount);
-
-    if (value < amt || isNaN(value) || input == "" || input == null) {
-      setIsShowDueDate(true);
-    } else {
-      setIsShowDueDate(false);
-      setDueDate(null);
-      setDueDateError("");
-    }
-
-    setBalanceAmount(
-      getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
-    );
-
-    if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
-      const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-      setConvenienceFees(conve_fees);
-    } else {
-      setConvenienceFees(0);
-    }
-
-    if (paymentValidationTrigger) {
-      setPaidNowError(
-        priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
-      );
-    }
-  };
-
-  const handleTaxType = (e) => {
-    setTaxType(e.target.value);
-    if (paymentValidationTrigger) {
-      setTaxTypeError(selectValidator(e.target.value));
-    }
-    const amnt = calculateAmount(
-      parseFloat(subTotal),
-      e.target.value == 5 ? 0 : 18,
-    );
-    if (isNaN(amnt)) {
-      setAmount("");
-    } else {
-      setAmount(parseFloat(amnt));
-    }
-
-    //handle balance amount
-    if (paidNow < amnt || isNaN(paidNow) || paidNow == "" || paidNow == null) {
-      setIsShowDueDate(true);
-    } else {
-      setIsShowDueDate(false);
-      setDueDate(null);
-      setDueDateError("");
-    }
-    setBalanceAmount(
-      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
-    );
-  };
-
-  const handlePaymentMode = (value) => {
-    setPaymentMode(value);
-    console.log("taxType", taxType);
-    const amnt = calculateAmount(
-      parseFloat(subTotal),
-      taxType == 5 || taxType == "" || taxType == null ? 0 : 18,
-    );
-    setAmount(amnt);
-
-    if (paymentValidationTrigger) {
-      setPaymentModeError(selectValidator(value));
-    }
-
-    //handle balance amount
-    if (
-      paidNow < amnt ||
-      isNaN(paidNow) ||
-      paidNow === "" ||
-      paidNow === null
-    ) {
-      setIsShowDueDate(true);
-    } else {
-      setIsShowDueDate(false);
-      setDueDate(null);
-      setDueDateError("");
-    }
-    setBalanceAmount(
-      getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
-    );
-
-    //handle convenience fees
-    if (value == 2 || value == 5 || value == 10) {
-      const conve_fees = getConvenienceFees(paidNow ? paidNow : 0);
-      setConvenienceFees(conve_fees);
-    } else {
-      setConvenienceFees(0);
-    }
-  };
 
   //onclick functions
-  const handlePaymentSubmit = async () => {
-    setPaymentValidationTrigger(true);
-    const taxTypeValidate = selectValidator(taxType);
-    const paymentTypeValidate = selectValidator(paymentMode);
-    const paymentDateValidate = selectValidator(paymentDate);
-    const customerJoiningDateValidate = selectValidator(customerJoiningDate);
-    const placeOfPaymentValidate = selectValidator(placeOfPayment);
-    const batchTimingValidate = selectValidator(customerBatchTimingId);
-    const currentLocationValidate = addressValidator(currentLocation);
-    const customerAddressValidate = addressValidator(customerAddress);
-    const placementSupportValidate = selectValidator(placementSupport);
-
-    console.log("eeeee", paidNow, amount);
-    const paidNowValidate = priceValidator(parseInt(paidNow), parseInt(amount));
-
-    const screenshotValidate = selectValidator(paymentScreenShotBase64);
-    let dueDateValidate;
-
-    if (isShowDueDate) {
-      dueDateValidate = selectValidator(dueDate);
-    } else {
-      dueDateValidate = "";
-    }
-
-    setTaxTypeError(taxTypeValidate);
-    setPaymentModeError(paymentTypeValidate);
-    setPaidNowError(paidNowValidate);
-    setPaymentDateError(paymentDateValidate);
-    setCustomerJoiningDateError(customerJoiningDateValidate);
-    setPlaceOfPaymentError(placeOfPaymentValidate);
-    setPaymentScreenShotError(screenshotValidate);
-    setDueDateError(dueDateValidate);
-    setCustomerBatchTimingIdError(batchTimingValidate);
-    setCurrentLocationError(currentLocationValidate);
-    setCustomerAddressError(customerAddressValidate);
-    setPlacementSupportError(placementSupportValidate);
-
-    if (
-      paymentTypeValidate ||
-      paidNowValidate ||
-      paymentDateValidate ||
-      placeOfPaymentValidate ||
-      screenshotValidate
-    ) {
-      setTimeout(() => {
-        const container = document.getElementById(
-          "leadmanager_paymentdetails_paymentinfo_heading",
-        );
-        container.scrollIntoView({ behavior: "smooth" });
-      }, 200);
-    }
-
-    if (taxTypeValidate) {
-      setTimeout(() => {
-        const container = document.getElementById(
-          "leadmanager_paymentdetails_heading",
-        );
-        container.scrollIntoView({ behavior: "smooth" });
-      }, 200);
-    }
-
-    if (
-      paymentTypeValidate ||
-      paidNowValidate ||
-      taxTypeValidate ||
-      paymentDateValidate ||
-      customerJoiningDateValidate ||
-      placeOfPaymentValidate ||
-      screenshotValidate ||
-      dueDateValidate ||
-      batchTimingValidate ||
-      currentLocationValidate ||
-      customerAddressValidate ||
-      placementSupportValidate
-    )
-      return;
-
-    setButtonLoading(true);
-
-    const today = new Date();
-
-    // Step 2: Calculate GST on discounted amount
-    const gstAmount = amount - subTotal;
-
-    console.log("GST Amount:", gstAmount);
-
-    const getloginUserDetails = localStorage.getItem("loginUserDetails");
-    const converAsJson = JSON.parse(getloginUserDetails);
-
-    const payload = {
-      lead_id: clickedLeadItem.id,
-      invoice_date: formatToBackendIST(paymentDate),
-      tax_type:
-        taxType == 1
-          ? "GST (18%)"
-          : taxType == 2
-            ? "SGST (18%)"
-            : taxType == 3
-              ? "IGST (18%)"
-              : taxType == 4
-                ? "VAT (18%)"
-                : "No Tax",
-      gst_percentage: taxType == 5 ? "0%" : "18%",
-      gst_amount: parseFloat(gstAmount).toFixed(2),
-      total_amount: amount,
-      convenience_fees: convenienceFees,
-      paymode_id: paymentMode,
-      paid_amount: paidNow,
-      payment_screenshot: paymentScreenShotBase64,
-      payment_status: "Verify Pending",
-      next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
-      date_of_joining: formatToBackendIST(customerJoiningDate),
-      ra_id: selectedRA,
-      created_date: formatToBackendIST(today),
-      paid_date: formatToBackendIST(paymentDate),
-      place_of_payment: placeOfPayment,
-      enrolled_course: customerCourseId,
-      batch_track_id: customerBatchTrackId,
-      batch_timing_id: customerBatchTimingId,
-      place_of_supply: currentLocation,
-      address: customerAddress,
-      state_code: "",
-      gst_number: gstNumber,
-      placement_support: placementSupport,
-      is_server_required: serverRequired,
-      updated_by:
-        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-    };
-
-    console.log("payment payload", payload);
-
-    try {
-      const response = await leadPayment(payload);
-      console.log("lead payment response", response);
-      const createdCustomerDetails = response?.data?.data;
-      CommonMessage("success", "Created as a Customer");
-      setTimeout(() => {
-        setButtonLoading(false);
-        setInvoiceButtonLoading(false);
-        formReset();
-        getAllLeadData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          allDownliners,
-          leadSourceFilterId,
-          leadSubSourceFilterId,
-          leadStatusId,
-          selectedOrigin,
-          filterValuesFromRedux.bucket,
-          pagination.page,
-          pagination.limit,
-        );
-        refreshLeadFollowUp();
-        // if (import.meta.env.PROD) {
-        handleSendCustomerFormLink(createdCustomerDetails);
-        // }
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      setInvoiceButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
-  const handleSendCustomerFormLink = async (customerDetails) => {
-    const payload = {
-      email: customerDetails.email,
-      link: `${import.meta.env.VITE_EMAIL_URL}/customer-registration/${
-        customerDetails.insertId
-      }`,
-      customer_id: customerDetails.insertId,
-    };
-
-    try {
-      await sendCustomerFormEmail(payload);
-    } catch (error) {
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    } finally {
-      setTimeout(() => {
-        handleSendWelcomeEmail(customerDetails);
-      }, 300);
-    }
-  };
-
-  const handleSendWelcomeEmail = async (customerDetails) => {
-    const payload = {
-      email: customerDetails.email,
-      name: customerDetails.name,
-    };
-
-    try {
-      await sendCustomerWelcomeEmail(payload);
-    } catch (error) {
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    } finally {
-      setTimeout(() => {
-        handleSendPaymentVerificationEmail(customerDetails);
-      }, 300);
-    }
-  };
-
-  const handleSendPaymentVerificationEmail = async (customerDetails) => {
-    const payload = {
-      email: customerDetails.email,
-      name: customerDetails.name,
-    };
-
-    try {
-      await sendCustomerPaymentVerificationEmail(payload);
-    } catch (error) {
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
   const formReset = () => {
     setIsOpenFilterDrawer(false);
     setIsOpenAssignModal(false);
@@ -2047,71 +1615,7 @@ export default function Leads({
     setLeadId(null);
     //payment drawer usestates
     setIsOpenPaymentDrawer(false);
-    setPaymentValidationTrigger(false);
     setClickedLeadItem(null);
-    setPaymentMode(null);
-    setPaymentModeError("");
-    setSubTotal();
-    setConvenienceFees("");
-    setTaxType(null);
-    setTaxTypeError("");
-    setAmount();
-    setPaidNow("");
-    setPaidNowError("");
-    setPaymentDate(null);
-    setPaymentDateError("");
-    setPlaceOfPayment(null);
-    setPlaceOfPaymentError("");
-    setPaymentScreenShotBase64("");
-    setPaymentScreenShotError("");
-    setIsShowDueDate(true);
-    setBalanceAmount();
-    setDueDate(null);
-    setDueDateError("");
-    setSelectedRA(null);
-    setCustomerCourseId(null);
-    setCustomerBatchTrackId(null);
-    setCustomerBatchTimingId(null);
-    setCustomerBatchTimingIdError("");
-    setCurrentLocation("");
-    setCurrentLocationError("");
-    setCustomerAddress("");
-    setCustomerAddressError("");
-    setGstNumber("");
-    setPlacementSupport("");
-    setPlacementSupportError("");
-    setServerRequired(false);
-  };
-
-  const getCountryName = (countryCode) => {
-    let countryName = "";
-    const countries = Country.getAllCountries();
-
-    const findCountry = countries.find((f) => f.isoCode == countryCode);
-
-    if (findCountry) {
-      countryName = findCountry.name;
-    } else {
-      countryName = "";
-    }
-    return countryName;
-  };
-
-  const getStateName = (countryCode, stateCode) => {
-    const stateList = State.getStatesOfCountry(countryCode);
-    const updateSates = stateList.map((s) => {
-      return { ...s, id: s.isoCode };
-    });
-
-    let stateName = "";
-
-    const findState = updateSates.find((f) => f.id == stateCode);
-    if (findState) {
-      stateName = findState.name;
-    } else {
-      stateName = "";
-    }
-    return stateName;
   };
 
   const handleSearch = (e) => {
@@ -2259,7 +1763,7 @@ export default function Leads({
       limit,
       undefined,
       currentSortField,
-      currentSortOrder
+      currentSortOrder,
     );
   };
 
@@ -2389,13 +1893,6 @@ export default function Leads({
           "Something went wrong. Try again later",
       );
     }
-  };
-
-  const handleSelectRA = async (e) => {
-    const value = e.target.value;
-    console.log("selected raaa", value);
-
-    setSelectedRA(value);
   };
 
   return (
@@ -3243,91 +2740,96 @@ export default function Leads({
           </div>
         )}
 
-      {leadBucketName === "Followup Leads" &&
-        Object.keys(followupLeadActions).length > 0 && (
-          <div style={{ marginTop: "15px", padding: "0 5px" }}>
-            <ScrollableTabContainer>
-              {(() => {
-                const orderedKeys = [
-                  "sale_ready_leads",
-                  "highly_interested_leads",
-                  "interested_leads",
-                  "exploring_leads",
-                  "not_responding_leads",
-                  "not_interested_leads",
-                ];
+      {leadBucketName === "Followup Leads" && (
+        <div style={{ marginTop: "15px", padding: "0 5px" }}>
+          <ScrollableTabContainer>
+            {(() => {
+              const orderedKeys = [
+                "all",
+                "sale_ready_leads",
+                "highly_interested_leads",
+                "interested_leads",
+                "exploring_leads",
+                "not_responding_leads",
+                "not_interested_leads",
+              ];
 
-                const sortedKeys = Object.keys(followupLeadActions)
-                  .filter((k) => k !== "all")
-                  .sort((a, b) => {
-                    let indexA = orderedKeys.indexOf(a);
-                    let indexB = orderedKeys.indexOf(b);
-                    if (indexA === -1) indexA = 999;
-                    if (indexB === -1) indexB = 999;
-                    return indexA - indexB;
-                  });
+              const sortedKeys = [
+                ...new Set(["all", ...Object.keys(followupLeadActions)]),
+              ].sort((a, b) => {
+                let indexA = orderedKeys.indexOf(a);
+                let indexB = orderedKeys.indexOf(b);
+                if (indexA === -1) indexA = 999;
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+              });
 
-                return sortedKeys.map((key) => {
-                  const count = followupLeadActions[key];
-                  const displayName =
-                    key === "all"
-                      ? "All"
-                      : key
-                          .split("_")
-                          .filter((word) => word.toLowerCase() !== "leads")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1),
-                          )
-                          .join(" ");
-                  const isActive = leadActionFilter === key;
-                  const actionColorMap = {
-                    sale_ready_leads: "#dc2626",
-                    highly_interested_leads: "#f97316",
-                    interested_leads: "#eab308",
-                    exploring_leads: "#3b82f6",
-                    not_responding_leads: "#6b7280",
-                    not_interested_leads: "#991b1b",
-                  };
-                  const baseColor = actionColorMap[key] || "#475569";
+              return sortedKeys.map((key) => {
+                const count =
+                  key === "all"
+                    ? leadBucketOptions.find((b) => b.id === "followup_leads")
+                        ?.count || 0
+                    : followupLeadActions[key] || 0;
+                const displayName =
+                  key === "all"
+                    ? "All"
+                    : key
+                        .split("_")
+                        .filter((word) => word.toLowerCase() !== "leads")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ");
+                const isActive = leadActionFilter === key;
+                const actionColorMap = {
+                  all: "#dc2626",
+                  sale_ready_leads: "#dc2626",
+                  highly_interested_leads: "#f97316",
+                  interested_leads: "#eab308",
+                  exploring_leads: "#3b82f6",
+                  not_responding_leads: "#6b7280",
+                  not_interested_leads: "#991b1b",
+                };
+                const baseColor = actionColorMap[key] || "#475569";
 
-                  return (
-                    <div
-                      key={key}
-                      onClick={() => {
-                        if (leadActionFilter === key) return;
-                        setLeadActionFilter(key);
-                        dispatch(
-                          storeLeadFilterValues({
-                            pageNumber: 1,
-                            pageLimit: pagination.limit,
-                          }),
-                        );
-                        getAllLeadData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          allDownliners,
-                          leadSourceFilterId,
-                          leadSubSourceFilterId,
-                          leadStatusId,
-                          selectedOrigin,
-                          "Followup Leads",
-                          1,
-                          pagination.limit,
-                          key,
-                        );
-                      }}
-                      className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
-                    >
-                      {displayName} {`( ${count} )`}
-                    </div>
-                  );
-                });
-              })()}
-            </ScrollableTabContainer>
-          </div>
-        )}
+                return (
+                  <div
+                    key={key}
+                    onClick={() => {
+                      if (leadActionFilter === key) return;
+                      setLeadActionFilter(key);
+                      dispatch(
+                        storeLeadFilterValues({
+                          pageNumber: 1,
+                          pageLimit: pagination.limit,
+                        }),
+                      );
+                      getAllLeadData(
+                        searchValue,
+                        selectedDates[0],
+                        selectedDates[1],
+                        allDownliners,
+                        leadSourceFilterId,
+                        leadSubSourceFilterId,
+                        leadStatusId,
+                        selectedOrigin,
+                        "Followup Leads",
+                        1,
+                        pagination.limit,
+                        key,
+                      );
+                    }}
+                    className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
+                  >
+                    {displayName} {`( ${count} )`}
+                  </div>
+                );
+              });
+            })()}
+          </ScrollableTabContainer>
+        </div>
+      )}
 
       {leadBucketName === "Valid Leads" &&
         Object.keys(validLeadActions).length > 0 && (
@@ -3585,19 +3087,6 @@ export default function Leads({
                                       getRaUsers();
                                     }
                                     setIsOpenPaymentDrawer(true);
-                                    setSubTotal(
-                                      parseFloat(record.primary_fees),
-                                    );
-                                    setAmount(parseFloat(record.primary_fees));
-                                    setBalanceAmount(
-                                      parseFloat(record.primary_fees),
-                                    );
-                                    setCustomerCourseId(
-                                      record.primary_course_id,
-                                    );
-                                    setCustomerBatchTrackId(
-                                      record.batch_track_id,
-                                    );
                                     setClickedLeadItem(record);
 
                                     setTimeout(() => {
@@ -3861,582 +3350,32 @@ export default function Leads({
         className="leadmanager_paymentdetails_drawer"
         id="leadmanager_paymentdetails_drawer"
       >
-        <p className="leadfollowup_leaddetails_heading">Lead Details</p>
-        <Row gutter={16} style={{ padding: "0px 0px 0px 24px" }}>
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    clickedLeadItem && clickedLeadItem.name
-                      ? clickedLeadItem.name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    clickedLeadItem && clickedLeadItem.email
-                      ? clickedLeadItem.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.phone
-                    ? clickedLeadItem.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.whatsapp
-                    ? clickedLeadItem.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <SlGlobe size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Country</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.country
-                    ? getCountryName(clickedLeadItem.country)
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Area</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.area_id
-                    ? clickedLeadItem.area_id
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    clickedLeadItem && clickedLeadItem.primary_course
-                      ? clickedLeadItem.primary_course
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#333", fontWeight: 700 }}
-                >
-                  {clickedLeadItem && clickedLeadItem.primary_fees
-                    ? "₹" + clickedLeadItem.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.branch_name
-                    ? clickedLeadItem.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.batch_track
-                    ? clickedLeadItem.batch_track
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Status</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.lead_status
-                    ? clickedLeadItem.lead_status
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
-                    clickedLeadItem && clickedLeadItem.lead_assigned_to_id
-                      ? clickedLeadItem.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    clickedLeadItem && clickedLeadItem.lead_assigned_to_name
-                      ? clickedLeadItem.lead_assigned_to_name
-                      : "-"
-                  })`}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="leadmanger_paymentdrawer_divider" />
-
-        <>
-          <p
-            className="leadmanager_paymentdetails_drawer_heading"
-            id="leadmanager_paymentdetails_heading"
-          >
-            Payment Details
-          </p>
-          <Row
-            gutter={16}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-            style={{ marginTop: "20px", marginBottom: "30px" }}
-          >
-            <Col span={8}>
-              <CommonInputField
-                label="Fees"
-                required={true}
-                type="number"
-                value={subTotal}
-                disabled={true}
-                height={"36px"}
-                fontSize={"13px"}
-                labelFontSize={"12px"}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label="Tax Type"
-                required={true}
-                options={[
-                  { id: 1, name: "GST (18%)" },
-                  { id: 2, name: "SGST (18%)" },
-                  { id: 3, name: "IGST (18%)" },
-                  { id: 4, name: "VAT (18%)" },
-                  { id: 5, name: "No Tax" },
-                ]}
-                onChange={handleTaxType}
-                value={taxType}
-                error={taxTypeError}
-                height={"36px"}
-                fontSize={"12px"}
-                labelFontSize={"12px"}
-                labelMarginTop={"0px"}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Total Amount"
-                required={true}
-                disabled
-                value={amount}
-                height={"36px"}
-                fontSize={"13px"}
-                labelFontSize={"12px"}
-              />
-            </Col>
-          </Row>
-
-          <Divider className="leadmanger_paymentdrawer_divider" />
-
-          <p
-            className="leadmanager_paymentdetails_drawer_heading"
-            id="leadmanager_paymentdetails_paymentinfo_heading"
-          >
-            Payment Info
-          </p>
-
-          <Row
-            gutter={16}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-            style={{ marginTop: "20px" }}
-          >
-            <Col span={8}>
-              <CommonInputField
-                label="Pay Amount"
-                required={true}
-                onChange={handlePaidNow}
-                value={paidNow}
-                error={paidNowError}
-                errorFontSize="10px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonGroupedSelectField
-                label="Payment Mode"
-                onChange={handlePaymentMode}
-                value={paymentMode}
-                error={paymentModeError}
-                height={"36px"}
-                fontSize={"13px"}
-                labelFontSize={"12px"}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Convenience fees"
-                required={true}
-                value={convenienceFees}
-                disabled={true}
-                type="number"
-              />
-            </Col>
-          </Row>
-
-          <Row
-            gutter={16}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-            style={{ marginTop: "40px" }}
-          >
-            <Col span={8}>
-              <CommonMuiDatePicker
-                label="Payment Date"
-                required={true}
-                onChange={(value) => {
-                  setPaymentDate(value);
-                  if (paymentValidationTrigger) {
-                    setPaymentDateError(selectValidator(value));
-                  }
-                }}
-                value={paymentDate}
-                error={paymentDateError}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label="Place of Payment"
-                required={true}
-                options={[
-                  { id: "Tamil Nadu", name: "Tamil Nadu" },
-                  { id: "Out of TN", name: "Out of TN" },
-                  { id: "Out of IND", name: "Out of IND" },
-                ]}
-                onChange={(e) => {
-                  setPlaceOfPayment(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setPlaceOfPaymentError(selectValidator(e.target.value));
-                  }
-                }}
-                value={placeOfPayment}
-                error={placeOfPaymentError}
-                height={"36px"}
-                fontSize={"12px"}
-                labelFontSize={"12px"}
-                labelMarginTop={"0px"}
-              />
-            </Col>
-            <Col span={8}>
-              <ImageUploadCrop
-                label="Payment Screenshot"
-                aspect={1}
-                maxSizeMB={1}
-                required={true}
-                value={paymentScreenShotBase64}
-                onChange={(base64) => setPaymentScreenShotBase64(base64)}
-                onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-              />
-              {paymentScreenShotError && (
-                <p style={{ fontSize: "10px", color: "#d32f2f", marginTop: 4 }}>
-                  {`Payment Screenshot ${paymentScreenShotError}`}
-                </p>
-              )}
-            </Col>
-          </Row>
-
-          <Divider className="leadmanger_paymentdrawer_divider" />
-
-          <p className="leadmanager_paymentdetails_drawer_heading">
-            Balance Amount Details
-          </p>
-
-          <Row
-            gutter={16}
-            style={{ marginTop: "20px", marginBottom: "30px" }}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-          >
-            <Col span={8}>
-              <CommonInputField
-                label="Balance Amount"
-                required={true}
-                value={balanceAmount}
-                disabled={true}
-                type="number"
-              />
-            </Col>
-            {isShowDueDate ? (
-              <Col span={8}>
-                <CommonMuiDatePicker
-                  label="Next Due Date"
-                  required={true}
-                  onChange={(value) => {
-                    setDueDate(value);
-                    setDueDateError(selectValidator(value));
-                  }}
-                  value={dueDate}
-                  error={dueDateError}
-                  disablePreviousDates={true}
-                />
-              </Col>
-            ) : (
-              ""
-            )}
-          </Row>
-
-          <Divider className="leadmanger_paymentdrawer_divider" />
-
-          <p className="leadmanager_paymentdetails_drawer_heading">
-            Add Customer Details
-          </p>
-
-          <Row
-            gutter={[16, 30]}
-            style={{ marginTop: "20px", marginBottom: "50px" }}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-          >
-            <Col span={8}>
-              <CommonMuiDatePicker
-                label="Customer Joining Date"
-                required={true}
-                onChange={(value) => {
-                  console.log("vallll", value);
-                  setCustomerJoiningDate(value);
-                  if (paymentValidationTrigger) {
-                    setCustomerJoiningDateError(selectValidator(value));
-                  }
-                }}
-                value={customerJoiningDate}
-                error={customerJoiningDateError}
-                disablePreviousDates={false}
-              />
-            </Col>
-
-            <Col span={8}>
-              <CommonSelectField
-                width="100%"
-                label="Select RA"
-                options={raUsers}
-                onChange={handleSelectRA}
-                value={selectedRA}
-                disableClearable={false}
-              />
-            </Col>
-
-            <Col span={8}>
-              <CommonSelectField
-                label="Course"
-                required={true}
-                options={courseOptions}
-                value={customerCourseId}
-                disabled={true}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label="Batch Track"
-                required={true}
-                options={batchTrackOptions}
-                value={customerBatchTrackId}
-                disabled={true}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label="Batch Type"
-                required={true}
-                options={batchTimingOptions}
-                onChange={(e) => {
-                  setCustomerBatchTimingId(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setCustomerBatchTimingIdError(
-                      selectValidator(e.target.value),
-                    );
-                  }
-                }}
-                value={customerBatchTimingId}
-                error={customerBatchTimingIdError}
-              />
-            </Col>
-
-            <Col span={8}>
-              <CommonInputField
-                label="Customer Current State"
-                required={true}
-                onChange={(e) => {
-                  setCurrentLocation(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setCurrentLocationError(addressValidator(e.target.value));
-                  }
-                }}
-                value={currentLocation}
-                error={currentLocationError}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Address"
-                required={true}
-                multiline={true}
-                // rows={1}
-                onChange={(e) => {
-                  const formatted = e.target.value;
-                  setCustomerAddress(formatted);
-
-                  if (paymentValidationTrigger) {
-                    setCustomerAddressError(addressValidator(formatted));
-                  }
-                }}
-                value={customerAddress}
-                error={customerAddressError}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="GST No"
-                required={false}
-                onChange={(e) => {
-                  const value = e.target.value.toUpperCase();
-                  setGstNumber(value);
-                }}
-                value={gstNumber}
-              />
-            </Col>
-
-            <Col span={8}>
-              <CommonSelectField
-                label="Placement Support"
-                required={true}
-                options={[
-                  { id: "Need", name: "Need" },
-                  { id: "Not Need", name: "Not Need" },
-                ]}
-                onChange={(e) => {
-                  setPlacementSupport(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setPlacementSupportError(selectValidator(e.target.value));
-                  }
-                }}
-                value={placementSupport}
-                error={placementSupportError}
-              />
-            </Col>
-
-            <Col span={8}>
-              <div
-                style={{
-                  marginTop: "10px",
-                  display: "flex",
-                  gap: "6px",
-                  alignItems: "center",
-                }}
-              >
-                <p className="leads_serverrequired_label">Server Required</p>
-                <Switch
-                  style={{ color: "#333" }}
-                  checked={serverRequired}
-                  onChange={(checked) => {
-                    setServerRequired(checked);
-                  }}
-                  className="leads_serverrequired_switch"
-                />
-              </div>
-            </Col>
-          </Row>
-        </>
+        {clickedLeadItem && (
+          <MakeAsCustomer
+            ref={makeAsCustomerRef}
+            clickedLeadItem={clickedLeadItem}
+            raUsers={raUsers}
+            allBranchesData={allBranchesData}
+            callgetLeadsApi={() => {
+              formReset();
+              getAllLeadData(
+                searchValue,
+                selectedDates[0],
+                selectedDates[1],
+                allDownliners,
+                leadSourceFilterId,
+                leadSubSourceFilterId,
+                leadStatusId,
+                selectedOrigin,
+                filterValuesFromRedux.bucket,
+                pagination.page,
+                pagination.limit,
+              );
+              refreshLeadFollowUp();
+            }}
+            setButtonLoading={setButtonLoading}
+          />
+        )}
         <div className="leadmanager_tablefiler_footer">
           <div
             className="leadmanager_submitlead_buttoncontainer"
@@ -4449,7 +3388,7 @@ export default function Leads({
             ) : (
               <button
                 className="users_adddrawer_createbutton"
-                onClick={handlePaymentSubmit}
+                onClick={() => makeAsCustomerRef.current.handlePaymentSubmit()}
               >
                 Submit
               </button>

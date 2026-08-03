@@ -23,6 +23,7 @@ import "./styles.css";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import {
   getAllAreas,
+  getAllBranches,
   getBatches,
   getBatchTrack,
   getBranches,
@@ -61,6 +62,11 @@ const CustomerUpdate = forwardRef(
     const [previewImage, setPreviewImage] = useState("");
     const [raUsers, setRaUsers] = useState([]);
     const [selectedRA, setSelectedRA] = useState(null);
+    const [placeOfService, setPlaceOfService] = useState("");
+    const [placeOfServiceError, setPlaceOfServiceError] = useState("");
+    const [allBranchesData, setAllBranchesData] = useState([]);
+    const [placeOfBranch, setPlaceOfBranch] = useState("");
+    const [placeOfBranchError, setPlaceOfBranchError] = useState("");
     const [leadId, setLeadId] = useState(null);
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
@@ -225,6 +231,39 @@ const CustomerUpdate = forwardRef(
         setRaUsers([]);
         console.log("get hr users error", error);
       } finally {
+        getAllBranchesData();
+      }
+    };
+
+    const getAllBranchesData = async () => {
+      try {
+        const response = await getAllBranches();
+        const branchData = response?.data?.result || [];
+
+        const branchOrder = [
+          "BDC",
+          "Velachery",
+          "Anna Nagar",
+          "OMR",
+          "Porur",
+          "Thambaram",
+          "Electronic city",
+          "BTM Layout",
+          "Rajaji Nagar",
+          "Marathahalli",
+          "Maraimalai Nagar",
+          "Hebbal",
+        ];
+
+        const sortedBranches = [...branchData].sort(
+          (a, b) => branchOrder.indexOf(a.name) - branchOrder.indexOf(b.name),
+        );
+
+        setAllBranchesData(sortedBranches);
+      } catch (error) {
+        setAllBranchesData([]);
+        console.log("get all branches error", error);
+      } finally {
         getCustomerData();
       }
     };
@@ -234,6 +273,8 @@ const CustomerUpdate = forwardRef(
         const response = await getCustomerById(customerId);
         console.log("customer response", response);
         const customerDetails = response?.data?.data;
+        setPlaceOfService(customerDetails?.place_of_service);
+        setPlaceOfBranch(customerDetails?.place_of_branch);
         setSelectedRA(customerDetails?.ra_id);
         setLeadId(customerDetails?.lead_id);
         setName(customerDetails.name);
@@ -523,6 +564,9 @@ const CustomerUpdate = forwardRef(
 
     const handleCustomerUpdate = async () => {
       setValidationTrigger(true);
+      const placeOfServiceValidate = selectValidator(placeOfService);
+      const placeOfBranchValidate =
+        placeOfService == 10 ? "" : selectValidator(placeOfBranch);
       const nameValidate = nameValidator(name);
       const emailValidate = emailValidator(email);
       const mobileValidate = mobileValidator(mobile);
@@ -537,6 +581,8 @@ const CustomerUpdate = forwardRef(
       const batchTimingValidate = selectValidator(batchTiming);
       const placementSupportValidate = selectValidator(placementSupport);
 
+      setPlaceOfServiceError(placeOfServiceValidate);
+      setPlaceOfBranchError(placeOfBranchValidate);
       setNameError(nameValidate);
       setEmailError(emailValidate);
       setMobileError(mobileValidate);
@@ -552,6 +598,8 @@ const CustomerUpdate = forwardRef(
       setPlacementSupportError(placementSupportValidate);
 
       if (
+        placeOfServiceValidate ||
+        placeOfBranchValidate ||
         nameValidate ||
         emailValidate ||
         mobileValidate ||
@@ -603,6 +651,8 @@ const CustomerUpdate = forwardRef(
         signature_image: signatureBase64,
         profile_image: profilePictureBase64,
         place_of_supply: currentLocation,
+        place_of_service: placeOfService,
+        place_of_branch: placeOfBranch,
         address: customerAddress,
         state_code: "",
         gst_number: gstNumber,
@@ -699,6 +749,10 @@ const CustomerUpdate = forwardRef(
       setProfilePictureArray([]);
       setProfilePictureBase64("");
       setSelectedRA(null);
+      setPlaceOfService("");
+      setPlaceOfServiceError("");
+      setPlaceOfBranch("");
+      setPlaceOfBranchError("");
       setLeadId(null);
       setName("");
       setNameError("");
@@ -771,6 +825,67 @@ const CustomerUpdate = forwardRef(
             </div>
 
             <Row gutter={[12, 30]} style={{ marginTop: "8px" }}>
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonMuiDatePicker
+                  label="Date Of Joining"
+                  required={false}
+                  maxLength={10}
+                  onChange={(value) => {
+                    setDateOfJoining(value);
+                  }}
+                  value={dateOfJoining}
+                  error={""}
+                />
+              </Col>
+
+              <Col span={8}>
+                <CommonSelectField
+                  width="100%"
+                  label="Place Of Service"
+                  labelMarginTop={"1px"}
+                  labelFontSize={"11px"}
+                  options={[
+                    { id: 1, name: "Online" },
+                    { id: 2, name: "Classroom" },
+                  ]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPlaceOfService(value);
+                    if (value == 1) {
+                      setPlaceOfBranch(10);
+                      setPlaceOfBranchError("");
+                    } else {
+                      setPlaceOfBranch(null);
+                    }
+                    if (validationTrigger) {
+                      setPlaceOfServiceError(selectValidator(value));
+                    }
+                  }}
+                  value={placeOfService}
+                  error={placeOfServiceError}
+                  errorFontSize={"9px"}
+                />
+              </Col>
+
+              <Col span={8}>
+                <CommonSelectField
+                  width="100%"
+                  label="Place Of Branch"
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                  options={allBranchesData}
+                  onChange={(e) => {
+                    setPlaceOfBranch(e.target.value);
+                    if (validationTrigger) {
+                      setPlaceOfBranchError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={placeOfBranch}
+                  error={placeOfBranchError}
+                  errorFontSize={"9px"}
+                  disabled={placeOfService == 1}
+                />
+              </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   width="100%"
@@ -884,19 +999,6 @@ const CustomerUpdate = forwardRef(
                     setGender(e.target.value);
                   }}
                   value={gender}
-                  error={""}
-                />
-              </Col>
-
-              <Col xs={24} sm={24} md={24} lg={8}>
-                <CommonMuiDatePicker
-                  label="Date Of Joining"
-                  required={false}
-                  maxLength={10}
-                  onChange={(value) => {
-                    setDateOfJoining(value);
-                  }}
-                  value={dateOfJoining}
                   error={""}
                 />
               </Col>
