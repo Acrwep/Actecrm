@@ -56,6 +56,7 @@ export default function Admissions() {
   const [allAdmissionsRegionCounts, setAllAdmissionsRegionCounts] =
     useState(null);
   const [customerId, setCustomerId] = useState(null);
+  const [modeStatus, setModeStatus] = useState("");
   const [status, setStatus] = useState("");
   const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
     useState(false);
@@ -257,6 +258,7 @@ export default function Admissions() {
         null,
         null,
         null,
+        null,
         downliners_ids,
         [
           { id: 1, name: "Classroom", checked: true },
@@ -274,6 +276,7 @@ export default function Admissions() {
     startDate,
     endDate,
     searchvalue,
+    bucket,
     origin,
     customerStatus,
     downliners,
@@ -300,6 +303,7 @@ export default function Admissions() {
               : {}),
       from_date: startDate,
       to_date: endDate,
+      bucket: bucket,
       date_type: "Created",
       ...(origin && { domain: origin }),
       ...(customerStatus && {
@@ -334,6 +338,8 @@ export default function Admissions() {
         chennai_region: response?.data?.data?.chennai_region || 0,
         bangalore_region: response?.data?.data?.bangalore_region || 0,
         hub_region: response?.data?.data?.hub_region || 0,
+        online_mode: response?.data?.data?.online_mode || 0,
+        classroom_mode: response?.data?.data?.classroom_mode || 0,
       });
     } catch (error) {
       setCustomersData([]);
@@ -447,6 +453,7 @@ export default function Admissions() {
       selectedDates[0],
       selectedDates[1],
       searchValue,
+      modeStatus,
       selectedOrigin,
       status,
       allDownliners,
@@ -467,6 +474,7 @@ export default function Admissions() {
         selectedDates[0],
         selectedDates[1],
         e.target.value,
+        modeStatus,
         selectedOrigin,
         status,
         allDownliners,
@@ -495,6 +503,7 @@ export default function Admissions() {
         selectedDates[0],
         selectedDates[1],
         searchValue,
+        modeStatus,
         selectedOrigin,
         status,
         downliners_ids,
@@ -518,6 +527,7 @@ export default function Admissions() {
     setSearchValue("");
     setSelectedUserId(null);
     setSelectedOrigin("");
+    setModeStatus("");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
@@ -565,6 +575,7 @@ export default function Admissions() {
                             selectedDates[0],
                             selectedDates[1],
                             null,
+                            modeStatus,
                             selectedOrigin,
                             status,
                             allDownliners,
@@ -617,6 +628,7 @@ export default function Admissions() {
                                 selectedDates[0],
                                 selectedDates[1],
                                 null,
+                                modeStatus,
                                 selectedOrigin,
                                 status,
                                 allDownliners,
@@ -696,6 +708,7 @@ export default function Admissions() {
                           dates[0],
                           dates[1],
                           searchValue,
+                          modeStatus,
                           selectedOrigin,
                           status,
                           allDownliners,
@@ -868,7 +881,81 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "20px" }}>
+      <div
+        className="customers_scroll_wrapper"
+        style={{ marginTop: "6px", marginBottom: "0px" }}
+      >
+        <div
+          className="customers_status_mainContainer"
+          style={{
+            marginTop: "0px",
+            marginBottom: "0px",
+            display: "flex",
+            gap: "12px",
+          }}
+        >
+          <div
+            className={
+              modeStatus === "Online"
+                ? "customers_active_completed_container"
+                : "customers_completed_container"
+            }
+            onClick={() => {
+              if (status == "Online") {
+                return;
+              }
+              setModeStatus("Online");
+              getAdmissionsData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                "Online",
+                selectedOrigin,
+                status,
+                allDownliners,
+                branchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}</p>
+          </div>
+
+          <div
+            className={
+              modeStatus === "Classroom"
+                ? "customers_active_verifytrainers_container"
+                : "customers_verifytrainers_container"
+            }
+            onClick={() => {
+              if (status == "Classroom") {
+                return;
+              }
+              setModeStatus("Classroom");
+              getAdmissionsData(
+                selectedDates[0],
+                selectedDates[1],
+                searchValue,
+                "Classroom",
+                selectedOrigin,
+                status,
+                allDownliners,
+                branchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Classroom{" "}
+              {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "12px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
@@ -1009,6 +1096,7 @@ export default function Admissions() {
                   selectedDates[0],
                   selectedDates[1],
                   searchValue,
+                  modeStatus,
                   selectedOrigin,
                   status,
                   allDownliners,

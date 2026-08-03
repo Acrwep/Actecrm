@@ -46,59 +46,59 @@ export default function SideMenu() {
       path: "presales",
     },
     3: {
+      title: "Admissions",
+      icon: <TbSchool size={17} />,
+      path: "admissions",
+    },
+    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    4: {
+    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    5: {
+    6: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    6: {
+    7: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    7: {
+    8: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    8: {
+    9: {
       title: "Trainer Payment",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainer-payment",
     },
-    9: {
+    10: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    10: {
+    11: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    11: {
+    12: {
       title: "Tickets",
       icon: <IoTicketOutline size={17} />,
       path: "tickets",
     },
-    12: {
+    13: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
-    },
-    13: {
-      title: "Admissions",
-      icon: <TbSchool size={17} />,
-      path: "admissions",
     },
   });
 
@@ -114,59 +114,59 @@ export default function SideMenu() {
       path: "presales",
     },
     3: {
+      title: "Admissions",
+      icon: <TbSchool size={17} />,
+      path: "admissions",
+    },
+    4: {
       title: "Customers",
       icon: <PiUsersThreeBold size={17} />,
       path: "customers",
     },
-    4: {
+    5: {
       title: "Batches",
       icon: <MdOutlineGroupAdd size={17} />,
       path: "batches",
     },
-    5: {
+    6: {
       title: "Fee Pending",
       icon: <MdOutlinePendingActions size={17} />,
       path: "fee-pending-customers",
     },
-    6: {
+    7: {
       title: "Server",
       icon: <IoServerOutline size={17} />,
       path: "server",
     },
-    7: {
+    8: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    8: {
+    9: {
       title: "Trainer Payment",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainer-payment",
     },
-    9: {
+    10: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    10: {
+    11: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    11: {
+    12: {
       title: "Tickets",
       icon: <IoTicketOutline size={17} />,
       path: "tickets",
     },
-    12: {
+    13: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
-    },
-    13: {
-      title: "Admissions",
-      icon: <TbSchool size={17} />,
-      path: "admissions",
     },
   };
 
@@ -179,34 +179,30 @@ export default function SideMenu() {
     }
 
     if (!permissions.includes("Fees Pending Page")) {
-      delete updatedMenu[5];
-    }
-
-    if (!permissions.includes("Server Page")) {
       delete updatedMenu[6];
     }
 
-    if (!permissions.includes("Trainers Page")) {
+    if (!permissions.includes("Server Page")) {
       delete updatedMenu[7];
     }
 
-    if (!permissions.includes("Trainer Payment Page")) {
+    if (!permissions.includes("Trainers Page")) {
       delete updatedMenu[8];
     }
 
-    if (!permissions.includes("Bulk Search Page")) {
+    if (!permissions.includes("Trainer Payment Page")) {
       delete updatedMenu[9];
     }
 
-    if (!permissions.includes("Reports Page")) {
+    if (!permissions.includes("Bulk Search Page")) {
       delete updatedMenu[10];
     }
 
-    if (!permissions.includes("Settings Page")) {
-      delete updatedMenu[12];
+    if (!permissions.includes("Reports Page")) {
+      delete updatedMenu[11];
     }
 
-    if (!permissions.includes("Admissions Page")) {
+    if (!permissions.includes("Settings Page")) {
       delete updatedMenu[13];
     }
 
@@ -275,34 +271,30 @@ export default function SideMenu() {
       }
 
       if (!permissions.includes("Fees Pending Page")) {
-        delete updatedMenu[5];
-      }
-
-      if (!permissions.includes("Server Page")) {
         delete updatedMenu[6];
       }
 
-      if (!updateData.includes("Trainers Page")) {
+      if (!permissions.includes("Server Page")) {
         delete updatedMenu[7];
       }
 
-      if (!updateData.includes("Trainer Payment Page")) {
+      if (!updateData.includes("Trainers Page")) {
         delete updatedMenu[8];
       }
 
-      if (!updateData.includes("Bulk Search Page")) {
+      if (!updateData.includes("Trainer Payment Page")) {
         delete updatedMenu[9];
       }
 
-      if (!updateData.includes("Reports Page")) {
+      if (!updateData.includes("Bulk Search Page")) {
         delete updatedMenu[10];
       }
 
-      if (!updateData.includes("Settings Page")) {
-        delete updatedMenu[12];
+      if (!updateData.includes("Reports Page")) {
+        delete updatedMenu[11];
       }
 
-      if (!permissions.includes("Admissions Page")) {
+      if (!updateData.includes("Settings Page")) {
         delete updatedMenu[13];
       }
 
@@ -354,7 +346,16 @@ export default function SideMenu() {
   };
 
   const handleMenuClick = (e) => {
-    navigate(`/${e.key}`);
+    if (e.key == "admissions") {
+      console.log("Jiiii");
+      if (permissions.includes("Admissions Page")) {
+        console.log("Jiiii000");
+        navigate(`/${e.key}`);
+      }
+    } else {
+      console.log("ooooooooooooooooooooooooo");
+      navigate(`/${e.key}`);
+    }
   };
 
   return (
