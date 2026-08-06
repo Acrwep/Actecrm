@@ -989,7 +989,7 @@ export default function Users({
       </div>
 
       <Drawer
-        title="Add User"
+        title={editUserId ? "Update User" : "Add User"}
         open={isOpenAddDrawer}
         onClose={formReset}
         width="45%"
@@ -1001,7 +1001,7 @@ export default function Users({
         >
           <div
             className="profilepage_personalinfo_profileimage_container"
-            style={profileImage ? { padding: 0, overflow: "hidden" } : {}}
+            style={profileImage ? { padding: 0, position: "relative" } : {}}
           >
             {profileImage ? (
               <img
@@ -1016,6 +1016,16 @@ export default function Users({
               />
             ) : (
               <FaUserLarge size={23} />
+            )}
+
+            {profileImage && (
+              <div
+                className="profile_image_remove_btn"
+                onClick={() => setProfileImage("")}
+                title="Remove Image"
+              >
+                <RiDeleteBinLine size={12} />
+              </div>
             )}
           </div>
 
