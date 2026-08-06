@@ -19,7 +19,7 @@ const DraggableStudentModal = ({
   open,
   onClose,
   customerDetails,
-  title = "Student Details",
+  title = "Candidate Details",
 }) => {
   const [disabled, setDisabled] = useState(true);
   const [zIndex, setZIndex] = useState(1000);
@@ -60,7 +60,13 @@ const DraggableStudentModal = ({
       zIndex={zIndex}
       styles={{
         wrapper: { pointerEvents: "none", overflow: "hidden" },
-        content: { pointerEvents: "auto" },
+        content: {
+          pointerEvents: "auto",
+          border: "1px solid #5b6aca3f",
+          borderRadius: "8px",
+          boxShadow:
+            "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        },
       }}
       title={
         <div
@@ -124,7 +130,7 @@ const DraggableStudentModal = ({
           <Avatar
             size={48}
             style={{
-              backgroundColor: "#4f46e5",
+              backgroundColor: "#5b69ca",
               fontSize: "20px",
               display: "flex",
               alignItems: "center",
