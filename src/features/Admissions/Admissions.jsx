@@ -901,7 +901,7 @@ export default function Admissions() {
                 : "customers_completed_container"
             }
             onClick={() => {
-              if (status == "Online") {
+              if (modeStatus == "Online") {
                 return;
               }
               setModeStatus("Online");
@@ -929,7 +929,7 @@ export default function Admissions() {
                 : "customers_verifytrainers_container"
             }
             onClick={() => {
-              if (status == "Classroom") {
+              if (modeStatus == "Classroom") {
                 return;
               }
               setModeStatus("Classroom");

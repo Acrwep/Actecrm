@@ -87,6 +87,14 @@ export default function CommonMuiCustomDatePicker({
           endDay.isSame(today, "day")
         ) {
           setOption("last90days");
+        } else if (
+          startDay.isSame(
+            today.subtract(1, "year").month(11).date(26),
+            "day",
+          ) &&
+          endDay.isSame(today, "day")
+        ) {
+          setOption("thisYear");
         } else {
           setOption("custom");
         }
@@ -151,6 +159,10 @@ export default function CommonMuiCustomDatePicker({
         break;
       case "last90days":
         newStart = today.subtract(89, "day");
+        newEnd = today;
+        break;
+      case "thisYear":
+        newStart = dayjs().subtract(1, "year").month(11).date(26); // Previous year Dec 26
         newEnd = today;
         break;
       case "custom":
@@ -289,6 +301,9 @@ export default function CommonMuiCustomDatePicker({
                 </MenuItem>
                 <MenuItem value="last90days" sx={{ fontSize: "12px" }}>
                   Last 90 Days
+                </MenuItem>
+                <MenuItem value="thisYear" sx={{ fontSize: "12px" }}>
+                  This Year
                 </MenuItem>
                 <MenuItem value="custom" sx={{ fontSize: "12px" }}>
                   Custom Range

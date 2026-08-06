@@ -336,7 +336,18 @@ export default function SideMenu() {
         key: item.path,
         icon: item.icon,
         label: (
-          <Link to={item.path} style={{ fontWeight: 400 }}>
+          <Link
+            to={item.path}
+            style={{ fontWeight: 400 }}
+            onClick={(e) => {
+              if (
+                item.path === "admissions" &&
+                !permissions.includes("Admissions Page")
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
             {item.title}
           </Link>
         ),

@@ -56,6 +56,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
 import FinanceVerify from "../Customers/FinanceVerify";
 import CommonSpinner from "../Common/CommonSpinner";
+import DraggableStudentModal from "../Common/DraggableStudentModal";
 
 export default function Received({
   filterData,
@@ -103,6 +104,8 @@ export default function Received({
     useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
+    useState(false);
   const [loading, setLoading] = useState(true);
 
   //lead executive filter
@@ -140,30 +143,16 @@ export default function Received({
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 100,
-    },
-    {
-      title: "Branch Name",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Lead Executive",
-            key: "closed_by",
-            dataIndex: "closed_by",
+            title: "Collected By",
+            key: "collected_by",
+            dataIndex: "collected_by",
             width: 130,
-            render: (text) => {
-              return <EllipsisTooltip text={text ? text : "-"} />;
+            render: (text, record) => {
+              const user = `${record.collected_user_id} - ${text}`;
+              return <EllipsisTooltip text={user} />;
             },
           },
         ]
@@ -202,30 +191,27 @@ export default function Received({
       },
     },
     {
-      title: "Name",
-      key: "cus_name",
-      dataIndex: "cus_name",
-      width: 130,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Mobile",
-      key: "cus_phone",
-      dataIndex: "cus_phone",
-      width: 100,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Course",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 130,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
+      title: "Student Id",
+      key: "student_id",
+      dataIndex: "student_id",
+      width: 120,
+      render: (text, record) => {
+        const user_id = text ? text : record?.cus_name ? record?.cus_name : "-";
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <EllipsisTooltip text={user_id} />
+            {user_id && (
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.customer_id, true);
+                }}
+              />
+            )}
+          </div>
+        );
       },
     },
     {
@@ -269,192 +255,58 @@ export default function Received({
       },
     },
     {
-      title: "Course Fees",
-      key: "course_fees",
-      dataIndex: "course_fees",
-      width: 100,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "GST",
-      key: "gst_amount",
-      dataIndex: "gst_amount",
-      width: 80,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Total Fees",
-      key: "total_course_fees",
-      dataIndex: "total_course_fees",
-      width: 95,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Fees Balance",
-      key: "fees_balance",
-      dataIndex: "fees_balance",
-      width: 105,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Paid Amount",
-      key: "paid_amount",
-      dataIndex: "paid_amount",
-      width: 105,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Conv.Fee",
-      key: "convenience_fees",
-      dataIndex: "convenience_fees",
-      width: 80,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Collected Fees",
-      key: "collected_fees",
-      dataIndex: "collected_fees",
-      width: 115,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Balance Due",
-      key: "balance_due",
-      dataIndex: "balance_due",
-      width: 110,
-      render: (text) => {
-        return <p>{Number(text).toLocaleString("en-IN")}</p>;
-      },
-    },
-    {
-      title: "Transacted To",
-      key: "transacted_to",
-      dataIndex: "transacted_to",
-      width: 110,
-    },
-    {
-      title: "Collected By",
-      key: "collected_by",
-      dataIndex: "collected_by",
-      width: 110,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
       title: "Payment Status",
       key: "payment_status",
       dataIndex: "payment_status",
-      width: 120,
+      width: 140,
       fixed: "right",
-      render: (text) => {
+      render: (text, record) => {
         return (
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
             {text === "Verify Pending" ? (
               <div>
-                <Button
-                  className="customers_status_awaitfinance_button"
-                  style={{ cursor: "default" }}
+                <Tooltip
+                  placement="top"
+                  title="Verify the Payment"
+                  trigger={["hover", "click"]}
                 >
-                  Payment Verify
-                </Button>
+                  <Button
+                    className="customers_status_awaitfinance_button"
+                    onClick={() => {
+                      if (!permissions.includes("Finance Verify")) {
+                        console.log("eeeeeeeeeeeeeeeee");
+                        CommonMessage("error", "Access Denied");
+                        return;
+                      }
+                      getParticularCustomerDetails(record?.customer_id);
+                      setDrawerContentStatus("Finance Verify");
+                      setIsStatusUpdateDrawer(true);
+                    }}
+                  >
+                    Payment Verify
+                  </Button>
+                </Tooltip>
               </div>
             ) : (
-              <Button
-                className="trainers_rejected_button"
-                style={{ cursor: "default" }}
+              <Tooltip
+                placement="top"
+                title="Update Payment"
+                trigger={["hover", "click"]}
               >
-                {text}
-              </Button>
+                <Button
+                  className="trainers_rejected_button"
+                  onClick={() => {
+                    getParticularCustomerDetails(record?.customer_id);
+                    setDrawerContentStatus("Update Payment");
+                    setIsStatusUpdateDrawer(true);
+                  }}
+                >
+                  {text}
+                </Button>
+              </Tooltip>
             )}
           </div>
         );
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      width: 140,
-      fixed: "right",
-      render: (text, record) => {
-        if (record?.payment_status === "Rejected") {
-          return (
-            <Tooltip
-              placement="top"
-              title="Update Payment"
-              trigger={["hover", "click"]}
-            >
-              <PiClockCounterClockwiseBold
-                size={16}
-                style={{ marginTop: "1px" }}
-                className="trainers_action_icons"
-                onClick={() => {
-                  getParticularCustomerDetails(record?.customer_id);
-                  setDrawerContentStatus("Update Payment");
-                  setIsStatusUpdateDrawer(true);
-                }}
-              />
-            </Tooltip>
-          );
-        } else {
-          return (
-            <div className="trainers_actionbuttonContainer">
-              <Tooltip
-                placement="top"
-                title="Verify the Payment"
-                trigger={["hover", "click"]}
-              >
-                <RiVerifiedBadgeLine
-                  size={16}
-                  style={{ marginTop: "1px" }}
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    if (!permissions.includes("Finance Verify")) {
-                      console.log("eeeeeeeeeeeeeeeee");
-                      CommonMessage("error", "Access Denied");
-                      return;
-                    }
-                    getParticularCustomerDetails(record?.customer_id);
-                    setDrawerContentStatus("Finance Verify");
-                    setIsStatusUpdateDrawer(true);
-                  }}
-                />
-              </Tooltip>
-
-              {/* {permissions?.includes("Add Part Payment") && (
-        <Tooltip
-          placement="top"
-          title="Pay Amount"
-          trigger={["hover", "click"]}
-        >
-          <GiReceiveMoney
-            size={17}
-            className="trainers_action_icons"
-            onClick={() => {
-              setIsOpenPaymentDrawer(true);
-              setCustomerDetails(record);
-            }}
-          />
-        </Tooltip>
-      )} */}
-            </div>
-          );
-        }
       },
     },
   ];
@@ -775,13 +627,19 @@ export default function Received({
   };
 
   //get particular customer full details
-  const getParticularCustomerDetails = async (customer_Id) => {
+  const getParticularCustomerDetails = async (
+    customer_Id,
+    isOpenModal = false,
+  ) => {
     setIsStatusUpdateDrawerLoading(true);
     try {
       const response = await getCustomerById(customer_Id);
       console.log("particular customer response", response);
       const customer_details = response?.data?.data;
       setCustomerDetails(customer_details);
+      if (isOpenModal) {
+        setIsOpenCustomerDetailsModal(true);
+      }
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
@@ -999,7 +857,7 @@ export default function Received({
             })}
           </Flex>
 
-          {permissions.includes("Finance Verify") && (
+          {permissions.includes("Show Region Summary") && (
             <div className="livelead_today_summary_container">
               <p className="livelead_today_label">Region Summary</p>
 
@@ -1719,6 +1577,13 @@ export default function Received({
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
+
+      {/* customer details modal */}
+      <DraggableStudentModal
+        open={isOpenCustomerDetailsModal}
+        onClose={() => setIsOpenCustomerDetailsModal(false)}
+        customerDetails={customerDetails}
+      />
     </div>
   );
 }

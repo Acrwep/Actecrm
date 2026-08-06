@@ -16,6 +16,7 @@ import {
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
+  getCustomerById,
   getPendingFeesCustomers,
   getTableColumns,
   updateTableColumns,
@@ -31,6 +32,7 @@ import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonSpinner from "../Common/CommonSpinner";
 import InsertPendingFees from "../Customers/Pending Fees/InsertPendingFees";
+import DraggableStudentModal from "../Common/DraggableStudentModal";
 
 export default function Receivables({
   setReceivableCount,
@@ -54,6 +56,8 @@ export default function Receivables({
   const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
   const [overAllPendingAmount, setOverAllPendingAmount] = useState(null);
   const [regionCounts, setRegionCounts] = useState(null);
+  const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
+    useState(false);
   const [loading, setLoading] = useState(true);
 
   //lead executive filter
@@ -86,39 +90,27 @@ export default function Receivables({
         ]
       : []),
     {
-      title: "Candidate Name",
-      key: "name",
-      dataIndex: "name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 200,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Mobile",
-      key: "phone",
-      dataIndex: "phone",
-      width: 110,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Course ",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 180,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      title: "Student Id",
+      key: "student_id",
+      dataIndex: "student_id",
+      width: 100,
+      render: (text, record) => {
+        const user_id = text ? text : record?.name ? record?.name : "-";
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <EllipsisTooltip text={user_id} />
+            {user_id && (
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.id, true);
+                }}
+              />
+            )}
+          </div>
+        );
       },
     },
     {
@@ -635,6 +627,25 @@ export default function Receivables({
     });
   };
 
+  //get particular customer full details
+  const getParticularCustomerDetails = async (
+    customer_Id,
+    isOpenModal = false,
+  ) => {
+    try {
+      const response = await getCustomerById(customer_Id);
+      console.log("particular customer response", response);
+      const customer_details = response?.data?.data;
+      setCustomerDetails(customer_details);
+      if (isOpenModal) {
+        setIsOpenCustomerDetailsModal(true);
+      }
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    }
+  };
+
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
@@ -772,7 +783,7 @@ export default function Receivables({
           />
         </Col>
       </Row>{" "}
-      {permissions.includes("Finance Verify") && (
+      {permissions.includes("Show Region Summary") && (
         <div className="livelead_today_summary_container">
           <p className="livelead_today_label">Region Summary</p>
 
@@ -1017,6 +1028,12 @@ export default function Receivables({
           ""
         )}
       </Drawer>
+      {/* customer details modal */}
+      <DraggableStudentModal
+        open={isOpenCustomerDetailsModal}
+        onClose={() => setIsOpenCustomerDetailsModal(false)}
+        customerDetails={customerDetails}
+      />
     </div>
   );
 }

@@ -19,10 +19,12 @@ import {
   getTableColumns,
   updateTableColumns,
   getAllDownlineUsers,
+  getCustomerById,
 } from "../ApiService/action";
 import CommonDnd from "../Common/CommonDnd";
 import { useSelector } from "react-redux";
 import InsertPendingFees from "../Customers/Pending Fees/InsertPendingFees";
+import DraggableStudentModal from "../Common/DraggableStudentModal";
 
 export default function FeeHistory({
   filterData,
@@ -47,6 +49,8 @@ export default function FeeHistory({
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
   const [allDownliners, setAllDownliners] = useState([]);
+  const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
+    useState(false);
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -86,48 +90,31 @@ export default function FeeHistory({
       },
     },
     {
-      title: "Name",
-      key: "customer_name",
-      dataIndex: "customer_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Mobile",
-      key: "customer_phone",
-      dataIndex: "customer_phone",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Email",
-      key: "customer_email",
-      dataIndex: "customer_email",
-      width: 200,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Course",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Total Amount",
-      key: "total_amount",
-      dataIndex: "total_amount",
-      width: 130,
-      render: (text) => {
-        return <p>{text ? Number(text).toLocaleString("en-IN") : "-"}</p>;
+      title: "Student Id",
+      key: "student_id",
+      dataIndex: "student_id",
+      width: 100,
+      render: (text, record) => {
+        const user_id = text
+          ? text
+          : record?.customer_name
+            ? record?.customer_name
+            : "-";
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <EllipsisTooltip text={user_id} />
+            {user_id && (
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.customer_id, true);
+                }}
+              />
+            )}
+          </div>
+        );
       },
     },
     {
@@ -160,24 +147,6 @@ export default function FeeHistory({
               : "-"}
           </p>
         );
-      },
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 100,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Branch",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -533,6 +502,25 @@ export default function FeeHistory({
     });
   };
 
+  //get particular customer full details
+  const getParticularCustomerDetails = async (
+    customer_Id,
+    isOpenModal = false,
+  ) => {
+    try {
+      const response = await getCustomerById(customer_Id);
+      console.log("particular customer response", response);
+      const customer_details = response?.data?.data;
+      setCustomerDetails(customer_details);
+      if (isOpenModal) {
+        setIsOpenCustomerDetailsModal(true);
+      }
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    }
+  };
+
   const formReset = () => {
     setIsOpenPaymentDrawer(false);
     setCustomerDetails(null);
@@ -659,7 +647,7 @@ export default function FeeHistory({
         </Col>
       </Row>
 
-      {permissions.includes("Finance Verify") && (
+      {permissions.includes("Show Region Summary") && (
         <div className="livelead_today_summary_container">
           <p className="livelead_today_label">Region Summary</p>
 
@@ -843,6 +831,13 @@ export default function FeeHistory({
           </div>
         </div>
       </Drawer>
+
+      {/* customer details modal */}
+      <DraggableStudentModal
+        open={isOpenCustomerDetailsModal}
+        onClose={() => setIsOpenCustomerDetailsModal(false)}
+        customerDetails={customerDetails}
+      />
     </div>
   );
 }

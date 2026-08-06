@@ -233,6 +233,7 @@ export default function Settings() {
         "Revert to Live Leads",
         "View All Assigned Leads",
         "Download Leads",
+        "Show Region Summary",
       ];
 
       const leadsSortedArray = leadsModule.sort(
