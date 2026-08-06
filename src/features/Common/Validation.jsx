@@ -571,6 +571,14 @@ export const getCurrentandLast90Date = () => {
   return dates;
 };
 
+export const getPreviousYearDec26ToCurrentDate = () => {
+  const currentDate = new Date();
+
+  const previousYearDec26 = new Date(currentDate.getFullYear() - 1, 11, 26);
+
+  return [formatDate(previousYearDec26), formatDate(currentDate)];
+};
+
 export const parseTimeToDecimal = (timeString) => {
   const [hours, minutes, seconds] = timeString.split(":").map(Number);
   return hours + minutes / 60 + seconds / 3600;

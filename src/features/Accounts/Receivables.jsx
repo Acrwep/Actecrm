@@ -12,7 +12,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   customersStatusDisplay,
   formatToBackendIST,
-  getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentDate,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -101,7 +101,7 @@ export default function Receivables({
             <EllipsisTooltip text={user_id} />
             {user_id && (
               <FaRegEye
-                size={13}
+                size={14}
                 className="trainers_action_icons"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
@@ -114,10 +114,18 @@ export default function Receivables({
       },
     },
     {
-      title: "Joined ",
+      title: "Date Of Joining",
       key: "date_of_joining",
       dataIndex: "date_of_joining",
       width: 140,
+      sorter: (a, b) =>
+        moment(a.date_of_joining).valueOf() -
+        moment(b.date_of_joining).valueOf(),
+      sortDirections: ["ascend"],
+      defaultSortOrder: "descend", // Optional
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
     },
     {
       title: "Fees",
@@ -214,6 +222,12 @@ export default function Receivables({
                   {text}
                 </Button>
               </div>
+            ) : text === "Trainer Approval" ? (
+              <div>
+                <Button className="customers_status_trainerapproval_button">
+                  {text}
+                </Button>
+              </div>
             ) : text === "Awaiting Class" ? (
               <div>
                 <Button className="customers_status_awaitingclass_button">
@@ -292,12 +306,12 @@ export default function Receivables({
       title: "Action",
       key: "action",
       dataIndex: "action",
-      width: 140,
+      width: 100,
       fixed: "right",
       render: (text, record) => {
         return (
           <div className="trainers_actionbuttonContainer">
-            <Tooltip
+            {/* <Tooltip
               placement="top"
               title="View Details"
               trigger={["hover", "click"]}
@@ -311,7 +325,7 @@ export default function Receivables({
                   setCustomerDetails(record);
                 }}
               />
-            </Tooltip>
+            </Tooltip> */}
 
             {permissions?.includes("Add Part Payment") && (
               <Tooltip
@@ -320,7 +334,7 @@ export default function Receivables({
                 trigger={["hover", "click"]}
               >
                 <GiReceiveMoney
-                  size={17}
+                  size={18}
                   className="trainers_action_icons"
                   onClick={() => {
                     setIsOpenPaymentDrawer(true);
@@ -444,8 +458,8 @@ export default function Receivables({
   };
 
   useEffect(() => {
-    const today = new Date();
-    setSelectedDates([today, today]);
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    setSelectedDates(PreviousYearDec26ToCurrentDate);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -492,8 +506,16 @@ export default function Receivables({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const today = new Date();
-      getPendingFeesCustomersData(today, today, null, downliners_ids, 1, 10);
+      const PreviousYearDec26ToCurrentDate =
+        getPreviousYearDec26ToCurrentDate();
+      getPendingFeesCustomersData(
+        PreviousYearDec26ToCurrentDate[0],
+        PreviousYearDec26ToCurrentDate[1],
+        null,
+        downliners_ids,
+        1,
+        10,
+      );
     } catch (error) {
       console.log("all downlines error", error);
     } finally {
@@ -655,7 +677,8 @@ export default function Receivables({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    setSelectedDates([new Date(), new Date()]);
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -710,6 +733,11 @@ export default function Receivables({
                   labelMarginTop="0px"
                   onChange={handleSearch}
                   value={searchValue}
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
                 />
               </div>
             </Col>

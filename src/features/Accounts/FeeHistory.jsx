@@ -11,8 +11,8 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
-  getCurrentandPreviousweekDate,
   formatToBackendIST,
+  getPreviousYearDec26ToCurrentDate,
 } from "../Common/Validation";
 import {
   getFeeHistory,
@@ -307,13 +307,14 @@ export default function FeeHistory({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      const PreviousYearDec26ToCurrentDate =
+        getPreviousYearDec26ToCurrentDate();
       const startDate = filterData?.startDate
         ? new Date(filterData.startDate)
-        : PreviousAndCurrentDate[0];
+        : PreviousYearDec26ToCurrentDate[0];
       const endDate = filterData?.endDate
         ? new Date(filterData.endDate)
-        : PreviousAndCurrentDate[1];
+        : PreviousYearDec26ToCurrentDate[1];
       fetchFeeHistoryData(startDate, endDate, null, downliners_ids, 1, 10);
     } catch (error) {
       console.log("all downlines error", error);
@@ -383,13 +384,13 @@ export default function FeeHistory({
   ]);
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
     const startDate = filterData?.startDate
       ? new Date(filterData.startDate)
-      : PreviousAndCurrentDate[0];
+      : PreviousYearDec26ToCurrentDate[0];
     const endDate = filterData?.endDate
       ? new Date(filterData.endDate)
-      : PreviousAndCurrentDate[1];
+      : PreviousYearDec26ToCurrentDate[1];
     setSelectedDates([startDate, endDate]);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -536,8 +537,8 @@ export default function FeeHistory({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -585,6 +586,11 @@ export default function FeeHistory({
                   labelMarginTop="0px"
                   onChange={handleSearch}
                   value={searchValue}
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
                 />
               </div>
             </Col>

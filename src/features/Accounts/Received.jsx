@@ -34,7 +34,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   customersStatusDisplay,
   formatToBackendIST,
-  getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentDate,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -420,14 +420,13 @@ export default function Received({
   };
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
     const startDate = filterData?.startDate
       ? new Date(filterData.startDate)
-      : PreviousAndCurrentDate[0];
+      : PreviousYearDec26ToCurrentDate[0];
     const endDate = filterData?.endDate
       ? new Date(filterData.endDate)
-      : PreviousAndCurrentDate[1];
+      : PreviousYearDec26ToCurrentDate[1];
     setSelectedDates([startDate, endDate]);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -474,13 +473,14 @@ export default function Received({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      const PreviousYearDec26ToCurrentDate =
+        getPreviousYearDec26ToCurrentDate();
       const startDate = filterData?.startDate
         ? new Date(filterData.startDate)
-        : PreviousAndCurrentDate[0];
+        : PreviousYearDec26ToCurrentDate[0];
       const endDate = filterData?.endDate
         ? new Date(filterData.endDate)
-        : PreviousAndCurrentDate[1];
+        : PreviousYearDec26ToCurrentDate[1];
       getPaymentRecievedData(
         startDate,
         endDate,
@@ -492,8 +492,6 @@ export default function Received({
       );
     } catch (error) {
       console.log("all downlines error", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -536,10 +534,7 @@ export default function Received({
         total: paginations.total,
         totalPages: paginations.totalPages,
       });
-
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     } catch (error) {
       setReceivedPaymentsData([]);
       setLoading(false);
@@ -677,8 +672,8 @@ export default function Received({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
+    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };
 
@@ -734,6 +729,11 @@ export default function Received({
                   labelMarginTop="0px"
                   onChange={handleSearch}
                   value={searchValue}
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
                 />
               </div>
             </Col>
@@ -796,7 +796,7 @@ export default function Received({
           />
         </Col>
       </Row>
-      <Row style={{ marginBottom: "20px" }}>
+      <Row style={{ marginBottom: "16px" }}>
         <Col
           span={24}
           style={{ display: "flex", gap: "16px", alignItems: "center" }}
@@ -856,50 +856,52 @@ export default function Received({
               );
             })}
           </Flex>
+        </Col>
+      </Row>
 
-          {permissions.includes("Show Region Summary") && (
-            <div className="livelead_today_summary_container">
-              <p className="livelead_today_label">Region Summary</p>
+      {permissions.includes("Show Region Summary") && (
+        <div className="livelead_today_summary_container">
+          <p className="livelead_today_label">Region Summary</p>
 
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.hub ?? "-"}
-                  </span>
-                </p>
-              </div>
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {statusCount?.hub ?? "-"}
+              </span>
+            </p>
+          </div>
 
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.chennai ?? "-"}
-                  </span>
-                </p>
-              </div>
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {statusCount?.chennai ?? "-"}
+              </span>
+            </p>
+          </div>
 
-              <div className="livelead_badge_item corporate">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#607d8b" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.bangalore ?? "-"}
-                  </span>
-                </p>
-              </div>
-              {/* <div className="livelead_badge_item total">
+          <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#607d8b" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {statusCount?.bangalore ?? "-"}
+              </span>
+            </p>
+          </div>
+          {/* <div className="livelead_badge_item total">
             <div
               className="livelead_badge_dot"
               style={{ backgroundColor: "#5b69ca" }}
@@ -911,11 +913,9 @@ export default function Received({
               </span>
             </p>
           </div> */}
-            </div>
-          )}
-        </Col>
-      </Row>
-      <div style={{ marginTop: "10px" }}>
+        </div>
+      )}
+      <div style={{ marginTop: "16px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
