@@ -475,7 +475,7 @@ export default function Customers() {
               title={
                 <>
                   <Row>
-                    <Col span={12}>
+                    {/* <Col span={12}>
                       {record.is_last_pay_rejected === 1 ? (
                         <>
                           <button
@@ -532,7 +532,7 @@ export default function Customers() {
                           </p>
                         </div>
                       )}
-                    </Col>
+                    </Col> */}
 
                     <Col span={12}>
                       {record.status === "Form Pending" ||
@@ -2564,7 +2564,7 @@ export default function Customers() {
             </p>
           </div>
 
-          <div
+          {/* <div
             className={
               status === "Awaiting Finance"
                 ? "customers_active_awaitfinance_container"
@@ -2663,7 +2663,7 @@ export default function Customers() {
                 });
               }}
             />
-          </div>
+          </div> */}
           <div
             className={
               status === "Awaiting Verify"

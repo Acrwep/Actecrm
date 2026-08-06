@@ -1581,7 +1581,7 @@ export default function PageAccess({
           </div>
 
           <Divider className="settings_addgroupdrawer_divider" />
-          <p className="settings_permission_subheading">Fee Pending Page</p>
+          <p className="settings_permission_subheading">Accounts Page</p>
           <div className="settings_permission_rowcontainer">
             <Row>
               {feesPendingModulePermissionData.map((item, index) => {

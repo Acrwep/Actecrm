@@ -312,10 +312,10 @@ export default function Settings() {
 
       //filter fees pending module
       const feesPendingModule = allPermissions.filter(
-        (f) => f.section === "Fees Pending Module",
+        (f) => f.section === "Accounts Module",
       );
 
-      const feesPendingCustomOrder = ["Fees Pending Page", "Add Part Payment"];
+      const feesPendingCustomOrder = ["Accounts Page", "Add Part Payment"];
 
       const feesPendingSortedArray = feesPendingModule.sort(
         (a, b) =>

@@ -856,6 +856,15 @@ export const getPendingFeesCustomers = async (payload) => {
   }
 };
 
+export const getPaymentRecievedList = async (payload) => {
+  try {
+    const response = await api.post("/api/recievedList", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getCustomersPaymentHistory = async (lead_id) => {
   try {
     const response = await api.get(`/api/getPaymentHistory/${lead_id}`);
@@ -1364,6 +1373,8 @@ export const getAllDownlineUsers = async (user_ids) => {
   const payload = {
     user_ids: Array.isArray(user_ids) ? user_ids : [user_ids],
   };
+  console.log("payload", payload);
+
   try {
     const response = await api.post(`/api/getMultiUsers`, payload);
     return response;
@@ -2026,6 +2037,15 @@ export const getTicketTracks = async (ticket_id) => {
 export const sendLoginLink = async (payload) => {
   try {
     const response = await api.post(`/api/sendLoginLink`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getFeeHistory = async (payload) => {
+  try {
+    const response = await api.post(`/api/feeHistory`, payload);
     return response;
   } catch (error) {
     throw error;

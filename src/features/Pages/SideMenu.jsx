@@ -12,6 +12,7 @@ import { MdOutlinePendingActions } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { TbReport } from "react-icons/tb";
 import { TbSchool } from "react-icons/tb";
+import { BiRupee } from "react-icons/bi";
 import { IoTicketOutline } from "react-icons/io5";
 import {
   getTableColumns,
@@ -61,9 +62,9 @@ export default function SideMenu() {
       path: "batches",
     },
     6: {
-      title: "Fee Pending",
-      icon: <MdOutlinePendingActions size={17} />,
-      path: "fee-pending-customers",
+      title: "Accounts",
+      icon: <BiRupee size={17} />,
+      path: "accounts",
     },
     7: {
       title: "Server",
@@ -100,6 +101,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    // 14: {
+    //   title: "Accounts",
+    //   icon: <BiRupee size={17} />,
+    //   path: "accounts",
+    // },
   });
 
   const nonChangeMenuOptions = {
@@ -129,9 +135,9 @@ export default function SideMenu() {
       path: "batches",
     },
     6: {
-      title: "Fee Pending",
-      icon: <MdOutlinePendingActions size={17} />,
-      path: "fee-pending-customers",
+      title: "Accounts",
+      icon: <BiRupee size={17} />,
+      path: "accounts",
     },
     7: {
       title: "Server",
@@ -168,6 +174,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    // 14: {
+    //   title: "Accounts",
+    //   icon: <BiRupee size={17} />,
+    //   path: "accounts",
+    // },
   };
 
   useEffect(() => {
@@ -178,7 +189,7 @@ export default function SideMenu() {
       delete updatedMenu[2];
     }
 
-    if (!permissions.includes("Fees Pending Page")) {
+    if (!permissions.includes("Accounts Page")) {
       delete updatedMenu[6];
     }
 
@@ -270,7 +281,7 @@ export default function SideMenu() {
         delete updatedMenu[2];
       }
 
-      if (!permissions.includes("Fees Pending Page")) {
+      if (!permissions.includes("Accounts Page")) {
         delete updatedMenu[6];
       }
 
@@ -317,15 +328,7 @@ export default function SideMenu() {
           label: item.title,
           children: item.children.map((child) => ({
             key: child.path,
-            label: (
-              <Link
-                to={`/${child.path}`}
-                className="side-menu-link"
-                style={{ color: "inherit" }}
-              >
-                {child.title}
-              </Link>
-            ),
+            label: child.title,
           })),
         };
       }
@@ -333,11 +336,7 @@ export default function SideMenu() {
         key: item.path,
         icon: item.icon,
         label: (
-          <Link
-            to={`/${item.path}`}
-            className="side-menu-link"
-            style={{ color: "inherit" }}
-          >
+          <Link to={item.path} style={{ fontWeight: 400 }}>
             {item.title}
           </Link>
         ),
@@ -347,13 +346,10 @@ export default function SideMenu() {
 
   const handleMenuClick = (e) => {
     if (e.key == "admissions") {
-      console.log("Jiiii");
       if (permissions.includes("Admissions Page")) {
-        console.log("Jiiii000");
         navigate(`/${e.key}`);
       }
     } else {
-      console.log("ooooooooooooooooooooooooo");
       navigate(`/${e.key}`);
     }
   };

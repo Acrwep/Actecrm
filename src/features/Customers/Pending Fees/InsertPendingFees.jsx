@@ -37,15 +37,25 @@ import {
   getCustomerById,
   getCustomersPaymentHistory,
   inserCustomerTrack,
+  viewPaymentInvoice,
 } from "../../ApiService/action";
 import PrismaZoom from "react-prismazoom";
 import moment from "moment";
 import { CommonMessage } from "../../Common/CommonMessage";
 import CommonGroupedSelectField from "../../Common/CommonGroupedSelectField";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
+import CommonInvoiceViewer from "../../Common/CommonInvoiceViewer";
 
 const InsertPendingFees = forwardRef(
-  ({ selectedCustomerDetails, setButtonLoading, callgetCustomersApi }, ref) => {
+  (
+    {
+      selectedCustomerDetails,
+      setButtonLoading,
+      callgetCustomersApi,
+      isViewOnly = false,
+    },
+    ref,
+  ) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [pendingAmount, setPendingAmount] = useState();
     const [payAmount, setPayAmount] = useState("");
@@ -81,6 +91,8 @@ const InsertPendingFees = forwardRef(
     const [loading, setLoading] = useState(true);
     //payment api usestates
     const [paymentDetails, setPaymentDetails] = useState(null);
+    const [invoiceHtmlContent, setInvoiceHtmlContent] = useState("");
+    const [isOpenViewInvoiceModal, setIsOpenViewInvoiceModal] = useState(false);
 
     useEffect(() => {
       setLoading(true);
@@ -89,7 +101,9 @@ const InsertPendingFees = forwardRef(
 
     const getParticularCustomerDetails = async () => {
       try {
-        const response = await getCustomerById(selectedCustomerDetails?.id);
+        const response = await getCustomerById(
+          selectedCustomerDetails?.id || selectedCustomerDetails?.customer_id,
+        );
         console.log("particular customer response", response);
         const customer_details = response?.data?.data;
         setCustomerDetails(customer_details);
@@ -378,6 +392,88 @@ const InsertPendingFees = forwardRef(
         }, 300);
       } catch (error) {
         console.log("customer track error", error);
+      }
+    };
+
+    const handleViewIncoice = async (transactionId) => {
+      console.log(paymentDetails, transactionId);
+
+      const findTrans =
+        paymentDetails?.payment_trans?.find((f) => f.id === transactionId) ??
+        null;
+
+      console.log("findTrans", findTrans);
+
+      const payload = {
+        email:
+          customerDetails && customerDetails.email ? customerDetails.email : "",
+        name:
+          customerDetails && customerDetails.name ? customerDetails.name : "",
+        mobile:
+          customerDetails && customerDetails.phone ? customerDetails.phone : "",
+        convenience_fees: findTrans?.convenience_fees || "",
+        gst_amount: paymentDetails?.gst_amount ? paymentDetails.gst_amount : "",
+        gst_percentage: paymentDetails?.gst_percentage
+          ? parseFloat(paymentDetails.gst_percentage)
+          : "",
+        invoice_date: findTrans?.invoice_date
+          ? moment(findTrans.invoice_date).format("DD-MM-YYYY")
+          : "",
+        invoice_number: findTrans?.invoice_number || "",
+        paid_amount: findTrans?.amount || "",
+        payment_mode: findTrans?.payment_mode || "",
+        total_amount: paymentDetails?.total_amount
+          ? paymentDetails.total_amount
+          : "",
+        balance_amount:
+          findTrans.balance_amount != undefined ||
+          findTrans.balance_amount != null
+            ? parseFloat(findTrans?.balance_amount).toFixed(2)
+            : "",
+        course_name:
+          customerDetails && customerDetails.course_name
+            ? customerDetails.course_name
+            : "",
+        sub_total:
+          customerDetails && customerDetails.primary_fees
+            ? customerDetails.primary_fees
+            : "",
+        place_of_supply:
+          customerDetails && customerDetails.place_of_supply
+            ? customerDetails.place_of_supply
+            : "",
+        address:
+          customerDetails && customerDetails.address
+            ? customerDetails.address
+            : "",
+        state_code:
+          customerDetails && customerDetails.state_code
+            ? customerDetails.state_code
+            : "",
+        gst_number:
+          customerDetails && customerDetails.gst_number
+            ? customerDetails.gst_number
+            : "",
+        invoice_type:
+          customerDetails && customerDetails.invoice_type
+            ? customerDetails.invoice_type
+            : "",
+      };
+      console.log("payload", payload);
+      // return;
+      try {
+        const response = await viewPaymentInvoice(payload);
+        console.log("view invoice response", response);
+        const htmlTemplate = response?.data?.data;
+        setInvoiceHtmlContent(htmlTemplate);
+        setIsOpenViewInvoiceModal(true);
+      } catch (error) {
+        console.log("error", error);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later",
+        );
       }
     };
 
@@ -872,7 +968,7 @@ const InsertPendingFees = forwardRef(
                         <Col span={12}>
                           <div className="customerdetails_rowheadingContainer">
                             <p className="customerdetails_rowheading">
-                              Balance Amount
+                              Total Paid Amount
                             </p>
                           </div>
                         </Col>
@@ -881,11 +977,13 @@ const InsertPendingFees = forwardRef(
                             className="customerdetails_text"
                             style={{
                               fontWeight: 700,
-                              color: "rgb(211, 47, 47)",
+                              color: "#3c9111",
                             }}
                           >
-                            {customerDetails && customerDetails.balance_amount
-                              ? "₹" + customerDetails.balance_amount
+                            {customerDetails &&
+                            customerDetails.paid_amount !== undefined &&
+                            customerDetails.paid_amount !== null
+                              ? "₹" + customerDetails.paid_amount
                               : "-"}
                           </p>
                         </Col>
@@ -1090,24 +1188,51 @@ const InsertPendingFees = forwardRef(
                                 </Col>
                               </Row>
 
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Nxt Due Date
+                              {isViewOnly &&
+                              item.payment_status == "Verified" ? (
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Invoice
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <button
+                                      className="customer_history_viewproofbutton"
+                                      style={{
+                                        fontSize: "12px",
+                                      }}
+                                      onClick={() => {
+                                        handleViewIncoice(item?.id ?? "0");
+                                      }}
+                                    >
+                                      <FaRegEye size={14} /> View Payment
+                                      Invoice
+                                    </button>
+                                  </Col>
+                                </Row>
+                              ) : (
+                                <Row style={{ marginTop: "12px" }}>
+                                  <Col span={12}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p className="customerdetails_rowheading">
+                                        Nxt Due Date
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <p className="customerdetails_text">
+                                      {item.next_due_date
+                                        ? moment(item.next_due_date).format(
+                                            "DD/MM/YYYY",
+                                          )
+                                        : "-"}{" "}
                                     </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.next_due_date
-                                      ? moment(item.next_due_date).format(
-                                          "DD/MM/YYYY",
-                                        )
-                                      : "-"}{" "}
-                                  </p>
-                                </Col>
-                              </Row>
+                                  </Col>
+                                </Row>
+                              )}
                             </Col>
                           </Row>
                         </div>
@@ -1151,71 +1276,73 @@ const InsertPendingFees = forwardRef(
               )}
             </div>
 
-            <Divider className="customer_statusupdate_divider" />
+            {!isViewOnly && (
+              <>
+                <Divider className="customer_statusupdate_divider" />
 
-            <p className="leadmanager_paymentdetails_drawer_heading">
-              Payment Info
-            </p>
+                <p className="leadmanager_paymentdetails_drawer_heading">
+                  Payment Info
+                </p>
 
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8} style={{ marginTop: "16px" }}>
-                <CommonInputField
-                  label="Pending Amount"
-                  required={true}
-                  value={pendingAmount}
-                  disabled={true}
-                  type="number"
-                />
-              </Col>
-              <Col span={8} style={{ marginTop: "16px" }}>
-                <CommonInputField
-                  label="Pay Amount"
-                  required={true}
-                  onChange={handlePaidNow}
-                  value={payAmount}
-                  error={payAmountError}
-                  errorFontSize="10px"
-                  type="number"
-                />
-              </Col>
-              <Col span={8} style={{ marginTop: "16px" }}>
-                <CommonGroupedSelectField
-                  label="Payment Mode"
-                  onChange={handlePaymentMode}
-                  value={paymentMode}
-                  error={paymentModeError}
-                />
-              </Col>
+                <Row
+                  gutter={16}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                >
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <CommonInputField
+                      label="Pending Amount"
+                      required={true}
+                      value={pendingAmount}
+                      disabled={true}
+                      type="number"
+                    />
+                  </Col>
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <CommonInputField
+                      label="Pay Amount"
+                      required={true}
+                      onChange={handlePaidNow}
+                      value={payAmount}
+                      error={payAmountError}
+                      errorFontSize="10px"
+                      type="number"
+                    />
+                  </Col>
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <CommonGroupedSelectField
+                      label="Payment Mode"
+                      onChange={handlePaymentMode}
+                      value={paymentMode}
+                      error={paymentModeError}
+                    />
+                  </Col>
 
-              <Col span={8} style={{ marginTop: "34px" }}>
-                <CommonInputField
-                  label="Conv. Fee"
-                  required={true}
-                  value={convenienceFees}
-                  type="number"
-                  disabled={true}
-                />
-              </Col>
+                  <Col span={8} style={{ marginTop: "34px" }}>
+                    <CommonInputField
+                      label="Conv. Fee"
+                      required={true}
+                      value={convenienceFees}
+                      type="number"
+                      disabled={true}
+                    />
+                  </Col>
 
-              <Col span={8} style={{ marginTop: "34px" }}>
-                <CommonMuiDatePicker
-                  label="Payment Date"
-                  required={true}
-                  onChange={(value) => {
-                    setPaymentDate(value);
-                    if (paymentValidationTrigger) {
-                      setPaymentDateError(selectValidator(value));
-                    }
-                  }}
-                  value={paymentDate}
-                  error={paymentDateError}
-                />
-              </Col>
+                  <Col span={8} style={{ marginTop: "34px" }}>
+                    <CommonMuiDatePicker
+                      label="Payment Date"
+                      required={true}
+                      onChange={(value) => {
+                        setPaymentDate(value);
+                        if (paymentValidationTrigger) {
+                          setPaymentDateError(selectValidator(value));
+                        }
+                      }}
+                      value={paymentDate}
+                      error={paymentDateError}
+                    />
+                  </Col>
 
-              {/* <Col span={8} style={{ marginTop: "34px" }}>
+                  {/* <Col span={8} style={{ marginTop: "34px" }}>
             <ImageUploadCrop
               label="Payment Screenshot"
               aspect={1}
@@ -1237,93 +1364,97 @@ const InsertPendingFees = forwardRef(
               </p>
             )}
           </Col> */}
-              <Col span={8} style={{ marginTop: "34px" }}>
-                <CommonSelectField
-                  label="Place of Payment"
-                  required={true}
-                  options={[
-                    { id: "Tamil Nadu", name: "Tamil Nadu" },
-                    { id: "Out of TN", name: "Out of TN" },
-                    { id: "Out of IND", name: "Out of IND" },
-                  ]}
-                  onChange={(e) => {
-                    setPlaceOfPayment(e.target.value);
-                    if (paymentValidationTrigger) {
-                      setPlaceOfPaymentError(selectValidator(e.target.value));
-                    }
-                  }}
-                  value={placeOfPayment}
-                  error={placeOfPaymentError}
-                />
-              </Col>
-            </Row>
+                  <Col span={8} style={{ marginTop: "34px" }}>
+                    <CommonSelectField
+                      label="Place of Payment"
+                      required={true}
+                      options={[
+                        { id: "Tamil Nadu", name: "Tamil Nadu" },
+                        { id: "Out of TN", name: "Out of TN" },
+                        { id: "Out of IND", name: "Out of IND" },
+                      ]}
+                      onChange={(e) => {
+                        setPlaceOfPayment(e.target.value);
+                        if (paymentValidationTrigger) {
+                          setPlaceOfPaymentError(
+                            selectValidator(e.target.value),
+                          );
+                        }
+                      }}
+                      value={placeOfPayment}
+                      error={placeOfPaymentError}
+                    />
+                  </Col>
+                </Row>
 
-            <Row
-              gutter={16}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={24} style={{ marginTop: "30px" }}>
-                <ImageUploadCrop
-                  label="Payment Screenshot"
-                  aspect={1}
-                  maxSizeMB={1}
-                  required={true}
-                  value={paymentScreenShotBase64}
-                  onChange={(base64) => setPaymentScreenShotBase64(base64)}
-                  onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-                />
-                {paymentScreenShotError && (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#d32f2f",
-                      marginTop: 4,
-                    }}
-                  >
-                    {`Payment Screenshot ${paymentScreenShotError}`}
-                  </p>
-                )}
-              </Col>
-            </Row>
+                <Row
+                  gutter={16}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                >
+                  <Col span={24} style={{ marginTop: "30px" }}>
+                    <ImageUploadCrop
+                      label="Payment Screenshot"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={paymentScreenShotBase64}
+                      onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                      onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+                    />
+                    {paymentScreenShotError && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#d32f2f",
+                          marginTop: 4,
+                        }}
+                      >
+                        {`Payment Screenshot ${paymentScreenShotError}`}
+                      </p>
+                    )}
+                  </Col>
+                </Row>
 
-            <Divider className="leadmanger_paymentdrawer_divider" />
+                <Divider className="leadmanger_paymentdrawer_divider" />
 
-            <p className="leadmanager_paymentdetails_drawer_heading">
-              Balance Amount Details
-            </p>
+                <p className="leadmanager_paymentdetails_drawer_heading">
+                  Balance Amount Details
+                </p>
 
-            <Row
-              gutter={16}
-              style={{ marginTop: "20px", marginBottom: "30px" }}
-              className="leadmanager_paymentdetails_drawer_rowdiv"
-            >
-              <Col span={8}>
-                <CommonInputField
-                  label="Balance Amount"
-                  required={true}
-                  value={balanceAmount}
-                  disabled={true}
-                  type="number"
-                />
-              </Col>
-              {isShowDueDate ? (
-                <Col span={8}>
-                  <CommonMuiDatePicker
-                    label="Next Due Date"
-                    required={true}
-                    onChange={(value) => {
-                      setDueDate(value);
-                      setDueDateError(selectValidator(value));
-                    }}
-                    value={dueDate}
-                    error={dueDateError}
-                    disablePreviousDates={true}
-                  />
-                </Col>
-              ) : (
-                ""
-              )}
-            </Row>
+                <Row
+                  gutter={16}
+                  style={{ marginTop: "20px", marginBottom: "30px" }}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                >
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Balance Amount"
+                      required={true}
+                      value={balanceAmount}
+                      disabled={true}
+                      type="number"
+                    />
+                  </Col>
+                  {isShowDueDate ? (
+                    <Col span={8}>
+                      <CommonMuiDatePicker
+                        label="Next Due Date"
+                        required={true}
+                        onChange={(value) => {
+                          setDueDate(value);
+                          setDueDateError(selectValidator(value));
+                        }}
+                        value={dueDate}
+                        error={dueDateError}
+                        disablePreviousDates={true}
+                      />
+                    </Col>
+                  ) : (
+                    ""
+                  )}
+                </Row>
+              </>
+            )}
 
             <Modal
               title="Payment Screenshot"
@@ -1346,6 +1477,28 @@ const InsertPendingFees = forwardRef(
                   )}
                 </PrismaZoom>
               </div>
+            </Modal>
+
+            {/* invoice view modal */}
+            <Modal
+              open={isOpenViewInvoiceModal}
+              onCancel={() => {
+                setIsOpenViewInvoiceModal(false);
+              }}
+              footer={false}
+              width="64%"
+              style={{ marginBottom: "20px" }}
+              zIndex={1100}
+              centered
+            >
+              <CommonInvoiceViewer
+                htmlTemplate={invoiceHtmlContent}
+                candidateName={
+                  customerDetails && customerDetails.name
+                    ? customerDetails.name
+                    : "-"
+                }
+              />
             </Modal>
           </>
         )}

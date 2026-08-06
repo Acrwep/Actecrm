@@ -54,11 +54,11 @@ export default function CustomerRegistration() {
   const { customer_id } = useParams();
   const [activeKey, setActiveKey] = useState("1");
 
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(true);
   const [otpEmail, setOtpEmail] = useState("");
   const [otpEmailError, setOtpEmailError] = useState("");
   const [otpCode, setOtpCode] = useState("");
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(true);
   const [otpLoading, setOtpLoading] = useState(false);
 
   const handleSendOtp = async () => {
@@ -162,7 +162,7 @@ export default function CustomerRegistration() {
   const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
   const [signatureError, setSignatureError] = useState("");
-  const [isOpenTermsModal, setIsOpenTermsModal] = useState(false);
+  const [isOpenTermsModal, setIsOpenTermsModal] = useState(true);
   const [isCheckedTerms, setIsCheckedTerms] = useState(false);
   const [isCheckedTermsError, setIsCheckedTermsError] = useState("");
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);

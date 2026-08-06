@@ -51,6 +51,7 @@ import TrainerPaymentRequestForm from "../Trainers/TrainerPaymentRequestForm";
 import RequestSuccess from "../Trainers/RequestSuccess";
 import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
 import Admissions from "../Admissions/Admissions";
+import Accounts from "../Accounts/Accounts";
 
 const { Sider, Content, Header } = Layout;
 
@@ -292,6 +293,7 @@ export default function Pages() {
             />
             <Route element={<Tickets />} path="/tickets" />
             <Route element={<WorkSheet />} path="/react-worksheet" />
+            <Route element={<Accounts />} path="/accounts" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>

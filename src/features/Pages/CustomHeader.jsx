@@ -491,6 +491,27 @@ export default function CustomHeader() {
       return;
     }
 
+    if (item.title == "Payment Rejected") {
+      const accountsFilterData = {
+        activeBucket: "Received",
+        startDate:
+          message.customer_last_payment_date || message.customer_created_date,
+        endDate:
+          message.customer_last_payment_date || message.customer_created_date,
+      };
+
+      if (location.pathname === "/accounts") {
+        window.dispatchEvent(
+          new CustomEvent("accountsNotificationFilter", {
+            detail: accountsFilterData,
+          }),
+        );
+        setIsOpenNotificationsDrawer(false);
+      }
+      navigate("/accounts", { state: accountsFilterData });
+      return;
+    }
+
     const filterData = {
       status:
         item.title == "Trainer Rejected"
@@ -730,31 +751,33 @@ Course Advisor
                   ? "Add Lead"
                   : location.pathname === "/presales"
                     ? "Pre Sales"
-                    : location.pathname === "/lead-followup"
-                      ? "Lead Followup"
-                      : location.pathname === "/customers"
-                        ? "Customers"
-                        : location.pathname === "/admissions"
-                          ? "Admissions"
-                          : location.pathname === "/fee-pending-customers"
-                            ? "Fee Pending Customers"
-                            : location.pathname === "/batches"
-                              ? "Batches"
-                              : location.pathname === "/bulk-search"
-                                ? "Bulk Search"
-                                : location.pathname === "/trainers"
-                                  ? "Trainers"
-                                  : location.pathname === "/trainer-payment"
-                                    ? "Trainer Payment"
-                                    : location.pathname === "/server"
-                                      ? "Server"
-                                      : location.pathname === "/tickets"
-                                        ? "Tickets"
-                                        : location.pathname === "/settings"
-                                          ? "Settings"
-                                          : location.pathname === "/reports"
-                                            ? "Reports"
-                                            : ""}
+                    : location.pathname === "/accounts"
+                      ? "Accounts"
+                      : location.pathname === "/lead-followup"
+                        ? "Lead Followup"
+                        : location.pathname === "/customers"
+                          ? "Customers"
+                          : location.pathname === "/admissions"
+                            ? "Admissions"
+                            : location.pathname === "/fee-pending-customers"
+                              ? "Fee Pending Customers"
+                              : location.pathname === "/batches"
+                                ? "Batches"
+                                : location.pathname === "/bulk-search"
+                                  ? "Bulk Search"
+                                  : location.pathname === "/trainers"
+                                    ? "Trainers"
+                                    : location.pathname === "/trainer-payment"
+                                      ? "Trainer Payment"
+                                      : location.pathname === "/server"
+                                        ? "Server"
+                                        : location.pathname === "/tickets"
+                                          ? "Tickets"
+                                          : location.pathname === "/settings"
+                                            ? "Settings"
+                                            : location.pathname === "/reports"
+                                              ? "Reports"
+                                              : ""}
           </p>
         </div>
 
