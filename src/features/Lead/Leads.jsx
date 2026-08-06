@@ -3469,7 +3469,7 @@ export default function Leads({
             Lead Details
           </span>
         }
-        width={800}
+        width={750}
         onClose={() => {
           setIsOpenViewDrawer(false);
           setViewLeadItem(null);

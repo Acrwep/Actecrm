@@ -647,7 +647,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.view-lead-details-ellipsis-text {
+  font-size: 13px;
+  color: rgb(15, 23, 42);
+  font-weight: 600;
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* Fix double horizontal scrollbar in antd tables with sticky enabled */
 .ant-table-sticky-scroll {
   display: none !important;

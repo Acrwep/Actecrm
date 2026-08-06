@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Upload, Modal, Skeleton } from "antd";
+import { Row, Col, Upload, Modal, Skeleton, Typography, Spin } from "antd";
 import { FaRegUser } from "react-icons/fa";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { MdOutlineDateRange } from "react-icons/md";
-import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
-import { IoLocationOutline } from "react-icons/io5";
-import moment from "moment";
-import EllipsisTooltip from "../Common/EllipsisTooltip";
 import {
-  getCustomerById,
-  getCustomersPaymentHistory,
-} from "../ApiService/action";
+  MdPerson,
+  MdBook,
+  MdAssignment,
+  MdAssignmentInd,
+} from "react-icons/md";
+import moment from "moment";
+import { getCustomerById } from "../ApiService/action";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
-export default function ParticularCustomerDetails({
-  // customerDetails,
-  customerId,
-}) {
+const { Text } = Typography;
+
+export default function ParticularCustomerDetails({ customerId }) {
   const [customerDetails, setCustomerDetails] = useState(null);
   const [profilePictureArray, setProfilePictureArray] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -27,14 +22,14 @@ export default function ParticularCustomerDetails({
 
   useEffect(() => {
     getParticularCustomerDetails();
-  }, []);
+  }, [customerId]);
 
   const getParticularCustomerDetails = async () => {
     setLoading(true);
     try {
       const response = await getCustomerById(customerId);
-      console.log("particular customer response", response);
       const customer_details = response?.data?.data;
+      console.log("particular customer details", customer_details);
       setCustomerDetails(customer_details);
       if (customer_details?.profile_image) {
         setProfilePictureArray([
@@ -42,7 +37,7 @@ export default function ParticularCustomerDetails({
             uid: "-1",
             name: "profile.jpg",
             status: "done",
-            url: customer_details.profile_image, // Base64 string directly usable
+            url: customer_details.profile_image,
           },
         ]);
       } else {
@@ -67,574 +62,345 @@ export default function ParticularCustomerDetails({
     const reader = new FileReader();
     reader.readAsDataURL(rawFile);
     reader.onload = () => {
-      const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
-      console.log("urlllll", dataUrl);
-      setPreviewImage(dataUrl); // Show in Modal
+      const dataUrl = reader.result;
+      setPreviewImage(dataUrl);
       setPreviewOpen(true);
     };
   };
 
+  const formatDateTime = (date, format = "DD/MM/YYYY") => {
+    return date ? moment(date).format(format) : "-";
+  };
+
+  const renderField = (label, value) => (
+    <div style={{ marginBottom: "8px" }}>
+      <Text
+        style={{
+          fontFamily: "'Poppins', sans-serif",
+          fontSize: "12px",
+          display: "block",
+          marginBottom: "2px",
+          color: "#64748b",
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </Text>
+      <EllipsisTooltip isViewLeadDetailsText={true} text={value} />
+    </div>
+  );
+
+  const cardStyle = {
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+    background: "#fff",
+    padding: "12px",
+  };
+
+  const HeaderTitle = ({ icon, title }) => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        marginBottom: "12px",
+        borderBottom: "1px solid #f1f5f9",
+        paddingBottom: "6px",
+      }}
+    >
+      {icon}
+      <span
+        style={{
+          fontFamily: "'Poppins', sans-serif",
+          color: "#1e3a8a",
+          fontSize: "14px",
+          fontWeight: 600,
+        }}
+      >
+        {title}
+      </span>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+        }}
+      >
+        <div style={cardStyle}>
+          <Skeleton avatar active paragraph={{ rows: 2 }} />
+        </div>
+        <div style={cardStyle}>
+          <Skeleton active paragraph={{ rows: 4 }} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!customerDetails) return null;
+
   return (
-    <div>
-      {loading ? (
-        <>
-          <div className="customer_profileContainer">
-            <Skeleton.Avatar active size={90} shape="circle" />
-            <div style={{ marginLeft: "20px", flex: 1 }}>
-              <Skeleton active paragraph={{ rows: 2 }} title={{ width: 150 }} />
-            </div>
-          </div>
-
-          <Row gutter={16} style={{ marginTop: "30px" }}>
-            <Col span={12}>
-              {[1, 2, 3, 4].map((i) => (
-                <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                  <Col span={12}>
-                    <Skeleton.Input
-                      active
-                      size="small"
-                      style={{ width: "80%" }}
-                    />
-                  </Col>
-                  <Col span={12}>
-                    <Skeleton.Input
-                      active
-                      size="small"
-                      style={{ width: "100%" }}
-                    />
-                  </Col>
-                </Row>
-              ))}
-            </Col>
-            <Col span={12}>
-              {[1, 2, 3, 4].map((i) => (
-                <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                  <Col span={12}>
-                    <Skeleton.Input
-                      active
-                      size="small"
-                      style={{ width: "80%" }}
-                    />
-                  </Col>
-                  <Col span={12}>
-                    <Skeleton.Input
-                      active
-                      size="small"
-                      style={{ width: "100%" }}
-                    />
-                  </Col>
-                </Row>
-              ))}
-            </Col>
-          </Row>
-
-          <div
-            className="customerdetails_coursecard"
-            style={{ marginTop: "30px" }}
-          >
-            <div className="customerdetails_coursecard_headercontainer">
-              <Skeleton.Input active size="small" style={{ width: 150 }} />
-            </div>
-            <div
-              className="customerdetails_coursecard_contentcontainer"
-              style={{ padding: "20px" }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                      <Col span={12}>
-                        <Skeleton.Input
-                          active
-                          size="small"
-                          style={{ width: "80%" }}
-                        />
-                      </Col>
-                      <Col span={12}>
-                        <Skeleton.Input
-                          active
-                          size="small"
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                    </Row>
-                  ))}
-                </Col>
-                <Col span={12}>
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Row key={i} style={{ marginTop: i === 1 ? "0" : "12px" }}>
-                      <Col span={12}>
-                        <Skeleton.Input
-                          active
-                          size="small"
-                          style={{ width: "80%" }}
-                        />
-                      </Col>
-                      <Col span={12}>
-                        <Skeleton.Input
-                          active
-                          size="small"
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                    </Row>
-                  ))}
-                </Col>
-              </Row>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="customer_profileContainer">
-            {/* <img src={ProfileImage} className="cutomer_profileimage" /> */}
-            {customerDetails && customerDetails.profile_image ? (
-              <Upload
-                listType="picture-circle"
-                fileList={profilePictureArray}
-                onPreview={handlePreview}
-                onRemove={false}
-                showUploadList={{
-                  showRemoveIcon: false,
-                }}
-                beforeUpload={() => false} // prevent auto upload
-                style={{ width: 90, height: 90 }} // reduce size
-                accept=".png,.jpg,.jpeg"
-              ></Upload>
-            ) : (
-              <FaRegUser size={50} color="#333" />
-            )}
-
-            <div>
-              <p className="customer_nametext">
-                {" "}
-                {customerDetails && customerDetails.name
-                  ? customerDetails.name
-                  : "-"}
-              </p>
-              {customerDetails?.student_id && (
-                <p className="customer_coursenametext">
-                  {customerDetails && customerDetails.student_id
-                    ? customerDetails.student_id
-                    : "-"}
-                </p>
-              )}
-              <p className="customer_coursenametext">
-                {" "}
-                Created At:{" "}
-                {customerDetails && customerDetails.created_date
-                  ? moment(customerDetails.created_date).format("DD/MM/YYYY")
-                  : "-"}
-              </p>
-            </div>
-          </div>
-
-          <Row gutter={16} style={{ marginTop: "30px" }}>
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaRegCircleUser size={15} color="gray" />
-
-                    <p className="customerdetails_rowheading">Name</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <EllipsisTooltip
-                    text={
-                      customerDetails && customerDetails.name
-                        ? customerDetails.name
-                        : "-"
-                    }
-                    smallText={true}
-                  />
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <MdOutlineEmail size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Email</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <EllipsisTooltip
-                    text={
-                      customerDetails && customerDetails.email
-                        ? customerDetails.email
-                        : "-"
-                    }
-                    smallText={true}
-                  />
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <IoCallOutline size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Mobile</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.phone
-                      ? customerDetails.phone
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaWhatsapp size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Whatsapp</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.whatsapp
-                      ? customerDetails.whatsapp
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-            </Col>
-
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <MdOutlineDateRange size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Date Of Birth</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.date_of_birth
-                      ? moment(customerDetails.date_of_birth).format(
-                          "DD/MM/YYYY",
-                        )
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    {customerDetails && customerDetails.gender === "Male" ? (
-                      <BsGenderMale size={15} color="gray" />
-                    ) : (
-                      <BsGenderFemale size={15} color="gray" />
-                    )}
-                    <p className="customerdetails_rowheading">Gender</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {customerDetails && customerDetails.gender
-                      ? customerDetails.gender
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <IoLocationOutline size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Area</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {" "}
-                    {customerDetails && customerDetails.current_location
-                      ? customerDetails.current_location
-                      : "-"}
-                  </p>
-                </Col>
-              </Row>
-
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div className="customerdetails_rowheadingContainer">
-                    <FaRegUser size={15} color="gray" />
-                    <p className="customerdetails_rowheading">Lead Executive</p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <p className="customerdetails_text">
-                    {`${
-                      customerDetails && customerDetails.lead_assigned_to_id
-                        ? customerDetails.lead_assigned_to_id
-                        : "-"
-                    } (${
-                      customerDetails && customerDetails.lead_assigned_to_name
-                        ? customerDetails.lead_assigned_to_name
-                        : "-"
-                    })`}
-                  </p>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <div className="customerdetails_coursecard">
-            <div className="customerdetails_coursecard_headercontainer">
-              <p>Course Details</p>
-            </div>
-
-            <div className="customerdetails_coursecard_contentcontainer">
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Course</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={
-                          customerDetails && customerDetails.course_name
-                            ? customerDetails.course_name
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Course Fees
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.primary_fees
-                          ? "₹" + customerDetails.primary_fees
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Course Fees
-                          <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails && customerDetails.total_amount
-                          ? "₹" + customerDetails.total_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Discount Amount
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {customerDetails &&
-                        customerDetails.discount_amount != null
-                          ? "₹" + customerDetails.discount_amount
-                          : "₹0.00"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Balance Amount
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customerdetails_text"
-                        style={{ color: "#d32f2f", fontWeight: 700 }}
-                      >
-                        {customerDetails &&
-                        customerDetails.balance_amount !== undefined &&
-                        customerDetails.balance_amount !== null
-                          ? "₹" + customerDetails.balance_amount
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Next Due Date
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails &&
-                        customerDetails.next_due_date !== undefined &&
-                        customerDetails.next_due_date !== null
-                          ? moment(customerDetails.next_due_date).format(
-                              "DD/MM/YYYY",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Region</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.region_name
-                          ? customerDetails.region_name
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Branch</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <EllipsisTooltip
-                        text={
-                          customerDetails && customerDetails.branch_name
-                            ? customerDetails.branch_name
-                            : "-"
-                        }
-                        smallText={true}
-                      />
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Batch Type</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.batch_timing
-                          ? customerDetails.batch_timing
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Batch Track
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.batch_tracking
-                          ? customerDetails.batch_tracking
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Server</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails &&
-                        customerDetails.is_server_required !== undefined
-                          ? customerDetails.is_server_required === 1
-                            ? "Required"
-                            : "Not Required"
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Placement Support
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {customerDetails && customerDetails.placement_support
-                          ? customerDetails.placement_support
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </div>
-          </div>
-
-          {customerDetails && customerDetails.signature_image ? (
-            <div className="customerdetails_signatureContainer">
-              <p style={{ fontWeight: "500", marginRight: "40px" }}>
-                Signature
-              </p>
-              <img
-                src={`${customerDetails.signature_image}`}
-                alt="Customer Signature"
-                className="customer_signature_image"
-              />
-            </div>
+    <div
+      style={{
+        fontFamily: "'Poppins', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        padding: "0px",
+      }}
+    >
+      {/* 1. Profile Header */}
+      <div
+        style={{
+          ...cardStyle,
+          display: "flex",
+          alignItems: "center",
+          gap: "20px",
+        }}
+      >
+        <div
+          style={{
+            width: 90,
+            height: 90,
+            borderRadius: "50%",
+            overflow: "hidden",
+            background: "#f1f5f9",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {customerDetails?.profile_image ? (
+            <Upload
+              listType="picture-circle"
+              fileList={profilePictureArray}
+              onPreview={handlePreview}
+              onRemove={false}
+              showUploadList={{ showRemoveIcon: false }}
+              beforeUpload={() => false}
+              style={{ width: 90, height: 90 }}
+              accept=".png,.jpg,.jpeg"
+            />
           ) : (
-            ""
+            <FaRegUser size={40} color="#94a3b8" />
           )}
-        </>
+        </div>
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              color: "#1e293b",
+              fontSize: "20px",
+              fontWeight: 600,
+            }}
+          >
+            {customerDetails?.name || "-"}
+          </h2>
+          {customerDetails?.student_id && (
+            <Text
+              style={{
+                color: "#64748b",
+                fontSize: "13px",
+                display: "block",
+                fontWeight: 500,
+              }}
+            >
+              ID: {customerDetails.student_id}
+            </Text>
+          )}
+          <Text
+            style={{
+              color: "#64748b",
+              fontSize: "13px",
+              display: "block",
+              fontWeight: 500,
+              marginTop: "0.5px",
+            }}
+          >
+            Date Of Joining:{" "}
+            {customerDetails?.date_of_joining
+              ? formatDateTime(customerDetails?.date_of_joining)
+              : "-"}
+          </Text>
+        </div>
+      </div>
+
+      {/* 2. Basic Information */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdPerson size={18} color="#2563eb" />}
+          title="Basic Information"
+        />
+        <Row gutter={24}>
+          <Col span={6}>
+            {renderField(
+              "Created At",
+              formatDateTime(customerDetails?.created_date),
+            )}
+          </Col>
+          <Col span={6}>{renderField("Email", customerDetails?.email)}</Col>
+          <Col span={6}>
+            {renderField("Mobile Number", customerDetails?.phone)}
+          </Col>
+          <Col span={6}>
+            {renderField("WhatsApp Number", customerDetails?.whatsapp)}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Date Of Birth",
+              formatDateTime(customerDetails?.date_of_birth),
+            )}
+          </Col>
+          <Col span={6}>{renderField("Gender", customerDetails?.gender)}</Col>
+          <Col span={6}>
+            {renderField("Area", customerDetails?.current_location)}
+          </Col>
+        </Row>
+      </div>
+
+      {/* 3. Course Details */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdBook size={18} color="#2563eb" />}
+          title="Course Details"
+        />
+        <Row gutter={24}>
+          <Col span={6}>
+            {renderField("Course", customerDetails?.course_name)}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Course Fees",
+              customerDetails?.primary_fees
+                ? `₹${customerDetails.primary_fees}`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Course Fees (+GST)",
+              customerDetails?.total_amount
+                ? `₹${customerDetails.total_amount}`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Discount Amount",
+              customerDetails?.discount_amount != null
+                ? `₹${customerDetails.discount_amount}`
+                : "₹0.00",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Balance Amount",
+              customerDetails?.balance_amount != null
+                ? `₹${customerDetails.balance_amount}`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Next Due Date",
+              formatDateTime(customerDetails?.next_due_date),
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField("Batch Type", customerDetails?.batch_timing)}
+          </Col>
+          <Col span={6}>
+            {renderField("Batch Track", customerDetails?.batch_tracking)}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Server",
+              customerDetails?.is_server_required !== undefined
+                ? customerDetails.is_server_required === 1
+                  ? "Required"
+                  : "Not Required"
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Placement Support",
+              customerDetails?.placement_support,
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      {/* 4. Assignment Details */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdAssignment size={18} color="#2563eb" />}
+          title="Assignment Details"
+        />
+        <Row gutter={24}>
+          <Col span={6}>
+            {renderField(
+              "Lead Executive",
+              customerDetails?.lead_assigned_to_id
+                ? `${customerDetails.lead_assigned_to_id} (${customerDetails.lead_assigned_to_name || "-"})`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField("Region", customerDetails?.region_name)}
+          </Col>
+          <Col span={6}>
+            {renderField("Branch", customerDetails?.branch_name)}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Place of Service",
+              customerDetails?.place_of_service_name,
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Place of Branch",
+              customerDetails?.place_of_branch_name,
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      {/* 5. Signature */}
+      {customerDetails?.signature_image && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            marginTop: "8px",
+            paddingRight: "12px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "13px",
+              fontWeight: 500,
+              color: "#000",
+              marginBottom: "4px",
+            }}
+          >
+            Signature
+          </span>
+          <img
+            src={`${customerDetails.signature_image}`}
+            alt="Customer Signature"
+            style={{ maxWidth: "160px" }}
+          />
+        </div>
       )}
 
       <Modal

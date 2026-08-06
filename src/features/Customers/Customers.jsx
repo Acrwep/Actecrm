@@ -3277,7 +3277,7 @@ export default function Customers() {
           setCustomerId(null);
         }}
         width="50%"
-        style={{ position: "relative" }}
+        style={{ position: "relative", padding: "0px" }}
       >
         {isOpenDetailsDrawer ? (
           <ParticularCustomerDetails customerId={customerId} />

@@ -290,7 +290,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
               formatDateTime(leadData.expected_join_date, "DD MMM YYYY"),
             )}
           </Col>
-          <Col span={8}>{renderField("Lead Score", leadData.lead_score)}</Col>
+          {/* <Col span={8}>{renderField("Lead Score", leadData.lead_score)}</Col> */}
         </Row>
       </div>
 

@@ -2,7 +2,11 @@ import React, { useRef, useState, useEffect } from "react";
 import { Tooltip } from "antd";
 import "./commonstyles.css";
 
-const EllipsisTooltip = ({ text, smallText = false }) => {
+const EllipsisTooltip = ({
+  text,
+  smallText = false,
+  isViewLeadDetailsText = false,
+}) => {
   const textRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
@@ -51,7 +55,9 @@ const EllipsisTooltip = ({ text, smallText = false }) => {
         className={
           smallText == true
             ? "ellipsistooltip_smalltext"
-            : "lead-ellipsis-text"
+            : isViewLeadDetailsText
+              ? "view-lead-details-ellipsis-text"
+              : "lead-ellipsis-text"
         }
         style={isTruncated ? { cursor: "pointer" } : undefined}
       >
