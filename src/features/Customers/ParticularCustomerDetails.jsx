@@ -86,7 +86,11 @@ export default function ParticularCustomerDetails({ customerId }) {
       >
         {label}
       </Text>
-      <EllipsisTooltip isViewLeadDetailsText={true} text={value} />
+      <EllipsisTooltip
+        isViewLeadDetailsText={true}
+        text={value}
+        showRed={label == "Balance Amount" ? true : false}
+      />
     </div>
   );
 

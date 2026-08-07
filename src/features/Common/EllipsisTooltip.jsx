@@ -6,6 +6,7 @@ const EllipsisTooltip = ({
   text,
   smallText = false,
   isViewLeadDetailsText = false,
+  showRed = false,
 }) => {
   const textRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -59,7 +60,11 @@ const EllipsisTooltip = ({
               ? "view-lead-details-ellipsis-text"
               : "lead-ellipsis-text"
         }
-        style={isTruncated ? { cursor: "pointer" } : undefined}
+        style={{
+          ...(isTruncated && { cursor: "pointer" }),
+          ...(showRed && { color: "#D32F2F" }),
+          ...(showRed && { fontWeight: 700 }),
+        }}
       >
         {text || "-"}
       </span>

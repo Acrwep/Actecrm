@@ -12,7 +12,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   customersStatusDisplay,
   formatToBackendIST,
-  getPreviousYearDec26ToCurrentDate,
+  getPreviousYearDec26ToCurrentYearDec25,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -458,7 +458,8 @@ export default function Receivables({
   };
 
   useEffect(() => {
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
@@ -507,7 +508,7 @@ export default function Receivables({
       });
       setAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
-        getPreviousYearDec26ToCurrentDate();
+        getPreviousYearDec26ToCurrentYearDec25();
       getPendingFeesCustomersData(
         PreviousYearDec26ToCurrentDate[0],
         PreviousYearDec26ToCurrentDate[1],
@@ -677,7 +678,8 @@ export default function Receivables({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };

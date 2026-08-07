@@ -273,6 +273,11 @@ export default function TrainerPayment() {
   const [isOpenTrainerFullDetailsModal, setIsOpenTrainerFullDetailsModal] =
     useState(false);
   const [trainerFullDetails, setTrainerFullDetails] = useState([]);
+  const [trainerDetailsLoading, setTrainerDetailsLoading] = useState("");
+  const trainerDetailsLoadingRef = useRef(trainerDetailsLoading);
+  useEffect(() => {
+    trainerDetailsLoadingRef.current = trainerDetailsLoading;
+  }, [trainerDetailsLoading]);
   const [isOpenStudentDetailsModal, setIsOpenStudentDetailsModal] =
     useState(false);
   const [selectedStudentDetails, setSelectedStudentDetails] = useState(null);
@@ -317,6 +322,12 @@ export default function TrainerPayment() {
     totalPages: 0,
   });
   const [statusCounts, setStatusCounts] = useState(null);
+  const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
+  const customerDetailsLoadingRef = useRef(customerDetailsLoading);
+  useEffect(() => {
+    customerDetailsLoadingRef.current = customerDetailsLoading;
+  }, [customerDetailsLoading]);
+
   // update drawer states
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [selectedPaymentDetails, setSelectedPaymentDetails] = useState(null);
@@ -446,18 +457,26 @@ export default function TrainerPayment() {
       dataIndex: "trainer_name",
       width: 150,
       render: (text, record) => {
+        const isLoading = trainerDetailsLoadingRef.current == record.id;
+
         return {
           children: (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <EllipsisTooltip text={text || "-"} />
-              <FaRegEye
-                size={14}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsOpenTrainerFullDetailsModal(true);
-                  getTrainerByIdData(record?.trainer_id);
-                }}
-              />
+              {isLoading ? (
+                <CommonSpinner color="#333" size={14} />
+              ) : (
+                <>
+                  <FaRegEye
+                    size={14}
+                    className="trainers_action_icons"
+                    onClick={() => {
+                      setIsOpenTrainerFullDetailsModal(true);
+                      getTrainerByIdData(record?.trainer_id, record?.id);
+                    }}
+                  />
+                </>
+              )}
             </div>
           ),
           props: { rowSpan: record.rowSpan },
@@ -469,23 +488,41 @@ export default function TrainerPayment() {
       key: "student_id",
       dataIndex: ["student_details", "customer_name"],
       width: 150,
-      render: (text, record) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <EllipsisTooltip text={text || "-"} />
-          {text && (
-            <FaRegEye
-              size={14}
-              className="trainers_action_icons"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                getParticularCustomerDetails(
-                  record.student_details?.customer_id,
-                );
-              }}
-            />
-          )}
-        </div>
-      ),
+      render: (text, record) => {
+        const isLoading =
+          customerDetailsLoadingRef.current ==
+          record.student_details?.customer_id;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <EllipsisTooltip text={text || "-"} />
+            {isLoading ? (
+              <CommonSpinner color="#333" size={14} />
+            ) : (
+              <>
+                {text && (
+                  <FaRegEye
+                    size={14}
+                    className="trainers_action_icons"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      getParticularCustomerDetails(
+                        record.student_details?.customer_id,
+                      );
+                    }}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Tech",
@@ -1022,6 +1059,9 @@ export default function TrainerPayment() {
                 ...col,
                 width: 150,
                 render: (text, record) => {
+                  const isLoading =
+                    trainerDetailsLoadingRef.current == record.id;
+
                   return {
                     children: (
                       <div
@@ -1032,14 +1072,23 @@ export default function TrainerPayment() {
                         }}
                       >
                         <EllipsisTooltip text={text || "-"} />
-                        <FaRegEye
-                          size={14}
-                          className="trainers_action_icons"
-                          onClick={() => {
-                            setIsOpenTrainerFullDetailsModal(true);
-                            getTrainerByIdData(record?.trainer_id);
-                          }}
-                        />
+                        {isLoading ? (
+                          <CommonSpinner color="#333" size={14} />
+                        ) : (
+                          <>
+                            <FaRegEye
+                              size={14}
+                              className="trainers_action_icons"
+                              onClick={() => {
+                                setIsOpenTrainerFullDetailsModal(true);
+                                getTrainerByIdData(
+                                  record?.trainer_id,
+                                  record?.id,
+                                );
+                              }}
+                            />
+                          </>
+                        )}
                       </div>
                     ),
                     props: { rowSpan: record.rowSpan },
@@ -1050,29 +1099,41 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 150,
-                render: (text, record) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <EllipsisTooltip text={text || "-"} />
-                    {text && (
-                      <FaRegEye
-                        size={14}
-                        className="trainers_action_icons"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          getParticularCustomerDetails(
-                            record.student_details?.customer_id,
-                          );
-                        }}
-                      />
-                    )}
-                  </div>
-                ),
+                render: (text, record) => {
+                  const isLoading =
+                    customerDetailsLoadingRef.current ==
+                    record.student_details?.customer_id;
+
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <EllipsisTooltip text={text || "-"} />
+                      {isLoading ? (
+                        <CommonSpinner color="#333" size={14} />
+                      ) : (
+                        <>
+                          {text && (
+                            <FaRegEye
+                              size={14}
+                              className="trainers_action_icons"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                getParticularCustomerDetails(
+                                  record.student_details?.customer_id,
+                                );
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                },
               };
             case "tech":
               return {
@@ -1856,14 +1917,17 @@ export default function TrainerPayment() {
     }
   };
 
-  const getTrainerByIdData = async (trainerId) => {
+  const getTrainerByIdData = async (trainerId, payment_id) => {
+    setTrainerDetailsLoading(payment_id);
     try {
       const response = await getTrainerById(trainerId);
       const trainerDetails = response?.data?.data;
       console.log("particular trainer details", trainerDetails);
       setTrainerFullDetails([trainerDetails]);
+      setTrainerDetailsLoading("");
     } catch (error) {
       setTrainerFullDetails([]);
+      setTrainerDetailsLoading("");
       console.log("get trainer by id error", error);
     }
   };
@@ -1873,6 +1937,7 @@ export default function TrainerPayment() {
     is_customer_history = false,
   ) => {
     console.log("is_customer_history", is_customer_history);
+    setCustomerDetailsLoading(customer_id);
 
     try {
       const response = await getCustomerById(customer_id);
@@ -1881,10 +1946,12 @@ export default function TrainerPayment() {
       setSelectedStudentDetails(customer_details);
       if (is_customer_history == false) {
         setIsOpenStudentDetailsModal(true);
+        setCustomerDetailsLoading("");
       }
     } catch (error) {
       console.log("getcustomer by id error", error);
       setSelectedStudentDetails(null);
+      setCustomerDetailsLoading("");
     }
   };
 

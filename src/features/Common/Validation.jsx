@@ -571,12 +571,13 @@ export const getCurrentandLast90Date = () => {
   return dates;
 };
 
-export const getPreviousYearDec26ToCurrentDate = () => {
+export const getPreviousYearDec26ToCurrentYearDec25 = () => {
   const currentDate = new Date();
 
   const previousYearDec26 = new Date(currentDate.getFullYear() - 1, 11, 26);
+  const currentYearDec25 = new Date(currentDate.getFullYear(), 11, 25);
 
-  return [formatDate(previousYearDec26), formatDate(currentDate)];
+  return [formatDate(previousYearDec26), formatDate(currentYearDec25)];
 };
 
 export const parseTimeToDecimal = (timeString) => {

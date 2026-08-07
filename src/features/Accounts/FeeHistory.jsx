@@ -12,7 +12,7 @@ import moment from "moment";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   formatToBackendIST,
-  getPreviousYearDec26ToCurrentDate,
+  getPreviousYearDec26ToCurrentYearDec25,
 } from "../Common/Validation";
 import {
   getFeeHistory,
@@ -25,6 +25,7 @@ import CommonDnd from "../Common/CommonDnd";
 import { useSelector } from "react-redux";
 import InsertPendingFees from "../Customers/Pending Fees/InsertPendingFees";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function FeeHistory({
   filterData,
@@ -51,6 +52,7 @@ export default function FeeHistory({
   const [allDownliners, setAllDownliners] = useState([]);
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
+  const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -100,18 +102,25 @@ export default function FeeHistory({
           : record?.customer_name
             ? record?.customer_name
             : "-";
+        const isLoading = customerDetailsLoading == record.customer_id;
         return (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <EllipsisTooltip text={user_id} />
-            {user_id && (
-              <FaRegEye
-                size={13}
-                className="trainers_action_icons"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  getParticularCustomerDetails(record?.customer_id, true);
-                }}
-              />
+            {isLoading ? (
+              <CommonSpinner color="#333" size={14} />
+            ) : (
+              <>
+                {user_id && (
+                  <FaRegEye
+                    size={13}
+                    className="trainers_action_icons"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      getParticularCustomerDetails(record?.customer_id, true);
+                    }}
+                  />
+                )}
+              </>
             )}
           </div>
         );
@@ -308,7 +317,7 @@ export default function FeeHistory({
       });
       setAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
-        getPreviousYearDec26ToCurrentDate();
+        getPreviousYearDec26ToCurrentYearDec25();
       const startDate = filterData?.startDate
         ? new Date(filterData.startDate)
         : PreviousYearDec26ToCurrentDate[0];
@@ -384,7 +393,8 @@ export default function FeeHistory({
   ]);
 
   useEffect(() => {
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     const startDate = filterData?.startDate
       ? new Date(filterData.startDate)
       : PreviousYearDec26ToCurrentDate[0];
@@ -508,15 +518,18 @@ export default function FeeHistory({
     customer_Id,
     isOpenModal = false,
   ) => {
+    setCustomerDetailsLoading(customer_Id);
     try {
       const response = await getCustomerById(customer_Id);
       console.log("particular customer response", response);
       const customer_details = response?.data?.data;
       setCustomerDetails(customer_details);
+      setCustomerDetailsLoading("");
       if (isOpenModal) {
         setIsOpenCustomerDetailsModal(true);
       }
     } catch (error) {
+      setCustomerDetailsLoading("");
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
     }
@@ -537,7 +550,8 @@ export default function FeeHistory({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };
@@ -706,7 +720,10 @@ export default function FeeHistory({
               0,
             ),
           }}
-          columns={tableColumns}
+          columns={tableColumns.map((col) => {
+            const original = nonChangeColumns.find((c) => c.key === col.key);
+            return original ? { ...col, render: original.render } : col;
+          })}
           dataSource={feeHistoryData}
           dataPerPage={10}
           loading={loading}

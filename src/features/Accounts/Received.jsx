@@ -34,7 +34,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   customersStatusDisplay,
   formatToBackendIST,
-  getPreviousYearDec26ToCurrentDate,
+  getPreviousYearDec26ToCurrentYearDec25,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -420,7 +420,8 @@ export default function Received({
   };
 
   useEffect(() => {
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     const startDate = filterData?.startDate
       ? new Date(filterData.startDate)
       : PreviousYearDec26ToCurrentDate[0];
@@ -474,7 +475,7 @@ export default function Received({
       });
       setAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
-        getPreviousYearDec26ToCurrentDate();
+        getPreviousYearDec26ToCurrentYearDec25();
       const startDate = filterData?.startDate
         ? new Date(filterData.startDate)
         : PreviousYearDec26ToCurrentDate[0];
@@ -672,7 +673,8 @@ export default function Received({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
-    const PreviousYearDec26ToCurrentDate = getPreviousYearDec26ToCurrentDate();
+    const PreviousYearDec26ToCurrentDate =
+      getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
     getAllDownlineUsersData(loginUserId);
   };

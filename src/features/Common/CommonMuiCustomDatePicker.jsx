@@ -92,7 +92,7 @@ export default function CommonMuiCustomDatePicker({
             today.subtract(1, "year").month(11).date(26),
             "day",
           ) &&
-          endDay.isSame(today, "day")
+          endDay.isSame(today.month(11).date(25), "day")
         ) {
           setOption("thisYear");
         } else {
@@ -163,7 +163,7 @@ export default function CommonMuiCustomDatePicker({
         break;
       case "thisYear":
         newStart = dayjs().subtract(1, "year").month(11).date(26); // Previous year Dec 26
-        newEnd = today;
+        newEnd = dayjs().month(11).date(25); // Current year Dec 25
         break;
       case "custom":
         // keep current start/end

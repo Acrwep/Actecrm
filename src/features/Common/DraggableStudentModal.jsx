@@ -287,8 +287,14 @@ const DraggableStudentModal = ({
                     }}
                   >
                     {customerDetails?.phone
-                      ? `${customerDetails?.phonecode || ""} ${customerDetails.phone}`
-                      : "-"}{" "}
+                      ? `${
+                          customerDetails?.phonecode
+                            ? customerDetails.phonecode.startsWith("+")
+                              ? customerDetails.phonecode
+                              : `+${customerDetails.phonecode}`
+                            : ""
+                        } ${customerDetails.phone}`
+                      : "-"}
                   </span>
                 </div>
 
@@ -322,7 +328,15 @@ const DraggableStudentModal = ({
                     }}
                   >
                     {customerDetails?.whatsapp
-                      ? `${customerDetails?.whatsapp_phone_code || ""} ${customerDetails.whatsapp}`
+                      ? `${
+                          customerDetails?.whatsapp_phone_code
+                            ? customerDetails.whatsapp_phone_code.startsWith(
+                                "+",
+                              )
+                              ? customerDetails.whatsapp_phone_code
+                              : `+${customerDetails.whatsapp_phone_code}`
+                            : ""
+                        } ${customerDetails.whatsapp}`
                       : "-"}
                   </span>
                 </div>

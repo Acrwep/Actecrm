@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Row, Col, Typography, Spin, Rate, Empty } from "antd";
 import { Country, State } from "country-state-city";
 import moment from "moment";
+import { FaRegUser } from "react-icons/fa";
 import {
   MdPerson,
   MdPhone,
@@ -12,6 +13,7 @@ import {
 } from "react-icons/md";
 import { getLeadById } from "../ApiService/action";
 import CommonAvatar from "../Common/CommonAvatar";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const { Text } = Typography;
 
@@ -43,7 +45,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
   if (!leadData) return null;
 
   const renderField = (label, value) => (
-    <div style={{ marginBottom: "14px" }}>
+    <div style={{ marginBottom: "8px" }}>
       <Text
         style={{
           fontFamily: "'Poppins', sans-serif",
@@ -56,27 +58,16 @@ export default function ViewLeadDetails({ leadData: initialData }) {
       >
         {label}
       </Text>
-      <Text
-        style={{
-          fontFamily: "'Poppins', sans-serif",
-          fontSize: "13px",
-          color: "#0f172a",
-          fontWeight: 600,
-          display: "block",
-          wordBreak: "break-word",
-        }}
-      >
-        {value || "-"}
-      </Text>
+      <EllipsisTooltip isViewLeadDetailsText={true} text={value || "-"} />
     </div>
   );
 
   const cardStyle = {
-    marginBottom: "12px",
     borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
     background: "#fff",
-    padding: "16px",
+    padding: "12px",
   };
 
   const HeaderTitle = ({ icon, title }) => (
@@ -85,9 +76,9 @@ export default function ViewLeadDetails({ leadData: initialData }) {
         display: "flex",
         alignItems: "center",
         gap: "8px",
-        marginBottom: "16px",
+        marginBottom: "12px",
         borderBottom: "1px solid #f1f5f9",
-        paddingBottom: "8px",
+        paddingBottom: "6px",
       }}
     >
       {icon}
@@ -172,10 +163,13 @@ export default function ViewLeadDetails({ leadData: initialData }) {
   return (
     <div
       style={{
-        padding: "12px",
-        background: "#f8fafc",
+        padding: "24px",
+        background: "#fff",
         minHeight: "100%",
         fontFamily: "'Poppins', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
       }}
     >
       {/* 1. Basic Information */}
@@ -185,14 +179,14 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           title="Basic Information"
         />
         <Row gutter={24}>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Lead Date & Time",
               formatDateTime(leadData.created_date),
             )}
           </Col>
-          <Col span={8}>{renderField("Candidate Name", leadData.name)}</Col>
-          <Col span={8}>
+          <Col span={6}>{renderField("Candidate Name", leadData.name)}</Col>
+          <Col span={6}>
             {renderField(
               "Mobile Number",
               leadData.phone
@@ -200,7 +194,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                 : "-",
             )}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "WhatsApp Number",
               leadData.whatsapp
@@ -208,17 +202,17 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                 : "-",
             )}
           </Col>
-          <Col span={8}>{renderField("Email", leadData.email)}</Col>
-          <Col span={8}>
+          <Col span={6}>{renderField("Email", leadData.email)}</Col>
+          <Col span={6}>
             {renderField("Country", getCountryName(leadData.country))}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "State",
               getStateName(leadData.country, leadData.state),
             )}
           </Col>
-          <Col span={8}>{renderField("Area", leadData.area_id)}</Col>
+          <Col span={6}>{renderField("Area", leadData.area_id)}</Col>
         </Row>
       </div>
 
@@ -229,13 +223,13 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           title="Lead Source"
         />
         <Row gutter={24}>
-          <Col span={8}>{renderField("Lead Source", leadData.lead_type)}</Col>
-          <Col span={8}>
+          <Col span={6}>{renderField("Lead Source", leadData.lead_type)}</Col>
+          <Col span={6}>
             {renderField("Lead Sub Source", leadData.lead_sub_source_name)}
           </Col>
-          <Col span={8}>{renderField("Region", leadData.region_name)}</Col>
+          <Col span={6}>{renderField("Region", leadData.region_name)}</Col>
           {leadData?.referral_name && (
-            <Col span={8}>
+            <Col span={6}>
               {renderField("Referral Name", leadData.referral_name)}
             </Col>
           )}
@@ -249,22 +243,22 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           title="Course Requirement"
         />
         <Row gutter={24}>
-          <Col span={8}>
+          <Col span={6}>
             {renderField("Primary Course", leadData.primary_course)}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Fees",
               leadData.primary_fees ? `₹${leadData.primary_fees}` : "-",
             )}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Preferred Mode",
               leadData?.preferred_mode_name || "-",
             )}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Preferred Batch",
               leadData?.preferred_batch_name || "-",
@@ -280,17 +274,16 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           title="Screening"
         />
         <Row gutter={24}>
-          <Col span={8}>{renderField("Lead Temp.", leadData.lead_status)}</Col>
-          <Col span={8}>
+          <Col span={6}>{renderField("Lead Temp.", leadData.lead_status)}</Col>
+          <Col span={6}>
             {renderField("Counsel Given", leadData?.counsel || "Not Given")}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Expected Join Date",
               formatDateTime(leadData.expected_join_date, "DD MMM YYYY"),
             )}
           </Col>
-          {/* <Col span={8}>{renderField("Lead Score", leadData.lead_score)}</Col> */}
         </Row>
       </div>
 
@@ -302,37 +295,37 @@ export default function ViewLeadDetails({ leadData: initialData }) {
         />
         <Row gutter={24}>
           {leadData?.re_assigned_date && (
-            <Col span={8}>
+            <Col span={6}>
               {renderField(
                 "Re-Assign Date",
                 formatDateTime(leadData.re_assigned_date),
               )}
             </Col>
           )}
-          <Col span={8}>
+          <Col span={6}>
             {renderField("Assigned Branch", leadData.assigned_branch_name)}
           </Col>
           {leadData?.assigned_branch_manager && (
-            <Col span={8}>
+            <Col span={6}>
               {renderField(
                 "Assigned Manager",
                 `${leadData.branch_manager_id} - ${leadData.assigned_branch_manager}`,
               )}
             </Col>
           )}
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Region Manager",
               `${leadData.assigned_manager} - ${leadData.assigned_regional_manager}`,
             )}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Assigned Executive",
               `${leadData.lead_assigned_to_id} - ${leadData.lead_assigned_to_name}`,
             )}
           </Col>
-          <Col span={8}>
+          <Col span={6}>
             {renderField(
               "Lead Owner",
               `${leadData?.user_id} - ${leadData.user_name}`,
