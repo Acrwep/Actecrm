@@ -1860,6 +1860,7 @@ export default function TrainerPayment() {
     try {
       const response = await getTrainerById(trainerId);
       const trainerDetails = response?.data?.data;
+      console.log("particular trainer details", trainerDetails);
       setTrainerFullDetails([trainerDetails]);
     } catch (error) {
       setTrainerFullDetails([]);

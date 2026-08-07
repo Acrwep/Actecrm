@@ -217,8 +217,8 @@ const DraggableStudentModal = ({
                     fontSize: "13px",
                   }}
                 >
-                  Lead:{" "}
-                  {`${customerDetails?.lead_assigned_to_id || "-"} (${customerDetails?.lead_assigned_to_name || "-"})`}
+                  Lead Executive:{" "}
+                  {`${customerDetails?.lead_assigned_to_name || "-"} (${customerDetails?.lead_assigned_to_id || "-"})`}
                 </Typography.Text>
               </div>
             </div>
@@ -286,7 +286,9 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.phone || "-"}
+                    {customerDetails?.phone
+                      ? `${customerDetails?.phonecode || ""} ${customerDetails.phone}`
+                      : "-"}{" "}
                   </span>
                 </div>
 
@@ -319,7 +321,9 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.whatsapp || "-"}
+                    {customerDetails?.whatsapp
+                      ? `${customerDetails?.whatsapp_phone_code || ""} ${customerDetails.whatsapp}`
+                      : "-"}
                   </span>
                 </div>
 
@@ -494,7 +498,7 @@ const DraggableStudentModal = ({
                   >
                     <EllipsisTooltip
                       text={customerDetails?.course_name || "-"}
-                      smallText={true}
+                      isViewLeadDetailsText={true}
                     />
                   </span>
                 </div>
