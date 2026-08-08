@@ -35,6 +35,11 @@ export default function CommonMultiSelectField({
   onFocus,
   onBlur,
 }) {
+  const onBlurRef = React.useRef(onBlur);
+  React.useEffect(() => {
+    onBlurRef.current = onBlur;
+  }, [onBlur]);
+
   // Resolve the string IDs from value into option objects
   const selectedOptions = React.useMemo(() => {
     if (!value) return [];
@@ -231,7 +236,14 @@ export default function CommonMultiSelectField({
                 {...getTagProps({ index: 0 })}
                 onDelete={(e) => {
                   if (onChange) {
-                    onChange(e, []);
+                    onChange({ target: { value: [], options: [] } });
+                  }
+                  if (onBlur) {
+                    setTimeout(() => {
+                      if (onBlurRef.current) {
+                        onBlurRef.current();
+                      }
+                    }, 150);
                   }
                 }}
                 sx={{

@@ -21,6 +21,7 @@ import { FiFilter } from "react-icons/fi";
 import { FaRegEye } from "react-icons/fa";
 import { GiReceiveMoney } from "react-icons/gi";
 import { RedoOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import { FaRegUser } from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
@@ -43,6 +44,8 @@ import {
   updateTableColumns,
   getPaymentRecievedList,
   getCustomerById,
+  getBranches,
+  getUsers,
 } from "../ApiService/action";
 import { useSelector } from "react-redux";
 import CommonTable from "../Common/CommonTable";
@@ -57,6 +60,9 @@ import { RiVerifiedBadgeLine } from "react-icons/ri";
 import FinanceVerify from "../Customers/FinanceVerify";
 import CommonSpinner from "../Common/CommonSpinner";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
+import CommonSelectField from "../Common/CommonSelectField";
+import "./styles.css";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function Received({
   filterData,
@@ -79,6 +85,8 @@ export default function Received({
         endDate,
         searchValue,
         allDownliners,
+        selectedRegionId,
+        selectedBranchId,
         1,
         pagination.limit,
         paymentType,
@@ -96,7 +104,7 @@ export default function Received({
   const [customerDetails, setCustomerDetails] = useState(null);
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
-  const [isOpenPaymentDrawer, setIsOpenPaymentDrawer] = useState(false);
+  const [totalAmountOfReceived, setTotalAmountOfReceived] = useState(null);
   //verify payment
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
@@ -106,13 +114,20 @@ export default function Received({
   const [previewImage, setPreviewImage] = useState("");
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
+  const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
+  const prevSelectedUserIdRef = useRef("[]");
   const [allDownliners, setAllDownliners] = useState([]);
-  const [loginUserId, setLoginUserId] = useState("");
+  const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
+  //filter usestates
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -143,10 +158,51 @@ export default function Received({
         return <p>{moment(text).format("DD/MM/YYYY")}</p>;
       },
     },
+    ...(paymentType === "REPAYMENT"
+      ? [
+          {
+            title: "Total Collection Days",
+            key: "total_days_taken",
+            dataIndex: "total_days_taken",
+            width: 165,
+            sorter: (a, b) =>
+              moment(a.total_days_taken).valueOf() -
+              moment(b.total_days_taken).valueOf(),
+            sortDirections: ["ascend", "descend"],
+          },
+        ]
+      : []),
+    {
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
+      title: "Place Of Sale",
+      key: "branch_name",
+      dataIndex: "branch_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
+      title: "Place Of Service",
+      key: "place_of_service",
+      dataIndex: "place_of_service",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Collected By",
+            title: "Sale Executive",
             key: "collected_by",
             dataIndex: "collected_by",
             width: 130,
@@ -157,101 +213,138 @@ export default function Received({
           },
         ]
       : []),
+    // {
+    //   title: "Collection Type",
+    //   key: "collection_type",
+    //   dataIndex: "collection_type",
+    //   width: 120,
+    //   render: (text) => {
+    //     if (text) {
+    //       const type = text.toLowerCase();
+    //       if (type.includes("new")) {
+    //         return <div className="transactionreport_new_type">{text}</div>;
+    //       } else if (type.includes("lmj")) {
+    //         return <div className="transactionreport_lmj_type">{text}</div>;
+    //       } else if (type.includes("cmj")) {
+    //         return <div className="transactionreport_cmj_type">{text}</div>;
+    //       } else if (type.includes("pmj")) {
+    //         return <div className="transactionreport_pmj_type">{text}</div>;
+    //       } else {
+    //         <p>{text}</p>;
+    //       }
+    //     } else {
+    //       return <p>-</p>;
+    //     }
+    //   },
+    // },
+    // {
+    //   title: "Student Id",
+    //   key: "student_id",
+    //   dataIndex: "student_id",
+    //   width: 120,
+    //   render: (text, record) => {
+    //     const user_id = text ? text : record?.cus_name ? record?.cus_name : "-";
+    //     return (
+    //       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    //         <EllipsisTooltip text={user_id} />
+    //         {user_id && (
+    //           <FaRegEye
+    //             size={13}
+    //             className="trainers_action_icons"
+    //             style={{ cursor: "pointer" }}
+    //             onClick={() => {
+    //               getParticularCustomerDetails(record?.customer_id, true);
+    //             }}
+    //           />
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
-      title: "Collection Type",
-      key: "collection_type",
-      dataIndex: "collection_type",
+      title: "Student Name",
+      key: "cus_name",
+      dataIndex: "cus_name",
       width: 120,
       render: (text) => {
-        if (text) {
-          const type = text.toLowerCase();
-          if (type.includes("new")) {
-            return <div className="transactionreport_new_type">{text}</div>;
-          } else if (type.includes("lmj")) {
-            return <div className="transactionreport_lmj_type">{text}</div>;
-          } else if (type.includes("cmj")) {
-            return <div className="transactionreport_cmj_type">{text}</div>;
-          } else if (type.includes("pmj")) {
-            return <div className="transactionreport_pmj_type">{text}</div>;
-          } else {
-            <p>{text}</p>;
-          }
-        } else {
-          return <p>-</p>;
-        }
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Joined Date",
-      key: "cus_reg_date",
-      dataIndex: "cus_reg_date",
-      width: 100,
+      title: "Student Mobile",
+      key: "cus_phone",
+      dataIndex: "cus_phone",
+      width: 120,
       render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Student Id",
-      key: "student_id",
-      dataIndex: "student_id",
+      title: "Course",
+      key: "course_name",
+      dataIndex: "course_name",
       width: 120,
-      render: (text, record) => {
-        const user_id = text ? text : record?.cus_name ? record?.cus_name : "-";
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Total Fees (With GST)",
+      key: "total_course_fees",
+      dataIndex: "total_course_fees",
+      width: 155,
+      render: (text) => {
+        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      },
+    },
+    {
+      title: "Paid Amount",
+      key: "paid_amount",
+      dataIndex: "paid_amount",
+      width: 120,
+      render: (text) => {
+        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      },
+    },
+    {
+      title: "Balance Amount",
+      key: "balance_due",
+      dataIndex: "balance_due",
+      width: 130,
+      render: (text) => {
+        const amount = Number(text);
+
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <EllipsisTooltip text={user_id} />
-            {user_id && (
-              <FaRegEye
-                size={13}
-                className="trainers_action_icons"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  getParticularCustomerDetails(record?.customer_id, true);
-                }}
-              />
-            )}
-          </div>
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {text !== null && text !== undefined
+              ? `₹${amount.toLocaleString("en-IN")}`
+              : "-"}
+          </p>
         );
       },
     },
     {
-      title: "Place of payment",
-      key: "place_of_payment",
-      dataIndex: "place_of_payment",
-      width: 130,
+      title: "Transaction Mode",
+      key: "transacted_to",
+      dataIndex: "transacted_to",
+      width: 135,
       render: (text) => {
-        if (text) {
-          if (text == "Tamil Nadu") {
-            return (
-              <div
-                className="transactionreport_lmj_type"
-                style={{ textTransform: "none" }}
-              >
-                Tamil Nadu
-              </div>
-            );
-          } else if (text == "Out of TN") {
-            return (
-              <div
-                className="transactionreport_cmj_type"
-                style={{ textTransform: "none" }}
-              >
-                Out of TN
-              </div>
-            );
-          } else if (text == "Out of IND") {
-            return (
-              <div
-                className="transactionreport_pmj_type"
-                style={{ textTransform: "none" }}
-              >
-                Out of IND
-              </div>
-            );
-          }
-        } else {
-          return <p>-</p>;
-        }
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
+      title: "Transaction To",
+      key: "bank_name",
+      dataIndex: "bank_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
@@ -346,7 +439,7 @@ export default function Received({
     if (allTableColumns !== null) {
       processTableColumnsData(allTableColumns);
     }
-  }, [allTableColumns]);
+  }, [allTableColumns, paymentType]);
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -384,22 +477,24 @@ export default function Received({
 
       setUpdateTableId(filterPage.id);
 
-      const filteredBackendColumns = filterPage.column_names || [];
+      let filteredBackendColumns = [...(filterPage.column_names || [])];
 
-      const attachRenderFunctions = (cols) =>
-        cols.map((col) => {
-          const original = nonChangeColumns.find((c) => c.key === col.key);
-          if (original) {
+      const attachRenderFunctions = (cols) => {
+        return cols
+          .filter((col) => nonChangeColumns.some((c) => c.key === col.key))
+          .map((col) => {
+            const original = nonChangeColumns.find((c) => c.key === col.key);
             return {
               ...col,
               width: original.width,
               fixed: original.fixed,
               hidden: original.hidden,
               render: original.render,
+              sorter: original.sorter,
+              sortDirections: original.sortDirections,
             };
-          }
-          return col;
-        });
+          });
+      };
 
       nonChangeColumns.forEach((c) => {
         if (!filteredBackendColumns.some((b) => b.key === c.key)) {
@@ -446,6 +541,8 @@ export default function Received({
           selectedDates[1],
           searchValue,
           allDownliners,
+          selectedRegionId,
+          selectedBranchId,
           pagination.page,
           pagination.limit,
           paymentType,
@@ -474,6 +571,7 @@ export default function Received({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      setDefaultAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
         getPreviousYearDec26ToCurrentYearDec25();
       const startDate = filterData?.startDate
@@ -487,6 +585,8 @@ export default function Received({
         endDate,
         null,
         downliners_ids,
+        null,
+        null,
         1,
         10,
         paymentType,
@@ -501,6 +601,8 @@ export default function Received({
     endDate,
     searchvalue,
     downliners,
+    regionId,
+    branchId,
     pageNumber,
     limit,
     payment_type,
@@ -515,6 +617,8 @@ export default function Received({
       end_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
       user_ids: downliners,
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       page: pageNumber,
       limit: limit,
       ...(payment_type && { payment_type }),
@@ -525,6 +629,9 @@ export default function Received({
       setReceivedPaymentsData(response?.data?.result?.data || []);
       const status_count = response?.data?.result?.status_count || {};
       setStatusCount(status_count);
+      setTotalAmountOfReceived(
+        response?.data?.result?.page_total_paid_amount || null,
+      );
       const paginations = response?.data?.result?.pagination;
       setReceivedCount(
         Number(status_count?.new_payment) + Number(status_count?.re_payment),
@@ -538,6 +645,7 @@ export default function Received({
       setLoading(false);
     } catch (error) {
       setReceivedPaymentsData([]);
+      setTotalAmountOfReceived(null);
       setLoading(false);
       console.log("received payments error", error);
     }
@@ -549,6 +657,8 @@ export default function Received({
       selectedDates[1],
       searchValue,
       allDownliners,
+      selectedRegionId,
+      selectedBranchId,
       page,
       limit,
       paymentType,
@@ -566,6 +676,8 @@ export default function Received({
       selectedDates[1],
       e.target.value,
       allDownliners,
+      selectedRegionId,
+      selectedBranchId,
       1,
       pagination.limit,
       paymentType,
@@ -575,6 +687,18 @@ export default function Received({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    // if (!value || value.length <= 0) return;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
 
     try {
       const response = await getAllDownlineUsers(
@@ -594,6 +718,8 @@ export default function Received({
         selectedDates[1],
         searchValue,
         downliners_ids,
+        selectedRegionId,
+        selectedBranchId,
         1,
         pagination.limit,
         paymentType,
@@ -662,10 +788,93 @@ export default function Received({
     };
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSubUsers([]);
+      console.log("get all users error", error);
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloadLoading(true);
+    const from_date = formatToBackendIST(selectedDates[0]);
+    const to_date = formatToBackendIST(selectedDates[1]);
+
+    const payload = {
+      start_date: moment(from_date).format("YYYY-MM-DD"),
+      end_date: moment(to_date).format("YYYY-MM-DD"),
+      ...(searchValue && { search_filter: searchValue }),
+      user_ids:
+        selectedRegionId || selectedBranchId
+          ? defaultAllDownliners
+          : allDownliners,
+      ...(selectedRegionId && { region_id: selectedRegionId }),
+      ...(selectedBranchId && { branch_id: selectedBranchId }),
+      ...(paymentType && { payment_type: paymentType }),
+    };
+    try {
+      const response = await getPaymentRecievedList(payload);
+      console.log("received payments response", response);
+      const download_data = response?.data?.result?.data || [];
+      if (download_data.length >= 1) {
+        DownloadTableAsCSV(
+          download_data,
+          nonChangeColumns,
+          `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+            selectedDates[1],
+          ).format("DD-MM-YYYY")} Received Payments.csv`,
+        );
+      } else {
+        CommonMessage("error", "No Data Found");
+      }
+      setDownloadLoading(false);
+    } catch (error) {
+      setDownloadLoading(false);
+      console.log("received payments error", error);
+    }
+  };
+
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
-    setIsOpenPaymentDrawer(false);
     setDrawerContentStatus("");
     setIsStatusUpdateDrawer(false);
   };
@@ -673,6 +882,11 @@ export default function Received({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
+    prevSelectedUserIdRef.current = "[]";
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setSubUsers(downlineUsers);
     const PreviousYearDec26ToCurrentDate =
       getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
@@ -688,10 +902,22 @@ export default function Received({
 
   return (
     <div>
-      <Row style={{ alignItems: "center", marginTop: "22px" }}>
-        <Col xs={24} sm={24} md={24} lg={16}>
+      <Row
+        style={{
+          alignItems: "center",
+          marginTop: permissions.includes("Lead Executive Filter")
+            ? "22px"
+            : "30px",
+        }}
+      >
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+        >
           <Row gutter={12} align="middle" wrap={false}>
-            <Col flex="28%">
+            <Col flex="1 1 0%">
               <div
                 className="overallduecustomers_filterContainer"
                 style={{ marginBottom: "0px" }}
@@ -716,6 +942,8 @@ export default function Received({
                             selectedDates[1],
                             null,
                             allDownliners,
+                            selectedRegionId,
+                            selectedBranchId,
                             1,
                             pagination.limit,
                             paymentType,
@@ -741,44 +969,139 @@ export default function Received({
             </Col>
 
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="28%">
-                <CommonMultiSelectField
-                  height="34px"
-                  label="Select User"
-                  labelMarginTop="1px"
-                  labelFontSize="11px"
-                  width={"100%"}
-                  options={subUsers}
-                  onChange={handleSelectUser}
-                  value={selectedUserId}
-                />
-              </Col>
-            )}
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Chennai",
+                      },
+                      {
+                        id: 2,
+                        name: "Bangalore",
+                      },
+                      {
+                        id: 3,
+                        name: "Hub",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegionId(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getPaymentRecievedData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        defaultAllDownliners,
+                        value,
+                        null,
+                        1,
+                        pagination.limit,
+                        paymentType,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setBranchOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegionId}
+                    disableClearable={false}
+                  />
+                </Col>
 
-            <Col flex="none">
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  getPaymentRecievedData(
-                    dates[0],
-                    dates[1],
-                    searchValue,
-                    allDownliners,
-                    1,
-                    pagination.limit,
-                    paymentType,
-                  );
-                }}
-              />
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={branchOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegionId, value);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getPaymentRecievedData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        defaultAllDownliners,
+                        selectedRegionId,
+                        value,
+                        1,
+                        pagination.limit,
+                        paymentType,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegionId == 3 ? true : false}
+                  />
+                </Col>
+
+                <Col flex="1 1 0%">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    width={"100%"}
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
+              </>
+            )}
+            <Col flex="1.5 1 0%">
+              <div style={{ position: "relative" }}>
+                <p className="accounts_datepicket_label">Entry Date</p>
+                <CommonMuiCustomDatePicker
+                  width="100%"
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPaymentRecievedData(
+                      dates[0],
+                      dates[1],
+                      searchValue,
+                      allDownliners,
+                      selectedRegionId,
+                      selectedBranchId,
+                      1,
+                      pagination.limit,
+                      paymentType,
+                    );
+                  }}
+                />
+              </div>
             </Col>
           </Row>
         </Col>
         <Col
-          span={8}
+          span={permissions.includes("Lead Executive Filter") ? 2 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -786,7 +1109,17 @@ export default function Received({
             gap: "12px",
           }}
         >
-          {/* <Tooltip placement="top" title="Download"></Tooltip> */}
+          {permissions.includes("Download Customers Data") && (
+            <Tooltip placement="top" title="Download">
+              <Button
+                className="dashboard_download_button"
+                onClick={handleDownload}
+                disabled={downloadLoading}
+              >
+                <DownloadOutlined className="download_icon" />
+              </Button>
+            </Tooltip>
+          )}
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -839,6 +1172,8 @@ export default function Received({
                       selectedDates[1],
                       searchValue,
                       allDownliners,
+                      selectedRegionId,
+                      selectedBranchId,
                       1,
                       pagination.limit,
                       bucket.value,
@@ -861,49 +1196,54 @@ export default function Received({
         </Col>
       </Row>
 
-      {permissions.includes("Show Region Summary") && (
-        <div className="livelead_today_summary_container">
-          <p className="livelead_today_label">Region Summary</p>
-
-          <div className="livelead_badge_item online">
+      <Row style={{ marginTop: "16px" }}>
+        <Col span={12}>
+          {permissions.includes("Show Region Summary") && (
             <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#3c9111" }}
-            />
-            <p className="livelead_badge_text">
-              Hub{" "}
-              <span className="livelead_badge_count">
-                {statusCount?.hub ?? "-"}
-              </span>
-            </p>
-          </div>
+              className="livelead_today_summary_container"
+              style={{ marginTop: "0px" }}
+            >
+              <p className="livelead_today_label">Region Summary</p>
 
-          <div className="livelead_badge_item classroom">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#1e90ff" }}
-            />
-            <p className="livelead_badge_text">
-              Chennai{" "}
-              <span className="livelead_badge_count">
-                {statusCount?.chennai ?? "-"}
-              </span>
-            </p>
-          </div>
+              <div className="livelead_badge_item online">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {statusCount?.hub ?? "-"}
+                  </span>
+                </p>
+              </div>
 
-          <div className="livelead_badge_item corporate">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#607d8b" }}
-            />
-            <p className="livelead_badge_text">
-              Bangalore{" "}
-              <span className="livelead_badge_count">
-                {statusCount?.bangalore ?? "-"}
-              </span>
-            </p>
-          </div>
-          {/* <div className="livelead_badge_item total">
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {statusCount?.chennai ?? "-"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item corporate">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#607d8b" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {statusCount?.bangalore ?? "-"}
+                  </span>
+                </p>
+              </div>
+              {/* <div className="livelead_badge_item total">
             <div
               className="livelead_badge_dot"
               style={{ backgroundColor: "#5b69ca" }}
@@ -915,8 +1255,31 @@ export default function Received({
               </span>
             </p>
           </div> */}
-        </div>
-      )}
+            </div>
+          )}
+        </Col>
+        <Col
+          span={12}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
+          <div
+            className="overall_pending_amount_card"
+            style={{ padding: "8px 16px" }}
+          >
+            <span className="overall_pending_amount_label">
+              Total Amount to Be Verified:
+            </span>
+            <span className="overall_pending_amount_value">
+              ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
+            </span>
+          </div>
+        </Col>
+      </Row>
+
       <div style={{ marginTop: "16px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
@@ -1556,6 +1919,8 @@ export default function Received({
                     selectedDates[1],
                     searchValue,
                     allDownliners,
+                    selectedRegionId,
+                    selectedBranchId,
                     1,
                     pagination.limit,
                     paymentType,

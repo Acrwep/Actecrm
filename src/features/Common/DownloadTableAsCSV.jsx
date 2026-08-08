@@ -37,6 +37,8 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "expected_join_date" ||
           column.dataIndex === "created_date" ||
           column.dataIndex === "date" ||
+          column.dataIndex === "entry_date" ||
+          column.dataIndex === "paid_date" ||
           column.dataIndex === "DATE"
         ) {
           const value = row[column.dataIndex];
@@ -92,6 +94,9 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "hdfc_bank" ||
           column.dataIndex === "sbi_pos" ||
           column.dataIndex === "razorpay_pos" ||
+          column.dataIndex === "total_course_fees" ||
+          column.dataIndex === "paid_amount" ||
+          column.dataIndex === "balance_due" ||
           column.dataIndex === "total"
         ) {
           return row[column.dataIndex]

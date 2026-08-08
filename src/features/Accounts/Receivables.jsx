@@ -8,6 +8,7 @@ import { FiFilter } from "react-icons/fi";
 import { FaRegEye } from "react-icons/fa";
 import { GiReceiveMoney } from "react-icons/gi";
 import { RedoOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   customersStatusDisplay,
@@ -16,9 +17,11 @@ import {
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
+  getBranches,
   getCustomerById,
   getPendingFeesCustomers,
   getTableColumns,
+  getUsers,
   updateTableColumns,
 } from "../ApiService/action";
 import { useSelector } from "react-redux";
@@ -33,6 +36,8 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonSpinner from "../Common/CommonSpinner";
 import InsertPendingFees from "../Customers/Pending Fees/InsertPendingFees";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
+import CommonSelectField from "../Common/CommonSelectField";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export default function Receivables({
   setReceivableCount,
@@ -59,12 +64,19 @@ export default function Receivables({
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
   const [loading, setLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
+  const prevSelectedUserIdRef = useRef("[]");
   const [allDownliners, setAllDownliners] = useState([]);
+  const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
+  //filter usestates
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -75,44 +87,6 @@ export default function Receivables({
   });
 
   const nonChangeColumns = [
-    ...(permissions.includes("Show Lead Executive Id")
-      ? [
-          {
-            title: "Lead Executive",
-            key: "lead_assigned_to_name",
-            dataIndex: "lead_assigned_to_name",
-            width: 150,
-            render: (text, record) => {
-              const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-              return <EllipsisTooltip text={lead_executive} />;
-            },
-          },
-        ]
-      : []),
-    {
-      title: "Student Id",
-      key: "student_id",
-      dataIndex: "student_id",
-      width: 100,
-      render: (text, record) => {
-        const user_id = text ? text : record?.name ? record?.name : "-";
-        return (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <EllipsisTooltip text={user_id} />
-            {user_id && (
-              <FaRegEye
-                size={14}
-                className="trainers_action_icons"
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  getParticularCustomerDetails(record?.id, true);
-                }}
-              />
-            )}
-          </div>
-        );
-      },
-    },
     {
       title: "Date Of Joining",
       key: "date_of_joining",
@@ -128,28 +102,130 @@ export default function Receivables({
       },
     },
     {
-      title: "Fees",
-      key: "course_fees",
-      dataIndex: "course_fees",
-      width: 140,
+      title: "Total Collection Days",
+      key: "total_days_taken",
+      dataIndex: "total_days_taken",
+      width: 165,
+      fixed: "right",
+      sorter: (a, b) =>
+        moment(a.total_days_taken).valueOf() -
+        moment(b.total_days_taken).valueOf(),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Region",
+      key: "region_name",
+      dataIndex: "region_name",
+      width: 120,
       render: (text) => {
-        return <p>{"₹" + text}</p>;
+        return <EllipsisTooltip text={text ? text : "-"} />;
       },
     },
     {
-      title: "Balance",
+      title: "Place Of Sale",
+      key: "branch_name",
+      dataIndex: "branch_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
+      title: "Place Of Service",
+      key: "place_of_service",
+      dataIndex: "place_of_service",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    ...(permissions.includes("Show Lead Executive Id")
+      ? [
+          {
+            title: "Lead Executive",
+            key: "lead_assigned_to_name",
+            dataIndex: "lead_assigned_to_name",
+            width: 150,
+            render: (text, record) => {
+              const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+              return <EllipsisTooltip text={lead_executive} />;
+            },
+          },
+        ]
+      : []),
+    {
+      title: "Student Name",
+      key: "name",
+      dataIndex: "name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Student Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Course",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Total Fees (With GST)",
+      key: "course_fees",
+      dataIndex: "course_fees",
+      width: 155,
+      render: (text) => {
+        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      },
+    },
+    {
+      title: "Paid Amount",
+      key: "paid_amount",
+      dataIndex: "paid_amount",
+      width: 120,
+      render: (text) => {
+        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      },
+    },
+    {
+      title: "Balance Amount",
       key: "balance_amount",
       dataIndex: "balance_amount",
-      width: 140,
+      width: 130,
       render: (text) => {
-        return <p>{"₹" + text}</p>;
+        const amount = Number(text);
+
+        return (
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {text !== null && text !== undefined
+              ? `₹${amount.toLocaleString("en-IN")}`
+              : "-"}
+          </p>
+        );
       },
     },
     {
       title: "Nxt Due Date",
       key: "next_due_date",
       dataIndex: "next_due_date",
-      width: 120,
+      width: 100,
       fixed: "right",
       render: (text, record) => {
         return (
@@ -306,7 +382,7 @@ export default function Receivables({
       title: "Action",
       key: "action",
       dataIndex: "action",
-      width: 100,
+      width: 80,
       fixed: "right",
       render: (text, record) => {
         return (
@@ -478,6 +554,8 @@ export default function Receivables({
           selectedDates[1],
           searchValue,
           allDownliners,
+          selectedRegionId,
+          selectedBranchId,
           pagination.page,
           pagination.limit,
         );
@@ -507,6 +585,7 @@ export default function Receivables({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      setDefaultAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
         getPreviousYearDec26ToCurrentYearDec25();
       getPendingFeesCustomersData(
@@ -514,6 +593,8 @@ export default function Receivables({
         PreviousYearDec26ToCurrentDate[1],
         null,
         downliners_ids,
+        null,
+        null,
         1,
         10,
       );
@@ -529,6 +610,8 @@ export default function Receivables({
     endDate,
     searchvalue,
     downliners,
+    regionId,
+    branchId,
     pageNumber,
     limit,
   ) => {
@@ -542,6 +625,8 @@ export default function Receivables({
       to_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
       user_ids: downliners,
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       page: pageNumber,
       limit: limit,
     };
@@ -578,6 +663,8 @@ export default function Receivables({
       selectedDates[1],
       searchValue,
       allDownliners,
+      selectedRegionId,
+      selectedBranchId,
       page,
       limit,
     );
@@ -594,6 +681,8 @@ export default function Receivables({
       selectedDates[1],
       e.target.value,
       allDownliners,
+      selectedRegionId,
+      selectedBranchId,
       1,
       pagination.limit,
     );
@@ -602,8 +691,16 @@ export default function Receivables({
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
 
-    console.log(value, "loginUserId", loginUserId);
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
 
     try {
       const response = await getAllDownlineUsers(
@@ -623,11 +720,58 @@ export default function Receivables({
         selectedDates[1],
         searchValue,
         downliners_ids,
+        selectedRegionId,
+        selectedBranchId,
         1,
         pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSubUsers([]);
+      console.log("get all users error", error);
     }
   };
 
@@ -669,6 +813,44 @@ export default function Receivables({
     }
   };
 
+  const handleDownload = async () => {
+    setDownloadLoading(true);
+    const from_date = formatToBackendIST(selectedDates[0]);
+    const to_date = formatToBackendIST(selectedDates[1]);
+
+    const payload = {
+      from_date: moment(from_date).format("YYYY-MM-DD"),
+      to_date: moment(to_date).format("YYYY-MM-DD"),
+      ...(searchValue && { search_filter: searchValue }),
+      user_ids:
+        selectedRegionId || selectedBranchId
+          ? defaultAllDownliners
+          : allDownliners,
+      ...(selectedRegionId && { region_id: selectedRegionId }),
+      ...(selectedBranchId && { branch_id: selectedBranchId }),
+    };
+    try {
+      const response = await getPendingFeesCustomers(payload);
+      console.log("pending fee customers response", response);
+      const download_data = response?.data?.data?.data || [];
+      if (download_data.length >= 1) {
+        DownloadTableAsCSV(
+          download_data,
+          nonChangeColumns,
+          `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+            selectedDates[1],
+          ).format("DD-MM-YYYY")} Receivable Payments.csv`,
+        );
+      } else {
+        CommonMessage("error", "No Data Found");
+      }
+      setDownloadLoading(false);
+    } catch (error) {
+      setDownloadLoading(false);
+      console.log("pending fee customers error", error);
+    }
+  };
+
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
     setCustomerDetails(null);
@@ -678,6 +860,11 @@ export default function Receivables({
   const handleRefresh = () => {
     setSearchValue("");
     setSelectedUserId([]);
+    prevSelectedUserIdRef.current = "[]";
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setSubUsers(downlineUsers);
     const PreviousYearDec26ToCurrentDate =
       getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
@@ -693,10 +880,22 @@ export default function Receivables({
 
   return (
     <div>
-      <Row style={{ alignItems: "center", marginTop: "22px" }}>
-        <Col xs={24} sm={24} md={24} lg={16}>
+      <Row
+        style={{
+          alignItems: "center",
+          marginTop: permissions.includes("Lead Executive Filter")
+            ? "22px"
+            : "30px",
+        }}
+      >
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+        >
           <Row gutter={12} align="middle" wrap={false}>
-            <Col flex="28%">
+            <Col flex="1 1 0%">
               <div
                 className="overallduecustomers_filterContainer"
                 style={{ marginBottom: "0px" }}
@@ -721,6 +920,8 @@ export default function Receivables({
                             selectedDates[1],
                             null,
                             allDownliners,
+                            selectedRegionId,
+                            selectedBranchId,
                             1,
                             pagination.limit,
                           );
@@ -745,48 +946,234 @@ export default function Receivables({
             </Col>
 
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="28%">
-                <CommonMultiSelectField
-                  height="34px"
-                  label="Select User"
-                  labelMarginTop="1px"
-                  labelFontSize="11px"
-                  width={"100%"}
-                  options={subUsers}
-                  onChange={handleSelectUser}
-                  value={selectedUserId}
-                />
-              </Col>
-            )}
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Chennai",
+                      },
+                      {
+                        id: 2,
+                        name: "Bangalore",
+                      },
+                      {
+                        id: 3,
+                        name: "Hub",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegionId(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getPendingFeesCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        defaultAllDownliners,
+                        value,
+                        null,
+                        1,
+                        pagination.limit,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setBranchOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegionId}
+                    disableClearable={false}
+                  />
+                </Col>
 
-            <Col flex="none">
-              <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  getPendingFeesCustomersData(
-                    dates[0],
-                    dates[1],
-                    searchValue,
-                    allDownliners,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              />
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={branchOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegionId, value);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getPendingFeesCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        defaultAllDownliners,
+                        selectedRegionId,
+                        value,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegionId == 3 ? true : false}
+                  />
+                </Col>
+
+                <Col flex="1 1 0%">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    width={"100%"}
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
+              </>
+            )}
+            <Col flex="1.5 1 0%">
+              <div style={{ position: "relative" }}>
+                <p className="accounts_datepicket_label">Nxt Due Date</p>
+                <CommonMuiCustomDatePicker
+                  width="100%"
+                  value={selectedDates}
+                  onDateChange={(dates) => {
+                    setSelectedDates(dates);
+                    setPagination({
+                      page: 1,
+                    });
+                    getPendingFeesCustomersData(
+                      dates[0],
+                      dates[1],
+                      searchValue,
+                      allDownliners,
+                      selectedRegionId,
+                      selectedBranchId,
+                      1,
+                      pagination.limit,
+                    );
+                  }}
+                />
+              </div>
             </Col>
           </Row>
         </Col>
         <Col
-          span={8}
+          span={permissions.includes("Lead Executive Filter") ? 2 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
             gap: "12px",
+          }}
+        >
+          {permissions.includes("Download Customers Data") && (
+            <Tooltip placement="top" title="Download">
+              <Button
+                className="dashboard_download_button"
+                onClick={handleDownload}
+                disabled={downloadLoading}
+              >
+                <DownloadOutlined className="download_icon" />
+              </Button>
+            </Tooltip>
+          )}
+          <FiFilter
+            size={20}
+            color="#5b69ca"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setIsOpenFilterDrawer(true);
+              //   getTableColumnsData(loginUserId);
+            }}
+          />
+        </Col>
+      </Row>{" "}
+      <Row style={{ marginTop: "20px" }}>
+        <Col span={12}>
+          {permissions.includes("Show Region Summary") && (
+            <div
+              className="livelead_today_summary_container"
+              style={{ marginTop: "0px" }}
+            >
+              <p className="livelead_today_label">Region Summary</p>
+
+              <div className="livelead_badge_item online">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.hub ?? "-"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.chennai ?? "-"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item corporate">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#607d8b" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.bangalore ?? "-"}
+                  </span>
+                </p>
+              </div>
+
+              {/* <div className="livelead_badge_item total">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Total{" "}
+              <span className="livelead_badge_count">
+                {allLeadsRegionCounts?.total || 0}
+              </span>
+            </p>
+          </div> */}
+            </div>
+          )}
+        </Col>
+        <Col
+          span={12}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
           }}
         >
           <div
@@ -800,76 +1187,8 @@ export default function Receivables({
               ₹{Number(overAllPendingAmount)?.toLocaleString("en-IN") || 0}
             </span>
           </div>
-
-          {/* <Tooltip placement="top" title="Download"></Tooltip> */}
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              setIsOpenFilterDrawer(true);
-              //   getTableColumnsData(loginUserId);
-            }}
-          />
         </Col>
-      </Row>{" "}
-      {permissions.includes("Show Region Summary") && (
-        <div className="livelead_today_summary_container">
-          <p className="livelead_today_label">Region Summary</p>
-
-          <div className="livelead_badge_item online">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#3c9111" }}
-            />
-            <p className="livelead_badge_text">
-              Hub{" "}
-              <span className="livelead_badge_count">
-                {regionCounts?.hub ?? "-"}
-              </span>
-            </p>
-          </div>
-
-          <div className="livelead_badge_item classroom">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#1e90ff" }}
-            />
-            <p className="livelead_badge_text">
-              Chennai{" "}
-              <span className="livelead_badge_count">
-                {regionCounts?.chennai ?? "-"}
-              </span>
-            </p>
-          </div>
-
-          <div className="livelead_badge_item corporate">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#607d8b" }}
-            />
-            <p className="livelead_badge_text">
-              Bangalore{" "}
-              <span className="livelead_badge_count">
-                {regionCounts?.bangalore ?? "-"}
-              </span>
-            </p>
-          </div>
-
-          {/* <div className="livelead_badge_item total">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#5b69ca" }}
-            />
-            <p className="livelead_badge_text">
-              Total{" "}
-              <span className="livelead_badge_count">
-                {allLeadsRegionCounts?.total || 0}
-              </span>
-            </p>
-          </div> */}
-        </div>
-      )}
+      </Row>
       <div style={{ marginTop: "20px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
@@ -915,6 +1234,8 @@ export default function Receivables({
                 selectedDates[1],
                 searchValue,
                 allDownliners,
+                selectedRegionId,
+                selectedBranchId,
                 pagination.page,
                 pagination.limit,
               );
