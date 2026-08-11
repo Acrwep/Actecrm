@@ -15,6 +15,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
+import { FaRegAddressCard } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
 import { GiReceiveMoney } from "react-icons/gi";
 import { FaRegCircleXmark } from "react-icons/fa6";
@@ -633,6 +634,25 @@ const InsertPendingFees = forwardRef(
                 <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
+                      <FaRegAddressCard size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Student Id</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.student_id
+                          ? customerDetails.student_id
+                          : "-"
+                      }
+                      smallText={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
                       <FaRegCircleUser size={15} color="gray" />
                       <p className="customerdetails_rowheading">Name</p>
                     </div>
@@ -735,11 +755,12 @@ const InsertPendingFees = forwardRef(
                     </p>
                   </Col>
                 </Row>
+              </Col>
 
-                <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <FaRegUser size={15} color="gray" />
                       <p className="customerdetails_rowheading">
                         Lead Executive
                       </p>
@@ -759,10 +780,8 @@ const InsertPendingFees = forwardRef(
                     </p>
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Course</p>
@@ -777,67 +796,6 @@ const InsertPendingFees = forwardRef(
                       }
                       smallText={true}
                     />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Course Fees
-                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {customerDetails && customerDetails.total_amount
-                        ? "₹" + customerDetails.total_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Balance Amount
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: 700 }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
-                        : "-"}
-                    </p>
                   </Col>
                 </Row>
 
@@ -885,15 +843,32 @@ const InsertPendingFees = forwardRef(
                     </p>
                   </Col>
                 </Row>
+
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">Server</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p className="customerdetails_text">
+                      {customerDetails &&
+                      customerDetails.is_server_required !== undefined
+                        ? customerDetails.is_server_required === 1
+                          ? "Required"
+                          : "Not Required"
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
               </Col>
             </Row>
-
             <Divider className="customer_statusupdate_divider" />
 
             <div style={{ padding: "0px 24px" }}>
               <div className="customerdetails_coursecard">
                 <div className="customerdetails_coursecard_headercontainer">
-                  <p>Tax Details</p>
+                  <p>Fees Details</p>
                 </div>
 
                 <div className="customerdetails_coursecard_contentcontainer">
@@ -902,9 +877,7 @@ const InsertPendingFees = forwardRef(
                       <Row>
                         <Col span={12}>
                           <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Course Fees
-                            </p>
+                            <p className="customerdetails_rowheading">Fees</p>
                           </div>
                         </Col>
                         <Col span={12}>
@@ -928,7 +901,10 @@ const InsertPendingFees = forwardRef(
                           </div>
                         </Col>
                         <Col span={12}>
-                          <p className="customerdetails_text">
+                          <p
+                            className="customerdetails_text"
+                            style={{ fontWeight: 700 }}
+                          >
                             {paymentDetails?.gst_amount ? (
                               <>
                                 ₹{paymentDetails.gst_amount}{" "}
@@ -942,10 +918,8 @@ const InsertPendingFees = forwardRef(
                           </p>
                         </Col>
                       </Row>
-                    </Col>
 
-                    <Col span={12}>
-                      <Row>
+                      <Row style={{ marginTop: "12px" }}>
                         <Col span={12}>
                           <div className="customerdetails_rowheadingContainer">
                             <p className="customerdetails_rowheading">
@@ -964,7 +938,10 @@ const InsertPendingFees = forwardRef(
                           </p>
                         </Col>
                       </Row>
-                      <Row style={{ marginTop: "12px" }}>
+                    </Col>
+
+                    <Col span={12}>
+                      <Row>
                         <Col span={12}>
                           <div className="customerdetails_rowheadingContainer">
                             <p className="customerdetails_rowheading">
@@ -984,6 +961,28 @@ const InsertPendingFees = forwardRef(
                             customerDetails.paid_amount !== undefined &&
                             customerDetails.paid_amount !== null
                               ? "₹" + customerDetails.paid_amount
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
+
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Balance Amount
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p
+                            className="customerdetails_text"
+                            style={{ color: "#d32f2f", fontWeight: 700 }}
+                          >
+                            {customerDetails &&
+                            customerDetails.balance_amount !== undefined &&
+                            customerDetails.balance_amount !== null
+                              ? "₹" + customerDetails.balance_amount
                               : "-"}
                           </p>
                         </Col>
@@ -1022,7 +1021,7 @@ const InsertPendingFees = forwardRef(
                             }}
                           >
                             <span>
-                              Transaction Date -{" "}
+                              Transaction Details -{" "}
                               <span style={{ fontWeight: "500" }}>
                                 {moment(item.invoice_date).format("DD/MM/YYYY")}
                               </span>
@@ -1060,69 +1059,103 @@ const InsertPendingFees = forwardRef(
                         }
                       >
                         <div style={{ padding: "0px 12px" }}>
-                          <Row
-                            gutter={16}
-                            style={{ marginTop: "6px", marginBottom: "8px" }}
-                          >
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Invoice Date
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {moment(item.invoice_date).format(
-                                      "DD/MM/YYYY",
-                                    )}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Invoice Number
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.invoice_number}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Payment Mode
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.payment_mode}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Payment Screenshot
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
+                          <table className="transaction-details-table">
+                            <tbody>
+                              <tr>
+                                <td>Paid Date (Invoice Date)</td>
+                                <td className="text-right">
+                                  {moment(item.invoice_date).format(
+                                    "DD/MM/YYYY",
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Transaction Mode</td>
+                                <td className="text-right">
+                                  {item.payment_mode}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Transaction To</td>
+                                <td className="text-right">
+                                  {item?.bank_name || "-"}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Fees</td>
+                                <td className="text-right">
+                                  {item.fees ? `₹${item?.fees}` : "-"}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>GST(18%)</td>
+                                <td className="text-right">
+                                  {item.gst_amount
+                                    ? `₹${item?.gst_amount}`
+                                    : "-"}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Total Fee Paid</td>
+                                <td className="text-right">
+                                  {item.amount ? `₹${item?.amount}` : "-"}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Convenience Fees</td>
+                                <td className="text-right">
+                                  {item.convenience_fees
+                                    ? `₹${item?.convenience_fees}`
+                                    : "-"}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold">Received Amount</td>
+                                <td className="text-right text-success font-bold">
+                                  {"₹" + item.paid_amount}
+                                </td>
+                              </tr>
+                              {isViewOnly &&
+                              item.payment_status == "Verified" ? (
+                                <tr>
+                                  <td>Invoice</td>
+                                  <td className="text-right">
+                                    <button
+                                      className="customer_history_viewproofbutton btn-icon text-primary"
+                                      onClick={() =>
+                                        handleViewIncoice(item?.id ?? "0")
+                                      }
+                                    >
+                                      <FaRegEye
+                                        size={14}
+                                        style={{
+                                          marginRight: "4px",
+                                          verticalAlign: "middle",
+                                        }}
+                                      />{" "}
+                                      <span style={{ verticalAlign: "middle" }}>
+                                        View Payment Invoice
+                                      </span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ) : (
+                                <tr>
+                                  <td>Nxt Due Date</td>
+                                  <td className="text-right">
+                                    {item.next_due_date
+                                      ? moment(item.next_due_date).format(
+                                          "DD/MM/YYYY",
+                                        )
+                                      : "-"}
+                                  </td>
+                                </tr>
+                              )}
+                              <tr>
+                                <td>Payment Screenshot</td>
+                                <td className="text-right">
                                   <button
-                                    className="pendingcustomer_paymentscreenshot_viewbutton"
+                                    className="pendingcustomer_paymentscreenshot_viewbutton btn-icon text-primary"
                                     onClick={() => {
                                       setIsOpenPaymentScreenshotModal(true);
                                       setTransactionScreenshot(
@@ -1130,111 +1163,21 @@ const InsertPendingFees = forwardRef(
                                       );
                                     }}
                                   >
-                                    <FaRegEye size={16} /> View screenshot
-                                  </button>
-                                </Col>
-                              </Row>
-                            </Col>
-
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Base Amount
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.amount}
-                                  </p>
-                                </Col>
-                              </Row>
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Convenience Fees
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.convenience_fees}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Paid Amount{" "}
-                                      <span className="customerdetails_coursegst">{` (Total)`}</span>
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p
-                                    className="customerdetails_text"
-                                    style={{
-                                      color: "#3c9111",
-                                      fontWeight: 700,
-                                    }}
-                                  >
-                                    {"₹" + item.paid_amount}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              {isViewOnly &&
-                              item.payment_status == "Verified" ? (
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Invoice
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <button
-                                      className="customer_history_viewproofbutton"
+                                    <FaRegEye
+                                      size={14}
                                       style={{
-                                        fontSize: "12px",
+                                        marginRight: "4px",
+                                        verticalAlign: "middle",
                                       }}
-                                      onClick={() => {
-                                        handleViewIncoice(item?.id ?? "0");
-                                      }}
-                                    >
-                                      <FaRegEye size={14} /> View Payment
-                                      Invoice
-                                    </button>
-                                  </Col>
-                                </Row>
-                              ) : (
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Nxt Due Date
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.next_due_date
-                                        ? moment(item.next_due_date).format(
-                                            "DD/MM/YYYY",
-                                          )
-                                        : "-"}{" "}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              )}
-                            </Col>
-                          </Row>
+                                    />{" "}
+                                    <span style={{ verticalAlign: "middle" }}>
+                                      View screenshot
+                                    </span>
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {item.payment_status == "Rejected" && (

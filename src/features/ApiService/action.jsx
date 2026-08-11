@@ -739,6 +739,15 @@ export const getLeadFollowUpsCountByUserIds = async (payload) => {
   }
 };
 
+export const getBanks = async (region_id) => {
+  try {
+    const response = await api.get(`/api/getBanks?region_id=${region_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const leadPayment = async (payload) => {
   try {
     const response = await api.post("/api/createPayment", payload);

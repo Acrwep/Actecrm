@@ -30,6 +30,7 @@ import { FaRegEye } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import PrismaZoom from "react-prismazoom";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import moment from "moment";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
@@ -683,7 +684,7 @@ const FinanceVerify = forwardRef(
               style={{ marginBottom: "16px" }}
             >
               <div className="customerdetails_coursecard_headercontainer">
-                <p>Payment Details</p>
+                <p>Fees Details</p>
               </div>
 
               <div className="customerdetails_coursecard_contentcontainer">
@@ -692,19 +693,21 @@ const FinanceVerify = forwardRef(
                     <Row>
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Course Fees
-                          </p>
+                          <p className="customerdetails_rowheading">Fees</p>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">
+                        <p
+                          className="customerdetails_text"
+                          style={{ fontWeight: 700 }}
+                        >
                           {customerDetails && customerDetails.primary_fees
                             ? "₹" + customerDetails.primary_fees
                             : "-"}
                         </p>
                       </Col>
                     </Row>
+
                     <Row style={{ marginTop: "12px" }}>
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
@@ -714,7 +717,10 @@ const FinanceVerify = forwardRef(
                         </div>
                       </Col>
                       <Col span={12}>
-                        <p className="customerdetails_text">
+                        <p
+                          className="customerdetails_text"
+                          style={{ fontWeight: 700 }}
+                        >
                           {paymentFullDetails?.gst_amount ? (
                             <>
                               ₹{paymentFullDetails.gst_amount}{" "}
@@ -728,10 +734,8 @@ const FinanceVerify = forwardRef(
                         </p>
                       </Col>
                     </Row>
-                  </Col>
 
-                  <Col span={12}>
-                    <Row>
+                    <Row style={{ marginTop: "12px" }}>
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
                           <p className="customerdetails_rowheading">
@@ -750,7 +754,10 @@ const FinanceVerify = forwardRef(
                         </p>
                       </Col>
                     </Row>
-                    <Row style={{ marginTop: "12px" }}>
+                  </Col>
+
+                  <Col span={12}>
+                    <Row>
                       <Col span={12}>
                         <div className="customerdetails_rowheadingContainer">
                           <p className="customerdetails_rowheading">
@@ -761,10 +768,37 @@ const FinanceVerify = forwardRef(
                       <Col span={12}>
                         <p
                           className="customerdetails_text"
-                          style={{ color: "#3c9111", fontWeight: 700 }}
+                          style={{
+                            fontWeight: 700,
+                            color: "#3c9111",
+                          }}
                         >
-                          {customerDetails && customerDetails.paid_amount
+                          {customerDetails &&
+                          customerDetails.paid_amount !== undefined &&
+                          customerDetails.paid_amount !== null
                             ? "₹" + customerDetails.paid_amount
+                            : "-"}
+                        </p>
+                      </Col>
+                    </Row>
+
+                    <Row style={{ marginTop: "12px" }}>
+                      <Col span={12}>
+                        <div className="customerdetails_rowheadingContainer">
+                          <p className="customerdetails_rowheading">
+                            Balance Amount
+                          </p>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <p
+                          className="customerdetails_text"
+                          style={{ color: "#d32f2f", fontWeight: 700 }}
+                        >
+                          {customerDetails &&
+                          customerDetails.balance_amount !== undefined &&
+                          customerDetails.balance_amount !== null
+                            ? "₹" + customerDetails.balance_amount
                             : "-"}
                         </p>
                       </Col>
@@ -774,7 +808,7 @@ const FinanceVerify = forwardRef(
               </div>
             </div>
 
-            <p style={{ fontWeight: 600, color: "#333", fontSize: "16px" }}>
+            <p style={{ fontWeight: 600, color: "#333", fontSize: "14px" }}>
               Transaction History
             </p>
 
@@ -800,46 +834,21 @@ const FinanceVerify = forwardRef(
                             }}
                           >
                             <span>
-                              Transaction Date -{" "}
+                              Transaction Details -{" "}
                               <span style={{ fontWeight: "500" }}>
                                 {moment(item.invoice_date).format("DD/MM/YYYY")}
                               </span>
                             </span>
 
                             {item.payment_status === "Verify Pending" ? (
-                              <div style={{ display: "flex", gap: "12px" }}>
-                                <Button
-                                  className="customer_finance_rejectbutton"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsShowFinanceRejectComment(true);
-                                    setFinanceRejectCommentError(
-                                      addressValidator(financeRejectComment),
-                                    );
-                                    setRejectTransItem(item);
-                                    setTimeout(() => {
-                                      const container = document.getElementById(
-                                        "customer_financereject_comment_container",
-                                      );
-                                      container.scrollIntoView({
-                                        behavior: "smooth",
-                                      });
-                                    }, 200);
-                                  }}
-                                >
-                                  Reject
-                                </Button>
-
-                                <Button
-                                  className="customer_finance_verifybutton"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsOpenFinanceVerifyModal(true);
-                                    setTransactionDetails(item);
-                                  }}
-                                >
-                                  Verify
-                                </Button>
+                              <div className="customer_trans_statustext_container">
+                                <PiClockCounterClockwiseBold
+                                  size={16}
+                                  color="gray"
+                                />
+                                <p style={{ color: "gray", fontWeight: 500 }}>
+                                  Waiting for Verify
+                                </p>
                               </div>
                             ) : item.payment_status === "Rejected" ? (
                               <div className="customer_trans_statustext_container">
@@ -864,164 +873,111 @@ const FinanceVerify = forwardRef(
                         }
                       >
                         <div>
-                          <Row
-                            gutter={16}
-                            style={{ marginTop: "6px", marginBottom: "8px" }}
-                          >
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Invoice Date
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
+                          <div style={{ padding: "0px 12px" }}>
+                            <table className="transaction-details-table">
+                              <tbody>
+                                <tr>
+                                  <td>Paid Date (Invoice Date)</td>
+                                  <td className="text-right">
                                     {moment(item.invoice_date).format(
                                       "DD/MM/YYYY",
                                     )}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Invoice Number
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.invoice_number}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Payment Mode
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Transaction Mode</td>
+                                  <td className="text-right">
                                     {item.payment_mode}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Payment Screenshot
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <button
-                                    className="pendingcustomer_paymentscreenshot_viewbutton"
-                                    onClick={() => {
-                                      setIsOpenPaymentScreenshotModal(true);
-                                      setTransactionScreenshot(
-                                        item.payment_screenshot,
-                                      );
-                                    }}
-                                  >
-                                    <FaRegEye size={16} /> View screenshot
-                                  </button>
-                                </Col>
-                              </Row>
-                            </Col>
-
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Base Amount
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.amount}
-                                  </p>
-                                </Col>
-                              </Row>
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Convenience Fees
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.convenience_fees}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Paid Amount
-                                      <span className="customerdetails_coursegst">{` (Total)`}</span>
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p
-                                    className="customerdetails_text"
-                                    style={{
-                                      color: "#3c9111",
-                                      fontWeight: 700,
-                                    }}
-                                  >
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Transaction To</td>
+                                  <td className="text-right">
+                                    {item?.bank_name || "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Fees</td>
+                                  <td className="text-right">
+                                    {item.fees ? `₹${item?.fees}` : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>GST(18%)</td>
+                                  <td className="text-right">
+                                    {item.gst_amount
+                                      ? `₹${item?.gst_amount}`
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Total Fee Paid</td>
+                                  <td className="text-right">
+                                    {item.amount ? `₹${item?.amount}` : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Convenience Fees</td>
+                                  <td className="text-right">
+                                    {item.convenience_fees
+                                      ? `₹${item?.convenience_fees}`
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="font-bold">Received Amount</td>
+                                  <td className="text-right text-success font-bold">
                                     {"₹" + item.paid_amount}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Nxt Due Date
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Nxt Due Date</td>
+                                  <td className="text-right">
                                     {item.next_due_date
                                       ? moment(item.next_due_date).format(
                                           "DD/MM/YYYY",
                                         )
-                                      : "-"}{" "}
-                                  </p>
-                                </Col>
-                              </Row>
-                            </Col>
-                          </Row>
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Payment Proof</td>
+                                  <td className="text-right">
+                                    <button
+                                      className="pendingcustomer_paymentscreenshot_viewbutton btn-icon text-primary"
+                                      onClick={() => {
+                                        setIsOpenPaymentScreenshotModal(true);
+                                        setTransactionScreenshot(
+                                          item.payment_screenshot,
+                                        );
+                                      }}
+                                    >
+                                      <FaRegEye
+                                        size={14}
+                                        style={{
+                                          marginRight: "4px",
+                                          verticalAlign: "middle",
+                                        }}
+                                      />{" "}
+                                      <span style={{ verticalAlign: "middle" }}>
+                                        View
+                                      </span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
 
                           {item.payment_status === "Verify Pending" &&
                           item.reason ? (
                             <>
                               <Divider className="customer_statusupdate_divider" />
-                              <div style={{ padding: "0px 12px 6px 0px" }}>
+                              <div style={{ padding: "0px 52px" }}>
                                 <Row>
                                   <Col span={24}>
                                     <Row>
-                                      <Col span={8}>
+                                      <Col span={9}>
                                         <div className="customerdetails_rowheadingContainer">
                                           <p
                                             className="customerdetails_rowheading"
@@ -1031,7 +987,7 @@ const FinanceVerify = forwardRef(
                                           </p>
                                         </div>
                                       </Col>
-                                      <Col span={16}>
+                                      <Col span={15}>
                                         <p className="customerdetails_text">
                                           {item.reason}
                                         </p>
@@ -1043,6 +999,46 @@ const FinanceVerify = forwardRef(
                             </>
                           ) : (
                             ""
+                          )}
+
+                          {item.payment_status === "Verify Pending" && (
+                            <div className="customer_finance_verify_buttons_container">
+                              <Button
+                                className="customer_finance_rejectbutton"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsShowFinanceRejectComment(true);
+                                  setFinanceRejectCommentError(
+                                    addressValidator(financeRejectComment),
+                                  );
+                                  setRejectTransItem(item);
+                                  setTimeout(() => {
+                                    const container = document.getElementById(
+                                      "customer_financereject_comment_container",
+                                    );
+
+                                    container.scrollIntoView({
+                                      behavior: "smooth",
+                                    });
+                                  }, 200);
+                                }}
+                              >
+                                Reject
+                              </Button>
+
+                              <Button
+                                className="customer_finance_verifybutton"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  setIsOpenFinanceVerifyModal(true);
+
+                                  setTransactionDetails(item);
+                                }}
+                              >
+                                Received
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </Collapse.Panel>

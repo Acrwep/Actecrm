@@ -3670,11 +3670,12 @@ export default function Customers() {
                     </p>
                   </Col>
                 </Row>
+              </Col>
 
-                <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <Row>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <FaRegUser size={15} color="gray" />
                       <p className="customerdetails_rowheading">
                         Lead Executive
                       </p>
@@ -3695,10 +3696,8 @@ export default function Customers() {
                     />
                   </Col>
                 </Row>
-              </Col>
 
-              <Col span={12}>
-                <Row>
+                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Course</p>
@@ -3713,67 +3712,6 @@ export default function Customers() {
                       }
                       smallText={true}
                     />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Course Fees</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {customerDetails && customerDetails.primary_fees
-                        ? "₹" + customerDetails.primary_fees
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Course Fees
-                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {customerDetails && customerDetails.total_amount
-                        ? "₹" + customerDetails.total_amount
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Balance Amount
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customerdetails_text"
-                      style={{ color: "#d32f2f", fontWeight: 700 }}
-                    >
-                      {customerDetails &&
-                      customerDetails.balance_amount !== undefined &&
-                      customerDetails.balance_amount !== null
-                        ? "₹" + customerDetails.balance_amount
-                        : "-"}
-                    </p>
                   </Col>
                 </Row>
 
