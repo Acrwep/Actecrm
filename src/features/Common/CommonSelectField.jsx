@@ -35,6 +35,7 @@ export default function CommonSelectField({
   onFocus,
   onBlur,
   errorLabel,
+  loading = false, // ✅ Add this
 }) {
   return (
     <div style={style}>
@@ -67,6 +68,7 @@ export default function CommonSelectField({
       >
         <Autocomplete
           options={options}
+          loading={loading}
           value={
             options.find(
               (opt) => String(opt.user_id ?? opt.id) === String(value),
@@ -95,6 +97,16 @@ export default function CommonSelectField({
               },
             })
           }
+          loadingText={
+            <span
+              style={{
+                fontSize: "13px",
+                color: "#888",
+              }}
+            >
+              Loading...
+            </span>
+          }
           disableClearable={disableClearable ?? true}
           getOptionDisabled={(option) =>
             option.is_active === false || option.is_active === 0
@@ -107,15 +119,27 @@ export default function CommonSelectField({
             },
           }}
           noOptionsText={
-            <span
-              style={{
-                fontSize: "13px",
-                color: "#888",
-                fontStyle: "Poppins, sans-serif",
-              }}
-            >
-              No data found
-            </span>
+            loading ? (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#888",
+                  fontFamily: "Poppins, sans-serif",
+                }}
+              >
+                Loading...
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "#888",
+                  fontFamily: "Poppins, sans-serif",
+                }}
+              >
+                No data found
+              </span>
+            )
           }
           renderInput={(params) => (
             <TextField

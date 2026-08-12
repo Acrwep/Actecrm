@@ -64,6 +64,7 @@ const FinanceVerify = forwardRef(
     const [paymentMode, setPaymentMode] = useState(null);
     const [paymentModeError, setPaymentModeError] = useState(null);
     const [convenienceFees, setConvenienceFees] = useState("");
+    const [bankLoading, setBankLoading] = useState(false);
     const [transactionToOptions, setTransactionToOptions] = useState([]);
     const [transactionTo, setTransactionTo] = useState(null);
     const [transactionToError, setTransactionToError] = useState(null);
@@ -262,6 +263,7 @@ const FinanceVerify = forwardRef(
     };
 
     const getBanksData = async (paymentmode_id) => {
+      setBankLoading(true);
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
       const user_id = converAsJson?.user_id;
@@ -274,6 +276,8 @@ const FinanceVerify = forwardRef(
       } catch (error) {
         setTransactionToOptions([]);
         console.log("get banks error", error);
+      } finally {
+        setBankLoading(false);
       }
     };
 
@@ -1504,10 +1508,10 @@ const FinanceVerify = forwardRef(
                     required={true}
                     options={[
                       { id: 1, name: "Cash" },
-                      { id: 11, name: "Card (POS)" },
+                      { id: 12, name: "Card (POS)" },
                       { id: 4, name: "UPI" },
                       { id: 5, name: "Razorpay" },
-                      { id: 12, name: "Bank" },
+                      { id: 13, name: "Bank" },
                     ]}
                     onChange={handlePaymentMode}
                     value={paymentMode}
@@ -1546,6 +1550,7 @@ const FinanceVerify = forwardRef(
                     }}
                     value={transactionTo}
                     error={transactionToError}
+                    loading={bankLoading}
                     height={"36px"}
                     labelFontSize={"11px"}
                     labelMarginTop={"1px"}

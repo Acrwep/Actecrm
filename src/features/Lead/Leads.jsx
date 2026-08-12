@@ -2357,7 +2357,7 @@ export default function Leads({
                                 selectedDates[1],
                                 allDownliners,
                                 leadSourceFilterId,
-                                leadSourceFilterId,
+                                leadSubSourceFilterId,
                                 leadStatusId,
                                 e.target.value,
                                 filterValuesFromRedux.bucket,

@@ -65,13 +65,14 @@ const InsertPendingFees = forwardRef(
     const [payAmountError, setPayAmountError] = useState("");
     const paymentModeOptions = [
       { id: 1, name: "Cash" },
-      { id: 11, name: "Card (POS)" },
+      { id: 12, name: "Card (POS)" },
       { id: 4, name: "UPI" },
       { id: 5, name: "Razorpay" },
-      { id: 12, name: "Bank" },
+      { id: 13, name: "Bank" },
     ];
     const [paymentMode, setPaymentMode] = useState("");
     const [paymentModeError, setPaymentModeError] = useState("");
+    const [bankLoading, setBankLoading] = useState(false);
     const [transactionToOptions, setTransactionToOptions] = useState([]);
     const [transactionTo, setTransactionTo] = useState(null);
     const [transactionToError, setTransactionToError] = useState(null);
@@ -223,6 +224,7 @@ const InsertPendingFees = forwardRef(
     };
 
     const getBanksData = async (paymentmode_id) => {
+      setBankLoading(true);
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
       const user_id = converAsJson?.user_id;
@@ -236,6 +238,8 @@ const InsertPendingFees = forwardRef(
       } catch (error) {
         setTransactionToOptions([]);
         console.log("get banks error", error);
+      } finally {
+        setBankLoading(false);
       }
     };
 
@@ -1494,6 +1498,7 @@ const InsertPendingFees = forwardRef(
                       }}
                       value={transactionTo}
                       error={transactionToError}
+                      loading={bankLoading}
                       height={"36px"}
                       labelFontSize={"11px"}
                       labelMarginTop={"1px"}
