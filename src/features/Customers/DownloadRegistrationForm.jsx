@@ -421,10 +421,26 @@ export default function DownloadRegistrationForm({ customerDetails }) {
         </div>
       </div>
 
+      <!--
       <div class="field-box">
         <p class="label">Area</p>
         <div class="field-value-box">
           <p class="field-value">${customerDetails?.current_location ?? "-"}</p>
+        </div>
+      </div>
+-->
+
+       <div class="field-box">
+        <p class="label">Full Address</p>
+        <div class="field-value-box">
+          <p class="field-value">${customerDetails?.address ?? "-"}</p>
+        </div>
+      </div>
+
+       <div class="field-box">
+        <p class="label">Postal/Zip Code</p>
+        <div class="field-value-box">
+          <p class="field-value">${customerDetails?.pin_code ?? "-"}</p>
         </div>
       </div>
 
@@ -513,7 +529,14 @@ export default function DownloadRegistrationForm({ customerDetails }) {
 
   if (fetchLoading) {
     return (
-      <div style={{ padding: "30px", backgroundColor: "#ffffff", minHeight: "820px", width: "100%" }}>
+      <div
+        style={{
+          padding: "30px",
+          backgroundColor: "#ffffff",
+          minHeight: "820px",
+          width: "100%",
+        }}
+      >
         <Skeleton active paragraph={{ rows: 15 }} />
       </div>
     );

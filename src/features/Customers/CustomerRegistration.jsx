@@ -137,6 +137,10 @@ export default function CustomerRegistration() {
   const [stateId, setStateId] = useState(null);
   const [areaOptions, setAreaOptions] = useState([]);
   const [areaId, setAreaId] = useState(null);
+  const [address, setAddress] = useState("");
+  const [addressError, setAddressError] = useState("");
+  const [pinCode, setPinCode] = useState("");
+  const [pinCodeError, setPinCodeError] = useState("");
   const [location, setLocation] = useState("");
   const [locationError, setLocationError] = useState("");
 
@@ -438,6 +442,8 @@ export default function CustomerRegistration() {
     const whatsAppValidate = mobileValidator(whatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
+    const addressValidate = selectValidator(address);
+    const pinCodeValidate = selectValidator(pinCode);
     const courseValidate = selectValidator(course);
     const batchTrackValidate = selectValidator(batchTrack);
     const batchTimingValidate = selectValidator(batchTiming);
@@ -473,6 +479,8 @@ export default function CustomerRegistration() {
     setWhatsAppError(whatsAppValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
+    setAddressError(addressValidate);
+    setPinCodeError(pinCodeValidate);
     setCourseError(courseValidate);
     setBatchTrackError(batchTrackValidate);
     setBatchTimingError(batchTimingValidate);
@@ -486,13 +494,9 @@ export default function CustomerRegistration() {
       mobileValidate ||
       whatsAppValidate ||
       dateOfBirthValidate ||
-      genderValidate
-    ) {
-      setActiveKey("1");
-      return;
-    }
-
-    if (
+      genderValidate ||
+      addressValidate ||
+      pinCodeValidate ||
       courseValidate ||
       batchTrackValidate ||
       batchTimingValidate ||
@@ -511,7 +515,7 @@ export default function CustomerRegistration() {
       id: customer_id,
       name: name,
       email: email,
-      phonecode: "+91",
+      phonecode: mobileCountryCode,
       phone: mobile,
       whatsapp: whatsApp,
       date_of_birth: formatToBackendIST(dateOfBirth),
@@ -547,10 +551,7 @@ export default function CustomerRegistration() {
         customerFullDetails && customerFullDetails.place_of_branch
           ? customerFullDetails.place_of_branch
           : null,
-      address:
-        customerFullDetails && customerFullDetails.address
-          ? customerFullDetails.address
-          : null,
+      address: address,
       state_code: "",
       gst_number:
         customerFullDetails && customerFullDetails.gst_number
@@ -1013,12 +1014,38 @@ export default function CustomerRegistration() {
                         lg={6}
                         style={{ marginTop: "30px" }}
                       >
-                        <CommonSelectField
-                          label="Area"
-                          required={true}
-                          options={areaOptions}
-                          value={areaId}
-                          disabled={true}
+                        <CommonInputField
+                          label={"Full Address"}
+                          onChange={(e) => {
+                            setAddress(e.target.value);
+                            if (validationTrigger) {
+                              setAddressError(addressValidator(e.target.value));
+                            }
+                          }}
+                          value={address}
+                          error={addressError}
+                          multiline={true}
+                        />
+                      </Col>
+
+                      <Col
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={6}
+                        style={{ marginTop: "30px" }}
+                      >
+                        <CommonInputField
+                          label={"Postal/Zip Code"}
+                          onChange={(e) => {
+                            setPinCode(e.target.value);
+                            if (validationTrigger) {
+                              setPinCodeError(selectValidator(e.target.value));
+                            }
+                          }}
+                          value={pinCode}
+                          error={pinCodeError}
+                          type={"number"}
                         />
                       </Col>
                     </Row>

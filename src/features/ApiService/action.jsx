@@ -739,9 +739,11 @@ export const getLeadFollowUpsCountByUserIds = async (payload) => {
   }
 };
 
-export const getBanks = async (region_id) => {
+export const getBanks = async (region_id, payment_mode) => {
   try {
-    const response = await api.get(`/api/getBanks?region_id=${region_id}`);
+    const response = await api.get(
+      `/api/getBanks?region_id=${region_id}&payment_mode=${payment_mode}`,
+    );
     return response;
   } catch (error) {
     throw error;

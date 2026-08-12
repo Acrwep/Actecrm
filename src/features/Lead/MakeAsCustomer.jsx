@@ -4,7 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
-import { Row, Col, Switch, Divider } from "antd";
+import { Row, Col, Switch, Divider, Checkbox } from "antd";
 import { Country, State } from "country-state-city";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
@@ -19,6 +19,7 @@ import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import {
+  getBanks,
   leadPayment,
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
@@ -30,6 +31,7 @@ import {
   formatToBackendIST,
   getBalanceAmount,
   getConvenienceFees,
+  mobileValidator,
   priceValidator,
   selectValidator,
 } from "../Common/Validation";
@@ -49,9 +51,6 @@ const MakeAsCustomer = forwardRef(
   ) => {
     const courseOptions = useSelector((state) => state.courselist);
 
-    const [customerJoiningDate, setCustomerJoiningDate] = useState(null);
-    const [customerJoiningDateError, setCustomerJoiningDateError] =
-      useState(null);
     const [selectedRA, setSelectedRA] = useState(null);
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
@@ -61,8 +60,18 @@ const MakeAsCustomer = forwardRef(
     const [placeOfServiceError, setPlaceOfServiceError] = useState("");
     const [placeOfBranch, setPlaceOfBranch] = useState("");
     const [placeOfBranchError, setPlaceOfBranchError] = useState("");
+    const paymentModeOptions = [
+      { id: 1, name: "Cash" },
+      { id: 11, name: "Card (POS)" },
+      { id: 4, name: "UPI" },
+      { id: 5, name: "Razorpay" },
+      { id: 12, name: "Bank" },
+    ];
     const [paymentMode, setPaymentMode] = useState(null);
     const [paymentModeError, setPaymentModeError] = useState(null);
+    const [transactionToOptions, setTransactionToOptions] = useState([]);
+    const [transactionTo, setTransactionTo] = useState(null);
+    const [transactionToError, setTransactionToError] = useState(null);
     const [subTotal, setSubTotal] = useState();
     const [convenienceFees, setConvenienceFees] = useState("");
     const [taxType, setTaxType] = useState("");
@@ -111,14 +120,23 @@ const MakeAsCustomer = forwardRef(
     const [customerBatchTimingId, setCustomerBatchTimingId] = useState(null);
     const [customerBatchTimingIdError, setCustomerBatchTimingIdError] =
       useState("");
-    const [currentLocation, setCurrentLocation] = useState("");
-    const [currentLocationError, setCurrentLocationError] = useState("");
-    const [customerAddress, setCustomerAddress] = useState("");
-    const [customerAddressError, setCustomerAddressError] = useState("");
-    const [gstNumber, setGstNumber] = useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
     const [placementSupportError, setPlacementSupportError] = useState("");
     const [serverRequired, setServerRequired] = useState(false);
+    //gst invoice details
+    const [isGstInvoice, setIsGstInvoice] = useState(false);
+    const [contactPerson, setContactPerson] = useState("");
+    const [contactPersonError, setContactPersonError] = useState("");
+    const [companyName, setCompanyName] = useState("");
+    const [companyNameError, setCompanyNameError] = useState("");
+    const [contactNumber, setContactNumber] = useState("");
+    const [contactNumberError, setContactNumberError] = useState("");
+    const [gstNumber, setGstNumber] = useState("");
+    const [gstNumberError, setGstNumberError] = useState("");
+    const [gstLocation, setGstLocation] = useState("");
+    const [gstLocationError, setGstLocationError] = useState("");
+    const [gstAddress, setGstAddress] = useState("");
+    const [gstAddressError, setGstAddressError] = useState("");
 
     useEffect(() => {
       console.log("allBranchesData", allBranchesData);
@@ -179,7 +197,20 @@ const MakeAsCustomer = forwardRef(
       const value = parseFloat(input); // parse for calculations
       const amt = parseFloat(amount);
 
-      if (value < amt || isNaN(value) || input == "" || input == null) {
+      const selectedBank = transactionToOptions.find(
+        (item) => item.id == transactionTo,
+      );
+      let conve_fees = 0;
+      if (selectedBank && selectedBank.is_convenience) {
+        conve_fees = ((isNaN(value) ? 0 : value) * 3) / 100;
+        setConvenienceFees(conve_fees.toFixed(2));
+      } else {
+        setConvenienceFees(0);
+      }
+
+      const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
+
+      if (actualPaid < amt || isNaN(value) || input == "" || input == null) {
         setIsShowDueDate(true);
       } else {
         setIsShowDueDate(false);
@@ -187,16 +218,7 @@ const MakeAsCustomer = forwardRef(
         setDueDateError("");
       }
 
-      setBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
-      );
-
-      if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
-        const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
-      }
+      setBalanceAmount(getBalanceAmount(isNaN(amt) ? 0 : amt, actualPaid));
 
       if (paymentValidationTrigger) {
         setPaidNowError(
@@ -212,7 +234,7 @@ const MakeAsCustomer = forwardRef(
       }
       const amnt = calculateAmount(
         parseFloat(subTotal),
-        e.target.value == 5 ? 0 : 18,
+        e.target.value === "0%" ? 0 : 18,
       );
       if (isNaN(amnt)) {
         setAmount("");
@@ -220,9 +242,12 @@ const MakeAsCustomer = forwardRef(
         setAmount(parseFloat(amnt));
       }
 
+      const conve_fees = parseFloat(convenienceFees) || 0;
+      const actualPaid = (parseFloat(paidNow) || 0) - conve_fees;
+
       //handle balance amount
       if (
-        paidNow < amnt ||
+        actualPaid < amnt ||
         isNaN(paidNow) ||
         paidNow == "" ||
         paidNow == null
@@ -233,17 +258,17 @@ const MakeAsCustomer = forwardRef(
         setDueDate(null);
         setDueDateError("");
       }
-      setBalanceAmount(
-        getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
-      );
+      setBalanceAmount(getBalanceAmount(isNaN(amnt) ? 0 : amnt, actualPaid));
     };
 
-    const handlePaymentMode = (value) => {
+    const handlePaymentMode = (e) => {
+      const value = e.target.value;
       setPaymentMode(value);
       console.log("taxType", taxType);
+      getBanksData(value);
       const amnt = calculateAmount(
         parseFloat(subTotal),
-        taxType == 5 || taxType == "" || taxType == null ? 0 : 18,
+        taxType === "0%" || taxType === "" || taxType === null ? 0 : 18,
       );
       setAmount(amnt);
 
@@ -251,9 +276,11 @@ const MakeAsCustomer = forwardRef(
         setPaymentModeError(selectValidator(value));
       }
 
+      const actualPaid = parseFloat(paidNow) || 0;
+
       //handle balance amount
       if (
-        paidNow < amnt ||
+        actualPaid < amnt ||
         isNaN(paidNow) ||
         paidNow === "" ||
         paidNow === null
@@ -264,16 +291,27 @@ const MakeAsCustomer = forwardRef(
         setDueDate(null);
         setDueDateError("");
       }
-      setBalanceAmount(
-        getBalanceAmount(isNaN(amnt) ? 0 : amnt, isNaN(paidNow) ? 0 : paidNow),
-      );
+      setBalanceAmount(getBalanceAmount(isNaN(amnt) ? 0 : amnt, actualPaid));
 
-      //handle convenience fees
-      if (value == 2 || value == 5 || value == 10) {
-        const conve_fees = getConvenienceFees(paidNow ? paidNow : 0);
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
+      // Reset transaction to and convenience fees
+      setTransactionTo(null);
+      setConvenienceFees(0);
+    };
+
+    const getBanksData = async (paymentmode_id) => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+      const user_id = converAsJson?.user_id;
+      const regionId =
+        user_id?.startsWith("HUB") || user_id?.startsWith("CHN") ? 2 : 3;
+
+      try {
+        const response = await getBanks(regionId, paymentmode_id);
+        console.log("get banks response", response);
+        setTransactionToOptions(response?.data?.data || []);
+      } catch (error) {
+        setTransactionToOptions([]);
+        console.log("get banks error", error);
       }
     };
 
@@ -286,15 +324,29 @@ const MakeAsCustomer = forwardRef(
       const taxTypeValidate = selectValidator(taxType);
       const paymentTypeValidate = selectValidator(paymentMode);
       const paymentDateValidate = selectValidator(paymentDate);
-      const customerJoiningDateValidate = selectValidator(customerJoiningDate);
       const placeOfPaymentValidate = selectValidator(placeOfPayment);
       const placeOfServiceValidate = selectValidator(placeOfService);
       const placeOfBranchValidate =
         placeOfService == 10 ? "" : selectValidator(placeOfBranch);
       const batchTimingValidate = selectValidator(customerBatchTimingId);
-      const currentLocationValidate = addressValidator(currentLocation);
-      const customerAddressValidate = addressValidator(customerAddress);
       const placementSupportValidate = selectValidator(placementSupport);
+      //gst invoice
+      const contactPersonValidate = isGstInvoice
+        ? addressValidator(contactPerson)
+        : "";
+      const companyNameValidate = isGstInvoice
+        ? addressValidator(companyName)
+        : "";
+      const contactNumberValidate = isGstInvoice
+        ? addressValidator(contactPerson)
+        : "";
+      const gstNumberValidate = isGstInvoice ? addressValidator(gstNumber) : "";
+      const gstLocationValidate = isGstInvoice
+        ? addressValidator(gstLocation)
+        : "";
+      const gstAddressValidate = isGstInvoice
+        ? addressValidator(gstAddress)
+        : "";
 
       console.log("eeeee", paidNow, amount);
       const paidNowValidate = priceValidator(
@@ -315,16 +367,19 @@ const MakeAsCustomer = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPaidNowError(paidNowValidate);
       setPaymentDateError(paymentDateValidate);
-      setCustomerJoiningDateError(customerJoiningDateValidate);
       setPlaceOfPaymentError(placeOfPaymentValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
       setPlaceOfBranchError(placeOfBranchValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
       setCustomerBatchTimingIdError(batchTimingValidate);
-      setCurrentLocationError(currentLocationValidate);
-      setCustomerAddressError(customerAddressValidate);
       setPlacementSupportError(placementSupportValidate);
+      setContactPersonError(contactPersonValidate);
+      setCompanyNameError(companyNameValidate);
+      setContactNumberError(contactNumberValidate);
+      setGstNumberError(gstNumberValidate);
+      setGstLocationError(gstLocationValidate);
+      setGstAddressError(gstAddressValidate);
 
       if (
         paymentTypeValidate ||
@@ -355,16 +410,19 @@ const MakeAsCustomer = forwardRef(
         paidNowValidate ||
         taxTypeValidate ||
         paymentDateValidate ||
-        customerJoiningDateValidate ||
         placeOfPaymentValidate ||
         placeOfServiceValidate ||
         placeOfBranchValidate ||
         screenshotValidate ||
         dueDateValidate ||
         batchTimingValidate ||
-        currentLocationValidate ||
-        customerAddressValidate ||
-        placementSupportValidate
+        placementSupportValidate ||
+        contactPersonValidate ||
+        companyNameValidate ||
+        contactNumberValidate ||
+        gstNumberValidate ||
+        gstLocationValidate ||
+        gstAddressValidate
       )
         return;
 
@@ -383,26 +441,18 @@ const MakeAsCustomer = forwardRef(
       const payload = {
         lead_id: clickedLeadItem.id,
         invoice_date: formatToBackendIST(paymentDate),
-        tax_type:
-          taxType == 1
-            ? "GST (18%)"
-            : taxType == 2
-              ? "SGST (18%)"
-              : taxType == 3
-                ? "IGST (18%)"
-                : taxType == 4
-                  ? "VAT (18%)"
-                  : "No Tax",
-        gst_percentage: taxType == 5 ? "0%" : "18%",
+        tax_type: taxType === "18%" ? "GST (18%)" : "No Tax",
+        gst_percentage: taxType === "0%" ? "0%" : "18%",
         gst_amount: parseFloat(gstAmount).toFixed(2),
         total_amount: amount,
         convenience_fees: convenienceFees,
         paymode_id: paymentMode,
+        bank_id: transactionTo,
         paid_amount: paidNow,
         payment_screenshot: paymentScreenShotBase64,
         payment_status: "Verify Pending",
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
-        date_of_joining: formatToBackendIST(customerJoiningDate),
+        date_of_joining: formatToBackendIST(paymentDate),
         ra_id: selectedRA,
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
@@ -412,10 +462,14 @@ const MakeAsCustomer = forwardRef(
         enrolled_course: customerCourseId,
         batch_track_id: customerBatchTrackId,
         batch_timing_id: customerBatchTimingId,
-        place_of_supply: currentLocation,
-        address: customerAddress,
+        place_of_supply: "",
         state_code: "",
-        gst_number: gstNumber,
+        contact_person: isGstInvoice ? contactPerson : "",
+        gst_number: isGstInvoice ? gstNumber : "",
+        company_name: isGstInvoice ? companyName : "",
+        contact_number: isGstInvoice ? contactNumber : "",
+        location: isGstInvoice ? gstLocation : "",
+        gst_address: isGstInvoice ? gstAddress : "",
         placement_support: placementSupport,
         is_server_required: serverRequired,
         updated_by:
@@ -728,7 +782,7 @@ const MakeAsCustomer = forwardRef(
             className="leadmanager_paymentdetails_drawer_heading"
             id="leadmanager_paymentdetails_heading"
           >
-            Payment Details
+            Fees Details
           </p>
           <Row
             gutter={16}
@@ -737,7 +791,7 @@ const MakeAsCustomer = forwardRef(
           >
             <Col span={8}>
               <CommonInputField
-                label="Fees"
+                label="Course Fees"
                 required={true}
                 type="number"
                 value={subTotal}
@@ -753,12 +807,16 @@ const MakeAsCustomer = forwardRef(
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
                 required={true}
+                // options={[
+                //   { id: 1, name: "GST (18%)" },
+                //   { id: 2, name: "SGST (18%)" },
+                //   { id: 3, name: "IGST (18%)" },
+                //   { id: 4, name: "VAT (18%)" },
+                //   { id: 5, name: "No Tax" },
+                // ]}
                 options={[
-                  { id: 1, name: "GST (18%)" },
-                  { id: 2, name: "SGST (18%)" },
-                  { id: 3, name: "IGST (18%)" },
-                  { id: 4, name: "VAT (18%)" },
-                  { id: 5, name: "No Tax" },
+                  { id: "18%", name: "18%" },
+                  { id: "0%", name: "0%" },
                 ]}
                 onChange={handleTaxType}
                 value={taxType}
@@ -769,8 +827,46 @@ const MakeAsCustomer = forwardRef(
               />
             </Col>
             <Col span={8}>
-              <CommonInputField
+              {/* <CommonInputField
                 label="Total Amount"
+                required={true}
+                disabled
+                value={amount}
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+              /> */}
+              <CommonInputField
+                label="Tax Amount"
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                required={true}
+                value={amount && subTotal ? (amount - subTotal).toFixed(2) : 0}
+                error={""}
+                height={"36px"}
+                fontSize={"12px"}
+                errorFontSize={"9px"}
+                disabled={true}
+              />
+            </Col>
+          </Row>
+
+          <Divider className="leadmanger_paymentdrawer_divider" />
+          <p
+            className="leadmanager_paymentdetails_drawer_heading"
+            id="leadmanager_paymentdetails_paymentinfo_heading"
+          >
+            Calculation's
+          </p>
+
+          <Row
+            gutter={[16, 22]}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+            style={{ marginTop: "20px", marginBottom: "30px" }}
+          >
+            <Col span={8}>
+              <CommonInputField
+                label="Total Fees Amount"
                 required={true}
                 disabled
                 value={amount}
@@ -779,44 +875,68 @@ const MakeAsCustomer = forwardRef(
                 labelMarginTop={"1px"}
               />
             </Col>
-          </Row>
-
-          <Divider className="leadmanger_paymentdrawer_divider" />
-
-          <p
-            className="leadmanager_paymentdetails_drawer_heading"
-            id="leadmanager_paymentdetails_paymentinfo_heading"
-          >
-            Payment Info
-          </p>
-
-          <Row
-            gutter={16}
-            className="leadmanager_paymentdetails_drawer_rowdiv"
-            style={{ marginTop: "20px" }}
-          >
             <Col span={8}>
               <CommonInputField
-                label="Pay Amount"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
+                label="Total Paid Amount"
                 required={true}
-                onChange={handlePaidNow}
-                value={paidNow}
-                error={paidNowError}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonGroupedSelectField
-                label="Payment Mode"
-                onChange={handlePaymentMode}
-                value={paymentMode}
-                error={paymentModeError}
+                disabled
+                value={paidNow || 0}
                 height={"36px"}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
-                errorFontSize="9px"
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Total Pending"
+                required={true}
+                disabled
+                value={balanceAmount !== undefined ? balanceAmount : 0}
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Fees"
+                required={true}
+                disabled
+                value={
+                  taxType === "18%"
+                    ? (
+                        (parseFloat(paidNow || 0) -
+                          parseFloat(convenienceFees || 0)) /
+                        1.18
+                      ).toFixed(2)
+                    : (
+                        parseFloat(paidNow || 0) -
+                        parseFloat(convenienceFees || 0)
+                      ).toFixed(2)
+                }
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="TAX"
+                required={true}
+                disabled
+                value={
+                  taxType === "18%"
+                    ? (
+                        ((parseFloat(paidNow || 0) -
+                          parseFloat(convenienceFees || 0)) *
+                          18) /
+                        118
+                      ).toFixed(2)
+                    : 0
+                }
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
               />
             </Col>
             <Col span={8}>
@@ -828,6 +948,106 @@ const MakeAsCustomer = forwardRef(
                 type="number"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
+              />
+            </Col>
+          </Row>
+          <Divider className="leadmanger_paymentdrawer_divider" />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              className="leadmanager_paymentdetails_drawer_heading"
+              id="leadmanager_paymentdetails_paymentinfo_heading"
+              style={{ marginBottom: 0 }}
+            >
+              Transaction Details
+            </p>
+            <Checkbox
+              checked={isGstInvoice}
+              onChange={(e) => setIsGstInvoice(e.target.checked)}
+              style={{ fontSize: "12px" }}
+            >
+              GST Invoice
+            </Checkbox>
+          </div>
+
+          <Row
+            gutter={16}
+            className="leadmanager_paymentdetails_drawer_rowdiv"
+            style={{ marginTop: "20px" }}
+          >
+            <Col span={8}>
+              <CommonSelectField
+                label="Payment Mode"
+                required={true}
+                options={paymentModeOptions}
+                onChange={handlePaymentMode}
+                value={paymentMode}
+                error={paymentModeError}
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                errorFontSize="9px"
+              />
+            </Col>
+            <Col span={8}>
+              {/* <CommonInputField
+                label="Convenience fees"
+                required={true}
+                value={convenienceFees}
+                disabled={true}
+                type="number"
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+              /> */}
+              <CommonSelectField
+                label={"Transaction To"}
+                required={true}
+                options={transactionToOptions?.map((item) => ({
+                  id: item.id,
+                  name: item.bank_name,
+                }))}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  setTransactionTo(selectedId);
+
+                  // Null the received amount
+                  setPaidNow("");
+                  setConvenienceFees(0);
+
+                  const amt = parseFloat(amount) || 0;
+                  const actualPaid = 0;
+
+                  setIsShowDueDate(true);
+
+                  setBalanceAmount(getBalanceAmount(amt, actualPaid));
+
+                  if (paymentValidationTrigger) {
+                    setTransactionToError(selectValidator(selectedId));
+                  }
+                }}
+                value={transactionTo}
+                height={"36px"}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                errorFontSize="9px"
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Received"
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                required={true}
+                onChange={handlePaidNow}
+                value={paidNow}
+                error={paidNowError}
+                errorFontSize="9px"
               />
             </Col>
           </Row>
@@ -854,7 +1074,7 @@ const MakeAsCustomer = forwardRef(
                 errorFontSize={"9px"}
               />
             </Col>
-            <Col span={8}>
+            {/* <Col span={8}>
               <CommonSelectField
                 label="Place of Payment"
                 required={true}
@@ -876,10 +1096,32 @@ const MakeAsCustomer = forwardRef(
                 labelMarginTop={"1px"}
                 errorFontSize={"9px"}
               />
-            </Col>
+            </Col> */}
+
+            {isShowDueDate ? (
+              <Col span={8}>
+                <CommonMuiDatePicker
+                  label="Next Due Date"
+                  required={true}
+                  onChange={(value) => {
+                    setDueDate(value);
+                    setDueDateError(selectValidator(value));
+                  }}
+                  value={dueDate}
+                  error={dueDateError}
+                  disablePreviousDates={true}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                  errorFontSize={"9px"}
+                />
+              </Col>
+            ) : (
+              ""
+            )}
+
             <Col span={8}>
               <ImageUploadCrop
-                label="Payment Screenshot"
+                label="Proof Upload"
                 aspect={1}
                 maxSizeMB={1}
                 required={true}
@@ -894,7 +1136,7 @@ const MakeAsCustomer = forwardRef(
               )}
             </Col>
           </Row>
-
+          {/* 
           <Divider className="leadmanger_paymentdrawer_divider" />
 
           <p className="leadmanager_paymentdetails_drawer_heading">
@@ -918,32 +1160,129 @@ const MakeAsCustomer = forwardRef(
                 errorFontSize={"9px"}
               />
             </Col>
-            {isShowDueDate ? (
-              <Col span={8}>
-                <CommonMuiDatePicker
-                  label="Next Due Date"
-                  required={true}
-                  onChange={(value) => {
-                    setDueDate(value);
-                    setDueDateError(selectValidator(value));
-                  }}
-                  value={dueDate}
-                  error={dueDateError}
-                  disablePreviousDates={true}
-                  labelFontSize={"11px"}
-                  labelMarginTop={"1px"}
-                  errorFontSize={"9px"}
-                />
-              </Col>
-            ) : (
-              ""
-            )}
-          </Row>
+          </Row> */}
+          {isGstInvoice && (
+            <>
+              <Divider className="leadmanger_paymentdrawer_divider" />
+              <p className="leadmanager_paymentdetails_drawer_heading">
+                GST Invoice Details
+              </p>
+
+              <Row
+                gutter={[16, 30]}
+                style={{ marginTop: "20px" }}
+                className="leadmanager_paymentdetails_drawer_rowdiv"
+              >
+                <Col span={8}>
+                  <CommonInputField
+                    label={"Contact Person"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setContactPerson(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setContactPersonError(addressValidator(e.target.value));
+                      }
+                    }}
+                    value={contactPerson}
+                    error={contactPersonError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label={"Company Name"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setCompanyName(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setCompanyNameError(addressValidator(e.target.value));
+                      }
+                    }}
+                    value={companyName}
+                    error={companyNameError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label={"Contact Number"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setContactNumber(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setContactNumberError(mobileValidator(e.target.value));
+                      }
+                    }}
+                    value={contactNumber}
+                    error={contactNumberError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label={"GST Number"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setGstNumber(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setGstNumberError(addressValidator(e.target.value));
+                      }
+                    }}
+                    value={gstNumber}
+                    error={gstNumberError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label={"Loaction"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setGstLocation(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setGstLocationError(addressValidator(e.target.value));
+                      }
+                    }}
+                    value={gstLocation}
+                    error={gstLocationError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonInputField
+                    label={"Address"}
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setGstAddress(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setGstAddressError(addressValidator(e.target.value));
+                      }
+                    }}
+                    value={gstAddress}
+                    error={gstAddressError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+              </Row>
+            </>
+          )}
 
           <Divider className="leadmanger_paymentdrawer_divider" />
 
           <p className="leadmanager_paymentdetails_drawer_heading">
-            Add Customer Details
+            Customer Details
           </p>
 
           <Row
@@ -952,29 +1291,9 @@ const MakeAsCustomer = forwardRef(
             className="leadmanager_paymentdetails_drawer_rowdiv"
           >
             <Col span={8}>
-              <CommonMuiDatePicker
-                label="Customer Joining Date"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={true}
-                onChange={(value) => {
-                  console.log("vallll", value);
-                  setCustomerJoiningDate(value);
-                  if (paymentValidationTrigger) {
-                    setCustomerJoiningDateError(selectValidator(value));
-                  }
-                }}
-                value={customerJoiningDate}
-                error={customerJoiningDateError}
-                errorFontSize={"9px"}
-                disablePreviousDates={false}
-              />
-            </Col>
-
-            <Col span={8}>
               <CommonSelectField
                 width="100%"
-                label="Place Of Service"
+                label="Mode of Class"
                 labelMarginTop={"1px"}
                 labelFontSize={"11px"}
                 options={[
@@ -1003,7 +1322,7 @@ const MakeAsCustomer = forwardRef(
             <Col span={8}>
               <CommonSelectField
                 width="100%"
-                label="Place Of Branch"
+                label="Place Of Service"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
                 options={allBranchesData}
@@ -1046,17 +1365,6 @@ const MakeAsCustomer = forwardRef(
             </Col>
             <Col span={8}>
               <CommonSelectField
-                label="Batch Track"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={true}
-                options={batchTrackOptions}
-                value={customerBatchTrackId}
-                disabled={true}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
                 label="Batch Type"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
@@ -1073,58 +1381,6 @@ const MakeAsCustomer = forwardRef(
                 value={customerBatchTimingId}
                 error={customerBatchTimingIdError}
                 errorFontSize={"9px"}
-              />
-            </Col>
-
-            <Col span={8}>
-              <CommonInputField
-                label="Customer Current State"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={true}
-                onChange={(e) => {
-                  setCurrentLocation(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setCurrentLocationError(addressValidator(e.target.value));
-                  }
-                }}
-                value={currentLocation}
-                error={currentLocationError}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Address"
-                labelFontSize={"11px"}
-                labelMarginTop={"1.5px"}
-                required={true}
-                multiline={true}
-                // rows={1}
-                onChange={(e) => {
-                  const formatted = e.target.value;
-                  setCustomerAddress(formatted);
-
-                  if (paymentValidationTrigger) {
-                    setCustomerAddressError(addressValidator(formatted));
-                  }
-                }}
-                value={customerAddress}
-                error={customerAddressError}
-                errorFontSize={"9px"}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="GST No"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={false}
-                onChange={(e) => {
-                  const value = e.target.value.toUpperCase();
-                  setGstNumber(value);
-                }}
-                value={gstNumber}
               />
             </Col>
 
