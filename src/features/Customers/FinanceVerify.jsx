@@ -16,6 +16,7 @@ import {
   updateCustomerPaymentTransaction,
   updateCustomerStatus,
   verifyCustomerPayment,
+  getBanks,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -60,11 +61,12 @@ const FinanceVerify = forwardRef(
     const [pendingAmount, setPendingAmount] = useState();
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
-    const [placeOfPayment, setPlaceOfPayment] = useState(null);
-    const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
     const [paymentMode, setPaymentMode] = useState(null);
     const [paymentModeError, setPaymentModeError] = useState(null);
     const [convenienceFees, setConvenienceFees] = useState("");
+    const [transactionToOptions, setTransactionToOptions] = useState([]);
+    const [transactionTo, setTransactionTo] = useState(null);
+    const [transactionToError, setTransactionToError] = useState(null);
     const [taxType, setTaxType] = useState(null);
     const [totalAmount, setTotalAmount] = useState("");
     const [paidNow, setPaidNow] = useState("");
@@ -102,7 +104,7 @@ const FinanceVerify = forwardRef(
             parseFloat(payment_full_details?.total_amount || 0).toFixed(2),
           );
 
-          setSubTotal(parseFloat(customerDetails.primary_fees).toFixed(2));
+          setSubTotal(parseFloat(payment_full_details.primary_fees).toFixed(2));
           setPendingAmount(parseFloat(customerDetails.balance_amount));
           setTaxType(
             payment_full_details && payment_full_details.tax_type
@@ -152,15 +154,16 @@ const FinanceVerify = forwardRef(
               ? rejectedItem.paid_date
               : null,
           );
-          setPlaceOfPayment(
-            rejectedItem && rejectedItem.place_of_payment
-              ? rejectedItem.place_of_payment
-              : null,
-          );
           setPaymentScreenShotBase64(
             rejectedItem && rejectedItem.payment_screenshot
               ? rejectedItem.payment_screenshot
               : "",
+          );
+          if (rejectedItem && rejectedItem.paymode_id) {
+            getBanksData(rejectedItem.paymode_id);
+          }
+          setTransactionTo(
+            rejectedItem && rejectedItem.bank_id ? rejectedItem.bank_id : null,
           );
           const rej_balance_amount =
             rejectedItem && rejectedItem.balance_amount
@@ -197,7 +200,20 @@ const FinanceVerify = forwardRef(
       const value = parseFloat(input); // parse for calculations
       const amt = parseFloat(pendingAmount);
 
-      if (value < amt || isNaN(value) || input == "" || input == null) {
+      const selectedBank = transactionToOptions?.find(
+        (item) => item.id == transactionTo,
+      );
+      let conve_fees = 0;
+      if (selectedBank && selectedBank.is_convenience) {
+        conve_fees = ((isNaN(value) ? 0 : value) * 3) / 100;
+        setConvenienceFees(conve_fees.toFixed(2));
+      } else {
+        setConvenienceFees(0);
+      }
+
+      const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
+
+      if (actualPaid < amt || isNaN(value) || input === "" || input === null) {
         setIsShowDueDate(true);
       } else {
         setIsShowDueDate(false);
@@ -205,16 +221,7 @@ const FinanceVerify = forwardRef(
         setDueDateError("");
       }
 
-      setBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
-      );
-
-      if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
-        const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
-      }
+      setBalanceAmount(getBalanceAmount(isNaN(amt) ? 0 : amt, actualPaid));
 
       if (paymentValidationTrigger) {
         setPaidNowError(
@@ -223,8 +230,11 @@ const FinanceVerify = forwardRef(
       }
     };
 
-    const handlePaymentMode = (value) => {
+    const handlePaymentMode = (e) => {
+      const value = e.target.value;
       setPaymentMode(value);
+      getBanksData(value);
+      setConvenienceFees(0);
 
       if (paymentValidationTrigger) {
         setPaymentModeError(selectValidator(value));
@@ -249,13 +259,21 @@ const FinanceVerify = forwardRef(
           isNaN(paidNow) ? 0 : paidNow,
         ),
       );
+    };
 
-      //handle convenience fees
-      if (value == 2 || value == 5 || value == 10) {
-        const conve_fees = getConvenienceFees(paidNow ? parseInt(paidNow) : 0);
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
+    const getBanksData = async (paymentmode_id) => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+      const user_id = converAsJson?.user_id;
+      const regionId =
+        user_id?.startsWith("HUB") || user_id?.startsWith("CHN") ? 2 : 3;
+
+      try {
+        const response = await getBanks(regionId, paymentmode_id);
+        setTransactionToOptions(response?.data?.data || []);
+      } catch (error) {
+        setTransactionToOptions([]);
+        console.log("get banks error", error);
       }
     };
 
@@ -431,7 +449,7 @@ const FinanceVerify = forwardRef(
       setPaymentValidationTrigger(true);
       const paymentTypeValidate = selectValidator(paymentMode);
       const paymentDateValidate = selectValidator(paymentDate);
-      const placeOfPaymentValidate = selectValidator(placeOfPayment);
+      const transactionToValidate = selectValidator(transactionTo);
 
       const paidNowValidate = priceValidator(
         parseInt(paidNow),
@@ -450,7 +468,7 @@ const FinanceVerify = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPaidNowError(paidNowValidate);
       setPaymentDateError(paymentDateValidate);
-      setPlaceOfPaymentError(placeOfPaymentValidate);
+      setTransactionToError(transactionToValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
 
@@ -458,7 +476,7 @@ const FinanceVerify = forwardRef(
         paymentTypeValidate ||
         paidNowValidate ||
         paymentDateValidate ||
-        placeOfPaymentValidate ||
+        transactionToValidate ||
         screenshotValidate ||
         dueDateValidate
       )
@@ -474,11 +492,11 @@ const FinanceVerify = forwardRef(
         amount: paidNow,
         convenience_fees: convenienceFees,
         paymode_id: paymentMode,
+        bank_id: transactionTo,
         payment_screenshot: paymentScreenShotBase64,
         paid_date: paymentDate ? formatToBackendIST(paymentDate) : null,
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         payment_trans_id: updatePaymentTransId,
-        place_of_payment: placeOfPayment,
       };
       try {
         await updateCustomerPaymentTransaction(payload);
@@ -1120,20 +1138,30 @@ const FinanceVerify = forwardRef(
                               }}
                             >
                               <span>
-                                Transaction Date -{" "}
+                                Transaction Details -{" "}
                                 <span style={{ fontWeight: "500" }}>
                                   {moment(item.invoice_date).format(
                                     "DD/MM/YYYY",
                                   )}
                                 </span>
                               </span>
-
-                              {item.payment_status === "Rejected" ? (
+                              {item.payment_status === "Verify Pending" ? (
+                                <div className="customer_trans_statustext_container">
+                                  <PiClockCounterClockwiseBold
+                                    size={16}
+                                    color="gray"
+                                  />
+                                  <p style={{ color: "gray", fontWeight: 500 }}>
+                                    Waiting for Verify
+                                  </p>
+                                </div>
+                              ) : item.payment_status === "Rejected" ? (
                                 <div className="customer_trans_statustext_container">
                                   <FaRegCircleXmark color="#d32f2f" />
                                   <p
                                     style={{
                                       color: "#d32f2f",
+                                      fontWeight: 500,
                                     }}
                                   >
                                     Rejected
@@ -1145,6 +1173,7 @@ const FinanceVerify = forwardRef(
                                   <p
                                     style={{
                                       color: "#3c9111",
+                                      fontWeight: 500,
                                     }}
                                   >
                                     Verified
@@ -1155,69 +1184,77 @@ const FinanceVerify = forwardRef(
                           }
                         >
                           <div style={{ padding: "0px 12px" }}>
-                            <Row
-                              gutter={16}
-                              style={{ marginTop: "6px", marginBottom: "8px" }}
-                            >
-                              <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Invoice Date
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {moment(item.invoice_date).format(
-                                        "DD/MM/YYYY",
-                                      )}
-                                    </p>
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Invoice Number
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.invoice_number}
-                                    </p>
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Payment Mode
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.payment_mode}
-                                    </p>
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Payment Screenshot
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
+                            <table className="transaction-details-table">
+                              <tbody>
+                                <tr>
+                                  <td>Paid Date</td>
+                                  <td className="text-right">
+                                    {moment(item.invoice_date).format(
+                                      "DD/MM/YYYY",
+                                    )}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Transaction Mode</td>
+                                  <td className="text-right">
+                                    {item.payment_mode}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Transaction To</td>
+                                  <td className="text-right">
+                                    {item?.bank_name || "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Fees</td>
+                                  <td className="text-right">
+                                    {item.fees ? `₹${item?.fees}` : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>GST(18%)</td>
+                                  <td className="text-right">
+                                    {item.gst_amount
+                                      ? `₹${item?.gst_amount}`
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Total Fee Paid</td>
+                                  <td className="text-right">
+                                    {item.amount ? `₹${item?.amount}` : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Convenience Fees</td>
+                                  <td className="text-right">
+                                    {item.convenience_fees
+                                      ? `₹${item?.convenience_fees}`
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="font-bold">Received Amount</td>
+                                  <td className="text-right text-success font-bold">
+                                    {"₹" + item.paid_amount}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Nxt Due Date</td>
+                                  <td className="text-right">
+                                    {item.next_due_date
+                                      ? moment(item.next_due_date).format(
+                                          "DD/MM/YYYY",
+                                        )
+                                      : "-"}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Payment Screenshot</td>
+                                  <td className="text-right">
                                     <button
-                                      className="pendingcustomer_paymentscreenshot_viewbutton"
+                                      className="pendingcustomer_paymentscreenshot_viewbutton btn-icon text-primary"
                                       onClick={() => {
                                         setIsOpenPaymentScreenshotModal(true);
                                         setTransactionScreenshot(
@@ -1225,90 +1262,27 @@ const FinanceVerify = forwardRef(
                                         );
                                       }}
                                     >
-                                      <FaRegEye size={16} /> View screenshot
+                                      <FaRegEye
+                                        size={14}
+                                        style={{
+                                          marginRight: "4px",
+                                          verticalAlign: "middle",
+                                        }}
+                                      />{" "}
+                                      <span style={{ verticalAlign: "middle" }}>
+                                        View screenshot
+                                      </span>
                                     </button>
-                                  </Col>
-                                </Row>
-                              </Col>
-
-                              <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Base Amount
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {"₹" + item.amount}
-                                    </p>
-                                  </Col>
-                                </Row>
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Convenience Fees
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {"₹" + item.convenience_fees}
-                                    </p>
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Paid Amount{" "}
-                                        <span className="customerdetails_coursegst">{` (Total)`}</span>
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p
-                                      className="customerdetails_text"
-                                      style={{
-                                        color: "#3c9111",
-                                        fontWeight: 700,
-                                      }}
-                                    >
-                                      {"₹" + item.paid_amount}
-                                    </p>
-                                  </Col>
-                                </Row>
-
-                                <Row style={{ marginTop: "12px" }}>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Nxt Due Date
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {item.next_due_date
-                                        ? moment(item.next_due_date).format(
-                                            "DD/MM/YYYY",
-                                          )
-                                        : "-"}{" "}
-                                    </p>
-                                  </Col>
-                                </Row>
-                              </Col>
-                            </Row>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
 
                           {item.payment_status == "Rejected" && (
                             <>
                               <Divider className="customer_statusupdate_divider" />
-                              <div style={{ padding: "0px 12px 6px 12px" }}>
+                              <div style={{ padding: "0px 52px 12px 52px" }}>
                                 <Row>
                                   <Col span={24}>
                                     <Row>
@@ -1349,7 +1323,7 @@ const FinanceVerify = forwardRef(
 
             <div className="customer_statusupdate_adddetailsContainer">
               <p className="customer_statusupdate_adddetails_heading">
-                Payment Details
+                Fees Details
               </p>
               <Row
                 gutter={16}
@@ -1367,30 +1341,156 @@ const FinanceVerify = forwardRef(
                 <Col span={8}>
                   <CommonSelectField
                     label="Tax Type"
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
                     required={true}
+                    // options={[
+                    //   { id: 1, name: "GST (18%)" },
+                    //   { id: 2, name: "SGST (18%)" },
+                    //   { id: 3, name: "IGST (18%)" },
+                    //   { id: 4, name: "VAT (18%)" },
+                    //   { id: 5, name: "No Tax" },
+                    // ]}
                     options={[
-                      { id: 1, name: "GST (18%)" },
-                      { id: 2, name: "SGST (18%)" },
-                      { id: 3, name: "IGST (18%)" },
-                      { id: 4, name: "VAT (18%)" },
-                      { id: 5, name: "No Tax" },
+                      { id: "18%", name: "18%" },
+                      { id: "0%", name: "0%" },
                     ]}
-                    value={taxType}
+                    value={
+                      paymentFullDetails?.tax_type.includes("18%")
+                        ? "18%"
+                        : "0%"
+                    }
+                    error={""}
+                    height={"36px"}
+                    fontSize={"12px"}
+                    errorFontSize={"9px"}
                     disabled={true}
                   />
                 </Col>
                 <Col span={8}>
                   <CommonInputField
-                    label="Total Amount"
+                    label="Tax Amount"
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
                     required={true}
-                    disabled
-                    value={totalAmount}
+                    value={paymentFullDetails?.gst_amount}
+                    error={""}
+                    height={"36px"}
+                    fontSize={"12px"}
+                    errorFontSize={"9px"}
+                    disabled={true}
                   />
                 </Col>
               </Row>
             </div>
 
             <Divider className="customer_statusupdate_divider" />
+
+            <p
+              className="leadmanager_paymentdetails_drawer_heading"
+              id="leadmanager_paymentdetails_paymentinfo_heading"
+            >
+              Calculation's
+            </p>
+
+            <Row
+              gutter={[16, 22]}
+              className="leadmanager_paymentdetails_drawer_rowdiv"
+              style={{ marginTop: "20px", marginBottom: "30px" }}
+            >
+              <Col span={8}>
+                <CommonInputField
+                  label="Total Fees Amount"
+                  required={true}
+                  disabled
+                  value={paymentFullDetails?.total_amount || ""}
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Total Paid Amount"
+                  required={true}
+                  disabled
+                  value={(
+                    parseFloat(paymentFullDetails?.paid_amount || 0) +
+                    (parseFloat(paidNow || 0) -
+                      parseFloat(convenienceFees || 0))
+                  ).toFixed(2)}
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Total Pending"
+                  required={true}
+                  disabled
+                  value={balanceAmount !== undefined ? balanceAmount : 0}
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Fees"
+                  required={true}
+                  disabled
+                  value={
+                    paymentFullDetails?.tax_type.includes("18%")
+                      ? (
+                          (parseFloat(paidNow || 0) -
+                            parseFloat(convenienceFees || 0)) /
+                          1.18
+                        ).toFixed(2)
+                      : (
+                          parseFloat(paidNow || 0) -
+                          parseFloat(convenienceFees || 0)
+                        ).toFixed(2)
+                  }
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="TAX"
+                  required={true}
+                  disabled
+                  value={
+                    paymentFullDetails?.tax_type.includes("18%")
+                      ? (
+                          ((parseFloat(paidNow || 0) -
+                            parseFloat(convenienceFees || 0)) *
+                            18) /
+                          118
+                        ).toFixed(2)
+                      : 0
+                  }
+                  height={"36px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+              <Col span={8}>
+                <CommonInputField
+                  label="Convenience fees"
+                  required={true}
+                  value={convenienceFees}
+                  disabled={true}
+                  type="number"
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                />
+              </Col>
+            </Row>
+
+            <Divider className="leadmanger_paymentdrawer_divider" />
 
             <div className="customer_statusupdate_adddetailsContainer">
               <p className="customer_statusupdate_adddetails_heading">
@@ -1399,35 +1499,78 @@ const FinanceVerify = forwardRef(
 
               <Row gutter={16} style={{ marginTop: "20px" }}>
                 <Col span={8}>
+                  <CommonSelectField
+                    label="Payment Mode"
+                    required={true}
+                    options={[
+                      { id: 1, name: "Cash" },
+                      { id: 11, name: "Card (POS)" },
+                      { id: 4, name: "UPI" },
+                      { id: 5, name: "Razorpay" },
+                      { id: 12, name: "Bank" },
+                    ]}
+                    onChange={handlePaymentMode}
+                    value={paymentMode}
+                    error={paymentModeError}
+                    height={"36px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"Transaction To"}
+                    required={true}
+                    options={transactionToOptions?.map((item) => ({
+                      id: item.id,
+                      name: item.bank_name,
+                    }))}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      setTransactionTo(selectedId);
+
+                      setPaidNow("");
+                      setConvenienceFees(0);
+
+                      const amt = parseFloat(pendingAmount) || 0;
+                      const actualPaid = 0;
+
+                      setIsShowDueDate(true);
+
+                      setBalanceAmount(getBalanceAmount(amt, actualPaid));
+
+                      if (paymentValidationTrigger) {
+                        setTransactionToError(selectValidator(selectedId));
+                      }
+                    }}
+                    value={transactionTo}
+                    error={transactionToError}
+                    height={"36px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
                   <CommonInputField
-                    label="Pay Amount"
+                    label="Received"
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
                     required={true}
                     onChange={handlePaidNow}
                     value={paidNow}
                     error={paidNowError}
-                    errorFontSize="10px"
-                  />
-                </Col>
-                <Col span={8}>
-                  <CommonGroupedSelectField
-                    label="Payment Mode"
-                    onChange={handlePaymentMode}
-                    value={paymentMode}
-                    error={paymentModeError}
-                  />
-                </Col>
-                <Col span={8}>
-                  <CommonInputField
-                    label="Convenience fees"
-                    required={true}
-                    value={convenienceFees}
-                    disabled={true}
+                    errorFontSize="9px"
                     type="number"
                   />
                 </Col>
               </Row>
 
-              <Row gutter={16} style={{ marginTop: "40px" }}>
+              <Row
+                gutter={16}
+                style={{ marginTop: "40px", marginBottom: "30px" }}
+              >
                 <Col span={8}>
                   <CommonMuiDatePicker
                     label="Payment Date"
@@ -1440,30 +1583,36 @@ const FinanceVerify = forwardRef(
                     }}
                     value={paymentDate}
                     error={paymentDateError}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    errorFontSize={"9px"}
                   />
                 </Col>
-                <Col span={8}>
-                  <CommonSelectField
-                    label="Place of Payment"
-                    required={true}
-                    options={[
-                      { id: "Tamil Nadu", name: "Tamil Nadu" },
-                      { id: "Out of TN", name: "Out of TN" },
-                      { id: "Out of IND", name: "Out of IND" },
-                    ]}
-                    onChange={(e) => {
-                      setPlaceOfPayment(e.target.value);
-                      if (paymentValidationTrigger) {
-                        setPlaceOfPaymentError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={placeOfPayment}
-                    error={placeOfPaymentError}
-                  />
-                </Col>
+
+                {isShowDueDate ? (
+                  <Col span={8}>
+                    <CommonMuiDatePicker
+                      label="Next Due Date"
+                      required={true}
+                      onChange={(value) => {
+                        setDueDate(value);
+                        setDueDateError(selectValidator(value));
+                      }}
+                      value={dueDate}
+                      error={dueDateError}
+                      disablePreviousDates={true}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      errorFontSize={"9px"}
+                    />
+                  </Col>
+                ) : (
+                  ""
+                )}
+
                 <Col span={8}>
                   <ImageUploadCrop
-                    label="Payment Screenshot"
+                    label="Proof Upload"
                     aspect={1}
                     maxSizeMB={1}
                     required={true}
@@ -1474,7 +1623,7 @@ const FinanceVerify = forwardRef(
                   {paymentScreenShotError && (
                     <p
                       style={{
-                        fontSize: "12px",
+                        fontSize: "10px",
                         color: "#d32f2f",
                         marginTop: 4,
                       }}
@@ -1483,45 +1632,6 @@ const FinanceVerify = forwardRef(
                     </p>
                   )}
                 </Col>
-              </Row>
-            </div>
-
-            <Divider className="customer_statusupdate_divider" />
-
-            <div className="customer_statusupdate_adddetailsContainer">
-              <p className="customer_statusupdate_adddetails_heading">
-                Balance Amount Details
-              </p>
-
-              <Row
-                gutter={16}
-                style={{ marginTop: "20px", marginBottom: "30px" }}
-              >
-                <Col span={8}>
-                  <CommonInputField
-                    label="Balance Amount"
-                    required={true}
-                    value={balanceAmount}
-                    disabled={true}
-                    type="number"
-                  />
-                </Col>
-                {isShowDueDate ? (
-                  <Col span={8}>
-                    <CommonMuiDatePicker
-                      label="Next Due Date"
-                      onChange={(value) => {
-                        setDueDate(value);
-                        setDueDateError(selectValidator(value));
-                      }}
-                      value={dueDate}
-                      error={dueDateError}
-                      disablePreviousDates={true}
-                    />
-                  </Col>
-                ) : (
-                  ""
-                )}
               </Row>
 
               <div className="customer_paymentreject_buttoncontainer">

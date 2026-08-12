@@ -1871,7 +1871,6 @@ export default function Customers() {
 
   const handleEdit = (item) => {
     setCustomerId(item?.id);
-    getParticularCustomerDetails(item?.id);
     setIsOpenEditDrawer(true);
   };
 

@@ -82,7 +82,7 @@ export default function FeeHistory({
       sorter: (a, b) =>
         moment(a.date_of_joining).valueOf() -
         moment(b.date_of_joining).valueOf(),
-      sortDirections: ["ascend"],
+      sortDirections: ["ascend", "descend"],
       defaultSortOrder: "descend", // Optional
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
@@ -318,10 +318,8 @@ export default function FeeHistory({
           const original = nonChangeColumns.find((c) => c.key === col.key);
           if (original) {
             return {
+              ...original,
               ...col,
-              width: original.width,
-              fixed: original.fixed,
-              hidden: original.hidden,
               render: original.render,
             };
           }
@@ -1018,7 +1016,13 @@ export default function FeeHistory({
           }}
           columns={tableColumns.map((col) => {
             const original = nonChangeColumns.find((c) => c.key === col.key);
-            return original ? { ...col, render: original.render } : col;
+            return original
+              ? {
+                  ...original,
+                  ...col,
+                  render: original.render,
+                }
+              : col;
           })}
           dataSource={feeHistoryData}
           dataPerPage={10}
@@ -1110,10 +1114,8 @@ export default function FeeHistory({
                     );
                     if (original) {
                       return {
+                        ...original,
                         ...col,
-                        width: original.width,
-                        fixed: original.fixed,
-                        hidden: original.hidden,
                         render: original.render,
                       };
                     }

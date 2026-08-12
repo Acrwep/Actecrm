@@ -62,11 +62,11 @@ const CustomerUpdate = forwardRef(
     const [previewImage, setPreviewImage] = useState("");
     const [raUsers, setRaUsers] = useState([]);
     const [selectedRA, setSelectedRA] = useState(null);
+    const [modeOfClass, setModeOfClass] = useState("");
+    const [modeOfClassError, setModeOfClassError] = useState("");
     const [placeOfService, setPlaceOfService] = useState("");
     const [placeOfServiceError, setPlaceOfServiceError] = useState("");
     const [allBranchesData, setAllBranchesData] = useState([]);
-    const [placeOfBranch, setPlaceOfBranch] = useState("");
-    const [placeOfBranchError, setPlaceOfBranchError] = useState("");
     const [leadId, setLeadId] = useState(null);
     const [name, setName] = useState("");
     const [nameError, setNameError] = useState("");
@@ -108,6 +108,7 @@ const CustomerUpdate = forwardRef(
     const [batchTiming, setBatchTiming] = useState(null);
     const [batchTimingError, setBatchTimingError] = useState("");
     const [currentLocation, setCurrentLocation] = useState("");
+    const [pinCode, setPinCode] = useState("");
     const [customerAddress, setCustomerAddress] = useState("");
     const [gstNumber, setGstNumber] = useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
@@ -273,8 +274,8 @@ const CustomerUpdate = forwardRef(
         const response = await getCustomerById(customerId);
         console.log("customer response", response);
         const customerDetails = response?.data?.data;
+        setModeOfClass(customerDetails?.mode_of_class);
         setPlaceOfService(customerDetails?.place_of_service);
-        setPlaceOfBranch(customerDetails?.place_of_branch);
         setSelectedRA(customerDetails?.ra_id);
         setLeadId(customerDetails?.lead_id);
         setName(customerDetails.name);
@@ -337,6 +338,7 @@ const CustomerUpdate = forwardRef(
         setBatchTiming(customerDetails?.batch_timing_id ?? "");
         setBranchId(customerDetails?.branch_id ?? "");
         setCurrentLocation(customerDetails?.place_of_supply ?? "");
+        setPinCode(customerDetails?.pincode ?? "");
         setCustomerAddress(customerDetails?.address ?? "");
         setGstNumber(customerDetails?.gst_number ?? "");
         setPlacementSupport(customerDetails.placement_support);
@@ -564,9 +566,8 @@ const CustomerUpdate = forwardRef(
 
     const handleCustomerUpdate = async () => {
       setValidationTrigger(true);
+      const modeOfClassValidate = selectValidator(modeOfClass);
       const placeOfServiceValidate = selectValidator(placeOfService);
-      const placeOfBranchValidate =
-        placeOfService == 10 ? "" : selectValidator(placeOfBranch);
       const nameValidate = nameValidator(name);
       const emailValidate = emailValidator(email);
       const mobileValidate = mobileValidator(mobile);
@@ -581,8 +582,8 @@ const CustomerUpdate = forwardRef(
       const batchTimingValidate = selectValidator(batchTiming);
       const placementSupportValidate = selectValidator(placementSupport);
 
+      setModeOfClassError(modeOfClassValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
-      setPlaceOfBranchError(placeOfBranchValidate);
       setNameError(nameValidate);
       setEmailError(emailValidate);
       setMobileError(mobileValidate);
@@ -598,8 +599,8 @@ const CustomerUpdate = forwardRef(
       setPlacementSupportError(placementSupportValidate);
 
       if (
+        modeOfClassValidate ||
         placeOfServiceValidate ||
-        placeOfBranchValidate ||
         nameValidate ||
         emailValidate ||
         mobileValidate ||
@@ -650,9 +651,10 @@ const CustomerUpdate = forwardRef(
         area: getCustomerArea.name,
         signature_image: signatureBase64,
         profile_image: profilePictureBase64,
-        place_of_supply: currentLocation,
+        place_of_supply: "",
+        mode_of_class: modeOfClass,
         place_of_service: placeOfService,
-        place_of_branch: placeOfBranch,
+        pincode: pinCode,
         address: customerAddress,
         state_code: "",
         gst_number: gstNumber,
@@ -749,10 +751,10 @@ const CustomerUpdate = forwardRef(
       setProfilePictureArray([]);
       setProfilePictureBase64("");
       setSelectedRA(null);
+      setModeOfClass("");
+      setModeOfClassError("");
       setPlaceOfService("");
       setPlaceOfServiceError("");
-      setPlaceOfBranch("");
-      setPlaceOfBranchError("");
       setLeadId(null);
       setName("");
       setNameError("");
@@ -782,6 +784,7 @@ const CustomerUpdate = forwardRef(
       setBranchId(null);
       setBranchIdError("");
       setCurrentLocation("");
+      setPinCode("");
       setCustomerAddress("");
       setGstNumber("");
       setPlacementSupport("");
@@ -841,7 +844,7 @@ const CustomerUpdate = forwardRef(
               <Col span={8}>
                 <CommonSelectField
                   width="100%"
-                  label="Place Of Service"
+                  label="Mode of Class"
                   labelMarginTop={"1px"}
                   labelFontSize={"11px"}
                   options={[
@@ -850,19 +853,19 @@ const CustomerUpdate = forwardRef(
                   ]}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setPlaceOfService(value);
+                    setModeOfClass(value);
                     if (value == 1) {
-                      setPlaceOfBranch(10);
-                      setPlaceOfBranchError("");
+                      setPlaceOfService(10);
+                      setPlaceOfServiceError("");
                     } else {
-                      setPlaceOfBranch(null);
+                      setPlaceOfService(null);
                     }
                     if (validationTrigger) {
-                      setPlaceOfServiceError(selectValidator(value));
+                      setModeOfClassError(selectValidator(value));
                     }
                   }}
-                  value={placeOfService}
-                  error={placeOfServiceError}
+                  value={modeOfClass}
+                  error={modeOfClassError}
                   errorFontSize={"9px"}
                 />
               </Col>
@@ -870,20 +873,20 @@ const CustomerUpdate = forwardRef(
               <Col span={8}>
                 <CommonSelectField
                   width="100%"
-                  label="Place Of Branch"
+                  label="Place Of Service"
                   labelFontSize={"11px"}
                   labelMarginTop={"1px"}
                   options={allBranchesData}
                   onChange={(e) => {
-                    setPlaceOfBranch(e.target.value);
+                    setPlaceOfService(e.target.value);
                     if (validationTrigger) {
-                      setPlaceOfBranchError(selectValidator(e.target.value));
+                      setPlaceOfServiceError(selectValidator(e.target.value));
                     }
                   }}
-                  value={placeOfBranch}
-                  error={placeOfBranchError}
+                  value={placeOfService}
+                  error={placeOfServiceError}
                   errorFontSize={"9px"}
-                  disabled={placeOfService == 1}
+                  disabled={modeOfClass == 1}
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
@@ -1048,17 +1051,17 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col span={8}>
                 <CommonInputField
-                  label="Current State"
-                  required={true}
+                  label="Postal/Zip Code"
+                  required={false}
                   onChange={(e) => {
-                    setCurrentLocation(e.target.value);
+                    setPinCode(e.target.value);
                   }}
-                  value={currentLocation}
+                  value={pinCode}
                   error={""}
                   errorFontSize="9px"
                 />
               </Col>
-              <Col xs={24} sm={24} md={24} lg={8}>
+              {/* <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonInputField
                   label="GST No"
                   required={false}
@@ -1069,7 +1072,7 @@ const CustomerUpdate = forwardRef(
                   value={gstNumber}
                   error={""}
                 />
-              </Col>
+              </Col> */}
 
               <Col xs={24} sm={24} md={24} lg={14}>
                 <CommonInputField

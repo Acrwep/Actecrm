@@ -54,10 +54,10 @@ const MakeAsCustomer = forwardRef(
     const [selectedRA, setSelectedRA] = useState(null);
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
+    const [modeOfClass, setModeOfClass] = useState("");
+    const [modeOfClassError, setModeOfClassError] = useState("");
     const [placeOfService, setPlaceOfService] = useState("");
     const [placeOfServiceError, setPlaceOfServiceError] = useState("");
-    const [placeOfBranch, setPlaceOfBranch] = useState("");
-    const [placeOfBranchError, setPlaceOfBranchError] = useState("");
     const paymentModeOptions = [
       { id: 1, name: "Cash" },
       { id: 11, name: "Card (POS)" },
@@ -323,9 +323,8 @@ const MakeAsCustomer = forwardRef(
       const paymentTypeValidate = selectValidator(paymentMode);
       const transactionToValidate = selectValidator(transactionTo);
       const paymentDateValidate = selectValidator(paymentDate);
+      const modeOfClassValidate = selectValidator(modeOfClass);
       const placeOfServiceValidate = selectValidator(placeOfService);
-      const placeOfBranchValidate =
-        placeOfService == 10 ? "" : selectValidator(placeOfBranch);
       const batchTimingValidate = selectValidator(customerBatchTimingId);
       const placementSupportValidate = selectValidator(placementSupport);
       //gst invoice
@@ -366,8 +365,8 @@ const MakeAsCustomer = forwardRef(
       setPaidNowError(paidNowValidate);
       setPaymentDateError(paymentDateValidate);
       setTransactionToError(transactionToValidate);
+      setModeOfClassError(modeOfClassValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
-      setPlaceOfBranchError(placeOfBranchValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
       setCustomerBatchTimingIdError(batchTimingValidate);
@@ -383,7 +382,6 @@ const MakeAsCustomer = forwardRef(
         paymentTypeValidate ||
         paidNowValidate ||
         paymentDateValidate ||
-        placeOfPaymentValidate ||
         screenshotValidate
       ) {
         setTimeout(() => {
@@ -409,9 +407,8 @@ const MakeAsCustomer = forwardRef(
         paidNowValidate ||
         taxTypeValidate ||
         paymentDateValidate ||
-        placeOfPaymentValidate ||
+        modeOfClassValidate ||
         placeOfServiceValidate ||
-        placeOfBranchValidate ||
         screenshotValidate ||
         dueDateValidate ||
         batchTimingValidate ||
@@ -456,8 +453,8 @@ const MakeAsCustomer = forwardRef(
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
         place_of_payment: "",
+        mode_of_class: modeOfClass,
         place_of_service: placeOfService,
-        place_of_branch: placeOfBranch,
         enrolled_course: customerCourseId,
         batch_track_id: customerBatchTrackId,
         batch_timing_id: customerBatchTimingId,
@@ -1302,19 +1299,19 @@ const MakeAsCustomer = forwardRef(
                 ]}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setPlaceOfService(value);
+                  setModeOfClass(value);
                   if (value == 1) {
-                    setPlaceOfBranch(10);
-                    setPlaceOfBranchError("");
+                    setPlaceOfService(10);
+                    setPlaceOfServiceError("");
                   } else {
-                    setPlaceOfBranch(null);
+                    setPlaceOfService(null);
                   }
                   if (paymentValidationTrigger) {
-                    setPlaceOfServiceError(selectValidator(value));
+                    setModeOfClassError(selectValidator(value));
                   }
                 }}
-                value={placeOfService}
-                error={placeOfServiceError}
+                value={modeOfClass}
+                error={modeOfClassError}
                 errorFontSize={"9px"}
               />
             </Col>
@@ -1327,15 +1324,15 @@ const MakeAsCustomer = forwardRef(
                 labelMarginTop={"1px"}
                 options={allBranchesData}
                 onChange={(e) => {
-                  setPlaceOfBranch(e.target.value);
+                  setPlaceOfService(e.target.value);
                   if (paymentValidationTrigger) {
-                    setPlaceOfBranchError(selectValidator(e.target.value));
+                    setPlaceOfServiceError(selectValidator(e.target.value));
                   }
                 }}
-                value={placeOfBranch}
-                error={placeOfBranchError}
+                value={placeOfService}
+                error={placeOfServiceError}
                 errorFontSize={"9px"}
-                disabled={placeOfService == 1}
+                disabled={modeOfClass == 1}
               />
             </Col>
 

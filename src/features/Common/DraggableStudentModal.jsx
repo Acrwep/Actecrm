@@ -396,7 +396,7 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdLocationOn size={16} /> Place of Service
+                    <MdLocationOn size={16} /> Mode of Class
                   </span>
                   <span
                     style={{
@@ -406,9 +406,7 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.place_of_service_name ||
-                      customerDetails?.place_of_service ||
-                      "-"}
+                    {customerDetails?.mode_of_class_name || "-"}
                   </span>
                 </div>
 
@@ -430,7 +428,7 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdBusiness size={16} /> Place of Branch
+                    <MdBusiness size={16} /> Place of Service
                   </span>
                   <span
                     style={{
@@ -440,9 +438,7 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.place_of_branch_name ||
-                      customerDetails?.place_of_branch ||
-                      "-"}
+                    {customerDetails?.place_of_service_name || "-"}
                   </span>
                 </div>
               </div>

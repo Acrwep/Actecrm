@@ -1859,7 +1859,7 @@ export default function Received({
                     allDownliners,
                     selectedRegionId,
                     selectedBranchId,
-                    1,
+                    pagination.page,
                     pagination.limit,
                     paymentType,
                   );

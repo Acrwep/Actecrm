@@ -543,15 +543,16 @@ export default function CustomerRegistration() {
         customerFullDetails && customerFullDetails.place_of_supply
           ? customerFullDetails.place_of_supply
           : null,
+      mode_of_class:
+        customerFullDetails && customerFullDetails.mode_of_class
+          ? customerFullDetails.mode_of_class
+          : null,
       place_of_service:
         customerFullDetails && customerFullDetails.place_of_service
           ? customerFullDetails.place_of_service
           : null,
-      place_of_branch:
-        customerFullDetails && customerFullDetails.place_of_branch
-          ? customerFullDetails.place_of_branch
-          : null,
       address: address,
+      pincode: pinCode,
       state_code: "",
       gst_number:
         customerFullDetails && customerFullDetails.gst_number

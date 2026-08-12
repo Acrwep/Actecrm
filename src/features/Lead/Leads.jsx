@@ -946,7 +946,7 @@ export default function Leads({
                     sorter: (a, b) =>
                       moment(a.created_date).valueOf() -
                       moment(b.created_date).valueOf(),
-                    sortDirections: ["ascend"],
+                    sortDirections: ["ascend", "descend"],
                     defaultSortOrder: "descend", // Optional
                     width: 170,
                     render: (text, record) => {

@@ -1205,7 +1205,7 @@ const InsertPendingFees = forwardRef(
                         {item.payment_status == "Rejected" && (
                           <>
                             <Divider className="customer_statusupdate_divider" />
-                            <div style={{ padding: "0px 12px 6px 12px" }}>
+                            <div style={{ padding: "0px 52px 12px 52px" }}>
                               <Row>
                                 <Col span={24}>
                                   <Row>
