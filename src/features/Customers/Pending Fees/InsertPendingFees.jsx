@@ -227,7 +227,7 @@ const InsertPendingFees = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       const user_id = converAsJson?.user_id;
       const regionId =
-        user_id?.startsWith("HUB") || user_id?.startsWith("CHN") ? 2 : 3;
+        user_id?.startsWith("HUB") || user_id?.startsWith("CHN") ? 3 : 2;
 
       try {
         const response = await getBanks(regionId, paymentmode_id);

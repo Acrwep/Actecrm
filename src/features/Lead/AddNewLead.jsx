@@ -539,6 +539,7 @@ const AddNewLead = forwardRef(
         setRegionManagerName("");
         setBranchManagerId(null);
         setBranchManagerName("");
+        setLoading(false);
         return;
       }
       try {
@@ -1585,7 +1586,13 @@ const AddNewLead = forwardRef(
               <div style={{ marginBottom: "26px" }}>
                 <CommonInputField
                   label="Lead Date & Time"
-                  value={moment().format("DD MMM YYYY hh:mm A")}
+                  value={
+                    updateLeadItem
+                      ? moment(updateLeadItem?.created_date).format(
+                          "DD MMM YYYY hh:mm A",
+                        )
+                      : moment().format("DD MMM YYYY hh:mm A")
+                  }
                   disabled={true}
                   error={""}
                   height={"35px"}
