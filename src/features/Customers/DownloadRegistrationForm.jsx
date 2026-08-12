@@ -440,7 +440,7 @@ export default function DownloadRegistrationForm({ customerDetails }) {
        <div class="field-box">
         <p class="label">Postal/Zip Code</p>
         <div class="field-value-box">
-          <p class="field-value">${customerDetails?.pin_code ?? "-"}</p>
+          <p class="field-value">${customerDetails?.pincode ?? "-"}</p>
         </div>
       </div>
 

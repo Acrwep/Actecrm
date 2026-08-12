@@ -131,9 +131,18 @@ export default function Receivables({
       },
     },
     {
+      title: "Mode Of Class",
+      key: "mode_of_class",
+      dataIndex: "mode_of_class",
+      width: 110,
+      render: (text) => {
+        return <EllipsisTooltip text={text ? text : "-"} />;
+      },
+    },
+    {
       title: "Place Of Service",
-      key: "place_of_service",
-      dataIndex: "place_of_service",
+      key: "place_of_service_name",
+      dataIndex: "place_of_service_name",
       width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text ? text : "-"} />;
