@@ -877,7 +877,7 @@ const FinanceVerify = forwardRef(
                             <table className="transaction-details-table">
                               <tbody>
                                 <tr>
-                                  <td>Paid Date (Invoice Date)</td>
+                                  <td>Paid Date</td>
                                   <td className="text-right">
                                     {moment(item.invoice_date).format(
                                       "DD/MM/YYYY",

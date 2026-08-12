@@ -54,8 +54,6 @@ const MakeAsCustomer = forwardRef(
     const [selectedRA, setSelectedRA] = useState(null);
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
-    const [placeOfPayment, setPlaceOfPayment] = useState(null);
-    const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
     const [placeOfService, setPlaceOfService] = useState("");
     const [placeOfServiceError, setPlaceOfServiceError] = useState("");
     const [placeOfBranch, setPlaceOfBranch] = useState("");
@@ -323,8 +321,8 @@ const MakeAsCustomer = forwardRef(
       setPaymentValidationTrigger(true);
       const taxTypeValidate = selectValidator(taxType);
       const paymentTypeValidate = selectValidator(paymentMode);
+      const transactionToValidate = selectValidator(transactionTo);
       const paymentDateValidate = selectValidator(paymentDate);
-      const placeOfPaymentValidate = selectValidator(placeOfPayment);
       const placeOfServiceValidate = selectValidator(placeOfService);
       const placeOfBranchValidate =
         placeOfService == 10 ? "" : selectValidator(placeOfBranch);
@@ -367,7 +365,7 @@ const MakeAsCustomer = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPaidNowError(paidNowValidate);
       setPaymentDateError(paymentDateValidate);
-      setPlaceOfPaymentError(placeOfPaymentValidate);
+      setTransactionToError(transactionToValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
       setPlaceOfBranchError(placeOfBranchValidate);
       setPaymentScreenShotError(screenshotValidate);
@@ -407,6 +405,7 @@ const MakeAsCustomer = forwardRef(
 
       if (
         paymentTypeValidate ||
+        transactionToValidate ||
         paidNowValidate ||
         taxTypeValidate ||
         paymentDateValidate ||
@@ -456,7 +455,7 @@ const MakeAsCustomer = forwardRef(
         ra_id: selectedRA,
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
-        place_of_payment: placeOfPayment,
+        place_of_payment: "",
         place_of_service: placeOfService,
         place_of_branch: placeOfBranch,
         enrolled_course: customerCourseId,
@@ -1032,6 +1031,7 @@ const MakeAsCustomer = forwardRef(
                   }
                 }}
                 value={transactionTo}
+                error={transactionToError}
                 height={"36px"}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}

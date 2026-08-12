@@ -35,6 +35,7 @@ import {
 } from "../../Common/Validation";
 import {
   customerDuePayment,
+  getBanks,
   getCustomerById,
   getCustomersPaymentHistory,
   inserCustomerTrack,
@@ -62,8 +63,18 @@ const InsertPendingFees = forwardRef(
     const [payAmount, setPayAmount] = useState("");
     const [duplicatePayAmount, setDuplicatePayAmount] = useState("");
     const [payAmountError, setPayAmountError] = useState("");
+    const paymentModeOptions = [
+      { id: 1, name: "Cash" },
+      { id: 11, name: "Card (POS)" },
+      { id: 4, name: "UPI" },
+      { id: 5, name: "Razorpay" },
+      { id: 12, name: "Bank" },
+    ];
     const [paymentMode, setPaymentMode] = useState("");
     const [paymentModeError, setPaymentModeError] = useState("");
+    const [transactionToOptions, setTransactionToOptions] = useState([]);
+    const [transactionTo, setTransactionTo] = useState(null);
+    const [transactionToError, setTransactionToError] = useState(null);
     const convenienceFeesStatusOptions = [
       { id: 1, name: "Inclusive With Pay Amount" },
       { id: 2, name: "Exclusive With Pay Amount" },
@@ -75,8 +86,6 @@ const InsertPendingFees = forwardRef(
     const [convenienceFeesError, setConvenienceFeesError] = useState("");
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState(null);
-    const [placeOfPayment, setPlaceOfPayment] = useState(null);
-    const [placeOfPaymentError, setPlaceOfPaymentError] = useState("");
     const [paymentScreenShotBase64, setPaymentScreenShotBase64] = useState("");
     const [paymentScreenShotError, setPaymentScreenShotError] = useState("");
     const [paymentValidationTrigger, setPaymentValidationTrigger] =
@@ -151,7 +160,20 @@ const InsertPendingFees = forwardRef(
       const value = parseFloat(input); // parse for calculations
       const amt = parseFloat(pendingAmount);
 
-      if (value < amt || isNaN(value) || input === "" || input === null) {
+      const selectedBank = transactionToOptions?.find(
+        (item) => item.id == transactionTo,
+      );
+      let conve_fees = 0;
+      if (selectedBank && selectedBank.is_convenience) {
+        conve_fees = ((isNaN(value) ? 0 : value) * 3) / 100;
+        setConvenienceFees(conve_fees.toFixed(2));
+      } else {
+        setConvenienceFees(0);
+      }
+
+      const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
+
+      if (actualPaid < amt || isNaN(value) || input === "" || input === null) {
         setIsShowDueDate(true);
       } else {
         setIsShowDueDate(false);
@@ -159,16 +181,7 @@ const InsertPendingFees = forwardRef(
         setDueDateError("");
       }
 
-      setBalanceAmount(
-        getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(value) ? 0 : value),
-      );
-
-      if (paymentMode == 2 || paymentMode == 5 || paymentMode == 10) {
-        const conve_fees = getConvenienceFees(isNaN(value) ? 0 : value);
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
-      }
+      setBalanceAmount(getBalanceAmount(isNaN(amt) ? 0 : amt, actualPaid));
 
       if (paymentValidationTrigger) {
         setPayAmountError(
@@ -177,8 +190,10 @@ const InsertPendingFees = forwardRef(
       }
     };
 
-    const handlePaymentMode = (value) => {
+    const handlePaymentMode = (e) => {
+      const value = e.target.value;
       setPaymentMode(value);
+      getBanksData(value);
       setConvenienceFeesStatus(null);
       setConvenienceFees(0);
 
@@ -205,15 +220,22 @@ const InsertPendingFees = forwardRef(
           isNaN(payAmount) ? 0 : payAmount,
         ),
       );
+    };
 
-      //handle convenience fees
-      if (value == 2 || value == 5 || value == 10) {
-        const conve_fees = getConvenienceFees(
-          payAmount ? parseInt(payAmount) : 0,
-        );
-        setConvenienceFees(conve_fees);
-      } else {
-        setConvenienceFees(0);
+    const getBanksData = async (paymentmode_id) => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+      const user_id = converAsJson?.user_id;
+      const regionId =
+        user_id?.startsWith("HUB") || user_id?.startsWith("CHN") ? 2 : 3;
+
+      try {
+        const response = await getBanks(regionId, paymentmode_id);
+        console.log("get banks response", response);
+        setTransactionToOptions(response?.data?.data || []);
+      } catch (error) {
+        setTransactionToOptions([]);
+        console.log("get banks error", error);
       }
     };
 
@@ -293,7 +315,7 @@ const InsertPendingFees = forwardRef(
       setPaymentValidationTrigger(true);
       const paymentTypeValidate = selectValidator(paymentMode);
       const paymentDateValidate = selectValidator(paymentDate);
-      const placeOfPaymentValidate = selectValidator(placeOfPayment);
+      const transactionToValidate = selectValidator(transactionTo);
       const payAmountValidate = priceValidator(
         parseInt(payAmount),
         parseInt(pendingAmount),
@@ -311,7 +333,7 @@ const InsertPendingFees = forwardRef(
       setPaymentModeError(paymentTypeValidate);
       setPayAmountError(payAmountValidate);
       setPaymentDateError(paymentDateValidate);
-      setPlaceOfPaymentError(placeOfPaymentValidate);
+      setTransactionToError(transactionToValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
 
@@ -320,7 +342,7 @@ const InsertPendingFees = forwardRef(
         payAmountValidate ||
         paymentDateValidate ||
         screenshotValidate ||
-        placeOfPaymentValidate ||
+        transactionToValidate ||
         dueDateValidate
       )
         return;
@@ -339,12 +361,12 @@ const InsertPendingFees = forwardRef(
         convenience_fees: convenienceFees,
         balance_amount: balanceAmount,
         paymode_id: paymentMode,
+        bank_id: transactionTo,
         payment_screenshot: paymentScreenShotBase64,
         payment_status: "Verify Pending",
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
-        place_of_payment: placeOfPayment,
         collected_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       };
@@ -863,7 +885,7 @@ const InsertPendingFees = forwardRef(
                 </Row>
               </Col>
             </Row>
-            <Divider className="customer_statusupdate_divider" />
+            {/* <Divider className="customer_statusupdate_divider" />
 
             <div style={{ padding: "0px 24px" }}>
               <div className="customerdetails_coursecard">
@@ -991,7 +1013,7 @@ const InsertPendingFees = forwardRef(
                   </Row>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <Divider className="customer_statusupdate_divider" />
 
@@ -1062,7 +1084,7 @@ const InsertPendingFees = forwardRef(
                           <table className="transaction-details-table">
                             <tbody>
                               <tr>
-                                <td>Paid Date (Invoice Date)</td>
+                                <td>Paid Date</td>
                                 <td className="text-right">
                                   {moment(item.invoice_date).format(
                                     "DD/MM/YYYY",
@@ -1221,56 +1243,284 @@ const InsertPendingFees = forwardRef(
 
             {!isViewOnly && (
               <>
-                <Divider className="customer_statusupdate_divider" />
-
-                <p className="leadmanager_paymentdetails_drawer_heading">
-                  Payment Info
+                <Divider className="leadmanger_paymentdrawer_divider" />
+                <p
+                  className="leadmanager_paymentdetails_drawer_heading"
+                  id="leadmanager_paymentdetails_heading"
+                >
+                  Fees Details
                 </p>
+                <Row
+                  gutter={16}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                  style={{ marginTop: "20px", marginBottom: "30px" }}
+                >
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Course Fees"
+                      required={true}
+                      type="number"
+                      value={
+                        paymentDetails && paymentDetails.primary_fees
+                          ? paymentDetails.primary_fees
+                          : "-"
+                      }
+                      disabled={true}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonSelectField
+                      label="Tax Type"
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      required={true}
+                      // options={[
+                      //   { id: 1, name: "GST (18%)" },
+                      //   { id: 2, name: "SGST (18%)" },
+                      //   { id: 3, name: "IGST (18%)" },
+                      //   { id: 4, name: "VAT (18%)" },
+                      //   { id: 5, name: "No Tax" },
+                      // ]}
+                      options={[
+                        { id: "18%", name: "18%" },
+                        { id: "0%", name: "0%" },
+                      ]}
+                      value={
+                        paymentDetails.tax_type.includes("18%") ? "18%" : "0%"
+                      }
+                      error={""}
+                      height={"36px"}
+                      fontSize={"12px"}
+                      errorFontSize={"9px"}
+                      disabled={true}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    {/* <CommonInputField
+                              label="Total Amount"
+                              required={true}
+                              disabled
+                              value={amount}
+                              height={"36px"}
+                              labelFontSize={"11px"}
+                              labelMarginTop={"1px"}
+                            /> */}
+                    <CommonInputField
+                      label="Tax Amount"
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      required={true}
+                      value={paymentDetails?.gst_amount}
+                      error={""}
+                      height={"36px"}
+                      fontSize={"12px"}
+                      errorFontSize={"9px"}
+                      disabled={true}
+                    />
+                  </Col>
+                </Row>
+
+                <Divider className="leadmanger_paymentdrawer_divider" />
+
+                <p
+                  className="leadmanager_paymentdetails_drawer_heading"
+                  id="leadmanager_paymentdetails_paymentinfo_heading"
+                >
+                  Calculation's
+                </p>
+
+                <Row
+                  gutter={[16, 22]}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                  style={{ marginTop: "20px", marginBottom: "30px" }}
+                >
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Total Fees Amount"
+                      required={true}
+                      disabled
+                      value={paymentDetails?.total_amount || ""}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Total Paid Amount"
+                      required={true}
+                      disabled
+                      value={(
+                        parseFloat(paymentDetails?.paid_amount || 0) +
+                        (parseFloat(payAmount || 0) -
+                          parseFloat(convenienceFees || 0))
+                      ).toFixed(2)}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Total Pending"
+                      required={true}
+                      disabled
+                      value={balanceAmount !== undefined ? balanceAmount : 0}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Fees"
+                      required={true}
+                      disabled
+                      value={
+                        paymentDetails.tax_type.includes("18%")
+                          ? (
+                              (parseFloat(payAmount || 0) -
+                                parseFloat(convenienceFees || 0)) /
+                              1.18
+                            ).toFixed(2)
+                          : (
+                              parseFloat(payAmount || 0) -
+                              parseFloat(convenienceFees || 0)
+                            ).toFixed(2)
+                      }
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label="TAX"
+                      required={true}
+                      disabled
+                      value={
+                        paymentDetails.tax_type.includes("18%")
+                          ? (
+                              ((parseFloat(payAmount || 0) -
+                                parseFloat(convenienceFees || 0)) *
+                                18) /
+                              118
+                            ).toFixed(2)
+                          : 0
+                      }
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label="Convenience fees"
+                      required={true}
+                      value={convenienceFees}
+                      disabled={true}
+                      type="number"
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                    />
+                  </Col>
+                </Row>
+
+                <Divider className="leadmanger_paymentdrawer_divider" />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <p
+                    className="leadmanager_paymentdetails_drawer_heading"
+                    id="leadmanager_paymentdetails_paymentinfo_heading"
+                    style={{ marginBottom: 0 }}
+                  >
+                    Transaction Details
+                  </p>
+                </div>
 
                 <Row
                   gutter={16}
                   className="leadmanager_paymentdetails_drawer_rowdiv"
+                  style={{ marginTop: "20px" }}
                 >
-                  <Col span={8} style={{ marginTop: "16px" }}>
-                    <CommonInputField
-                      label="Pending Amount"
+                  <Col span={8}>
+                    <CommonSelectField
+                      label="Payment Mode"
                       required={true}
-                      value={pendingAmount}
-                      disabled={true}
-                      type="number"
+                      options={paymentModeOptions}
+                      onChange={handlePaymentMode}
+                      value={paymentMode}
+                      error={paymentModeError}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      errorFontSize="9px"
                     />
                   </Col>
-                  <Col span={8} style={{ marginTop: "16px" }}>
+                  <Col span={8}>
+                    <CommonSelectField
+                      label={"Transaction To"}
+                      required={true}
+                      options={transactionToOptions?.map((item) => ({
+                        id: item.id,
+                        name: item.bank_name,
+                      }))}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        setTransactionTo(selectedId);
+
+                        setPayAmount("");
+                        setConvenienceFees(0);
+
+                        const amt = parseFloat(pendingAmount) || 0;
+                        const actualPaid = 0;
+
+                        setIsShowDueDate(true);
+
+                        setBalanceAmount(getBalanceAmount(amt, actualPaid));
+
+                        if (paymentValidationTrigger) {
+                          setTransactionToError(selectValidator(selectedId));
+                        }
+                      }}
+                      value={transactionTo}
+                      error={transactionToError}
+                      height={"36px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      errorFontSize="9px"
+                    />
+                  </Col>
+                  <Col span={8}>
                     <CommonInputField
-                      label="Pay Amount"
+                      label="Received"
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
                       required={true}
                       onChange={handlePaidNow}
                       value={payAmount}
                       error={payAmountError}
-                      errorFontSize="10px"
+                      errorFontSize="9px"
                       type="number"
                     />
                   </Col>
-                  <Col span={8} style={{ marginTop: "16px" }}>
-                    <CommonGroupedSelectField
-                      label="Payment Mode"
-                      onChange={handlePaymentMode}
-                      value={paymentMode}
-                      error={paymentModeError}
-                    />
-                  </Col>
+                </Row>
 
-                  <Col span={8} style={{ marginTop: "34px" }}>
-                    <CommonInputField
-                      label="Conv. Fee"
-                      required={true}
-                      value={convenienceFees}
-                      type="number"
-                      disabled={true}
-                    />
-                  </Col>
-
-                  <Col span={8} style={{ marginTop: "34px" }}>
+                <Row
+                  gutter={16}
+                  className="leadmanager_paymentdetails_drawer_rowdiv"
+                  style={{ marginTop: "40px", marginBottom: "30px" }}
+                >
+                  <Col span={8}>
                     <CommonMuiDatePicker
                       label="Payment Date"
                       required={true}
@@ -1282,102 +1532,12 @@ const InsertPendingFees = forwardRef(
                       }}
                       value={paymentDate}
                       error={paymentDateError}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"1px"}
+                      errorFontSize={"9px"}
                     />
                   </Col>
 
-                  {/* <Col span={8} style={{ marginTop: "34px" }}>
-            <ImageUploadCrop
-              label="Payment Screenshot"
-              aspect={1}
-              maxSizeMB={1}
-              required={true}
-              value={paymentScreenShotBase64}
-              onChange={(base64) => setPaymentScreenShotBase64(base64)}
-              onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-            />
-            {paymentScreenShotError && (
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d32f2f",
-                  marginTop: 4,
-                }}
-              >
-                {`Payment Screenshot ${paymentScreenShotError}`}
-              </p>
-            )}
-          </Col> */}
-                  <Col span={8} style={{ marginTop: "34px" }}>
-                    <CommonSelectField
-                      label="Place of Payment"
-                      required={true}
-                      options={[
-                        { id: "Tamil Nadu", name: "Tamil Nadu" },
-                        { id: "Out of TN", name: "Out of TN" },
-                        { id: "Out of IND", name: "Out of IND" },
-                      ]}
-                      onChange={(e) => {
-                        setPlaceOfPayment(e.target.value);
-                        if (paymentValidationTrigger) {
-                          setPlaceOfPaymentError(
-                            selectValidator(e.target.value),
-                          );
-                        }
-                      }}
-                      value={placeOfPayment}
-                      error={placeOfPaymentError}
-                    />
-                  </Col>
-                </Row>
-
-                <Row
-                  gutter={16}
-                  className="leadmanager_paymentdetails_drawer_rowdiv"
-                >
-                  <Col span={24} style={{ marginTop: "30px" }}>
-                    <ImageUploadCrop
-                      label="Payment Screenshot"
-                      aspect={1}
-                      maxSizeMB={1}
-                      required={true}
-                      value={paymentScreenShotBase64}
-                      onChange={(base64) => setPaymentScreenShotBase64(base64)}
-                      onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
-                    />
-                    {paymentScreenShotError && (
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          color: "#d32f2f",
-                          marginTop: 4,
-                        }}
-                      >
-                        {`Payment Screenshot ${paymentScreenShotError}`}
-                      </p>
-                    )}
-                  </Col>
-                </Row>
-
-                <Divider className="leadmanger_paymentdrawer_divider" />
-
-                <p className="leadmanager_paymentdetails_drawer_heading">
-                  Balance Amount Details
-                </p>
-
-                <Row
-                  gutter={16}
-                  style={{ marginTop: "20px", marginBottom: "30px" }}
-                  className="leadmanager_paymentdetails_drawer_rowdiv"
-                >
-                  <Col span={8}>
-                    <CommonInputField
-                      label="Balance Amount"
-                      required={true}
-                      value={balanceAmount}
-                      disabled={true}
-                      type="number"
-                    />
-                  </Col>
                   {isShowDueDate ? (
                     <Col span={8}>
                       <CommonMuiDatePicker
@@ -1390,11 +1550,37 @@ const InsertPendingFees = forwardRef(
                         value={dueDate}
                         error={dueDateError}
                         disablePreviousDates={true}
+                        labelFontSize={"11px"}
+                        labelMarginTop={"1px"}
+                        errorFontSize={"9px"}
                       />
                     </Col>
                   ) : (
                     ""
                   )}
+
+                  <Col span={8}>
+                    <ImageUploadCrop
+                      label="Proof Upload"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={paymentScreenShotBase64}
+                      onChange={(base64) => setPaymentScreenShotBase64(base64)}
+                      onErrorChange={setPaymentScreenShotError} // ✅ pass setter directly
+                    />
+                    {paymentScreenShotError && (
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          color: "#d32f2f",
+                          marginTop: 4,
+                        }}
+                      >
+                        {`Payment Screenshot ${paymentScreenShotError}`}
+                      </p>
+                    )}
+                  </Col>
                 </Row>
               </>
             )}
