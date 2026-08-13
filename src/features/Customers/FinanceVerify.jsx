@@ -1602,6 +1602,7 @@ const FinanceVerify = forwardRef(
                     <CommonMuiDatePicker
                       label="Next Due Date"
                       required={true}
+                      is_nextdue_date={true}
                       onChange={(value) => {
                         setDueDate(value);
                         setDueDateError(selectValidator(value));
@@ -1709,7 +1710,11 @@ const FinanceVerify = forwardRef(
             You Want To Verify The Payment Of{" "}
             <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
               {transactionDetails && transactionDetails.amount
-                ? "₹" + (parseFloat(transactionDetails.amount) + parseFloat(transactionDetails.convenience_fees || 0)).toFixed(2)
+                ? "₹" +
+                  (
+                    parseFloat(transactionDetails.amount) +
+                    parseFloat(transactionDetails.convenience_fees || 0)
+                  ).toFixed(2)
                 : "-"}{" "}
             </span>
             for{" "}

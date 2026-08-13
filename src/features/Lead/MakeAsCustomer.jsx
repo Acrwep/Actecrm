@@ -1089,6 +1089,7 @@ const MakeAsCustomer = forwardRef(
                 <CommonMuiDatePicker
                   label="Next Due Date"
                   required={true}
+                  is_nextdue_date={true}
                   onChange={(value) => {
                     setDueDate(value);
                     setDueDateError(selectValidator(value));
@@ -1276,6 +1277,18 @@ const MakeAsCustomer = forwardRef(
             style={{ marginTop: "20px", marginBottom: "50px" }}
             className="leadmanager_paymentdetails_drawer_rowdiv"
           >
+            <Col span={8}>
+              <CommonInputField
+                label={"Place Of Sale"}
+                required={true}
+                labelMarginTop={"1px"}
+                labelFontSize={"11px"}
+                value={""}
+                error={""}
+                errorFontSize={"9px"}
+                disabled={true}
+              />
+            </Col>
             <Col span={8}>
               <CommonSelectField
                 width="100%"

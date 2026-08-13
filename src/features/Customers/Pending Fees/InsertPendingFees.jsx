@@ -1545,6 +1545,7 @@ const InsertPendingFees = forwardRef(
                       <CommonMuiDatePicker
                         label="Next Due Date"
                         required={true}
+                        is_nextdue_date={true}
                         onChange={(value) => {
                           setDueDate(value);
                           setDueDateError(selectValidator(value));

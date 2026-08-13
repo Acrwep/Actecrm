@@ -19,6 +19,7 @@ export default function CommonMuiDatePicker({
   disablePreviousDates,
   allowAllDates,
   disabled,
+  is_nextdue_date = false,
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -51,6 +52,16 @@ export default function CommonMuiDatePicker({
           }
 
           const today = dayjs();
+
+          // If next due date, allow only today + next 7 days
+          if (is_nextdue_date) {
+            const next7Days = today.add(7, "day");
+
+            return (
+              date.isBefore(today, "day") || date.isAfter(next7Days, "day")
+            );
+          }
+
           if (disablePreviousDates) {
             return date.isBefore(today, "day"); // disable past dates
           } else {
