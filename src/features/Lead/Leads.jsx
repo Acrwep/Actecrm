@@ -27,6 +27,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered, MdOutlineDateRange } from "react-icons/md";
+import { RxUpdate } from "react-icons/rx";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
@@ -50,6 +51,7 @@ import {
   leadReEntry,
   getUsersByRole,
   getLeadSubCategory,
+  moveToInterested,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -195,6 +197,11 @@ export default function Leads({
   const [leadSubSourceOptions, setLeadSubSourceOptions] = useState([]);
   const [leadSubSourceFilterId, setLeadSubSourceFilterId] = useState(null);
   const [selectedOrigin, setSelectedOrigin] = useState("");
+  //move to interested
+  const [isOpenMoveToInterestedModal, setIsOpenMoveToInterestedModal] =
+    useState(false);
+  const [nextFollowUpDate, setNextFollowUpDate] = useState(null);
+  const [nextFollowUpDateError, setNextFollowUpDateError] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -445,9 +452,26 @@ export default function Leads({
                 <>
                   {text ? (
                     <div
-                      className={`leadfollwup_table_status_container ${statusClass}`}
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        alignItems: "center",
+                      }}
                     >
-                      <p>{text}</p>
+                      <div
+                        className={`leadfollwup_table_status_container ${statusClass}`}
+                      >
+                        <p>{text}</p>
+                      </div>
+                      {(text === "Dormant" || text === "Not Interested") && (
+                        <Tooltip placement="top" title="Move to Interested">
+                          <RxUpdate
+                            color="#333333d3"
+                            size={14}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </Tooltip>
+                      )}
                     </div>
                   ) : (
                     <p>-</p>
@@ -1095,7 +1119,7 @@ export default function Leads({
                       (a.lead_status || "").localeCompare(b.lead_status || ""),
                     sortDirections: ["ascend", "descend"],
                     width: 140,
-                    render: (text) => {
+                    render: (text, record) => {
                       const statusClass =
                         text === "Super Hot"
                           ? "super_hot_priority"
@@ -1115,9 +1139,34 @@ export default function Leads({
                         <>
                           {text ? (
                             <div
-                              className={`leadfollwup_table_status_container ${statusClass}`}
+                              style={{
+                                display: "flex",
+                                gap: "6px",
+                                alignItems: "center",
+                              }}
                             >
-                              <p>{text}</p>
+                              <div
+                                className={`leadfollwup_table_status_container ${statusClass}`}
+                              >
+                                <p>{text}</p>
+                              </div>
+                              {(text === "Dormant" ||
+                                text === "Not Interested") && (
+                                <Tooltip
+                                  placement="top"
+                                  title="Move to Interested"
+                                >
+                                  <RxUpdate
+                                    color="#333333d3"
+                                    size={14}
+                                    style={{ cursor: "pointer" }}
+                                    onClick={() => {
+                                      setIsOpenMoveToInterestedModal(true);
+                                      setClickedLeadItem(record);
+                                    }}
+                                  />
+                                </Tooltip>
+                              )}
                             </div>
                           ) : (
                             <p>-</p>
@@ -1844,6 +1893,55 @@ export default function Leads({
       setLeadExeCountLoading(false);
       setLeadCountByExecutives([]);
       console.log("error", error);
+    }
+  };
+
+  const handleMoveToInterested = async () => {
+    const nextFollowUpDateValidate = selectValidator(nextFollowUpDate);
+
+    setNextFollowUpDateError(nextFollowUpDateValidate);
+
+    if (nextFollowUpDateValidate) return;
+
+    setAddCourseLoading(true);
+
+    const payload = {
+      lead_id: clickedLeadItem?.id,
+      next_follow_up_date: nextFollowUpDate
+        ? formatToBackendIST(nextFollowUpDate)
+        : null,
+      updated_by: loginUserId,
+      updated_date: formatToBackendIST(new Date()),
+    };
+    try {
+      const response = await moveToInterested(payload);
+      console.log("leads count response", response);
+      CommonMessage("success", "Lead has been moved to Hot successfully");
+      setAddCourseLoading(false);
+      setIsOpenMoveToInterestedModal(false);
+      setNextFollowUpDate(null);
+      setClickedLeadItem(null);
+      getAllLeadData(
+        searchValue,
+        selectedDates[0],
+        selectedDates[1],
+        allDownliners,
+        leadSourceFilterId,
+        leadSubSourceFilterId,
+        leadStatusId,
+        selectedOrigin,
+        filterValuesFromRedux.bucket,
+        pagination.page,
+        pagination.limit,
+      );
+    } catch (error) {
+      setAddCourseLoading(false);
+      console.log("move to interested error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
     }
   };
 
@@ -3456,6 +3554,69 @@ export default function Leads({
             value={reEntryNxtFollowUpDate}
             disablePreviousDates={true}
             error={""}
+          />
+        </div>
+      </Modal>
+
+      {/* move to interested modal */}
+      <Modal
+        title="Move to Interested"
+        open={isOpenMoveToInterestedModal}
+        onCancel={() => {
+          setIsOpenMoveToInterestedModal(false);
+          setNextFollowUpDate(null);
+          setClickedLeadItem(null);
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsOpenMoveToInterestedModal(false);
+              setNextFollowUpDate(null);
+              setClickedLeadItem(null);
+            }}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          addCourseLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleMoveToInterested}
+              className="leads_coursemodal_createbutton"
+            >
+              Move
+            </Button>
+          ),
+        ]}
+        width="30%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <CommonNxtFollowupDatePicker
+            label="Next Follow-up Date"
+            required={true}
+            onChange={(val) => {
+              setNextFollowUpDate(val);
+              setNextFollowUpDateError(selectValidator(val));
+            }}
+            leadTemperature={parseInt(1)}
+            value={nextFollowUpDate}
+            error={nextFollowUpDateError}
+            height={"36px"}
+            labelFontSize={"11px"}
+            fontSize={"11px"}
+            errorFontSize={"9px"}
+            labelMarginTop={"1px"}
           />
         </div>
       </Modal>

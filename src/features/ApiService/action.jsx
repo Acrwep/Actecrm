@@ -767,6 +767,15 @@ export const sendPaymentInvoiceByEmail = async (payload) => {
     throw error;
   }
 };
+
+export const moveToInterested = async (payload) => {
+  try {
+    const response = await api.post("/api/dormantToInterested", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //live leads
 export const getLiveLeads = async (payload) => {
   try {

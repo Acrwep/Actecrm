@@ -133,11 +133,16 @@ const FinanceVerify = forwardRef(
           setUpdatePaymentTransId(
             rejectedItem && rejectedItem.id ? rejectedItem.id : null,
           );
-          setPaidNow(
-            parseFloat(
-              rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0,
-            ).toFixed(2),
+          const rejAmount = parseFloat(
+            rejectedItem && rejectedItem.amount ? rejectedItem.amount : 0,
           );
+          const rejConvFees = parseFloat(
+            rejectedItem && rejectedItem.convenience_fees
+              ? rejectedItem.convenience_fees
+              : 0,
+          );
+
+          setPaidNow((rejAmount + rejConvFees).toFixed(2));
           setPaymentMode(
             rejectedItem && rejectedItem.paymode_id
               ? rejectedItem.paymode_id
@@ -189,6 +194,35 @@ const FinanceVerify = forwardRef(
       }
     };
 
+    useEffect(() => {
+      const selectedBank = transactionToOptions?.find(
+        (item) => item.id == transactionTo,
+      );
+      let conve_fees = 0;
+      if (selectedBank && selectedBank.is_convenience == 1) {
+        conve_fees = ((parseFloat(paidNow) || 0) * 0.03) / 1.03;
+      }
+      setConvenienceFees(conve_fees.toFixed(2));
+
+      const actualPaid = (parseFloat(paidNow) || 0) - conve_fees;
+      const amt = parseFloat(pendingAmount) || 0;
+
+      if (
+        actualPaid < amt ||
+        paidNow === "" ||
+        paidNow === null ||
+        isNaN(parseFloat(paidNow))
+      ) {
+        setIsShowDueDate(true);
+      } else {
+        setIsShowDueDate(false);
+        setDueDate(null);
+        setDueDateError("");
+      }
+
+      setBalanceAmount(getBalanceAmount(amt, actualPaid));
+    }, [paidNow, transactionTo, transactionToOptions, pendingAmount]);
+
     // onchange functions
     const handlePaidNow = (e) => {
       const input = e.target.value;
@@ -198,36 +232,18 @@ const FinanceVerify = forwardRef(
 
       setPaidNow(input); // store as string for user input
 
-      const value = parseFloat(input); // parse for calculations
-      const amt = parseFloat(pendingAmount);
-
-      const selectedBank = transactionToOptions?.find(
-        (item) => item.id == transactionTo,
-      );
-      let conve_fees = 0;
-      if (selectedBank && selectedBank.is_convenience) {
-        conve_fees = ((isNaN(value) ? 0 : value) * 3) / 100;
-        setConvenienceFees(conve_fees.toFixed(2));
-      } else {
-        setConvenienceFees(0);
-      }
-
-      const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
-
-      if (actualPaid < amt || isNaN(value) || input === "" || input === null) {
-        setIsShowDueDate(true);
-      } else {
-        setIsShowDueDate(false);
-        setDueDate(null);
-        setDueDateError("");
-      }
-
-      setBalanceAmount(getBalanceAmount(isNaN(amt) ? 0 : amt, actualPaid));
-
       if (paymentValidationTrigger) {
-        setPaidNowError(
-          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
+        const value = parseFloat(input);
+        const selectedBank = transactionToOptions?.find(
+          (item) => item.id == transactionTo,
         );
+        const conve_fees =
+          selectedBank && selectedBank.is_convenience == 1
+            ? ((isNaN(value) ? 0 : value) * 0.03) / 1.03
+            : 0;
+        const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
+        const amt = parseFloat(pendingAmount);
+        setPaidNowError(priceValidator(actualPaid, amt));
       }
     };
 
@@ -235,31 +251,11 @@ const FinanceVerify = forwardRef(
       const value = e.target.value;
       setPaymentMode(value);
       getBanksData(value);
-      setConvenienceFees(0);
 
       if (paymentValidationTrigger) {
         setPaymentModeError(selectValidator(value));
       }
-
-      //handle balance amount
-      if (
-        paidNow < pendingAmount ||
-        isNaN(paidNow) ||
-        paidNow == "" ||
-        paidNow == null
-      ) {
-        setIsShowDueDate(true);
-      } else {
-        setIsShowDueDate(false);
-        setDueDate(null);
-        setDueDateError("");
-      }
-      setBalanceAmount(
-        getBalanceAmount(
-          isNaN(pendingAmount) ? 0 : pendingAmount,
-          isNaN(paidNow) ? 0 : paidNow,
-        ),
-      );
+      setTransactionTo(null);
     };
 
     const getBanksData = async (paymentmode_id) => {
@@ -455,9 +451,19 @@ const FinanceVerify = forwardRef(
       const paymentDateValidate = selectValidator(paymentDate);
       const transactionToValidate = selectValidator(transactionTo);
 
+      const selectedBankForValidation = transactionToOptions.find(
+        (item) => item.id == transactionTo,
+      );
+      const calculatedConveFees =
+        selectedBankForValidation &&
+        selectedBankForValidation.is_convenience == 1
+          ? ((parseFloat(paidNow) || 0) * 0.03) / 1.03
+          : 0;
+      const calculatedActualPaid =
+        (parseFloat(paidNow) || 0) - calculatedConveFees;
       const paidNowValidate = priceValidator(
-        parseInt(paidNow),
-        parseInt(pendingAmount),
+        calculatedActualPaid,
+        parseFloat(pendingAmount),
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);
@@ -493,7 +499,9 @@ const FinanceVerify = forwardRef(
 
       const payload = {
         invoice_date: formatToBackendIST(paymentDate),
-        amount: paidNow,
+        amount: (
+          parseFloat(paidNow || 0) - parseFloat(convenienceFees || 0)
+        ).toFixed(2),
         convenience_fees: convenienceFees,
         paymode_id: paymentMode,
         bank_id: transactionTo,
@@ -1377,7 +1385,7 @@ const FinanceVerify = forwardRef(
                     labelFontSize={"11px"}
                     labelMarginTop={"1px"}
                     required={true}
-                    value={paymentFullDetails?.gst_amount}
+                    value={paymentFullDetails?.gst_amount || ""}
                     error={""}
                     height={"36px"}
                     fontSize={"12px"}
@@ -1433,7 +1441,11 @@ const FinanceVerify = forwardRef(
                   label="Total Pending"
                   required={true}
                   disabled
-                  value={balanceAmount !== undefined ? balanceAmount : 0}
+                  value={
+                    balanceAmount !== undefined
+                      ? parseFloat(balanceAmount).toFixed(2)
+                      : 0
+                  }
                   height={"36px"}
                   labelFontSize={"11px"}
                   labelMarginTop={"1px"}
@@ -1533,16 +1545,7 @@ const FinanceVerify = forwardRef(
                     onChange={(e) => {
                       const selectedId = e.target.value;
                       setTransactionTo(selectedId);
-
                       setPaidNow("");
-                      setConvenienceFees(0);
-
-                      const amt = parseFloat(pendingAmount) || 0;
-                      const actualPaid = 0;
-
-                      setIsShowDueDate(true);
-
-                      setBalanceAmount(getBalanceAmount(amt, actualPaid));
 
                       if (paymentValidationTrigger) {
                         setTransactionToError(selectValidator(selectedId));
@@ -1706,7 +1709,7 @@ const FinanceVerify = forwardRef(
             You Want To Verify The Payment Of{" "}
             <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
               {transactionDetails && transactionDetails.amount
-                ? "₹" + transactionDetails.amount
+                ? "₹" + (parseFloat(transactionDetails.amount) + parseFloat(transactionDetails.convenience_fees || 0)).toFixed(2)
                 : "-"}{" "}
             </span>
             for{" "}

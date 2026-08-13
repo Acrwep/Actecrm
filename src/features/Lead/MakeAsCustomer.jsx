@@ -146,6 +146,47 @@ const MakeAsCustomer = forwardRef(
       setCustomerBatchTrackId(clickedLeadItem.batch_track_id);
     }, []);
 
+    useEffect(() => {
+      const taxPercentage = taxType === "18%" ? 18 : 0;
+      const taxAmount = (parseFloat(subTotal) || 0) * (taxPercentage / 100);
+      const totalFeesAmount = (parseFloat(subTotal) || 0) + taxAmount;
+      setAmount(totalFeesAmount);
+
+      const selectedBank = transactionToOptions.find(
+        (item) => item.id == transactionTo,
+      );
+      let conve_fees = 0;
+      if (selectedBank && selectedBank.is_convenience == 1) {
+        conve_fees = ((parseFloat(paidNow) || 0) * 0.03) / 1.03;
+      }
+      setConvenienceFees(conve_fees.toFixed(2));
+
+      const actualPaid = (parseFloat(paidNow) || 0) - conve_fees;
+      const pending = totalFeesAmount - actualPaid;
+
+      if (
+        actualPaid < totalFeesAmount ||
+        paidNow === "" ||
+        paidNow === null ||
+        isNaN(parseFloat(paidNow))
+      ) {
+        setIsShowDueDate(true);
+      } else {
+        setIsShowDueDate(false);
+        setDueDate(null);
+        setDueDateError("");
+      }
+
+      setBalanceAmount(pending);
+    }, [
+      subTotal,
+      taxType,
+      paymentMode,
+      paidNow,
+      transactionTo,
+      transactionToOptions,
+    ]);
+
     //onchange functions
     const getCountryName = (countryCode) => {
       let countryName = "";
@@ -193,36 +234,20 @@ const MakeAsCustomer = forwardRef(
 
       setPaidNow(input); // store as string for user input
 
-      const value = parseFloat(input); // parse for calculations
-      const amt = parseFloat(amount);
-
-      const selectedBank = transactionToOptions.find(
-        (item) => item.id == transactionTo,
-      );
-      let conve_fees = 0;
-      if (selectedBank && selectedBank.is_convenience) {
-        conve_fees = ((isNaN(value) ? 0 : value) * 3) / 100;
-        setConvenienceFees(conve_fees.toFixed(2));
-      } else {
-        setConvenienceFees(0);
-      }
-
-      const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
-
-      if (actualPaid < amt || isNaN(value) || input == "" || input == null) {
-        setIsShowDueDate(true);
-      } else {
-        setIsShowDueDate(false);
-        setDueDate(null);
-        setDueDateError("");
-      }
-
-      setBalanceAmount(getBalanceAmount(isNaN(amt) ? 0 : amt, actualPaid));
-
       if (paymentValidationTrigger) {
-        setPaidNowError(
-          priceValidator(isNaN(value) ? 0 : value, parseFloat(amt)),
+        const value = parseFloat(input);
+        const selectedBank = transactionToOptions.find(
+          (item) => item.id == transactionTo,
         );
+        const conve_fees =
+          selectedBank && selectedBank.is_convenience == 1
+            ? ((isNaN(value) ? 0 : value) * 0.03) / 1.03
+            : 0;
+        const actualPaid = (isNaN(value) ? 0 : value) - conve_fees;
+        const taxPercentage = taxType === "18%" ? 18 : 0;
+        const totalFeesAmount =
+          (parseFloat(subTotal) || 0) * (1 + taxPercentage / 100);
+        setPaidNowError(priceValidator(actualPaid, totalFeesAmount));
       }
     };
 
@@ -231,33 +256,6 @@ const MakeAsCustomer = forwardRef(
       if (paymentValidationTrigger) {
         setTaxTypeError(selectValidator(e.target.value));
       }
-      const amnt = calculateAmount(
-        parseFloat(subTotal),
-        e.target.value === "0%" ? 0 : 18,
-      );
-      if (isNaN(amnt)) {
-        setAmount("");
-      } else {
-        setAmount(parseFloat(amnt));
-      }
-
-      const conve_fees = parseFloat(convenienceFees) || 0;
-      const actualPaid = (parseFloat(paidNow) || 0) - conve_fees;
-
-      //handle balance amount
-      if (
-        actualPaid < amnt ||
-        isNaN(paidNow) ||
-        paidNow == "" ||
-        paidNow == null
-      ) {
-        setIsShowDueDate(true);
-      } else {
-        setIsShowDueDate(false);
-        setDueDate(null);
-        setDueDateError("");
-      }
-      setBalanceAmount(getBalanceAmount(isNaN(amnt) ? 0 : amnt, actualPaid));
     };
 
     const handlePaymentMode = (e) => {
@@ -265,36 +263,13 @@ const MakeAsCustomer = forwardRef(
       setPaymentMode(value);
       console.log("taxType", taxType);
       getBanksData(value);
-      const amnt = calculateAmount(
-        parseFloat(subTotal),
-        taxType === "0%" || taxType === "" || taxType === null ? 0 : 18,
-      );
-      setAmount(amnt);
 
       if (paymentValidationTrigger) {
         setPaymentModeError(selectValidator(value));
       }
 
-      const actualPaid = parseFloat(paidNow) || 0;
-
-      //handle balance amount
-      if (
-        actualPaid < amnt ||
-        isNaN(paidNow) ||
-        paidNow === "" ||
-        paidNow === null
-      ) {
-        setIsShowDueDate(true);
-      } else {
-        setIsShowDueDate(false);
-        setDueDate(null);
-        setDueDateError("");
-      }
-      setBalanceAmount(getBalanceAmount(isNaN(amnt) ? 0 : amnt, actualPaid));
-
-      // Reset transaction to and convenience fees
+      // Reset transaction to
       setTransactionTo(null);
-      setConvenienceFees(0);
     };
 
     const getBanksData = async (paymentmode_id) => {
@@ -350,9 +325,18 @@ const MakeAsCustomer = forwardRef(
         : "";
 
       console.log("eeeee", paidNow, amount);
+      const selectedBank = transactionToOptions.find(
+        (item) => item.id == transactionTo,
+      );
+      const calculatedConveFees =
+        selectedBank && selectedBank.is_convenience == 1
+          ? ((parseFloat(paidNow) || 0) * 0.03) / 1.03
+          : 0;
+      const calculatedActualPaid =
+        (parseFloat(paidNow) || 0) - calculatedConveFees;
       const paidNowValidate = priceValidator(
-        parseInt(paidNow),
-        parseInt(amount),
+        calculatedActualPaid,
+        parseFloat(amount),
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);
@@ -448,7 +432,9 @@ const MakeAsCustomer = forwardRef(
         convenience_fees: convenienceFees,
         paymode_id: paymentMode,
         bank_id: transactionTo,
-        paid_amount: paidNow,
+        paid_amount: (
+          parseFloat(paidNow || 0) - parseFloat(convenienceFees || 0)
+        ).toFixed(2),
         payment_screenshot: paymentScreenShotBase64,
         payment_status: "Verify Pending",
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
@@ -869,7 +855,7 @@ const MakeAsCustomer = forwardRef(
                 label="Total Fees Amount"
                 required={true}
                 disabled
-                value={amount}
+                value={amount !== undefined ? parseFloat(amount).toFixed(2) : 0}
                 height={"36px"}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
@@ -880,7 +866,9 @@ const MakeAsCustomer = forwardRef(
                 label="Total Paid Amount"
                 required={true}
                 disabled
-                value={paidNow || 0}
+                value={(
+                  (parseFloat(paidNow) || 0) - parseFloat(convenienceFees || 0)
+                ).toFixed(2)}
                 height={"36px"}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
@@ -891,7 +879,11 @@ const MakeAsCustomer = forwardRef(
                 label="Total Pending"
                 required={true}
                 disabled
-                value={balanceAmount !== undefined ? balanceAmount : 0}
+                value={
+                  balanceAmount !== undefined
+                    ? parseFloat(balanceAmount).toFixed(2)
+                    : 0
+                }
                 height={"36px"}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
@@ -1018,14 +1010,6 @@ const MakeAsCustomer = forwardRef(
 
                   // Null the received amount
                   setPaidNow("");
-                  setConvenienceFees(0);
-
-                  const amt = parseFloat(amount) || 0;
-                  const actualPaid = 0;
-
-                  setIsShowDueDate(true);
-
-                  setBalanceAmount(getBalanceAmount(amt, actualPaid));
 
                   if (paymentValidationTrigger) {
                     setTransactionToError(selectValidator(selectedId));
