@@ -35,6 +35,7 @@ import {
   getUsersByRole,
   paymentMasterUpdate,
   updateCustomer,
+  inserCustomerTrack,
 } from "../ApiService/action";
 import { Country, State } from "country-state-city";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -122,6 +123,8 @@ const CustomerUpdate = forwardRef(
     const [loading, setLoading] = useState(true);
     const [validationTrigger, setValidationTrigger] = useState(false);
     const [callCustomerApi, setCallCustomerApi] = useState(false);
+    const [originalCustomerDetails, setOriginalCustomerDetails] =
+      useState(null);
 
     //payment master usestaes
     const [paymentFullDetails, setPaymentFullDetails] = useState(null);
@@ -274,6 +277,7 @@ const CustomerUpdate = forwardRef(
         const response = await getCustomerById(customerId);
         console.log("customer response", response);
         const customerDetails = response?.data?.data;
+        setOriginalCustomerDetails(customerDetails);
         setModeOfClass(customerDetails?.mode_of_class);
         setPlaceOfService(customerDetails?.place_of_service);
         setSelectedRA(customerDetails?.ra_id);
@@ -662,8 +666,124 @@ const CustomerUpdate = forwardRef(
         is_server_required: server == "Need" ? 1 : 0,
       };
 
+      const changedFields = {};
+      if (originalCustomerDetails) {
+        const getNameFromOptions = (options, val) => {
+          if (!options || !Array.isArray(options)) return val;
+          const found = options.find((o) => String(o.id) === String(val));
+          return found ? found.name || found.course_name || val : val;
+        };
+
+        const fieldsToCompare = [
+          { key: "ra_id", origKey: "ra_id", options: raUsers },
+          { key: "name", origKey: "name" },
+          { key: "email", origKey: "email" },
+          { key: "phone", origKey: "phone" },
+          { key: "phonecode", origKey: "phonecode" },
+          { key: "whatsapp", origKey: "whatsapp" },
+          { key: "whatsapp_phone_code", origKey: "whatsapp_phone_code" },
+          { key: "date_of_birth", origKey: "date_of_birth" },
+          { key: "gender", origKey: "gender" },
+          { key: "date_of_joining", origKey: "date_of_joining" },
+          {
+            key: "enrolled_course",
+            origKey: "enrolled_course",
+            options: courseOptions,
+          },
+          { key: "region_id", origKey: "region_id", options: regionOptions },
+          { key: "branch_id", origKey: "branch_id", options: branchOptions },
+          {
+            key: "batch_track_id",
+            origKey: "batch_track_id",
+            options: batchTrackOptions,
+          },
+          {
+            key: "batch_timing_id",
+            origKey: "batch_timing_id",
+            options: batchTimingOptions,
+          },
+          { key: "country", origKey: "country", options: countryOptions },
+          { key: "state", origKey: "state", options: stateOptions },
+          { key: "area", origKey: "current_location" },
+          {
+            key: "mode_of_class",
+            origKey: "mode_of_class",
+            options: [
+              { id: 1, name: "Online" },
+              { id: 2, name: "Classroom" },
+            ],
+          },
+          {
+            key: "place_of_service",
+            origKey: "place_of_service",
+            options: allBranchesData,
+          },
+          { key: "pincode", origKey: "pincode" },
+          { key: "address", origKey: "address" },
+          { key: "gst_number", origKey: "gst_number" },
+          { key: "placement_support", origKey: "placement_support" },
+        ];
+
+        fieldsToCompare.forEach(({ key, origKey, options }) => {
+          let newVal = payload[key];
+          let oldVal = originalCustomerDetails[origKey];
+
+          if (newVal === null || newVal === undefined) newVal = "";
+          if (oldVal === null || oldVal === undefined) oldVal = "";
+
+          let nValStr = String(newVal);
+          let oValStr = String(oldVal);
+
+          if (key === "date_of_birth" || key === "date_of_joining") {
+            nValStr = nValStr.substring(0, 10);
+            oValStr = oValStr.substring(0, 10);
+          }
+
+          if (nValStr !== oValStr) {
+            changedFields[key] = {
+              previous_value:
+                getNameFromOptions(options, originalCustomerDetails[origKey]) ||
+                "",
+              new_value: getNameFromOptions(options, payload[key]) || "",
+            };
+          }
+        });
+
+        let oldServer = originalCustomerDetails.is_server_required == 1 ? 1 : 0;
+        if (String(payload.is_server_required) !== String(oldServer)) {
+          changedFields["is_server_required"] = {
+            previous_value: oldServer,
+            new_value: payload.is_server_required,
+          };
+        }
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        setUpdateButtonLoading(false);
+        CommonMessage("info", "No changes made to update.");
+        return;
+      }
+
       try {
         await updateCustomer(payload);
+
+        const getloginUserDetails = localStorage.getItem("loginUserDetails");
+        const converAsJson = getloginUserDetails
+          ? JSON.parse(getloginUserDetails)
+          : null;
+        const trackPayload = {
+          customers: [
+            {
+              customer_id: customerId,
+              status: "Customer Details Updated",
+              details: changedFields,
+              status_date: formatToBackendIST(new Date()),
+              updated_by: converAsJson?.user_id || "",
+            },
+          ],
+        };
+        await inserCustomerTrack(trackPayload);
+
         CommonMessage("success", "Updated");
         setTimeout(() => {
           setUpdateButtonLoading(false);
@@ -719,10 +839,66 @@ const CustomerUpdate = forwardRef(
         discount_amount: parseFloat(discountAmount) || 0,
         total_amount: amount - (parseFloat(discountAmount) || 0),
       };
-      console.log("payloaddd", payload);
-      // return;
+      const changedFields = {};
+      if (paymentFullDetails) {
+        const fieldsToCompare = [
+          { key: "tax_type", origKey: "tax_type" },
+          { key: "gst_percentage", origKey: "gst_percentage" },
+          { key: "gst_amount", origKey: "gst_amount" },
+          { key: "discount_amount", origKey: "discount_amount" },
+          { key: "total_amount", origKey: "total_amount" },
+        ];
+
+        fieldsToCompare.forEach(({ key, origKey }) => {
+          let newVal = payload[key];
+          let oldVal = paymentFullDetails[origKey];
+
+          if (newVal === null || newVal === undefined) newVal = "";
+          if (oldVal === null || oldVal === undefined) oldVal = "";
+
+          let nValStr = String(newVal);
+          let oValStr = String(oldVal);
+
+          if (key.includes("amount")) {
+            nValStr = Number(newVal || 0).toFixed(2);
+            oValStr = Number(oldVal || 0).toFixed(2);
+          }
+
+          if (nValStr !== oValStr) {
+            changedFields[key] = {
+              previous_value: oldVal || "",
+              new_value: newVal || "",
+            };
+          }
+        });
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        setUpdateButtonLoading(false);
+        CommonMessage("info", "No changes made to update.");
+        return;
+      }
+
       try {
         await paymentMasterUpdate(payload);
+
+        const getloginUserDetails = localStorage.getItem("loginUserDetails");
+        const converAsJson = getloginUserDetails
+          ? JSON.parse(getloginUserDetails)
+          : null;
+        const trackPayload = {
+          customers: [
+            {
+              customer_id: customerId,
+              status: "Customer Details Updated",
+              details: changedFields,
+              status_date: formatToBackendIST(new Date()),
+              updated_by: converAsJson?.user_id || "",
+            },
+          ],
+        };
+        await inserCustomerTrack(trackPayload);
+
         CommonMessage("success", "Updated");
         setTimeout(() => {
           setUpdateButtonLoading(false);
@@ -876,7 +1052,15 @@ const CustomerUpdate = forwardRef(
                   label="Place Of Service"
                   labelFontSize={"11px"}
                   labelMarginTop={"1px"}
-                  options={allBranchesData}
+                  options={
+                    modeOfClass == 2
+                      ? allBranchesData.filter(
+                          (b) =>
+                            b.name.toLowerCase() !== "bdc" &&
+                            b.name.toLowerCase() !== "virtual",
+                        )
+                      : allBranchesData
+                  }
                   onChange={(e) => {
                     setPlaceOfService(e.target.value);
                     if (validationTrigger) {

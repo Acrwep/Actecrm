@@ -1324,7 +1324,15 @@ const MakeAsCustomer = forwardRef(
                 label="Place Of Service"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
-                options={allBranchesData}
+                options={
+                  modeOfClass == 2
+                    ? allBranchesData.filter(
+                        (b) =>
+                          b.name.toLowerCase() !== "bdc" &&
+                          b.name.toLowerCase() !== "virtual",
+                      )
+                    : allBranchesData
+                }
                 onChange={(e) => {
                   setPlaceOfService(e.target.value);
                   if (paymentValidationTrigger) {

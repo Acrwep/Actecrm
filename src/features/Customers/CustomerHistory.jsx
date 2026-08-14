@@ -818,6 +818,79 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <FaRegEye size={16} /> View Attachment
             </button>
           </div>
+        ) : item.status === "Customer Details Updated" && item.details ? (
+          <div>
+            <p className="customer_history_updateddate">
+              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+            </p>
+            <p className="customer_history_updateddate">
+              Updated By:{"  "}
+              <span style={{ color: "gray" }}>
+                {item?.updated_by_id
+                  ? `${item.updated_by_id} - ${item.updated_by}`
+                  : ""}
+              </span>
+            </p>
+            <div
+              style={{
+                marginTop: "12px",
+                border: "1px solid #f0f0f0",
+                padding: "8px 10px 10px 10px",
+                borderRadius: "6px",
+                backgroundColor: "#fafafa",
+              }}
+            >
+              <p
+                style={{
+                  fontWeight: 500,
+                  fontSize: "12px",
+                  marginBottom: "8px",
+                  borderBottom: "1px solid #e0e0e0",
+                  paddingBottom: "4px",
+                }}
+              >
+                Changes Made:
+              </p>
+              {Object.keys(item.details).map((key) => {
+                const detail = item.details[key];
+                return (
+                  <div
+                    key={key}
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        minWidth: "120px",
+                      }}
+                    >
+                      {key.replace(/_/g, " ")}:
+                    </span>
+                    <span
+                      style={{
+                        color: "#d9363e",
+                        textDecoration: "line-through",
+                      }}
+                    >
+                      {detail.previous_value || "Empty"}
+                    </span>
+                    <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                    <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                      {detail.new_value || "Empty"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : (
           <div>
             <p className="customer_history_updateddate">
