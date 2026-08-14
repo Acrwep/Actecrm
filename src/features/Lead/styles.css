@@ -797,13 +797,13 @@
 }
 
 /* Followup Leads Sub-Buckets UI */
-.leadmanager_bucket.sale_ready_leads {
+.leadmanager_bucket.sales_ready_leads {
   border: 1px solid #dc26266a;
   background-color: #dc262615;
   color: #dc2626;
 }
 
-.leadmanager_bucket.sale_ready_leads.active {
+.leadmanager_bucket.sales_ready_leads.active {
   background-color: #dc2626;
 }
 

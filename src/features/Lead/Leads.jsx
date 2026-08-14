@@ -1473,7 +1473,7 @@ export default function Leads({
       ...(bucket && { bucket: bucket }),
       ...(bucket === "Followup Leads" &&
         [
-          "sale_ready_leads",
+          "sales_ready_leads",
           "highly_interested_leads",
           "interested_leads",
           "exploring_leads",
@@ -2845,7 +2845,7 @@ export default function Leads({
             {(() => {
               const orderedKeys = [
                 "all",
-                "sale_ready_leads",
+                "sales_ready_leads",
                 "highly_interested_leads",
                 "interested_leads",
                 "exploring_leads",
@@ -2883,7 +2883,7 @@ export default function Leads({
                 const isActive = leadActionFilter === key;
                 const actionColorMap = {
                   all: "#dc2626",
-                  sale_ready_leads: "#dc2626",
+                  sales_ready_leads: "#dc2626",
                   highly_interested_leads: "#f97316",
                   interested_leads: "#eab308",
                   exploring_leads: "#3b82f6",
