@@ -3301,6 +3301,8 @@ export default function Customers() {
         <CustomerUpdate
           ref={customerUpdateRef}
           customerId={customerId}
+          setCustomerId={setCustomerId}
+          setCustomerDetails={setCustomerDetails}
           setUpdateDrawerTabKey={setUpdateDrawerTabKey}
           setUpdateButtonLoading={setUpdateButtonLoading}
           setIsOpenEditDrawer={setIsOpenEditDrawer}

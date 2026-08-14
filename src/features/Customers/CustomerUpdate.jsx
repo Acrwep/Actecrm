@@ -48,6 +48,8 @@ const CustomerUpdate = forwardRef(
       callgetCustomersApi,
       setUpdateDrawerTabKey,
       customerId,
+      setCustomerId,
+      setCustomerDetails,
       setUpdateButtonLoading,
       setIsOpenEditDrawer,
     },
@@ -390,17 +392,7 @@ const CustomerUpdate = forwardRef(
         //payment usestaes
         setSubTotal(parseFloat(customerDetails.primary_fees));
         setTaxType(
-          payment_full_details?.tax_type == "GST (18%)"
-            ? 1
-            : payment_full_details?.tax_type == "SGST (18%)"
-              ? 2
-              : payment_full_details?.tax_type == "IGST (18%)"
-                ? 3
-                : payment_full_details?.tax_type == "VAT (18%)"
-                  ? 4
-                  : payment_full_details?.tax_type == "No Tax"
-                    ? 5
-                    : "",
+          payment_full_details?.tax_type.includes("18%") ? "18%" : "0%",
         );
         setAmount(
           (parseFloat(payment_full_details?.total_amount) || 0) +
@@ -544,7 +536,7 @@ const CustomerUpdate = forwardRef(
         setSubTotalError(selectValidator(value));
       }
       //handle total amount
-      const amnt = calculateAmount(value, taxType == 5 ? 0 : 18);
+      const amnt = calculateAmount(value, taxType === "18%" ? 18 : 0);
       if (isNaN(amnt)) {
         setAmount("");
       } else {
@@ -559,7 +551,7 @@ const CustomerUpdate = forwardRef(
       }
       const amnt = calculateAmount(
         parseFloat(subTotal),
-        e.target.value == 5 ? 0 : 18,
+        e.target.value === "18%" ? 18 : 0,
       );
       if (isNaN(amnt)) {
         setAmount("");
@@ -787,6 +779,8 @@ const CustomerUpdate = forwardRef(
         CommonMessage("success", "Updated");
         setTimeout(() => {
           setUpdateButtonLoading(false);
+          setCustomerId(null);
+          setCustomerDetails(null);
           setIsOpenEditDrawer(false);
           setUpdateDrawerTabKey("1");
           setActiveKey("1");
@@ -824,17 +818,8 @@ const CustomerUpdate = forwardRef(
 
       const payload = {
         payment_master_id: paymentFullDetails?.id,
-        tax_type:
-          taxType == 1
-            ? "GST (18%)"
-            : taxType == 2
-              ? "SGST (18%)"
-              : taxType == 3
-                ? "IGST (18%)"
-                : taxType == 4
-                  ? "VAT (18%)"
-                  : "No Tax",
-        gst_percentage: taxType == 5 ? "0%" : "18%",
+        tax_type: taxType === "18%" ? "GST (18%)" : "No Tax",
+        gst_percentage: taxType === "0%" ? "0%" : "18%",
         gst_amount: parseFloat(gstAmount).toFixed(2),
         discount_amount: parseFloat(discountAmount) || 0,
         total_amount: amount - (parseFloat(discountAmount) || 0),
@@ -842,6 +827,7 @@ const CustomerUpdate = forwardRef(
       const changedFields = {};
       if (paymentFullDetails) {
         const fieldsToCompare = [
+          { key: "primary_fees", origKey: "primary_fees" },
           { key: "tax_type", origKey: "tax_type" },
           { key: "gst_percentage", origKey: "gst_percentage" },
           { key: "gst_amount", origKey: "gst_amount" },
@@ -851,6 +837,13 @@ const CustomerUpdate = forwardRef(
 
         fieldsToCompare.forEach(({ key, origKey }) => {
           let newVal = payload[key];
+
+          // Since primary_fees is not sent to paymentMasterUpdate payload,
+          // fetch it directly from the subTotal state for history tracking
+          if (key === "primary_fees") {
+            newVal = subTotal;
+          }
+
           let oldVal = paymentFullDetails[origKey];
 
           if (newVal === null || newVal === undefined) newVal = "";
@@ -859,15 +852,15 @@ const CustomerUpdate = forwardRef(
           let nValStr = String(newVal);
           let oValStr = String(oldVal);
 
-          if (key.includes("amount")) {
+          if (key.includes("amount") || key.includes("fees")) {
             nValStr = Number(newVal || 0).toFixed(2);
             oValStr = Number(oldVal || 0).toFixed(2);
           }
 
           if (nValStr !== oValStr) {
             changedFields[key] = {
-              previous_value: oldVal || "",
-              new_value: newVal || "",
+              previous_value: oValStr,
+              new_value: nValStr,
             };
           }
         });
@@ -902,6 +895,8 @@ const CustomerUpdate = forwardRef(
         CommonMessage("success", "Updated");
         setTimeout(() => {
           setUpdateButtonLoading(false);
+          setCustomerId(null);
+          setCustomerDetails(null);
           setIsOpenEditDrawer(false);
           setUpdateDrawerTabKey("1");
           setActiveKey("1");
@@ -1422,11 +1417,8 @@ const CustomerUpdate = forwardRef(
                   label="Tax Type"
                   required={true}
                   options={[
-                    { id: 1, name: "GST (18%)" },
-                    { id: 2, name: "SGST (18%)" },
-                    { id: 3, name: "IGST (18%)" },
-                    { id: 4, name: "VAT (18%)" },
-                    { id: 5, name: "No Tax" },
+                    { id: "18%", name: "18%" },
+                    { id: "0%", name: "0%" },
                   ]}
                   onChange={handleTaxType}
                   value={taxType}

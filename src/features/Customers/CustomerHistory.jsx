@@ -877,7 +877,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     <span
                       style={{
                         color: "#d9363e",
-                        textDecoration: "line-through",
+                        // textDecoration: "line-through",
                       }}
                     >
                       {detail.previous_value || "Empty"}
