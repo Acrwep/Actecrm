@@ -387,16 +387,18 @@ export default function Receivables({
         );
       },
     },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      width: 80,
-      fixed: "right",
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            {/* <Tooltip
+    ...(permissions.includes("Add Part Payment")
+      ? [
+          {
+            title: "Action",
+            key: "action",
+            dataIndex: "action",
+            width: 80,
+            fixed: "right",
+            render: (text, record) => {
+              return (
+                <div className="trainers_actionbuttonContainer">
+                  {/* <Tooltip
               placement="top"
               title="View Details"
               trigger={["hover", "click"]}
@@ -412,26 +414,26 @@ export default function Receivables({
               />
             </Tooltip> */}
 
-            {permissions?.includes("Add Part Payment") && (
-              <Tooltip
-                placement="top"
-                title="Add Payment"
-                trigger={["hover", "click"]}
-              >
-                <GiReceiveMoney
-                  size={18}
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setIsOpenPaymentDrawer(true);
-                    setCustomerDetails(record);
-                  }}
-                />
-              </Tooltip>
-            )}
-          </div>
-        );
-      },
-    },
+                  <Tooltip
+                    placement="top"
+                    title="Add Payment"
+                    trigger={["hover", "click"]}
+                  >
+                    <GiReceiveMoney
+                      size={18}
+                      className="trainers_action_icons"
+                      onClick={() => {
+                        setIsOpenPaymentDrawer(true);
+                        setCustomerDetails(record);
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   const [columns, setColumns] = useState(

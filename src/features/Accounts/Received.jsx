@@ -1178,6 +1178,12 @@ export default function Received({
                 baseColor: "#ffa502",
                 count: statusCount?.re_payment || 0,
               },
+              {
+                label: "Rejected",
+                value: "REJECTED",
+                baseColor: "#e11d48",
+                count: statusCount?.rejected || 0,
+              },
             ].map((bucket) => {
               const isActive = paymentType === bucket.value;
               const baseColor = bucket.baseColor;
