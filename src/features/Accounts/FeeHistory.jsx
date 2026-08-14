@@ -89,10 +89,10 @@ export default function FeeHistory({
       },
     },
     {
-      title: "Total Collection Days",
+      title: "T.Days Count",
       key: "total_days_taken",
       dataIndex: "total_days_taken",
-      width: 165,
+      width: 120,
       sorter: (a, b) =>
         moment(a.total_days_taken).valueOf() -
         moment(b.total_days_taken).valueOf(),

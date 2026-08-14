@@ -161,10 +161,10 @@ export default function Received({
     ...(paymentType === "REPAYMENT"
       ? [
           {
-            title: "Total Collection Days",
+            title: "T.Days Count",
             key: "total_days_taken",
             dataIndex: "total_days_taken",
-            width: 165,
+            width: 120,
             sorter: (a, b) =>
               moment(a.total_days_taken).valueOf() -
               moment(b.total_days_taken).valueOf(),
@@ -507,7 +507,21 @@ export default function Received({
 
       nonChangeColumns.forEach((c) => {
         if (!filteredBackendColumns.some((b) => b.key === c.key)) {
-          filteredBackendColumns.push({ ...c, isChecked: true });
+          if (c.key === "total_days_taken") {
+            const paidDateIndex = filteredBackendColumns.findIndex(
+              (b) => b.key === "paid_date",
+            );
+            if (paidDateIndex !== -1) {
+              filteredBackendColumns.splice(paidDateIndex + 1, 0, {
+                ...c,
+                isChecked: true,
+              });
+            } else {
+              filteredBackendColumns.push({ ...c, isChecked: true });
+            }
+          } else {
+            filteredBackendColumns.push({ ...c, isChecked: true });
+          }
         }
       });
 
