@@ -17,7 +17,7 @@ import {
   addressValidator,
   formatToBackendIST,
 } from "../Common/Validation";
-import { updateFollowUp } from "../ApiService/action";
+import { moveToInterested, updateFollowUp } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 
 export default function FollowUpDrawerForm({
@@ -32,6 +32,7 @@ export default function FollowUpDrawerForm({
   handleNext,
   currentIndex,
   totalItems,
+  is_moveto_interested = false,
 }) {
   const [communicationStatus, setCommunicationStatus] = useState(null);
   const [communicationStatusError, setCommunicationStatusError] = useState("");
@@ -112,50 +113,86 @@ export default function FollowUpDrawerForm({
       ? JSON.parse(getloginUserDetails)
       : null;
 
-    const payload = {
-      lead_history_id: leadHistoryId,
-      is_today_followup: addTodayFollowup
-        ? formatToBackendIST(new Date())
-        : null,
-      next_follow_up_date: nxtFollowupDate
-        ? formatToBackendIST(nxtFollowupDate)
-        : null,
-      lead_status_id: followupType,
-      lead_id: leadId,
-      communication_status: communicationStatus,
-      contact_mode: contactMode,
-      response_status: responseStatus,
-      next_follow_up_time: nextFollowupTime
-        ? formatToBackendIST(nextFollowupTime)
-        : null,
-      interest_rate: interestRate,
-      comments: newComment,
-      updated_by:
-        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-      updated_date: formatToBackendIST(new Date()),
-    };
-    console.log("update followup payload", payload);
-    try {
-      await updateFollowUp(payload);
-      CommonMessage("success", "Updated");
-      setTimeout(() => {
-        if (onUpdateSuccess) onUpdateSuccess();
-        formReset();
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      console.log("update follow up error", error);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message ||
-          "Something went wrong. Try again later",
-      );
+    if (is_moveto_interested) {
+      const moveto_interested_payload = {
+        lead_id: leadId,
+        next_follow_up_date: nxtFollowupDate
+          ? formatToBackendIST(nxtFollowupDate)
+          : null,
+        lead_action_id: followupType,
+        comments: newComment,
+        communication_status: communicationStatus,
+        contact_mode: contactMode,
+        response_status: responseStatus,
+        interest_rate: interestRate,
+        updated_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        updated_date: formatToBackendIST(new Date()),
+      };
+
+      console.log("move to interested payload", moveto_interested_payload);
+      try {
+        await moveToInterested(moveto_interested_payload);
+        CommonMessage("success", "Lead has been moved to Hot successfully");
+        setTimeout(() => {
+          if (onUpdateSuccess) onUpdateSuccess();
+          formReset();
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        console.log("update follow up error", error);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later",
+        );
+      }
+    } else {
+      const payload = {
+        lead_history_id: leadHistoryId,
+        is_today_followup: addTodayFollowup
+          ? formatToBackendIST(new Date())
+          : null,
+        next_follow_up_date: nxtFollowupDate
+          ? formatToBackendIST(nxtFollowupDate)
+          : null,
+        lead_status_id: followupType,
+        lead_id: leadId,
+        communication_status: communicationStatus,
+        contact_mode: contactMode,
+        response_status: responseStatus,
+        next_follow_up_time: nextFollowupTime
+          ? formatToBackendIST(nextFollowupTime)
+          : null,
+        interest_rate: interestRate,
+        comments: newComment,
+        updated_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        updated_date: formatToBackendIST(new Date()),
+      };
+      console.log("update followup payload", payload);
+      try {
+        await updateFollowUp(payload);
+        CommonMessage("success", "Updated");
+        setTimeout(() => {
+          if (onUpdateSuccess) onUpdateSuccess();
+          formReset();
+        }, 300);
+      } catch (error) {
+        setButtonLoading(false);
+        console.log("update follow up error", error);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later",
+        );
+      }
     }
   };
 
   return (
     <Drawer
-      title="Lead Follow-Up"
+      title={is_moveto_interested ? "Move to Interested" : "Lead Follow-Up"}
       open={isOpen}
       onClose={formReset}
       width="52%"
@@ -760,9 +797,17 @@ export default function FollowUpDrawerForm({
                 { id: 1, name: "Highly Interested", color: "#f97316" },
                 { id: 8, name: "Interested", color: "#eab308" },
                 { id: 9, name: "Exploring", color: "#3b82f6" },
-                { id: 10, name: "Not Responding", color: "#4b5563" },
+                {
+                  id: 10,
+                  name: "Not Responding",
+                  color: "#4b5563",
+                },
                 { id: 2, name: "Not Interested", color: "#111827" },
-              ]}
+              ].filter((option) =>
+                is_moveto_interested
+                  ? option.id !== 10 && option.id !== 2
+                  : true
+              )}
               renderOption={(props, option) => (
                 <li {...props}>
                   <div

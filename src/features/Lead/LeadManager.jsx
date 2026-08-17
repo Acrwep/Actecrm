@@ -107,6 +107,7 @@ export default function LeadManager() {
     eligible_leads: 0,
     interested_leads: 0,
     joinings: 0,
+    open_leads: 0,
   });
   const [liveLeadCount, setLiveLeadCount] = useState(0);
   const [junkLeadCount, setJunkLeadCount] = useState(0);
@@ -257,6 +258,7 @@ export default function LeadManager() {
           "interested_leads",
           "followup_leads",
           "joinings",
+          "open_leads",
         ].includes(activePage)
       ) {
         handleTabClick(hasAddLeadPerm ? "add_lead" : "all_leads");
@@ -506,6 +508,7 @@ export default function LeadManager() {
         "interested_leads",
         "followup_leads",
         "joinings",
+        "open_leads",
       ].includes(tab);
       return {
         ...prev,
@@ -544,6 +547,7 @@ export default function LeadManager() {
         "interested_leads",
         "followup_leads",
         "joinings",
+        "open_leads",
       ].includes(activePage)
     ) {
       const bucketMapping = {
@@ -553,6 +557,7 @@ export default function LeadManager() {
         interested_leads: "Interested Leads",
         followup_leads: "Followup Leads",
         joinings: "Joinings",
+        open_leads: "Open Leads",
       };
       dispatch(
         storeLeadFilterValues({
@@ -606,6 +611,7 @@ export default function LeadManager() {
         "interested_leads",
         "followup_leads",
         "joinings",
+        "open_leads",
       ].includes(activePage);
 
       const keyToIncrement = isLeadBucket ? "leads" : activePage;
@@ -761,6 +767,17 @@ export default function LeadManager() {
             <p style={{ margin: 0 }}>{`Joinings (${bucketCounts.joinings})`}</p>
           </div>
 
+          <div
+            className={
+              activePage === "open_leads"
+                ? "open_leads_tab_activebutton"
+                : "open_leads_tab_inactivebutton"
+            }
+            onClick={() => handleTabClick("open_leads")}
+          >
+            <p style={{ margin: 0 }}>{`Open Leads (${bucketCounts.open_leads || 0})`}</p>
+          </div>
+
           {/* {permissions.includes("Junk Leads Tab") && (
             <button
               className={
@@ -818,6 +835,7 @@ export default function LeadManager() {
               "interested_leads",
               "followup_leads",
               "joinings",
+              "open_leads",
             ].includes(activePage)
               ? "block"
               : "none",

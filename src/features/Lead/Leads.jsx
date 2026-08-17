@@ -51,7 +51,6 @@ import {
   leadReEntry,
   getUsersByRole,
   getLeadSubCategory,
-  moveToInterested,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -103,6 +102,7 @@ export default function Leads({
     interested_leads: "interested_leads",
     sales_ready: "sales_ready",
     joinings: "joinings",
+    open_leads: "open_leads",
   };
   const [leadBucketName, setLeadBucketName] = useState("All");
   const [leadStatusId, setLeadStatusId] = useState(null);
@@ -135,7 +135,7 @@ export default function Leads({
   const [followupHistory, setFollowupHistory] = useState([]);
   const [leadHistoryId, setLeadHistoryId] = useState(null);
 
-  const openFollowUpForm = async (record) => {
+  const openFollowUpForm = async (record, is_moveto_interested = false) => {
     setSelectedLeadForFollowUp(record);
     try {
       const response = await getLeadById(record.id);
@@ -163,7 +163,11 @@ export default function Leads({
       setFollowupHistory([]);
       setLeadHistoryId(null);
     }
-    setIsOpenFollowUpDrawer(true);
+    if (is_moveto_interested) {
+      setIsOpenMoveToInterestedDrawer(true);
+    } else {
+      setIsOpenFollowUpDrawer(true);
+    }
   };
 
   const [filterType, setFilterType] = useState(1);
@@ -198,7 +202,7 @@ export default function Leads({
   const [leadSubSourceFilterId, setLeadSubSourceFilterId] = useState(null);
   const [selectedOrigin, setSelectedOrigin] = useState("");
   //move to interested
-  const [isOpenMoveToInterestedModal, setIsOpenMoveToInterestedModal] =
+  const [isOpenMoveToInterestedDrawer, setIsOpenMoveToInterestedDrawer] =
     useState(false);
   const [nextFollowUpDate, setNextFollowUpDate] = useState(null);
   const [nextFollowUpDateError, setNextFollowUpDateError] = useState(null);
@@ -469,6 +473,9 @@ export default function Leads({
                             color="#333333d3"
                             size={14}
                             style={{ cursor: "pointer" }}
+                            onClick={() => {
+                              openFollowUpForm(record, true);
+                            }}
                           />
                         </Tooltip>
                       )}
@@ -514,6 +521,7 @@ export default function Leads({
 
             {permissions.includes("Edit Lead Button") &&
               isShowEdit &&
+              leadBucketName !== "Open Leads" &&
               record.is_customer_reg === 0 && (
                 <AiOutlineEdit
                   className="leadmanager_action_icon"
@@ -709,6 +717,7 @@ export default function Leads({
         "interested_leads",
         "followup_leads",
         "joinings",
+        "open_leads",
         "leads",
       ].includes(activePage) &&
       activePage !== "add_lead"
@@ -735,6 +744,7 @@ export default function Leads({
           interested_leads: "Interested Leads",
           followup_leads: "Followup Leads",
           joinings: "Joinings",
+          open_leads: "Open Leads",
         };
         const targetBucket =
           bucketMapping[activePage] || filterValuesFromRedux.bucket;
@@ -799,6 +809,7 @@ export default function Leads({
           "interested_leads",
           "followup_leads",
           "joinings",
+          "open_leads",
         ].includes(activePage)
       ) {
         setLoading(true);
@@ -809,6 +820,7 @@ export default function Leads({
           interested_leads: "Interested Leads",
           followup_leads: "Followup Leads",
           joinings: "Joinings",
+          open_leads: "Open Leads",
         };
         const targetBucket = bucketMapping[activePage];
 
@@ -1161,8 +1173,7 @@ export default function Leads({
                                     size={14}
                                     style={{ cursor: "pointer" }}
                                     onClick={() => {
-                                      setIsOpenMoveToInterestedModal(true);
-                                      setClickedLeadItem(record);
+                                      openFollowUpForm(record, true);
                                     }}
                                   />
                                 </Tooltip>
@@ -1204,6 +1215,7 @@ export default function Leads({
 
                       {permissions.includes("Edit Lead Button") &&
                         isShowEdit &&
+                        leadBucketName !== "Open Leads" &&
                         record.is_customer_reg === 0 && (
                           <AiOutlineEdit
                             className="leadmanager_action_icon"
@@ -1465,7 +1477,7 @@ export default function Leads({
               : {}),
       start_date: startDate,
       end_date: endDate,
-      user_ids: downliners,
+      ...(bucket === "Open Leads" ? {} : { user_ids: downliners }),
       ...(leadsource && { lead_type: leadsource }),
       ...(lead_sub_source && { sub_source_id: lead_sub_source }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
@@ -1560,6 +1572,7 @@ export default function Leads({
           interested_leads: bucket_counts["interested_leads"] || 0,
           followup_leads: bucket_counts["followup_leads"] || 0,
           joinings: bucket_counts["joinings"] || 0,
+          open_leads: bucket_counts["open_leads"] || 0,
         });
       }
 
@@ -1600,6 +1613,11 @@ export default function Leads({
           id: "joinings",
           name: "Joinings",
           count: bucket_counts["joinings"] || 0,
+        },
+        {
+          id: "open_leads",
+          name: "Open Leads",
+          count: bucket_counts["open_leads"] || 0,
         },
       ];
 
@@ -1896,55 +1914,6 @@ export default function Leads({
     }
   };
 
-  const handleMoveToInterested = async () => {
-    const nextFollowUpDateValidate = selectValidator(nextFollowUpDate);
-
-    setNextFollowUpDateError(nextFollowUpDateValidate);
-
-    if (nextFollowUpDateValidate) return;
-
-    setAddCourseLoading(true);
-
-    const payload = {
-      lead_id: clickedLeadItem?.id,
-      next_follow_up_date: nextFollowUpDate
-        ? formatToBackendIST(nextFollowUpDate)
-        : null,
-      updated_by: loginUserId,
-      updated_date: formatToBackendIST(new Date()),
-    };
-    try {
-      const response = await moveToInterested(payload);
-      console.log("leads count response", response);
-      CommonMessage("success", "Lead has been moved to Hot successfully");
-      setAddCourseLoading(false);
-      setIsOpenMoveToInterestedModal(false);
-      setNextFollowUpDate(null);
-      setClickedLeadItem(null);
-      getAllLeadData(
-        searchValue,
-        selectedDates[0],
-        selectedDates[1],
-        allDownliners,
-        leadSourceFilterId,
-        leadSubSourceFilterId,
-        leadStatusId,
-        selectedOrigin,
-        filterValuesFromRedux.bucket,
-        pagination.page,
-        pagination.limit,
-      );
-    } catch (error) {
-      setAddCourseLoading(false);
-      console.log("move to interested error", error);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
   const handleDownload = async () => {
     const isWithIn30days = isWithin30Days(selectedDates[0], selectedDates[1]);
     console.log("isWithIn30days", isWithIn30days);
@@ -2139,85 +2108,88 @@ export default function Leads({
                 </div>
               </div>
             </Col>
-            {permissions.includes("Lead Executive Filter") && (
-              <Col flex="26%">
-                <div style={{ width: "100%" }}>
-                  <div className="overallduecustomers_filterContainer">
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <CommonMultiSelectField
-                        height="34px"
-                        label="Select User"
-                        labelMarginTop="1px"
-                        labelFontSize="11px"
-                        options={subUsers}
-                        onChange={handleSelectUser}
-                        value={selectedUserId}
-                        borderRightNone={true}
-                      />
-                    </div>
-                    <div
-                      onClick={() => {
-                        if (executiveCountTooltip) {
-                          return;
-                        }
-                        handleLeadCountByExecutive();
-                      }}
-                      style={{ marginLeft: "-2px" }}
-                    >
-                      <Flex
-                        justify="center"
-                        align="center"
-                        style={{ whiteSpace: "nowrap" }}
-                      >
-                        <Tooltip
-                          placement="bottomLeft"
-                          color="#fff"
-                          title={
-                            <>
-                              {leadExeCountLoading ? (
-                                <div className="leadsmanager_executivecount_loader_container">
-                                  <Spin size="small" />
-                                </div>
-                              ) : (
-                                <div
-                                  style={{
-                                    maxHeight: "140px",
-                                    overflowY: "auto",
-                                    whiteSpace: "pre-line",
-                                    lineHeight: "24px",
-                                  }}
-                                >
-                                  {leadCountByExecutives.map((item, index) => {
-                                    return (
-                                      <p className="leadsmanager_executivecount_text">
-                                        {`${index + 1}. ${item.user_name} - ${
-                                          item.lead_count
-                                        }`}
-                                      </p>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </>
+            {permissions.includes("Lead Executive Filter") &&
+              leadBucketName != "Open Leads" && (
+                <Col flex="26%">
+                  <div style={{ width: "100%" }}>
+                    <div className="overallduecustomers_filterContainer">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <CommonMultiSelectField
+                          height="34px"
+                          label="Select User"
+                          labelMarginTop="1px"
+                          labelFontSize="11px"
+                          options={subUsers}
+                          onChange={handleSelectUser}
+                          value={selectedUserId}
+                          borderRightNone={true}
+                        />
+                      </div>
+                      <div
+                        onClick={() => {
+                          if (executiveCountTooltip) {
+                            return;
                           }
-                          trigger={["click"]}
-                          onOpenChange={(value) => {
-                            setExecutiveCountTooltip(value);
-                            if (value === false) {
-                              setLeadCountByExecutives([]);
-                            }
-                          }}
+                          handleLeadCountByExecutive();
+                        }}
+                        style={{ marginLeft: "-2px" }}
+                      >
+                        <Flex
+                          justify="center"
+                          align="center"
+                          style={{ whiteSpace: "nowrap" }}
                         >
-                          <Button className="leadsmanager_executivecount_iconcontainer">
-                            <MdFormatListNumbered size={16} />
-                          </Button>
-                        </Tooltip>
-                      </Flex>
+                          <Tooltip
+                            placement="bottomLeft"
+                            color="#fff"
+                            title={
+                              <>
+                                {leadExeCountLoading ? (
+                                  <div className="leadsmanager_executivecount_loader_container">
+                                    <Spin size="small" />
+                                  </div>
+                                ) : (
+                                  <div
+                                    style={{
+                                      maxHeight: "140px",
+                                      overflowY: "auto",
+                                      whiteSpace: "pre-line",
+                                      lineHeight: "24px",
+                                    }}
+                                  >
+                                    {leadCountByExecutives.map(
+                                      (item, index) => {
+                                        return (
+                                          <p className="leadsmanager_executivecount_text">
+                                            {`${index + 1}. ${item.user_name} - ${
+                                              item.lead_count
+                                            }`}
+                                          </p>
+                                        );
+                                      },
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            }
+                            trigger={["click"]}
+                            onOpenChange={(value) => {
+                              setExecutiveCountTooltip(value);
+                              if (value === false) {
+                                setLeadCountByExecutives([]);
+                              }
+                            }}
+                          >
+                            <Button className="leadsmanager_executivecount_iconcontainer">
+                              <MdFormatListNumbered size={16} />
+                            </Button>
+                          </Tooltip>
+                        </Flex>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Col>
-            )}
+                </Col>
+              )}
 
             <Col flex="none">
               <CommonMuiCustomDatePicker
@@ -3120,6 +3092,7 @@ export default function Leads({
 
                         {permissions.includes("Edit Lead Button") &&
                           isShowEdit &&
+                          leadBucketName !== "Open Leads" &&
                           record.is_customer_reg === 0 && (
                             <AiOutlineEdit
                               className="leadmanager_action_icon"
@@ -3558,69 +3531,6 @@ export default function Leads({
         </div>
       </Modal>
 
-      {/* move to interested modal */}
-      <Modal
-        title="Move to Interested"
-        open={isOpenMoveToInterestedModal}
-        onCancel={() => {
-          setIsOpenMoveToInterestedModal(false);
-          setNextFollowUpDate(null);
-          setClickedLeadItem(null);
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsOpenMoveToInterestedModal(false);
-              setNextFollowUpDate(null);
-              setClickedLeadItem(null);
-            }}
-            className="leads_coursemodal_cancelbutton"
-          >
-            Cancel
-          </Button>,
-
-          addCourseLoading ? (
-            <Button
-              key="create"
-              type="primary"
-              className="leads_coursemodal_loading_createbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              key="create"
-              type="primary"
-              onClick={handleMoveToInterested}
-              className="leads_coursemodal_createbutton"
-            >
-              Move
-            </Button>
-          ),
-        ]}
-        width="30%"
-      >
-        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-          <CommonNxtFollowupDatePicker
-            label="Next Follow-up Date"
-            required={true}
-            onChange={(val) => {
-              setNextFollowUpDate(val);
-              setNextFollowUpDateError(selectValidator(val));
-            }}
-            leadTemperature={parseInt(1)}
-            value={nextFollowUpDate}
-            error={nextFollowUpDateError}
-            height={"36px"}
-            labelFontSize={"11px"}
-            fontSize={"11px"}
-            errorFontSize={"9px"}
-            labelMarginTop={"1px"}
-          />
-        </div>
-      </Modal>
-
       {/* View Lead Drawer */}
       <Drawer
         title={
@@ -3658,6 +3568,35 @@ export default function Leads({
         leadHistoryId={leadHistoryId}
         onUpdateSuccess={() => {
           setIsOpenFollowUpDrawer(false);
+          // if (refreshLeadFollowUp) refreshLeadFollowUp();
+          if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
+
+          getAllLeadData(
+            searchValue,
+            selectedDates[0],
+            selectedDates[1],
+            allDownliners,
+            leadSourceFilterId,
+            leadSubSourceFilterId,
+            leadStatusId,
+            selectedOrigin,
+            filterValuesFromRedux.bucket,
+            pagination.page,
+            pagination.limit,
+          );
+        }}
+      />
+      {/* move to interested */}
+      <FollowUpDrawerForm
+        isOpen={isOpenMoveToInterestedDrawer}
+        onClose={() => setIsOpenMoveToInterestedDrawer(false)}
+        leadDetails={selectedLeadForFollowUp}
+        commentsHistory={followupHistory}
+        leadId={selectedLeadForFollowUp?.id}
+        leadHistoryId={leadHistoryId}
+        is_moveto_interested={true}
+        onUpdateSuccess={() => {
+          setIsOpenMoveToInterestedDrawer(false);
           // if (refreshLeadFollowUp) refreshLeadFollowUp();
           if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
 
