@@ -126,10 +126,10 @@ export default function FeeHistory({
       },
     },
     {
-      title: "Mode Of Class",
+      title: "Mode Of Training",
       key: "mode_of_class",
       dataIndex: "mode_of_class",
-      width: 110,
+      width: 125,
       render: (text) => {
         return <EllipsisTooltip text={text ? text : "-"} />;
       },

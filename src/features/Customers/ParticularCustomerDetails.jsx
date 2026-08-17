@@ -363,7 +363,10 @@ export default function ParticularCustomerDetails({ customerId }) {
             {renderField("Branch", customerDetails?.branch_name)}
           </Col>
           <Col span={6}>
-            {renderField("Mode of Class", customerDetails?.mode_of_class_name)}
+            {renderField(
+              "Mode of Training",
+              customerDetails?.mode_of_class_name,
+            )}
           </Col>
           <Col span={6}>
             {renderField(

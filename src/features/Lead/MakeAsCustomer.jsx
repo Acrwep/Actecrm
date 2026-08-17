@@ -711,13 +711,13 @@ const MakeAsCustomer = forwardRef(
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
+                  <p className="customerdetails_rowheading">Preferred Batch</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.batch_track
-                    ? clickedLeadItem.batch_track
+                  {clickedLeadItem && clickedLeadItem.preferred_batch_name
+                    ? clickedLeadItem.preferred_batch_name
                     : "-"}
                 </p>
               </Col>
@@ -1292,7 +1292,7 @@ const MakeAsCustomer = forwardRef(
             <Col span={8}>
               <CommonSelectField
                 width="100%"
-                label="Mode of Class"
+                label="Mode of Training"
                 labelMarginTop={"1px"}
                 labelFontSize={"11px"}
                 options={[

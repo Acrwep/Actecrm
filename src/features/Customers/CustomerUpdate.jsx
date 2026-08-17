@@ -1015,7 +1015,7 @@ const CustomerUpdate = forwardRef(
               <Col span={8}>
                 <CommonSelectField
                   width="100%"
-                  label="Mode of Class"
+                  label="Mode of Training"
                   labelMarginTop={"1px"}
                   labelFontSize={"11px"}
                   options={[

@@ -396,7 +396,7 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdLocationOn size={16} /> Mode of Class
+                    <MdLocationOn size={16} /> Mode of Training
                   </span>
                   <span
                     style={{

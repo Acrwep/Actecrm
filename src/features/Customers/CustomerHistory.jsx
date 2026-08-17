@@ -436,7 +436,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <p className="customer_history_details_label">
-                      Mode Of Class
+                      Mode Of Training
                     </p>
                   </Col>
                   <Col span={12}>
@@ -593,7 +593,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <p className="customer_history_details_label">
-                      Mode Of Class
+                      Mode Of Training
                     </p>
                   </Col>
                   <Col span={12}>

@@ -979,3 +979,19 @@ export const customersStatusDisplay = (record) => {
 
   return record.status || "";
 };
+
+export const getRegionNameByUserId = (user_id) => {
+  if (!user_id) {
+    return "-";
+  }
+
+  if (user_id.includes("HUB")) {
+    return "Hub";
+  } else if (user_id.includes("CHN")) {
+    return "Chennai";
+  } else if (user_id.includes("BNG")) {
+    return "Bangalore";
+  } else {
+    return "Admin";
+  }
+};

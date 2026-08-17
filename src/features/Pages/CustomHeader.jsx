@@ -41,6 +41,7 @@ import {
   changePassword,
   getCustomerById,
   getCustomerFullHistory,
+  getLeadById,
   getNotifications,
   getTechnologies,
   getUsers,
@@ -59,6 +60,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import {
   confirmPasswordValidator,
+  getRegionNameByUserId,
   passwordValidator,
   shortRelativeTime,
 } from "../Common/Validation";
@@ -315,6 +317,18 @@ export default function CustomHeader() {
     setTimeout(() => {
       getCourseData(e.target.value);
     }, 300);
+  };
+
+  const fetchLeadDetails = async (lead_id) => {
+    try {
+      const res = await getLeadById(lead_id);
+      console.log("particular lead details", res);
+      if (res?.data?.data) {
+        setLeadDetails(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handlePreview = async (file) => {
@@ -1045,7 +1059,7 @@ Course Advisor
                               onClick={() => {
                                 setIsOpenLeadDetailsDrawer(true);
                                 console.log("global search lead details", item);
-                                setLeadDetails(item);
+                                fetchLeadDetails(item.id);
                               }}
                             >
                               <p className="header_search_options_name">
@@ -1385,8 +1399,28 @@ Course Advisor
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.region_name
+                  {/* {leadDetails && leadDetails.region_name
                     ? leadDetails.region_name
+                    : "-"} */}
+                  {getRegionNameByUserId(
+                    leadDetails && leadDetails.lead_assigned_to_id
+                      ? leadDetails.lead_assigned_to_id
+                      : "",
+                  )}
+                </p>
+              </Col>
+            </Row>
+
+            <Row style={{ marginTop: "12px" }}>
+              <Col span={12}>
+                <div className="customerdetails_rowheadingContainer">
+                  <p className="customerdetails_rowheading">Assigned Branch</p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <p className="customerdetails_text">
+                  {leadDetails && leadDetails.assigned_branch_name
+                    ? leadDetails.assigned_branch_name
                     : "-"}
                 </p>
               </Col>
@@ -1395,28 +1429,13 @@ Course Advisor
             <Row style={{ marginTop: "12px" }}>
               <Col span={12}>
                 <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
+                  <p className="customerdetails_rowheading">Preferred Batch</p>
                 </div>
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {leadDetails && leadDetails.branch_name
-                    ? leadDetails.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {leadDetails && leadDetails.batch_track
-                    ? leadDetails.batch_track
+                  {leadDetails && leadDetails.preferred_batch_name
+                    ? leadDetails.preferred_batch_name
                     : "-"}
                 </p>
               </Col>

@@ -183,22 +183,6 @@ const AddNewLead = forwardRef(
       useState(false);
     const [assignedBranchId, setAssignedBranchId] = useState("");
     const [branchError, setBranchError] = useState("");
-    const batchTrackOptions = [
-      {
-        id: 1,
-        name: "Normal",
-      },
-      {
-        id: 2,
-        name: "Fastrack",
-      },
-      {
-        id: 3,
-        name: "Custom",
-      },
-    ];
-    const [batchTrack, setBatchTrack] = useState(1);
-    const [batchTrackError, setBatchTrackError] = useState("");
     //response status usestates
     const communicationStatusOptions = [
       { id: 1, name: "Communicated" },
@@ -478,7 +462,7 @@ const AddNewLead = forwardRef(
           setDefaultBranch(updateLeadItem.assigned_branch_id);
           setAssignedBranchId(updateLeadItem.assigned_branch_id);
         }
-        setBatchTrack(updateLeadItem.batch_track_id);
+        setPreferredBatch(updateLeadItem?.preferred_batch ?? 1);
         setInterestRate(updateLeadItem?.interest_rate || 5);
         setComments(updateLeadItem.comments);
       } else if (liveLeadItem) {
@@ -979,7 +963,6 @@ const AddNewLead = forwardRef(
       const branchValidate = updateLeadItem
         ? ""
         : selectValidator(assignedBranchId);
-      const batchTrackValidate = selectValidator(batchTrack);
       const contactModeValidate = communicationStatus
         ? selectValidator(contactMode)
         : "";
@@ -1045,7 +1028,6 @@ const AddNewLead = forwardRef(
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
-      setBatchTrackError(batchTrackValidate);
 
       if (
         nameValidate ||
@@ -1065,8 +1047,7 @@ const AddNewLead = forwardRef(
         followUpStatusIdValidate ||
         nxtFollowupDateValidate ||
         regionIdValidate ||
-        branchValidate ||
-        batchTrackValidate
+        branchValidate
       ) {
         console.log({
           nameValidate,
@@ -1087,7 +1068,6 @@ const AddNewLead = forwardRef(
           nxtFollowupDateValidate,
           regionIdValidate,
           branchValidate,
-          batchTrackValidate,
         });
 
         setTimeout(() => {
@@ -1150,7 +1130,7 @@ const AddNewLead = forwardRef(
         secondary_course_id: secondaryCourse,
         secondary_fees: secondaryFees ? secondaryFees : 0,
         preferred_mode: preferredMode,
-        preferred_batch: batchTrack,
+        preferred_batch: preferredBatch,
         counsel: counsel,
         domain_origin:
           updateLeadItem && updateLeadItem.domain_origin
@@ -1187,7 +1167,7 @@ const AddNewLead = forwardRef(
           : null,
         region_id: regionId,
         branch_id: leadOwnerBranch,
-        batch_track_id: batchTrack,
+        batch_track_id: null,
         comments: comments,
         ...(isReAssign && isReAssign == true
           ? { is_reentry: true }
@@ -1396,8 +1376,6 @@ const AddNewLead = forwardRef(
       // setAssignExecutiveError("");
       setExpectDateJoin(null);
       setRegionError("");
-      setBatchTrack(1);
-      setBatchTrackError("");
       setComments("");
       setLeadSubSource(null);
       setLeadSubSourceError("");
