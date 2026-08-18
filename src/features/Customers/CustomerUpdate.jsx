@@ -104,9 +104,9 @@ const CustomerUpdate = forwardRef(
     const [regionOptions, setRegionOptions] = useState([]);
     const [regionId, setRegionId] = useState(null);
     const [regionError, setRegionError] = useState("");
-    const [batchTrackOptions, setBatchTrackOptions] = useState([]);
-    const [batchTrack, setBatchTrack] = useState(null);
-    const [batchTrackError, setBatchTrackError] = useState("");
+    const [preferredBatchOptions, setPreferredBatchOptions] = useState([]);
+    const [preferredBatch, setPreferredBatch] = useState(null);
+    const [preferredBatchError, setPreferredBatchError] = useState("");
     const [batchTimingOptions, setBatchTimingOptions] = useState([]);
     const [batchTiming, setBatchTiming] = useState(null);
     const [batchTimingError, setBatchTimingError] = useState("");
@@ -170,9 +170,9 @@ const CustomerUpdate = forwardRef(
     const getBatchTrackData = async () => {
       try {
         const response = await getBatchTrack();
-        setBatchTrackOptions(response?.data?.result || []);
+        setPreferredBatchOptions(response?.data?.result || []);
       } catch (error) {
-        setBatchTrackOptions([]);
+        setPreferredBatchOptions([]);
         console.log("response status error", error);
       } finally {
         setTimeout(() => {
@@ -340,7 +340,7 @@ const CustomerUpdate = forwardRef(
           setAreaOptions([]);
           console.log("area error", error);
         }
-        setBatchTrack(customerDetails?.batch_track_id ?? "");
+        setPreferredBatch(customerDetails?.batch_track_id ?? "");
         setBatchTiming(customerDetails?.batch_timing_id ?? "");
         setBranchId(customerDetails?.branch_id ?? "");
         setCurrentLocation(customerDetails?.place_of_supply ?? "");
@@ -574,7 +574,7 @@ const CustomerUpdate = forwardRef(
       const courseValidate = selectValidator(course);
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = selectValidator(branchId);
-      const batchTrackValidate = selectValidator(batchTrack);
+      const preferredBatchValidate = selectValidator(preferredBatch);
       const batchTimingValidate = selectValidator(batchTiming);
       const placementSupportValidate = selectValidator(placementSupport);
 
@@ -590,7 +590,7 @@ const CustomerUpdate = forwardRef(
       setCourseError(courseValidate);
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
-      setBatchTrackError(batchTrackValidate);
+      setPreferredBatchError(preferredBatchValidate);
       setBatchTimingError(batchTimingValidate);
       setPlacementSupportError(placementSupportValidate);
 
@@ -613,7 +613,7 @@ const CustomerUpdate = forwardRef(
         courseValidate ||
         regionIdValidate ||
         branchIdValidate ||
-        batchTrackValidate ||
+        preferredBatchValidate ||
         batchTimingValidate ||
         placementSupportValidate
       )
@@ -640,7 +640,7 @@ const CustomerUpdate = forwardRef(
         enrolled_course: course,
         region_id: regionId,
         branch_id: branchId,
-        batch_track_id: batchTrack,
+        batch_track_id: preferredBatch,
         batch_timing_id: batchTiming,
         country: countryId,
         state: stateId,
@@ -687,7 +687,7 @@ const CustomerUpdate = forwardRef(
           {
             key: "batch_track_id",
             origKey: "batch_track_id",
-            options: batchTrackOptions,
+            options: preferredBatchOptions,
           },
           {
             key: "batch_timing_id",
@@ -948,8 +948,8 @@ const CustomerUpdate = forwardRef(
       setAreaIdError("");
       setCourse("");
       setCourseError("");
-      setBatchTrack("");
-      setBatchTrackError("");
+      setPreferredBatch("");
+      setPreferredBatchError("");
       setBatchTiming("");
       setBatchTimingError("");
       setBranchId(null);
@@ -1328,17 +1328,17 @@ const CustomerUpdate = forwardRef(
             >
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
-                  label="Batch Track"
+                  label="Preferred Batch"
                   required={true}
-                  options={batchTrackOptions}
+                  options={preferredBatchOptions}
                   onChange={(e) => {
-                    setBatchTrack(e.target.value);
+                    setPreferredBatch(e.target.value);
                     if (validationTrigger) {
-                      setBatchTrackError(selectValidator(e.target.value));
+                      setPreferredBatchError(selectValidator(e.target.value));
                     }
                   }}
-                  value={batchTrack}
-                  error={batchTrackError}
+                  value={preferredBatch}
+                  error={preferredBatchError}
                 />
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>

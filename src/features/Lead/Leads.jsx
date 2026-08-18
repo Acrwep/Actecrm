@@ -51,6 +51,7 @@ import {
   leadReEntry,
   getUsersByRole,
   getLeadSubCategory,
+  leadSelfAssign,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -604,14 +605,23 @@ export default function Leads({
                 </Tooltip>
               ))}
 
-            {permissions.includes("Assign Lead") &&
+            {(permissions.includes("Assign Lead") ||
+              leadBucketName === "Open Leads") &&
               (leadBucketName === "All" || leadBucketName === "Open Leads") && (
                 <Tooltip placement="bottom" title="Re-Assign">
                   <PiShareFatBold
                     className="leadmanager_action_icon"
                     color="#5b69ca"
                     onClick={() => {
-                      if (onEditLead) {
+                      if (leadBucketName === "Open Leads") {
+                        if (!permissions.includes("Pick Open Leads")) {
+                          CommonMessage("error", "Access Denied");
+                          return;
+                        }
+                        setIsOpenSelfReAssignModal(true);
+                        setUpdateLeadItem(record);
+                        setLeadId(record.id);
+                      } else if (onEditLead) {
                         onEditLead(record, true);
                       } else {
                         setIsReEntry(true);
@@ -1298,7 +1308,8 @@ export default function Leads({
                           </Tooltip>
                         ))}
 
-                      {permissions.includes("Assign Lead") &&
+                      {(permissions.includes("Assign Lead") ||
+                        leadBucketName === "Open Leads") &&
                         (leadBucketName === "All" ||
                           leadBucketName === "Open Leads") && (
                           <Tooltip placement="bottom" title="Re-Assign">
@@ -1306,7 +1317,17 @@ export default function Leads({
                               className="leadmanager_action_icon"
                               color="#5b69ca"
                               onClick={() => {
-                                if (onEditLead) {
+                                if (leadBucketName === "Open Leads") {
+                                  if (
+                                    !permissions.includes("Pick Open Leads")
+                                  ) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  setIsOpenSelfReAssignModal(true);
+                                  setUpdateLeadItem(record);
+                                  setLeadId(record.id);
+                                } else if (onEditLead) {
                                   onEditLead(record, true);
                                 } else {
                                   setIsReEntry(true);
@@ -1908,6 +1929,48 @@ export default function Leads({
       setLeadExeCountLoading(false);
       setLeadCountByExecutives([]);
       console.log("error", error);
+    }
+  };
+
+  const handleSelfReAssign = async () => {
+    setButtonLoading(true);
+
+    const payload = {
+      lead_id: leadId,
+      updated_date: formatToBackendIST(new Date()),
+      updated_by: loginUserId,
+      assigned_to: loginUserId,
+      next_follow_up_date: formatToBackendIST(new Date()),
+    };
+
+    try {
+      await leadSelfAssign(payload);
+      CommonMessage("success", "Re-Assigned Successfully");
+      setButtonLoading(false);
+      setIsOpenSelfReAssignModal(false);
+      setUpdateLeadItem(null);
+      setLeadId(null);
+
+      getAllLeadData(
+        searchValue,
+        selectedDates[0],
+        selectedDates[1],
+        allDownliners,
+        leadSourceFilterId,
+        leadSubSourceFilterId,
+        leadStatusId,
+        selectedOrigin,
+        filterValuesFromRedux.bucket,
+        pagination.page,
+        pagination.limit,
+      );
+    } catch (error) {
+      console.log("self reassign error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
     }
   };
 
@@ -3178,7 +3241,8 @@ export default function Leads({
                             </Tooltip>
                           ))}
 
-                        {permissions.includes("Assign Lead") &&
+                        {(permissions.includes("Assign Lead") ||
+                          leadBucketName === "Open Leads") &&
                           (leadBucketName === "All" ||
                             leadBucketName === "Open Leads") && (
                             <Tooltip placement="bottom" title="Re-Assign">
@@ -3186,7 +3250,17 @@ export default function Leads({
                                 className="leadmanager_action_icon"
                                 color="#5b69ca"
                                 onClick={() => {
-                                  if (onEditLead) {
+                                  if (leadBucketName === "Open Leads") {
+                                    if (
+                                      !permissions.includes("Pick Open Leads")
+                                    ) {
+                                      CommonMessage("error", "Access Denied");
+                                      return;
+                                    }
+                                    setIsOpenSelfReAssignModal(true);
+                                    setUpdateLeadItem(record);
+                                    setLeadId(record.id);
+                                  } else if (onEditLead) {
                                     onEditLead(record, true);
                                   } else {
                                     setIsReEntry(true);
@@ -3610,6 +3684,48 @@ export default function Leads({
           );
         }}
       />
+      {/* Self Re-Assign Confirmation Modal */}
+      <Modal
+        open={isOpenSelfReAssignModal}
+        onCancel={() => {
+          setIsOpenSelfReAssignModal(false);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Pick The Lead{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenSelfReAssignModal(false);
+            }}
+          >
+            No
+          </Button>
+          {buttonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={handleSelfReAssign}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

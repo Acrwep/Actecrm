@@ -234,6 +234,7 @@ export default function Settings() {
         "View All Assigned Leads",
         "Download Leads",
         "Show Region Summary",
+        "Pick Open Leads",
       ];
 
       const leadsSortedArray = leadsModule.sort(

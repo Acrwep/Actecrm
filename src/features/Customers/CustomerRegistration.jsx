@@ -148,12 +148,10 @@ export default function CustomerRegistration() {
   const [courseOptions, setCourseOptions] = useState([]);
   const [course, setCourse] = useState(null);
   const [courseError, setCourseError] = useState("");
-  const [batchTrackOptions, setBatchTrackOptions] = useState([]);
-  const [batchTrack, setBatchTrack] = useState(null);
-  const [batchTrackError, setBatchTrackError] = useState("");
+  const [preferredBatchOptions, setPreferredBatchOptions] = useState([]);
+  const [preferredBatch, setPreferredBatch] = useState(null);
   const [batchTimingOptions, setBatchTimingOptions] = useState([]);
   const [batchTiming, setBatchTiming] = useState(null);
-  const [batchTimingError, setBatchTimingError] = useState("");
   const [placementSupport, setPlacementSupport] = useState(null);
   const [placementSupportError, setPlacementSupportError] = useState(null);
   const [server, setServer] = useState("");
@@ -195,9 +193,9 @@ export default function CustomerRegistration() {
   const getBatchTrackData = async () => {
     try {
       const response = await getBatchTrack();
-      setBatchTrackOptions(response?.data?.result || []);
+      setPreferredBatchOptions(response?.data?.result || []);
     } catch (error) {
-      setBatchTrackOptions([]);
+      setPreferredBatchOptions([]);
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
@@ -278,7 +276,7 @@ export default function CustomerRegistration() {
       setStateId(customerDetails.state);
       setCourse(customerDetails.enrolled_course);
       setDateOfJoining(customerDetails?.date_of_joining);
-      setBatchTrack(customerDetails.batch_track_id);
+      setPreferredBatch(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
       setPlacementSupport(customerDetails.placement_support);
       setServer(customerDetails.is_server_required);
@@ -445,8 +443,6 @@ export default function CustomerRegistration() {
     const addressValidate = selectValidator(address);
     const pinCodeValidate = selectValidator(pinCode);
     const courseValidate = selectValidator(course);
-    const batchTrackValidate = selectValidator(batchTrack);
-    const batchTimingValidate = selectValidator(batchTiming);
     const placementSupportValidate = selectValidator(placementSupport);
 
     let profileValidate;
@@ -482,8 +478,6 @@ export default function CustomerRegistration() {
     setAddressError(addressValidate);
     setPinCodeError(pinCodeValidate);
     setCourseError(courseValidate);
-    setBatchTrackError(batchTrackValidate);
-    setBatchTimingError(batchTimingValidate);
     setPlacementSupportError(placementSupportValidate);
     setSignatureError(signatureValidate);
     setIsCheckedTermsError(termsandconditionsValidate);
@@ -498,8 +492,6 @@ export default function CustomerRegistration() {
       addressValidate ||
       pinCodeValidate ||
       courseValidate ||
-      batchTrackValidate ||
-      batchTimingValidate ||
       placementSupportValidate ||
       profileValidate ||
       signatureValidate ||
@@ -532,7 +524,7 @@ export default function CustomerRegistration() {
         customerFullDetails && customerFullDetails.branch_id
           ? customerFullDetails.branch_id
           : null,
-      batch_track_id: batchTrack,
+      batch_track_id: preferredBatch,
       batch_timing_id: batchTiming,
       country: countryId,
       state: stateId,
@@ -1089,19 +1081,14 @@ export default function CustomerRegistration() {
                         style={{ marginTop: "16px" }}
                       >
                         <CommonSelectField
-                          label="Batch Track"
+                          label="Preferred Batch"
                           required={true}
-                          options={batchTrackOptions}
+                          options={preferredBatchOptions}
                           onChange={(e) => {
-                            setBatchTrack(e.target.value);
-                            if (validationTrigger) {
-                              setBatchTrackError(
-                                selectValidator(e.target.value),
-                              );
-                            }
+                            setPreferredBatch(e.target.value);
                           }}
-                          value={batchTrack}
-                          error={batchTrackError}
+                          value={preferredBatch}
+                          error={""}
                           disabled={true}
                         />
                       </Col>
@@ -1118,14 +1105,9 @@ export default function CustomerRegistration() {
                           options={batchTimingOptions}
                           onChange={(e) => {
                             setBatchTiming(e.target.value);
-                            if (validationTrigger) {
-                              setBatchTimingError(
-                                selectValidator(e.target.value),
-                              );
-                            }
                           }}
                           value={batchTiming}
-                          error={batchTimingError}
+                          error={""}
                           disabled={true}
                         />
                       </Col>
