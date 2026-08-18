@@ -1978,7 +1978,7 @@ export default function TrainerPayment() {
           selectedDates[0],
           selectedDates[1],
           status || null,
-          1,
+          pagination.page,
           pagination.limit,
         );
       }, 300);
@@ -2560,7 +2560,7 @@ export default function TrainerPayment() {
       </Row>
 
       {/* Payment Requests Table */}
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "20px", marginBottom: "20px" }}>
         <CommonTable
           scroll={{
             x: tableColumns.reduce(

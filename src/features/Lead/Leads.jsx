@@ -206,6 +206,8 @@ export default function Leads({
     useState(false);
   const [nextFollowUpDate, setNextFollowUpDate] = useState(null);
   const [nextFollowUpDateError, setNextFollowUpDateError] = useState(null);
+  //self reassign
+  const [isOpenSelfReAssignModal, setIsOpenSelfReAssignModal] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -603,11 +605,8 @@ export default function Leads({
               ))}
 
             {permissions.includes("Assign Lead") &&
-              leadBucketName === "All" && (
-                <Tooltip
-                  placement="bottom"
-                  title="Re-Assign this lead to another user"
-                >
+              (leadBucketName === "All" || leadBucketName === "Open Leads") && (
+                <Tooltip placement="bottom" title="Re-Assign">
                   <PiShareFatBold
                     className="leadmanager_action_icon"
                     color="#5b69ca"
@@ -1300,11 +1299,9 @@ export default function Leads({
                         ))}
 
                       {permissions.includes("Assign Lead") &&
-                        leadBucketName === "All" && (
-                          <Tooltip
-                            placement="bottom"
-                            title="Re-Assign this lead to another user"
-                          >
+                        (leadBucketName === "All" ||
+                          leadBucketName === "Open Leads") && (
+                          <Tooltip placement="bottom" title="Re-Assign">
                             <PiShareFatBold
                               className="leadmanager_action_icon"
                               color="#5b69ca"
@@ -3182,11 +3179,9 @@ export default function Leads({
                           ))}
 
                         {permissions.includes("Assign Lead") &&
-                          leadBucketName === "All" && (
-                            <Tooltip
-                              placement="bottom"
-                              title="Re-Assign this lead to another user"
-                            >
+                          (leadBucketName === "All" ||
+                            leadBucketName === "Open Leads") && (
+                            <Tooltip placement="bottom" title="Re-Assign">
                               <PiShareFatBold
                                 className="leadmanager_action_icon"
                                 color="#5b69ca"

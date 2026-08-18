@@ -631,6 +631,15 @@ export const leadReEntry = async (payload) => {
   }
 };
 
+export const leadSelfAssign = async (payload) => {
+  try {
+    const response = await api.post("/api/leadSelfAssign", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getLeads = async (payload) => {
   try {
     const response = await api.post("/api/getLeadsV1", payload);
