@@ -351,7 +351,7 @@ const AddNewLead = forwardRef(
         setLeadOwnerName(updateLeadItem?.user_name);
         setAssignExecutiveId(updateLeadItem?.lead_assigned_to_id);
         if (isReAssign) {
-          getSaleUsersData();
+          getSaleUsersData(updateLeadItem?.assigned_branch_id || null);
         }
         // getSaleManagers(updateLeadItem?.lead_assigned_to_id);
         setName(updateLeadItem.name);
@@ -484,6 +484,9 @@ const AddNewLead = forwardRef(
         setMobile(liveLeadItem.phone);
         setWhatsApp(liveLeadItem.phone);
         setLeadSource(4);
+        setLeadSubSource(
+          liveLeadItem?.domain_origin.includes("Google") ? 8 : null,
+        );
         getLeadSubSourceData(4);
         liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
       }
@@ -634,13 +637,14 @@ const AddNewLead = forwardRef(
       }
     };
 
-    const getSaleUsersData = async () => {
+    const getSaleUsersData = async (branchId) => {
       setLoading(true);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
       const payload = {
         role: "SALE",
+        ...(branchId && { branch_id: branchId }),
       };
 
       try {
@@ -648,21 +652,24 @@ const AddNewLead = forwardRef(
 
         const users = response?.data?.data?.data || [];
 
-        // Get first 3 letters from logged-in user_id
-        const loggedPrefix = convertAsJson?.user_id
-          ?.substring(0, 3)
-          ?.toUpperCase();
+        if (branchId) {
+          setSaleUsers(users);
+        } else {
+          // Get first 3 letters from logged-in user_id
+          const loggedPrefix = convertAsJson?.user_id
+            ?.substring(0, 3)
+            ?.toUpperCase();
 
-        // Filter users whose user_id starts with same 3 letters
-        const filteredUsers = loggedPrefix
-          ? users.filter((item) =>
-              item?.user_id?.toUpperCase()?.startsWith(loggedPrefix),
-            )
-          : users;
+          // Filter users whose user_id starts with same 3 letters
+          const filteredUsers = loggedPrefix
+            ? users.filter((item) =>
+                item?.user_id?.toUpperCase()?.startsWith(loggedPrefix),
+              )
+            : users;
 
-        console.log("filtered sale users", filteredUsers);
-
-        setSaleUsers(filteredUsers);
+          console.log("filtered sale users", filteredUsers);
+          setSaleUsers(filteredUsers);
+        }
       } catch (error) {
         setSaleUsers([]);
         console.log("get sale users error", error);
@@ -1831,7 +1838,10 @@ const AddNewLead = forwardRef(
                     value={leadSubSource}
                     error={leadSubSourceError}
                     disabled={
-                      leadSource == 2 || leadSource == 3 || leadSource == 6
+                      leadSource == 2 ||
+                      leadSource == 3 ||
+                      leadSource == 6 ||
+                      liveLeadItem?.domain_origin.includes("Google")
                     }
                     disableClearable={false}
                     height={"35px"}

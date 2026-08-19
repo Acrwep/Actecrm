@@ -130,6 +130,7 @@ export default function Leads({
     bangalore_leads: 0,
     total: 0,
   });
+  const [selectedRegion, setSelectedRegion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
@@ -1498,7 +1499,10 @@ export default function Leads({
     actionOverride,
     sortFieldParam,
     sortOrderParam,
+    regionParam,
   ) => {
+    const finalRegion =
+      regionParam !== undefined ? regionParam : selectedRegion;
     const currentAction =
       actionOverride !== undefined ? actionOverride : leadActionFilter;
     const finalSortField =
@@ -1518,7 +1522,8 @@ export default function Leads({
               : {}),
       start_date: startDate,
       end_date: endDate,
-      ...(bucket === "Open Leads" ? {} : { user_ids: downliners }),
+      ...(finalRegion && { region: finalRegion }),
+      user_ids: downliners,
       ...(leadsource && { lead_type: leadsource }),
       ...(lead_sub_source && { sub_source_id: lead_sub_source }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
@@ -2854,7 +2859,50 @@ export default function Leads({
           <div className="livelead_today_summary_container">
             <p className="livelead_today_label">Region Summary</p>
 
-            <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_item online"
+              style={{
+                cursor: "pointer",
+                boxShadow:
+                  selectedRegion === "HUB"
+                    ? "0 0 0 1px #3c9111, 0 2px 5px rgba(60, 145, 17, 0.15)"
+                    : "0 0 0 1px transparent",
+                transform:
+                  selectedRegion === "HUB" ? "translateY(-1px)" : "none",
+                transition: "all 0.2s ease",
+              }}
+              onClick={() => {
+                const newRegion = selectedRegion === "HUB" ? null : "HUB";
+                setSelectedRegion(newRegion);
+                dispatch(
+                  storeLeadFilterValues({
+                    pageNumber: 1,
+                    pageLimit: pagination.limit,
+                  }),
+                );
+                getAllLeadData(
+                  filterValuesFromRedux.searchValue,
+                  filterValuesFromRedux.start_date ||
+                    getCurrentandPreviousweekDate()[0],
+                  filterValuesFromRedux.end_date ||
+                    getCurrentandPreviousweekDate()[1],
+                  allDownliners,
+                  filterValuesFromRedux.lead_source,
+                  filterValuesFromRedux.lead_sub_source,
+                  filterValuesFromRedux.lead_status_id,
+                  filterValuesFromRedux?.origin,
+                  filterValuesFromRedux.bucket === "all"
+                    ? ""
+                    : filterValuesFromRedux.bucket,
+                  1,
+                  filterValuesFromRedux.pageLimit,
+                  undefined,
+                  undefined,
+                  undefined,
+                  newRegion,
+                );
+              }}
+            >
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#3c9111" }}
@@ -2867,7 +2915,50 @@ export default function Leads({
               </p>
             </div>
 
-            <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_item classroom"
+              style={{
+                cursor: "pointer",
+                boxShadow:
+                  selectedRegion === "CHN"
+                    ? "0 0 0 1px #1e90ff, 0 2px 5px rgba(30, 144, 255, 0.15)"
+                    : "0 0 0 1px transparent",
+                transform:
+                  selectedRegion === "CHN" ? "translateY(-1px)" : "none",
+                transition: "all 0.2s ease",
+              }}
+              onClick={() => {
+                const newRegion = selectedRegion === "CHN" ? null : "CHN";
+                setSelectedRegion(newRegion);
+                dispatch(
+                  storeLeadFilterValues({
+                    pageNumber: 1,
+                    pageLimit: pagination.limit,
+                  }),
+                );
+                getAllLeadData(
+                  filterValuesFromRedux.searchValue,
+                  filterValuesFromRedux.start_date ||
+                    getCurrentandPreviousweekDate()[0],
+                  filterValuesFromRedux.end_date ||
+                    getCurrentandPreviousweekDate()[1],
+                  allDownliners,
+                  filterValuesFromRedux.lead_source,
+                  filterValuesFromRedux.lead_sub_source,
+                  filterValuesFromRedux.lead_status_id,
+                  filterValuesFromRedux?.origin,
+                  filterValuesFromRedux.bucket === "all"
+                    ? ""
+                    : filterValuesFromRedux.bucket,
+                  1,
+                  filterValuesFromRedux.pageLimit,
+                  undefined,
+                  undefined,
+                  undefined,
+                  newRegion,
+                );
+              }}
+            >
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#1e90ff" }}
@@ -2880,7 +2971,50 @@ export default function Leads({
               </p>
             </div>
 
-            <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_item corporate"
+              style={{
+                cursor: "pointer",
+                boxShadow:
+                  selectedRegion === "BNG"
+                    ? "0 0 0 1px #607d8b, 0 2px 5px rgba(96, 125, 139, 0.15)"
+                    : "0 0 0 1px transparent",
+                transform:
+                  selectedRegion === "BNG" ? "translateY(-1px)" : "none",
+                transition: "all 0.2s ease",
+              }}
+              onClick={() => {
+                const newRegion = selectedRegion === "BNG" ? null : "BNG";
+                setSelectedRegion(newRegion);
+                dispatch(
+                  storeLeadFilterValues({
+                    pageNumber: 1,
+                    pageLimit: pagination.limit,
+                  }),
+                );
+                getAllLeadData(
+                  filterValuesFromRedux.searchValue,
+                  filterValuesFromRedux.start_date ||
+                    getCurrentandPreviousweekDate()[0],
+                  filterValuesFromRedux.end_date ||
+                    getCurrentandPreviousweekDate()[1],
+                  allDownliners,
+                  filterValuesFromRedux.lead_source,
+                  filterValuesFromRedux.lead_sub_source,
+                  filterValuesFromRedux.lead_status_id,
+                  filterValuesFromRedux?.origin,
+                  filterValuesFromRedux.bucket === "all"
+                    ? ""
+                    : filterValuesFromRedux.bucket,
+                  1,
+                  filterValuesFromRedux.pageLimit,
+                  undefined,
+                  undefined,
+                  undefined,
+                  newRegion,
+                );
+              }}
+            >
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#607d8b" }}
