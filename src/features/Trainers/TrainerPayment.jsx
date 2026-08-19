@@ -485,8 +485,8 @@ export default function TrainerPayment() {
     },
     {
       title: "Student Name",
-      key: "student_id",
-      dataIndex: ["student_details", "customer_name"],
+      key: "customer_name",
+      dataIndex: "customer_name",
       width: 150,
       render: (text, record) => {
         const isLoading =
@@ -512,9 +512,7 @@ export default function TrainerPayment() {
                     className="trainers_action_icons"
                     style={{ cursor: "pointer" }}
                     onClick={() => {
-                      getParticularCustomerDetails(
-                        record.student_details?.customer_id,
-                      );
+                      getParticularCustomerDetails(record?.customer_id);
                     }}
                   />
                 )}
@@ -526,21 +524,19 @@ export default function TrainerPayment() {
     },
     {
       title: "Tech",
-      key: "tech",
-      dataIndex: ["student_details", "course_name"],
+      key: "course_name",
+      dataIndex: "course_name",
       width: 150,
       render: (text) => <EllipsisTooltip text={text || "-"} />,
     },
     {
       title: "RA",
       key: "ra",
-      dataIndex: ["student_details", "ra_user_id"],
+      dataIndex: "ra_user_id",
       width: 110,
       render: (text, record) => (
         <EllipsisTooltip
-          text={
-            text ? `${text} - ${record?.student_details?.ra_user_name}` : "-"
-          }
+          text={text ? `${text} - ${record?.ra_user_name}` : "-"}
         />
       ),
     },
@@ -1095,14 +1091,13 @@ export default function TrainerPayment() {
                   };
                 },
               };
-            case "student_id":
+            case "customer_name":
               return {
                 ...col,
                 width: 150,
                 render: (text, record) => {
                   const isLoading =
-                    customerDetailsLoadingRef.current ==
-                    record.student_details?.customer_id;
+                    customerDetailsLoadingRef.current == record?.customer_id;
 
                   return (
                     <div
@@ -1124,7 +1119,7 @@ export default function TrainerPayment() {
                               style={{ cursor: "pointer" }}
                               onClick={() => {
                                 getParticularCustomerDetails(
-                                  record.student_details?.customer_id,
+                                  record?.customer_id,
                                 );
                               }}
                             />
@@ -1135,7 +1130,13 @@ export default function TrainerPayment() {
                   );
                 },
               };
-            case "tech":
+            case "customer_name":
+              return {
+                ...col,
+                width: 150,
+                render: (text) => <EllipsisTooltip text={text || "-"} />,
+              };
+            case "course_name":
               return {
                 ...col,
                 width: 150,
@@ -1147,11 +1148,7 @@ export default function TrainerPayment() {
                 width: 110,
                 render: (text, record) => (
                   <EllipsisTooltip
-                    text={
-                      text
-                        ? `${text} - ${record?.student_details?.ra_user_name}`
-                        : "-"
-                    }
+                    text={text ? `${text} - ${record?.ra_user_name}` : "-"}
                   />
                 ),
               };
@@ -1161,11 +1158,7 @@ export default function TrainerPayment() {
                 width: 110,
                 render: (text, record) => (
                   <EllipsisTooltip
-                    text={
-                      text
-                        ? `${text} - ${record?.student_details?.hr_user_name}`
-                        : "-"
-                    }
+                    text={text ? `${text} - ${record?.hr_user_name}` : "-"}
                   />
                 ),
               };
@@ -1194,20 +1187,17 @@ export default function TrainerPayment() {
                 render: (text, record) => {
                   return (
                     <div className="customers_review_container">
-                      {record?.student_details?.google_review ? (
+                      {record?.google_review ? (
                         <div
                           className="customers_review_google_active"
                           onClick={() => {
                             setReviewModalTitle("Google Review");
-                            setReviewScreenshot(
-                              record?.student_details?.google_review,
-                            );
+                            setReviewScreenshot(record?.google_review);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
                           <FcGoogle size={15} />
-                          {record?.student_details?.is_google_verified ===
-                            1 && (
+                          {record?.is_google_verified === 1 && (
                             <PiSealCheckFill
                               size={13}
                               className="google_verified_icon"
@@ -1224,20 +1214,17 @@ export default function TrainerPayment() {
                           </div>
                         </Tooltip>
                       )}
-                      {record?.student_details?.linkedin_review ? (
+                      {record?.linkedin_review ? (
                         <div
                           className="customers_review_linkedin_active"
                           onClick={() => {
                             setReviewModalTitle("LinkedIn Review");
-                            setReviewScreenshot(
-                              record?.student_details?.linkedin_review,
-                            );
+                            setReviewScreenshot(record?.linkedin_review);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
                           <FaLinkedinIn size={14} color="#0a66c2" />
-                          {record?.student_details?.is_linkedin_verified ===
-                            1 && (
+                          {record?.is_linkedin_verified === 1 && (
                             <PiSealCheckFill
                               size={13}
                               className="google_verified_icon"
@@ -1281,7 +1268,7 @@ export default function TrainerPayment() {
                         navigator.clipboard.writeText(
                           `${
                             import.meta.env.VITE_EMAIL_URL
-                          }/acknowledge-class-completion/${record.student_details?.customer_id}`,
+                          }/acknowledge-class-completion/${record?.customer_id}`,
                         );
                         CommonMessage("success", "Link Copied");
                         console.log("Copied: eeee");
@@ -2066,27 +2053,50 @@ export default function TrainerPayment() {
 
   const flattenedTableData = useMemo(() => {
     const flatData = [];
+    const groupedRequests = [];
+    const idToGroup = {};
+
+    // 1. Group the flat data by payment master id
     paymentRequestsData.forEach((request) => {
-      if (request.students && request.students.length > 0) {
-        request.students.forEach((student, index) => {
+      const id = request.id;
+      if (!idToGroup[id]) {
+        // Initialize a new group based on the first row's data
+        const newGroup = { ...request, students: [] };
+        idToGroup[id] = newGroup;
+        groupedRequests.push(newGroup);
+      }
+
+      // If there is a student/customer associated (customer_id is not null) or if it's the main transaction
+      // we push the whole request object because it contains the student details mapped directly.
+      // E.g., customer_id or payment_trans_id from the flat query
+      if (request.customer_id || request.payment_trans_id) {
+        idToGroup[id].students.push(request);
+      }
+    });
+
+    // 2. Flatten for the table, computing rowSpan
+    groupedRequests.forEach((groupedRequest) => {
+      if (groupedRequest.students && groupedRequest.students.length > 0) {
+        groupedRequest.students.forEach((student, index) => {
           flatData.push({
-            ...request, // spreads id, which is fine since handleMoveToPaidNow expects item.id to be the request id
+            ...groupedRequest, // spreads id, which is fine since handleMoveToPaidNow expects item.id to be the request id
             student_details: student,
-            rowSpan: index === 0 ? request.students.length : 0,
-            request_details: request, // Keep original request handy
-            row_num: `${request.id}_${student.customer_id || index}`,
+            rowSpan: index === 0 ? groupedRequest.students.length : 0,
+            request_details: groupedRequest, // Keep original request handy
+            row_num: `${groupedRequest.id}_${student.customer_id || index}`,
           });
         });
       } else {
         flatData.push({
-          ...request,
+          ...groupedRequest,
           student_details: null,
           rowSpan: 1,
-          request_details: request,
-          row_num: `${request.id}_no_student`,
+          request_details: groupedRequest,
+          row_num: `${groupedRequest.id}_no_student`,
         });
       }
     });
+
     return flatData;
   }, [paymentRequestsData]);
 

@@ -52,6 +52,7 @@ import {
   getUsersByRole,
   getLeadSubCategory,
   leadSelfAssign,
+  getBranchManagers,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -67,6 +68,7 @@ import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import MakeAsCustomer from "./MakeAsCustomer";
+import CommonInputField from "../Common/CommonInputField";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -209,6 +211,21 @@ export default function Leads({
   const [nextFollowUpDateError, setNextFollowUpDateError] = useState(null);
   //self reassign
   const [isOpenSelfReAssignModal, setIsOpenSelfReAssignModal] = useState(false);
+  const [selfReAssignValidationTrigger, setSelfReAssignValidationTrigger] =
+    useState(false);
+  const [assignedBranchId, setAssignedBranchId] = useState("");
+  const [assignedBranchIdError, setAssignedBranchIdError] = useState("");
+  const [regionManagerId, setRegionManagerId] = useState(null);
+  const [regionManagerName, setRegionManagerName] = useState("");
+  const [branchManagerId, setBranchManagerId] = useState(null);
+  const [branchManagerName, setBranchManagerName] = useState("");
+  const [selfReAssignExecutiveOptions, setSelfReAssignExecutiveOptions] =
+    useState("");
+  const [selfReAssignExecutiveId, setSelfReAssignExecutiveId] = useState("");
+  const [selfReAssignExecutiveIdError, setSelfReAssignExecutiveIdError] =
+    useState("");
+  const [currentLeadExecutive, setCurrentLeadExecutive] = useState("");
+  const [selfAssignLoading, setSelfAssignLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -621,6 +638,9 @@ export default function Leads({
                         setIsOpenSelfReAssignModal(true);
                         setUpdateLeadItem(record);
                         setLeadId(record.id);
+                        setCurrentLeadExecutive(
+                          `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                        );
                       } else if (onEditLead) {
                         onEditLead(record, true);
                       } else {
@@ -1327,6 +1347,9 @@ export default function Leads({
                                   setIsOpenSelfReAssignModal(true);
                                   setUpdateLeadItem(record);
                                   setLeadId(record.id);
+                                  setCurrentLeadExecutive(
+                                    `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                                  );
                                 } else if (onEditLead) {
                                   onEditLead(record, true);
                                 } else {
@@ -1932,24 +1955,104 @@ export default function Leads({
     }
   };
 
+  const getBranchManagersData = async (branchId) => {
+    setSelfAssignLoading(true);
+    const payload = {
+      branch_id: branchId,
+    };
+    if (!branchId) {
+      setRegionManagerId(null);
+      setRegionManagerName("");
+      setBranchManagerId(null);
+      setBranchManagerName("");
+      setSelfAssignLoading(true);
+      return;
+    }
+    try {
+      const response = await getBranchManagers(payload);
+      console.log("get branch managers response", response);
+
+      const branch_data = response?.data?.data[0];
+      console.log("branch_data", branch_data);
+      getSaleUsersData(branchId);
+      if (branch_data) {
+        setRegionManagerId(branch_data?.regional_manager_id);
+        setRegionManagerName(branch_data?.regional_manager_name);
+
+        if (branch_data?.regional_manager_id?.startsWith("HUB")) {
+          setBranchManagerId(null);
+          setBranchManagerName("");
+        } else {
+          setBranchManagerId(branch_data?.branch_manager_id);
+          setBranchManagerName(branch_data?.branch_manager_name);
+        }
+      }
+    } catch (error) {
+      setSelfAssignLoading(false);
+      console.log("get branch managers error", error);
+    }
+  };
+
+  const getSaleUsersData = async (branchId) => {
+    const payload = {
+      role: "SALE",
+      branch_id: branchId,
+    };
+
+    try {
+      const response = await getUsersByRole(payload);
+
+      const users = response?.data?.data?.data || [];
+      console.log("filtered sale users", users);
+
+      setSelfReAssignExecutiveOptions(users);
+    } catch (error) {
+      setSelfReAssignExecutiveOptions([]);
+      console.log("get sale users error", error);
+    } finally {
+      setSelfAssignLoading(false);
+    }
+  };
+
   const handleSelfReAssign = async () => {
+    setSelfReAssignValidationTrigger(true);
+    const assignedBranchIdValidate = selectValidator(assignedBranchId);
+    const branchManagerIdValidate = selectValidator(branchManagerId);
+    const regionManagerIdValidate = selectValidator(regionManagerId);
+    const selfReAssignExecutiveIdValidate = selectValidator(
+      selfReAssignExecutiveId,
+    );
+
+    setAssignedBranchIdError(assignedBranchIdValidate);
+    setSelfReAssignExecutiveIdError(selfReAssignExecutiveIdValidate);
+
+    if (assignedBranchIdValidate || selfReAssignExecutiveIdValidate) return;
+
+    if (regionManagerIdValidate) {
+      CommonMessage("error", "Region Manager Id is required");
+      return;
+    } else if (branchManagerIdValidate) {
+      CommonMessage("error", "Branch Manager Id is required");
+      return;
+    }
+
     setButtonLoading(true);
 
     const payload = {
       lead_id: leadId,
       updated_date: formatToBackendIST(new Date()),
       updated_by: loginUserId,
-      assigned_to: loginUserId,
+      assigned_to: selfReAssignExecutiveId,
       next_follow_up_date: formatToBackendIST(new Date()),
+      assigned_manager: regionManagerId,
+      assigned_branch_id: assignedBranchId,
+      branch_manager_id: branchManagerId,
     };
 
     try {
       await leadSelfAssign(payload);
       CommonMessage("success", "Re-Assigned Successfully");
-      setButtonLoading(false);
-      setIsOpenSelfReAssignModal(false);
-      setUpdateLeadItem(null);
-      setLeadId(null);
+      openLeadsFormReset();
 
       getAllLeadData(
         searchValue,
@@ -1972,6 +2075,25 @@ export default function Leads({
           "Something went wrong. Try again later",
       );
     }
+  };
+
+  const openLeadsFormReset = () => {
+    setSelfReAssignValidationTrigger(false);
+    setSelfAssignLoading(false);
+    setButtonLoading(false);
+    setIsOpenSelfReAssignModal(false);
+    setUpdateLeadItem(null);
+    setLeadId(null);
+    setAssignedBranchId(null);
+    setAssignedBranchIdError("");
+    setRegionManagerId(null);
+    setRegionManagerName("");
+    setBranchManagerId(null);
+    setBranchManagerName("");
+    setSelfReAssignExecutiveOptions([]);
+    setSelfReAssignExecutiveId(null);
+    setSelfReAssignExecutiveIdError("");
+    setCurrentLeadExecutive("");
   };
 
   const handleDownload = async () => {
@@ -3260,6 +3382,9 @@ export default function Leads({
                                     setIsOpenSelfReAssignModal(true);
                                     setUpdateLeadItem(record);
                                     setLeadId(record.id);
+                                    setCurrentLeadExecutive(
+                                      `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                                    );
                                   } else if (onEditLead) {
                                     onEditLead(record, true);
                                   } else {
@@ -3686,27 +3811,128 @@ export default function Leads({
       />
       {/* Self Re-Assign Confirmation Modal */}
       <Modal
+        title="Re-Assign"
         open={isOpenSelfReAssignModal}
-        onCancel={() => {
-          setIsOpenSelfReAssignModal(false);
-        }}
+        onCancel={openLeadsFormReset}
         footer={false}
         width="30%"
         zIndex={1100}
       >
-        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+        {/* <p className="customer_classcompletemodal_heading">Are you sure?</p>
 
         <p className="customer_classcompletemodal_text">
           You Want To Pick The Lead{" "}
-        </p>
-        <div className="customer_classcompletemodal_button_container">
+        </p> */}
+
+        <div style={{ marginBottom: "24px", marginTop: "30px" }}>
+          <CommonSelectField
+            label="Assigned Branch"
+            required={false}
+            value={assignedBranchId}
+            loading={selfAssignLoading}
+            onChange={(e) => {
+              setAssignedBranchId(e.target.value);
+              setSelfReAssignExecutiveId("");
+              setSelfReAssignExecutiveIdError("");
+              setRegionManagerId("");
+              setRegionManagerName("");
+              setBranchManagerId("");
+              setBranchManagerName("");
+              getBranchManagersData(e.target.value);
+              if (selfReAssignValidationTrigger) {
+                setAssignedBranchIdError(selectValidator(e.target.value));
+              }
+            }}
+            options={allBranchesData ? allBranchesData : []}
+            error={assignedBranchIdError}
+            height={"35px"}
+            labelFontSize={"11.5px"}
+            errorFontSize={"9px"}
+            labelMarginTop={"0px"}
+            // disabled={true}
+          />
+        </div>
+        {!regionManagerId?.startsWith("HUB") && (
+          <div style={{ marginBottom: "24px" }}>
+            <CommonInputField
+              label="Branch Manager"
+              required={false}
+              value={
+                branchManagerId
+                  ? `${branchManagerId} - ${branchManagerName}`
+                  : ""
+              }
+              error={""}
+              height={"35px"}
+              labelFontSize={"11.5px"}
+              disabled={true}
+            />
+          </div>
+        )}
+        <div style={{ marginBottom: "24px" }}>
+          <CommonInputField
+            label="Region Manager"
+            required={false}
+            value={
+              regionManagerId ? `${regionManagerId} - ${regionManagerName}` : ""
+            }
+            error={""}
+            height={"35px"}
+            labelFontSize={"11.5px"}
+            disabled={true}
+          />
+        </div>
+
+        <div style={{ marginBottom: "22px" }}>
+          <CommonSelectField
+            label="Assigned Executive"
+            required={false}
+            value={selfReAssignExecutiveId}
+            loading={selfAssignLoading}
+            onChange={(e) => {
+              setSelfReAssignExecutiveId(e.target.value);
+              if (setSelfReAssignValidationTrigger) {
+                setSelfReAssignExecutiveIdError(
+                  selectValidator(e.target.value),
+                );
+              }
+              // getSaleManagers(e.target.value);
+            }}
+            options={
+              selfReAssignExecutiveOptions ? selfReAssignExecutiveOptions : []
+            }
+            error={selfReAssignExecutiveIdError}
+            errorFontSize={"9px"}
+            height={"35px"}
+            labelFontSize={"11.5px"}
+            // disabled={
+            //   !permissions.includes("Assign Lead") ||
+            //   (isReAssign == false && updateLeadItem)
+            // }
+          />
+        </div>
+
+        <div style={{ marginBottom: "0px" }}>
+          <CommonInputField
+            label="Current Lead Executive"
+            required={false}
+            value={currentLeadExecutive}
+            error={""}
+            height={"35px"}
+            labelFontSize={"11.5px"}
+            disabled={true}
+          />
+        </div>
+
+        <div
+          className="customer_classcompletemodal_button_container"
+          style={{ display: "flex", justifyContent: "flex-end" }}
+        >
           <Button
             className="customer_classcompletemodal_cancelbutton"
-            onClick={() => {
-              setIsOpenSelfReAssignModal(false);
-            }}
+            onClick={openLeadsFormReset}
           >
-            No
+            Cancel
           </Button>
           {buttonLoading ? (
             <Button
@@ -3721,7 +3947,7 @@ export default function Leads({
               className="customer_classcompletemodal_okbutton"
               onClick={handleSelfReAssign}
             >
-              Yes
+              Submit
             </Button>
           )}
         </div>
