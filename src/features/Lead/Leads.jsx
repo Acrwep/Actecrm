@@ -53,6 +53,7 @@ import {
   getLeadSubCategory,
   leadSelfAssign,
   getBranchManagers,
+  getBranches,
 } from "../ApiService/action";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -174,7 +175,6 @@ export default function Leads({
     }
   };
 
-  const [filterType, setFilterType] = useState(1);
   const [downloadButtonLoader, setDownloadButtonLoader] = useState(false);
 
   //payment usestates
@@ -196,10 +196,31 @@ export default function Leads({
   //lead executive
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const prevSelectedUserIdRef = useRef(null);
   const [leadCountByExecutives, setLeadCountByExecutives] = useState([]);
   const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
   const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
   const [allDownliners, setAllDownliners] = useState([]);
+
+  // region and branch
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [branchFilterOptions, setBranchFilterOptions] = useState([]);
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      console.log("users fetch error", error);
+    }
+  };
+
   //lead source filter
   const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
   const [leadSubSourceOptions, setLeadSubSourceOptions] = useState([]);
@@ -784,7 +805,6 @@ export default function Leads({
           filterValuesFromRedux.start_date,
           filterValuesFromRedux.end_date,
         ]);
-        setFilterType(filterValuesFromRedux.filterType);
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
         setLeadSubSourceFilterId(filterValuesFromRedux?.lead_sub_source);
@@ -1500,9 +1520,12 @@ export default function Leads({
     sortFieldParam,
     sortOrderParam,
     regionParam,
+    branchParam,
   ) => {
     const finalRegion =
       regionParam !== undefined ? regionParam : selectedRegion;
+    const finalBranch =
+      branchParam !== undefined ? branchParam : selectedBranchId;
     const currentAction =
       actionOverride !== undefined ? actionOverride : leadActionFilter;
     const finalSortField =
@@ -1511,18 +1534,11 @@ export default function Leads({
       sortOrderParam !== undefined ? sortOrderParam : sortOrder;
     setLoading(true);
     const payload = {
-      ...(searchvalue && filterType == 1
-        ? { phone: searchvalue }
-        : searchvalue && filterType == 2
-          ? { name: searchvalue }
-          : searchvalue && filterType == 3
-            ? { email: searchvalue }
-            : searchvalue && filterType == 4
-              ? { course: searchvalue }
-              : {}),
+      ...(searchvalue && { search_filter: searchvalue }),
       start_date: startDate,
       end_date: endDate,
       ...(finalRegion && { region: finalRegion }),
+      ...(finalBranch && { branch: finalBranch }),
       user_ids: downliners,
       ...(leadsource && { lead_type: leadsource }),
       ...(lead_sub_source && { sub_source_id: lead_sub_source }),
@@ -1880,17 +1896,57 @@ export default function Leads({
     );
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchFilterOptions(reordered);
+        } else {
+          setBranchFilterOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchFilterOptions([]);
+      }
+    } catch (error) {
+      setBranchFilterOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
   const handleSelectUser = async (e) => {
     const value = e.target.value;
+    setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
     dispatch(
       storeLeadFilterValues({
         user_id: value,
       }),
     );
-    setSelectedUserId(value);
 
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1918,6 +1974,11 @@ export default function Leads({
         filterValuesFromRedux.bucket,
         1,
         pagination.limit,
+        undefined,
+        undefined,
+        undefined,
+        selectedRegion,
+        selectedBranchId,
       );
     } catch (error) {
       console.log("all downlines error", error);
@@ -2152,24 +2213,19 @@ export default function Leads({
   return (
     <div>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={22}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+        >
           <Row gutter={12}>
-            <Col flex="23%">
+            <Col flex="1 1 0%">
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : filterType == 4
-                            ? "Search by Course"
-                            : ""
-                  }
+                  label="Search..."
                   width="100%"
-                  height="32px"
+                  height="33px"
                   labelFontSize="11px"
                   icon={
                     searchValue ? (
@@ -2210,8 +2266,7 @@ export default function Leads({
                   }
                   labelMarginTop="0px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
+                    borderRadius: "6px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -2219,95 +2274,116 @@ export default function Leads({
                   value={searchValue}
                   onChange={handleSearch}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            setFilterType(e.target.value);
-                            dispatch(
-                              storeLeadFilterValues({
-                                filterType: e.target.value,
-                              }),
-                            );
-                            if (searchValue == "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              dispatch(
-                                storeLeadFilterValues({
-                                  searchValue: "",
-                                  pageNumber: 1,
-                                  pageLimit: pagination.limit,
-                                }),
-                              );
-                              setPagination({
-                                page: 1,
-                              });
-                              getAllLeadData(
-                                null,
-                                selectedDates[0],
-                                selectedDates[1],
-                                allDownliners,
-                                leadSourceFilterId,
-                                leadSubSourceFilterId,
-                                leadStatusId,
-                                selectedOrigin,
-                                filterValuesFromRedux.bucket,
-                                1,
-                                pagination.limit,
-                              );
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "6px" }}>
-                            Search by Course
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
-            {permissions.includes("Lead Executive Filter") &&
-              leadBucketName != "Open Leads" && (
-                <Col flex="26%">
+            {permissions.includes("Lead Executive Filter") && (
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={regionOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegion(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({ page: 1, limit: pagination.limit });
+                      getAllLeadData(
+                        searchValue,
+                        selectedDates[0],
+                        selectedDates[1],
+                        allDownliners,
+                        leadSourceFilterId,
+                        leadSubSourceFilterId,
+                        leadStatusId,
+                        selectedOrigin,
+                        filterValuesFromRedux.bucket,
+                        1,
+                        pagination.limit,
+                        undefined,
+                        undefined,
+                        undefined,
+                        value,
+                        null,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setBranchFilterOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegion}
+                    disableClearable={false}
+                  />
+                </Col>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="32px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={branchFilterOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegion, value);
+                      setPagination({ page: 1, limit: pagination.limit });
+                      getAllLeadData(
+                        searchValue,
+                        selectedDates[0],
+                        selectedDates[1],
+                        allDownliners,
+                        leadSourceFilterId,
+                        leadSubSourceFilterId,
+                        leadStatusId,
+                        selectedOrigin,
+                        filterValuesFromRedux.bucket,
+                        1,
+                        pagination.limit,
+                        undefined,
+                        undefined,
+                        undefined,
+                        selectedRegion,
+                        value,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegion == 3 ? true : false}
+                  />
+                </Col>
+                <Col flex="1.2 1 0%">
+                  <style>{`
+                    .leads_user_select_container .MuiOutlinedInput-root {
+                      flex-wrap: nowrap !important;
+                    }
+                    .leads_user_select_container .MuiAutocomplete-input {
+                      min-width: 0px !important;
+                      width: 0px !important;
+                      padding: 0px !important;
+                    }
+                  `}</style>
                   <div style={{ width: "100%" }}>
                     <div className="overallduecustomers_filterContainer">
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        className="leads_user_select_container"
+                        style={{ flex: 1, minWidth: 0 }}
+                      >
                         <CommonMultiSelectField
-                          height="34px"
+                          height="33px"
                           label="Select User"
                           labelMarginTop="1px"
                           labelFontSize="11px"
+                          width="100%"
                           options={subUsers}
                           onChange={handleSelectUser}
+                          onBlur={handleSelectUserBlur}
                           value={selectedUserId}
                           borderRightNone={true}
                         />
@@ -2368,7 +2444,7 @@ export default function Leads({
                             }}
                           >
                             <Button className="leadsmanager_executivecount_iconcontainer">
-                              <MdFormatListNumbered size={16} />
+                              <MdFormatListNumbered size={14} />
                             </Button>
                           </Tooltip>
                         </Flex>
@@ -2376,10 +2452,13 @@ export default function Leads({
                     </div>
                   </div>
                 </Col>
-              )}
+              </>
+            )}
 
-            <Col flex="none">
+            <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
+                width="100%"
+                dateFontSize={"12.5px"}
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
@@ -2742,7 +2821,7 @@ export default function Leads({
               >
                 <Button
                   // type="primary"
-                  icon={<IoFilter size={15} />}
+                  icon={<IoFilter size={14} />}
                   className="leads_advancefilter_button"
                   style={{
                     background: "#fff",
@@ -2762,7 +2841,12 @@ export default function Leads({
             </Col>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={2}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
+        >
           <div
             style={{
               display: "flex",
@@ -2859,50 +2943,7 @@ export default function Leads({
           <div className="livelead_today_summary_container">
             <p className="livelead_today_label">Region Summary</p>
 
-            <div
-              className="livelead_badge_item online"
-              style={{
-                cursor: "pointer",
-                boxShadow:
-                  selectedRegion === "HUB"
-                    ? "0 0 0 1px #3c9111, 0 2px 5px rgba(60, 145, 17, 0.15)"
-                    : "0 0 0 1px transparent",
-                transform:
-                  selectedRegion === "HUB" ? "translateY(-1px)" : "none",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => {
-                const newRegion = selectedRegion === "HUB" ? null : "HUB";
-                setSelectedRegion(newRegion);
-                dispatch(
-                  storeLeadFilterValues({
-                    pageNumber: 1,
-                    pageLimit: pagination.limit,
-                  }),
-                );
-                getAllLeadData(
-                  filterValuesFromRedux.searchValue,
-                  filterValuesFromRedux.start_date ||
-                    getCurrentandPreviousweekDate()[0],
-                  filterValuesFromRedux.end_date ||
-                    getCurrentandPreviousweekDate()[1],
-                  allDownliners,
-                  filterValuesFromRedux.lead_source,
-                  filterValuesFromRedux.lead_sub_source,
-                  filterValuesFromRedux.lead_status_id,
-                  filterValuesFromRedux?.origin,
-                  filterValuesFromRedux.bucket === "all"
-                    ? ""
-                    : filterValuesFromRedux.bucket,
-                  1,
-                  filterValuesFromRedux.pageLimit,
-                  undefined,
-                  undefined,
-                  undefined,
-                  newRegion,
-                );
-              }}
-            >
+            <div className="livelead_badge_item online">
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#3c9111" }}
@@ -2915,50 +2956,7 @@ export default function Leads({
               </p>
             </div>
 
-            <div
-              className="livelead_badge_item classroom"
-              style={{
-                cursor: "pointer",
-                boxShadow:
-                  selectedRegion === "CHN"
-                    ? "0 0 0 1px #1e90ff, 0 2px 5px rgba(30, 144, 255, 0.15)"
-                    : "0 0 0 1px transparent",
-                transform:
-                  selectedRegion === "CHN" ? "translateY(-1px)" : "none",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => {
-                const newRegion = selectedRegion === "CHN" ? null : "CHN";
-                setSelectedRegion(newRegion);
-                dispatch(
-                  storeLeadFilterValues({
-                    pageNumber: 1,
-                    pageLimit: pagination.limit,
-                  }),
-                );
-                getAllLeadData(
-                  filterValuesFromRedux.searchValue,
-                  filterValuesFromRedux.start_date ||
-                    getCurrentandPreviousweekDate()[0],
-                  filterValuesFromRedux.end_date ||
-                    getCurrentandPreviousweekDate()[1],
-                  allDownliners,
-                  filterValuesFromRedux.lead_source,
-                  filterValuesFromRedux.lead_sub_source,
-                  filterValuesFromRedux.lead_status_id,
-                  filterValuesFromRedux?.origin,
-                  filterValuesFromRedux.bucket === "all"
-                    ? ""
-                    : filterValuesFromRedux.bucket,
-                  1,
-                  filterValuesFromRedux.pageLimit,
-                  undefined,
-                  undefined,
-                  undefined,
-                  newRegion,
-                );
-              }}
-            >
+            <div className="livelead_badge_item classroom">
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#1e90ff" }}
@@ -2971,50 +2969,7 @@ export default function Leads({
               </p>
             </div>
 
-            <div
-              className="livelead_badge_item corporate"
-              style={{
-                cursor: "pointer",
-                boxShadow:
-                  selectedRegion === "BNG"
-                    ? "0 0 0 1px #607d8b, 0 2px 5px rgba(96, 125, 139, 0.15)"
-                    : "0 0 0 1px transparent",
-                transform:
-                  selectedRegion === "BNG" ? "translateY(-1px)" : "none",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => {
-                const newRegion = selectedRegion === "BNG" ? null : "BNG";
-                setSelectedRegion(newRegion);
-                dispatch(
-                  storeLeadFilterValues({
-                    pageNumber: 1,
-                    pageLimit: pagination.limit,
-                  }),
-                );
-                getAllLeadData(
-                  filterValuesFromRedux.searchValue,
-                  filterValuesFromRedux.start_date ||
-                    getCurrentandPreviousweekDate()[0],
-                  filterValuesFromRedux.end_date ||
-                    getCurrentandPreviousweekDate()[1],
-                  allDownliners,
-                  filterValuesFromRedux.lead_source,
-                  filterValuesFromRedux.lead_sub_source,
-                  filterValuesFromRedux.lead_status_id,
-                  filterValuesFromRedux?.origin,
-                  filterValuesFromRedux.bucket === "all"
-                    ? ""
-                    : filterValuesFromRedux.bucket,
-                  1,
-                  filterValuesFromRedux.pageLimit,
-                  undefined,
-                  undefined,
-                  undefined,
-                  newRegion,
-                );
-              }}
-            >
+            <div className="livelead_badge_item corporate">
               <div
                 className="livelead_badge_dot"
                 style={{ backgroundColor: "#607d8b" }}
