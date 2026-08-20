@@ -858,6 +858,7 @@ export default function AssignLeads({
         lead_id: acknowledgeLeadItem.id,
         acknowledged_by: convertAsJson?.user_id,
         acknowledged_date: moment().format("YYYY-MM-DD HH:mm:ss"),
+        is_self_assigned: acknowledgeLeadItem?.is_self_assigned,
       };
       await acknowledgeLead(payload);
       CommonMessage("success", "Lead acknowledged successfully");

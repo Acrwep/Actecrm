@@ -109,6 +109,10 @@ export default function Leads({
     open_leads: "open_leads",
   };
   const [leadBucketName, setLeadBucketName] = useState("All");
+  const leadBucketNameRef = useRef(leadBucketName);
+  useEffect(() => {
+    leadBucketNameRef.current = leadBucketName;
+  }, [leadBucketName]);
   const [leadStatusId, setLeadStatusId] = useState(null);
   const [leadData, setLeadData] = useState([]);
 
@@ -509,18 +513,19 @@ export default function Leads({
                       >
                         <p>{text}</p>
                       </div>
-                      {(text === "Dormant" || text === "Not Interested") && (
-                        <Tooltip placement="top" title="Move to Interested">
-                          <RxUpdate
-                            color="#333333d3"
-                            size={14}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => {
-                              openFollowUpForm(record, true);
-                            }}
-                          />
-                        </Tooltip>
-                      )}
+                      {(text === "Dormant" || text === "Not Interested") &&
+                        leadBucketNameRef.current !== "Open Leads" && (
+                          <Tooltip placement="top" title="Move to Interested">
+                            <RxUpdate
+                              color="#333333d3"
+                              size={14}
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                openFollowUpForm(record, true);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
                     </div>
                   ) : (
                     <p>-</p>
@@ -563,7 +568,7 @@ export default function Leads({
 
             {permissions.includes("Edit Lead Button") &&
               isShowEdit &&
-              leadBucketName !== "Open Leads" &&
+              leadBucketNameRef.current !== "Open Leads" &&
               record.is_customer_reg === 0 && (
                 <AiOutlineEdit
                   className="leadmanager_action_icon"
@@ -579,9 +584,9 @@ export default function Leads({
                 />
               )}
 
-            {(leadBucketName === "All" ||
-              leadBucketName === "Interested Leads" ||
-              leadBucketName === "Followup Leads") &&
+            {(leadBucketNameRef.current === "All" ||
+              leadBucketNameRef.current === "Interested Leads" ||
+              leadBucketNameRef.current === "Followup Leads") &&
               (record.is_customer_reg === 1 ? (
                 <Tooltip placement="bottom" title="Already a Customer">
                   <FaRegAddressCard
@@ -645,14 +650,15 @@ export default function Leads({
               ))}
 
             {(permissions.includes("Assign Lead") ||
-              leadBucketName === "Open Leads") &&
-              (leadBucketName === "All" || leadBucketName === "Open Leads") && (
+              leadBucketNameRef.current === "Open Leads") &&
+              (leadBucketNameRef.current === "All" ||
+                leadBucketNameRef.current === "Open Leads") && (
                 <Tooltip placement="bottom" title="Re-Assign">
                   <PiShareFatBold
                     className="leadmanager_action_icon"
                     color="#5b69ca"
                     onClick={() => {
-                      if (leadBucketName === "Open Leads") {
+                      if (leadBucketNameRef.current === "Open Leads") {
                         if (!permissions.includes("Pick Open Leads")) {
                           CommonMessage("error", "Access Denied");
                           return;
@@ -1213,21 +1219,22 @@ export default function Leads({
                                 <p>{text}</p>
                               </div>
                               {(text === "Dormant" ||
-                                text === "Not Interested") && (
-                                <Tooltip
-                                  placement="top"
-                                  title="Move to Interested"
-                                >
-                                  <RxUpdate
-                                    color="#333333d3"
-                                    size={14}
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => {
-                                      openFollowUpForm(record, true);
-                                    }}
-                                  />
-                                </Tooltip>
-                              )}
+                                text === "Not Interested") &&
+                                leadBucketNameRef.current !== "Open Leads" && (
+                                  <Tooltip
+                                    placement="top"
+                                    title="Move to Interested"
+                                  >
+                                    <RxUpdate
+                                      color="#333333d3"
+                                      size={14}
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() => {
+                                        openFollowUpForm(record, true);
+                                      }}
+                                    />
+                                  </Tooltip>
+                                )}
                             </div>
                           ) : (
                             <p>-</p>
@@ -1265,7 +1272,7 @@ export default function Leads({
 
                       {permissions.includes("Edit Lead Button") &&
                         isShowEdit &&
-                        leadBucketName !== "Open Leads" &&
+                        leadBucketNameRef.current !== "Open Leads" &&
                         record.is_customer_reg === 0 && (
                           <AiOutlineEdit
                             className="leadmanager_action_icon"
@@ -1281,9 +1288,9 @@ export default function Leads({
                           />
                         )}
 
-                      {(leadBucketName === "All" ||
-                        leadBucketName === "Interested Leads" ||
-                        leadBucketName === "Followup Leads") &&
+                      {(leadBucketNameRef.current === "All" ||
+                        leadBucketNameRef.current === "Interested Leads" ||
+                        leadBucketNameRef.current === "Followup Leads") &&
                         (record.is_customer_reg === 1 ? (
                           <Tooltip
                             placement="bottom"
@@ -1350,15 +1357,17 @@ export default function Leads({
                         ))}
 
                       {(permissions.includes("Assign Lead") ||
-                        leadBucketName === "Open Leads") &&
-                        (leadBucketName === "All" ||
-                          leadBucketName === "Open Leads") && (
+                        leadBucketNameRef.current === "Open Leads") &&
+                        (leadBucketNameRef.current === "All" ||
+                          leadBucketNameRef.current === "Open Leads") && (
                           <Tooltip placement="bottom" title="Re-Assign">
                             <PiShareFatBold
                               className="leadmanager_action_icon"
                               color="#5b69ca"
                               onClick={() => {
-                                if (leadBucketName === "Open Leads") {
+                                if (
+                                  leadBucketNameRef.current === "Open Leads"
+                                ) {
                                   if (
                                     !permissions.includes("Pick Open Leads")
                                   ) {
@@ -2134,6 +2143,7 @@ export default function Leads({
         pagination.limit,
       );
     } catch (error) {
+      setButtonLoading(false);
       console.log("self reassign error", error);
       CommonMessage(
         "error",
@@ -2218,6 +2228,7 @@ export default function Leads({
           sm={24}
           md={24}
           lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
         >
           <Row gutter={12}>
             <Col flex="1 1 0%">
@@ -2323,7 +2334,7 @@ export default function Leads({
                 </Col>
                 <Col flex="0.8 1 0%">
                   <CommonSelectField
-                    height="32px"
+                    height="33px"
                     label="Select Branch"
                     labelMarginTop="0px"
                     labelFontSize="11px"
@@ -2358,8 +2369,9 @@ export default function Leads({
                     disabled={selectedRegion == 3 ? true : false}
                   />
                 </Col>
-                <Col flex="1.2 1 0%">
-                  <style>{`
+                {leadBucketName != "Open Leads" && (
+                  <Col flex="1.2 1 0%">
+                    <style>{`
                     .leads_user_select_container .MuiOutlinedInput-root {
                       flex-wrap: nowrap !important;
                     }
@@ -2369,89 +2381,90 @@ export default function Leads({
                       padding: 0px !important;
                     }
                   `}</style>
-                  <div style={{ width: "100%" }}>
-                    <div className="overallduecustomers_filterContainer">
-                      <div
-                        className="leads_user_select_container"
-                        style={{ flex: 1, minWidth: 0 }}
-                      >
-                        <CommonMultiSelectField
-                          height="33px"
-                          label="Select User"
-                          labelMarginTop="1px"
-                          labelFontSize="11px"
-                          width="100%"
-                          options={subUsers}
-                          onChange={handleSelectUser}
-                          onBlur={handleSelectUserBlur}
-                          value={selectedUserId}
-                          borderRightNone={true}
-                        />
-                      </div>
-                      <div
-                        onClick={() => {
-                          if (executiveCountTooltip) {
-                            return;
-                          }
-                          handleLeadCountByExecutive();
-                        }}
-                        style={{ marginLeft: "-2px" }}
-                      >
-                        <Flex
-                          justify="center"
-                          align="center"
-                          style={{ whiteSpace: "nowrap" }}
+                    <div style={{ width: "100%" }}>
+                      <div className="overallduecustomers_filterContainer">
+                        <div
+                          className="leads_user_select_container"
+                          style={{ flex: 1, minWidth: 0 }}
                         >
-                          <Tooltip
-                            placement="bottomLeft"
-                            color="#fff"
-                            title={
-                              <>
-                                {leadExeCountLoading ? (
-                                  <div className="leadsmanager_executivecount_loader_container">
-                                    <Spin size="small" />
-                                  </div>
-                                ) : (
-                                  <div
-                                    style={{
-                                      maxHeight: "140px",
-                                      overflowY: "auto",
-                                      whiteSpace: "pre-line",
-                                      lineHeight: "24px",
-                                    }}
-                                  >
-                                    {leadCountByExecutives.map(
-                                      (item, index) => {
-                                        return (
-                                          <p className="leadsmanager_executivecount_text">
-                                            {`${index + 1}. ${item.user_name} - ${
-                                              item.lead_count
-                                            }`}
-                                          </p>
-                                        );
-                                      },
-                                    )}
-                                  </div>
-                                )}
-                              </>
+                          <CommonMultiSelectField
+                            height="33px"
+                            label="Select User"
+                            labelMarginTop="1px"
+                            labelFontSize="11px"
+                            width="100%"
+                            options={subUsers}
+                            onChange={handleSelectUser}
+                            onBlur={handleSelectUserBlur}
+                            value={selectedUserId}
+                            borderRightNone={true}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            if (executiveCountTooltip) {
+                              return;
                             }
-                            trigger={["click"]}
-                            onOpenChange={(value) => {
-                              setExecutiveCountTooltip(value);
-                              if (value === false) {
-                                setLeadCountByExecutives([]);
-                              }
-                            }}
+                            handleLeadCountByExecutive();
+                          }}
+                          style={{ marginLeft: "-2px" }}
+                        >
+                          <Flex
+                            justify="center"
+                            align="center"
+                            style={{ whiteSpace: "nowrap" }}
                           >
-                            <Button className="leadsmanager_executivecount_iconcontainer">
-                              <MdFormatListNumbered size={14} />
-                            </Button>
-                          </Tooltip>
-                        </Flex>
+                            <Tooltip
+                              placement="bottomLeft"
+                              color="#fff"
+                              title={
+                                <>
+                                  {leadExeCountLoading ? (
+                                    <div className="leadsmanager_executivecount_loader_container">
+                                      <Spin size="small" />
+                                    </div>
+                                  ) : (
+                                    <div
+                                      style={{
+                                        maxHeight: "140px",
+                                        overflowY: "auto",
+                                        whiteSpace: "pre-line",
+                                        lineHeight: "24px",
+                                      }}
+                                    >
+                                      {leadCountByExecutives.map(
+                                        (item, index) => {
+                                          return (
+                                            <p className="leadsmanager_executivecount_text">
+                                              {`${index + 1}. ${item.user_name} - ${
+                                                item.lead_count
+                                              }`}
+                                            </p>
+                                          );
+                                        },
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              }
+                              trigger={["click"]}
+                              onOpenChange={(value) => {
+                                setExecutiveCountTooltip(value);
+                                if (value === false) {
+                                  setLeadCountByExecutives([]);
+                                }
+                              }}
+                            >
+                              <Button className="leadsmanager_executivecount_iconcontainer">
+                                <MdFormatListNumbered size={14} />
+                              </Button>
+                            </Tooltip>
+                          </Flex>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
+                  </Col>
+                )}
               </>
             )}
 
@@ -2846,6 +2859,7 @@ export default function Leads({
           sm={24}
           md={24}
           lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
         >
           <div
             style={{

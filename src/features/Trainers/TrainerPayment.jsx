@@ -2579,7 +2579,7 @@ export default function TrainerPayment() {
             ),
           }}
           columns={tableColumns}
-          dataSource={flattenedTableData}
+          dataSource={paymentRequestsData}
           dataPerPage={10}
           loading={loading}
           // checkBox={permissions.includes("Payment Approval") ? "true" : "false"}

@@ -902,6 +902,7 @@ export default function Receivables({
           sm={24}
           md={24}
           lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
         >
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 0%">
@@ -1084,7 +1085,8 @@ export default function Receivables({
           </Row>
         </Col>
         <Col
-          span={permissions.includes("Lead Executive Filter") ? 2 : 12}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
