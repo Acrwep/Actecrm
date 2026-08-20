@@ -490,8 +490,7 @@ export default function TrainerPayment() {
       width: 150,
       render: (text, record) => {
         const isLoading =
-          customerDetailsLoadingRef.current ==
-          record.student_details?.customer_id;
+          customerDetailsLoadingRef.current == record?.customer_id;
 
         return (
           <div
@@ -542,42 +541,40 @@ export default function TrainerPayment() {
     },
     {
       title: "HR",
-      key: "hr",
-      dataIndex: ["student_details", "hr_user_id"],
+      key: "hr_user_id",
+      dataIndex: "hr_user_id",
       width: 110,
       render: (text, record) => (
         <EllipsisTooltip
-          text={
-            text ? `${text} - ${record?.student_details?.hr_user_name}` : "-"
-          }
+          text={text ? `${text} - ${record?.hr_user_name}` : "-"}
         />
       ),
     },
     {
       title: "Mode of Training",
-      key: "training_mode",
-      dataIndex: ["student_details", "training_mode"],
+      key: "mode_of_training",
+      dataIndex: "mode_of_training",
       width: 130,
-      render: (text) => <p>{text || "-"}</p>,
+      render: (text, record) => <EllipsisTooltip text={text} />,
     },
     {
       title: "Payment Cleared",
       key: "is_payment_cleared",
-      dataIndex: ["student_details", "is_payment_cleared"],
+      dataIndex: "is_payment_cleared",
       width: 130,
       render: (text) => renderCellWithBackground(text),
     },
     {
       title: "Completion 100%",
       key: "is_class_percentage",
-      dataIndex: ["student_details", "is_class_percentage"],
+      dataIndex: "is_class_percentage",
       width: 140,
       render: (text) => renderCellWithBackground(text),
     },
     {
       title: "Student Acknowledgement",
       key: "is_acknowledged",
-      dataIndex: ["student_details", "is_acknowledged"],
+      dataIndex: "is_acknowledged",
       width: 190,
       render: (text, record) =>
         renderCellWithBackground(
@@ -589,7 +586,7 @@ export default function TrainerPayment() {
               navigator.clipboard.writeText(
                 `${
                   import.meta.env.VITE_EMAIL_URL
-                }/acknowledge-class-completion/${record.student_details?.customer_id}`,
+                }/acknowledge-class-completion/${record?.customer_id}`,
               );
               CommonMessage("success", "Link Copied");
               console.log("Copied: eeee");
@@ -604,17 +601,17 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return (
           <div className="customers_review_container">
-            {record?.student_details?.google_review ? (
+            {record?.google_review ? (
               <div
                 className="customers_review_google_active"
                 onClick={() => {
                   setReviewModalTitle("Google Review");
-                  setReviewScreenshot(record?.student_details?.google_review);
+                  setReviewScreenshot(record?.google_review);
                   setIsOpenReviewScreenshotModal(true);
                 }}
               >
                 <FcGoogle size={15} />
-                {record?.student_details?.is_google_verified === 1 && (
+                {record?.is_google_verified === 1 && (
                   <PiSealCheckFill size={13} className="google_verified_icon" />
                 )}
               </div>
@@ -625,17 +622,17 @@ export default function TrainerPayment() {
                 </div>
               </Tooltip>
             )}
-            {record?.student_details?.linkedin_review ? (
+            {record?.linkedin_review ? (
               <div
                 className="customers_review_linkedin_active"
                 onClick={() => {
                   setReviewModalTitle("LinkedIn Review");
-                  setReviewScreenshot(record?.student_details?.linkedin_review);
+                  setReviewScreenshot(record?.linkedin_review);
                   setIsOpenReviewScreenshotModal(true);
                 }}
               >
                 <FaLinkedinIn size={14} color="#0a66c2" />
-                {record?.student_details?.is_linkedin_verified === 1 && (
+                {record?.is_linkedin_verified === 1 && (
                   <PiSealCheckFill size={13} className="google_verified_icon" />
                 )}
               </div>
@@ -665,7 +662,13 @@ export default function TrainerPayment() {
       hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
         return {
-          children: <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>,
+          children: (
+            <p>
+              {record.commercial
+                ? `₹${parseFloat(record.commercial).toFixed(2)}`
+                : "-"}
+            </p>
+          ),
           props: { rowSpan: record.rowSpan },
         };
       },
@@ -721,8 +724,7 @@ export default function TrainerPayment() {
       dataIndex: "status",
       width: 140,
       fixed: "right",
-      render: (text, flatRecord) => {
-        const record = flatRecord.request_details;
+      render: (text, record) => {
         return {
           children: (
             <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
@@ -883,7 +885,6 @@ export default function TrainerPayment() {
               )}
             </div>
           ),
-          props: { rowSpan: flatRecord.rowSpan },
         };
       },
     },
@@ -894,8 +895,7 @@ export default function TrainerPayment() {
       fixed: "right",
       width: 100,
       hidden: !permissions.includes("View Financial Details") ? true : false,
-      render: (text, flatRecord) => {
-        const record = flatRecord.request_details;
+      render: (text, record) => {
         return {
           children: (
             <div className="trainers_actionbuttonContainer">
@@ -921,28 +921,25 @@ export default function TrainerPayment() {
                   justifyContent: "center",
                 }}
               >
-                {record?.students?.map((student, index) => (
-                  <Tooltip
-                    key={index}
-                    placement="left"
-                    title="View Customer Track"
-                    trigger={["hover", "click"]}
-                  >
-                    <LuFileClock
-                      size={15}
-                      className="trainers_action_icons"
-                      style={{ cursor: "pointer", marginLeft: "4px" }}
-                      onClick={() => {
-                        setSelectedHistoryCustomerId(student.customer_id);
-                        setIsOpenCustomerHistoryDrawer(true);
-                      }}
-                    />
-                  </Tooltip>
-                ))}
+                <Tooltip
+                  placement="left"
+                  title="View Customer Track"
+                  trigger={["hover", "click"]}
+                >
+                  <LuFileClock
+                    size={15}
+                    className="trainers_action_icons"
+                    style={{ cursor: "pointer", marginLeft: "4px" }}
+                    onClick={() => {
+                      setSelectedHistoryCustomerId(record.customer_id);
+                      setIsOpenCustomerHistoryDrawer(true);
+                    }}
+                  />
+                </Tooltip>
               </div>
             </div>
           ),
-          props: { rowSpan: flatRecord.rowSpan },
+          // props: { rowSpan: flatRecord.rowSpan },
         };
       },
     },
@@ -1130,12 +1127,6 @@ export default function TrainerPayment() {
                   );
                 },
               };
-            case "customer_name":
-              return {
-                ...col,
-                width: 150,
-                render: (text) => <EllipsisTooltip text={text || "-"} />,
-              };
             case "course_name":
               return {
                 ...col,
@@ -1152,7 +1143,7 @@ export default function TrainerPayment() {
                   />
                 ),
               };
-            case "hr":
+            case "hr_user_id":
               return {
                 ...col,
                 width: 110,
@@ -1162,11 +1153,11 @@ export default function TrainerPayment() {
                   />
                 ),
               };
-            case "training_mode":
+            case "mode_of_training":
               return {
                 ...col,
                 width: 130,
-                render: (text) => <p>{text || "-"}</p>,
+                render: (text, record) => <EllipsisTooltip text={text} />,
               };
             case "is_payment_cleared":
               return {
@@ -1286,7 +1277,11 @@ export default function TrainerPayment() {
                 render: (text, record) => {
                   return {
                     children: (
-                      <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>
+                      <p>
+                        {record.commercial
+                          ? `₹${parseFloat(record.commercial).toFixed(2)}`
+                          : "-"}
+                      </p>
                     ),
                     props: { rowSpan: record.rowSpan },
                   };
@@ -1349,8 +1344,7 @@ export default function TrainerPayment() {
                 ...col,
                 width: 140,
                 fixed: "right",
-                render: (text, flatRecord) => {
-                  const record = flatRecord.request_details;
+                render: (text, record) => {
                   return {
                     children: (
                       <div
@@ -1528,7 +1522,6 @@ export default function TrainerPayment() {
                         )}
                       </div>
                     ),
-                    props: { rowSpan: flatRecord.rowSpan },
                   };
                 },
               };
@@ -1538,8 +1531,7 @@ export default function TrainerPayment() {
                 width: 100,
                 hidden: !permissions.includes("View Financial Details"),
                 fixed: "right",
-                render: (text, flatRecord) => {
-                  const record = flatRecord.request_details;
+                render: (text, record) => {
                   return {
                     children: (
                       <div className="trainers_actionbuttonContainer">
@@ -1565,37 +1557,34 @@ export default function TrainerPayment() {
                             justifyContent: "center",
                           }}
                         >
-                          {record?.students?.map((student, index) => (
-                            <Tooltip
-                              key={index}
-                              placement="left"
-                              title="View Customer Track"
-                              trigger={["hover", "click"]}
-                            >
-                              <LuFileClock
-                                size={15}
-                                className="trainers_action_icons"
-                                style={{ cursor: "pointer", marginLeft: "4px" }}
-                                onClick={() => {
-                                  setSelectedHistoryCustomerId(
-                                    student.customer_id,
+                          <Tooltip
+                            placement="left"
+                            title="View Customer Track"
+                            trigger={["hover", "click"]}
+                          >
+                            <LuFileClock
+                              size={15}
+                              className="trainers_action_icons"
+                              style={{ cursor: "pointer", marginLeft: "4px" }}
+                              onClick={() => {
+                                setSelectedHistoryCustomerId(
+                                  record.customer_id,
+                                );
+                                setIsOpenCustomerHistoryDrawer(true);
+                                setTimeout(() => {
+                                  const container = document.getElementById(
+                                    "customer_history_profilecontainer",
                                   );
-                                  setIsOpenCustomerHistoryDrawer(true);
-                                  setTimeout(() => {
-                                    const container = document.getElementById(
-                                      "customer_history_profilecontainer",
-                                    );
-                                    if (container) {
-                                      container.scrollIntoView({
-                                        behavior: "smooth",
-                                        block: "start",
-                                      });
-                                    }
-                                  }, 300);
-                                }}
-                              />
-                            </Tooltip>
-                          ))}
+                                  if (container) {
+                                    container.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    });
+                                  }
+                                }, 300);
+                              }}
+                            />
+                          </Tooltip>
                         </div>
 
                         {/* {record?.paid_amount == "0.00" && (
@@ -1611,7 +1600,7 @@ export default function TrainerPayment() {
               )} */}
                       </div>
                     ),
-                    props: { rowSpan: flatRecord.rowSpan },
+                    // props: { rowSpan: flatRecord.rowSpan },
                   };
                 },
               };
@@ -2050,55 +2039,6 @@ export default function TrainerPayment() {
       10,
     );
   };
-
-  const flattenedTableData = useMemo(() => {
-    const flatData = [];
-    const groupedRequests = [];
-    const idToGroup = {};
-
-    // 1. Group the flat data by payment master id
-    paymentRequestsData.forEach((request) => {
-      const id = request.id;
-      if (!idToGroup[id]) {
-        // Initialize a new group based on the first row's data
-        const newGroup = { ...request, students: [] };
-        idToGroup[id] = newGroup;
-        groupedRequests.push(newGroup);
-      }
-
-      // If there is a student/customer associated (customer_id is not null) or if it's the main transaction
-      // we push the whole request object because it contains the student details mapped directly.
-      // E.g., customer_id or payment_trans_id from the flat query
-      if (request.customer_id || request.payment_trans_id) {
-        idToGroup[id].students.push(request);
-      }
-    });
-
-    // 2. Flatten for the table, computing rowSpan
-    groupedRequests.forEach((groupedRequest) => {
-      if (groupedRequest.students && groupedRequest.students.length > 0) {
-        groupedRequest.students.forEach((student, index) => {
-          flatData.push({
-            ...groupedRequest, // spreads id, which is fine since handleMoveToPaidNow expects item.id to be the request id
-            student_details: student,
-            rowSpan: index === 0 ? groupedRequest.students.length : 0,
-            request_details: groupedRequest, // Keep original request handy
-            row_num: `${groupedRequest.id}_${student.customer_id || index}`,
-          });
-        });
-      } else {
-        flatData.push({
-          ...groupedRequest,
-          student_details: null,
-          rowSpan: 1,
-          request_details: groupedRequest,
-          row_num: `${groupedRequest.id}_no_student`,
-        });
-      }
-    });
-
-    return flatData;
-  }, [paymentRequestsData]);
 
   return (
     <div>
