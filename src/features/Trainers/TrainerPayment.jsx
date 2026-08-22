@@ -14,6 +14,8 @@ import {
   Upload,
 } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import { IoIosClose } from "react-icons/io";
+import { CiSearch } from "react-icons/ci";
 import { PiSealCheckFill } from "react-icons/pi";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
@@ -27,6 +29,7 @@ import { FaXmark } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCopy } from "react-icons/fa6";
 import { LuFileClock } from "react-icons/lu";
+import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";
 import {
   deleteTrainerPaymentRequest,
@@ -39,10 +42,12 @@ import {
   getTableColumns,
   updateTableColumns,
   getCustomerFullHistory,
+  getBranches,
 } from "../ApiService/action";
 import {
   formatToBackendIST,
   getCurrentandLast90Date,
+  regionOptions,
 } from "../Common/Validation";
 import moment from "moment";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -61,6 +66,9 @@ import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelec
 import TrainerFullDetailsModal from "./TrainerFullDetailsModal";
 import TrainerPayslip from "./TrainerPayslip";
 import { TagOutlined } from "@ant-design/icons";
+import CommonOutlinedInput from "../Common/CommonOutlinedInput";
+import CommonSelectField from "../Common/CommonSelectField";
+import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 
 export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
   if (!updatedDate) return null;
@@ -214,20 +222,38 @@ export const TimerPill = ({ updatedDate, deadlineDate, status, paidDate }) => {
   }
 
   return (
-    <div
-      style={{
-        backgroundColor: pillColor,
-        color: textColor,
-        padding: "3px 12px",
-        borderRadius: "20px",
-        display: "inline-block",
-        fontWeight: "bold",
-        fontSize: "11px",
-        whiteSpace: "nowrap",
+    <Tooltip
+      title={elapsedString}
+      placement="top"
+      styles={{
+        body: {
+          backgroundColor: "#fff",
+          color: "#333",
+          fontWeight: 500,
+          fontSize: "13px",
+        },
       }}
+      color="#fff"
     >
-      {elapsedString}
-    </div>
+      <div
+        style={{
+          backgroundColor: pillColor,
+          color: textColor,
+          padding: "3px 12px",
+          borderRadius: "20px",
+          display: "inline-block",
+          fontWeight: "bold",
+          fontSize: "11px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: "100%",
+          verticalAlign: "middle",
+        }}
+      >
+        {elapsedString}
+      </div>
+    </Tooltip>
   );
 };
 
@@ -251,6 +277,13 @@ export default function TrainerPayment() {
       behavior: "smooth",
     });
   };
+  //filter usestates
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [commercialType, setCommercialType] = useState("");
   /* ---------------- Trainer STATES ---------------- */
   const [trainersDataList, setTrainersDataList] = useState([]);
   // ✅ IMPORTANT: keep IDs & Objects separately
@@ -314,7 +347,10 @@ export default function TrainerPayment() {
 
   //table data states
   const [paymentRequestsData, setPaymentRequestsData] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -322,6 +358,7 @@ export default function TrainerPayment() {
     totalPages: 0,
   });
   const [statusCounts, setStatusCounts] = useState(null);
+  const [regionCounts, setRegionCounts] = useState(null);
   const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
   const customerDetailsLoadingRef = useRef(customerDetailsLoading);
   useEffect(() => {
@@ -399,6 +436,22 @@ export default function TrainerPayment() {
   // Table columns definition
   const nonChangeColumns = [
     {
+      title: "Approved Date",
+      key: "approved_date",
+      dataIndex: "approved_date",
+      width: 130,
+      render: (text, record) => {
+        return {
+          children: (
+            <p style={{ margin: 0 }}>
+              {text ? moment(text).format("DD/MM/YYYY") : "-"}
+            </p>
+          ),
+          props: { rowSpan: record.rowSpan },
+        };
+      },
+    },
+    {
       title: "Bill Raise Date",
       key: "bill_raisedate",
       dataIndex: "bill_raisedate",
@@ -452,6 +505,79 @@ export default function TrainerPayment() {
       },
     },
     {
+      title: "Deadline Date",
+      key: "deadline_date",
+      dataIndex: "deadline_date",
+      width: 130,
+      render: (text, record) => {
+        const hasPermission = permissions.includes("View Financial Details");
+        const calcDate = calculateDeadlineDate(
+          record?.updated_date,
+          record?.students,
+          hasPermission,
+        );
+        return {
+          children: <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>,
+          props: { rowSpan: record.rowSpan },
+        };
+      },
+    },
+    {
+      title: permissions.includes("View Financial Details")
+        ? "Days Taken"
+        : "Days Taken To Complete",
+      key: "days_taken_topay",
+      dataIndex: "days_taken_topay",
+      width: permissions.includes("View Financial Details") ? 130 : 175,
+      render: (text, record) => {
+        const hasPermission = permissions.includes("View Financial Details");
+        const deadlineDate = calculateDeadlineDate(
+          record?.updated_date,
+          record?.students,
+          hasPermission,
+        );
+        return {
+          children: (
+            <TimerPill
+              updatedDate={record?.updated_date}
+              deadlineDate={deadlineDate}
+              status={record?.status}
+              paidDate={record?.paid_date}
+            />
+          ),
+          props: { rowSpan: record.rowSpan },
+        };
+      },
+    },
+    {
+      title: "Region",
+      key: "std_region_name",
+      dataIndex: "std_region_name",
+      width: 120,
+      render: (text) => <EllipsisTooltip text={text || "-"} />,
+    },
+    {
+      title: "Place Of Sale",
+      key: "std_place_of_sale_name",
+      dataIndex: "std_place_of_sale_name",
+      width: 120,
+      render: (text) => <EllipsisTooltip text={text || "-"} />,
+    },
+    {
+      title: "Place Of Service",
+      key: "std_place_of_service_name",
+      dataIndex: "std_place_of_service_name",
+      width: 120,
+      render: (text) => <EllipsisTooltip text={text || "-"} />,
+    },
+    {
+      title: "Mode of Training",
+      key: "mode_of_training",
+      dataIndex: "mode_of_training",
+      width: 130,
+      render: (text, record) => <EllipsisTooltip text={text} />,
+    },
+    {
       title: "Trainer Name",
       key: "trainer_name",
       dataIndex: "trainer_name",
@@ -482,6 +608,22 @@ export default function TrainerPayment() {
           props: { rowSpan: record.rowSpan },
         };
       },
+    },
+    {
+      title: "No. Of Students",
+      key: "batch_student_count",
+      dataIndex: "batch_student_count",
+      width: 115,
+      render: (text) => {
+        return <p>{`${Number(text).toLocaleString("en-IN")}`}</p>;
+      },
+    },
+    {
+      title: "Batch Id",
+      key: "batch_number",
+      dataIndex: "batch_number",
+      width: 72,
+      render: (text, record) => <EllipsisTooltip text={text} />,
     },
     {
       title: "Student Name",
@@ -529,6 +671,25 @@ export default function TrainerPayment() {
       render: (text) => <EllipsisTooltip text={text || "-"} />,
     },
     {
+      title: "Amount",
+      key: "request_amount",
+      dataIndex: "request_amount",
+      width: 140,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
+      render: (text, record) => {
+        return {
+          children: (
+            <p>
+              {record.commercial
+                ? `₹${parseFloat(record.commercial).toFixed(2)}`
+                : "-"}
+            </p>
+          ),
+          props: { rowSpan: record.rowSpan },
+        };
+      },
+    },
+    {
       title: "RA",
       key: "ra",
       dataIndex: "ra_user_id",
@@ -551,31 +712,67 @@ export default function TrainerPayment() {
       ),
     },
     {
-      title: "Mode of Training",
-      key: "mode_of_training",
-      dataIndex: "mode_of_training",
+      title: "SE",
+      title: (
+        <Tooltip title="Sales Executive" placement="top">
+          <div
+            style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
+          >
+            SE
+          </div>
+        </Tooltip>
+      ),
+      key: "lead_assigned_to_id",
+      dataIndex: "lead_assigned_to_id",
       width: 130,
-      render: (text, record) => <EllipsisTooltip text={text} />,
+      render: (text, record) => {
+        const lead_executive = `${text} - ${record?.lead_assigned_to_name}`;
+        return <EllipsisTooltip text={lead_executive} />;
+      },
     },
     {
-      title: "Payment Cleared",
+      title: (
+        <Tooltip title="Payment Cleared" placement="top">
+          <div
+            style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
+          >
+            PC
+          </div>
+        </Tooltip>
+      ),
       key: "is_payment_cleared",
       dataIndex: "is_payment_cleared",
-      width: 130,
+      width: 60,
       render: (text) => renderCellWithBackground(text),
     },
     {
-      title: "Completion 100%",
+      title: (
+        <Tooltip title="Class Completion 100%" placement="top">
+          <div
+            style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
+          >
+            AC
+          </div>
+        </Tooltip>
+      ),
       key: "is_class_percentage",
       dataIndex: "is_class_percentage",
-      width: 140,
+      width: 60,
       render: (text) => renderCellWithBackground(text),
     },
     {
-      title: "Student Acknowledgement",
+      title: (
+        <Tooltip title="Student Acknowledgement" placement="top">
+          <div
+            style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
+          >
+            SA
+          </div>
+        </Tooltip>
+      ),
       key: "is_acknowledged",
       dataIndex: "is_acknowledged",
-      width: 190,
+      width: 60,
       render: (text, record) =>
         renderCellWithBackground(
           text,
@@ -655,72 +852,8 @@ export default function TrainerPayment() {
     //   render: (text, record) => renderCellWithBackground(text),
     // },
     {
-      title: "Request Amount",
-      key: "request_amount",
-      dataIndex: "request_amount",
-      width: 140,
-      hidden: !permissions.includes("View Financial Details") ? true : false,
-      render: (text, record) => {
-        return {
-          children: (
-            <p>
-              {record.commercial
-                ? `₹${parseFloat(record.commercial).toFixed(2)}`
-                : "-"}
-            </p>
-          ),
-          props: { rowSpan: record.rowSpan },
-        };
-      },
-    },
-    {
-      title: permissions.includes("View Financial Details")
-        ? "Days Taken To Pay"
-        : "Days Taken To Complete",
-      key: "days_taken_topay",
-      dataIndex: "days_taken_topay",
-      width: permissions.includes("View Financial Details") ? 140 : 175,
-      render: (text, record) => {
-        const hasPermission = permissions.includes("View Financial Details");
-        const deadlineDate = calculateDeadlineDate(
-          record?.updated_date,
-          record?.students,
-          hasPermission,
-        );
-        return {
-          children: (
-            <TimerPill
-              updatedDate={record?.updated_date}
-              deadlineDate={deadlineDate}
-              status={record?.status}
-              paidDate={record?.paid_date}
-            />
-          ),
-          props: { rowSpan: record.rowSpan },
-        };
-      },
-    },
-    {
-      title: "Deadline Date",
-      key: "deadline_date",
-      dataIndex: "deadline_date",
-      width: 130,
-      render: (text, record) => {
-        const hasPermission = permissions.includes("View Financial Details");
-        const calcDate = calculateDeadlineDate(
-          record?.updated_date,
-          record?.students,
-          hasPermission,
-        );
-        return {
-          children: <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>,
-          props: { rowSpan: record.rowSpan },
-        };
-      },
-    },
-    {
       title: "Status",
-      key: "status",
+      key: "trainer_payment_status",
       dataIndex: "status",
       width: 140,
       fixed: "right",
@@ -810,7 +943,7 @@ export default function TrainerPayment() {
                               }
                             }}
                           >
-                            Ready to Pay{" "}
+                            Pay{" "}
                           </Checkbox>
                         ) : (
                           <div className="customers_classcompleted_container">
@@ -873,7 +1006,7 @@ export default function TrainerPayment() {
                       navigator.clipboard.writeText(
                         `${
                           import.meta.env.VITE_EMAIL_URL
-                        }/trainer-payment-claim/${record.trainer_id}/${record.id}`,
+                        }/trainer-payment-claim/${record.trainer_id}/${record.payment_master_id}`,
                       );
                       CommonMessage("success", "Link Copied");
                       console.log("Copied: eeee");
@@ -1007,6 +1140,111 @@ export default function TrainerPayment() {
                   };
                 },
               };
+            case "approved_date":
+              return {
+                ...col,
+                width: 130,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p style={{ margin: 0 }}>
+                        {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                      </p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "days_taken_topay":
+              return {
+                ...col,
+                title: permissions.includes("View Financial Details")
+                  ? "Days Taken"
+                  : "Days Taken To Complete",
+                width: permissions.includes("View Financial Details")
+                  ? 140
+                  : 175,
+                render: (text, record) => {
+                  const hasPermission = permissions.includes(
+                    "View Financial Details",
+                  );
+                  const deadlineDate = calculateDeadlineDate(
+                    record?.updated_date,
+                    record?.students,
+                    hasPermission,
+                  );
+                  return {
+                    children: (
+                      <TimerPill
+                        updatedDate={record?.updated_date}
+                        deadlineDate={deadlineDate}
+                        status={record?.status}
+                        paidDate={record?.paid_date}
+                      />
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "deadline_date":
+              return {
+                ...col,
+                width: 110,
+                render: (text, record) => {
+                  const hasPermission = permissions.includes(
+                    "View Financial Details",
+                  );
+                  const calcDate = calculateDeadlineDate(
+                    record?.updated_date,
+                    record?.students,
+                    hasPermission,
+                  );
+                  return {
+                    children: (
+                      <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
+            case "std_region_name":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => <EllipsisTooltip text={text || "-"} />,
+              };
+            case "std_place_of_sale_name":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => <EllipsisTooltip text={text || "-"} />,
+              };
+            case "std_place_of_service_name":
+              return {
+                ...col,
+                width: 120,
+                render: (text) => <EllipsisTooltip text={text || "-"} />,
+              };
+            case "mode_of_training":
+              return {
+                ...col,
+                width: 130,
+                render: (text, record) => <EllipsisTooltip text={text} />,
+              };
+            case "batch_student_count":
+              return {
+                ...col,
+                width: 115,
+                render: (text) => {
+                  return <p>{`${Number(text).toLocaleString("en-IN")}`}</p>;
+                },
+              };
+            case "batch_number":
+              return {
+                ...col,
+                width: 72,
+                render: (text, record) => <EllipsisTooltip text={text} />,
+              };
             case "commercial_type":
               return {
                 ...col,
@@ -1133,6 +1371,26 @@ export default function TrainerPayment() {
                 width: 150,
                 render: (text) => <EllipsisTooltip text={text || "-"} />,
               };
+            case "request_amount":
+              return {
+                ...col,
+                width: 140,
+                hidden: !permissions.includes("View Financial Details")
+                  ? true
+                  : false,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>
+                        {record.commercial
+                          ? `₹${parseFloat(record.commercial).toFixed(2)}`
+                          : "-"}
+                      </p>
+                    ),
+                    props: { rowSpan: record.rowSpan },
+                  };
+                },
+              };
             case "ra":
               return {
                 ...col,
@@ -1153,23 +1411,100 @@ export default function TrainerPayment() {
                   />
                 ),
               };
-            case "mode_of_training":
+            case "lead_assigned_to_id":
               return {
                 ...col,
-                width: 130,
-                render: (text, record) => <EllipsisTooltip text={text} />,
+                title: (
+                  <Tooltip title="Sales Executive" placement="top">
+                    <div
+                      style={{
+                        cursor: "pointer",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
+                      SE
+                    </div>
+                  </Tooltip>
+                ),
+                width: 110,
+                render: (text, record) => {
+                  const lead_executive = `${text} - ${record?.lead_assigned_to_name}`;
+                  return <EllipsisTooltip text={lead_executive} />;
+                },
               };
             case "is_payment_cleared":
               return {
                 ...col,
-                width: 130,
+                title: (
+                  <Tooltip title="Payment Cleared" placement="top">
+                    <div
+                      style={{
+                        cursor: "pointer",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
+                      PC
+                    </div>
+                  </Tooltip>
+                ),
+                width: 60,
                 render: (text) => renderCellWithBackground(text),
               };
             case "is_class_percentage":
               return {
                 ...col,
-                width: 140,
+                title: (
+                  <Tooltip title="Class Completion 100%" placement="top">
+                    <div
+                      style={{
+                        cursor: "pointer",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
+                      AC
+                    </div>
+                  </Tooltip>
+                ),
+                width: 60,
                 render: (text) => renderCellWithBackground(text),
+              };
+            case "is_acknowledged":
+              return {
+                ...col,
+                title: (
+                  <Tooltip title="Student Acknowledgement" placement="top">
+                    <div
+                      style={{
+                        cursor: "pointer",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
+                      SA
+                    </div>
+                  </Tooltip>
+                ),
+                width: 60,
+                render: (text, record) =>
+                  renderCellWithBackground(
+                    text,
+                    {},
+                    {
+                      showCopy: true,
+                      onCopy: () => {
+                        navigator.clipboard.writeText(
+                          `${
+                            import.meta.env.VITE_EMAIL_URL
+                          }/acknowledge-class-completion/${record?.customer_id}`,
+                        );
+                        CommonMessage("success", "Link Copied");
+                        console.log("Copied: eeee");
+                      },
+                    },
+                  ),
               };
             case "review_status":
               return {
@@ -1233,113 +1568,7 @@ export default function TrainerPayment() {
                   );
                 },
               };
-            case "is_google":
-              return {
-                ...col,
-                width: 120,
-                render: (text) => renderCellWithBackground(text),
-              };
-            case "is_linkedin":
-              return {
-                ...col,
-                width: 130,
-                render: (text) => renderCellWithBackground(text),
-              };
-            case "is_acknowledged":
-              return {
-                ...col,
-                width: 190,
-                render: (text, record) =>
-                  renderCellWithBackground(
-                    text,
-                    {},
-                    {
-                      showCopy: true,
-                      onCopy: () => {
-                        navigator.clipboard.writeText(
-                          `${
-                            import.meta.env.VITE_EMAIL_URL
-                          }/acknowledge-class-completion/${record?.customer_id}`,
-                        );
-                        CommonMessage("success", "Link Copied");
-                        console.log("Copied: eeee");
-                      },
-                    },
-                  ),
-              };
-            case "request_amount":
-              return {
-                ...col,
-                width: 140,
-                hidden: !permissions.includes("View Financial Details")
-                  ? true
-                  : false,
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <p>
-                        {record.commercial
-                          ? `₹${parseFloat(record.commercial).toFixed(2)}`
-                          : "-"}
-                      </p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "days_taken_topay":
-              return {
-                ...col,
-                title: permissions.includes("View Financial Details")
-                  ? "Days Taken To Pay"
-                  : "Days Taken To Complete",
-                width: permissions.includes("View Financial Details")
-                  ? 140
-                  : 175,
-                render: (text, record) => {
-                  const hasPermission = permissions.includes(
-                    "View Financial Details",
-                  );
-                  const deadlineDate = calculateDeadlineDate(
-                    record?.updated_date,
-                    record?.students,
-                    hasPermission,
-                  );
-                  return {
-                    children: (
-                      <TimerPill
-                        updatedDate={record?.updated_date}
-                        deadlineDate={deadlineDate}
-                        status={record?.status}
-                        paidDate={record?.paid_date}
-                      />
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "deadline_date":
-              return {
-                ...col,
-                width: 130,
-                render: (text, record) => {
-                  const hasPermission = permissions.includes(
-                    "View Financial Details",
-                  );
-                  const calcDate = calculateDeadlineDate(
-                    record?.updated_date,
-                    record?.students,
-                    hasPermission,
-                  );
-                  return {
-                    children: (
-                      <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "status":
+            case "trainer_payment_status":
               return {
                 ...col,
                 width: 140,
@@ -1443,7 +1672,7 @@ export default function TrainerPayment() {
                                         }
                                       }}
                                     >
-                                      Ready to Pay{" "}
+                                      Pay{" "}
                                     </Checkbox>
                                   ) : (
                                     <div className="customers_classcompleted_container">
@@ -1510,7 +1739,7 @@ export default function TrainerPayment() {
                                 navigator.clipboard.writeText(
                                   `${
                                     import.meta.env.VITE_EMAIL_URL
-                                  }/trainer-payment-claim/${record.trainer_id}/${record.id}`,
+                                  }/trainer-payment-claim/${record.trainer_id}/${record.payment_master_id}`,
                                 );
                                 CommonMessage("success", "Link Copied");
                                 console.log("Copied: eeee");
@@ -1634,10 +1863,28 @@ export default function TrainerPayment() {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
+    // Sanitize columns to prevent "Converting circular structure to JSON"
+    // caused by React nodes in the `title` property
+    const sanitizedColumns = columns.map((col) => {
+      let titleStr = col.title;
+      if (typeof col.title !== "string") {
+        if (col.key === "is_payment_cleared") titleStr = "PC";
+        else if (col.key === "is_class_percentage") titleStr = "AC";
+        else if (col.key === "is_acknowledged") titleStr = "SA";
+        else if (col.key === "lead_assigned_to_id") titleStr = "SE";
+        else titleStr = col.key || "";
+      }
+      return {
+        ...col,
+        title: titleStr,
+        render: undefined, // Remove render functions before saving
+      };
+    });
+
     const payload = {
       user_id: convertAsJson?.user_id,
       page_name: "Trainer Payment",
-      column_names: columns,
+      column_names: sanitizedColumns,
     };
     try {
       await updateTableColumns(payload);
@@ -1713,6 +1960,10 @@ export default function TrainerPayment() {
 
       getTrainerPaymentsData(
         selectedId,
+        searchValue,
+        selectedRegionId,
+        selectedBranchId,
+        commercialType,
         dateFilterType,
         selectedDates[0],
         selectedDates[1],
@@ -1727,6 +1978,10 @@ export default function TrainerPayment() {
       getTrainersData(null, 1);
       getTrainerPaymentsData(
         null,
+        searchValue,
+        selectedRegionId,
+        selectedBranchId,
+        commercialType,
         dateFilterType,
         selectedDates[0],
         selectedDates[1],
@@ -1795,6 +2050,11 @@ export default function TrainerPayment() {
 
   const rerunTrainerPaymentFilters = (stateData) => {
     const PreviousAndCurrentDate = getCurrentandLast90Date();
+    setSearchValue("");
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setCommercialType("");
     const receivedSearchValueFromNotification = stateData?.searchValue || null;
     const receivedStatusValueFromNotification = stateData?.status || null;
     const receivedBillRaiseDateFromNotification =
@@ -1823,6 +2083,10 @@ export default function TrainerPayment() {
       receivedSearchValueFromNotification
         ? receivedSearchValueFromNotification
         : null,
+      null,
+      null,
+      null,
+      null,
       "RaiseDate",
       receivedBillRaiseDateFromNotification
         ? receivedBillRaiseDateFromNotification
@@ -1841,6 +2105,10 @@ export default function TrainerPayment() {
 
   const getTrainerPaymentsData = async (
     trainerId,
+    searchValue,
+    regionId,
+    branchId,
+    commercialType,
     dateType,
     startDate,
     endDate,
@@ -1852,6 +2120,10 @@ export default function TrainerPayment() {
     setLoading(true);
     const payload = {
       trainer_id: trainerId,
+      ...(searchValue && { search_filter: searchValue }),
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      ...(commercialType && { commercial_type: commercialType }),
       type: dateType,
       start_date: startDate,
       end_date: endDate,
@@ -1867,6 +2139,7 @@ export default function TrainerPayment() {
       const responseData = response?.data?.data?.data || [];
       const paginationData = response?.data?.data?.pagination || {};
       const statusCountsData = response?.data?.data?.statusCount || {};
+      const regionCountsData = response?.data?.data?.regionCount || {};
 
       // Set payment requests data
       setPaymentRequestsData(responseData);
@@ -1879,7 +2152,8 @@ export default function TrainerPayment() {
         totalPages: paginationData.totalPages || 0,
       });
 
-      // Update status counts
+      // Update status and region counts
+      setRegionCounts(regionCountsData);
       setStatusCounts(statusCountsData);
     } catch (error) {
       setPaymentRequestsData([]);
@@ -1938,7 +2212,7 @@ export default function TrainerPayment() {
 
     const payload = {
       status: updateStatus,
-      trainer_payment_id: selectedPaymentDetails?.id,
+      trainer_payment_id: selectedPaymentDetails?.payment_master_id,
       updated_by: convertAsJson?.user_id,
       updated_date: formatToBackendIST(new Date()),
     };
@@ -1950,6 +2224,10 @@ export default function TrainerPayment() {
         // Refresh the payment requests data
         getTrainerPaymentsData(
           selectedTrainerId,
+          searchValue,
+          selectedRegionId,
+          selectedBranchId,
+          commercialType,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -1977,6 +2255,10 @@ export default function TrainerPayment() {
         setButtonLoading(false);
         getTrainerPaymentsData(
           selectedTrainerId,
+          searchValue,
+          selectedRegionId,
+          selectedBranchId,
+          commercialType,
           dateFilterType,
           selectedDates[0],
           selectedDates[1],
@@ -1995,6 +2277,164 @@ export default function TrainerPayment() {
     }
   };
 
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setLoading(true);
+    setPagination({
+      page: 1,
+    });
+    getTrainerPaymentsData(
+      selectedTrainerId,
+      e.target.value,
+      selectedRegionId,
+      selectedBranchId,
+      commercialType,
+      dateFilterType,
+      selectedDates[0],
+      selectedDates[1],
+      status || null,
+      1,
+      pagination.limit,
+    );
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    setFilterLoading(true);
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    } finally {
+      setFilterLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloadLoading(true);
+    const from_date = formatToBackendIST(selectedDates[0]);
+    const to_date = formatToBackendIST(selectedDates[1]);
+
+    const payload = {
+      trainer_id: selectedTrainerId,
+      ...(searchValue && { search_filter: searchValue }),
+      ...(selectedRegionId && { region_id: selectedRegionId }),
+      ...(selectedBranchId && { branch_id: selectedBranchId }),
+      ...(commercialType && { commercial_type: commercialType }),
+      type: "RaiseDate",
+      start_date: from_date,
+      end_date: to_date,
+      status: status,
+    };
+    try {
+      const response = await getTrainerPayments(payload);
+      console.log("received payments response", response);
+      const download_data = response?.data?.data?.data || [];
+      if (download_data.length >= 1) {
+        const exportColumns = nonChangeColumns
+          .filter((col) => {
+            if (col.key === "review_status" || col.key === "action") {
+              return false;
+            }
+
+            if (
+              commercialType === "Pay Per Head" &&
+              (col.key === "batch_number" || col.key === "batch_student_count")
+            ) {
+              return false;
+            }
+
+            if (
+              col.key === "approved_date" &&
+              status !== "Awaiting Finance" &&
+              status !== "Paid"
+            ) {
+              return false;
+            }
+
+            return true;
+          })
+          .flatMap((col) => {
+            if (col.key === "is_payment_cleared") {
+              return [{ ...col, title: "Payment Cleared" }];
+            }
+
+            if (col.key === "is_class_percentage") {
+              return [{ ...col, title: "Class Completion 100%" }];
+            }
+
+            if (col.key === "is_acknowledged") {
+              return [
+                { ...col, title: "Student Acknowledgement" },
+                //add google review columns
+                {
+                  key: "google_review",
+                  dataIndex: "google_review",
+                  title: "Google Review",
+                },
+                {
+                  key: "is_google_verified",
+                  dataIndex: "is_google_verified",
+                  title: "Google Review Verify",
+                },
+                //add linkedin review columns
+                {
+                  key: "linkedin_review",
+                  dataIndex: "linkedin_review",
+                  title: "Linkedin Review",
+                },
+                {
+                  key: "is_linkedin_verified",
+                  dataIndex: "is_linkedin_verified",
+                  title: "Linkedin Review Verify",
+                },
+              ];
+            }
+
+            if (col.key === "lead_assigned_to_id") {
+              return [{ ...col, title: "Sales Executive" }];
+            }
+
+            return [col];
+          });
+
+        DownloadTableAsCSV(
+          download_data,
+          exportColumns,
+          `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+            selectedDates[1],
+          ).format("DD-MM-YYYY")} Trainer Payments.csv`,
+          true,
+        );
+      } else {
+        CommonMessage("error", "No Data Found");
+      }
+      setDownloadLoading(false);
+    } catch (error) {
+      setDownloadLoading(false);
+      console.log("received payments error", error);
+    }
+  };
+
   const paymentformReset = () => {
     setButtonLoading(false);
     setIsOpenDetailsDrawer(false);
@@ -2010,6 +2450,10 @@ export default function TrainerPayment() {
     // Fetch data with new pagination
     getTrainerPaymentsData(
       selectedTrainerId,
+      searchValue,
+      selectedRegionId,
+      selectedBranchId,
+      commercialType,
       dateFilterType,
       selectedDates[0],
       selectedDates[1],
@@ -2017,6 +2461,13 @@ export default function TrainerPayment() {
       page,
       limit,
     );
+  };
+
+  const handleSelectedRow = (row) => {
+    console.log("selected rowwww", row);
+    setSelectedRows(row);
+    const keys = row.map((item) => item.id); // or your unique row key
+    setSelectedRowKeys(keys);
   };
 
   const handleRefresh = () => {
@@ -2029,7 +2480,16 @@ export default function TrainerPayment() {
     setSelectedTrainerObject(null);
     setTrainerSearchText("");
     getTrainersData(null, 1);
+    setSearchValue("");
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setCommercialType("");
     getTrainerPaymentsData(
+      null,
+      null,
+      null,
+      null,
       null,
       "RaiseDate",
       PreviousAndCurrentDate[0],
@@ -2067,6 +2527,10 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    commercialType,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -2101,6 +2565,10 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    commercialType,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -2135,6 +2603,10 @@ export default function TrainerPayment() {
                   setPagination({ ...pagination, page: 1 });
                   getTrainerPaymentsData(
                     selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    commercialType,
                     dateFilterType,
                     selectedDates[0],
                     selectedDates[1],
@@ -2155,40 +2627,6 @@ export default function TrainerPayment() {
                   } )`}
                 </p>
               </div>
-              {/* <div
-                className={
-                  status === "Awaiting Approval"
-                    ? "customers_active_classschedule_container"
-                    : "customers_classschedule_container"
-                }
-                onClick={() => {
-                  if (status === "Awaiting Approval") {
-                    return;
-                  }
-                  setStatus("Awaiting Approval");
-                  setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Awaiting Approval",
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>
-                  Awaiting Approval{" "}
-                  {`( ${
-                    statusCounts &&
-                    statusCounts.awaiting_approval !== undefined &&
-                    statusCounts.awaiting_approval !== null
-                      ? statusCounts.awaiting_approval
-                      : "-"
-                  } )`}
-                </p>
-              </div> */}
               {permissions.includes("Show Ready to Pay & Paid Buckets") && (
                 <>
                   <div
@@ -2205,6 +2643,10 @@ export default function TrainerPayment() {
                       setPagination({ ...pagination, page: 1 });
                       getTrainerPaymentsData(
                         selectedTrainerId,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        commercialType,
                         dateFilterType,
                         selectedDates[0],
                         selectedDates[1],
@@ -2240,6 +2682,10 @@ export default function TrainerPayment() {
                       setPagination({ ...pagination, page: 1 });
                       getTrainerPaymentsData(
                         selectedTrainerId,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        commercialType,
                         dateFilterType,
                         selectedDates[0],
                         selectedDates[1],
@@ -2262,81 +2708,7 @@ export default function TrainerPayment() {
                   </div>
                 </>
               )}
-              {/* <div
-                className={
-                  status === "Payment Rejected"
-                    ? "customers_active_escalated_container"
-                    : "customers_escalated_container"
-                }
-                onClick={() => {
-                  if (status === "Payment Rejected") {
-                    return;
-                  }
-                  setStatus("Payment Rejected");
-                  setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Payment Rejected",
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>
-                  Rejected{" "}
-                  {`( ${
-                    statusCounts &&
-                    statusCounts.payment_rejected !== undefined &&
-                    statusCounts.payment_rejected !== null
-                      ? statusCounts.payment_rejected
-                      : "-"
-                  } )`}
-                </p>
-              </div> */}
-              {/* <div
-                className={
-                  status === "Completed"
-                    ? "trainers_active_verifiedtrainers_container"
-                    : "customers_completed_container"
-                }
-                onClick={() => {
-                  if (status === "Completed") {
-                    return;
-                  }
-                  setStatus("Completed");
-                  setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Completed",
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              >
-                <p>
-                  Completed{" "}
-                  {`( ${
-                    statusCounts &&
-                    statusCounts.completed !== undefined &&
-                    statusCounts.completed !== null
-                      ? statusCounts.completed
-                      : "-"
-                  } )`}
-                </p>
-              </div> */}
             </div>
-            {/* <button
-              onClick={() => scroll(900)}
-              className="customer_statusscroll_button"
-            >
-              <IoMdArrowDropright size={25} />
-            </button> */}
           </div>
         </Col>
 
@@ -2363,9 +2735,9 @@ export default function TrainerPayment() {
       </Row>
 
       <Row>
-        <Col xs={24} sm={24} md={24} lg={17}>
-          <Row gutter={16}>
-            <Col span={8}>
+        <Col xs={24} sm={24} md={24} lg={22} xxl={18}>
+          <Row gutter={12} align="middle" wrap={false}>
+            <Col flex="1 1 0%">
               <CommonCustomerSingleSelectField
                 label="Trainer"
                 height="30px"
@@ -2384,99 +2756,165 @@ export default function TrainerPayment() {
                 disableClearable={false}
               />
             </Col>
-            <Col span={10}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  flexWrap: "nowrap",
-                }}
-              >
-                <div style={{ flex: "0 0 260px" }}>
-                  <CommonMuiCustomDatePicker
-                    value={selectedDates}
-                    onDateChange={(dates) => {
-                      setSelectedDates(dates);
-                      setPagination({
-                        page: 1,
-                      });
-                      getTrainerPaymentsData(
-                        selectedTrainerId,
-                        dateFilterType,
-                        dates[0],
-                        dates[1],
-                        status || null,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  />
-                </div>
 
-                {/* <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={dateFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setDateFilterType(e.target.value);
-                            getTrainerPaymentsData(
-                              selectedTrainerId,
-                              e.target.value,
-                              selectedDates[0],
-                              selectedDates[1],
-                              status || null,
-                              1,
-                              pagination.limit,
-                            );
-                          }}
-                        >
-                          <Radio
-                            value="RaiseDate"
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            Search by Bill Raise Date
-                          </Radio>
-                          <Radio
-                            value="Deadline"
-                            style={{ marginBottom: "12px" }}
-                          >
-                            Search by Deadline Date
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                          height: "35px",
+            <Col flex="1 1 0%">
+              <div
+                className="overallduecustomers_filterContainer"
+                style={{ marginBottom: "0px" }}
+              >
+                {/* Search Input */}
+                <CommonOutlinedInput
+                  label={"Candidate Search..."}
+                  width="100%"
+                  height="33px"
+                  labelFontSize="11px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          setPagination({
+                            page: 1,
+                          });
+                          getTrainerPaymentsData(
+                            selectedTrainerId,
+                            null,
+                            selectedRegionId,
+                            selectedBranchId,
+                            commercialType,
+                            dateFilterType,
+                            selectedDates[0],
+                            selectedDates[1],
+                            status || null,
+                            1,
+                            pagination.limit,
+                          );
                         }}
                       >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div> */}
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="0px"
+                  onChange={handleSearch}
+                  value={searchValue}
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                />
               </div>
+            </Col>
+
+            <Col flex="0.8 1 0%">
+              <CommonSelectField
+                height="33px"
+                label="Select Region"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={regionOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedRegionId(value);
+                  setSelectedBranchId(null);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    searchValue,
+                    value,
+                    selectedBranchId,
+                    commercialType,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    status || null,
+                    1,
+                    pagination.limit,
+                  );
+                  if (value) {
+                    getBranchesData(value);
+                  } else {
+                    setBranchOptions([]);
+                  }
+                }}
+                value={selectedRegionId}
+                disableClearable={false}
+              />
+            </Col>
+
+            <Col flex="0.8 1 0%">
+              <CommonSelectField
+                height="33px"
+                label="Select Branch"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={branchOptions}
+                loading={filterLoading}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedBranchId(value);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    value,
+                    commercialType,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    status || null,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+                value={selectedBranchId}
+                disableClearable={false}
+                disabled={selectedRegionId == 3 ? true : false}
+              />
+            </Col>
+            <Col flex="1.5 1 0%">
+              <CommonMuiCustomDatePicker
+                width={"100%"}
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    commercialType,
+                    dateFilterType,
+                    dates[0],
+                    dates[1],
+                    status || null,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              />
             </Col>
           </Row>
         </Col>
 
         <Col
-          span={7}
+          xs={24}
+          sm={24}
+          md={24}
+          lg={2}
+          xxl={6}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -2484,19 +2922,17 @@ export default function TrainerPayment() {
             gap: "12px",
           }}
         >
-          {/* {permissions.includes("Add Trainer Payment Request") ? (
-            <button
-              className="leadmanager_addleadbutton"
-              onClick={() => {
-                setIsOpenAddRequestDrawer(true);
-                setIsOpenAddRequestComponent(true);
-              }}
-            >
-              Add Request
-            </button>
-          ) : (
-            ""
-          )} */}
+          {permissions.includes("Download Trainer Payment Data") && (
+            <Tooltip placement="top" title="Download">
+              <Button
+                className="dashboard_download_button"
+                onClick={handleDownload}
+                disabled={downloadLoading}
+              >
+                <DownloadOutlined className="download_icon" />
+              </Button>
+            </Tooltip>
+          )}
           <FiFilter
             size={20}
             color="#5b69ca"
@@ -2509,33 +2945,242 @@ export default function TrainerPayment() {
         </Col>
       </Row>
 
+      <div
+        className="customers_scroll_wrapper"
+        style={{ marginTop: "12px", marginBottom: "0px" }}
+      >
+        <div
+          className="customers_status_mainContainer"
+          style={{
+            marginTop: "0px",
+            marginBottom: "0px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className={
+              commercialType === "Pay Per Head"
+                ? "customers_active_completed_container"
+                : "customers_completed_container"
+            }
+            style={{ height: "100%" }}
+            onClick={() => {
+              if (commercialType == "Pay Per Head") {
+                return;
+              }
+              setCommercialType("Pay Per Head");
+              setPagination({
+                page: 1,
+              });
+              getTrainerPaymentsData(
+                selectedTrainerId,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                "Pay Per Head",
+                dateFilterType,
+                selectedDates[0],
+                selectedDates[1],
+                status || null,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>Pay Per Head</p>
+          </div>
+
+          <div
+            className={
+              commercialType === "Batch"
+                ? "customers_active_verifytrainers_container"
+                : "customers_verifytrainers_container"
+            }
+            style={{ height: "100%" }}
+            onClick={() => {
+              if (commercialType == "Batch") {
+                return;
+              }
+              setCommercialType("Batch");
+              setPagination({
+                page: 1,
+              });
+              getTrainerPaymentsData(
+                selectedTrainerId,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                "Batch",
+                dateFilterType,
+                selectedDates[0],
+                selectedDates[1],
+                status || null,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>Batch </p>
+          </div>
+
+          {permissions.includes("Show Region Summary") && (
+            <div
+              className="livelead_today_summary_container"
+              style={{ marginTop: "0px", marginLeft: "12px" }}
+            >
+              <p className="livelead_today_label">Region Summary</p>
+
+              <div className="livelead_badge_item online">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.hub_count ?? "-"}
+                  </span>
+                  {regionCounts?.hub_amount != null && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        paddingLeft: "8px",
+                        borderLeft: "1px solid rgba(0,0,0,0.15)",
+                        fontWeight: "600",
+                        color: "#3c9111",
+                        fontSize: "13px",
+                      }}
+                    >
+                      ₹{Number(regionCounts.hub_amount).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.chn_count ?? "-"}
+                  </span>
+                  {regionCounts?.chn_amount != null && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        paddingLeft: "8px",
+                        borderLeft: "1px solid rgba(0,0,0,0.15)",
+                        fontWeight: "600",
+                        color: "#1e90ff",
+                        fontSize: "13px",
+                      }}
+                    >
+                      ₹{Number(regionCounts.chn_amount).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="livelead_badge_item corporate">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#607d8b" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.blr_count ?? "-"}
+                  </span>
+                  {regionCounts?.blr_amount != null && (
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        paddingLeft: "8px",
+                        borderLeft: "1px solid rgba(0,0,0,0.15)",
+                        fontWeight: "600",
+                        color: "#607d8b",
+                        fontSize: "13px",
+                      }}
+                    >
+                      ₹{Number(regionCounts.blr_amount).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Payment Requests Table */}
-      <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "16px", marginBottom: "20px" }}>
         <CommonTable
           scroll={{
-            x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
-              0,
-            ),
+            x: tableColumns
+              .filter((col) => {
+                if (
+                  commercialType !== "Batch" &&
+                  (col.key === "batch_student_count" ||
+                    col.key === "batch_number")
+                ) {
+                  return false;
+                }
+                if (
+                  col.key === "approved_date" &&
+                  status !== "Awaiting Finance" &&
+                  status !== "Paid"
+                ) {
+                  return false;
+                }
+                return true;
+              })
+              .reduce((total, col) => total + (col.width || 150), 0),
           }}
-          columns={tableColumns}
+          columns={tableColumns.filter((col) => {
+            if (
+              commercialType !== "Batch" &&
+              (col.key === "batch_student_count" || col.key === "batch_number")
+            ) {
+              return false;
+            }
+            if (
+              col.key === "approved_date" &&
+              status !== "Awaiting Finance" &&
+              status !== "Paid"
+            ) {
+              return false;
+            }
+            return true;
+          })}
           dataSource={paymentRequestsData}
           dataPerPage={10}
           loading={loading}
-          // checkBox={permissions.includes("Payment Approval") ? "true" : "false"}
-          checkBox={"false"}
+          checkBox={
+            permissions.includes("Show Ready to Pay & Paid Buckets") &&
+            (status === "Awaiting Finance" || status === "Paid")
+              ? "true"
+              : "false"
+          }
+          // checkBox={"false"}
           size="small"
           className="questionupload_table"
           onPaginationChange={handlePaginationChange}
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
           limit={pagination.limit}
           page_number={pagination.page}
           totalPageNumber={pagination.total}
           disableLocalPagination={true}
-          getCheckboxProps={(record) => ({
-            disabled: record.rowSpan === 0,
-            style: { display: record.rowSpan === 0 ? "none" : "block" },
-          })}
-          rowKey="row_num"
+          // getCheckboxProps={(record) => ({
+          //   disabled: record.rowSpan === 0,
+          //   style: { display: record.rowSpan === 0 ? "none" : "block" },
+          // })}
+          // rowKey="row_num"
         />
       </div>
 
@@ -2567,6 +3212,10 @@ export default function TrainerPayment() {
                       paymentformReset();
                       getTrainerPaymentsData(
                         selectedTrainerId,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        commercialType,
                         dateFilterType,
                         selectedDates[0],
                         selectedDates[1],

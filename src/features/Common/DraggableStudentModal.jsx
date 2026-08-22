@@ -341,44 +341,7 @@ const DraggableStudentModal = ({
                   </span>
                 </div>
 
-                {/* Joining Date */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#64748b",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <MdDateRange size={16} /> Joining Date
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: "#0f172a",
-                      fontSize: "13px",
-                      textAlign: "right",
-                      maxWidth: "150px",
-                    }}
-                  >
-                    {customerDetails?.date_of_joining
-                      ? moment(customerDetails.date_of_joining).format(
-                          "DD/MM/YYYY",
-                        )
-                      : "-"}
-                  </span>
-                </div>
-
-                {/* Place of Service */}
+                {/* Mode Of Training */}
                 <div
                   style={{
                     display: "flex",
@@ -410,7 +373,34 @@ const DraggableStudentModal = ({
                   </span>
                 </div>
 
-                {/* Place of Branch */}
+                {/* Place of Sale */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#64748b",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <MdBusiness size={16} /> Place of Sale
+                  </span>
+
+                  <EllipsisTooltip
+                    text={customerDetails?.place_of_sale_name || "-"}
+                    isViewLeadDetailsText={true}
+                  />
+                </div>
+
+                {/* Place of Service */}
                 <div
                   style={{
                     display: "flex",
@@ -477,6 +467,43 @@ const DraggableStudentModal = ({
                   gap: "12px",
                 }}
               >
+                {/* Joining Date */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#64748b",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <MdDateRange size={16} /> Joining Date
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#0f172a",
+                      fontSize: "13px",
+                      textAlign: "right",
+                      maxWidth: "150px",
+                    }}
+                  >
+                    {customerDetails?.date_of_joining
+                      ? moment(customerDetails.date_of_joining).format(
+                          "DD/MM/YYYY",
+                        )
+                      : "-"}
+                  </span>
+                </div>
+
                 {/* Course */}
                 <div
                   style={{
@@ -619,41 +646,6 @@ const DraggableStudentModal = ({
                     {customerDetails?.balance_amount !== undefined &&
                     customerDetails.balance_amount !== null
                       ? `₹${customerDetails.balance_amount}`
-                      : "-"}
-                  </span>
-                </div>
-
-                {/* Commercial */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginTop: "2px",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#64748b",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <BiRupee size={16} /> Commercial
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: "#0f172a",
-                      fontSize: "13px",
-                      textAlign: "right",
-                    }}
-                  >
-                    {customerDetails?.commercial
-                      ? `₹${customerDetails.commercial}`
                       : "-"}
                   </span>
                 </div>

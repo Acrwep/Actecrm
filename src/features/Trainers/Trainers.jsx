@@ -343,7 +343,7 @@ export default function Trainers() {
     total: 0,
     totalPages: 0,
   });
-  
+
   const paginationRef = useRef(pagination);
   const searchValueRef = useRef(searchValue);
   const hrIdRef = useRef(hrId);
@@ -503,7 +503,15 @@ export default function Trainers() {
         return <p>{text + " Years"}</p>;
       },
     },
-    { title: "Batch", key: "batch", dataIndex: "batch", width: 130 },
+    {
+      title: "Batch",
+      key: "batch",
+      dataIndex: "batch",
+      width: 100,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
     {
       title: "Avaibility Time",
       key: "availability_time",
@@ -1027,6 +1035,15 @@ export default function Trainers() {
               return {
                 ...col,
                 width: 170,
+                render: (text) => {
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            }
+            case "batch": {
+              return {
+                ...col,
+                width: 100,
                 render: (text) => {
                   return <EllipsisTooltip text={text} />;
                 },

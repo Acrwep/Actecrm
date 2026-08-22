@@ -52,7 +52,7 @@ const TrainerPayslip = forwardRef(
       setButtonLoading(true);
 
       const payload = {
-        trainer_payment_id: selectedPaymentDetails?.id,
+        trainer_payment_id: selectedPaymentDetails?.payment_master_id,
         paid_amount: selectedPaymentDetails?.request_amount,
         payment_type: "Fully Paid",
         paid_date: formatToBackendIST(paymentDate),

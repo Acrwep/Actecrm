@@ -995,3 +995,18 @@ export const getRegionNameByUserId = (user_id) => {
     return "Admin";
   }
 };
+
+export const regionOptions = [
+  {
+    id: 1,
+    name: "Chennai",
+  },
+  {
+    id: 2,
+    name: "Bangalore",
+  },
+  {
+    id: 3,
+    name: "Hub",
+  },
+];

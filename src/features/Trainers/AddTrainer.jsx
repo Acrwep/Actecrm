@@ -107,6 +107,7 @@ const AddTrainer = forwardRef(
     const [accountNumber, setAccountNumber] = useState("");
     const [bankName, setBankName] = useState("");
     const [branchName, setBranchName] = useState("");
+    const [accountType, setAccountType] = useState("");
     const [ifscCode, setIfscCode] = useState("");
     const [signatureImage, setSignatureImage] = useState("");
 
@@ -237,11 +238,6 @@ const AddTrainer = forwardRef(
             setSkills(getSkillsIds);
 
             setTrainerBankId(item.trainer_bank_id);
-            setAccountHolderName(item.account_holder_name || "");
-            setAccountNumber(item.account_number || "");
-            setBankName(item.bank_name || "");
-            setBranchName(item.branch_name || "");
-            setIfscCode(item.ifsc_code || "");
             setSignatureImage(item.signature_image || "");
 
             setSecondarySkills(item.secondary_skills || []);
@@ -271,6 +267,7 @@ const AddTrainer = forwardRef(
                     setAccountNumber(primaryBank.account_number || "");
                     setBankName(primaryBank.bank_name || "");
                     setBranchName(primaryBank.branch_name || "");
+                    setAccountType(primaryBank.account_type || "");
                     setIfscCode(primaryBank.ifsc_code || "");
                   }
                 } else {
@@ -368,6 +365,7 @@ const AddTrainer = forwardRef(
         account_number: accountNumber,
         bank_name: bankName,
         branch_name: branchName,
+        account_type: accountType,
         ifsc_code: ifscCode,
         signature_image: signatureImage,
         secondary_skills: secondarySkills,

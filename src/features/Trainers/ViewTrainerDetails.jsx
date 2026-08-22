@@ -434,6 +434,9 @@ export default function ViewTrainerDetails({ trainerData: initialData }) {
                       {renderField("Account Number", bank.account_number)}
                     </Col>
                     <Col span={8}>
+                      {renderField("Account Type", bank.account_type)}
+                    </Col>
+                    <Col span={8}>
                       {renderField("IFSC Code", bank.ifsc_code)}
                     </Col>
                   </Row>

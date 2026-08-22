@@ -2,7 +2,12 @@ import * as XLSX from "xlsx";
 import moment from "moment";
 import { Country, State } from "country-state-city";
 
-const DownloadTableAsCSV = (data, columns, fileName) => {
+const DownloadTableAsCSV = (
+  data,
+  columns,
+  fileName,
+  isTrainerPayment = false,
+) => {
   // Create a new workbook
   const workbook = XLSX.utils.book_new();
 
@@ -39,6 +44,8 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "date" ||
           column.dataIndex === "entry_date" ||
           column.dataIndex === "paid_date" ||
+          column.dataIndex === "approved_date" ||
+          column.dataIndex === "bill_raisedate" ||
           column.dataIndex === "DATE"
         ) {
           const value = row[column.dataIndex];
@@ -97,6 +104,7 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           column.dataIndex === "total_course_fees" ||
           column.dataIndex === "paid_amount" ||
           column.dataIndex === "balance_due" ||
+          column.dataIndex === "request_amount" ||
           column.dataIndex === "total"
         ) {
           return row[column.dataIndex]
@@ -165,6 +173,24 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
             ? `${row.lead_assigned_to_id} - ${lName}`
             : lName;
         }
+        if (column.dataIndex === "lead_assigned_to_id") {
+          const l_id = row[column.dataIndex];
+          if (!l_id) return "-";
+          return l_id ? `${l_id} - ${row.lead_assigned_to_name}` : l_id;
+        }
+
+        if (column.dataIndex === "ra_user_id") {
+          const ra_id = row[column.dataIndex];
+          if (!ra_id) return "-";
+          return ra_id ? `${ra_id} - ${row.ra_user_name}` : ra_id;
+        }
+
+        if (column.dataIndex === "hr_user_id") {
+          const hr_id = row[column.dataIndex];
+          if (!hr_id) return "-";
+          return hr_id ? `${hr_id} - ${row.hr_user_name}` : hr_id;
+        }
+
         if (column.dataIndex === "user_name") {
           const uName = row[column.dataIndex];
           if (!uName) return "-";
@@ -186,6 +212,26 @@ const DownloadTableAsCSV = (data, columns, fileName) => {
           return row[column.dataIndex] ? "Collected" : "Not Collected";
         }
 
+        if (
+          column.dataIndex === "is_payment_cleared" ||
+          column.dataIndex === "is_class_percentage" ||
+          column.dataIndex === "is_acknowledged" ||
+          column.dataIndex === "is_google_verified" ||
+          column.dataIndex === "is_linkedin_verified"
+        ) {
+          return row[column.dataIndex] ? "Yes" : "No";
+        }
+
+        if (column.dataIndex === "status" && isTrainerPayment) {
+          const status = row[column.dataIndex];
+          if (status === "Requested") {
+            return "Claim";
+          } else if (status === "Awaiting Finance") {
+            return "Ready to Pay";
+          } else {
+            return status;
+          }
+        }
         if (column.dataIndex === "commercial_percentage") {
           return row[column.dataIndex] ? row[column.dataIndex] + "%" : "-";
         }

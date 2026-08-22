@@ -391,6 +391,7 @@ export default function Settings() {
         "View Financial Details",
         "Payment Approval",
         "Payment Completion",
+        "Download Trainer Payment Data",
       ];
 
       const trainerPaymentSortedArray = trainerPaymentModule.sort(

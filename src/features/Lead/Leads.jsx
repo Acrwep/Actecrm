@@ -2092,7 +2092,9 @@ export default function Leads({
   const handleSelfReAssign = async () => {
     setSelfReAssignValidationTrigger(true);
     const assignedBranchIdValidate = selectValidator(assignedBranchId);
-    const branchManagerIdValidate = selectValidator(branchManagerId);
+    const branchManagerIdValidate = regionManagerId?.startsWith("HUB")
+      ? ""
+      : selectValidator(branchManagerId);
     const regionManagerIdValidate = selectValidator(regionManagerId);
     const selfReAssignExecutiveIdValidate = selectValidator(
       selfReAssignExecutiveId,

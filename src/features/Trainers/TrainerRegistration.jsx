@@ -101,6 +101,8 @@ export default function TrainerRegistration() {
   const [bankNameError, setBankNameError] = useState("");
   const [branchName, setBranchName] = useState("");
   const [branchNameError, setBranchNameError] = useState("");
+  const [accountType, setAccountType] = useState("");
+  const [accountTypeError, setAccountTypeError] = useState("");
   const [ifscCode, setIfscCode] = useState("");
   const [ifscCodeError, setIfscCodeError] = useState("");
   const [signatureArray, setSignatureArray] = useState([]);
@@ -255,7 +257,9 @@ export default function TrainerRegistration() {
       setPreferredMode(trainerDetails.preferred_mode || []);
       setSalaryExpectation(trainerDetails.salary_expectation || "");
       setSalaryType(trainerDetails.salary_type || "Per session");
-      setLanguagesKnown(trainerDetails.language_known || trainerDetails.languages_known || []);
+      setLanguagesKnown(
+        trainerDetails.language_known || trainerDetails.languages_known || [],
+      );
       setTrainerCurrentStatus(trainerDetails.trainer_status || "Active");
       setAdditionalNotes(trainerDetails.additional_notes || "");
       setTrainerBankId(trainerDetails.trainer_bank_id);
@@ -387,6 +391,7 @@ export default function TrainerRegistration() {
     const accountNumberValidate = accountNumberValidator(accountNumber);
     const bankNameValidate = nameValidator(bankName);
     const branchNameValidate = nameValidator(branchName);
+    const accountTypeValidate = selectValidator(accountType);
     const ifscCodeValidate = ifscValidator(ifscCode);
     let signatureValidate;
 
@@ -410,6 +415,7 @@ export default function TrainerRegistration() {
     setAccountNumberError(accountNumberValidate);
     setBankNameError(bankNameValidate);
     setBranchNameError(branchNameValidate);
+    setAccountTypeError(accountTypeValidate);
     setIfscCodeError(ifscCodeValidate);
     setSignatureError(signatureValidate);
 
@@ -428,6 +434,7 @@ export default function TrainerRegistration() {
       accountNumberValidate ||
       bankNameValidate ||
       branchNameValidate ||
+      accountTypeValidate ||
       ifscCodeValidate ||
       signatureValidate
     ) {
@@ -467,6 +474,7 @@ export default function TrainerRegistration() {
       account_number: accountNumber,
       bank_name: bankName,
       branch_name: branchName,
+      account_type: accountType,
       ifsc_code: ifscCode,
       signature_image: signatureBase64,
       is_bank_updated: 1,
@@ -1090,7 +1098,39 @@ export default function TrainerRegistration() {
                 </Col>
               </Row>
 
-              <Row gutter={12} style={{ marginTop: "40px" }}>
+              <Row gutter={12} style={{ marginTop: "30px" }}>
+                <Col
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={6}
+                  className="trainer_registration_primarydetails_col_container"
+                >
+                  <CommonSelectField
+                    label="Account Type"
+                    required={true}
+                    options={[
+                      {
+                        id: "Savings",
+                        name: "Savings",
+                      },
+                      {
+                        id: "Current",
+                        name: "Current",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      setAccountType(e.target.value);
+                      if (validationTrigger) {
+                        setAccountTypeError(selectValidator(e.target.value));
+                      }
+                    }}
+                    value={accountType}
+                    error={accountTypeError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+
                 <Col
                   xs={24}
                   sm={24}

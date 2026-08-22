@@ -1355,12 +1355,14 @@ export default function ViewTrainerPaymentDetails({
                   <Row style={{ marginTop: "12px" }}>
                     <Col span={12}>
                       <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">IFSC Code</p>
+                        <p className="customerdetails_rowheading">
+                          Account Type
+                        </p>
                       </div>
                     </Col>
                     <Col span={12}>
                       <EllipsisTooltip
-                        text={item.ifsc_code ? item.ifsc_code : "-"}
+                        text={item.account_type ? item.account_type : "-"}
                         smallText={true}
                       />
                     </Col>
@@ -1393,6 +1395,20 @@ export default function ViewTrainerPaymentDetails({
                     <Col span={12}>
                       <EllipsisTooltip
                         text={item.branch_name ? item.branch_name : "-"}
+                        smallText={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <div className="customerdetails_rowheadingContainer">
+                        <p className="customerdetails_rowheading">IFSC Code</p>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <EllipsisTooltip
+                        text={item.ifsc_code ? item.ifsc_code : "-"}
                         smallText={true}
                       />
                     </Col>
