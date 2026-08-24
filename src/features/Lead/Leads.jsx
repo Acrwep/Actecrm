@@ -226,6 +226,7 @@ export default function Leads({
   };
 
   //lead source filter
+  const [modeOfTrainingFilterId, setModeOfTrainingFilterId] = useState(null);
   const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
   const [leadSubSourceOptions, setLeadSubSourceOptions] = useState([]);
   const [leadSubSourceFilterId, setLeadSubSourceFilterId] = useState(null);
@@ -813,6 +814,7 @@ export default function Leads({
         ]);
         setSearchValue(filterValuesFromRedux.searchValue);
         setLeadSourceFilterId(filterValuesFromRedux.lead_source);
+        setModeOfTrainingFilterId(filterValuesFromRedux.mode_of_training);
         setLeadSubSourceFilterId(filterValuesFromRedux?.lead_sub_source);
         setSelectedOrigin(filterValuesFromRedux?.origin);
         setSelectedUserId(filterValuesFromRedux.user_id);
@@ -900,6 +902,7 @@ export default function Leads({
           selectedDates[0],
           selectedDates[1],
           allDownliners,
+          modeOfTrainingFilterId,
           leadSourceFilterId,
           leadSubSourceFilterId,
           leadStatusId,
@@ -929,6 +932,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         allDownliners,
+        modeOfTrainingFilterId,
         leadSourceFilterId,
         leadSubSourceFilterId,
         leadStatusId,
@@ -1495,6 +1499,7 @@ export default function Leads({
           ? filterValuesFromRedux.end_date
           : PreviousAndCurrentDate[1],
         downliners_ids,
+        filterValuesFromRedux.mode_of_training,
         filterValuesFromRedux.lead_source,
         filterValuesFromRedux.lead_sub_source,
         filterValuesFromRedux.lead_status_id,
@@ -1518,6 +1523,7 @@ export default function Leads({
     startDate,
     endDate,
     downliners,
+    mode_of_training,
     leadsource,
     lead_sub_source,
     leadStatusId,
@@ -1549,6 +1555,7 @@ export default function Leads({
       ...(finalRegion && { region: finalRegion }),
       ...(finalBranch && { branch: finalBranch }),
       user_ids: downliners,
+      ...(mode_of_training && { preferred_mode: mode_of_training }),
       ...(leadsource && { lead_type: leadsource }),
       ...(lead_sub_source && { sub_source_id: lead_sub_source }),
       ...(leadStatusId && { lead_status_id: leadStatusId }),
@@ -1775,6 +1782,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         allDownliners,
+        modeOfTrainingFilterId,
         leadSourceFilterId,
         leadSubSourceFilterId,
         leadStatusId,
@@ -1840,6 +1848,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            modeOfTrainingFilterId,
             leadSourceFilterId,
             leadSubSourceFilterId,
             leadStatusId,
@@ -1892,6 +1901,7 @@ export default function Leads({
       selectedDates[0],
       selectedDates[1],
       allDownliners,
+      modeOfTrainingFilterId,
       leadSourceFilterId,
       leadSubSourceFilterId,
       leadStatusId,
@@ -1976,6 +1986,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         downliners_ids,
+        modeOfTrainingFilterId,
         leadSourceFilterId,
         leadSubSourceFilterId,
         leadStatusId,
@@ -2136,6 +2147,7 @@ export default function Leads({
         selectedDates[0],
         selectedDates[1],
         allDownliners,
+        modeOfTrainingFilterId,
         leadSourceFilterId,
         leadSubSourceFilterId,
         leadStatusId,
@@ -2261,6 +2273,7 @@ export default function Leads({
                             selectedDates[0],
                             selectedDates[1],
                             allDownliners,
+                            modeOfTrainingFilterId,
                             leadSourceFilterId,
                             leadSubSourceFilterId,
                             leadStatusId,
@@ -2309,6 +2322,7 @@ export default function Leads({
                         selectedDates[0],
                         selectedDates[1],
                         allDownliners,
+                        modeOfTrainingFilterId,
                         leadSourceFilterId,
                         leadSubSourceFilterId,
                         leadStatusId,
@@ -2352,6 +2366,7 @@ export default function Leads({
                         selectedDates[0],
                         selectedDates[1],
                         allDownliners,
+                        modeOfTrainingFilterId,
                         leadSourceFilterId,
                         leadSubSourceFilterId,
                         leadStatusId,
@@ -2493,6 +2508,7 @@ export default function Leads({
                     dates[0],
                     dates[1],
                     allDownliners,
+                    modeOfTrainingFilterId,
                     leadSourceFilterId,
                     leadSubSourceFilterId,
                     leadStatusId,
@@ -2545,7 +2561,7 @@ export default function Leads({
                         Advanced Filters
                       </span>
                       <Badge
-                        count={leadSubSourceFilterId == 3 ? 4 : 3}
+                        count={leadSubSourceFilterId == 3 ? 5 : 4}
                         style={{
                           backgroundColor: "#3b82f6",
                           boxShadow: "0 0 0 2px #f8fafc",
@@ -2562,6 +2578,47 @@ export default function Leads({
                         padding: "20px",
                       }}
                     >
+                      <div style={{ width: "100%" }}>
+                        <CommonSelectField
+                          width="100%"
+                          height="35px"
+                          label="Select Mode Of Training"
+                          labelMarginTop="0px"
+                          labelFontSize="12px"
+                          options={[
+                            { id: 1, name: "Online" },
+                            { id: 2, name: "Classroom" },
+                          ]}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setModeOfTrainingFilterId(value);
+                            dispatch(
+                              storeLeadFilterValues({
+                                mode_of_training: value,
+                                pageNumber: 1,
+                                pageLimit: pagination.limit,
+                              }),
+                            );
+                            getAllLeadData(
+                              searchValue,
+                              selectedDates[0],
+                              selectedDates[1],
+                              allDownliners,
+                              value,
+                              leadSourceFilterId,
+                              leadSubSourceFilterId,
+                              leadStatusId,
+                              selectedOrigin,
+                              filterValuesFromRedux.bucket,
+                              1,
+                              pagination.limit,
+                            );
+                          }}
+                          value={modeOfTrainingFilterId}
+                          disableClearable={false}
+                        />{" "}
+                      </div>
+
                       <div style={{ width: "100%" }}>
                         <CommonSelectField
                           width="100%"
@@ -2589,6 +2646,7 @@ export default function Leads({
                               selectedDates[0],
                               selectedDates[1],
                               allDownliners,
+                              modeOfTrainingFilterId,
                               e.target.value,
                               null,
                               leadStatusId,
@@ -2636,6 +2694,7 @@ export default function Leads({
                               selectedDates[0],
                               selectedDates[1],
                               allDownliners,
+                              modeOfTrainingFilterId,
                               leadSourceFilterId,
                               e.target.value,
                               leadStatusId,
@@ -2707,6 +2766,7 @@ export default function Leads({
                                 selectedDates[0],
                                 selectedDates[1],
                                 allDownliners,
+                                modeOfTrainingFilterId,
                                 leadSourceFilterId,
                                 leadSubSourceFilterId,
                                 leadStatusId,
@@ -2747,6 +2807,7 @@ export default function Leads({
                               selectedDates[0],
                               selectedDates[1],
                               allDownliners,
+                              modeOfTrainingFilterId,
                               leadSourceFilterId,
                               leadSubSourceFilterId,
                               e.target.value,
@@ -3077,6 +3138,7 @@ export default function Leads({
                           selectedDates[0],
                           selectedDates[1],
                           allDownliners,
+                          modeOfTrainingFilterId,
                           leadSourceFilterId,
                           leadSubSourceFilterId,
                           leadStatusId,
@@ -3168,6 +3230,7 @@ export default function Leads({
                         selectedDates[0],
                         selectedDates[1],
                         allDownliners,
+                        modeOfTrainingFilterId,
                         leadSourceFilterId,
                         leadSubSourceFilterId,
                         leadStatusId,
@@ -3230,6 +3293,7 @@ export default function Leads({
                           selectedDates[0],
                           selectedDates[1],
                           allDownliners,
+                          modeOfTrainingFilterId,
                           leadSourceFilterId,
                           leadSubSourceFilterId,
                           leadStatusId,
@@ -3302,6 +3366,7 @@ export default function Leads({
                           selectedDates[0],
                           selectedDates[1],
                           allDownliners,
+                          modeOfTrainingFilterId,
                           leadSourceFilterId,
                           leadSubSourceFilterId,
                           leadStatusId,
@@ -3568,6 +3633,7 @@ export default function Leads({
               selectedDates[0],
               selectedDates[1],
               allDownliners,
+              modeOfTrainingFilterId,
               leadSourceFilterId,
               leadSubSourceFilterId,
               leadStatusId,
@@ -3734,6 +3800,7 @@ export default function Leads({
                 selectedDates[0],
                 selectedDates[1],
                 allDownliners,
+                modeOfTrainingFilterId,
                 leadSourceFilterId,
                 leadSubSourceFilterId,
                 leadStatusId,
@@ -3875,6 +3942,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            modeOfTrainingFilterId,
             leadSourceFilterId,
             leadSubSourceFilterId,
             leadStatusId,
@@ -3904,6 +3972,7 @@ export default function Leads({
             selectedDates[0],
             selectedDates[1],
             allDownliners,
+            modeOfTrainingFilterId,
             leadSourceFilterId,
             leadSubSourceFilterId,
             leadStatusId,

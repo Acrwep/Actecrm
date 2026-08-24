@@ -72,6 +72,8 @@ const TrainerPaymentRequestForm = forwardRef(
     const [bankNameError, setBankNameError] = useState("");
     const [branchName, setBranchName] = useState("");
     const [branchNameError, setBranchNameError] = useState("");
+    const [accountType, setAccountType] = useState("");
+    const [accountTypeError, setAccountTypeError] = useState("");
     const [ifscCode, setIfscCode] = useState("");
     const [ifscCodeError, setIfscCodeError] = useState("");
     //training details
@@ -154,6 +156,7 @@ const TrainerPaymentRequestForm = forwardRef(
         setAccountNumber(trainerDetails.account_number);
         setBankName(trainerDetails.bank_name);
         setBranchName(trainerDetails.branch_name);
+        setAccountType(trainerDetails.account_type);
         setIfscCode(trainerDetails.ifsc_code);
       } catch (error) {
         console.log(error);
@@ -279,6 +282,7 @@ const TrainerPaymentRequestForm = forwardRef(
           setAccountHolderName(payment_details?.account_holder_name);
           setIfscCode(payment_details?.ifsc_code);
           setBranchName(payment_details?.branch_name);
+          setAccountType(payment_details?.account_type);
           setCommercialType(payment_details?.commercial_type);
           console.log(payment_details?.students, "stuuuu");
 
@@ -517,6 +521,7 @@ const TrainerPaymentRequestForm = forwardRef(
         : "";
       const bankNameValidate = isTrainer ? nameValidator(bankName) : "";
       const branchNameValidate = isTrainer ? nameValidator(branchName) : "";
+      const accountTypeValidate = isTrainer ? nameValidator(accountType) : "";
       const ifscCodeValidate = isTrainer ? ifscValidator(ifscCode) : "";
       const commercialTypeValidate = selectValidator(commercialType);
       const batchIdValidate = isTrainer
@@ -605,6 +610,7 @@ const TrainerPaymentRequestForm = forwardRef(
       setAccountNumberError(accountNumberValidate);
       setBankNameError(bankNameValidate);
       setBranchNameError(branchNameValidate);
+      setAccountTypeError(accountTypeValidate);
       setIfscCodeError(ifscCodeValidate);
       setCommercialTypeError(commercialTypeValidate);
       setBatchIdError(batchIdValidate);
@@ -615,6 +621,7 @@ const TrainerPaymentRequestForm = forwardRef(
         accountNumberValidate ||
         bankNameValidate ||
         branchNameValidate ||
+        accountTypeValidate ||
         ifscCodeValidate ||
         commercialTypeValidate ||
         batchIdValidate ||
@@ -639,6 +646,7 @@ const TrainerPaymentRequestForm = forwardRef(
           bank_name: bankName,
           ifsc_code: ifscCode,
           branch_name: branchName,
+          account_type: accountType,
           feedback: feedBack,
           students: formFields,
           updated_date: formatToBackendIST(new Date()),
@@ -921,27 +929,6 @@ const TrainerPaymentRequestForm = forwardRef(
             className="trainer_paymentrequestform_five_col"
           >
             <CommonInputField
-              label={"IFSC Code"}
-              required={isTrainer ? true : false}
-              onChange={(e) => {
-                setIfscCode(e.target.value);
-                if (validationTrigger) {
-                  setIfscCodeError(ifscValidator(e.target.value));
-                }
-              }}
-              value={ifscCode}
-              error={isTrainer ? ifscCodeError : ""}
-              errorFontSize={"10px"}
-              disabled={!isBankEdit}
-            />
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
-            className="trainer_paymentrequestform_five_col"
-          >
-            <CommonInputField
               label={"Branch"}
               required={isTrainer ? true : false}
               onChange={(e) => {
@@ -952,6 +939,60 @@ const TrainerPaymentRequestForm = forwardRef(
               }}
               value={branchName}
               error={isTrainer ? branchNameError : ""}
+              errorFontSize={"10px"}
+              disabled={!isBankEdit}
+            />
+          </Col>
+
+          <Col
+            xs={24}
+            sm={24}
+            md={12}
+            className="trainer_paymentrequestform_five_col"
+          >
+            <CommonSelectField
+              label="Account Type"
+              required={true}
+              options={[
+                {
+                  id: "Savings",
+                  name: "Savings",
+                },
+                {
+                  id: "Current",
+                  name: "Current",
+                },
+              ]}
+              onChange={(e) => {
+                setAccountType(e.target.value);
+                if (validationTrigger) {
+                  setAccountTypeError(selectValidator(e.target.value));
+                }
+              }}
+              value={accountType}
+              error={isTrainer ? accountTypeError : ""}
+              errorFontSize={"10px"}
+              disabled={!isBankEdit}
+            />
+          </Col>
+
+          <Col
+            xs={24}
+            sm={24}
+            md={12}
+            className="trainer_paymentrequestform_five_col"
+          >
+            <CommonInputField
+              label={"IFSC Code"}
+              required={isTrainer ? true : false}
+              onChange={(e) => {
+                setIfscCode(e.target.value);
+                if (validationTrigger) {
+                  setIfscCodeError(ifscValidator(e.target.value));
+                }
+              }}
+              value={ifscCode}
+              error={isTrainer ? ifscCodeError : ""}
               errorFontSize={"10px"}
               disabled={!isBankEdit}
             />

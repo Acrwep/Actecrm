@@ -382,6 +382,7 @@ const leadFilterValues = {
   start_date: null,
   end_date: null,
   user_id: null,
+  mode_of_training: null,
   lead_source: null,
   lead_sub_source: null,
   origin: null,

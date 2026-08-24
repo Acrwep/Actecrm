@@ -483,6 +483,7 @@ const AddNewLead = forwardRef(
         setEmail(liveLeadItem.email);
         setMobile(liveLeadItem.phone);
         setWhatsApp(liveLeadItem.phone);
+        setPreferredMode(liveLeadItem?.training?.includes("Classroom") ? 2 : 1);
         setLeadSource(4);
         setLeadSubSource(
           liveLeadItem?.domain_origin.includes("Google") ? 8 : null,
@@ -2007,6 +2008,7 @@ const AddNewLead = forwardRef(
                     labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
+                    disabled={liveLeadItem}
                   />
                 </div>
 

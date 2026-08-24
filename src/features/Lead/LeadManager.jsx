@@ -194,6 +194,7 @@ export default function LeadManager() {
           start_date: todayFormatted,
           end_date: todayFormatted,
           user_id: null,
+          mode_of_training: null,
           lead_source: null,
           lead_sub_source: null,
           origin: null,
@@ -566,6 +567,7 @@ export default function LeadManager() {
           start_date: todayFormatted,
           end_date: todayFormatted,
           user_id: null,
+          mode_of_training: null,
           lead_source: null,
           lead_sub_source: null,
           origin: null,
@@ -775,7 +777,9 @@ export default function LeadManager() {
             }
             onClick={() => handleTabClick("open_leads")}
           >
-            <p style={{ margin: 0 }}>{`Open Leads (${bucketCounts.open_leads || 0})`}</p>
+            <p
+              style={{ margin: 0 }}
+            >{`Open Leads (${bucketCounts.open_leads || 0})`}</p>
           </div>
 
           {/* {permissions.includes("Junk Leads Tab") && (
