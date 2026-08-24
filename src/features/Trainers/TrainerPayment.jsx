@@ -467,43 +467,43 @@ export default function TrainerPayment() {
         };
       },
     },
-    {
-      title: "Commercial Type",
-      key: "commercial_type",
-      dataIndex: "commercial_type",
-      width: 130,
-      render: (text, record) => {
-        if (text == "Pay Per Head") {
-          return {
-            children: (
-              <div
-                style={{ display: "flex", gap: "6px", alignItems: "center" }}
-              >
-                <FaUserAlt size={11} color="#5b69ca" />
-                <p>Pay Per Head</p>
-              </div>
-            ),
-            props: { rowSpan: record.rowSpan },
-          };
-        } else {
-          return {
-            children: (
-              <div style={{ display: "flex", gap: "6px" }}>
-                <Tooltip
-                  placement="top"
-                  title={`Batch Code: ${record?.batch_number}`}
-                  trigger={["hover", "click"]}
-                >
-                  <MdGroups size={17.5} color="#5b69ca" />
-                </Tooltip>
-                <p>Batch</p>
-              </div>
-            ),
-            props: { rowSpan: record.rowSpan },
-          };
-        }
-      },
-    },
+    // {
+    //   title: "Commercial Type",
+    //   key: "commercial_type",
+    //   dataIndex: "commercial_type",
+    //   width: 130,
+    //   render: (text, record) => {
+    //     if (text == "Pay Per Head") {
+    //       return {
+    //         children: (
+    //           <div
+    //             style={{ display: "flex", gap: "6px", alignItems: "center" }}
+    //           >
+    //             <FaUserAlt size={11} color="#5b69ca" />
+    //             <p>Pay Per Head</p>
+    //           </div>
+    //         ),
+    //         props: { rowSpan: record.rowSpan },
+    //       };
+    //     } else {
+    //       return {
+    //         children: (
+    //           <div style={{ display: "flex", gap: "6px" }}>
+    //             <Tooltip
+    //               placement="top"
+    //               title={`Batch Code: ${record?.batch_number}`}
+    //               trigger={["hover", "click"]}
+    //             >
+    //               <MdGroups size={17.5} color="#5b69ca" />
+    //             </Tooltip>
+    //             <p>Batch</p>
+    //           </div>
+    //         ),
+    //         props: { rowSpan: record.rowSpan },
+    //       };
+    //     }
+    //   },
+    // },
     {
       title: "Deadline Date",
       key: "deadline_date",
@@ -556,27 +556,20 @@ export default function TrainerPayment() {
       width: 120,
       render: (text) => <EllipsisTooltip text={text || "-"} />,
     },
-    {
-      title: "Place Of Sale",
-      key: "std_place_of_sale_name",
-      dataIndex: "std_place_of_sale_name",
-      width: 120,
-      render: (text) => <EllipsisTooltip text={text || "-"} />,
-    },
-    {
-      title: "Place Of Service",
-      key: "std_place_of_service_name",
-      dataIndex: "std_place_of_service_name",
-      width: 120,
-      render: (text) => <EllipsisTooltip text={text || "-"} />,
-    },
-    {
-      title: "Mode of Training",
-      key: "mode_of_training",
-      dataIndex: "mode_of_training",
-      width: 130,
-      render: (text, record) => <EllipsisTooltip text={text} />,
-    },
+    // {
+    //   title: "Place Of Sale",
+    //   key: "std_place_of_sale_name",
+    //   dataIndex: "std_place_of_sale_name",
+    //   width: 120,
+    //   render: (text) => <EllipsisTooltip text={text || "-"} />,
+    // },
+    // {
+    //   title: "Place Of Service",
+    //   key: "std_place_of_service_name",
+    //   dataIndex: "std_place_of_service_name",
+    //   width: 120,
+    //   render: (text) => <EllipsisTooltip text={text || "-"} />,
+    // },
     {
       title: "Trainer Name",
       key: "trainer_name",
@@ -663,18 +656,30 @@ export default function TrainerPayment() {
         );
       },
     },
+    // {
+    //   title: "Tech",
+    //   key: "course_name",
+    //   dataIndex: "course_name",
+    //   width: 150,
+    //   render: (text) => <EllipsisTooltip text={text || "-"} />,
+    // },
     {
-      title: "Tech",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 150,
-      render: (text) => <EllipsisTooltip text={text || "-"} />,
+      title: "Batch Amount",
+      key: "batch_amount",
+      dataIndex: "batch_amount",
+      width: 110,
+      hidden: !permissions.includes("View Financial Details") ? true : false,
+      render: (text, record) => {
+        return {
+          children: <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>,
+        };
+      },
     },
     {
       title: "Amount",
       key: "request_amount",
       dataIndex: "request_amount",
-      width: 140,
+      width: 100,
       hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
         return {
@@ -1078,7 +1083,7 @@ export default function TrainerPayment() {
     },
   ].filter((col) => {
     if (!permissions.includes("View Financial Details")) {
-      return !["request_amount", "action"].includes(col.key);
+      return !["request_amount", "batch_amount", "action"].includes(col.key);
     }
     return true;
   });
@@ -1213,24 +1218,18 @@ export default function TrainerPayment() {
                 width: 120,
                 render: (text) => <EllipsisTooltip text={text || "-"} />,
               };
-            case "std_place_of_sale_name":
-              return {
-                ...col,
-                width: 120,
-                render: (text) => <EllipsisTooltip text={text || "-"} />,
-              };
-            case "std_place_of_service_name":
-              return {
-                ...col,
-                width: 120,
-                render: (text) => <EllipsisTooltip text={text || "-"} />,
-              };
-            case "mode_of_training":
-              return {
-                ...col,
-                width: 130,
-                render: (text, record) => <EllipsisTooltip text={text} />,
-              };
+            // case "std_place_of_sale_name":
+            //   return {
+            //     ...col,
+            //     width: 120,
+            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
+            //   };
+            // case "std_place_of_service_name":
+            //   return {
+            //     ...col,
+            //     width: 120,
+            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
+            //   };
             case "batch_student_count":
               return {
                 ...col,
@@ -1245,46 +1244,46 @@ export default function TrainerPayment() {
                 width: 72,
                 render: (text, record) => <EllipsisTooltip text={text} />,
               };
-            case "commercial_type":
-              return {
-                ...col,
-                width: 130,
-                render: (text, record) => {
-                  if (text == "Pay Per Head") {
-                    return {
-                      children: (
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "6px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <FaUserAlt size={11} color="#5b69ca" />
-                          <p>Pay Per Head</p>
-                        </div>
-                      ),
-                      props: { rowSpan: record.rowSpan },
-                    };
-                  } else {
-                    return {
-                      children: (
-                        <div style={{ display: "flex", gap: "6px" }}>
-                          <Tooltip
-                            placement="top"
-                            title={`Batch Code: ${record?.batch_number}`}
-                            trigger={["hover", "click"]}
-                          >
-                            <MdGroups size={18} color="#5b69ca" />
-                          </Tooltip>
-                          <p>Batch</p>
-                        </div>
-                      ),
-                      props: { rowSpan: record.rowSpan },
-                    };
-                  }
-                },
-              };
+            // case "commercial_type":
+            //   return {
+            //     ...col,
+            //     width: 130,
+            //     render: (text, record) => {
+            //       if (text == "Pay Per Head") {
+            //         return {
+            //           children: (
+            //             <div
+            //               style={{
+            //                 display: "flex",
+            //                 gap: "6px",
+            //                 alignItems: "center",
+            //               }}
+            //             >
+            //               <FaUserAlt size={11} color="#5b69ca" />
+            //               <p>Pay Per Head</p>
+            //             </div>
+            //           ),
+            //           props: { rowSpan: record.rowSpan },
+            //         };
+            //       } else {
+            //         return {
+            //           children: (
+            //             <div style={{ display: "flex", gap: "6px" }}>
+            //               <Tooltip
+            //                 placement="top"
+            //                 title={`Batch Code: ${record?.batch_number}`}
+            //                 trigger={["hover", "click"]}
+            //               >
+            //                 <MdGroups size={18} color="#5b69ca" />
+            //               </Tooltip>
+            //               <p>Batch</p>
+            //             </div>
+            //           ),
+            //           props: { rowSpan: record.rowSpan },
+            //         };
+            //       }
+            //     },
+            //   };
             case "trainer_name":
               return {
                 ...col,
@@ -1365,16 +1364,31 @@ export default function TrainerPayment() {
                   );
                 },
               };
-            case "course_name":
+            // case "course_name":
+            //   return {
+            //     ...col,
+            //     width: 150,
+            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
+            //   };
+            case "batch_amount":
               return {
                 ...col,
-                width: 150,
-                render: (text) => <EllipsisTooltip text={text || "-"} />,
+                width: 110,
+                hidden: !permissions.includes("View Financial Details")
+                  ? true
+                  : false,
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>
+                    ),
+                  };
+                },
               };
             case "request_amount":
               return {
                 ...col,
-                width: 140,
+                width: 100,
                 hidden: !permissions.includes("View Financial Details")
                   ? true
                   : false,
@@ -2500,6 +2514,59 @@ export default function TrainerPayment() {
     );
   };
 
+  const filteredColumns = tableColumns.filter((col) => {
+    // Batch-specific columns
+    if (
+      commercialType !== "Batch" &&
+      (col.key === "batch_student_count" ||
+        col.key === "batch_number" ||
+        col.key === "batch_amount")
+    ) {
+      return false;
+    }
+
+    // Approved date
+    if (
+      col.key === "approved_date" &&
+      status !== "Awaiting Finance" &&
+      status !== "Paid"
+    ) {
+      return false;
+    }
+
+    // Hide these columns for Awaiting Finance / Paid
+    if (
+      (col.key === "review_status" ||
+        col.key === "ra" ||
+        col.key === "hr_user_id" ||
+        col.key === "lead_assigned_to_id" ||
+        col.key === "is_payment_cleared" ||
+        col.key === "is_class_percentage" ||
+        col.key === "is_acknowledged") &&
+      (status === "Awaiting Finance" || status === "Paid")
+    ) {
+      return false;
+    }
+
+    // Hide these columns for empty / Requested status
+    if (
+      (col.key === "deadline_date" ||
+        col.key === "days_taken_topay" ||
+        col.key === "std_region_name" ||
+        col.key === "request_amount" ||
+        col.key === "lead_assigned_to_id" ||
+        col.key === "is_payment_cleared" ||
+        col.key === "is_class_percentage" ||
+        col.key === "is_acknowledged" ||
+        col.key === "review_status") &&
+      (status === "" || status === "Link Sent")
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
   return (
     <div>
       <Row>
@@ -2967,10 +3034,13 @@ export default function TrainerPayment() {
             }
             style={{ height: "100%" }}
             onClick={() => {
+              let com_type = "";
               if (commercialType == "Pay Per Head") {
-                return;
+                com_type = "";
+              } else {
+                com_type = "Pay Per Head";
               }
-              setCommercialType("Pay Per Head");
+              setCommercialType(com_type);
               setPagination({
                 page: 1,
               });
@@ -2979,7 +3049,7 @@ export default function TrainerPayment() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
-                "Pay Per Head",
+                com_type,
                 dateFilterType,
                 selectedDates[0],
                 selectedDates[1],
@@ -3000,10 +3070,13 @@ export default function TrainerPayment() {
             }
             style={{ height: "100%" }}
             onClick={() => {
+              let com_type = "";
               if (commercialType == "Batch") {
-                return;
+                com_type = "";
+              } else {
+                com_type = "Batch";
               }
-              setCommercialType("Batch");
+              setCommercialType(com_type);
               setPagination({
                 page: 1,
               });
@@ -3012,7 +3085,7 @@ export default function TrainerPayment() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
-                "Batch",
+                com_type,
                 dateFilterType,
                 selectedDates[0],
                 selectedDates[1],
@@ -3121,42 +3194,12 @@ export default function TrainerPayment() {
       <div style={{ marginTop: "16px", marginBottom: "20px" }}>
         <CommonTable
           scroll={{
-            x: tableColumns
-              .filter((col) => {
-                if (
-                  commercialType !== "Batch" &&
-                  (col.key === "batch_student_count" ||
-                    col.key === "batch_number")
-                ) {
-                  return false;
-                }
-                if (
-                  col.key === "approved_date" &&
-                  status !== "Awaiting Finance" &&
-                  status !== "Paid"
-                ) {
-                  return false;
-                }
-                return true;
-              })
-              .reduce((total, col) => total + (col.width || 150), 0),
+            x: filteredColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0,
+            ),
           }}
-          columns={tableColumns.filter((col) => {
-            if (
-              commercialType !== "Batch" &&
-              (col.key === "batch_student_count" || col.key === "batch_number")
-            ) {
-              return false;
-            }
-            if (
-              col.key === "approved_date" &&
-              status !== "Awaiting Finance" &&
-              status !== "Paid"
-            ) {
-              return false;
-            }
-            return true;
-          })}
+          columns={filteredColumns}
           dataSource={paymentRequestsData}
           dataPerPage={10}
           loading={loading}
@@ -3166,7 +3209,6 @@ export default function TrainerPayment() {
               ? "true"
               : "false"
           }
-          // checkBox={"false"}
           size="small"
           className="questionupload_table"
           onPaginationChange={handlePaginationChange}
@@ -3176,11 +3218,6 @@ export default function TrainerPayment() {
           page_number={pagination.page}
           totalPageNumber={pagination.total}
           disableLocalPagination={true}
-          // getCheckboxProps={(record) => ({
-          //   disabled: record.rowSpan === 0,
-          //   style: { display: record.rowSpan === 0 ? "none" : "block" },
-          // })}
-          // rowKey="row_num"
         />
       </div>
 
