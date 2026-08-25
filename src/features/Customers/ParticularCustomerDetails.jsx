@@ -262,8 +262,9 @@ export default function ParticularCustomerDetails({ customerId }) {
             )}
           </Col>
           <Col span={6}>{renderField("Gender", customerDetails?.gender)}</Col>
+          <Col span={6}>{renderField("Address", customerDetails?.address)}</Col>
           <Col span={6}>
-            {renderField("Area", customerDetails?.current_location)}
+            {renderField("Postal/Zip Code", customerDetails?.pincode)}
           </Col>
         </Row>
       </div>

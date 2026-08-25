@@ -341,7 +341,7 @@ const DraggableStudentModal = ({
                   </span>
                 </div>
 
-                {/* Mode Of Training */}
+                {/* Date of Birth */}
                 <div
                   style={{
                     display: "flex",
@@ -359,7 +359,7 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdLocationOn size={16} /> Mode of Training
+                    <MdDateRange size={16} /> Date of Birth
                   </span>
                   <span
                     style={{
@@ -369,11 +369,15 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.mode_of_class_name || "-"}
+                    {customerDetails?.date_of_birth
+                      ? moment(customerDetails.date_of_birth).format(
+                          "DD/MM/YYYY",
+                        )
+                      : "-"}
                   </span>
                 </div>
 
-                {/* Place of Sale */}
+                {/* Gender */}
                 <div
                   style={{
                     display: "flex",
@@ -391,16 +395,22 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdBusiness size={16} /> Place of Sale
+                    <MdPerson size={16} /> Gender
                   </span>
 
-                  <EllipsisTooltip
-                    text={customerDetails?.place_of_sale_name || "-"}
-                    isViewLeadDetailsText={true}
-                  />
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#0f172a",
+                      fontSize: "13px",
+                      textAlign: "right",
+                    }}
+                  >
+                    {customerDetails?.gender || "-"}
+                  </span>
                 </div>
 
-                {/* Place of Service */}
+                {/* Area */}
                 <div
                   style={{
                     display: "flex",
@@ -418,7 +428,7 @@ const DraggableStudentModal = ({
                       fontWeight: 500,
                     }}
                   >
-                    <MdBusiness size={16} /> Place of Service
+                    <MdLocationOn size={16} /> Postal Code
                   </span>
                   <span
                     style={{
@@ -428,7 +438,7 @@ const DraggableStudentModal = ({
                       textAlign: "right",
                     }}
                   >
-                    {customerDetails?.place_of_service_name || "-"}
+                    {customerDetails?.pincode || "-"}
                   </span>
                 </div>
               </div>

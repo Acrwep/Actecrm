@@ -411,6 +411,17 @@ export default function Leads({
       sortDirections: ["ascend", "descend"],
     },
     {
+      title: "Mode Of Training",
+      key: "preferred_mode_name",
+      dataIndex: "preferred_mode_name",
+      width: 140,
+      sorter: (a, b) =>
+        (a.preferred_mode_name || "").localeCompare(
+          b.preferred_mode_name || "",
+        ),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
       title: "Primary Course",
       key: "primary_course",
       dataIndex: "primary_course",
@@ -692,13 +703,20 @@ export default function Leads({
     nonChangeColumns.map((col) => ({
       ...col,
       isChecked:
-        col.key === "domain_origin" || col.key === "lead_type" ? false : true,
+        col.key === "domain_origin" ||
+        col.key === "lead_type" ||
+        col.key === "preferred_mode_name"
+          ? false
+          : true,
     })),
   );
 
   const [tableColumns, setTableColumns] = useState(
     nonChangeColumns.filter(
-      (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+      (col) =>
+        col.key !== "domain_origin" &&
+        col.key !== "lead_type" &&
+        col.key !== "preferred_mode_name",
     ),
   );
 
@@ -716,7 +734,10 @@ export default function Leads({
   useEffect(() => {
     setTableColumns(
       nonChangeColumns.filter(
-        (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+        (col) =>
+          col.key !== "domain_origin" &&
+          col.key !== "lead_type" &&
+          col.key !== "preferred_mode_name",
       ),
     );
   }, [permissions, isShowEdit]);
@@ -729,14 +750,19 @@ export default function Leads({
         const updatedColumns = nonChangeColumns.map((col) => ({
           ...col,
           isChecked:
-            col.key === "domain_origin" || col.key === "lead_type"
+            col.key === "domain_origin" ||
+            col.key === "lead_type" ||
+            col.key === "preferred_mode_name"
               ? false
               : true,
         }));
         setColumns(updatedColumns);
         setTableColumns(
           nonChangeColumns.filter(
-            (col) => col.key !== "domain_origin" && col.key !== "lead_type",
+            (col) =>
+              col.key !== "domain_origin" &&
+              col.key !== "lead_type" &&
+              col.key !== "preferred_mode_name",
           ),
         );
 
@@ -1138,6 +1164,15 @@ export default function Leads({
                   (a.lead_type || "").localeCompare(b.lead_type || ""),
                 sortDirections: ["ascend", "descend"],
               };
+            case "preferred_mode_name":
+              return {
+                ...col,
+                sorter: (a, b) =>
+                  (a.preferred_mode_name || "").localeCompare(
+                    b.preferred_mode_name || "",
+                  ),
+                sortDirections: ["ascend", "descend"],
+              };
             case "lead_status":
             case "lead_action_name":
               return leadBucketName === "Followup Leads"
@@ -1421,7 +1456,9 @@ export default function Leads({
         ...missingColumns.map((col) => ({
           ...col,
           isChecked:
-            col.key === "domain_origin" || col.key === "lead_type"
+            col.key === "domain_origin" ||
+            col.key === "lead_type" ||
+            col.key === "preferred_mode_name"
               ? false
               : true,
         })),

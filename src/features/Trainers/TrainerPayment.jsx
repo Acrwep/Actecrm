@@ -441,14 +441,24 @@ export default function TrainerPayment() {
       dataIndex: "approved_date",
       width: 130,
       render: (text, record) => {
-        return {
-          children: (
-            <p style={{ margin: 0 }}>
-              {text ? moment(text).format("DD/MM/YYYY") : "-"}
-            </p>
-          ),
-          props: { rowSpan: record.rowSpan },
-        };
+        return (
+          <p style={{ margin: 0 }}>
+            {text ? moment(text).format("DD/MM/YYYY") : "-"}
+          </p>
+        );
+      },
+    },
+    {
+      title: "Paid Date",
+      key: "paid_date",
+      dataIndex: "paid_date",
+      width: 110,
+      render: (text, record) => {
+        return (
+          <p style={{ margin: 0 }}>
+            {text ? moment(text).format("DD/MM/YYYY") : "-"}
+          </p>
+        );
       },
     },
     {
@@ -554,22 +564,29 @@ export default function TrainerPayment() {
       key: "std_region_name",
       dataIndex: "std_region_name",
       width: 120,
-      render: (text) => <EllipsisTooltip text={text || "-"} />,
+      render: (text) => <EllipsisTooltip text={text} />,
     },
-    // {
-    //   title: "Place Of Sale",
-    //   key: "std_place_of_sale_name",
-    //   dataIndex: "std_place_of_sale_name",
-    //   width: 120,
-    //   render: (text) => <EllipsisTooltip text={text || "-"} />,
-    // },
-    // {
-    //   title: "Place Of Service",
-    //   key: "std_place_of_service_name",
-    //   dataIndex: "std_place_of_service_name",
-    //   width: 120,
-    //   render: (text) => <EllipsisTooltip text={text || "-"} />,
-    // },
+    {
+      title: "Place Of Sale",
+      key: "std_place_of_sale_name",
+      dataIndex: "std_place_of_sale_name",
+      width: 120,
+      render: (text) => <EllipsisTooltip text={text} />,
+    },
+    {
+      title: "Place Of Service",
+      key: "std_place_of_service_name",
+      dataIndex: "std_place_of_service_name",
+      width: 120,
+      render: (text) => <EllipsisTooltip text={text} />,
+    },
+    {
+      title: "Mode of Training",
+      key: "mode_of_training",
+      dataIndex: "mode_of_training",
+      width: 130,
+      render: (text) => <EllipsisTooltip text={text} />,
+    },
     {
       title: "Trainer Name",
       key: "trainer_name",
@@ -679,19 +696,9 @@ export default function TrainerPayment() {
       title: "Amount",
       key: "request_amount",
       dataIndex: "request_amount",
-      width: 100,
-      hidden: !permissions.includes("View Financial Details") ? true : false,
-      render: (text, record) => {
-        return {
-          children: (
-            <p>
-              {record.commercial
-                ? `₹${parseFloat(record.commercial).toFixed(2)}`
-                : "-"}
-            </p>
-          ),
-          props: { rowSpan: record.rowSpan },
-        };
+      width: 130,
+      render: (text) => {
+        return text ? `₹${parseFloat(text).toFixed(2)}` : "-";
       },
     },
     {
@@ -717,7 +724,6 @@ export default function TrainerPayment() {
       ),
     },
     {
-      title: "SE",
       title: (
         <Tooltip title="Sales Executive" placement="top">
           <div
@@ -860,109 +866,13 @@ export default function TrainerPayment() {
       title: "Status",
       key: "trainer_payment_status",
       dataIndex: "status",
-      width: 140,
+      width: 120,
       fixed: "right",
       render: (text, record) => {
         return {
           children: (
             <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              <Tooltip
-                placement="bottomLeft"
-                className="customers_statustooltip"
-                color="#fff"
-                styles={{
-                  body: {
-                    width: "240px",
-                    maxWidth: "none",
-                    whiteSpace: "normal",
-                  },
-                }}
-                title={
-                  <>
-                    <Row>
-                      <Col span={12} style={{ marginBottom: "8px" }}>
-                        {record?.status == "Requested" ||
-                        record?.status == "Link Sent" ||
-                        record?.status == "Payment Rejected" ||
-                        record?.status == "Approval Rejected" ||
-                        record?.status == "Awaiting Approval" ? (
-                          <Checkbox
-                            className="server_statuscheckbox"
-                            checked={false}
-                            onChange={(e) => {
-                              if (permissions.includes("Payment Approval")) {
-                                if (record?.status == "Link Sent") {
-                                  CommonMessage(
-                                    "error",
-                                    "This payment has not been claimed yet.",
-                                  );
-                                  return;
-                                }
-                                // setIsOpenDetailsDrawer(true);
-                                // setDrawerContentStatus("Approve");
-                                setIsOpenApproveModal(true);
-                                setSelectedPaymentDetails(record);
-                              } else {
-                                CommonMessage("error", "Access Denied");
-                              }
-                            }}
-                          >
-                            Approve
-                          </Checkbox>
-                        ) : (
-                          <div className="customers_classcompleted_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p className="customers_classgoing_completedtext">
-                              Approved
-                            </p>
-                          </div>
-                        )}
-                      </Col>
-
-                      <Col span={12} style={{ marginBottom: "8px" }}>
-                        {record?.status == "Requested" ||
-                        record?.status == "Link Sent" ||
-                        record?.status == "Awaiting Finance" ||
-                        record?.status == "Awaiting Approval" ||
-                        record?.status == "Approval Rejected" ||
-                        record?.status == "Payment Rejected" ? (
-                          <Checkbox
-                            className="server_statuscheckbox"
-                            checked={false}
-                            onChange={(e) => {
-                              if (record?.status == "Awaiting Finance") {
-                                if (
-                                  permissions.includes("Payment Completion")
-                                ) {
-                                  setSelectedPaymentDetails(record);
-                                  setDrawerContentStatus("Awaiting Finance");
-                                  setIsOpenDetailsDrawer(true);
-                                } else {
-                                  CommonMessage("error", "Access Denied");
-                                }
-                              } else {
-                                CommonMessage(
-                                  "warning",
-                                  "Claim not approved yet",
-                                );
-                              }
-                            }}
-                          >
-                            Pay{" "}
-                          </Checkbox>
-                        ) : (
-                          <div className="customers_classcompleted_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p className="customers_classgoing_completedtext">
-                              Paid
-                            </p>
-                          </div>
-                        )}
-                      </Col>
-                    </Row>
-                  </>
-                }
-              >
+              <>
                 {text === "Link Sent" ? (
                   <Button className="customers_status_awaitingclass_button">
                     Link Sent
@@ -995,7 +905,7 @@ export default function TrainerPayment() {
                 ) : (
                   <p style={{ marginLeft: "6px" }}>-</p>
                 )}
-              </Tooltip>
+              </>
 
               {record?.status == "Link Sent" ? (
                 <Tooltip
@@ -1026,10 +936,82 @@ export default function TrainerPayment() {
         };
       },
     },
+
     {
       title: "Action",
       key: "action",
       dataIndex: "action",
+      width: 110,
+      fixed: "right",
+      render: (text, record) => {
+        return {
+          children: (
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <Tooltip
+                placement="top"
+                title={
+                  record?.status === "Requested"
+                    ? "Click to Approve"
+                    : "Click to Pay"
+                }
+                trigger={["hover", "click"]}
+              >
+                {record?.status === "Requested" ? (
+                  <Button
+                    className="trainers_pending_button"
+                    onClick={() => {
+                      if (permissions.includes("Payment Approval")) {
+                        if (record?.status == "Link Sent") {
+                          CommonMessage(
+                            "error",
+                            "This payment has not been claimed yet.",
+                          );
+                          return;
+                        }
+                        // setIsOpenDetailsDrawer(true);
+                        // setDrawerContentStatus("Approve");
+                        setIsOpenApproveModal(true);
+                        setSelectedPaymentDetails(record);
+                      } else {
+                        CommonMessage("error", "Access Denied");
+                      }
+                    }}
+                  >
+                    Approve
+                  </Button>
+                ) : record?.status === "Awaiting Finance" ? (
+                  <Button
+                    className="trainers_verified_button"
+                    onClick={() => {
+                      if (record?.status == "Awaiting Finance") {
+                        if (permissions.includes("Payment Completion")) {
+                          setSelectedPaymentDetails(record);
+                          setDrawerContentStatus("Awaiting Finance");
+                          setIsOpenDetailsDrawer(true);
+                        } else {
+                          CommonMessage("error", "Access Denied");
+                        }
+                      } else {
+                        CommonMessage("warning", "Claim not approved yet");
+                      }
+                    }}
+                  >
+                    Pay
+                  </Button>
+                ) : (
+                  <p style={{ marginLeft: "6px" }}>-</p>
+                )}
+              </Tooltip>
+            </div>
+          ),
+        };
+      },
+    },
+
+    {
+      title: "Details",
+      key: "details",
+      dataIndex: "details",
       fixed: "right",
       width: 100,
       hidden: !permissions.includes("View Financial Details") ? true : false,
@@ -1083,7 +1065,9 @@ export default function TrainerPayment() {
     },
   ].filter((col) => {
     if (!permissions.includes("View Financial Details")) {
-      return !["request_amount", "batch_amount", "action"].includes(col.key);
+      return !["request_amount", "batch_amount", "action", "details"].includes(
+        col.key,
+      );
     }
     return true;
   });
@@ -1150,14 +1134,23 @@ export default function TrainerPayment() {
                 ...col,
                 width: 130,
                 render: (text, record) => {
-                  return {
-                    children: (
-                      <p style={{ margin: 0 }}>
-                        {text ? moment(text).format("DD/MM/YYYY") : "-"}
-                      </p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
+                  return (
+                    <p style={{ margin: 0 }}>
+                      {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                    </p>
+                  );
+                },
+              };
+            case "paid_date":
+              return {
+                ...col,
+                width: 110,
+                render: (text, record) => {
+                  return (
+                    <p style={{ margin: 0 }}>
+                      {text ? moment(text).format("DD/MM/YYYY") : "-"}
+                    </p>
+                  );
                 },
               };
             case "days_taken_topay":
@@ -1216,20 +1209,47 @@ export default function TrainerPayment() {
               return {
                 ...col,
                 width: 120,
-                render: (text) => <EllipsisTooltip text={text || "-"} />,
+                render: (students) => {
+                  const text = students?.[0]?.std_region_name || "-";
+                  return <EllipsisTooltip text={text} />;
+                },
               };
-            // case "std_place_of_sale_name":
-            //   return {
-            //     ...col,
-            //     width: 120,
-            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
-            //   };
-            // case "std_place_of_service_name":
-            //   return {
-            //     ...col,
-            //     width: 120,
-            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
-            //   };
+            case "std_place_of_sale_name":
+              return {
+                ...col,
+                width: 120,
+                render: (students) => {
+                  const text =
+                    students?.[0]?.std_place_of_sale_name ||
+                    students?.[0]?.place_of_sale ||
+                    "-";
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "std_place_of_service_name":
+              return {
+                ...col,
+                width: 120,
+                render: (students) => {
+                  const text =
+                    students?.[0]?.std_place_of_service_name ||
+                    students?.[0]?.place_of_supply ||
+                    "-";
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
+            case "mode_of_training":
+              return {
+                ...col,
+                width: 120,
+                render: (students) => {
+                  const text =
+                    students?.[0]?.mode_of_training ||
+                    students?.[0]?.training_mode ||
+                    "-";
+                  return <EllipsisTooltip text={text} />;
+                },
+              };
             case "batch_student_count":
               return {
                 ...col,
@@ -1585,7 +1605,7 @@ export default function TrainerPayment() {
             case "trainer_payment_status":
               return {
                 ...col,
-                width: 140,
+                width: 120,
                 fixed: "right",
                 render: (text, record) => {
                   return {
@@ -1597,110 +1617,7 @@ export default function TrainerPayment() {
                           alignItems: "center",
                         }}
                       >
-                        <Tooltip
-                          placement="bottomLeft"
-                          className="customers_statustooltip"
-                          color="#fff"
-                          styles={{
-                            body: {
-                              width: "240px",
-                              maxWidth: "none",
-                              whiteSpace: "normal",
-                            },
-                          }}
-                          title={
-                            <>
-                              <Row>
-                                <Col span={12} style={{ marginBottom: "8px" }}>
-                                  {record?.status == "Requested" ||
-                                  record?.status == "Link Sent" ||
-                                  record?.status == "Payment Rejected" ||
-                                  record?.status == "Approval Rejected" ||
-                                  record?.status == "Awaiting Approval" ? (
-                                    <Checkbox
-                                      className="server_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (
-                                          permissions.includes(
-                                            "Payment Approval",
-                                          )
-                                        ) {
-                                          setIsOpenApproveModal(true);
-                                          setSelectedPaymentDetails(record);
-                                        } else {
-                                          CommonMessage(
-                                            "error",
-                                            "Access Denied",
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Approve
-                                    </Checkbox>
-                                  ) : (
-                                    <div className="customers_classcompleted_container">
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Approved
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-
-                                <Col span={12} style={{ marginBottom: "8px" }}>
-                                  {record?.status == "Requested" ||
-                                  record?.status == "Link Sent" ||
-                                  record?.status == "Awaiting Finance" ||
-                                  record?.status == "Awaiting Approval" ||
-                                  record?.status == "Approval Rejected" ||
-                                  record?.status == "Payment Rejected" ? (
-                                    <Checkbox
-                                      className="server_statuscheckbox"
-                                      checked={false}
-                                      onChange={(e) => {
-                                        if (
-                                          record?.status == "Awaiting Finance"
-                                        ) {
-                                          if (
-                                            permissions.includes(
-                                              "Payment Completion",
-                                            )
-                                          ) {
-                                            setSelectedPaymentDetails(record);
-                                            setDrawerContentStatus(
-                                              "Awaiting Finance",
-                                            );
-                                            setIsOpenDetailsDrawer(true);
-                                          } else {
-                                            CommonMessage(
-                                              "error",
-                                              "Access Denied",
-                                            );
-                                          }
-                                        } else {
-                                          CommonMessage(
-                                            "warning",
-                                            "Claim not approved yet",
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      Pay{" "}
-                                    </Checkbox>
-                                  ) : (
-                                    <div className="customers_classcompleted_container">
-                                      <BsPatchCheckFill color="#3c9111" />
-                                      <p className="customers_classgoing_completedtext">
-                                        Paid
-                                      </p>
-                                    </div>
-                                  )}
-                                </Col>
-                              </Row>
-                            </>
-                          }
-                        >
+                        <>
                           {text === "Link Sent" ? (
                             <Button className="customers_status_awaitingclass_button">
                               Link Sent
@@ -1737,7 +1654,7 @@ export default function TrainerPayment() {
                           ) : (
                             <p style={{ marginLeft: "6px" }}>-</p>
                           )}
-                        </Tooltip>
+                        </>
 
                         {record?.status == "Link Sent" ? (
                           <Tooltip
@@ -1769,6 +1686,86 @@ export default function TrainerPayment() {
                 },
               };
             case "action":
+              return {
+                ...col,
+                width: 110,
+                fixed: "right",
+                render: (text, record) => {
+                  return {
+                    children: (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Tooltip
+                          placement="top"
+                          title={
+                            record?.status === "Requested"
+                              ? "Click to Approve"
+                              : "Click to Pay"
+                          }
+                          trigger={["hover", "click"]}
+                        >
+                          {record?.status === "Requested" ? (
+                            <Button
+                              className="trainers_pending_button"
+                              onClick={() => {
+                                if (permissions.includes("Payment Approval")) {
+                                  if (record?.status == "Link Sent") {
+                                    CommonMessage(
+                                      "error",
+                                      "This payment has not been claimed yet.",
+                                    );
+                                    return;
+                                  }
+                                  // setIsOpenDetailsDrawer(true);
+                                  // setDrawerContentStatus("Approve");
+                                  setIsOpenApproveModal(true);
+                                  setSelectedPaymentDetails(record);
+                                } else {
+                                  CommonMessage("error", "Access Denied");
+                                }
+                              }}
+                            >
+                              Approve
+                            </Button>
+                          ) : record?.status === "Awaiting Finance" ? (
+                            <Button
+                              className="trainers_verified_button"
+                              onClick={() => {
+                                if (record?.status == "Awaiting Finance") {
+                                  if (
+                                    permissions.includes("Payment Completion")
+                                  ) {
+                                    setSelectedPaymentDetails(record);
+                                    setDrawerContentStatus("Awaiting Finance");
+                                    setIsOpenDetailsDrawer(true);
+                                  } else {
+                                    CommonMessage("error", "Access Denied");
+                                  }
+                                } else {
+                                  CommonMessage(
+                                    "warning",
+                                    "Claim not approved yet",
+                                  );
+                                }
+                              }}
+                            >
+                              Pay
+                            </Button>
+                          ) : (
+                            <p style={{ marginLeft: "6px" }}>-</p>
+                          )}
+                        </Tooltip>
+                      </div>
+                    ),
+                  };
+                },
+              };
+            case "details":
               return {
                 ...col,
                 width: 100,
@@ -1856,7 +1853,7 @@ export default function TrainerPayment() {
 
       const filteredBackendColumns = filterPage.column_names.filter((col) => {
         if (!permissions.includes("View Financial Details")) {
-          return !["request_amount", "action"].includes(col.key);
+          return !["request_amount", "action", "details"].includes(col.key);
         }
         return true;
       });
@@ -2363,10 +2360,45 @@ export default function TrainerPayment() {
       const response = await getTrainerPayments(payload);
       console.log("received payments response", response);
       const download_data = response?.data?.data?.data || [];
-      if (download_data.length >= 1) {
+
+      const flatDownloadData = [];
+      download_data.forEach((request) => {
+        if (request.students && request.students.length > 0) {
+          request.students.forEach((student) => {
+            flatDownloadData.push({
+              ...request,
+              ...student,
+              std_region_name: student.std_region_name || "-",
+              std_place_of_sale_name:
+                student.std_place_of_sale_name || student.place_of_sale || "-",
+              std_place_of_service_name:
+                student.std_place_of_service_name ||
+                student.place_of_supply ||
+                "-",
+              mode_of_training:
+                student.mode_of_training || student.training_mode || "-",
+              request_amount:
+                student.commercial ||
+                request.commercial ||
+                request.request_amount ||
+                0,
+            });
+          });
+        } else {
+          flatDownloadData.push({
+            ...request,
+          });
+        }
+      });
+
+      if (flatDownloadData.length >= 1) {
         const exportColumns = nonChangeColumns
           .filter((col) => {
-            if (col.key === "review_status" || col.key === "action") {
+            if (
+              col.key === "review_status" ||
+              col.key === "action" ||
+              col.key === "details"
+            ) {
               return false;
             }
 
@@ -2377,11 +2409,11 @@ export default function TrainerPayment() {
               return false;
             }
 
-            if (
-              col.key === "approved_date" &&
-              status !== "Awaiting Finance" &&
-              status !== "Paid"
-            ) {
+            if (col.key === "approved_date" && status !== "Awaiting Finance") {
+              return false;
+            }
+
+            if (col.key === "paid_date" && status !== "Paid") {
               return false;
             }
 
@@ -2432,7 +2464,7 @@ export default function TrainerPayment() {
           });
 
         DownloadTableAsCSV(
-          download_data,
+          flatDownloadData,
           exportColumns,
           `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
             selectedDates[1],
@@ -2526,11 +2558,12 @@ export default function TrainerPayment() {
     }
 
     // Approved date
-    if (
-      col.key === "approved_date" &&
-      status !== "Awaiting Finance" &&
-      status !== "Paid"
-    ) {
+    if (col.key === "approved_date" && status !== "Awaiting Finance") {
+      return false;
+    }
+
+    // Approved date
+    if (col.key === "paid_date" && status !== "Paid") {
       return false;
     }
 
@@ -2553,18 +2586,153 @@ export default function TrainerPayment() {
       (col.key === "deadline_date" ||
         col.key === "days_taken_topay" ||
         col.key === "std_region_name" ||
+        col.key === "std_place_of_sale_name" ||
+        col.key === "std_place_of_service_name" ||
+        col.key === "mode_of_training" ||
         col.key === "request_amount" ||
         col.key === "lead_assigned_to_id" ||
         col.key === "is_payment_cleared" ||
         col.key === "is_class_percentage" ||
         col.key === "is_acknowledged" ||
         col.key === "review_status") &&
-      (status === "" || status === "Link Sent")
+      status === ""
     ) {
       return false;
     }
 
+    if (
+      (col.key === "deadline_date" ||
+        col.key === "days_taken_topay" ||
+        col.key === "std_region_name" ||
+        col.key === "std_place_of_sale_name" ||
+        col.key === "std_place_of_service_name" ||
+        col.key === "mode_of_training" ||
+        col.key === "lead_assigned_to_id") &&
+      status === "Link Sent"
+    ) {
+      return false;
+    }
+
+    // hide action column
+    if (
+      col.key === "action" &&
+      (status === "" || status === "Link Sent" || status === "Paid")
+    ) {
+      return false;
+    }
+
+    // hide status column
+    if (
+      col.key === "trainer_payment_status" &&
+      (status === "Requested" ||
+        status === "Awaiting Finance" ||
+        status === "Paid")
+    ) {
+      return false;
+    }
     return true;
+  });
+
+  const flattenedTableData = useMemo(() => {
+    const flatData = [];
+    paymentRequestsData.forEach((request) => {
+      if (request.students && request.students.length > 0) {
+        request.students.forEach((student, index) => {
+          flatData.push({
+            ...request,
+            ...student,
+            std_region_name: student.std_region_name || "-",
+            std_place_of_sale_name:
+              student.std_place_of_sale_name || student.place_of_sale || "-",
+            std_place_of_service_name:
+              student.std_place_of_service_name ||
+              student.place_of_supply ||
+              "-",
+            mode_of_training:
+              student.mode_of_training || student.training_mode || "-",
+            request_amount:
+              student.commercial ||
+              request.commercial ||
+              request.request_amount ||
+              0,
+            students: [student],
+            student_details: student,
+            rowSpan: index === 0 ? request.students.length : 0,
+            request_details: request,
+            row_num: `${request.id}_${student.customer_id || index}`,
+          });
+        });
+      } else {
+        flatData.push({
+          ...request,
+          student_details: null,
+          rowSpan: 1,
+          request_details: request,
+          row_num: `${request.id}_no_student`,
+        });
+      }
+    });
+    return flatData;
+  }, [paymentRequestsData]);
+
+  const studentLevelColumns = [
+    "customer_name",
+    "request_amount",
+    "std_region_name",
+    "std_place_of_sale_name",
+    "std_place_of_service_name",
+    "mode_of_training",
+    "ra",
+    "hr_user_id",
+    "lead_assigned_to_id",
+    "is_payment_cleared",
+    "is_class_percentage",
+    "is_acknowledged",
+    "review_status",
+    "details",
+  ];
+
+  const finalColumns = filteredColumns.map((col) => {
+    if (studentLevelColumns.includes(col.key)) {
+      return col;
+    }
+
+    const originalRender = col.render;
+    if (originalRender) {
+      return {
+        ...col,
+        render: (text, record, index) => {
+          const result = originalRender(text, record, index);
+          if (
+            result &&
+            typeof result === "object" &&
+            !Array.isArray(result) &&
+            !result.$$typeof
+          ) {
+            return {
+              ...result,
+              props: {
+                ...(result.props || {}),
+                rowSpan: record.rowSpan,
+              },
+            };
+          } else {
+            return {
+              children: result,
+              props: { rowSpan: record.rowSpan },
+            };
+          }
+        },
+      };
+    }
+
+    return {
+      ...col,
+      render: (text, record) => ({
+        children: text,
+        props: { rowSpan: record.rowSpan },
+      }),
+    };
   });
 
   return (
@@ -3199,8 +3367,9 @@ export default function TrainerPayment() {
               0,
             ),
           }}
-          columns={filteredColumns}
-          dataSource={paymentRequestsData}
+          columns={finalColumns}
+          dataSource={flattenedTableData}
+          rowKey={(record) => record.row_num}
           dataPerPage={10}
           loading={loading}
           checkBox={
