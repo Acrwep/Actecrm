@@ -44,6 +44,7 @@ import {
   getCustomerFullHistory,
   getBranches,
 } from "../ApiService/action";
+import { SlActionUndo } from "react-icons/sl";
 import {
   formatToBackendIST,
   getCurrentandLast90Date,
@@ -358,6 +359,7 @@ export default function TrainerPayment() {
     totalPages: 0,
   });
   const [statusCounts, setStatusCounts] = useState(null);
+  const [commercialTypeCounts, setCommercialTypeCounts] = useState(null);
   const [regionCounts, setRegionCounts] = useState(null);
   const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
   const customerDetailsLoadingRef = useRef(customerDetailsLoading);
@@ -378,6 +380,8 @@ export default function TrainerPayment() {
   //approve usestates
   const [isOpenApproveModal, setIsOpenApproveModal] = useState(false);
   const [approveButtonLoading, setApproveButtonLoading] = useState(false);
+  // revert usestates
+  const [isOpenRevertModal, setIsOpenRevertModal] = useState(false);
 
   const renderCellWithBackground = (
     status,
@@ -946,7 +950,7 @@ export default function TrainerPayment() {
       render: (text, record) => {
         return {
           children: (
-            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <Tooltip
                 placement="top"
                 title={
@@ -1002,6 +1006,28 @@ export default function TrainerPayment() {
                   <p style={{ marginLeft: "6px" }}>-</p>
                 )}
               </Tooltip>
+
+              {record?.status === "Awaiting Finance" && (
+                <Tooltip
+                  placement="top"
+                  title={"Move to Claim"}
+                  trigger={["hover", "click"]}
+                >
+                  <SlActionUndo
+                    size={14}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      if (
+                        permissions.includes("Payment Approval") ||
+                        permissions.includes("Payment Completion")
+                      ) {
+                        setIsOpenRevertModal(true);
+                        setSelectedPaymentDetails(record);
+                      }
+                    }}
+                  />
+                </Tooltip>
+              )}
             </div>
           ),
         };
@@ -2151,6 +2177,8 @@ export default function TrainerPayment() {
       const paginationData = response?.data?.data?.pagination || {};
       const statusCountsData = response?.data?.data?.statusCount || {};
       const regionCountsData = response?.data?.data?.regionCount || {};
+      const commercialTypeCountsData =
+        response?.data?.data?.commercialTypeCount || {};
 
       // Set payment requests data
       setPaymentRequestsData(responseData);
@@ -2165,6 +2193,7 @@ export default function TrainerPayment() {
 
       // Update status and region counts
       setRegionCounts(regionCountsData);
+      setCommercialTypeCounts(commercialTypeCountsData);
       setStatusCounts(statusCountsData);
     } catch (error) {
       setPaymentRequestsData([]);
@@ -2216,7 +2245,7 @@ export default function TrainerPayment() {
     }
   };
 
-  const handleTrainerPaymentStatus = async (updateStatus) => {
+  const handleTrainerPaymentStatus = async (updateStatus, isRevert = false) => {
     setApproveButtonLoading(true);
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -2226,6 +2255,7 @@ export default function TrainerPayment() {
       trainer_payment_id: selectedPaymentDetails?.payment_master_id,
       updated_by: convertAsJson?.user_id,
       updated_date: formatToBackendIST(new Date()),
+      ...(isRevert && { Revert: 1 }),
     };
     try {
       await updateTrainerPaymentStatus(payload);
@@ -2486,6 +2516,7 @@ export default function TrainerPayment() {
     setIsOpenDetailsDrawer(false);
     setSelectedPaymentDetails(null);
     setIsOpenApproveModal(false);
+    setIsOpenRevertModal(false);
     setApproveButtonLoading(false);
     setDrawerContentStatus("");
   };
@@ -2510,9 +2541,9 @@ export default function TrainerPayment() {
   };
 
   const handleSelectedRow = (row) => {
-    console.log("selected rowwww", row);
     setSelectedRows(row);
-    const keys = row.map((item) => item.id); // or your unique row key
+    console.log("selected rowsss", row);
+    const keys = row.map((item) => item.row_num); // match table rowKey
     setSelectedRowKeys(keys);
   };
 
@@ -3227,7 +3258,7 @@ export default function TrainerPayment() {
               );
             }}
           >
-            <p>Pay Per Head</p>
+            <p>{`Pay Per Head ( ${commercialTypeCounts?.Pay_Per_Head_Count ?? 0} )`}</p>
           </div>
 
           <div
@@ -3263,7 +3294,7 @@ export default function TrainerPayment() {
               );
             }}
           >
-            <p>Batch </p>
+            <p>{`Batch ( ${commercialTypeCounts?.Batch_Count ?? 0} )`}</p>
           </div>
 
           {permissions.includes("Show Region Summary") && (
@@ -3528,6 +3559,67 @@ export default function TrainerPayment() {
               className="customer_classcompletemodal_okbutton"
               onClick={() => {
                 handleTrainerPaymentStatus("Awaiting Finance");
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      {/* revert confirm modal */}
+      <Modal
+        open={isOpenRevertModal}
+        onCancel={() => {
+          setIsOpenRevertModal(false);
+          setSelectedPaymentDetails(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Revert The Amount Of{" "}
+          <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
+            {selectedPaymentDetails
+              ? "₹" +
+                (selectedPaymentDetails.commercial_type === "Batch"
+                  ? selectedPaymentDetails.batch_amount
+                  : selectedPaymentDetails.request_amount)
+              : "-"}{" "}
+          </span>
+          for trainer{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {selectedPaymentDetails && selectedPaymentDetails.trainer_name
+              ? selectedPaymentDetails.trainer_name
+              : ""}
+          </span>{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenRevertModal(false);
+              setSelectedPaymentDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {approveButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleTrainerPaymentStatus("Requested", true);
               }}
             >
               Yes

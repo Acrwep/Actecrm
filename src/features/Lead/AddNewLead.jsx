@@ -486,7 +486,7 @@ const AddNewLead = forwardRef(
         setPreferredMode(liveLeadItem?.training?.includes("Classroom") ? 2 : 1);
         setLeadSource(4);
         setLeadSubSource(
-          liveLeadItem?.domain_origin.includes("Google") ? 8 : null,
+          liveLeadItem?.domain_origin?.includes("Google") ? 8 : null,
         );
         getLeadSubSourceData(4);
         liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
@@ -1842,7 +1842,7 @@ const AddNewLead = forwardRef(
                       leadSource == 2 ||
                       leadSource == 3 ||
                       leadSource == 6 ||
-                      liveLeadItem?.domain_origin.includes("Google")
+                      liveLeadItem?.domain_origin?.includes("Google")
                     }
                     disableClearable={false}
                     height={"35px"}
