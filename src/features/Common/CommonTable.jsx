@@ -252,6 +252,17 @@ const CommonTable = ({
             }
           },
           getCheckboxProps: getCheckboxProps,
+          renderCell: (checked, record, index, originNode) => {
+            if (record.rowSpan !== undefined) {
+              return {
+                children: originNode,
+                props: {
+                  rowSpan: record.rowSpan,
+                },
+              };
+            }
+            return originNode;
+          },
         };
 
   const paginationConfig = {

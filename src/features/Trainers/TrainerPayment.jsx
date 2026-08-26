@@ -12,6 +12,7 @@ import {
   Checkbox,
   Divider,
   Upload,
+  Dropdown,
 } from "antd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { IoIosClose } from "react-icons/io";
@@ -43,9 +44,12 @@ import {
   updateTableColumns,
   getCustomerFullHistory,
   getBranches,
+  getTrainerPaymentBankSheet,
+  verifyReview,
 } from "../ApiService/action";
 import { SlActionUndo } from "react-icons/sl";
 import {
+  bank_sheet_columns,
   formatToBackendIST,
   getCurrentandLast90Date,
   regionOptions,
@@ -819,6 +823,7 @@ export default function TrainerPayment() {
                 onClick={() => {
                   setReviewModalTitle("Google Review");
                   setReviewScreenshot(record?.google_review);
+                  setSelectedPaymentDetails(record);
                   setIsOpenReviewScreenshotModal(true);
                 }}
               >
@@ -840,6 +845,7 @@ export default function TrainerPayment() {
                 onClick={() => {
                   setReviewModalTitle("LinkedIn Review");
                   setReviewScreenshot(record?.linkedin_review);
+                  setSelectedPaymentDetails(record);
                   setIsOpenReviewScreenshotModal(true);
                 }}
               >
@@ -1057,6 +1063,7 @@ export default function TrainerPayment() {
                     setIsOpenViewDrawer(true);
                     setSelectedPaymentDetails(record);
                   }}
+                  style={{ visibility: record.rowSpan !== 0 ? "visible" : "hidden" }}
                 />
               </Tooltip>
               <div
@@ -1579,6 +1586,7 @@ export default function TrainerPayment() {
                           onClick={() => {
                             setReviewModalTitle("Google Review");
                             setReviewScreenshot(record?.google_review);
+                            setSelectedPaymentDetails(record);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
@@ -1606,6 +1614,7 @@ export default function TrainerPayment() {
                           onClick={() => {
                             setReviewModalTitle("LinkedIn Review");
                             setReviewScreenshot(record?.linkedin_review);
+                            setSelectedPaymentDetails(record);
                             setIsOpenReviewScreenshotModal(true);
                           }}
                         >
@@ -2370,6 +2379,31 @@ export default function TrainerPayment() {
     }
   };
 
+  const handleDownloadBankSheet = async () => {
+    console.log("Download Bank Sheet for selected rows: ", selectedRows);
+    const payment_master_id = selectedRows.map((item) => {
+      return item.payment_master_id;
+    });
+    const payload = {
+      payment_master_id,
+    };
+    console.log("payment_master_ids", payload);
+    try {
+      const response = await getTrainerPaymentBankSheet(payload);
+      console.log("bank sheet response", response);
+      const download_data = response?.data?.data || [];
+      if (download_data.length >= 1) {
+        DownloadTableAsCSV(
+          download_data,
+          bank_sheet_columns,
+          `Trainer Payments Bank Sheet.csv`,
+        );
+      }
+    } catch (error) {
+      console.log("get bank sheet error", error);
+    }
+  };
+
   const handleDownload = async () => {
     setDownloadLoading(true);
     const from_date = formatToBackendIST(selectedDates[0]);
@@ -2519,6 +2553,8 @@ export default function TrainerPayment() {
     setIsOpenRevertModal(false);
     setApproveButtonLoading(false);
     setDrawerContentStatus("");
+    setIsOpenReviewScreenshotModal(false);
+    setReviewModalTitle("");
   };
 
   const handlePaginationChange = ({ page, limit }) => {
@@ -2541,10 +2577,80 @@ export default function TrainerPayment() {
   };
 
   const handleSelectedRow = (row) => {
-    setSelectedRows(row);
-    console.log("selected rowsss", row);
-    const keys = row.map((item) => item.row_num); // match table rowKey
+    const newSelectedIds = new Set();
+    const incomingIds = new Set(row.map((item) => item.id));
+
+    incomingIds.forEach((id) => {
+      // Find all rows for this ID
+      const groupRows = flattenedTableData.filter((item) => item.id === id);
+      const groupKeys = groupRows.map((item) => item.row_num);
+
+      // Check if this group was fully selected before
+      const wasFullySelected = groupKeys.every((key) =>
+        selectedRowKeys.includes(key),
+      );
+
+      // Check how many of this group are currently in the incoming "row"
+      const incomingGroupKeys = row
+        .filter((item) => item.id === id)
+        .map((item) => item.row_num);
+
+      if (wasFullySelected && incomingGroupKeys.length < groupKeys.length) {
+        // The user unchecked one of them! So deselect the whole group.
+      } else {
+        // The user checked one of them, or it's still fully selected! Expand the whole group.
+        newSelectedIds.add(id);
+      }
+    });
+
+    const expandedSelectedRows = flattenedTableData.filter((item) =>
+      newSelectedIds.has(item.id),
+    );
+
+    setSelectedRows(expandedSelectedRows);
+    const keys = expandedSelectedRows.map((item) => item.row_num);
     setSelectedRowKeys(keys);
+  };
+
+  const handleVerifyReview = async () => {
+    console.log("selectedPaymentDetails", selectedPaymentDetails);
+    // return;
+    setApproveButtonLoading(true);
+    const payload = {
+      customer_id: selectedPaymentDetails?.customer_id,
+      type: reviewModalTitle.includes("Google") ? "Google" : "Linkedin",
+      is_verified: 1,
+      verified_by: loginUserId,
+      verified_date: formatToBackendIST(new Date()),
+    };
+    try {
+      await verifyReview(payload);
+      setTimeout(() => {
+        paymentformReset();
+        setApproveButtonLoading(false);
+        CommonMessage("success", "Review Verified");
+        getTrainerPaymentsData(
+          selectedTrainerId,
+          searchValue,
+          selectedRegionId,
+          selectedBranchId,
+          commercialType,
+          dateFilterType,
+          selectedDates[0],
+          selectedDates[1],
+          status || null,
+          pagination.page,
+          pagination.limit,
+        );
+      }, 300);
+    } catch (error) {
+      setApproveButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
   };
 
   const handleRefresh = () => {
@@ -3189,15 +3295,44 @@ export default function TrainerPayment() {
           }}
         >
           {permissions.includes("Download Trainer Payment Data") && (
-            <Tooltip placement="top" title="Download">
-              <Button
-                className="dashboard_download_button"
-                onClick={handleDownload}
-                disabled={downloadLoading}
-              >
-                <DownloadOutlined className="download_icon" />
-              </Button>
-            </Tooltip>
+            <>
+              {status === "Paid" && selectedRowKeys.length > 0 ? (
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: "1",
+                        label: "Export Data",
+                        onClick: handleDownload,
+                      },
+                      {
+                        key: "2",
+                        label: "Bank Sheet",
+                        onClick: handleDownloadBankSheet,
+                      },
+                    ],
+                  }}
+                  placement="bottomRight"
+                >
+                  <Button
+                    className="dashboard_download_button"
+                    disabled={downloadLoading}
+                  >
+                    <DownloadOutlined className="download_icon" />
+                  </Button>
+                </Dropdown>
+              ) : (
+                <Tooltip placement="top" title="Download">
+                  <Button
+                    className="dashboard_download_button"
+                    onClick={handleDownload}
+                    disabled={downloadLoading}
+                  >
+                    <DownloadOutlined className="download_icon" />
+                  </Button>
+                </Tooltip>
+              )}
+            </>
           )}
           <FiFilter
             size={20}
@@ -3211,186 +3346,205 @@ export default function TrainerPayment() {
         </Col>
       </Row>
 
-      <div
-        className="customers_scroll_wrapper"
-        style={{ marginTop: "12px", marginBottom: "0px" }}
-      >
-        <div
-          className="customers_status_mainContainer"
+      <Row style={{ marginTop: "10px" }}>
+        <Col span={12}>
+          <div
+            className="customers_scroll_wrapper"
+            style={{ marginTop: "0px", marginBottom: "0px" }}
+          >
+            <div
+              className="customers_status_mainContainer"
+              style={{
+                marginTop: "0px",
+                marginBottom: "0px",
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+              }}
+            >
+              <div
+                className={
+                  commercialType === "Pay Per Head"
+                    ? "customers_active_completed_container"
+                    : "customers_completed_container"
+                }
+                style={{ height: "100%" }}
+                onClick={() => {
+                  let com_type = "";
+                  if (commercialType == "Pay Per Head") {
+                    com_type = "";
+                  } else {
+                    com_type = "Pay Per Head";
+                  }
+                  setCommercialType(com_type);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    com_type,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    status || null,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>{`Pay Per Head ( ${commercialTypeCounts?.Pay_Per_Head_Count ?? 0} )`}</p>
+              </div>
+
+              <div
+                className={
+                  commercialType === "Batch"
+                    ? "customers_active_verifytrainers_container"
+                    : "customers_verifytrainers_container"
+                }
+                style={{ height: "100%" }}
+                onClick={() => {
+                  let com_type = "";
+                  if (commercialType == "Batch") {
+                    com_type = "";
+                  } else {
+                    com_type = "Batch";
+                  }
+                  setCommercialType(com_type);
+                  setPagination({
+                    page: 1,
+                  });
+                  getTrainerPaymentsData(
+                    selectedTrainerId,
+                    searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
+                    com_type,
+                    dateFilterType,
+                    selectedDates[0],
+                    selectedDates[1],
+                    status || null,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>{`Batch ( ${commercialTypeCounts?.Batch_Count ?? 0} )`}</p>
+              </div>
+            </div>
+          </div>
+        </Col>
+
+        <Col
+          span={12}
           style={{
-            marginTop: "0px",
-            marginBottom: "0px",
             display: "flex",
-            gap: "12px",
+            justifyContent: "flex-end",
             alignItems: "center",
           }}
         >
-          <div
-            className={
-              commercialType === "Pay Per Head"
-                ? "customers_active_completed_container"
-                : "customers_completed_container"
-            }
-            style={{ height: "100%" }}
-            onClick={() => {
-              let com_type = "";
-              if (commercialType == "Pay Per Head") {
-                com_type = "";
-              } else {
-                com_type = "Pay Per Head";
-              }
-              setCommercialType(com_type);
-              setPagination({
-                page: 1,
-              });
-              getTrainerPaymentsData(
-                selectedTrainerId,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                com_type,
-                dateFilterType,
-                selectedDates[0],
-                selectedDates[1],
-                status || null,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>{`Pay Per Head ( ${commercialTypeCounts?.Pay_Per_Head_Count ?? 0} )`}</p>
-          </div>
-
-          <div
-            className={
-              commercialType === "Batch"
-                ? "customers_active_verifytrainers_container"
-                : "customers_verifytrainers_container"
-            }
-            style={{ height: "100%" }}
-            onClick={() => {
-              let com_type = "";
-              if (commercialType == "Batch") {
-                com_type = "";
-              } else {
-                com_type = "Batch";
-              }
-              setCommercialType(com_type);
-              setPagination({
-                page: 1,
-              });
-              getTrainerPaymentsData(
-                selectedTrainerId,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                com_type,
-                dateFilterType,
-                selectedDates[0],
-                selectedDates[1],
-                status || null,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>{`Batch ( ${commercialTypeCounts?.Batch_Count ?? 0} )`}</p>
-          </div>
-
-          {permissions.includes("Show Region Summary") && (
-            <div
-              className="livelead_today_summary_container"
-              style={{ marginTop: "0px", marginLeft: "12px" }}
-            >
-              <p className="livelead_today_label">Region Summary</p>
-
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.hub_count ?? "-"}
-                  </span>
-                  {regionCounts?.hub_amount != null && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        paddingLeft: "8px",
-                        borderLeft: "1px solid rgba(0,0,0,0.15)",
-                        fontWeight: "600",
-                        color: "#3c9111",
-                        fontSize: "13px",
-                      }}
-                    >
-                      ₹{Number(regionCounts.hub_amount).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.chn_count ?? "-"}
-                  </span>
-                  {regionCounts?.chn_amount != null && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        paddingLeft: "8px",
-                        borderLeft: "1px solid rgba(0,0,0,0.15)",
-                        fontWeight: "600",
-                        color: "#1e90ff",
-                        fontSize: "13px",
-                      }}
-                    >
-                      ₹{Number(regionCounts.chn_amount).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              <div className="livelead_badge_item corporate">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#607d8b" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.blr_count ?? "-"}
-                  </span>
-                  {regionCounts?.blr_amount != null && (
-                    <span
-                      style={{
-                        marginLeft: "8px",
-                        paddingLeft: "8px",
-                        borderLeft: "1px solid rgba(0,0,0,0.15)",
-                        fontWeight: "600",
-                        color: "#607d8b",
-                        fontSize: "13px",
-                      }}
-                    >
-                      ₹{Number(regionCounts.blr_amount).toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
+          {permissions.includes("Add Direct Payment") && (
+            <button className="leadmanager_addleadbutton">
+              Add Direct Payment
+            </button>
           )}
+        </Col>
+      </Row>
+
+      {permissions.includes("Show Region Summary") && (
+        <div
+          className="livelead_today_summary_container"
+          style={{ marginTop: "10px" }}
+        >
+          <p className="livelead_today_label">Region Summary</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.hub_count ?? "-"}
+              </span>
+              {regionCounts?.hub_amount != null && (
+                <span
+                  style={{
+                    marginLeft: "8px",
+                    paddingLeft: "8px",
+                    borderLeft: "1px solid rgba(0,0,0,0.15)",
+                    fontWeight: "600",
+                    color: "#3c9111",
+                    fontSize: "13px",
+                  }}
+                >
+                  ₹{Number(regionCounts.hub_amount).toLocaleString("en-IN")}
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.chn_count ?? "-"}
+              </span>
+              {regionCounts?.chn_amount != null && (
+                <span
+                  style={{
+                    marginLeft: "8px",
+                    paddingLeft: "8px",
+                    borderLeft: "1px solid rgba(0,0,0,0.15)",
+                    fontWeight: "600",
+                    color: "#1e90ff",
+                    fontSize: "13px",
+                  }}
+                >
+                  ₹{Number(regionCounts.chn_amount).toLocaleString("en-IN")}
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="livelead_badge_item corporate">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#607d8b" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.blr_count ?? "-"}
+              </span>
+              {regionCounts?.blr_amount != null && (
+                <span
+                  style={{
+                    marginLeft: "8px",
+                    paddingLeft: "8px",
+                    borderLeft: "1px solid rgba(0,0,0,0.15)",
+                    fontWeight: "600",
+                    color: "#607d8b",
+                    fontSize: "13px",
+                  }}
+                >
+                  ₹{Number(regionCounts.blr_amount).toLocaleString("en-IN")}
+                </span>
+              )}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Payment Requests Table */}
-      <div style={{ marginTop: "16px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "20px", paddingBottom: "40px" }}>
         <CommonTable
           scroll={{
             x: filteredColumns.reduce(
@@ -3525,8 +3679,11 @@ export default function TrainerPayment() {
         <p className="customer_classcompletemodal_text">
           You Want To Approve The Amount Of{" "}
           <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
-            {selectedPaymentDetails && selectedPaymentDetails.request_amount
-              ? "₹" + selectedPaymentDetails.request_amount
+            {selectedPaymentDetails
+              ? "₹" +
+                (selectedPaymentDetails.commercial_type === "Batch"
+                  ? selectedPaymentDetails.batch_amount
+                  : selectedPaymentDetails.request_amount)
               : "-"}{" "}
           </span>
           for trainer{" "}
@@ -3784,7 +3941,42 @@ export default function TrainerPayment() {
           setReviewScreenshot("");
           setReviewModalTitle("");
         }}
-        footer={false}
+        footer={
+          permissions.includes("Review Verify")
+            ? [
+                <div style={{ marginTop: "20px" }}>
+                  {approveButtonLoading ? (
+                    <Button
+                      key="create"
+                      type="primary"
+                      className="leads_coursemodal_loading_createbutton"
+                    >
+                      <CommonSpinner />
+                    </Button>
+                  ) : (
+                    <>
+                      {reviewModalTitle.includes("Google") &&
+                      selectedPaymentDetails?.is_google_verified == 1 ? (
+                        ""
+                      ) : reviewModalTitle.includes("LinkedIn") &&
+                        selectedPaymentDetails?.is_linkedin_verified == 1 ? (
+                        ""
+                      ) : (
+                        <Button
+                          key="create"
+                          type="primary"
+                          className="leads_coursemodal_createbutton"
+                          onClick={handleVerifyReview}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>,
+              ]
+            : false
+        }
         width="32%"
         className="customer_paymentscreenshot_modal"
       >

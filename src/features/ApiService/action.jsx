@@ -451,6 +451,14 @@ export const viewTrainerPayslip = async (payload) => {
   }
 };
 
+export const getTrainerPaymentBankSheet = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTrainerPaymentBankSheet`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // lead api's
 export const getAllAreas = async (payload) => {
   try {

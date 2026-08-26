@@ -1010,3 +1010,71 @@ export const regionOptions = [
     name: "Hub",
   },
 ];
+
+export const bank_sheet_columns = [
+  {
+    title: "Payment Type",
+    key: "payment_type",
+    dataIndex: "payment_type",
+  },
+  {
+    title: "Source Account Number",
+    key: "source_account_number",
+    dataIndex: "source_account_number",
+  },
+  {
+    title: "Source Account Number",
+    key: "source_account_number",
+    dataIndex: "source_account_number",
+  },
+  {
+    title: "Source Narration",
+    key: "source_narration",
+    dataIndex: "source_narration",
+  },
+  {
+    title: "Destination Account Number",
+    key: "destination_account_number",
+    dataIndex: "destination_account_number",
+  },
+  {
+    title: "Currency",
+    key: "currency",
+    dataIndex: "currency",
+  },
+  {
+    title: "Amount",
+    key: "amount",
+    dataIndex: "amount",
+  },
+  {
+    title: "Destination Narration",
+    key: "destination_narration",
+    dataIndex: "destination_narration",
+  },
+  {
+    title: "Destination bank",
+    key: "destination_bank",
+    dataIndex: "destination_bank",
+  },
+  {
+    title: "Destination Bank IFS Code",
+    key: "destination_bank_ifsc_code",
+    dataIndex: "destination_bank_ifsc_code",
+  },
+  {
+    title: "Beneficiary Name",
+    key: "beneficiary_name",
+    dataIndex: "beneficiary_name",
+  },
+  {
+    title: "Beneficiary Account Type",
+    key: "beneficiary_account_type",
+    dataIndex: "beneficiary_account_type",
+  },
+  {
+    title: "Email",
+    key: "email",
+    dataIndex: "email",
+  },
+];

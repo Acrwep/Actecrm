@@ -391,6 +391,7 @@ export default function Settings() {
         "View Financial Details",
         "Payment Approval",
         "Payment Completion",
+        "Add Direct Payment",
         "Download Trainer Payment Data",
       ];
 
