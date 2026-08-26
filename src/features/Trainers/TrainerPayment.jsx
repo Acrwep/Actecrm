@@ -74,6 +74,7 @@ import { TagOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import TrainerPaymentDirectPaid from "./TrainerPaymentDirectPaid";
 
 export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
   if (!updatedDate) return null;
@@ -386,6 +387,9 @@ export default function TrainerPayment() {
   const [approveButtonLoading, setApproveButtonLoading] = useState(false);
   // revert usestates
   const [isOpenRevertModal, setIsOpenRevertModal] = useState(false);
+  //direct payment
+  const [isOpenDirectPaidDrawer, setIsOpenDirectPaidDrawer] = useState(false);
+  const directPaymentRef = useRef();
 
   const renderCellWithBackground = (
     status,
@@ -1063,7 +1067,9 @@ export default function TrainerPayment() {
                     setIsOpenViewDrawer(true);
                     setSelectedPaymentDetails(record);
                   }}
-                  style={{ visibility: record.rowSpan !== 0 ? "visible" : "hidden" }}
+                  style={{
+                    visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                  }}
                 />
               </Tooltip>
               <div
@@ -1822,6 +1828,10 @@ export default function TrainerPayment() {
                               setIsOpenViewDrawer(true);
                               setSelectedPaymentDetails(record);
                             }}
+                            style={{
+                              visibility:
+                                record.rowSpan !== 0 ? "visible" : "hidden",
+                            }}
                           />
                         </Tooltip>
                         <div
@@ -1861,21 +1871,8 @@ export default function TrainerPayment() {
                             />
                           </Tooltip>
                         </div>
-
-                        {/* {record?.paid_amount == "0.00" && (
-                <RiDeleteBinLine
-                  size={18}
-                  color="#d32f2f"
-                  className="trainers_action_icons"
-                  onClick={() => {
-                    setSelectedPaymentDetails(record);
-                    setIsOpenRequestDeleteModal(true);
-                  }}
-                />
-              )} */}
                       </div>
                     ),
-                    // props: { rowSpan: flatRecord.rowSpan },
                   };
                 },
               };
@@ -2555,6 +2552,7 @@ export default function TrainerPayment() {
     setDrawerContentStatus("");
     setIsOpenReviewScreenshotModal(false);
     setReviewModalTitle("");
+    setIsOpenDirectPaidDrawer(false);
   };
 
   const handlePaginationChange = ({ page, limit }) => {
@@ -3446,7 +3444,12 @@ export default function TrainerPayment() {
           }}
         >
           {permissions.includes("Add Direct Payment") && (
-            <button className="leadmanager_addleadbutton">
+            <button
+              className="leadmanager_addleadbutton"
+              onClick={() => {
+                setIsOpenDirectPaidDrawer(true);
+              }}
+            >
               Add Direct Payment
             </button>
           )}
@@ -3994,6 +3997,69 @@ export default function TrainerPayment() {
           </PrismaZoom>
         </div>
       </Modal>
+
+      {/* trainer payment direct paid drawer */}
+      <Drawer
+        title={
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Add Direct Payment
+          </div>
+        }
+        open={isOpenDirectPaidDrawer}
+        onClose={paymentformReset}
+        width="85.5%"
+        style={{ position: "relative", paddingBottom: 65 }}
+      >
+        {isOpenDirectPaidDrawer ? (
+          <TrainerPaymentDirectPaid
+            ref={directPaymentRef}
+            trainer_id={null}
+            isTrainer={false}
+            setButtonLoading={setApproveButtonLoading}
+            onFormRefresh={() => {
+              paymentformReset(false);
+              getTrainerPaymentsData(
+                selectedTrainerId,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                commercialType,
+                dateFilterType,
+                selectedDates[0],
+                selectedDates[1],
+                status || null,
+                1,
+                pagination.limit,
+              );
+            }}
+          />
+        ) : (
+          ""
+        )}
+        <div className="leadmanager_tablefiler_footer">
+          <div className="leadmanager_submitlead_buttoncontainer">
+            {approveButtonLoading ? (
+              <button className="users_adddrawer_loadingcreatebutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="users_adddrawer_createbutton"
+                onClick={() =>
+                  directPaymentRef.current?.handleInsertTrainerPaymentDirectlyToPaid()
+                }
+              >
+                Send
+              </button>
+            )}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

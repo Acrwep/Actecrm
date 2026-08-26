@@ -254,6 +254,18 @@ export const updateTrainerPaymentRequestForm = async (payload) => {
   }
 };
 
+export const insertTrainerPaymentDirectlyToPaid = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/insertTrainerPaymentDirectlyToPaid",
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const sendTrainerPaymentRequestMail = async (payload) => {
   try {
     const response = await api.post("/api/sendTrainerPaymentMail", payload);
