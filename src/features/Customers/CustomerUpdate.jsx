@@ -145,6 +145,7 @@ const CustomerUpdate = forwardRef(
       if (callCustomerApi && customerId != null) {
         setUpdateDrawerTabKey("1");
         setActiveKey("1");
+        setLoading(true);
         getCustomerData(customerId);
       }
     }, [customerId]);
@@ -561,6 +562,7 @@ const CustomerUpdate = forwardRef(
     };
 
     const handleCustomerUpdate = async () => {
+      if (loading) return;
       setValidationTrigger(true);
       const modeOfClassValidate = selectValidator(modeOfClass);
       const placeOfServiceValidate = selectValidator(placeOfService);
@@ -748,6 +750,24 @@ const CustomerUpdate = forwardRef(
             new_value: payload.is_server_required,
           };
         }
+
+        let oldProfile = originalCustomerDetails.profile_image || "";
+        let newProfile = payload.profile_image || "";
+        if (oldProfile !== newProfile) {
+          changedFields["profile_image"] = {
+            previous_value: oldProfile,
+            new_value: newProfile,
+          };
+        }
+
+        let oldSignature = originalCustomerDetails.signature_image || "";
+        let newSignature = payload.signature_image || "";
+        if (oldSignature !== newSignature) {
+          changedFields["signature_image"] = {
+            previous_value: oldSignature,
+            new_value: newSignature,
+          };
+        }
       }
 
       if (Object.keys(changedFields).length === 0) {
@@ -797,6 +817,7 @@ const CustomerUpdate = forwardRef(
     };
 
     const handlePaymentUpdate = async () => {
+      if (loading) return;
       if (!permissions.includes("Update Payment Master")) {
         CommonMessage("error", "Access Denied");
         return;

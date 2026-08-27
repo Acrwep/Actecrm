@@ -2100,3 +2100,12 @@ export const getFeeHistory = async (payload) => {
     throw error;
   }
 };
+
+export const getTrainerBankAccounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getTrainerBankAccounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

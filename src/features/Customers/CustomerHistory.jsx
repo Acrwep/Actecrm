@@ -874,18 +874,87 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     >
                       {key.replace(/_/g, " ")}:
                     </span>
-                    <span
-                      style={{
-                        color: "#d9363e",
-                        // textDecoration: "line-through",
-                      }}
-                    >
-                      {detail.previous_value || "Empty"}
-                    </span>
-                    <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
-                    <span style={{ color: "#52c41a", fontWeight: 500 }}>
-                      {detail.new_value || "Empty"}
-                    </span>
+                    {key === "profile_image" || key === "signature_image" ? (
+                      <>
+                        {detail.previous_value ? (
+                          <img
+                            src={
+                              detail.previous_value.startsWith("data:") ||
+                              detail.previous_value.startsWith("http")
+                                ? detail.previous_value
+                                : `data:image/png;base64,${detail.previous_value}`
+                            }
+                            alt="Previous"
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius:
+                                key === "profile_image" ? "50%" : "4px",
+                              objectFit: "cover",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setPreviewImage(
+                                detail.previous_value.startsWith("data:") ||
+                                detail.previous_value.startsWith("http")
+                                  ? detail.previous_value
+                                  : `data:image/png;base64,${detail.previous_value}`
+                              );
+                              setPreviewOpen(true);
+                            }}
+                          />
+                        ) : (
+                          <span style={{ color: "#d9363e" }}>Empty</span>
+                        )}
+                        <span style={{ color: "gray", fontSize: "10px" }}>
+                          ➔
+                        </span>
+                        {detail.new_value ? (
+                          <img
+                            src={
+                              detail.new_value.startsWith("data:") ||
+                              detail.new_value.startsWith("http")
+                                ? detail.new_value
+                                : `data:image/png;base64,${detail.new_value}`
+                            }
+                            alt="New"
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius:
+                                key === "profile_image" ? "50%" : "4px",
+                              objectFit: "cover",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setPreviewImage(
+                                detail.new_value.startsWith("data:") ||
+                                detail.new_value.startsWith("http")
+                                  ? detail.new_value
+                                  : `data:image/png;base64,${detail.new_value}`
+                              );
+                              setPreviewOpen(true);
+                            }}
+                          />
+                        ) : (
+                          <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                            Empty
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ color: "#d9363e" }}>
+                          {detail.previous_value || "Empty"}
+                        </span>
+                        <span style={{ color: "gray", fontSize: "10px" }}>
+                          ➔
+                        </span>
+                        <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                          {detail.new_value || "Empty"}
+                        </span>
+                      </>
+                    )}
                   </div>
                 );
               })}

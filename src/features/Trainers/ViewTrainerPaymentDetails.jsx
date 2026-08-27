@@ -30,6 +30,7 @@ import {
   getTrainerPaymentsById,
   viewCertForCustomer,
   viewTrainerPayslip,
+  getTrainerBankAccounts,
 } from "../ApiService/action";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
@@ -80,6 +81,32 @@ export default function ViewTrainerPaymentDetails({
   const [currentPayslipName, setCurrentPayslipName] = useState("");
   const [isOpenViewPayslipModal, setIsOpenViewPayslipModal] = useState(false);
   const [payslipHtmlContent, setPayslipHtmlContent] = useState("");
+  const [bankDetails, setBankDetails] = useState(null);
+  const [bankDetailsLoading, setBankDetailsLoading] = useState(false);
+
+  useEffect(() => {
+    if (
+      selectedPaymentDetails?.status === "Paid" &&
+      selectedPaymentDetails?.bank_id
+    ) {
+      fetchBankDetails(selectedPaymentDetails.bank_id);
+    }
+  }, [selectedPaymentDetails]);
+
+  const fetchBankDetails = async (bank_id) => {
+    setBankDetailsLoading(true);
+    try {
+      const response = await getTrainerBankAccounts({
+        trainer_bank_account_id: bank_id,
+      });
+      setBankDetails(response?.data?.data?.[0] || null);
+    } catch (error) {
+      console.log("Error fetching bank details:", error);
+      setBankDetails(null);
+    } finally {
+      setBankDetailsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (trainer_payment_id) {
@@ -939,6 +966,95 @@ export default function ViewTrainerPaymentDetails({
           {selectedPaymentDetails?.status == "Paid" &&
           permissions.includes("View Financial Details") ? (
             <>
+              {bankDetailsLoading ? (
+                <>
+                  <Divider className="customer_statusupdate_divider" />
+                  <div style={{ padding: "0px 24px" }}>
+                    <Skeleton active paragraph={{ rows: 2 }} />
+                  </div>
+                </>
+              ) : bankDetails ? (
+                <>
+                  <Divider className="customer_statusupdate_divider" />
+                  <div style={{ padding: "0px 24px" }}>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        marginBottom: "12px",
+                        border: "1px solid #f0f0f0",
+                        padding: "8px 10px 10px 10px",
+                        borderRadius: "6px",
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontWeight: 500,
+                          fontSize: "13px",
+                          marginBottom: "8px",
+                          borderBottom: "1px solid #e0e0e0",
+                          paddingBottom: "4px",
+                        }}
+                      >
+                        Paid Bank Details:
+                      </p>
+
+                      <Row gutter={[16, 8]} style={{ marginTop: "8px" }}>
+                        {[
+                          { label: "Bank Name", value: bankDetails.bank_name },
+                          {
+                            label: "Account Holder Name",
+                            value: bankDetails.account_holder_name,
+                          },
+                          {
+                            label: "Account Number",
+                            value: bankDetails.account_number,
+                          },
+                          {
+                            label: "Account Type",
+                            value: bankDetails.account_type,
+                          },
+                          {
+                            label: "Branch Name",
+                            value: bankDetails.branch_name,
+                          },
+                          { label: "IFSC Code", value: bankDetails.ifsc_code },
+                        ].map((item, index) => (
+                          <Col span={12} key={index}>
+                            <div
+                              style={{
+                                fontSize: "12.5px",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                alignItems: "flex-start",
+                                gap: "6px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  textTransform: "capitalize",
+                                  minWidth: "140px",
+                                }}
+                              >
+                                {item.label}:
+                              </span>
+                              <span
+                                style={{
+                                  color: "#333",
+                                }}
+                              >
+                                {item.value || "-"}
+                              </span>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  </div>
+                </>
+              ) : null}
+
               <Divider className="customer_statusupdate_divider" />
               <div style={{ padding: "0px 0px 0px 24px" }}>
                 <p
