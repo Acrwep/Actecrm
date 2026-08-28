@@ -22,6 +22,7 @@ import { IoFilter } from "react-icons/io5";
 import { LuSend } from "react-icons/lu";
 import { FaLinkedinIn } from "react-icons/fa";
 import { LiaIdCardSolid } from "react-icons/lia";
+import { SlActionUndo } from "react-icons/sl";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
@@ -88,6 +89,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PreCertificate from "./PreCertificate";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import PrismaZoom from "react-prismazoom";
+import RevertTrainerApproval from "./RevertTrainerApproval";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -190,6 +192,8 @@ export default function Customers() {
     useState(false);
   const [reviewScreenshot, setReviewScreenshot] = useState("");
   const [reviewModalTitle, setReviewModalTitle] = useState("");
+  //revert modal
+  const [isOpenRevertModal, setIsOpenRevertModal] = useState("");
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -1384,6 +1388,23 @@ export default function Customers() {
             ) : (
               ""
             )}
+            {record?.status === "Awaiting Class" &&
+              permissions.includes("Approve Trainer") && (
+                <Tooltip
+                  placement="top"
+                  title={"Move to Trainer Approval"}
+                  trigger={["hover", "click"]}
+                >
+                  <SlActionUndo
+                    size={14}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setIsOpenRevertModal(true);
+                      setCustomerDetails(record);
+                    }}
+                  />
+                </Tooltip>
+              )}
           </div>
         );
       },
@@ -4512,6 +4533,32 @@ export default function Customers() {
           </PrismaZoom>
         </div>
       </Modal>
+
+      {/* revert modal */}
+      <RevertTrainerApproval
+        open={isOpenRevertModal}
+        onCancel={() => {
+          setIsOpenRevertModal(false);
+          setCustomerDetails(null);
+        }}
+        customerDetails={customerDetails}
+        callgetCustomersApi={() => {
+          setIsOpenRevertModal(false);
+          setCustomerDetails(null);
+          getCustomersData(
+            selectedDates[0],
+            selectedDates[1],
+            dateFilterType,
+            searchValue,
+            selectedOrigin,
+            status,
+            allDownliners,
+            duplicateBranchOptions,
+            pagination.page,
+            pagination.limit,
+          );
+        }}
+      />
     </div>
   );
 }

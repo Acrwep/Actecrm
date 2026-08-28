@@ -3294,7 +3294,7 @@ export default function TrainerPayment() {
         >
           {permissions.includes("Download Trainer Payment Data") && (
             <>
-              {status === "Paid" && selectedRowKeys.length > 0 ? (
+              {status === "Awaiting Finance" && selectedRowKeys.length > 0 ? (
                 <Dropdown
                   menu={{
                     items: [

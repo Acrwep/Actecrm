@@ -1536,8 +1536,8 @@ const AssignAndVerifyTrainer = forwardRef(
                     <Col span={12}>
                       <p className="customerdetails_text">
                         {customerDetails &&
-                        customerDetails.mode_of_class !== null
-                          ? customerDetails.mode_of_class
+                        customerDetails.mode_of_class_name !== null
+                          ? customerDetails.mode_of_class_name
                           : "-"}
                       </p>
                     </Col>

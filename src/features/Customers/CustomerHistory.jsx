@@ -24,6 +24,7 @@ import { BsStopCircle } from "react-icons/bs";
 import { IoBan } from "react-icons/io5";
 import { RiRefund2Fill } from "react-icons/ri";
 import { LuSend } from "react-icons/lu";
+import { SlActionUndo } from "react-icons/sl";
 import "./styles.css";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import {
@@ -307,12 +308,15 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
         item.status.includes("Class Completion Acknowledgeme") ||
         item.status.includes("Trainer Payment Claim Form Sent") ? (
         <LuSend size={16} style={{ color: "gray" }} />
+      ) : item.status.includes("Class Completion Acknowledgement Sent") ? (
+        <SlActionUndo size={16} />
       ) : undefined,
     label: (
       <span
         style={{
           whiteSpace: "nowrap",
           textWrap: "auto",
+          fontSize: "12.5px",
         }}
       >
         {item.status}
@@ -896,9 +900,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                             onClick={() => {
                               setPreviewImage(
                                 detail.previous_value.startsWith("data:") ||
-                                detail.previous_value.startsWith("http")
+                                  detail.previous_value.startsWith("http")
                                   ? detail.previous_value
-                                  : `data:image/png;base64,${detail.previous_value}`
+                                  : `data:image/png;base64,${detail.previous_value}`,
                               );
                               setPreviewOpen(true);
                             }}
@@ -929,9 +933,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                             onClick={() => {
                               setPreviewImage(
                                 detail.new_value.startsWith("data:") ||
-                                detail.new_value.startsWith("http")
+                                  detail.new_value.startsWith("http")
                                   ? detail.new_value
-                                  : `data:image/png;base64,${detail.new_value}`
+                                  : `data:image/png;base64,${detail.new_value}`,
                               );
                               setPreviewOpen(true);
                             }}

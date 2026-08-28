@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Col, Tooltip, Drawer, Checkbox, Button } from "antd";
+import { Row, Col, Tooltip, Drawer, Checkbox, Button, Flex, Radio } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import { FiFilter } from "react-icons/fi";
 import { IoIosClose } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
+import { LuFileClock } from "react-icons/lu";
+import { IoFilter } from "react-icons/io5";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -31,6 +33,7 @@ import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonSelectField from "../Common/CommonSelectField";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import CustomerHistory from "../Customers/CustomerHistory";
 
 export default function FeeHistory({
   filterData,
@@ -46,6 +49,7 @@ export default function FeeHistory({
   const mounted = useRef(false);
   const [searchValue, setSearchValue] = useState("");
   const [feeHistoryData, setFeeHistoryData] = useState([]);
+  const [dateFilterType, setDateFilterType] = useState("joining_date");
   const [selectedDates, setSelectedDates] = useState([]);
   const [loginUserId, setLoginUserId] = useState("");
   const [regionCounts, setRegionCounts] = useState(null);
@@ -61,6 +65,10 @@ export default function FeeHistory({
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
   const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
+    useState(null);
   //filter usestates
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [branchOptions, setBranchOptions] = useState([]);
@@ -74,6 +82,30 @@ export default function FeeHistory({
   });
 
   const nonChangeColumns = [
+    ...(dateFilterType === "last_payment_verified_date"
+      ? [
+          {
+            title: (
+              <Tooltip title="Last Payment Verified Date" placement="top">
+                <div
+                  style={{
+                    cursor: "pointer",
+                    width: "100%",
+                  }}
+                >
+                  Last PV Date
+                </div>
+              </Tooltip>
+            ),
+            key: "last_payment_verified_date",
+            dataIndex: "last_payment_verified_date",
+            width: 135,
+            render: (text) => {
+              return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+            },
+          },
+        ]
+      : []),
     {
       title: "Date of Joining",
       key: "date_of_joining",
@@ -257,6 +289,22 @@ export default function FeeHistory({
                 }}
               />
             </Tooltip>
+
+            <Tooltip
+              placement="left"
+              title="View Customer Track"
+              trigger={["hover", "click"]}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer", marginLeft: "4px" }}
+                onClick={() => {
+                  setSelectedHistoryCustomerId(record.customer_id);
+                  setIsOpenCustomerHistoryDrawer(true);
+                }}
+              />
+            </Tooltip>
           </div>
         );
       },
@@ -282,7 +330,7 @@ export default function FeeHistory({
     if (allTableColumns !== null) {
       processTableColumnsData(allTableColumns);
     }
-  }, [allTableColumns]);
+  }, [allTableColumns, dateFilterType, permissions]);
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -320,7 +368,9 @@ export default function FeeHistory({
 
       setUpdateTableId(filterPage.id);
 
-      const filteredBackendColumns = filterPage.column_names || [];
+      const filteredBackendColumns = filterPage.column_names
+        ? [...filterPage.column_names]
+        : [];
 
       const attachRenderFunctions = (cols) =>
         cols.map((col) => {
@@ -337,13 +387,21 @@ export default function FeeHistory({
 
       nonChangeColumns.forEach((c) => {
         if (!filteredBackendColumns.some((b) => b.key === c.key)) {
-          filteredBackendColumns.push({ ...c, isChecked: true });
+          if (c.key === "last_payment_verified_date") {
+            filteredBackendColumns.unshift({ ...c, isChecked: true });
+          } else {
+            filteredBackendColumns.push({ ...c, isChecked: true });
+          }
         }
       });
 
-      const allColumns = attachRenderFunctions(filteredBackendColumns);
+      const validColumns = filteredBackendColumns.filter((b) =>
+        nonChangeColumns.some((c) => c.key === b.key),
+      );
+
+      const allColumns = attachRenderFunctions(validColumns);
       const visibleColumns = attachRenderFunctions(
-        filteredBackendColumns.filter((col) => col.isChecked),
+        validColumns.filter((col) => col.isChecked),
       );
 
       setColumns(allColumns);
@@ -388,6 +446,7 @@ export default function FeeHistory({
         ? new Date(filterData.endDate)
         : PreviousYearDec26ToCurrentDate[1];
       fetchFeeHistoryData(
+        "joining_date",
         startDate,
         endDate,
         null,
@@ -431,6 +490,7 @@ export default function FeeHistory({
       setAllDownliners(downliners_ids);
 
       fetchFeeHistoryData(
+        dateFilterType,
         selectedDates[0],
         selectedDates[1],
         searchValue,
@@ -452,6 +512,7 @@ export default function FeeHistory({
     const handleRefreshFeesHistory = () => {
       if (allDownliners.length > 0) {
         fetchFeeHistoryData(
+          dateFilterType,
           selectedDates[0],
           selectedDates[1],
           searchValue,
@@ -498,6 +559,7 @@ export default function FeeHistory({
   }, [childUsers]);
 
   const fetchFeeHistoryData = async (
+    dateType,
     startDate,
     endDate,
     searchvalue,
@@ -513,6 +575,7 @@ export default function FeeHistory({
     const to_date = formatToBackendIST(endDate);
 
     const payload = {
+      date_type: dateType,
       start_date: moment(from_date).format("YYYY-MM-DD"),
       end_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
@@ -559,6 +622,7 @@ export default function FeeHistory({
 
   const handlePaginationChange = ({ page, limit }) => {
     fetchFeeHistoryData(
+      dateFilterType,
       selectedDates[0],
       selectedDates[1],
       searchValue,
@@ -577,6 +641,7 @@ export default function FeeHistory({
       page: 1,
     });
     fetchFeeHistoryData(
+      dateFilterType,
       selectedDates[0],
       selectedDates[1],
       e.target.value,
@@ -728,6 +793,7 @@ export default function FeeHistory({
   });
 
   const handleRefresh = () => {
+    setDateFilterType("joining_date");
     setSearchValue("");
     setSelectedUserId([]);
     prevSelectedUserIdRef.current = "[]";
@@ -780,6 +846,7 @@ export default function FeeHistory({
                             page: 1,
                           });
                           fetchFeeHistoryData(
+                            dateFilterType,
                             selectedDates[0],
                             selectedDates[1],
                             null,
@@ -841,6 +908,7 @@ export default function FeeHistory({
                         limit: pagination.limit,
                       });
                       fetchFeeHistoryData(
+                        dateFilterType,
                         selectedDates[0],
                         selectedDates[1],
                         searchValue,
@@ -880,6 +948,7 @@ export default function FeeHistory({
                         limit: pagination.limit,
                       });
                       fetchFeeHistoryData(
+                        dateFilterType,
                         selectedDates[0],
                         selectedDates[1],
                         searchValue,
@@ -914,27 +983,118 @@ export default function FeeHistory({
 
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p className="accounts_datepicket_label">Joining Date</p>
-                <CommonMuiCustomDatePicker
-                  width={"100%"}
-                  value={selectedDates}
-                  onDateChange={(dates) => {
-                    setSelectedDates(dates);
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchFeeHistoryData(
-                      dates[0],
-                      dates[1],
-                      searchValue,
-                      allDownliners,
-                      selectedRegionId,
-                      selectedBranchId,
-                      1,
-                      pagination.limit,
-                    );
+                <p
+                  className="accounts_datepicket_label"
+                  style={{
+                    position: "absolute",
+                    top: "-20px",
+                    left: "2px",
+                    fontSize: "11px",
+                    color: "#8c8c8c",
+                    marginBottom: 0,
                   }}
-                />
+                >
+                  {dateFilterType === "joining_date"
+                    ? "Joining Date"
+                    : "Last Payment Verified Date"}
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexWrap: "nowrap",
+                    width: "100%",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <CommonMuiCustomDatePicker
+                      width={"100%"}
+                      value={selectedDates}
+                      onDateChange={(dates) => {
+                        setSelectedDates(dates);
+                        setPagination({
+                          page: 1,
+                        });
+                        fetchFeeHistoryData(
+                          dateFilterType,
+                          dates[0],
+                          dates[1],
+                          searchValue,
+                          allDownliners,
+                          selectedRegionId,
+                          selectedBranchId,
+                          1,
+                          pagination.limit,
+                        );
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <Flex
+                      justify="center"
+                      align="center"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <Tooltip
+                        placement="bottomLeft"
+                        color="#fff"
+                        title={
+                          <Radio.Group
+                            value={dateFilterType}
+                            onChange={(e) => {
+                              console.log(e.target.value);
+                              setDateFilterType(e.target.value);
+                              setPagination({
+                                page: 1,
+                              });
+                              fetchFeeHistoryData(
+                                e.target.value,
+                                selectedDates[0],
+                                selectedDates[1],
+                                searchValue,
+                                allDownliners,
+                                selectedRegionId,
+                                selectedBranchId,
+                                1,
+                                pagination.limit,
+                              );
+                            }}
+                          >
+                            <Radio
+                              value="joining_date"
+                              className="customers_datetypefilter_radio"
+                              style={{
+                                marginTop: "6px",
+                                marginBottom: "12px",
+                                fontSize: "12px",
+                              }}
+                            >
+                              Search by Joining Date
+                            </Radio>
+                            <Radio
+                              value="last_payment_verified_date"
+                              style={{ marginBottom: "12px", fontSize: "12px" }}
+                            >
+                              Search by Last Payment Verified Date
+                            </Radio>
+                          </Radio.Group>
+                        }
+                      >
+                        <Button
+                          className="customer_trainermappingfilter_container"
+                          style={{
+                            // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                            height: "35px",
+                          }}
+                        >
+                          <IoFilter size={16} />
+                        </Button>
+                      </Tooltip>
+                    </Flex>
+                  </div>
+                </div>
               </div>
             </Col>
           </Row>
@@ -1169,6 +1329,16 @@ export default function FeeHistory({
         open={isOpenCustomerDetailsModal}
         onClose={() => setIsOpenCustomerDetailsModal(false)}
         customerDetails={customerDetails}
+      />
+
+      {/* Customer History Drawer */}
+      <CustomerHistory
+        customerId={selectedHistoryCustomerId}
+        isOpen={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setSelectedHistoryCustomerId(null);
+        }}
       />
     </div>
   );

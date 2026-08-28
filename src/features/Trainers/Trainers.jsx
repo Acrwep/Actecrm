@@ -1222,8 +1222,7 @@ export default function Trainers() {
                           title="Edit"
                         />
                       )}
-                      {(statusRef.current === "OnGoing" ||
-                        statusRef.current === "Onboarded") &&
+                      {(["OnGoing", "Ongoing", "Onboarded", "New", "Existing", "1", "5", "10", "10+"].includes(statusRef.current)) &&
                       permissions.includes("Update Trainer") ? (
                         <Tooltip
                           placement="top"
