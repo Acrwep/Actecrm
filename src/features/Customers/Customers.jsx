@@ -4081,6 +4081,26 @@ export default function Customers() {
                       Previous
                     </Button>
                   )}
+                  {stepIndex == 0 && (
+                    <>
+                      {linkedinLoading ? (
+                        <Button className="customer_loading_linkedin_update_button">
+                          <CommonSpinner />
+                        </Button>
+                      ) : (
+                        <Button
+                          className="customer_linkedin_update_button"
+                          onClick={() =>
+                            passedOutProcessRef.current?.handleGoogleReview(
+                              true,
+                            )
+                          }
+                        >
+                          Update G-Review
+                        </Button>
+                      )}
+                    </>
+                  )}
                   {stepIndex == 2 && (
                     <>
                       {linkedinLoading ? (

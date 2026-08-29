@@ -1076,7 +1076,7 @@
   border-color: #5b69ca !important;
   opacity: 0.7;
   width: 160px;
-  cursor: default;
+  cursor: not-allowed;
 }
 .customer_generatecert_loading_button:hover {
   border-color: #5b69ca !important;
@@ -1102,6 +1102,7 @@
   width: 140px;
   font-weight: 500;
   opacity: 0.7;
+  cursor: not-allowed;
 }
 .customer_stepperbuttons {
   font-size: 13px;
@@ -1131,7 +1132,7 @@
   width: 140px;
   margin-right: 12px;
   opacity: 0.7;
-  cursor: default;
+  cursor: not-allowed;
 }
 .customer_complete_passedoutbutton {
   font-size: 13px !important;

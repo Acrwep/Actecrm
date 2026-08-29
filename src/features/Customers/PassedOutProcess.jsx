@@ -75,6 +75,7 @@ const PassesOutProcess = forwardRef(
     const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
     const [certificateName, setCertificateName] = useState("");
     const [updateCertLoading, setUpdateCertLoading] = useState(false);
+    const [lastUpdatedCertDetails, setLastUpdatedCertDetails] = useState(null);
 
     useEffect(() => {
       setCourseDuration(customerDetails?.cer_course_duration);
@@ -105,30 +106,38 @@ const PassesOutProcess = forwardRef(
       handleCompleteProcess,
     }));
 
-    const handleGoogleReview = async () => {
-      if (isGoogleReviewChange) {
+    const handleGoogleReview = async (isFromUpdateBtn = false) => {
+      const baseDetails = lastUpdatedCertDetails || customerDetails;
+      const initialGoogleReview = baseDetails?.google_review || "";
+      const currentGoogleReview = googleFeedbackBase64 || "";
+
+      if (isFromUpdateBtn && initialGoogleReview === currentGoogleReview) {
+        CommonMessage("info", "No changes made");
+        return;
+      }
+
+      if (isGoogleReviewChange && initialGoogleReview !== currentGoogleReview) {
+        setLinkedinLoading(true);
         const today = new Date();
         const customers =
           customerIdsFromBatch && customerIdsFromBatch.length > 0
             ? customerIdsFromBatch.map((item) => ({
                 customer_id: item.customer_id,
-                linkedin_review: customerDetails.linkedin_review
-                  ? customerDetails.linkedin_review
-                  : linkedinFeedbackBase64,
-                google_review: googleFeedbackBase64,
-                course_duration: customerDetails.course_duration,
-                course_completed_date: customerDetails.course_completion_date,
+                linkedin_review:
+                  baseDetails?.linkedin_review || linkedinFeedbackBase64,
+                google_review: currentGoogleReview,
+                course_duration: baseDetails?.course_duration,
+                course_completed_date: baseDetails?.course_completion_date,
                 review_updated_date: formatToBackendIST(today),
               }))
             : [
                 {
-                  customer_id: customerDetails.id,
-                  linkedin_review: customerDetails.linkedin_review
-                    ? customerDetails.linkedin_review
-                    : linkedinFeedbackBase64,
-                  google_review: googleFeedbackBase64,
-                  course_duration: customerDetails.course_duration,
-                  course_completed_date: customerDetails.course_completion_date,
+                  customer_id: baseDetails?.id,
+                  linkedin_review:
+                    baseDetails?.linkedin_review || linkedinFeedbackBase64,
+                  google_review: currentGoogleReview,
+                  course_duration: baseDetails?.course_duration,
+                  course_completed_date: baseDetails?.course_completion_date,
                   review_updated_date: formatToBackendIST(today),
                 },
               ];
@@ -136,12 +145,20 @@ const PassesOutProcess = forwardRef(
         const payload = { customers };
         try {
           await updatefeedbackForCustomer(payload);
-          // callgetCustomersApi(false, false);
           setIsGoogleReviewChange(false);
+          setLinkedinLoading(false);
+          setLastUpdatedCertDetails({
+            ...baseDetails,
+            google_review: currentGoogleReview,
+          });
           handleCustomerTrack("Google Review Added");
-          // CommonMessage("success", "Updated Successfully");
-          setStepIndex(1);
+          if (isFromUpdateBtn) {
+            CommonMessage("success", "Google Review Updated Successfully");
+          } else {
+            setStepIndex(1);
+          }
         } catch (error) {
+          setLinkedinLoading(false);
           CommonMessage(
             "error",
             error?.response?.data?.details ||
@@ -149,7 +166,9 @@ const PassesOutProcess = forwardRef(
           );
         }
       } else {
-        setStepIndex(1);
+        if (!isFromUpdateBtn) {
+          setStepIndex(1);
+        }
       }
     };
 
@@ -187,6 +206,37 @@ const PassesOutProcess = forwardRef(
       )
         return;
 
+      const baseDetails = lastUpdatedCertDetails || customerDetails;
+      const isUpdate = baseDetails?.is_certificate_generated === 1;
+
+      if (isUpdate) {
+        const initialCourseDuration = baseDetails?.cer_course_duration || "";
+        const initialCertMonth =
+          baseDetails?.cer_course_completion_month || null;
+        const initialCertName =
+          baseDetails?.cer_customer_name || baseDetails?.name || "";
+        const initialCertCourseName =
+          baseDetails?.cer_course_name || baseDetails?.course_name || "";
+        const initialCertLocation = baseDetails?.cer_location || "";
+
+        const currentCourseDuration = courseDuration || "";
+        const currentCertMonth = certMonth || null;
+        const currentCertName = certName || "";
+        const currentCertCourseName = certCourseName || "";
+        const currentCertLocation = certLocation || "";
+
+        if (
+          initialCourseDuration == currentCourseDuration &&
+          initialCertMonth == currentCertMonth &&
+          initialCertName == currentCertName &&
+          initialCertCourseName == currentCertCourseName &&
+          initialCertLocation == currentCertLocation
+        ) {
+          CommonMessage("info", "No changes made");
+          return;
+        }
+      }
+
       const today = new Date();
       const payload = {
         ...(customerDetails && customerDetails.is_certificate_generated == 1
@@ -210,8 +260,6 @@ const PassesOutProcess = forwardRef(
         setGenerateCertLoading(true);
       }
       try {
-        const isUpdate = customerDetails?.is_certificate_generated === 1;
-
         isUpdate
           ? await updateCertForCustomer(payload)
           : await generateCertForCustomer(payload);
@@ -227,6 +275,16 @@ const PassesOutProcess = forwardRef(
           handleCustomerTrack(
             isUpdate ? "Certificate Updated" : "Certificate Generated",
           );
+
+          setLastUpdatedCertDetails({
+            ...(lastUpdatedCertDetails || customerDetails),
+            cer_course_duration: courseDuration,
+            cer_course_completion_month: certMonth,
+            cer_customer_name: certName,
+            cer_course_name: certCourseName,
+            cer_location: certLocation,
+            is_certificate_generated: 1,
+          });
 
           if (!isUpdate) {
             callgetCustomersApi(false, true);
@@ -268,10 +326,17 @@ const PassesOutProcess = forwardRef(
       }
     };
 
-    const handleLinkedinReview = async () => {
-      console.log("eeeeeeeeeeeeeeeeeeeeeeee");
+    const handleLinkedinReview = async (isFromUpdateBtn = false) => {
+      const baseDetails = lastUpdatedCertDetails || customerDetails;
+      const initialLinkedinReview = baseDetails?.linkedin_review || "";
+      const currentLinkedinReview = linkedinFeedbackBase64 || "";
 
-      if (customerDetails.is_certificate_generated === 0) {
+      if (initialLinkedinReview === currentLinkedinReview) {
+        CommonMessage("info", "No changes made");
+        return;
+      }
+
+      if (baseDetails?.is_certificate_generated === 0) {
         CommonMessage("error", "Please Generate Certificate");
         return;
       }
@@ -283,21 +348,18 @@ const PassesOutProcess = forwardRef(
         customerIdsFromBatch && customerIdsFromBatch.length > 0
           ? customerIdsFromBatch.map((item) => ({
               customer_id: item.customer_id,
-              linkedin_review: linkedinFeedbackBase64,
-              google_review: customerDetails.google_review
-                ? customerDetails.google_review
-                : googleFeedbackBase64,
+              linkedin_review: currentLinkedinReview,
+              google_review: baseDetails?.google_review || googleFeedbackBase64,
               course_duration: null,
               course_completed_date: null,
               review_updated_date: formatToBackendIST(today),
             }))
           : [
               {
-                customer_id: customerDetails.id,
-                linkedin_review: linkedinFeedbackBase64,
-                google_review: customerDetails.google_review
-                  ? customerDetails.google_review
-                  : googleFeedbackBase64,
+                customer_id: baseDetails?.id,
+                linkedin_review: currentLinkedinReview,
+                google_review:
+                  baseDetails?.google_review || googleFeedbackBase64,
                 course_duration: null,
                 course_completed_date: null,
                 review_updated_date: formatToBackendIST(today),
@@ -308,7 +370,15 @@ const PassesOutProcess = forwardRef(
 
       try {
         await updatefeedbackForCustomer(payload);
-        CommonMessage("success", "Updated Successfully");
+        setLastUpdatedCertDetails({
+          ...baseDetails,
+          linkedin_review: currentLinkedinReview,
+        });
+        if (isFromUpdateBtn) {
+          CommonMessage("success", "Linkedin Review Updated Successfully");
+        } else {
+          CommonMessage("success", "Updated Successfully");
+        }
         setTimeout(async () => {
           setLinkedinLoading(false);
           handleCustomerTrack("Linkedin Review Added");
@@ -388,12 +458,112 @@ const PassesOutProcess = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
+      const baseDetails = lastUpdatedCertDetails || customerDetails;
+
       const googleReviewDetails = {
-        google_review: googleFeedbackBase64,
+        google_review: {
+          previous_value: baseDetails?.google_review || "",
+          new_value: googleFeedbackBase64 || "",
+        },
       };
 
       const linkedinReviewDetails = {
-        linkedin_review: linkedinFeedbackBase64,
+        linkedin_review: {
+          previous_value: baseDetails?.linkedin_review || "",
+          new_value: linkedinFeedbackBase64 || "",
+        },
+      };
+
+      let certificateDetails = {};
+      if (
+        updatestatus === "Certificate Updated" ||
+        updatestatus === "Certificate Generated"
+      ) {
+        if (updatestatus === "Certificate Generated") {
+          certificateDetails = {
+            cer_course_duration: {
+              previous_value: "",
+              new_value: courseDuration || "",
+            },
+            cer_course_completion_month: {
+              previous_value: "",
+              new_value: certMonth || "",
+            },
+            cer_customer_name: {
+              previous_value: "",
+              new_value: certName || "",
+            },
+            cer_course_name: {
+              previous_value: "",
+              new_value: certCourseName || "",
+            },
+            cer_location: { previous_value: "", new_value: certLocation || "" },
+          };
+        } else {
+          const initialCourseDuration = baseDetails?.cer_course_duration || "";
+          const currentCourseDuration = courseDuration || "";
+          if (initialCourseDuration != currentCourseDuration) {
+            certificateDetails["cer_course_duration"] = {
+              previous_value: initialCourseDuration,
+              new_value: currentCourseDuration,
+            };
+          }
+
+          const initialCertMonth =
+            baseDetails?.cer_course_completion_month || null;
+          const currentCertMonth = certMonth || null;
+          if (initialCertMonth != currentCertMonth) {
+            certificateDetails["cer_course_completion_month"] = {
+              previous_value: initialCertMonth || "",
+              new_value: currentCertMonth || "",
+            };
+          }
+
+          const initialCertName =
+            baseDetails?.cer_customer_name || baseDetails?.name || "";
+          const currentCertName = certName || "";
+          if (initialCertName != currentCertName) {
+            certificateDetails["cer_customer_name"] = {
+              previous_value: initialCertName,
+              new_value: currentCertName,
+            };
+          }
+
+          const initialCertCourseName =
+            baseDetails?.cer_course_name || baseDetails?.course_name || "";
+          const currentCertCourseName = certCourseName || "";
+          if (initialCertCourseName != currentCertCourseName) {
+            certificateDetails["cer_course_name"] = {
+              previous_value: initialCertCourseName,
+              new_value: currentCertCourseName,
+            };
+          }
+
+          const initialCertLocation = baseDetails?.cer_location || "";
+          const currentCertLocation = certLocation || "";
+          if (initialCertLocation != currentCertLocation) {
+            certificateDetails["cer_location"] = {
+              previous_value: initialCertLocation,
+              new_value: currentCertLocation,
+            };
+          }
+        }
+      }
+
+      const getDetailsObj = (status) => {
+        if (status === "Google Review Added")
+          return { details: googleReviewDetails };
+        if (status === "Linkedin Review Added")
+          return { details: linkedinReviewDetails };
+        if (
+          status === "Certificate Updated" ||
+          status === "Certificate Generated"
+        ) {
+          return Object.keys(certificateDetails).length > 0
+            ? { details: certificateDetails }
+            : {};
+        }
+        return {};
       };
 
       const customers =
@@ -404,11 +574,7 @@ const PassesOutProcess = forwardRef(
               updated_by:
                 converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
               status_date: formatToBackendIST(today),
-              ...(updatestatus === "Google Review Added"
-                ? { details: googleReviewDetails }
-                : updatestatus === "Linkedin Review Added"
-                  ? { details: linkedinReviewDetails }
-                  : {}),
+              ...getDetailsObj(updatestatus),
             }))
           : [
               {
@@ -419,11 +585,7 @@ const PassesOutProcess = forwardRef(
                     ? converAsJson.user_id
                     : 0,
                 status_date: formatToBackendIST(today),
-                ...(updatestatus === "Google Review Added"
-                  ? { details: googleReviewDetails }
-                  : updatestatus === "Linkedin Review Added"
-                    ? { details: linkedinReviewDetails }
-                    : {}),
+                ...getDetailsObj(updatestatus),
               },
             ];
 
@@ -568,6 +730,7 @@ const PassesOutProcess = forwardRef(
                   }}
                   value={certMonth}
                   error={certMonthError}
+                  errorFontSize={"11px"}
                   disabled={
                     customerDetails?.is_certificate_generated === 1 &&
                     !permissions.includes("Update Certificate Details")

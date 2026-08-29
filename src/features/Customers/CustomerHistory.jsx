@@ -25,6 +25,7 @@ import { IoBan } from "react-icons/io5";
 import { RiRefund2Fill } from "react-icons/ri";
 import { LuSend } from "react-icons/lu";
 import { SlActionUndo } from "react-icons/sl";
+import { PiSealCheckFill } from "react-icons/pi";
 import "./styles.css";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import {
@@ -274,19 +275,24 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
   const items = customerHistory.map((item) => ({
     key: item.id,
     dot:
-      item.status.includes("Verified") ||
-      item.status.includes("Form Submitted") ||
-      item.status.includes("Class Completion Acknowledged") ||
-      item.status.includes("Down") ||
-      item.status.includes("Paid") ||
-      item.status.includes("Assigned") ||
-      item.status.includes("Claim") ||
-      item.status.includes("Added") ||
-      item.status.includes("Completed") ||
-      item.status.includes("Approved") ||
-      item.status.includes("created") ||
-      item.status.includes("Generated") ||
-      item.status.includes("Scheduled") ? (
+      item.status.includes("Google verified") ||
+      item.status.includes("Google Review Verified") ||
+      item.status.includes("Linkedin verified") ||
+      item.status.includes("Linkedin verified") ? (
+        <PiSealCheckFill size={17} />
+      ) : item.status.includes("Verified") ||
+        item.status.includes("Form Submitted") ||
+        item.status.includes("Class Completion Acknowledged") ||
+        item.status.includes("Down") ||
+        item.status.includes("Paid") ||
+        item.status.includes("Assigned") ||
+        item.status.includes("Claim") ||
+        item.status.includes("Added") ||
+        item.status.includes("Completed") ||
+        item.status.includes("Approved") ||
+        item.status.includes("created") ||
+        item.status.includes("Generated") ||
+        item.status.includes("Scheduled") ? (
         <LuCircleCheck size={16} style={{ color: "green" }} />
       ) : item.status.includes("Going") || item.status.includes("Updated") ? (
         <GrUpdate size={14} style={{ color: "gray" }} />
@@ -711,78 +717,6 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_comments">100% Class Completed</p>
             </div>
           </div>
-        ) : item.status === "Google Review Added" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <button
-              className="customer_history_viewproofbutton"
-              onClick={() => {
-                getImageTypeFromBase64(item.details.google_review);
-                setProofScreenshotBase64(item.details.google_review);
-                setIsOpenProofViewModal(true);
-              }}
-            >
-              <FaRegEye size={16} /> View Google Review
-            </button>
-          </div>
-        ) : item.status === "Certificate Generated" ||
-          item.status === "Certificate Updated" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <button
-              className="customer_history_viewproofbutton"
-              onClick={() => {
-                handleViewCert();
-              }}
-            >
-              <FaRegEye size={16} /> View Certificate
-            </button>
-          </div>
-        ) : item.status === "Linkedin Review Added" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-
-            <button
-              className="customer_history_viewproofbutton"
-              onClick={() => {
-                getImageTypeFromBase64(item.details.linkedin_review);
-                setProofScreenshotBase64(item.details.linkedin_review);
-                setIsOpenProofViewModal(true);
-              }}
-            >
-              <FaRegEye size={16} /> View Linkedin Review
-            </button>
-          </div>
         ) : item.status === "Escalated" ||
           item.status === "Partially Closed" ||
           item.status === "Discontinued" ||
@@ -822,7 +756,12 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <FaRegEye size={16} /> View Attachment
             </button>
           </div>
-        ) : item.status === "Customer Details Updated" && item.details ? (
+        ) : (item.status === "Customer Details Updated" ||
+            item.status === "Certificate Updated" ||
+            item.status === "Certificate Generated" ||
+            item.status === "Google Review Added" ||
+            item.status === "Linkedin Review Added") &&
+          item.details ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -835,134 +774,177 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                   : ""}
               </span>
             </p>
-            <div
-              style={{
-                marginTop: "12px",
-                border: "1px solid #f0f0f0",
-                padding: "8px 10px 10px 10px",
-                borderRadius: "6px",
-                backgroundColor: "#fafafa",
-              }}
-            >
-              <p
-                style={{
-                  fontWeight: 500,
-                  fontSize: "12px",
-                  marginBottom: "8px",
-                  borderBottom: "1px solid #e0e0e0",
-                  paddingBottom: "4px",
-                }}
-              >
-                Changes Made:
-              </p>
-              {Object.keys(item.details).map((key) => {
-                const detail = item.details[key];
-                return (
-                  <div
-                    key={key}
+            {(() => {
+              const isLegacy = Object.values(item.details).every(
+                (val) => typeof val === "string",
+              );
+              if (isLegacy) {
+                return Object.keys(item.details).map((key) => {
+                  const detail = item.details[key];
+                  if (
+                    key === "google_review" ||
+                    key === "linkedin_review" ||
+                    key === "attachment"
+                  ) {
+                    return (
+                      <button
+                        key={key}
+                        className="customer_history_viewproofbutton"
+                        style={{ marginTop: "12px" }}
+                        onClick={() => {
+                          getImageTypeFromBase64(detail);
+                          setProofScreenshotBase64(detail);
+                          setIsOpenProofViewModal(true);
+                        }}
+                      >
+                        <FaRegEye size={16} /> View{" "}
+                        {key
+                          .split("_")
+                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                          .join(" ")}
+                      </button>
+                    );
+                  }
+                  return null;
+                });
+              }
+
+              return (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    border: "1px solid #f0f0f0",
+                    padding: "8px 10px 10px 10px",
+                    borderRadius: "6px",
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <p
                     style={{
-                      marginTop: "6px",
+                      fontWeight: 500,
                       fontSize: "12px",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                      gap: "6px",
+                      marginBottom: "8px",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingBottom: "4px",
                     }}
                   >
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        textTransform: "capitalize",
-                        minWidth: "120px",
-                      }}
-                    >
-                      {key.replace(/_/g, " ")}:
-                    </span>
-                    {key === "profile_image" || key === "signature_image" ? (
-                      <>
-                        {detail.previous_value ? (
-                          <img
-                            src={
-                              detail.previous_value.startsWith("data:") ||
-                              detail.previous_value.startsWith("http")
-                                ? detail.previous_value
-                                : `data:image/png;base64,${detail.previous_value}`
-                            }
-                            alt="Previous"
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius:
-                                key === "profile_image" ? "50%" : "4px",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => {
-                              setPreviewImage(
-                                detail.previous_value.startsWith("data:") ||
+                    Changes Made:
+                  </p>
+                  {Object.keys(item.details).map((key) => {
+                    const detail = item.details[key];
+                    return (
+                      <div
+                        key={key}
+                        style={{
+                          marginTop: "6px",
+                          fontSize: "12px",
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            textTransform: "capitalize",
+                            minWidth: "120px",
+                          }}
+                        >
+                          {key.replace(/_/g, " ")}:
+                        </span>
+                        {key === "profile_image" ||
+                        key === "signature_image" ||
+                        key === "google_review" ||
+                        key === "linkedin_review" ? (
+                          <>
+                            {detail.previous_value ? (
+                              <img
+                                src={
+                                  detail.previous_value.startsWith("data:") ||
                                   detail.previous_value.startsWith("http")
-                                  ? detail.previous_value
-                                  : `data:image/png;base64,${detail.previous_value}`,
-                              );
-                              setPreviewOpen(true);
-                            }}
-                          />
-                        ) : (
-                          <span style={{ color: "#d9363e" }}>Empty</span>
-                        )}
-                        <span style={{ color: "gray", fontSize: "10px" }}>
-                          ➔
-                        </span>
-                        {detail.new_value ? (
-                          <img
-                            src={
-                              detail.new_value.startsWith("data:") ||
-                              detail.new_value.startsWith("http")
-                                ? detail.new_value
-                                : `data:image/png;base64,${detail.new_value}`
-                            }
-                            alt="New"
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius:
-                                key === "profile_image" ? "50%" : "4px",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => {
-                              setPreviewImage(
-                                detail.new_value.startsWith("data:") ||
+                                    ? detail.previous_value
+                                    : `data:image/png;base64,${detail.previous_value}`
+                                }
+                                alt="Previous"
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius:
+                                    key === "profile_image" ? "50%" : "4px",
+                                  objectFit: "cover",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  setPreviewImage(
+                                    detail.previous_value.startsWith("data:") ||
+                                      detail.previous_value.startsWith("http")
+                                      ? detail.previous_value
+                                      : `data:image/png;base64,${detail.previous_value}`,
+                                  );
+                                  setPreviewOpen(true);
+                                }}
+                              />
+                            ) : (
+                              <span style={{ color: "#d9363e" }}>Empty</span>
+                            )}
+                            <span style={{ color: "gray", fontSize: "10px" }}>
+                              ➔
+                            </span>
+                            {detail.new_value ? (
+                              <img
+                                src={
+                                  detail.new_value.startsWith("data:") ||
                                   detail.new_value.startsWith("http")
-                                  ? detail.new_value
-                                  : `data:image/png;base64,${detail.new_value}`,
-                              );
-                              setPreviewOpen(true);
-                            }}
-                          />
+                                    ? detail.new_value
+                                    : `data:image/png;base64,${detail.new_value}`
+                                }
+                                alt="New"
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius:
+                                    key === "profile_image" ? "50%" : "4px",
+                                  objectFit: "cover",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  setPreviewImage(
+                                    detail.new_value.startsWith("data:") ||
+                                      detail.new_value.startsWith("http")
+                                      ? detail.new_value
+                                      : `data:image/png;base64,${detail.new_value}`,
+                                  );
+                                  setPreviewOpen(true);
+                                }}
+                              />
+                            ) : (
+                              <span
+                                style={{ color: "#52c41a", fontWeight: 500 }}
+                              >
+                                Empty
+                              </span>
+                            )}
+                          </>
                         ) : (
-                          <span style={{ color: "#52c41a", fontWeight: 500 }}>
-                            Empty
-                          </span>
+                          <>
+                            <span style={{ color: "#d9363e" }}>
+                              {detail.previous_value || "Empty"}
+                            </span>
+                            <span style={{ color: "gray", fontSize: "10px" }}>
+                              ➔
+                            </span>
+                            <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                              {detail.new_value || "Empty"}
+                            </span>
+                          </>
                         )}
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ color: "#d9363e" }}>
-                          {detail.previous_value || "Empty"}
-                        </span>
-                        <span style={{ color: "gray", fontSize: "10px" }}>
-                          ➔
-                        </span>
-                        <span style={{ color: "#52c41a", fontWeight: 500 }}>
-                          {detail.new_value || "Empty"}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         ) : (
           <div>
@@ -977,6 +959,18 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                   : ""}
               </span>
             </p>
+            {(item.status === "Certificate Generated" ||
+              item.status === "Certificate Updated") && (
+              <button
+                className="customer_history_viewproofbutton"
+                style={{ marginTop: "12px" }}
+                onClick={() => {
+                  handleViewCert();
+                }}
+              >
+                <FaRegEye size={16} /> View Certificate
+              </button>
+            )}
           </div>
         )}
       </>
