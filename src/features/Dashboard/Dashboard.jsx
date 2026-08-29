@@ -180,6 +180,7 @@ export default function Dashboard() {
   const [subUsers, setSubUsers] = useState([]);
   const [defaultSubUsers, setDefaultSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const prevSelectedUserIdRef = useRef("[]");
   const [allDownliners, setAllDownliners] = useState([]);
   const [selectedRegionId, setSelectedRegionId] = useState("All");
 
@@ -1555,8 +1556,16 @@ export default function Dashboard() {
   const handleSelectUserBlur = async () => {
     const value = selectedUserId;
 
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
     try {
-      const response = await getAllDownlineUsers(value && value.length > 0 ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        value && value.length > 0 ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1686,6 +1695,7 @@ export default function Dashboard() {
     setRegionWiseTotalFollowUp([]);
 
     setSelectedUserId(null);
+    prevSelectedUserIdRef.current = "[]";
     setSelectedRegionId("All");
     setSubUsers(defaultSubUsers);
     setScoreBoardLoader(true);

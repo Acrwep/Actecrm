@@ -1228,6 +1228,14 @@ export const customerDuePayment = async (payload) => {
   }
 };
 
+export const revertCustomerDuePayment = async (payload) => {
+  try {
+    const response = await api.post("/api/revertCustomerPaymentTrans", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //email template
 export const createEmailTemplate = async (payload) => {
   try {

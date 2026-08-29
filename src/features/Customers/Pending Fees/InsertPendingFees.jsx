@@ -4,7 +4,16 @@ import React, {
   useEffect,
   useImperativeHandle,
 } from "react";
-import { Row, Col, Divider, Collapse, Modal, Skeleton } from "antd";
+import {
+  Row,
+  Col,
+  Divider,
+  Collapse,
+  Modal,
+  Skeleton,
+  Tooltip,
+  Button,
+} from "antd";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
@@ -18,6 +27,7 @@ import { IoLocationOutline } from "react-icons/io5";
 import { FaRegAddressCard } from "react-icons/fa6";
 import { LuCircleUser } from "react-icons/lu";
 import { GiReceiveMoney } from "react-icons/gi";
+import { SlActionUndo } from "react-icons/sl";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import CommonInputField from "../../Common/CommonInputField";
@@ -39,6 +49,7 @@ import {
   getCustomerById,
   getCustomersPaymentHistory,
   inserCustomerTrack,
+  revertCustomerDuePayment,
   viewPaymentInvoice,
 } from "../../ApiService/action";
 import PrismaZoom from "react-prismazoom";
@@ -47,6 +58,8 @@ import { CommonMessage } from "../../Common/CommonMessage";
 import CommonGroupedSelectField from "../../Common/CommonGroupedSelectField";
 import EllipsisTooltip from "../../Common/EllipsisTooltip";
 import CommonInvoiceViewer from "../../Common/CommonInvoiceViewer";
+import CommonSpinner from "../../Common/CommonSpinner";
+import { useSelector } from "react-redux";
 
 const InsertPendingFees = forwardRef(
   (
@@ -58,6 +71,8 @@ const InsertPendingFees = forwardRef(
     },
     ref,
   ) => {
+    const permissions = useSelector((state) => state.userpermissions);
+
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [pendingAmount, setPendingAmount] = useState();
     const [payAmount, setPayAmount] = useState("");
@@ -104,6 +119,10 @@ const InsertPendingFees = forwardRef(
     const [paymentDetails, setPaymentDetails] = useState(null);
     const [invoiceHtmlContent, setInvoiceHtmlContent] = useState("");
     const [isOpenViewInvoiceModal, setIsOpenViewInvoiceModal] = useState(false);
+    //revert modal
+    const [isOpenRevertModal, setIsOpenRevertModal] = useState("");
+    const [revertItem, setRevertItem] = useState(null);
+    const [revertButtonLoading, setRevertButtonLoading] = useState(false);
 
     useEffect(() => {
       setLoading(true);
@@ -506,6 +525,36 @@ const InsertPendingFees = forwardRef(
       }
     };
 
+    const handleRevertPaymentTrans = async () => {
+      setRevertButtonLoading(true);
+      const payload = {
+        id: revertItem?.id,
+      };
+      try {
+        await revertCustomerDuePayment(payload);
+        setTimeout(() => {
+          revertModalReset();
+          setLoading(true);
+          getPaymentHistoryData();
+          window.dispatchEvent(new CustomEvent("refreshReceived"));
+          window.dispatchEvent(new CustomEvent("refreshReceivables"));
+        }, 300);
+      } catch (error) {
+        setRevertButtonLoading(false);
+        console.log("error", error);
+        CommonMessage(
+          "error",
+          error?.response?.data?.message ||
+            "Something went wrong. Try again later",
+        );
+      }
+    };
+
+    const revertModalReset = () => {
+      setRevertItem(null);
+      setRevertButtonLoading(false);
+      setIsOpenRevertModal(false);
+    };
     return (
       <div>
         {loading ? (
@@ -1075,6 +1124,41 @@ const InsertPendingFees = forwardRef(
                               </div>
                             ) : (
                               <div className="customer_trans_statustext_container">
+                                {index === 0 &&
+                                  item.payment_status === "Verified" &&
+                                  permissions.includes("Finance Verify") && (
+                                    // <SlActionUndo
+                                    //   style={{
+                                    //     marginLeft: "8px",
+                                    //     marginRight: "8px",
+                                    //     cursor: "pointer",
+                                    //   }}
+                                    //   size={15}
+                                    //   onClick={(e) => {
+                                    //     e.stopPropagation();
+                                    //     // handle undo here
+                                    //   }}
+                                    // />
+                                    <Tooltip
+                                      placement="top"
+                                      title={"Move to Pending"}
+                                      trigger={["hover", "click"]}
+                                    >
+                                      <SlActionUndo
+                                        size={14}
+                                        style={{
+                                          marginLeft: "8px",
+                                          marginRight: "8px",
+                                          cursor: "pointer",
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setRevertItem(item);
+                                          setIsOpenRevertModal(true);
+                                        }}
+                                      />
+                                    </Tooltip>
+                                  )}
                                 <BsPatchCheckFill color="#3c9111" />
                                 <p
                                   style={{ color: "#3c9111", fontWeight: 500 }}
@@ -1631,6 +1715,62 @@ const InsertPendingFees = forwardRef(
                     : "-"
                 }
               />
+            </Modal>
+
+            {/* revert confirm modal */}
+            <Modal
+              open={isOpenRevertModal}
+              onCancel={revertModalReset}
+              footer={false}
+              width="30%"
+              zIndex={1100}
+            >
+              <p className="customer_classcompletemodal_heading">
+                Are you sure?
+              </p>
+
+              <p className="customer_classcompletemodal_text">
+                {" "}
+                Do you want to revert the verified payment of{" "}
+                <span
+                  style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}
+                >
+                  {" "}
+                  ₹{revertItem?.amount}{" "}
+                </span>{" "}
+                for customer{" "}
+                <span
+                  style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}
+                >
+                  {" "}
+                  {selectedCustomerDetails?.customer_name}{" "}
+                </span>{" "}
+                back to Pending?{" "}
+              </p>
+              <div className="customer_classcompletemodal_button_container">
+                <Button
+                  className="customer_classcompletemodal_cancelbutton"
+                  onClick={revertModalReset}
+                >
+                  No
+                </Button>
+                {revertButtonLoading ? (
+                  <Button
+                    type="primary"
+                    className="customer_classcompletemodal_loading_okbutton"
+                  >
+                    <CommonSpinner />
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    className="customer_classcompletemodal_okbutton"
+                    onClick={handleRevertPaymentTrans}
+                  >
+                    Yes
+                  </Button>
+                )}
+              </div>
             </Modal>
           </>
         )}
