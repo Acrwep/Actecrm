@@ -280,6 +280,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
       item.status.includes("Linkedin verified") ||
       item.status.includes("Linkedin verified") ? (
         <PiSealCheckFill size={17} />
+      ) : item.status.includes("Reverted") ? (
+        <SlActionUndo size={16} style={{ color: "gray" }} />
       ) : item.status.includes("Verified") ||
         item.status.includes("Form Submitted") ||
         item.status.includes("Class Completion Acknowledged") ||
@@ -314,8 +316,6 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
         item.status.includes("Class Completion Acknowledgeme") ||
         item.status.includes("Trainer Payment Claim Form Sent") ? (
         <LuSend size={16} style={{ color: "gray" }} />
-      ) : item.status.includes("Class Completion Acknowledgement Sent") ? (
-        <SlActionUndo size={16} />
       ) : undefined,
     label: (
       <span
@@ -323,6 +323,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           whiteSpace: "nowrap",
           textWrap: "auto",
           fontSize: "12.5px",
+          textTransform: "capitalize",
         }}
       >
         {item.status}

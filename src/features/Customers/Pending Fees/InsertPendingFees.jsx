@@ -37,11 +37,8 @@ import ImageUploadCrop from "../../Common/ImageUploadCrop";
 import {
   priceValidator,
   selectValidator,
-  calculateThreePercentAmount,
   getBalanceAmount,
-  validateConvenienceFee,
   formatToBackendIST,
-  getConvenienceFees,
 } from "../../Common/Validation";
 import {
   customerDuePayment,
@@ -527,8 +524,13 @@ const InsertPendingFees = forwardRef(
 
     const handleRevertPaymentTrans = async () => {
       setRevertButtonLoading(true);
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
       const payload = {
-        id: revertItem?.id,
+        payment_trans_id: revertItem?.id,
+        customer_id: selectedCustomerDetails?.customer_id || null,
+        created_date: formatToBackendIST(new Date()),
+        updated_by: converAsJson?.user_id,
       };
       try {
         await revertCustomerDuePayment(payload);
