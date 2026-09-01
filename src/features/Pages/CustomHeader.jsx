@@ -542,7 +542,7 @@ export default function CustomHeader() {
       payment_swap: true,
     };
 
-    if (location.pathname === "/customers") {
+    if (location.pathname === "/postsales") {
       window.dispatchEvent(
         new CustomEvent("notificationFilter", { detail: filterData }),
       );
@@ -550,7 +550,7 @@ export default function CustomHeader() {
       return;
     }
     console.log("Hiiiiiiiiiiiiiiiiiiee");
-    navigate("/customers", { state: filterData });
+    navigate("/postsales", { state: filterData });
     setIsOpenNotificationsDrawer(false);
   };
 
@@ -769,8 +769,8 @@ Course Advisor
                       ? "Accounts"
                       : location.pathname === "/lead-followup"
                         ? "Lead Followup"
-                        : location.pathname === "/customers"
-                          ? "Customers"
+                        : location.pathname === "/postsales"
+                          ? "Post Sales"
                           : location.pathname === "/admissions"
                             ? "Admissions"
                             : location.pathname === "/fee-pending-customers"

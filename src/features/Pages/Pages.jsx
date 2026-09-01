@@ -272,7 +272,7 @@ export default function Pages() {
             <Route element={<LeadFollowUp />} path="/lead-followup" />
             <Route element={<BulkSearch />} path="/bulk-search" />
             <Route element={<Admissions />} path="/admissions" />
-            <Route element={<Customers />} path="/customers" />
+            <Route element={<Customers />} path="/postsales" />
             <Route
               element={<PendingFeesCustomers />}
               path="/fee-pending-customers"

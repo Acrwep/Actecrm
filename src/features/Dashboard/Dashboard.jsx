@@ -635,7 +635,7 @@ export default function Dashboard() {
       startDate: postSaleSelectedDates[0],
       endDate: postSaleSelectedDates[1],
     };
-    navigate("/customers", { state: filterData });
+    navigate("/postsales", { state: filterData });
   };
 
   const getUserWiseLeadCountsData = async (

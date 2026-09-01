@@ -1541,7 +1541,7 @@ export default function PageAccess({
           </div>
 
           <Divider className="settings_addgroupdrawer_divider" />
-          <p className="settings_permission_subheading">Customers Page</p>
+          <p className="settings_permission_subheading">Post Sale Page</p>
           <div className="settings_permission_rowcontainer">
             <Row>
               {customersModulePermissionData.map((item, index) => {

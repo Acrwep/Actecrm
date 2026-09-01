@@ -52,9 +52,9 @@ export default function SideMenu() {
       path: "admissions",
     },
     4: {
-      title: "Customers",
+      title: "Post Sales",
       icon: <PiUsersThreeBold size={17} />,
-      path: "customers",
+      path: "postsales",
     },
     5: {
       title: "Batches",
@@ -125,9 +125,9 @@ export default function SideMenu() {
       path: "admissions",
     },
     4: {
-      title: "Customers",
+      title: "Post Sales",
       icon: <PiUsersThreeBold size={17} />,
-      path: "customers",
+      path: "postsales",
     },
     5: {
       title: "Batches",
