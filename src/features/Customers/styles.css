@@ -108,6 +108,64 @@
   /* margin-top: 18px;
   margin-bottom: 24px; */
 }
+/* bucket status css */
+/* ============================================================== */
+.customers_student_onboarding_container {
+  border: 1px solid #4590da4f;
+  background-color: #4590da1a;
+  color: #458fda;
+}
+.customers_active_student_onboarding_container {
+  border: 1px solid #458fda;
+  background-color: #458fda;
+  font-weight: 600;
+  color: #fff;
+}
+.customers_trainer_coordination_container {
+  border: 1px solid #0478574d;
+  background-color: #04785718;
+  color: #047857;
+}
+.customers_active_trainer_coordination_container {
+  border: 1px solid #047857;
+  background-color: #047857;
+  font-weight: 600;
+  color: #fff;
+}
+.customers_progress_monitoring_container {
+  border: 1px solid #f2b3155b;
+  background-color: #f2b31517;
+  color: #f2b415;
+}
+.customers_active_progress_monitoring_container {
+  border: 1px solid #f2b415;
+  background-color: #f2b415;
+  font-weight: 600;
+  color: #fff;
+}
+.customers_course_completion_container {
+  border: 1px solid #f06b2354;
+  background-color: #f06b2317;
+  color: #f06c23;
+}
+.customers_active_course_completion_container {
+  border: 1px solid #f06c23;
+  background-color: #f06c23;
+  font-weight: 600;
+  color: #fff;
+}
+.customers_review_and_cert_container {
+  border: 1px solid #7d61bb56;
+  background-color: #7d61bb18;
+  color: #7e61bb;
+}
+.customers_active_review_and_cert_container {
+  border: 1px solid #7e61bb;
+  background-color: #7e61bb;
+  font-weight: 600;
+  color: #fff;
+}
+/* ============================================================== */
 .customers_status_mainContainer::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }

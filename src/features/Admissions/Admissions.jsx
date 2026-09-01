@@ -30,6 +30,32 @@ import { RedoOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FiFilter } from "react-icons/fi";
+import { GiCheckMark } from "react-icons/gi";
+import { FaXmark } from "react-icons/fa6";
+import { FaRegCopy } from "react-icons/fa6";
+import { PiPhoneCallFill } from "react-icons/pi";
+import { LuNotepadText } from "react-icons/lu";
+import {
+  FaUser,
+  FaPhoneAlt,
+  FaWhatsapp,
+  FaRegEnvelope,
+  FaLink,
+  FaDesktop,
+  FaUserCheck,
+  FaChartLine,
+  FaHeadset,
+  FaRegCommentDots,
+  FaCheckDouble,
+  FaRegFileAlt,
+  FaFileSignature,
+  FaStar,
+  FaLinkedin,
+  FaCertificate,
+  FaGraduationCap,
+  FaPhoneSlash,
+  FaHandshake,
+} from "react-icons/fa";
 import CommonDnd from "../Common/CommonDnd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
@@ -88,19 +114,75 @@ export default function Admissions() {
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
 
+  const renderCellWithBackground = (
+    status,
+    extraProps = {},
+    { showCopy = false, onCopy } = {},
+  ) => {
+    return {
+      children: (
+        <div
+          style={{
+            color: status ? "#2e7d32" : "#c62828",
+            fontWeight: "bold",
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+          }}
+        >
+          {status ? (
+            <GiCheckMark size={14} />
+          ) : (
+            <>
+              <FaXmark size={14} />
+              {showCopy && (
+                <Tooltip
+                  placement="top"
+                  title="Copy Acknowledgement Link"
+                  trigger={["hover", "click"]}
+                >
+                  <FaRegCopy
+                    size={13}
+                    color="#33333398"
+                    style={{ cursor: "pointer", marginLeft: "6px" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCopy?.();
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </>
+          )}
+        </div>
+      ),
+      props: {
+        ...extraProps,
+        style: {
+          backgroundColor: status ? "#e8f5e9" : "#ffebee",
+          ...(extraProps.style || {}),
+        },
+      },
+    };
+  };
+
   const nonChangeColumns = [
     {
       title: "Sl. No",
       key: "row_num",
       dataIndex: "row_num",
       width: 80,
+      group: "General Info",
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Joined Date",
       key: "date_of_joining",
       dataIndex: "date_of_joining",
-      width: 110,
+      width: 100,
+      group: "General Info",
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
@@ -110,6 +192,7 @@ export default function Admissions() {
       key: "student_id",
       dataIndex: "student_id",
       width: 100,
+      group: "General Info",
       render: (text, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <EllipsisTooltip text={text || "-"} />
@@ -130,7 +213,8 @@ export default function Admissions() {
       title: "Course ",
       key: "course_name",
       dataIndex: "course_name",
-      width: 180,
+      width: 140,
+      group: "General Info",
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -139,7 +223,8 @@ export default function Admissions() {
       title: "Sale Executive",
       key: "sale_executive",
       dataIndex: "sale_executive",
-      width: 150,
+      width: 140,
+      group: "General Info",
       render: (text, record) => {
         const lead_executive = `${record.assigned_to} - ${text}`;
         return <EllipsisTooltip text={lead_executive} />;
@@ -149,7 +234,8 @@ export default function Admissions() {
       title: "RA",
       key: "ra_user_name",
       dataIndex: "ra_user_name",
-      width: 150,
+      width: 140,
+      group: "General Info",
       render: (text, record) => {
         if (text) {
           const ra = `${record.ra_user_id} - ${text}`;
@@ -163,7 +249,8 @@ export default function Admissions() {
       title: "HR",
       key: "hr_user_name",
       dataIndex: "hr_user_name",
-      width: 150,
+      width: 140,
+      group: "General Info",
       render: (text, record) => {
         if (text) {
           const hr = `${record.hr_user_id} - ${text}`;
@@ -172,6 +259,300 @@ export default function Admissions() {
           return "-";
         }
       },
+    },
+    {
+      title: (
+        <Tooltip title="Welcome Call" placement="top">
+          <div className="admissions_table_icons_container">
+            <PiPhoneCallFill size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "welcome_call",
+      dataIndex: "welcome_call",
+      width: 80,
+      group: "Student Onboarding",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Requirement Verification" placement="top">
+          <div className="admissions_table_icons_container">
+            <LuNotepadText size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "requirement_verification",
+      dataIndex: "requirement_verification",
+      width: 80,
+      group: "Student Onboarding",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Trainer Assignment Request" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaUser size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "trainer_assignment_request",
+      dataIndex: "trainer_assignment_request",
+      width: 80,
+      group: "Student Onboarding",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Trainer Fixation Call" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaPhoneAlt size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "trainer_fixation_call",
+      dataIndex: "trainer_fixation_call",
+      width: 80,
+      group: "Student Onboarding",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="WhatsApp Group Creation" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaWhatsapp size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "whatsapp_group_creation",
+      dataIndex: "whatsapp_group_creation",
+      width: 80,
+      group: "Trainer Coordination",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Welcome Message" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaRegEnvelope size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "welcome_message",
+      dataIndex: "welcome_message",
+      width: 80,
+      group: "Trainer Coordination",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="ShareTeams Link & Attendance Link" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaLink size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "shareteams_link",
+      dataIndex: "shareteams_link",
+      width: 80,
+      group: "Trainer Coordination",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="First class Monitoring" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaDesktop size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "first_class_monitoring",
+      dataIndex: "first_class_monitoring",
+      width: 80,
+      group: "Trainer Coordination",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Trainer Confirmation" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaUserCheck size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "trainer_confirmation",
+      dataIndex: "trainer_confirmation",
+      width: 80,
+      group: "Trainer Coordination",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Class Progress Monitoring" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaChartLine size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "class_progress_monitoring",
+      dataIndex: "class_progress_monitoring",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Student Support" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaHeadset size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "student_support",
+      dataIndex: "student_support",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Mid Course Feedback" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaRegCommentDots size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "mid_course_feedback",
+      dataIndex: "mid_course_feedback",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Class completion Confirmation" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaCheckDouble size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "class_completion_confirmation",
+      dataIndex: "class_completion_confirmation",
+      width: 80,
+      group: "Course Completion",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Trainer Completion report" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaRegFileAlt size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "trainer_completion_report",
+      dataIndex: "trainer_completion_report",
+      width: 80,
+      group: "Course Completion",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Student Completion Report" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaFileSignature size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "student_completion_report",
+      dataIndex: "student_completion_report",
+      width: 80,
+      group: "Course Completion",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Google review Collection" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaStar size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "google_review_collection",
+      dataIndex: "google_review_collection",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="LinkedIn Recommendation" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaLinkedin size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "linkedin_recommendation",
+      dataIndex: "linkedin_recommendation",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Cerificate Verification" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaCertificate size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "certificate_verification",
+      dataIndex: "certificate_verification",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Course Completion Certificate" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaGraduationCap size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "course_completion_certificate",
+      dataIndex: "course_completion_certificate",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Course Closure Call" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaPhoneSlash size={15} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "course_closure_call",
+      dataIndex: "course_closure_call",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
+    },
+    {
+      title: (
+        <Tooltip title="Placement Handover" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaHandshake size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "placement_handover",
+      dataIndex: "placement_handover",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text),
     },
   ];
 
@@ -381,6 +762,7 @@ export default function Admissions() {
               fixed: original.fixed,
               hidden: original.hidden,
               render: original.render,
+              group: original.group,
             };
           }
           return col;
@@ -727,80 +1109,9 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      <Row>
-        <Col span={12}>
-          <div className="livelead_today_summary_container">
-            <p className="livelead_today_label">REGION SUMMARY</p>
-
-            <div className="livelead_badge_item online">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#3c9111" }}
-              />
-              <p className="livelead_badge_text">
-                Hub{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.hub_region ?? 0}
-                </span>
-              </p>
-            </div>
-
-            <div className="livelead_badge_item classroom">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#1e90ff" }}
-              />
-              <p className="livelead_badge_text">
-                Chennai{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.chennai_region ?? 0}
-                </span>
-              </p>
-            </div>
-
-            <div className="livelead_badge_item classroom">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#5b69ca" }}
-              />
-              <p className="livelead_badge_text">
-                Bangalore{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-                </span>
-              </p>
-            </div>
-          </div>
-        </Col>
-        <Col
-          span={12}
-          style={{
-            marginTop: "16px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <div className="admissions_progress_container">
-            <span className="admissions_progress_label">Overall Progress:</span>
-            <Progress
-              percent={65}
-              showInfo={false}
-              strokeWidth={6}
-              strokeColor={{
-                "0%": "#8a9bf8",
-                "100%": "#5b69ca",
-              }}
-              trailColor="#f1f5f9"
-              className="admissions_progress_bar"
-            />
-            <span className="admissions_progress_text">65%</span>
-          </div>
-        </Col>
-      </Row>
-
       <div
         className="customers_scroll_wrapper"
-        style={{ marginTop: "6px", marginBottom: "0px" }}
+        style={{ marginTop: "12px", marginBottom: "0px" }}
       >
         <div
           className="customers_status_mainContainer"
@@ -872,27 +1183,175 @@ export default function Admissions() {
         </div>
       </div>
 
-      <div style={{ marginTop: "12px" }}>
-        <CommonTable
-          // scroll={{ x: 2350 }}
-          scroll={{
-            x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
-              0,
-            ),
+      <Row>
+        <Col span={12}>
+          <div
+            className="livelead_today_summary_container"
+            style={{ marginTop: "12px" }}
+          >
+            <p className="livelead_today_label">REGION SUMMARY</p>
+
+            <div className="livelead_badge_item online">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#3c9111" }}
+              />
+              <p className="livelead_badge_text">
+                Hub{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.hub_region ?? 0}
+                </span>
+              </p>
+            </div>
+
+            <div className="livelead_badge_item classroom">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#1e90ff" }}
+              />
+              <p className="livelead_badge_text">
+                Chennai{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.chennai_region ?? 0}
+                </span>
+              </p>
+            </div>
+
+            <div className="livelead_badge_item classroom">
+              <div
+                className="livelead_badge_dot"
+                style={{ backgroundColor: "#5b69ca" }}
+              />
+              <p className="livelead_badge_text">
+                Bangalore{" "}
+                <span className="livelead_badge_count">
+                  {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+                </span>
+              </p>
+            </div>
+          </div>
+        </Col>
+        <Col
+          span={12}
+          style={{
+            marginTop: "12px",
+            display: "flex",
+            justifyContent: "flex-end",
           }}
-          columns={tableColumns}
-          dataSource={customersData}
-          dataPerPage={10}
-          loading={loading}
-          checkBox="false"
-          size="small"
-          className="questionupload_table"
-          onPaginationChange={handlePaginationChange} // callback to fetch new data
-          limit={pagination.limit} // page size
-          page_number={pagination.page} // current page
-          totalPageNumber={pagination.total} // total rows
-        />
+        >
+          <div className="admissions_progress_container">
+            <span className="admissions_progress_label">Overall Progress:</span>
+            <Progress
+              percent={65}
+              showInfo={false}
+              strokeWidth={6}
+              strokeColor={{
+                "0%": "#8a9bf8",
+                "100%": "#5b69ca",
+              }}
+              trailColor="#f1f5f9"
+              className="admissions_progress_bar"
+            />
+            <span className="admissions_progress_text">65%</span>
+          </div>
+        </Col>
+      </Row>
+
+      <div style={{ marginTop: "22px" }}>
+        {(() => {
+          const colorPalette = {
+            "General Info": {
+              groupHeaderClass: "group-header-violet",
+              headerClass: "header-violet",
+            },
+            "Student Onboarding": {
+              groupHeaderClass: "group-header-blue",
+              headerClass: "header-blue",
+            },
+            "Trainer Coordination": {
+              groupHeaderClass: "group-header-green",
+              headerClass: "header-green",
+            },
+            "Progress Monitoring": {
+              groupHeaderClass: "group-header-yellow",
+              headerClass: "header-yellow",
+            },
+            "Course Completion": {
+              groupHeaderClass: "group-header-orange",
+              headerClass: "header-orange",
+            },
+            "Review & Certifications": {
+              groupHeaderClass: "group-header-purple",
+              headerClass: "header-purple",
+            },
+          };
+
+          const groupedTableColumns = [];
+          tableColumns.forEach((col) => {
+            if (col.group) {
+              const palette = colorPalette[col.group];
+              let group = groupedTableColumns.find((g) => g.key === col.group);
+              if (!group) {
+                group = {
+                  title: (
+                    <div
+                      style={{
+                        minHeight: "24px",
+                        lineHeight: "24px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {col.group}
+                    </div>
+                  ),
+                  key: col.group,
+                  children: [],
+                  className: palette?.groupHeaderClass,
+                  onHeaderCell: () => ({
+                    className: palette?.groupHeaderClass,
+                  }),
+                };
+                groupedTableColumns.push(group);
+              }
+              group.children.push({
+                ...col,
+                onHeaderCell: () => ({
+                  className: palette?.headerClass,
+                }),
+                onCell: () => ({
+                  className: palette?.cellClass,
+                }),
+              });
+            } else {
+              groupedTableColumns.push(col);
+            }
+          });
+
+          return (
+            <CommonTable
+              // scroll={{ x: 2350 }}
+              scroll={{
+                x: tableColumns.reduce(
+                  (total, col) => total + (col.width || 150),
+                  0,
+                ),
+              }}
+              columns={groupedTableColumns}
+              dataSource={customersData}
+              dataPerPage={10}
+              loading={loading}
+              checkBox="false"
+              size="small"
+              className="admissions_table"
+              onPaginationChange={handlePaginationChange} // callback to fetch new data
+              limit={pagination.limit} // page size
+              page_number={pagination.page} // current page
+              totalPageNumber={pagination.total} // total rows
+            />
+          );
+        })()}
       </div>
 
       <Drawer

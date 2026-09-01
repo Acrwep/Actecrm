@@ -90,6 +90,7 @@ import PreCertificate from "./PreCertificate";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import PrismaZoom from "react-prismazoom";
 import RevertTrainerApproval from "./RevertTrainerApproval";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -117,6 +118,9 @@ export default function Customers() {
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
 
+  const [bucketStatus, setBucketStatus] = useState("");
+  const [customerBucketStatusCount, setCustomerBucketStatusCount] =
+    useState(null);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [dateFilterType, setDateFilterType] = useState("Updated");
   const [selectedDates, setSelectedDates] = useState([]);
@@ -1598,6 +1602,7 @@ export default function Customers() {
       "Updated",
       null,
       null,
+      null,
       receivedValueFromDashboard
         ? receivedValueFromDashboard === "Trainer Rejected"
           ? ["Trainer Rejected"]
@@ -1638,6 +1643,7 @@ export default function Customers() {
     date_type,
     searchvalue,
     origin,
+    bucketStatus,
     customerStatus,
     downliners,
     branch_options,
@@ -1676,6 +1682,7 @@ export default function Customers() {
           : region_data.includes("Online")
             ? { region: "Online" }
             : {}),
+      bucket_status: bucketStatus ? bucketStatus : "Student Onboarding",
       page: pageNumber,
       limit: limit,
     };
@@ -1693,6 +1700,9 @@ export default function Customers() {
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      setCustomerBucketStatusCount(
+        response?.data?.data?.bucket_status_count || null,
+      );
       setCustomerStatusCount(
         response?.data?.data?.customer_status_count || null,
       );
@@ -1829,6 +1839,7 @@ export default function Customers() {
       dateFilterType,
       searchValue,
       selectedOrigin,
+      bucketStatus,
       status,
       allDownliners,
       branchOptions,
@@ -1850,6 +1861,7 @@ export default function Customers() {
         dateFilterType,
         e.target.value,
         selectedOrigin,
+        bucketStatus,
         status,
         allDownliners,
         branchOptions,
@@ -1879,6 +1891,7 @@ export default function Customers() {
         dateFilterType,
         searchValue,
         selectedOrigin,
+        bucketStatus,
         status,
         downliners_ids,
         branchOptions,
@@ -1902,6 +1915,7 @@ export default function Customers() {
   };
 
   const handleRefresh = () => {
+    setBucketStatus("");
     setStatus("");
     setSearchValue("");
     setSelectedUserId(null);
@@ -2004,6 +2018,7 @@ export default function Customers() {
           dateFilterType,
           searchValue,
           selectedOrigin,
+          bucketStatus,
           status,
           allDownliners,
           branchOptions,
@@ -2023,6 +2038,238 @@ export default function Customers() {
 
   return (
     <div>
+      <div
+        className="settings_tabbutton_maincontainer"
+        style={{ marginBottom: "4px" }}
+      >
+        <ScrollableTabContainer>
+          <div
+            className={
+              bucketStatus === ""
+                ? "customers_active_student_onboarding_container"
+                : "customers_student_onboarding_container"
+            }
+            onClick={() => {
+              if (bucketStatus === "") {
+                return;
+              }
+              setBucketStatus("");
+              setStatus("");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                null,
+                null,
+                allDownliners,
+                duplicateBranchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Student Onboarding{" "}
+              {`( ${
+                customerStatusCount &&
+                customerStatusCount.total_count !== undefined &&
+                customerStatusCount.total_count !== null
+                  ? customerStatusCount.total_count
+                  : "-"
+              } )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              bucketStatus === "Training Coordination"
+                ? "customers_active_trainer_coordination_container"
+                : "customers_trainer_coordination_container"
+            }
+            onClick={() => {
+              if (bucketStatus === "Training Coordination") {
+                return;
+              }
+              setBucketStatus("Training Coordination");
+              setStatus("");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                "Training Coordination",
+                null,
+                allDownliners,
+                duplicateBranchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Training Coordination{" "}
+              {`( ${
+                customerBucketStatusCount &&
+                customerBucketStatusCount.training_coordination_count !==
+                  undefined &&
+                customerBucketStatusCount.training_coordination_count !== null
+                  ? customerBucketStatusCount.training_coordination_count
+                  : "-"
+              } )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              bucketStatus === "Progress Monitoring"
+                ? "customers_active_progress_monitoring_container"
+                : "customers_progress_monitoring_container"
+            }
+            onClick={() => {
+              if (bucketStatus === "Progress Monitoring") {
+                return;
+              }
+              setBucketStatus("Progress Monitoring");
+              setStatus("");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                "Progress Monitoring",
+                null,
+                allDownliners,
+                duplicateBranchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Progress Monitoring{" "}
+              {`( ${
+                customerBucketStatusCount &&
+                customerBucketStatusCount.progress_monitoring_count !==
+                  undefined &&
+                customerBucketStatusCount.progress_monitoring_count !== null
+                  ? customerBucketStatusCount.progress_monitoring_count
+                  : "-"
+              } )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              bucketStatus === "Course completion"
+                ? "customers_active_course_completion_container"
+                : "customers_course_completion_container"
+            }
+            onClick={() => {
+              if (bucketStatus === "Course completion") {
+                return;
+              }
+              setBucketStatus("Course completion");
+              setStatus("");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                "Course completion",
+                null,
+                allDownliners,
+                duplicateBranchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Course Completion{" "}
+              {`( ${
+                customerBucketStatusCount &&
+                customerBucketStatusCount.course_completion_count !==
+                  undefined &&
+                customerBucketStatusCount.course_completion_count !== null
+                  ? customerBucketStatusCount.course_completion_count
+                  : "-"
+              } )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              bucketStatus === "Reviews & Certification"
+                ? "customers_active_review_and_cert_container"
+                : "customers_review_and_cert_container"
+            }
+            onClick={() => {
+              if (bucketStatus === "Reviews & Certification") {
+                return;
+              }
+              setBucketStatus("Reviews & Certification");
+              setStatus("");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedOrigin,
+                "Reviews & Certification",
+                null,
+                allDownliners,
+                duplicateBranchOptions,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Reviews & Certification{" "}
+              {`( ${
+                customerBucketStatusCount &&
+                customerBucketStatusCount.reviews_certification_count !==
+                  undefined &&
+                customerBucketStatusCount.reviews_certification_count !== null
+                  ? customerBucketStatusCount.reviews_certification_count
+                  : "-"
+              } )`}
+            </p>
+          </div>
+        </ScrollableTabContainer>
+
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <Tooltip placement="top" title="Refresh">
+            <Button
+              className="leadmanager_refresh_button"
+              onClick={handleRefresh}
+            >
+              <RedoOutlined className="refresh_icon" />
+            </Button>
+          </Tooltip>
+        </div>
+      </div>
+
       <Row>
         <Col xs={24} sm={24} md={24} lg={20}>
           <Row gutter={12}>
@@ -2059,6 +2306,7 @@ export default function Customers() {
                             dateFilterType,
                             null,
                             selectedOrigin,
+                            bucketStatus,
                             status,
                             allDownliners,
                             branchOptions,
@@ -2112,6 +2360,7 @@ export default function Customers() {
                                 dateFilterType,
                                 null,
                                 selectedOrigin,
+                                bucketStatus,
                                 status,
                                 allDownliners,
                                 branchOptions,
@@ -2184,6 +2433,7 @@ export default function Customers() {
                         dateFilterType,
                         searchValue,
                         selectedOrigin,
+                        bucketStatus,
                         status,
                         allDownliners,
                         branchOptions,
@@ -2218,6 +2468,7 @@ export default function Customers() {
                               e.target.value,
                               searchValue,
                               selectedOrigin,
+                              bucketStatus,
                               status,
                               allDownliners,
                               branchOptions,
@@ -2367,6 +2618,7 @@ export default function Customers() {
                               dateFilterType,
                               searchValue,
                               e.target.value,
+                              bucketStatus,
                               status,
                               allDownliners,
                               branchOptions,
@@ -2485,130 +2737,627 @@ export default function Customers() {
               </Button>
             </Tooltip>
           )}
-
-          <Tooltip placement="top" title="Refresh">
-            <Button
-              className="leadmanager_refresh_button"
-              onClick={handleRefresh}
-            >
-              <RedoOutlined className="refresh_icon" />
-            </Button>
-          </Tooltip>
         </Col>
       </Row>
 
       <div className="customers_scroll_wrapper">
-        <button
+        {/* <button
           onClick={() => scroll(-600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropleft size={25} />
-        </button>
+        </button> */}
         <div className="customers_status_mainContainer" ref={scrollRef}>
-          <div
-            className={
-              status === ""
-                ? "trainers_active_all_container"
-                : "trainers_all_container"
-            }
-            onClick={() => {
-              if (status === "") {
-                return;
-              }
-              setStatus("");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                null,
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              All{" "}
-              {`( ${
-                customerStatusCount &&
-                customerStatusCount.total_count !== undefined &&
-                customerStatusCount.total_count !== null
-                  ? customerStatusCount.total_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
-          <div
-            className={
-              status == "Form Pending"
-                ? "customers_active_formpending_container"
-                : "customers_formpending_container"
-            }
-            onClick={() => {
-              if (status == "Form Pending") {
-                return;
-              }
-              setStatus("Form Pending");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Form Pending",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Form Pending{" "}
-              {`( ${
-                customerStatusCount &&
-                customerStatusCount.form_pending !== undefined &&
-                customerStatusCount.form_pending !== null
-                  ? customerStatusCount.form_pending
-                  : "-"
-              } )`}
-            </p>
-          </div>
+          {(bucketStatus === null ||
+            bucketStatus === "" ||
+            bucketStatus === "Student Onboarding") && (
+            <>
+              <div
+                className={
+                  status === ""
+                    ? "trainers_active_all_container"
+                    : "trainers_all_container"
+                }
+                onClick={() => {
+                  if (status === "") {
+                    return;
+                  }
+                  setStatus("");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    null,
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  All{" "}
+                  {`( ${
+                    customerStatusCount &&
+                    customerStatusCount.total_count !== undefined &&
+                    customerStatusCount.total_count !== null
+                      ? customerStatusCount.total_count
+                      : "-"
+                  } )`}
+                </p>
+              </div>
+              <div
+                className={
+                  status == "Form Pending"
+                    ? "customers_active_formpending_container"
+                    : "customers_formpending_container"
+                }
+                onClick={() => {
+                  if (status == "Form Pending") {
+                    return;
+                  }
+                  setStatus("Form Pending");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Form Pending",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Form Pending{" "}
+                  {`( ${
+                    customerStatusCount &&
+                    customerStatusCount.form_pending !== undefined &&
+                    customerStatusCount.form_pending !== null
+                      ? customerStatusCount.form_pending
+                      : "-"
+                  } )`}
+                </p>
+              </div>
 
-          {/* <div
-            className={
-              status === "Awaiting Finance"
-                ? "customers_active_awaitfinance_container"
-                : status === "Payment Rejected"
-                  ? "customers_active_paymentreject_container"
-                  : isSwap
-                    ? "customers_paymentreject_container"
-                    : "customers_awaitfinance_container"
-            }
-          >
+              <div
+                className={
+                  status === "Awaiting Verify"
+                    ? "customers_active_studentvefity_container"
+                    : "customers_studentvefity_container"
+                }
+                onClick={() => {
+                  if (status === "Awaiting Verify") {
+                    return;
+                  }
+                  setStatus("Awaiting Verify");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Awaiting Verify",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Student Verify{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.awaiting_verify !== undefined &&
+                    customerStatusCount.awaiting_verify !== null
+                      ? customerStatusCount.awaiting_verify
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+
+              <div
+                className={
+                  status === "Awaiting Trainer"
+                    ? "customers_active_assigntrainers_container"
+                    : status === "Trainer Rejected"
+                      ? "customers_active_paymentreject_container"
+                      : isAssignTrainerSwap
+                        ? "customers_paymentreject_container"
+                        : "customers_assigntrainers_container"
+                }
+              >
+                <div
+                  onClick={() => {
+                    if (
+                      status === "Awaiting Trainer" ||
+                      status === "Trainer Rejected"
+                    ) {
+                      return;
+                    }
+                    setStatus(
+                      isAssignTrainerSwap
+                        ? "Trainer Rejected"
+                        : "Awaiting Trainer",
+                    );
+                    setPagination({
+                      page: 1,
+                    });
+                    getCustomersData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      dateFilterType,
+                      searchValue,
+                      selectedOrigin,
+                      bucketStatus,
+                      isAssignTrainerSwap
+                        ? "Trainer Rejected"
+                        : "Awaiting Trainer",
+                      allDownliners,
+                      branchOptions,
+                      1,
+                      pagination.limit,
+                    );
+                  }}
+                >
+                  {isAssignTrainerSwap ? (
+                    <p>
+                      Trainer Rejected{" "}
+                      {`(  ${
+                        customerStatusCount &&
+                        customerStatusCount.trainer_rejected !== undefined &&
+                        customerStatusCount.trainer_rejected !== null
+                          ? customerStatusCount.trainer_rejected
+                          : "-"
+                      }
+ )`}
+                    </p>
+                  ) : (
+                    <p>
+                      Assign Trainer{" "}
+                      {`(  ${
+                        customerStatusCount &&
+                        customerStatusCount.awaiting_trainer !== undefined &&
+                        customerStatusCount.awaiting_trainer !== null
+                          ? customerStatusCount.awaiting_trainer
+                          : "-"
+                      }
+ )`}
+                    </p>
+                  )}
+                </div>
+                <MdOutlineSwapVert
+                  size={19}
+                  style={{
+                    cursor: "pointer",
+                    transition: "transform 0.3s ease",
+                    transform: isAssignTrainerSwap
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                  }}
+                  onClick={() => {
+                    setIsAssignTrainerSwap((prev) => {
+                      const newSwap = !prev;
+                      const newStatus = newSwap
+                        ? "Trainer Rejected"
+                        : "Awaiting Trainer";
+                      console.log("newStatus", newStatus);
+                      setStatus(newStatus);
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedOrigin,
+                        bucketStatus,
+                        newStatus,
+                        allDownliners,
+                        branchOptions,
+                        1,
+                        pagination.limit,
+                      );
+                      return newSwap;
+                    });
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          {bucketStatus === "Training Coordination" && (
+            <>
+              <div
+                className={
+                  status === "Awaiting Trainer Verify"
+                    ? "customers_active_verifytrainers_container"
+                    : status === "Approval Rejected"
+                      ? "customers_active_paymentreject_container"
+                      : isApprovalTrainerSwap
+                        ? "customers_paymentreject_container"
+                        : "customers_verifytrainers_container"
+                }
+                onClick={() => {
+                  if (
+                    status === "Awaiting Trainer Verify" ||
+                    status === "Approval Rejected"
+                  ) {
+                    return;
+                  }
+                  setStatus(
+                    isApprovalTrainerSwap
+                      ? "Approval Rejected"
+                      : "Awaiting Trainer Verify",
+                  );
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    isApprovalTrainerSwap
+                      ? "Approval Rejected"
+                      : "Awaiting Trainer Verify",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                {isApprovalTrainerSwap ? (
+                  <p>
+                    Approval Rejected{" "}
+                    {`(  ${
+                      customerStatusCount &&
+                      customerStatusCount.approval_rejected !== undefined &&
+                      customerStatusCount.approval_rejected !== null
+                        ? customerStatusCount.approval_rejected
+                        : "-"
+                    }
+ )`}
+                  </p>
+                ) : (
+                  <p>
+                    Verify Trainer{" "}
+                    {`(  ${
+                      customerStatusCount &&
+                      customerStatusCount.awaiting_trainer_verify !==
+                        undefined &&
+                      customerStatusCount.awaiting_trainer_verify !== null
+                        ? customerStatusCount.awaiting_trainer_verify
+                        : "-"
+                    }
+ )`}
+                  </p>
+                )}
+
+                <MdOutlineSwapVert
+                  size={19}
+                  style={{
+                    cursor: "pointer",
+                    transition: "transform 0.3s ease",
+                    transform: isApprovalTrainerSwap
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                  }}
+                  onClick={() => {
+                    setIsApprovalTrainerSwap((prev) => {
+                      const newSwap = !prev;
+                      const newStatus = newSwap
+                        ? "Approval Rejected"
+                        : "Awaiting Trainer Verify";
+                      console.log("newStatus", newStatus);
+                      setStatus(newStatus);
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedOrigin,
+                        bucketStatus,
+                        newStatus,
+                        allDownliners,
+                        branchOptions,
+                        1,
+                        pagination.limit,
+                      );
+                      return newSwap;
+                    });
+                  }}
+                />
+              </div>
+
+              <div
+                className={
+                  status === "Trainer Approval"
+                    ? "customers_active_trainerapproval_container"
+                    : "customers_trainerapproval_container"
+                }
+                onClick={() => {
+                  if (status === "Trainer Approval") {
+                    return;
+                  }
+                  setStatus("Trainer Approval");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Trainer Approval",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Trainer Approval{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.trainer_approval !== undefined &&
+                    customerStatusCount.trainer_approval !== null
+                      ? customerStatusCount.trainer_approval
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+            </>
+          )}
+
+          {bucketStatus === "Progress Monitoring" && (
+            <>
+              <div
+                className={
+                  status === "Awaiting Class"
+                    ? "customers_active_awaitingclass_container"
+                    : "customers_awaitingclass_container"
+                }
+                onClick={() => {
+                  if (status === "Awaiting Class") {
+                    return;
+                  }
+                  setStatus("Awaiting Class");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Awaiting Class",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Awaiting Class{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.awaiting_class !== undefined &&
+                    customerStatusCount.awaiting_class !== null
+                      ? customerStatusCount.awaiting_class
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+
+              <div
+                className={
+                  status === "Class Scheduled"
+                    ? "customers_active_classschedule_container"
+                    : "customers_classschedule_container"
+                }
+                onClick={() => {
+                  if (status === "Class Scheduled") {
+                    return;
+                  }
+                  setStatus("Class Scheduled");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Class Scheduled",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Class Scheduled{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.class_scheduled !== undefined &&
+                    customerStatusCount.class_scheduled !== null
+                      ? customerStatusCount.class_scheduled
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+              <div
+                className={
+                  status === "Class Going"
+                    ? "customers_active_classgoing_container"
+                    : "customers_classgoing_container"
+                }
+                onClick={() => {
+                  if (status === "Class Going") {
+                    return;
+                  }
+                  setStatus("Class Going");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Class Going",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Class Going{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.class_going !== undefined &&
+                    customerStatusCount.class_going !== null
+                      ? customerStatusCount.class_going
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+              <div
+                className={
+                  status === "Escalated"
+                    ? "customers_active_escalated_container"
+                    : "customers_escalated_container"
+                }
+                onClick={() => {
+                  if (status === "Escalated") {
+                    return;
+                  }
+                  setStatus("Escalated");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Escalated",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Escalated{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.escalated !== undefined &&
+                    customerStatusCount.escalated !== null
+                      ? customerStatusCount.escalated
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+
+              <div
+                className={
+                  status === "Others"
+                    ? "customers_active_others_container"
+                    : "customers_others_container"
+                }
+                onClick={() => {
+                  if (status === "Others") {
+                    return;
+                  }
+                  setStatus("Others");
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    "Others",
+                    allDownliners,
+                    branchOptions,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Others{" "}
+                  {`(  ${
+                    customerStatusCount &&
+                    customerStatusCount.Others !== undefined &&
+                    customerStatusCount.Others !== null
+                      ? customerStatusCount.Others
+                      : "-"
+                  }
+ )`}
+                </p>
+              </div>
+            </>
+          )}
+
+          {bucketStatus === "Course completion" && (
             <div
-              // className={
-              //   status === "Awaiting Finance"
-              //     ? "customers_active_awaitfinance_container"
-              //     : "customers_awaitfinance_container"
-              // }
+              className={
+                status === "Passedout process"
+                  ? "customers_active_feedback_container"
+                  : "customers_feedback_container"
+              }
               onClick={() => {
-                if (
-                  status === "Awaiting Finance" ||
-                  status === "Payment Rejected"
-                ) {
+                if (status === "Passedout process") {
                   return;
                 }
-                setStatus(isSwap ? "Payment Rejected" : "Awaiting Finance");
+                setStatus("Passedout process");
                 setPagination({
                   page: 1,
                 });
@@ -2618,7 +3367,8 @@ export default function Customers() {
                   dateFilterType,
                   searchValue,
                   selectedOrigin,
-                  isSwap ? "Payment Rejected" : "Awaiting Finance",
+                  bucketStatus,
+                  "Passedout Process",
                   allDownliners,
                   branchOptions,
                   1,
@@ -2626,132 +3376,32 @@ export default function Customers() {
                 );
               }}
             >
-              {isSwap ? (
-                <p>
-                  Payment Rejected{" "}
-                  {`(  ${
-                    customerStatusCount &&
-                    customerStatusCount.rejected_payment !== undefined &&
-                    customerStatusCount.rejected_payment !== null
-                      ? customerStatusCount.rejected_payment
-                      : "-"
-                  }
+              <p>
+                Passedout Process{" "}
+                {`(  ${
+                  customerStatusCount &&
+                  customerStatusCount.passedout_process !== undefined &&
+                  customerStatusCount.passedout_process !== null
+                    ? customerStatusCount.passedout_process
+                    : "-"
+                }
  )`}
-                </p>
-              ) : (
-                <p>
-                  Payment Verify{" "}
-                  {`(  ${
-                    customerStatusCount &&
-                    customerStatusCount.awaiting_finance !== undefined &&
-                    customerStatusCount.awaiting_finance !== null
-                      ? customerStatusCount.awaiting_finance
-                      : "-"
-                  }
- )`}
-                </p>
-              )}
+              </p>
             </div>
-            <MdOutlineSwapVert
-              size={19}
-              style={{
-                cursor: "pointer",
-                transition: "transform 0.3s ease",
-                transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
-              }}
-              onClick={() => {
-                setIsSwap((prev) => {
-                  const newSwap = !prev;
-                  const newStatus = newSwap
-                    ? "Payment Rejected"
-                    : "Awaiting Finance";
-                  console.log("newStatus", newStatus);
-                  setStatus(newStatus);
-                  getCustomersData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    dateFilterType,
-                    searchValue,
-                    selectedOrigin,
-                    newStatus,
-                    allDownliners,
-                    branchOptions,
-                    1,
-                    pagination.limit,
-                  );
-                  return newSwap;
-                });
-              }}
-            />
-          </div> */}
-          <div
-            className={
-              status === "Awaiting Verify"
-                ? "customers_active_studentvefity_container"
-                : "customers_studentvefity_container"
-            }
-            onClick={() => {
-              if (status === "Awaiting Verify") {
-                return;
-              }
-              setStatus("Awaiting Verify");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Awaiting Verify",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Student Verify{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_verify !== undefined &&
-                customerStatusCount.awaiting_verify !== null
-                  ? customerStatusCount.awaiting_verify
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-          <div
-            // className={
-            //   status === "Awaiting Trainer"
-            //     ? "customers_active_assigntrainers_container"
-            //     : "customers_assigntrainers_container"
-            // }
+          )}
 
-            className={
-              status === "Awaiting Trainer"
-                ? "customers_active_assigntrainers_container"
-                : status === "Trainer Rejected"
-                  ? "customers_active_paymentreject_container"
-                  : isAssignTrainerSwap
-                    ? "customers_paymentreject_container"
-                    : "customers_assigntrainers_container"
-            }
-          >
+          {bucketStatus === "Reviews & Certification" && (
             <div
+              className={
+                status === "Completed"
+                  ? "customers_active_completed_container"
+                  : "customers_completed_container"
+              }
               onClick={() => {
-                if (
-                  status === "Awaiting Trainer" ||
-                  status === "Trainer Rejected"
-                ) {
+                if (status === "Completed") {
                   return;
                 }
-                setStatus(
-                  isAssignTrainerSwap ? "Trainer Rejected" : "Awaiting Trainer",
-                );
+                setStatus("Completed");
                 setPagination({
                   page: 1,
                 });
@@ -2761,7 +3411,8 @@ export default function Customers() {
                   dateFilterType,
                   searchValue,
                   selectedOrigin,
-                  isAssignTrainerSwap ? "Trainer Rejected" : "Awaiting Trainer",
+                  bucketStatus,
+                  "Completed",
                   allDownliners,
                   branchOptions,
                   1,
@@ -2769,501 +3420,26 @@ export default function Customers() {
                 );
               }}
             >
-              {isAssignTrainerSwap ? (
-                <p>
-                  Trainer Rejected{" "}
-                  {`(  ${
-                    customerStatusCount &&
-                    customerStatusCount.trainer_rejected !== undefined &&
-                    customerStatusCount.trainer_rejected !== null
-                      ? customerStatusCount.trainer_rejected
-                      : "-"
-                  }
+              <p>
+                Completed{" "}
+                {`(  ${
+                  customerStatusCount &&
+                  customerStatusCount.completed !== undefined &&
+                  customerStatusCount.completed !== null
+                    ? customerStatusCount.completed
+                    : "-"
+                }
  )`}
-                </p>
-              ) : (
-                <p>
-                  Assign Trainer{" "}
-                  {`(  ${
-                    customerStatusCount &&
-                    customerStatusCount.awaiting_trainer !== undefined &&
-                    customerStatusCount.awaiting_trainer !== null
-                      ? customerStatusCount.awaiting_trainer
-                      : "-"
-                  }
- )`}
-                </p>
-              )}
+              </p>
             </div>
-            <MdOutlineSwapVert
-              size={19}
-              style={{
-                cursor: "pointer",
-                transition: "transform 0.3s ease",
-                transform: isAssignTrainerSwap
-                  ? "rotate(180deg)"
-                  : "rotate(0deg)",
-              }}
-              onClick={() => {
-                setIsAssignTrainerSwap((prev) => {
-                  const newSwap = !prev;
-                  const newStatus = newSwap
-                    ? "Trainer Rejected"
-                    : "Awaiting Trainer";
-                  console.log("newStatus", newStatus);
-                  setStatus(newStatus);
-                  getCustomersData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    dateFilterType,
-                    searchValue,
-                    selectedOrigin,
-                    newStatus,
-                    allDownliners,
-                    branchOptions,
-                    1,
-                    pagination.limit,
-                  );
-                  return newSwap;
-                });
-              }}
-            />
-          </div>
-
-          <div
-            className={
-              status === "Awaiting Trainer Verify"
-                ? "customers_active_verifytrainers_container"
-                : status === "Approval Rejected"
-                  ? "customers_active_paymentreject_container"
-                  : isApprovalTrainerSwap
-                    ? "customers_paymentreject_container"
-                    : "customers_verifytrainers_container"
-            }
-            onClick={() => {
-              if (
-                status === "Awaiting Trainer Verify" ||
-                status === "Approval Rejected"
-              ) {
-                return;
-              }
-              setStatus(
-                isApprovalTrainerSwap
-                  ? "Approval Rejected"
-                  : "Awaiting Trainer Verify",
-              );
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                isApprovalTrainerSwap
-                  ? "Approval Rejected"
-                  : "Awaiting Trainer Verify",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            {isApprovalTrainerSwap ? (
-              <p>
-                Approval Rejected{" "}
-                {`(  ${
-                  customerStatusCount &&
-                  customerStatusCount.approval_rejected !== undefined &&
-                  customerStatusCount.approval_rejected !== null
-                    ? customerStatusCount.approval_rejected
-                    : "-"
-                }
- )`}
-              </p>
-            ) : (
-              <p>
-                Verify Trainer{" "}
-                {`(  ${
-                  customerStatusCount &&
-                  customerStatusCount.awaiting_trainer_verify !== undefined &&
-                  customerStatusCount.awaiting_trainer_verify !== null
-                    ? customerStatusCount.awaiting_trainer_verify
-                    : "-"
-                }
- )`}
-              </p>
-            )}
-
-            <MdOutlineSwapVert
-              size={19}
-              style={{
-                cursor: "pointer",
-                transition: "transform 0.3s ease",
-                transform: isApprovalTrainerSwap
-                  ? "rotate(180deg)"
-                  : "rotate(0deg)",
-              }}
-              onClick={() => {
-                setIsApprovalTrainerSwap((prev) => {
-                  const newSwap = !prev;
-                  const newStatus = newSwap
-                    ? "Approval Rejected"
-                    : "Awaiting Trainer Verify";
-                  console.log("newStatus", newStatus);
-                  setStatus(newStatus);
-                  getCustomersData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    dateFilterType,
-                    searchValue,
-                    selectedOrigin,
-                    newStatus,
-                    allDownliners,
-                    branchOptions,
-                    1,
-                    pagination.limit,
-                  );
-                  return newSwap;
-                });
-              }}
-            />
-          </div>
-
-          <div
-            className={
-              status === "Trainer Approval"
-                ? "customers_active_trainerapproval_container"
-                : "customers_trainerapproval_container"
-            }
-            onClick={() => {
-              if (status === "Trainer Approval") {
-                return;
-              }
-              setStatus("Trainer Approval");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Trainer Approval",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Trainer Approval{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.trainer_approval !== undefined &&
-                customerStatusCount.trainer_approval !== null
-                  ? customerStatusCount.trainer_approval
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              status === "Awaiting Class"
-                ? "customers_active_awaitingclass_container"
-                : "customers_awaitingclass_container"
-            }
-            onClick={() => {
-              if (status === "Awaiting Class") {
-                return;
-              }
-              setStatus("Awaiting Class");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Awaiting Class",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Awaiting Class{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_class !== undefined &&
-                customerStatusCount.awaiting_class !== null
-                  ? customerStatusCount.awaiting_class
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              status === "Class Scheduled"
-                ? "customers_active_classschedule_container"
-                : "customers_classschedule_container"
-            }
-            onClick={() => {
-              if (status === "Class Scheduled") {
-                return;
-              }
-              setStatus("Class Scheduled");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Class Scheduled",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Class Scheduled{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.class_scheduled !== undefined &&
-                customerStatusCount.class_scheduled !== null
-                  ? customerStatusCount.class_scheduled
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-          <div
-            className={
-              status === "Class Going"
-                ? "customers_active_classgoing_container"
-                : "customers_classgoing_container"
-            }
-            onClick={() => {
-              if (status === "Class Going") {
-                return;
-              }
-              setStatus("Class Going");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Class Going",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Class Going{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.class_going !== undefined &&
-                customerStatusCount.class_going !== null
-                  ? customerStatusCount.class_going
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              status === "Passedout process"
-                ? "customers_active_feedback_container"
-                : "customers_feedback_container"
-            }
-            onClick={() => {
-              if (status === "Passedout process") {
-                return;
-              }
-              setStatus("Passedout process");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Passedout Process",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Passedout Process{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.passedout_process !== undefined &&
-                customerStatusCount.passedout_process !== null
-                  ? customerStatusCount.passedout_process
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-          <div
-            className={
-              status === "Completed"
-                ? "customers_active_completed_container"
-                : "customers_completed_container"
-            }
-            onClick={() => {
-              if (status === "Completed") {
-                return;
-              }
-              setStatus("Completed");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Completed",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Completed{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.completed !== undefined &&
-                customerStatusCount.completed !== null
-                  ? customerStatusCount.completed
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              status === "Escalated"
-                ? "customers_active_escalated_container"
-                : "customers_escalated_container"
-            }
-            onClick={() => {
-              if (status === "Escalated") {
-                return;
-              }
-              setStatus("Escalated");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Escalated",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Escalated{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.escalated !== undefined &&
-                customerStatusCount.escalated !== null
-                  ? customerStatusCount.escalated
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              status === "Others"
-                ? "customers_active_others_container"
-                : "customers_others_container"
-            }
-            onClick={() => {
-              if (status === "Others") {
-                return;
-              }
-              setStatus("Others");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedOrigin,
-                "Others",
-                allDownliners,
-                branchOptions,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Others{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.Others !== undefined &&
-                customerStatusCount.Others !== null
-                  ? customerStatusCount.Others
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
+          )}
         </div>
-        <button
+        {/* <button
           onClick={() => scroll(600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropright size={25} />
-        </button>
+        </button> */}
       </div>
 
       <div>
@@ -3337,6 +3513,7 @@ export default function Customers() {
               dateFilterType,
               searchValue,
               selectedOrigin,
+              bucketStatus,
               status,
               allDownliners,
               branchOptions,
@@ -3824,6 +4001,7 @@ export default function Customers() {
                     dateFilterType,
                     searchValue,
                     selectedOrigin,
+                    bucketStatus,
                     status,
                     allDownliners,
                     branchOptions,
@@ -3849,6 +4027,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -3880,6 +4059,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -3907,6 +4087,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -3935,6 +4116,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -3971,6 +4153,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -3998,6 +4181,7 @@ export default function Customers() {
                       dateFilterType,
                       searchValue,
                       selectedOrigin,
+                      bucketStatus,
                       status,
                       allDownliners,
                       branchOptions,
@@ -4339,6 +4523,7 @@ export default function Customers() {
                   dateFilterType,
                   searchValue,
                   selectedOrigin,
+                  bucketStatus,
                   status,
                   allDownliners,
                   duplicateBranchOptions,
@@ -4571,6 +4756,7 @@ export default function Customers() {
             dateFilterType,
             searchValue,
             selectedOrigin,
+            bucketStatus,
             status,
             allDownliners,
             duplicateBranchOptions,

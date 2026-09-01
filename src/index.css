@@ -474,6 +474,16 @@ button:focus-visible {
 /* ==========================================
    STATUS FILTER TABS OPTIMIZATIONS
    ========================================== */
+.customers_student_onboarding_container,
+.customers_active_student_onboarding_container,
+.customers_trainer_coordination_container,
+.customers_active_trainer_coordination_container,
+.customers_progress_monitoring_container,
+.customers_active_progress_monitoring_container,
+.customers_course_completion_container,
+.customers_active_course_completion_container,
+.customers_review_and_cert_container,
+.customers_active_review_and_cert_container,
 .customers_formpending_container,
 .customers_active_formpending_container,
 .customers_paymentreject_container,

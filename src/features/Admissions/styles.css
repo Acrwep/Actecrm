@@ -44,3 +44,120 @@
   span {
   font-size: 13px !important;
 }
+
+/* ===============================
+   ADMISSION SALE REPORT STYLES
+================================ */
+.admissions_table .ant-table {
+  font-size: 12px;
+}
+.admissions_table .ant-table-thead > tr > th {
+  /* padding: 22px !important; */
+  line-height: 0px !important;
+  font-weight: 600;
+}
+
+/* Header Background Colors (using !important to override default Antd styles) */
+.admissions_table.ant-table-wrapper
+  .ant-table.ant-table-small
+  .ant-table-thead
+  > tr
+  > th {
+  padding: 13px !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-violet {
+  background-color: #e3e6fc !important; /* Blue 500 */
+  color: #222d77 !important;
+  text-align: center !important;
+  padding: 12px !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-blue {
+  background-color: #eff6ff !important; /* Orange 500 */
+  color: #2d4191 !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-green {
+  background-color: #ecfdf5 !important; /* Emerald 500 */
+  color: #146951 !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-orange {
+  background-color: #fde7db !important; /* Cyan 500 */
+  color: #703a1d !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-yellow {
+  background-color: #f8efda !important; /* Violet 500 */
+  color: #7c5f16 !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.header-purple {
+  background-color: #e4dbf8 !important; /* Violet 500 */
+  color: #321b63 !important;
+  text-align: center !important;
+}
+/* Top-level Group Headers (Distinct from child headers) */
+.admissions_table.ant-table-wrapper
+  .ant-table.ant-table-small
+  .ant-table-thead
+  > tr:first-child
+  > th {
+  padding: 0px 0 !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-violet {
+  background-color: #5b69ca !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-size: 12px !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-blue {
+  background-color: #458fda !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-green {
+  background-color: #047857 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-yellow {
+  background-color: #f2b415 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-orange {
+  background-color: #f06c23 !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+.admissions_table .ant-table-thead > tr > th.group-header-purple {
+  background-color: #7e61bb !important;
+  color: #fff !important;
+  text-align: center !important;
+}
+/* Remove default splitters in antd v5 headers */
+.admissions_table .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+/* Cell background */
+.admissions_table .ant-table-tbody > tr > td.cell-grey {
+  background-color: #fafafa !important;
+  border-right: 1px solid #f0f0f0 !important;
+}
+
+/* Dynamic vibrant pastel cell backgrounds matching header groups */
+/* .admissions_table .ant-table-tbody > tr > td.cell-light-blue {
+  background-color: #eff6ff !important; 
+  border-right: 1px solid #dbeafe !important; 
+  border-bottom: 1px solid #dbeafe !important;
+} */
+
+/* table icons */
+.admissions_table_icons_container {
+  cursor: pointer;
+  text-align: center;
+  position: absolute;
+  top: 16%;
+  left: 40%;
+}
