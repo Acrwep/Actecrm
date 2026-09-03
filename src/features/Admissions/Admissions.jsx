@@ -827,6 +827,7 @@ export default function Admissions() {
           if (original) {
             return {
               ...col,
+              title: original.title,
               width: original.width,
               fixed: original.fixed,
               hidden: original.hidden,
